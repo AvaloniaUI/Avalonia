@@ -8,6 +8,7 @@ using Avalonia.Utilities;
 using XamlIl;
 using XamlIl.Ast;
 using XamlIl.Transform;
+using XamlIl.Transform.Transformers;
 using XamlIl.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
@@ -20,17 +21,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (node is XamlIlAstObjectNode on)
             {
                 AvaloniaXamlIlDataContextTypeMetadataNode calculatedDataContextTypeNode = null;
-                foreach (var child in on.Children)
+                AvaloniaXamlIlDataContextTypeMetadataNode directiveDataContextTypeNode = null;
+
+                for (int i = 0; i < on.Children.Count; ++i)
                 {
+                    var child = on.Children[i];
                     if (child is XamlIlAstXmlDirective directive)
                     {
                         if (directive.Namespace == XamlNamespaces.Xaml2006
                             && directive.Name == "DataContextType"
                             && directive.Values.Count == 1
-                            && directive.Values[0] is XamlIlTypeExtensionNode dataContextType)
+                            && directive.Values[0] is XamlIlAstTextNode text)
                         {
                             on.Children.Remove(child);
-                            return new AvaloniaXamlIlDataContextTypeMetadataNode(on, dataContextType.Value.GetClrType());
+                            i--;
+                            directiveDataContextTypeNode = new AvaloniaXamlIlDataContextTypeMetadataNode(on,
+                                XamlIlTypeReferenceResolver.ResolveType(context, text.Text, isMarkupExtension: false, text, strict: true).Type);
                         }
                     }
                     else if (child is XamlIlAstXamlPropertyValueNode pv
@@ -62,10 +68,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         }
                     }
                 }
-                if (!(calculatedDataContextTypeNode is null))
-                {
-                    return calculatedDataContextTypeNode;
-                }
+                return directiveDataContextTypeNode ?? calculatedDataContextTypeNode ?? node;
             }
             // TODO: Add node for DataTemplate scope.
 

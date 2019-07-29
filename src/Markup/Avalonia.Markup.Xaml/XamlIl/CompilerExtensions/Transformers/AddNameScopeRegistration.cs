@@ -72,12 +72,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     {
         private readonly AvaloniaXamlIlWellKnownTypes _types;
         public IXamlIlAstValueNode Name { get; set; }
-        public IXamlIlType ControlType { get; }
+        public IXamlIlType TargetType { get; }
 
-        public AvaloniaNameScopeRegistrationXamlIlNode(IXamlIlAstValueNode name, AvaloniaXamlIlWellKnownTypes types, IXamlIlType controlType) : base(name)
+        public AvaloniaNameScopeRegistrationXamlIlNode(IXamlIlAstValueNode name, AvaloniaXamlIlWellKnownTypes types, IXamlIlType targetType) : base(name)
         {
             _types = types;
-            ControlType = controlType;
+            TargetType = targetType;
             Name = name;
         }
 

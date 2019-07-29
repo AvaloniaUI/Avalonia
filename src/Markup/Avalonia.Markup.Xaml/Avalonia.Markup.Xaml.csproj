@@ -17,9 +17,10 @@
         <Compile Include="Extensions.cs" />
         <Compile Include="MarkupExtension.cs" />
         <Compile Include="MarkupExtensions\CompiledBindingExtension.cs" />
+        <Compile Include="MarkupExtensions\CompiledBindings\ArrayElementPlugin.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\CompiledBindingPath.cs" />
-        <Compile Include="MarkupExtensions\CompiledBindings\NotifyingPropertyInfoHelpers.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\ObservableStreamPlugin.cs" />
+        <Compile Include="MarkupExtensions\CompiledBindings\PropertyInfoAccessorFactory.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\PropertyInfoAccessorPlugin.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\TaskStreamPlugin.cs" />
         <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
@@ -69,6 +70,7 @@
         <Compile Include="XamlIl\CompilerExtensions\Transformers\XNameTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\XamlIlBindingPathHelper.cs" />
         <Compile Include="XamlIl\CompilerExtensions\XamlIlClrPropertyInfoHelper.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\XamlIlPropertyInfoAccessorFactoryEmitter.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
         <Compile Include="XamlIl\Runtime\XamlIlRuntimeHelpers.cs" />

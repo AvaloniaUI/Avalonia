@@ -20,16 +20,25 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             _builder = builder;
         }
 
-        static string GetKey(IXamlIlProperty property) 
-            => property.Getter.DeclaringType.GetFullName() + "." + property.Name;
+        static string GetKey(IXamlIlProperty property, string indexerArgumentsKey)
+        {
+            var baseKey = property.Getter.DeclaringType.GetFullName() + "." + property.Name;
 
-        public IXamlIlType Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen, IXamlIlProperty property, IEnumerable<IXamlIlAstValueNode> indexerArguments = null)
+            if (indexerArgumentsKey is null)
+            {
+                return baseKey;
+            }
+
+            return baseKey + $"[{indexerArgumentsKey}]";
+        }
+
+        public IXamlIlType Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen, IXamlIlProperty property, IEnumerable<IXamlIlAstValueNode> indexerArguments = null, string indexerArgumentsKey = null)
         {
             indexerArguments = indexerArguments ?? Enumerable.Empty<IXamlIlAstValueNode>();
             var types = context.GetAvaloniaTypes();
             IXamlIlMethod Get()
             {
-                var key = GetKey(property);
+                var key = GetKey(property, indexerArgumentsKey);
                 if (!_fields.TryGetValue(key, out var lst))
                     _fields[key] = lst = new List<(IXamlIlProperty prop, IXamlIlMethod get)>();
 

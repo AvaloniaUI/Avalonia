@@ -128,16 +128,21 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         break;
                     case BindingExpressionGrammar.IndexerNode indexer:
                         {
+                            if (targetType.IsArray)
+                            {
+                                nodes.Add(new XamlIlArrayIndexerPathElementNode(targetType, indexer.Arguments, lineInfo));
+                                break;
+                            }
+
                             IXamlIlProperty property = null;
                             for (var currentType = targetType; currentType != null; currentType = currentType.BaseType)
                             {
-                                var defaultMemberAttribute = currentType.CustomAttributes.FirstOrDefault(x => x.Type.GetFullName() == "System.Reflection.DefaultMemberAttribute");
+                                var defaultMemberAttribute = currentType.CustomAttributes.FirstOrDefault(x => x.Type.Namespace == "System.Reflection" && x.Type.Name == "DefaultMemberAttribute");
                                 if (defaultMemberAttribute != null)
                                 {
                                     property = targetType.GetAllProperties().FirstOrDefault(x => x.Name == (string)defaultMemberAttribute.Parameters[0]);
                                     break;
                                 }
-
                             };
                             if (property is null)
                             {
@@ -150,7 +155,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             int currentParamIndex = 0;
                             foreach (var param in parameters)
                             {
-                                var textNode = new XamlIlAstTextNode(lineInfo, indexer.Arguments[currentParamIndex]);
+                                var textNode = new XamlIlAstTextNode(lineInfo, indexer.Arguments[currentParamIndex], type: context.Configuration.WellKnownTypes.String);
                                 if (!XamlIlTransformHelpers.TryGetCorrectlyTypedValue(context, textNode,
                                         param, out var converted))
                                     throw new XamlIlParseException(
@@ -163,7 +168,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                             bool isNotifyingCollection = targetType.GetAllInterfaces().Any(i => i.FullName == "System.Collections.Specialized.INotifyCollectionChanged");
 
-                            nodes.Add(new XamlIlClrIndexerPathElementNode(property, values, isNotifyingCollection));
+                            nodes.Add(new XamlIlClrIndexerPathElementNode(property, values, string.Join(",", indexer.Arguments), isNotifyingCollection));
                             break;
                         }
                     case BindingExpressionGrammar.AttachedPropertyNameNode attachedProp:
@@ -183,7 +188,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         IXamlIlType elementType = null;
                         foreach (var deferredContent in context.ParentNodes().OfType<NestedScopeMetadataNode>())
                         {
-                            elementType = ScopeRegistrationFinder.GetControlType(deferredContent, elementName.Name);
+                            elementType = ScopeRegistrationFinder.GetTargetType(deferredContent, elementName.Name);
                             if (!(elementType is null))
                             {
                                 break;
@@ -191,7 +196,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         }
                         if (elementType is null)
                         {
-                            elementType = ScopeRegistrationFinder.GetControlType(context.RootObject, elementName.Name);
+                            elementType = ScopeRegistrationFinder.GetTargetType(context.RootObject, elementName.Name);
                         }
 
                         if (elementType is null)
@@ -224,13 +229,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             string Name { get; }
 
-            IXamlIlType ControlType { get; set; }
+            IXamlIlType TargetType { get; set; }
 
-            public static IXamlIlType GetControlType(IXamlIlAstNode namescopeRoot, string name)
+            public static IXamlIlType GetTargetType(IXamlIlAstNode namescopeRoot, string name)
             {
                 var finder = new ScopeRegistrationFinder(name);
                 namescopeRoot.Visit(finder);
-                return finder.ControlType;
+                return finder.TargetType;
             }
 
             void IXamlIlAstVisitor.Pop()
@@ -257,7 +262,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     if (registration.Name is XamlIlAstTextNode text && text.Text == Name)
                     {
-                        ControlType = registration.ControlType;
+                        TargetType = registration.TargetType;
                     }
                 }
                 return node;
@@ -387,12 +392,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             public void Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
-                => codeGen
-                    .Ldsfld(_field)
-                    .EmitCall(context.GetAvaloniaTypes()
-                        .NotifyingPropertyInfoHelpers.FindMethod(m => m.Name == "CreateAvaloniaPropertyInfo"))
-                    .EmitCall(context.GetAvaloniaTypes()
-                        .CompiledBindingPathBuilder.FindMethod(m => m.Name == "Property"));
+            {
+                codeGen.Ldsfld(_field);
+                context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                    .EmitLoadInpcPropertyAccessorFactory(context, codeGen);
+                codeGen.EmitCall(context.GetAvaloniaTypes()
+                    .CompiledBindingPathBuilder.FindMethod(m => m.Name == "Property"));
+            }
 
             public IXamlIlType Type { get; }
         }
@@ -411,9 +417,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 context.Configuration.GetExtra<XamlIlClrPropertyInfoEmitter>()
                     .Emit(context, codeGen, _property);
 
+                context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                    .EmitLoadInpcPropertyAccessorFactory(context, codeGen);
+
                 codeGen
-                    .EmitCall(context.GetAvaloniaTypes()
-                        .NotifyingPropertyInfoHelpers.FindMethod(m => m.Name == "CreateINPCPropertyInfo"))
                     .EmitCall(context.GetAvaloniaTypes()
                         .CompiledBindingPathBuilder.FindMethod(m => m.Name == "Property"));
             }
@@ -425,12 +432,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         {
             private readonly IXamlIlProperty _property;
             private readonly List<IXamlIlAstValueNode> _values;
+            private readonly string _indexerKey;
             private readonly bool _isNotifyingCollection;
 
-            public XamlIlClrIndexerPathElementNode(IXamlIlProperty property, List<IXamlIlAstValueNode> values, bool isNotifyingCollection)
+            public XamlIlClrIndexerPathElementNode(IXamlIlProperty property, List<IXamlIlAstValueNode> values, string indexerKey, bool isNotifyingCollection)
             {
                 _property = property;
                 _values = values;
+                _indexerKey = indexerKey;
                 _isNotifyingCollection = isNotifyingCollection;
             }
 
@@ -438,21 +447,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 var intType = context.Configuration.TypeSystem.GetType("System.Int32");
                 context.Configuration.GetExtra<XamlIlClrPropertyInfoEmitter>()
-                    .Emit(context, codeGen, _property, _values);
+                    .Emit(context, codeGen, _property, _values, _indexerKey);
 
                 if (_isNotifyingCollection
                     &&
                     _values.Count == 1
                     && _values[0].Type.GetClrType().Equals(intType))
                 {
-                    context.Emit(_values[0], codeGen, intType);
-                    codeGen.EmitCall(context.GetAvaloniaTypes()
-                        .NotifyingPropertyInfoHelpers.FindMethod(m => m.Name == "CreateIndexerPropertyInfo"));
+                    context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                        .EmitLoadIndexerAccessorFactory(context, codeGen, _values[0]);
                 }
                 else
                 {
-                    codeGen.EmitCall(context.GetAvaloniaTypes()
-                        .NotifyingPropertyInfoHelpers.FindMethod(m => m.Name == "CreateINPCPropertyInfo"));
+                    context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                        .EmitLoadInpcPropertyAccessorFactory(context, codeGen);
                 }
 
                 codeGen.EmitCall(context.GetAvaloniaTypes()
@@ -460,6 +468,49 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             public IXamlIlType Type => _property.Getter?.ReturnType ?? _property.Setter?.Parameters[0];
+        }
+
+        class XamlIlArrayIndexerPathElementNode : IXamlIlBindingPathElementNode
+        {
+            private readonly IXamlIlType _arrayType;
+            private readonly List<int> _values;
+
+            public XamlIlArrayIndexerPathElementNode(IXamlIlType arrayType, IList<string> values, IXamlIlLineInfo lineInfo)
+            {
+                _arrayType = arrayType;
+                _values = new List<int>(values.Count);
+                foreach (var item in values)
+                {
+                    if (!int.TryParse(item, out var index))
+                    {
+                        throw new XamlIlParseException($"Unable to convert '{item}' to an integer.", lineInfo.Line, lineInfo.Position);
+                    }
+                    _values.Add(index);
+                }
+            }
+
+            public void Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+            {
+                var intType = context.Configuration.TypeSystem.GetType("System.Int32");
+                var indices = codeGen.DefineLocal(context.Configuration.WellKnownTypes.Object.MakeArrayType(1));
+                codeGen.Ldc_I4(_values.Count)
+                    .Newarr(intType)
+                    .Stloc(indices);
+                for (int i = 0; i < _values.Count; i++)
+                {
+                    codeGen.Ldloc(indices)
+                        .Ldc_I4(i)
+                        .Ldc_I4(_values[i])
+                        .Stelem_ref();
+                }
+
+                codeGen.Ldloc(indices)
+                    .Ldtype(Type)
+                    .EmitCall(context.GetAvaloniaTypes()
+                    .CompiledBindingPathBuilder.FindMethod(m => m.Name == "ArrayElement"));
+            }
+
+            public IXamlIlType Type => _arrayType.ArrayElementType;
         }
 
         class XamlIlBindingPathNode : XamlIlAstNode, IXamlIlBindingPathNode, IXamlIlAstEmitableNode

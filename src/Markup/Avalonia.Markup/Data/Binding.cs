@@ -71,7 +71,7 @@ namespace Avalonia.Data
             
             enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
 
-            INameScope nameScope;
+            INameScope nameScope = null;
             NameScope?.TryGetTarget(out nameScope);
 
             var (node, mode) = ExpressionObserverBuilder.Parse(Path, enableDataValidation, TypeResolver, nameScope);

@@ -117,10 +117,12 @@ namespace Avalonia.Markup.Xaml.XamlIl
 
             var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + uri);
             var clrPropertyBuilder = tb.DefineNestedType("ClrProperties_" + Guid.NewGuid().ToString("N"));
-            
+            var indexerClosureType = tb.DefineNestedType("IndexerClosure_" + Guid.NewGuid().ToString("N"));
+
             var compiler = new AvaloniaXamlIlCompiler(new AvaloniaXamlIlCompilerConfiguration(_sreTypeSystem, asm,
                 _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter,
-                new XamlIlClrPropertyInfoEmitter(_sreTypeSystem.CreateTypeBuilder(clrPropertyBuilder))), 
+                new XamlIlClrPropertyInfoEmitter(_sreTypeSystem.CreateTypeBuilder(clrPropertyBuilder)),
+                new XamlIlPropertyInfoAccessorFactoryEmitter(_sreTypeSystem.CreateTypeBuilder(indexerClosureType))), 
                 _sreContextType);
             
 

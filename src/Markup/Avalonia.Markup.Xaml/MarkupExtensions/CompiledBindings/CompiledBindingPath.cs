@@ -32,7 +32,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                         node = new LogicalNotNode();
                         break;
                     case PropertyElement prop:
-                        node = new PropertyAccessorNode(prop.Property.Name, enableValidation, new PropertyInfoAccessorPlugin(prop.Property));
+                        node = new PropertyAccessorNode(prop.Property.Name, enableValidation, new PropertyInfoAccessorPlugin(prop.Property, prop.AccessorFactory));
+                        break;
+                    case ArrayElementPathElement arr:
+                        node = new PropertyAccessorNode(CommonPropertyNames.IndexerName, enableValidation, new ArrayElementPlugin(arr.Indices, arr.ElementType));
                         break;
                     case AncestorPathElement ancestor:
                         node = new FindAncestorNode(ancestor.AncestorType, ancestor.Level);
@@ -69,9 +72,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
-        public CompiledBindingPathBuilder Property(INotifyingPropertyInfo info)
+        public CompiledBindingPathBuilder Property(IPropertyInfo info, Func<WeakReference, IPropertyInfo, IPropertyAccessor> accessorFactory)
         {
-            _elements.Add(new PropertyElement(info));
+            _elements.Add(new PropertyElement(info, accessorFactory));
             return this;
         }
 
@@ -105,6 +108,12 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
+        public CompiledBindingPathBuilder ArrayElement(int[] indices, Type elementType)
+        {
+            _elements.Add(new ArrayElementPathElement(indices, elementType));
+            return this;
+        }
+
         public CompiledBindingPath Build() => new CompiledBindingPath(_elements);
     }
 
@@ -121,12 +130,15 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     internal class PropertyElement : ICompiledBindingPathElement
     {
-        public PropertyElement(INotifyingPropertyInfo property)
+        public PropertyElement(IPropertyInfo property, Func<WeakReference, IPropertyInfo, IPropertyAccessor> accessorFactory)
         {
             Property = property;
+            AccessorFactory = accessorFactory;
         }
 
-        public INotifyingPropertyInfo Property { get; }
+        public IPropertyInfo Property { get; }
+
+        public Func<WeakReference, IPropertyInfo, IPropertyAccessor> AccessorFactory { get; }
     }
 
     internal interface IStronglyTypedStreamElement : ICompiledBindingPathElement
@@ -175,5 +187,17 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public INameScope NameScope { get; }
         public string Name { get; }
+    }
+
+    internal class ArrayElementPathElement : ICompiledBindingPathElement
+    {
+        public ArrayElementPathElement(int[] indices, Type elementType)
+        {
+            Indices = indices;
+            ElementType = elementType;
+        }
+
+        public int[] Indices { get; }
+        public Type ElementType { get; }
     }
 }
