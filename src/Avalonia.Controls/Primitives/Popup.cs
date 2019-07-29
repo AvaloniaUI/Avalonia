@@ -450,12 +450,12 @@ namespace Avalonia.Controls.Primitives
 
         private bool IsChildOrThis(IVisual child)
         {
-            return ((IVisual)_popupHost)?.FindCommonVisualAncestor(child) == _popupHost;
+            return _popupHost != null && ((IVisual)_popupHost).FindCommonVisualAncestor(child) == _popupHost;
         }
         
         public bool IsInsidePopup(IVisual visual)
         {
-            return ((IVisual)_popupHost)?.FindCommonVisualAncestor(visual) == _popupHost;
+            return _popupHost != null && ((IVisual)_popupHost)?.FindCommonVisualAncestor(visual) == _popupHost;
         }
 
         public bool IsPointerOverPopup => ((IInputElement)_popupHost).IsPointerOver;
