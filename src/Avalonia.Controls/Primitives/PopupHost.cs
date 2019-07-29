@@ -1,24 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Disposables;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
-using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class PopupHost : Decorator, IPopupHost, IInteractive, IManagedPopupPositionerPopup
+    public class PopupHost : ContentControl, IPopupHost, IInteractive, IManagedPopupPositionerPopup
     {
         private readonly OverlayLayer _overlayLayer;
         private PopupPositionerParameters _positionerParameters = new PopupPositionerParameters();
         private ManagedPopupPositioner _positioner;
         private bool _shown;
-        private IControl _content;
 
         public PopupHost(OverlayLayer overlayLayer)
         {
@@ -28,7 +24,7 @@ namespace Avalonia.Controls.Primitives
 
         public void SetContent(IControl control)
         {
-            Child = control;
+            Content = control;
         }
 
         public IVisual VisualRoot => null;

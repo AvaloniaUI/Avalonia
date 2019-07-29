@@ -19,6 +19,7 @@
   <StyleInclude Source="resm:Avalonia.Themes.Default.Menu.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.ContextMenu.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.MenuItem.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.PopupHost.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.PopupRoot.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.ProgressBar.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.RadioButton.xaml?assembly=Avalonia.Themes.Default"/>
