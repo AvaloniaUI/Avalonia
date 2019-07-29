@@ -568,6 +568,28 @@ namespace Avalonia
                 });
         }
 
+        protected virtual void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    SetLogicalParent(e.NewItems.Cast<ILogical>());
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    ClearLogicalParent(e.OldItems.Cast<ILogical>());
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    ClearLogicalParent(e.OldItems.Cast<ILogical>());
+                    SetLogicalParent(e.NewItems.Cast<ILogical>());
+                    break;
+
+                case NotifyCollectionChangedAction.Reset:
+                    throw new NotSupportedException("Reset should not be signaled on LogicalChildren collection");
+            }
+        }
+
         /// <summary>
         /// Called when the styled element is added to a rooted logical tree.
         /// </summary>
@@ -734,28 +756,6 @@ namespace Avalonia
         private void OnDataContextChangedCore(AvaloniaPropertyChangedEventArgs e)
         {
             OnDataContextChanged(EventArgs.Empty);
-        }
-
-        private void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    SetLogicalParent(e.NewItems.Cast<ILogical>());
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    ClearLogicalParent(e.OldItems.Cast<ILogical>());
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    ClearLogicalParent(e.OldItems.Cast<ILogical>());
-                    SetLogicalParent(e.NewItems.Cast<ILogical>());
-                    break;
-
-                case NotifyCollectionChangedAction.Reset:
-                    throw new NotSupportedException("Reset should not be signaled on LogicalChildren collection");
-            }
         }
 
         private void SetLogicalParent(IEnumerable<ILogical> children)

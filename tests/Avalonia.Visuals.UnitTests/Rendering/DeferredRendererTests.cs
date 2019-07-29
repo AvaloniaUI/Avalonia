@@ -97,6 +97,180 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         }
 
         [Fact]
+        public void Should_Update_VisualNode_Order_On_Child_Remove_Insert()
+        {
+            var dispatcher = new ImmediateDispatcher();
+            var loop = new Mock<IRenderLoop>();
+
+            StackPanel stack;
+            Canvas canvas1;
+            Canvas canvas2;
+            var root = new TestRoot
+            {
+                Child = stack = new StackPanel
+                {
+                    Children=
+                    {
+                        (canvas1 = new Canvas()),
+                        (canvas2 = new Canvas()),
+                    }
+                }
+            };
+
+            var sceneBuilder = new SceneBuilder();
+            var target = new DeferredRenderer(
+                root,
+                loop.Object,
+                sceneBuilder: sceneBuilder,
+                dispatcher: dispatcher);
+
+            root.Renderer = target;
+            target.Start();
+            RunFrame(target);
+
+            stack.Children.Remove(canvas2);
+            stack.Children.Insert(0, canvas2);
+
+            RunFrame(target);
+
+            var scene = target.UnitTestScene();
+            var stackNode = scene.FindNode(stack);
+
+            Assert.Same(stackNode.Children[0].Visual, canvas2);
+            Assert.Same(stackNode.Children[1].Visual, canvas1);
+        }
+
+        [Fact]
+        public void Should_Update_VisualNode_Order_On_Child_Move()
+        {
+            var dispatcher = new ImmediateDispatcher();
+            var loop = new Mock<IRenderLoop>();
+
+            StackPanel stack;
+            Canvas canvas1;
+            Canvas canvas2;
+            var root = new TestRoot
+            {
+                Child = stack = new StackPanel
+                {
+                    Children =
+                    {
+                        (canvas1 = new Canvas()),
+                        (canvas2 = new Canvas()),
+                    }
+                }
+            };
+
+            var sceneBuilder = new SceneBuilder();
+            var target = new DeferredRenderer(
+                root,
+                loop.Object,
+                sceneBuilder: sceneBuilder,
+                dispatcher: dispatcher);
+
+            root.Renderer = target;
+            target.Start();
+            RunFrame(target);
+
+            stack.Children.Move(1, 0);
+
+            RunFrame(target);
+
+            var scene = target.UnitTestScene();
+            var stackNode = scene.FindNode(stack);
+
+            Assert.Same(stackNode.Children[0].Visual, canvas2);
+            Assert.Same(stackNode.Children[1].Visual, canvas1);
+        }
+
+        [Fact]
+        public void Should_Update_VisualNode_Order_On_ZIndex_Change()
+        {
+            var dispatcher = new ImmediateDispatcher();
+            var loop = new Mock<IRenderLoop>();
+
+            StackPanel stack;
+            Canvas canvas1;
+            Canvas canvas2;
+            var root = new TestRoot
+            {
+                Child = stack = new StackPanel
+                {
+                    Children =
+                    {
+                        (canvas1 = new Canvas { ZIndex = 1 }),
+                        (canvas2 = new Canvas { ZIndex = 2 }),
+                    }
+                }
+            };
+
+            var sceneBuilder = new SceneBuilder();
+            var target = new DeferredRenderer(
+                root,
+                loop.Object,
+                sceneBuilder: sceneBuilder,
+                dispatcher: dispatcher);
+
+            root.Renderer = target;
+            target.Start();
+            RunFrame(target);
+
+            canvas1.ZIndex = 3;
+
+            RunFrame(target);
+
+            var scene = target.UnitTestScene();
+            var stackNode = scene.FindNode(stack);
+
+            Assert.Same(stackNode.Children[0].Visual, canvas2);
+            Assert.Same(stackNode.Children[1].Visual, canvas1);
+        }
+
+        [Fact]
+        public void Should_Update_VisualNode_Order_On_ZIndex_Change_With_Dirty_Ancestor()
+        {
+            var dispatcher = new ImmediateDispatcher();
+            var loop = new Mock<IRenderLoop>();
+
+            StackPanel stack;
+            Canvas canvas1;
+            Canvas canvas2;
+            var root = new TestRoot
+            {
+                Child = stack = new StackPanel
+                {
+                    Children =
+                    {
+                        (canvas1 = new Canvas { ZIndex = 1 }),
+                        (canvas2 = new Canvas { ZIndex = 2 }),
+                    }
+                }
+            };
+
+            var sceneBuilder = new SceneBuilder();
+            var target = new DeferredRenderer(
+                root,
+                loop.Object,
+                sceneBuilder: sceneBuilder,
+                dispatcher: dispatcher);
+
+            root.Renderer = target;
+            target.Start();
+            RunFrame(target);
+
+            root.InvalidateVisual();
+            canvas1.ZIndex = 3;
+
+            RunFrame(target);
+
+            var scene = target.UnitTestScene();
+            var stackNode = scene.FindNode(stack);
+
+            Assert.Same(stackNode.Children[0].Visual, canvas2);
+            Assert.Same(stackNode.Children[1].Visual, canvas1);
+        }
+
+        [Fact]
         public void Should_Push_Opacity_For_Controls_With_Less_Than_1_Opacity()
         {
             var root = new TestRoot
