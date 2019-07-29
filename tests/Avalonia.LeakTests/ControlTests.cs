@@ -401,6 +401,10 @@ namespace Avalonia.LeakTests
             {
             }
 
+            public void RecalculateChildren(IVisual visual)
+            {
+            }
+
             public void Resized(Size size)
             {
             }
