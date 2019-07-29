@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Input;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Primitives
 {

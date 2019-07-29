@@ -17,13 +17,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Spacing"/> property.
         /// </summary>
         public static readonly StyledProperty<double> SpacingProperty =
-            AvaloniaProperty.Register<StackPanel, double>(nameof(Spacing));
+            StackLayout.SpacingProperty.AddOwner<StackPanel>();
 
         /// <summary>
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            AvaloniaProperty.Register<StackPanel, Orientation>(nameof(Orientation), Orientation.Vertical);
+            StackLayout.OrientationProperty.AddOwner<StackPanel>();
 
         /// <summary>
         /// Initializes static members of the <see cref="StackPanel"/> class.

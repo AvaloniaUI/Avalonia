@@ -23,11 +23,11 @@ namespace Avalonia.Diagnostics.Views
             }
 
             return Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
-                e => source.PropertyChanged += e,
-                e => source.PropertyChanged -= e)
-                    .Where(e => e.EventArgs.PropertyName == propertyName)
-                    .Select(_ => (T)property.GetValue(source))
-                    .StartWith((T)property.GetValue(source));
+                    e => source.PropertyChanged += e,
+                    e => source.PropertyChanged -= e)
+                .Where(e => e.EventArgs.PropertyName == propertyName)
+                .Select(_ => (T)property.GetValue(source))
+                .StartWith((T)property.GetValue(source));
         }
     }
 }

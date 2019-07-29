@@ -14,6 +14,7 @@ namespace Avalonia.Diagnostics.Views
     {
         private static readonly StyledProperty<ControlDetailsViewModel> ViewModelProperty =
             AvaloniaProperty.Register<ControlDetailsView, ControlDetailsViewModel>(nameof(ViewModel));
+
         private SimpleGrid _grid;
 
         public ControlDetailsView()
@@ -25,7 +26,7 @@ namespace Avalonia.Diagnostics.Views
 
         public ControlDetailsViewModel ViewModel
         {
-            get { return GetValue(ViewModelProperty); }
+            get => GetValue(ViewModelProperty);
             private set
             {
                 SetValue(ViewModelProperty, value);
@@ -37,13 +38,7 @@ namespace Avalonia.Diagnostics.Views
         {
             Func<object, IEnumerable<Control>> pt = PropertyTemplate;
 
-            Content = new ScrollViewer
-            {
-                Content = _grid = new SimpleGrid
-                {
-                    [GridRepeater.TemplateProperty] = pt,
-                }
-            };
+            Content = new ScrollViewer { Content = _grid = new SimpleGrid { [GridRepeater.TemplateProperty] = pt } };
         }
 
         private IEnumerable<Control> PropertyTemplate(object i)
@@ -57,7 +52,7 @@ namespace Avalonia.Diagnostics.Views
                 Margin = margin,
                 Text = property.Name,
                 TextWrapping = TextWrapping.NoWrap,
-                [!ToolTip.TipProperty] = property.GetObservable<string>(nameof(property.Diagnostic)).ToBinding(),
+                [!ToolTip.TipProperty] = property.GetObservable<string>(nameof(property.Diagnostic)).ToBinding()
             };
 
             yield return new TextBlock
@@ -66,14 +61,14 @@ namespace Avalonia.Diagnostics.Views
                 TextWrapping = TextWrapping.NoWrap,
                 [!TextBlock.TextProperty] = property.GetObservable<object>(nameof(property.Value))
                     .Select(v => v?.ToString())
-                    .ToBinding(),
+                    .ToBinding()
             };
 
             yield return new TextBlock
             {
                 Margin = margin,
                 TextWrapping = TextWrapping.NoWrap,
-                [!TextBlock.TextProperty] = property.GetObservable<string>((nameof(property.Priority))).ToBinding(),
+                [!TextBlock.TextProperty] = property.GetObservable<string>((nameof(property.Priority))).ToBinding()
             };
         }
     }

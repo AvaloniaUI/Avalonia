@@ -20,7 +20,7 @@
     <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
-    <Compile Include="..\Avalonia.Controls.UnitTests\MouseTestHelper.cs" />
+    <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

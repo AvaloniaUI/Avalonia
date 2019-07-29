@@ -23,7 +23,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public TreeNode SelectedNode
         {
-            get { return _selected; }
+            get => _selected;
             set
             {
                 if (RaiseAndSetIfChanged(ref _selected, value))
@@ -35,8 +35,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public ControlDetailsViewModel Details
         {
-            get { return _details; }
-            private set { RaiseAndSetIfChanged(ref _details, value); }
+            get => _details;
+            private set => RaiseAndSetIfChanged(ref _details, value);
         }
 
         public TreeNode FindNode(IControl control)
@@ -66,7 +66,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 {
                     control = control.GetVisualParent<IControl>();
                 }
-            }            
+            }
 
             if (node != null)
             {
@@ -90,16 +90,14 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 return node;
             }
-            else
-            {
-                foreach (var child in node.Children)
-                {
-                    var result = FindNode(child, control);
 
-                    if (result != null)
-                    {
-                        return result;
-                    }
+            foreach (var child in node.Children)
+            {
+                var result = FindNode(child, control);
+
+                if (result != null)
+                {
+                    return result;
                 }
             }
 
