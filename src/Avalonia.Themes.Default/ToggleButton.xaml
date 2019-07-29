@@ -22,14 +22,14 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="ToggleButton:checked">
+  <Style Selector="ToggleButton:checked /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ThemeControlHighBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
   </Style>
-  <Style Selector="ToggleButton:pointerover">
+  <Style Selector="ToggleButton:pointerover /template/ ContentPresenter">
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
   </Style>
-  <Style Selector="ToggleButton:pressed">
+  <Style Selector="ToggleButton:pressed  /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ThemeControlHighBrush}"/>
   </Style>
   <Style Selector="ToggleButton:disabled">
