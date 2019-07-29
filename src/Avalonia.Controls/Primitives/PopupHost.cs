@@ -131,15 +131,14 @@ namespace Avalonia.Controls.Primitives
             var platform = (target.GetVisualRoot() as TopLevel)?.PlatformImpl?.CreatePopup();
             if (platform != null)
                 return new PopupRoot((TopLevel)target.GetVisualRoot(), platform, dependencyResolver);
-            {
-                var overlayLayer = OverlayLayer.GetOverlayLayer(target);
-                if (overlayLayer == null)
-                    throw new InvalidOperationException(
-                        "Unable to create IPopupImpl and no overlay layer is found for the target control");
-                
+            
+            var overlayLayer = OverlayLayer.GetOverlayLayer(target);
+            if (overlayLayer == null)
+                throw new InvalidOperationException(
+                    "Unable to create IPopupImpl and no overlay layer is found for the target control");
 
-                return new PopupHost(overlayLayer);
-            }
+
+            return new PopupHost(overlayLayer);
         }
 
         public override void Render(DrawingContext context)
