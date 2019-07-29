@@ -253,7 +253,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     new[]
                     {
                         "ContentPresenter",
-                        "PopupContentHost",
                         "ContentPresenter",
                         "Border",
                     },
@@ -267,7 +266,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     new object[]
                     {
                         popupRoot,
-                        target, // PopupContentHost doesn't really need a templated parent, but gets assigned one
                         target,
                         null,
                     },

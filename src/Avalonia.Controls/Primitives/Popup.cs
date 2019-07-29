@@ -84,7 +84,6 @@ namespace Avalonia.Controls.Primitives
         private IDisposable _nonClientListener;
         bool _ignoreIsOpenChanged = false;
         private List<IDisposable> _bindings = new List<IDisposable>();
-        private PopupContentHost _decorator = new PopupContentHost();
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
@@ -237,10 +236,8 @@ namespace Avalonia.Controls.Primitives
 
             _bindings.Add(_popupRoot.BindConstraints(this, WidthProperty, MinWidthProperty, MaxWidthProperty,
                 HeightProperty, MinHeightProperty, MaxHeightProperty, TopmostProperty));
-            _bindings.Add(_decorator.Bind(PopupContentHost.ChildProperty, this[~ChildProperty]));
 
-            _popupRoot.SetContent(_decorator);
-            
+            _popupRoot.SetContent(Child);
 
             ((ISetLogicalParent)_popupRoot).SetParent(this);
 
@@ -400,15 +397,15 @@ namespace Avalonia.Controls.Primitives
 
         private bool IsChildOrThis(IVisual child)
         {
-            return _decorator.FindCommonVisualAncestor(child) == _decorator;
+            return ((IVisual)_popupRoot)?.FindCommonVisualAncestor(child) == _popupRoot;
         }
         
         public bool IsInsidePopup(IVisual visual)
         {
-            return _decorator.FindCommonVisualAncestor(visual) == _decorator;
+            return ((IVisual)_popupRoot)?.FindCommonVisualAncestor(visual) == _popupRoot;
         }
 
-        public bool IsPointerOverPopup => _decorator.IsPointerOver;
+        public bool IsPointerOverPopup => ((IInputElement)_popupRoot).IsPointerOver;
 
         private void WindowDeactivated(object sender, EventArgs e)
         {
@@ -444,55 +441,6 @@ namespace Avalonia.Controls.Primitives
             public void Dispose()
             {
                 _owner._ignoreIsOpenChanged = false;
-            }
-        }
-
-        // For some reason when PopupRoot.Content is bound directly to Child weird stuff happens 
-        class PopupContentHost : Control
-        {
-            /// <summary>
-            /// Defines the <see cref="Child"/> property.
-            /// </summary>
-            public static readonly StyledProperty<IControl> ChildProperty =
-                AvaloniaProperty.Register<Decorator, IControl>(nameof(Child));
-
-            static PopupContentHost()
-            {
-                ChildProperty.Changed.AddClassHandler<PopupContentHost>(x => x.ChildChanged);
-            }
-            
-            public IControl Child
-            {
-                get { return GetValue(ChildProperty); }
-                set { SetValue(ChildProperty, value); }
-            }
-            
-            /// <inheritdoc/>
-            protected override Size MeasureOverride(Size availableSize)
-            {
-                if (Child == null)
-                    return Size.Empty;
-                Child.Measure(availableSize);
-                return Child.DesiredSize;
-            }
-
-            /// <inheritdoc/>
-            protected override Size ArrangeOverride(Size finalSize)
-            {
-                Child?.Arrange(new Rect(finalSize));
-                return finalSize;
-            }
-
-
-            private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
-            {
-                var oldChild = (Control)e.OldValue;
-                var newChild = (Control)e.NewValue;
-
-                if (oldChild != null) VisualChildren.Remove(oldChild);
-
-                if (newChild != null)
-                    VisualChildren.Add(newChild);
             }
         }
     }
