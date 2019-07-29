@@ -1,9 +1,10 @@
 using System.Linq;
+using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class OverlayLayer : Canvas
+    public class OverlayLayer : Canvas, ICustomSimpleHitTest
     {
         public Size AvailableSize { get; private set; }
         public static OverlayLayer GetOverlayLayer(IVisual visual)
@@ -19,6 +20,11 @@ namespace Avalonia.Controls.Primitives
             }
 
             return null;
+        }
+        
+        public bool HitTest(Point point)
+        {
+            return Children.Any(ctrl => ctrl.TransformedBounds?.Contains(point) == true);
         }
         
         protected override Size ArrangeOverride(Size finalSize)
