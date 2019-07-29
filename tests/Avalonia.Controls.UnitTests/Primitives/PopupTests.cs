@@ -227,10 +227,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Templated_Control_With_Popup_In_Template_Should_Set_TemplatedParent()
         {
-            if(UsePopupHost)
-                // For some reason with overlay popups templates don't get applied in test mode but
-                // everything works perfectly fine at runtime. I leave this one to you @grokys
-                return;
             using (CreateServices())
             {
                 PopupContentControl target;
@@ -242,9 +238,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 root.Show();
 
                 target.ApplyTemplate();
+
                 var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
                 popup.Open();
-                var popupRoot = (Visual)popup.Host;
+
+                var popupRoot = (Control)popup.Host;
+                popupRoot.Measure(Size.Infinity);
+                popupRoot.Arrange(new Rect(popupRoot.DesiredSize));
 
                 var children = popupRoot.GetVisualDescendants().ToList();
                 var types = children.Select(x => x.GetType().Name).ToList();
@@ -326,7 +326,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
-
         private IDisposable CreateServices()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
@@ -337,15 +336,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                             return null;
                         return MockWindowingPlatform.CreatePopupMock().Object;
                     })));
-        }
-
-        private static IControl PopupRootTemplate(PopupRoot control, INameScope scope)
-        {
-            return new ContentPresenter
-            {
-                Name = "PART_ContentPresenter",
-                [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
-            }.RegisterInNameScope(scope);
         }
 
         private static IControl PopupContentControlTemplate(PopupContentControl control, INameScope scope)

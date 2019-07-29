@@ -3,14 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Disposables;
-using System.Text;
-using Avalonia.Controls.Platform;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.Data;
-using Avalonia.Diagnostics;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -26,7 +20,6 @@ namespace Avalonia.Controls.Primitives
     public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
     {
         private readonly TopLevel _parent;
-        private IDisposable _presenterSubscription;
         private PopupPositionerParameters _positionerParameters;
 
         /// <summary>
@@ -83,48 +76,6 @@ namespace Avalonia.Controls.Primitives
 
         /// <inheritdoc/>
         public void Dispose() => PlatformImpl?.Dispose();
-
-        /// <inheritdoc/>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
-        {
-            base.OnTemplateApplied(e);
-
-            if (Parent?.TemplatedParent != null)
-            {
-                if (_presenterSubscription != null)
-                {
-                    _presenterSubscription.Dispose();
-                    _presenterSubscription = null;
-                }
-
-                Presenter?.ApplyTemplate();
-                Presenter?.GetObservable(ContentPresenter.ChildProperty)
-                    .Subscribe(SetTemplatedParentAndApplyChildTemplates);
-            }
-        }
-
-        private void SetTemplatedParentAndApplyChildTemplates(IControl control)
-        {
-            if (control != null)
-            {
-                var templatedParent = Parent.TemplatedParent;
-
-                if (control.TemplatedParent == null)
-                {
-                    control.SetValue(TemplatedParentProperty, templatedParent);
-                }
-
-                control.ApplyTemplate();
-
-                if (!(control is IPresenter) && control.TemplatedParent == templatedParent)
-                {
-                    foreach (IControl child in control.GetVisualChildren())
-                    {
-                        SetTemplatedParentAndApplyChildTemplates(child);
-                    }
-                }
-            }
-        }
 
         void UpdatePosition()
         {

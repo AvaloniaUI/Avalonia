@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.VisualTree;
 
@@ -7,7 +8,10 @@ namespace Avalonia.Controls.Primitives
     public interface IPopupHost : IDisposable
     {
         void SetContent(IControl control);
+        IContentPresenter Presenter { get; }
         IVisual VisualRoot { get; }
+
+        event EventHandler<TemplateAppliedEventArgs> TemplateApplied;
 
         void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
             PopupPositioningEdge anchor = PopupPositioningEdge.None,
