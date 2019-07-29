@@ -12,7 +12,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class PopupHost : Control, IPopupHost, IInteractive, IManagedPopupPositionerPopup
+    public class PopupHost : Decorator, IPopupHost, IInteractive, IManagedPopupPositionerPopup
     {
         private readonly OverlayLayer _overlayLayer;
         private PopupPositionerParameters _positionerParameters = new PopupPositionerParameters();
@@ -28,13 +28,7 @@ namespace Avalonia.Controls.Primitives
 
         public void SetContent(IControl control)
         {
-            if (_content == control)
-                return;
-            if (_content != null)
-                VisualChildren.Remove(_content);
-            _content = control;
-            if (_content != null)
-                VisualChildren.Add(_content);
+            Child = control;
         }
 
         public IVisual VisualRoot => null;
@@ -47,13 +41,13 @@ namespace Avalonia.Controls.Primitives
 
         public void Show()
         {
-            _overlayLayer.Add(this);
+            _overlayLayer.Children.Add(this);
             _shown = true;
         }
 
         public void Hide()
         {
-            _overlayLayer.Remove(this);
+            _overlayLayer.Children.Remove(this);
             _shown = false;
         }
 
