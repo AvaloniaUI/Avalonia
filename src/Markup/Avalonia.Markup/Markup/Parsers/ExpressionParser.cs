@@ -69,6 +69,7 @@ namespace Avalonia.Markup.Parsers
                 else
                 {
                     node.Next = nextNode;
+                    node = nextNode;
                 }
             }
 
