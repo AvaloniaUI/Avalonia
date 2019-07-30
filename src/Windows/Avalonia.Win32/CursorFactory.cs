@@ -56,7 +56,7 @@ namespace Avalonia.Win32
             {StandardCursorType.Wait, 32514},
             //Same as SizeNorthSouth
             {StandardCursorType.TopSide, 32645},
-            {StandardCursorType.BottomSize, 32645},
+            {StandardCursorType.BottomSide, 32645},
             //Same as SizeWestEast
             {StandardCursorType.LeftSide, 32644},
             {StandardCursorType.RightSide, 32644},

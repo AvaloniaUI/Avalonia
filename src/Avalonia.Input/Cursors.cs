@@ -28,7 +28,7 @@ namespace Avalonia.Input
         AppStarting,
         Help,
         TopSide,
-        BottomSize,
+        BottomSide,
         LeftSide,
         RightSide,
         TopLeftCorner,
