@@ -184,7 +184,7 @@ namespace Avalonia.Rendering.SceneGraph
                 return;
             }
 
-            var keys = new List<long>();
+            var keys = new List<long>(Visual.VisualChildren.Count);
 
             for (var i = 0; i < Visual.VisualChildren.Count; ++i)
             {
