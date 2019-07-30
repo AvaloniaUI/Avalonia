@@ -5,6 +5,7 @@
 
 using System;
 using Avalonia.Input;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
