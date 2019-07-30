@@ -9,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using ReactiveUI.Legacy;
 using ReactiveUI;
+using Avalonia.Layout;
 
 namespace VirtualizationDemo.ViewModels
 {
@@ -97,6 +98,24 @@ namespace VirtualizationDemo.ViewModels
         public ReactiveCommand RemoveItemCommand { get; private set; }
         public ReactiveCommand SelectFirstCommand { get; private set; }
         public ReactiveCommand SelectLastCommand { get; private set; }
+
+        public void RandomizeSize()
+        {
+            var random = new Random();
+
+            foreach (var i in Items)
+            {
+                i.Height = random.Next(240) + 10;
+            }
+        }
+
+        public void ResetSize()
+        {
+            foreach (var i in Items)
+            {
+                i.Height = double.NaN;
+            }
+        }
 
         private void ResizeItems(int count)
         {

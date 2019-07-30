@@ -19,7 +19,8 @@ namespace Avalonia.Input.Raw
         NonClientLeftButtonDown,
         TouchBegin,
         TouchUpdate,
-        TouchEnd
+        TouchEnd,
+        TouchCancel
     }
 
     /// <summary>

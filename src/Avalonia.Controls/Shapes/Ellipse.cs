@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Shapes
 
         protected override Geometry CreateDefiningGeometry()
         {
-            var rect = new Rect(Bounds.Size).Deflate(StrokeThickness);
+            var rect = new Rect(Bounds.Size).Deflate(StrokeThickness / 2);
             return new EllipseGeometry(rect);
         }
 

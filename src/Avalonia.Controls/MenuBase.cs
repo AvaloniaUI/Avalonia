@@ -7,7 +7,6 @@ using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -31,13 +30,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="MenuOpened"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> MenuOpenedEvent =
-            RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(MenuOpened), RoutingStrategies.Bubble);
+            RoutedEvent.Register<MenuBase, RoutedEventArgs>(nameof(MenuOpened), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="MenuClosed"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> MenuClosedEvent =
-            RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(MenuClosed), RoutingStrategies.Bubble);
+            RoutedEvent.Register<MenuBase, RoutedEventArgs>(nameof(MenuClosed), RoutingStrategies.Bubble);
 
         private bool _isOpen;
 

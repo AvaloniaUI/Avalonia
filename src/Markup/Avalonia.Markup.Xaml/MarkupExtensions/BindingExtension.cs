@@ -10,14 +10,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
     using Avalonia.Data.Converters;
     using Avalonia.Markup.Data;
     using Avalonia.Styling;
-    using Portable.Xaml;
-    using Portable.Xaml.ComponentModel;
-    using Portable.Xaml.Markup;
-    using PortableXaml;
     using System.ComponentModel;
 
-    [MarkupExtensionReturnType(typeof(IBinding))]
-    public class BindingExtension : MarkupExtension
+    public class BindingExtension
     {
         public BindingExtension()
         {
@@ -28,12 +23,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             Path = path;
         }
 
-        public override object ProvideValue(IServiceProvider serviceProvider)
-        {
-            return ProvideTypedValue(serviceProvider);
-        }
-        
-        public Binding ProvideTypedValue(IServiceProvider serviceProvider)
+        public Binding ProvideValue(IServiceProvider serviceProvider)
         {
             var descriptorContext = (ITypeDescriptorContext)serviceProvider;
 
@@ -50,7 +40,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 Source = Source,
                 StringFormat = StringFormat,
                 RelativeSource = RelativeSource,
-                DefaultAnchor = new WeakReference(GetDefaultAnchor(descriptorContext))
+                DefaultAnchor = new WeakReference(GetDefaultAnchor(descriptorContext)),
+                NameScope = new WeakReference<INameScope>(serviceProvider.GetService<INameScope>())
             };
         }
 

@@ -37,6 +37,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<ItemsControl, IEnumerable>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
 
         /// <summary>
+        /// Defines the <see cref="ItemCount"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ItemsControl, int> ItemCountProperty =
+            AvaloniaProperty.RegisterDirect<ItemsControl, int>(nameof(ItemCount), o => o.ItemCount);
+
+        /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
         public static readonly StyledProperty<ITemplate<IPanel>> ItemsPanelProperty =
@@ -48,13 +54,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
             AvaloniaProperty.Register<ItemsControl, IDataTemplate>(nameof(ItemTemplate));
 
-        /// <summary>
-        /// Defines the <see cref="MemberSelector"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IMemberSelector> MemberSelectorProperty =
-            AvaloniaProperty.Register<ItemsControl, IMemberSelector>(nameof(MemberSelector));
-
         private IEnumerable _items = new AvaloniaList<object>();
+        private int _itemCount;
         private IItemContainerGenerator _itemContainerGenerator;
         private IDisposable _itemsCollectionChangedSubscription;
 
@@ -110,10 +111,13 @@ namespace Avalonia.Controls
             set { SetAndRaise(ItemsProperty, ref _items, value); }
         }
 
+        /// <summary>
+        /// Gets the number of items in <see cref="Items"/>.
+        /// </summary>
         public int ItemCount
         {
-            get;
-            private set;
+            get => _itemCount;
+            private set => SetAndRaise(ItemCountProperty, ref _itemCount, value);
         }
 
         /// <summary>
@@ -132,15 +136,6 @@ namespace Avalonia.Controls
         {
             get { return GetValue(ItemTemplateProperty); }
             set { SetValue(ItemTemplateProperty, value); }
-        }
-
-        /// <summary>
-        /// Selects a member from <see cref="Items"/> to use as the list item.
-        /// </summary>
-        public IMemberSelector MemberSelector
-        {
-            get { return GetValue(MemberSelectorProperty); }
-            set { SetValue(MemberSelectorProperty, value); }
         }
 
         /// <summary>

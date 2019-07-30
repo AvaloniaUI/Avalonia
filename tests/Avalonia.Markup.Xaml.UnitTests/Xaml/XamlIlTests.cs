@@ -207,6 +207,65 @@ namespace Avalonia.Markup.Xaml.UnitTests
     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>", typeof(XamlIlTests).Assembly);
             Assert.Equal(Design.GetDataContext(loaded), SomeStaticProperty);
         }
+        
+        [Fact]
+        public void Attached_Properties_From_Static_Types_Should_Work_In_Style_Setters_Bug_2561()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+
+                var parsed = (Window)AvaloniaXamlLoader.Parse(@"
+<Window
+  xmlns='https://github.com/avaloniaui'
+  xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+>
+  <Window.Styles>
+    <Style Selector='TextBox'>
+      <Setter Property='local:XamlIlBugTestsStaticClassWithAttachedProperty.TestInt' Value='100'/>
+    </Style>
+  </Window.Styles>
+  <TextBox/>
+
+</Window>
+");
+                var tb = ((TextBox)parsed.Content);
+                parsed.Show();
+                tb.ApplyTemplate();
+                Assert.Equal(100, XamlIlBugTestsStaticClassWithAttachedProperty.GetTestInt(tb));
+            }
+        }
+
+        [Fact]
+        public void DataTemplates_Should_Resolve_Named_Controls_From_Parent_Scope()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parsed = (Window)AvaloniaXamlLoader.Parse(@"
+<Window
+  xmlns='https://github.com/avaloniaui'
+  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+>
+  <StackPanel>
+    <StackPanel.DataTemplates>
+      <DataTemplate DataType='{x:Type x:String}'>
+       <TextBlock Classes='target' Text='{Binding #txt.Text}'/>
+      </DataTemplate>
+    </StackPanel.DataTemplates>
+    <TextBlock Text='Test' Name='txt'/>
+    <ContentControl Content='tst'/>
+  </StackPanel>
+</Window>
+");
+                parsed.DataContext = new List<string>() {"Test"};
+                parsed.Show();
+                parsed.ApplyTemplate();
+                var cc = ((ContentControl)((StackPanel)parsed.Content).Children.Last());
+                cc.ApplyTemplate();
+                var templated = cc.GetVisualDescendants().OfType<TextBlock>()
+                    .First(x => x.Classes.Contains("target"));
+                Assert.Equal("Test", templated.Text);
+            }
+        }
     }
     
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
@@ -272,4 +331,19 @@ namespace Avalonia.Markup.Xaml.UnitTests
     {
     }
 
+    public static class XamlIlBugTestsStaticClassWithAttachedProperty
+    {
+        public static readonly AvaloniaProperty<int> TestIntProperty = AvaloniaProperty
+            .RegisterAttached<Control, int>("TestInt", typeof(XamlIlBugTestsStaticClassWithAttachedProperty));
+
+        public static void SetTestInt(Control control, int value)
+        {
+            control.SetValue(TestIntProperty, value);
+        }
+
+        public static int GetTestInt(Control control)
+        {
+            return (int)control.GetValue(TestIntProperty);
+        }
+    }
 }

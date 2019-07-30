@@ -5,6 +5,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -40,37 +41,41 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         public override void Close()
         {
-            if (IsOpen)
+            if (!IsOpen)
             {
-                foreach (var i in ((IMenu)this).SubItems)
-                {
-                    i.Close();
-                }
-
-                IsOpen = false;
-                SelectedIndex = -1;
-
-                RaiseEvent(new RoutedEventArgs
-                {
-                    RoutedEvent = MenuClosedEvent,
-                    Source = this,
-                });
+                return;
             }
+
+            foreach (var i in ((IMenu)this).SubItems)
+            {
+                i.Close();
+            }
+
+            IsOpen = false;
+            SelectedIndex = -1;
+
+            RaiseEvent(new RoutedEventArgs
+            {
+                RoutedEvent = MenuClosedEvent,
+                Source = this,
+            });
         }
 
         /// <inheritdoc/>
         public override void Open()
         {
-            if (!IsOpen)
+            if (IsOpen)
             {
-                IsOpen = true;
-
-                RaiseEvent(new RoutedEventArgs
-                {
-                    RoutedEvent = MenuOpenedEvent,
-                    Source = this,
-                });
+                return;
             }
+
+            IsOpen = true;
+
+            RaiseEvent(new RoutedEventArgs
+            {
+                RoutedEvent = MenuOpenedEvent,
+                Source = this,
+            });
         }
 
         /// <inheritdoc/>

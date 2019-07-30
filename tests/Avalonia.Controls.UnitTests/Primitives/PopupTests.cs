@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using Moq;
 using Avalonia.Controls.Presenters;
@@ -186,6 +187,53 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Popup_Open_Should_Raise_Single_Opened_Event()
+        {
+            using (CreateServices())
+            {
+                var window = new Window();
+                var target = new Popup();
+
+                window.Content = target;
+
+                int openedCount = 0;
+
+                target.Opened += (sender, args) =>
+                {
+                    openedCount++;
+                };
+
+                target.Open();
+
+                Assert.Equal(1, openedCount);
+            }
+        }
+
+        [Fact]
+        public void Popup_Close_Should_Raise_Single_Closed_Event()
+        {
+            using (CreateServices())
+            {
+                var window = new Window();
+                var target = new Popup();
+
+                window.Content = target;
+                target.Open();
+
+                int closedCount = 0;
+
+                target.Closed += (sender, args) =>
+                {
+                    closedCount++;
+                };
+
+                target.Close();
+
+                Assert.Equal(1, closedCount);
+            }
+        }
+
+        [Fact]
         public void PopupRoot_Should_Have_Template_Applied()
         {
             using (CreateServices())
@@ -315,16 +363,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
             return result;
         }
 
-        private static IControl PopupRootTemplate(PopupRoot control)
+        private static IControl PopupRootTemplate(PopupRoot control, INameScope scope)
         {
             return new ContentPresenter
             {
                 Name = "PART_ContentPresenter",
                 [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
-            };
+            }.RegisterInNameScope(scope);
         }
 
-        private static IControl PopupContentControlTemplate(PopupContentControl control)
+        private static IControl PopupContentControlTemplate(PopupContentControl control, INameScope scope)
         {
             return new Popup
             {
@@ -333,7 +381,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 {
                     [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
                 }
-            };
+            }.RegisterInNameScope(scope);
         }
 
         private class PopupContentControl : ContentControl

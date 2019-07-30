@@ -137,17 +137,6 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void DataTemplate_Created_Control_Should_Be_NameScope()
-        {
-            var (target, _) = CreateTarget();
-
-            target.Content = "Foo";
-
-            Assert.IsType<TextBlock>(target.Child);
-            Assert.NotNull(NameScope.GetNameScope((Control)target.Child));
-        }
-
-        [Fact]
         public void Assigning_Control_To_Content_Should_Not_Set_DataContext()
         {
             var (target, _) = CreateTarget();
@@ -170,7 +159,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             var (target, _) = CreateTarget();
 
-            target.ContentTemplate = new FuncDataTemplate<string>(_ => new Canvas());
+            target.ContentTemplate = new FuncDataTemplate<string>((_, __) => new Canvas());
             target.Content = "Foo";
 
             Assert.IsType<Canvas>(target.Child);
@@ -184,7 +173,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Content = "Foo";
             Assert.IsType<TextBlock>(target.Child);
 
-            target.ContentTemplate = new FuncDataTemplate<string>(_ => new Canvas());
+            target.ContentTemplate = new FuncDataTemplate<string>((_, __) => new Canvas());
             Assert.IsType<Canvas>(target.Child);
 
             target.ContentTemplate = null;
@@ -209,7 +198,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         public void Recycles_DataTemplate()
         {
             var (target, _) = CreateTarget();
-            target.DataTemplates.Add(new FuncDataTemplate<string>(_ => new Border(), true));
+            target.DataTemplates.Add(new FuncDataTemplate<string>((_, __) => new Border(), true));
 
             target.Content = "foo";
 
@@ -239,7 +228,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         public void Detects_DataTemplate_Doesnt_Support_Recycling()
         {
             var (target, _) = CreateTarget();
-            target.DataTemplates.Add(new FuncDataTemplate<string>(_ => new Border(), false));
+            target.DataTemplates.Add(new FuncDataTemplate<string>((_, __) => new Border(), false));
 
             target.Content = "foo";
 
@@ -256,7 +245,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var (target, _) = CreateTarget();
 
             target.DataTemplates.Add(new FuncDataTemplate<string>(x => x == "bar", _ => new Canvas(), true));
-            target.DataTemplates.Add(new FuncDataTemplate<string>(_ => new Border(), true));
+            target.DataTemplates.Add(new FuncDataTemplate<string>((_, __) => new Border(), true));
 
             target.Content = "foo";
 
@@ -278,8 +267,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             };
 
             var (target, host) = CreateTarget();
-            host.DataTemplates.Add(new FuncDataTemplate<string>(x => textBlock));
-            host.DataTemplates.Add(new FuncDataTemplate<int>(x => new Canvas()));
+            host.DataTemplates.Add(new FuncDataTemplate<string>((_, __) => textBlock));
+            host.DataTemplates.Add(new FuncDataTemplate<int>((_, __) => new Canvas()));
 
             target.Content = "foo";
             Assert.Same(textBlock, target.Child);
@@ -296,11 +285,11 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             var templatedParent = new ContentControl
             {
-                Template = new FuncControlTemplate<ContentControl>(x => 
+                Template = new FuncControlTemplate<ContentControl>((_, s) => 
                     new ContentPresenter
                     {
                         Name = "PART_ContentPresenter",
-                    }),
+                    }.RegisterInNameScope(s)),
             };
             var root = new TestRoot { Child = templatedParent };
 

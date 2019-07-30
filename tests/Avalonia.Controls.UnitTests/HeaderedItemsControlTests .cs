@@ -63,7 +63,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<HeaderedItemsControl>(parent =>
+            return new FuncControlTemplate<HeaderedItemsControl>((parent, scope) =>
             {
                 return new Border
                 {
@@ -71,7 +71,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Name = "PART_HeaderPresenter",
                         [~ContentPresenter.ContentProperty] = parent[~HeaderedItemsControl.HeaderProperty],
-                    }
+                    }.RegisterInNameScope(scope)
                 };
             });
         }

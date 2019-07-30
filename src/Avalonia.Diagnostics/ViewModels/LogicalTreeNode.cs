@@ -17,8 +17,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public static LogicalTreeNode[] Create(object control)
         {
-            var logical = control as ILogical;
-            return logical != null ? new[] { new LogicalTreeNode(logical, null) } : null;
+            return control is ILogical logical ? new[] { new LogicalTreeNode(logical, null) } : null;
         }
     }
 }

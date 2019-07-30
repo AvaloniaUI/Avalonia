@@ -1,6 +1,5 @@
 using System;
 using System.Xml;
-using Portable.Xaml;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
@@ -14,7 +13,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
             catch (Exception e)
             {
-                if(e is XamlObjectWriterException || e is XmlException)
+                if(e is XmlException)
                     return;
             }
             throw new Exception("Expected to throw xaml exception");

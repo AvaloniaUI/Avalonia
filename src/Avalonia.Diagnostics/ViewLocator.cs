@@ -7,7 +7,7 @@ using Avalonia.Controls.Templates;
 
 namespace Avalonia.Diagnostics
 {
-    public class ViewLocator<TViewModel> : IDataTemplate
+    internal class ViewLocator<TViewModel> : IDataTemplate
     {
         public bool SupportsRecycling => false;
 

@@ -30,6 +30,13 @@ namespace Avalonia
         void BindingNotificationReceived(AvaloniaProperty property, BindingNotification notification);
 
         /// <summary>
+        /// Returns deferred setter for given non-direct property.
+        /// </summary>
+        /// <param name="property">Property.</param>
+        /// <returns>Deferred setter for given property.</returns>
+        DeferredSetter<object> GetNonDirectDeferredSetter(AvaloniaProperty property);
+
+        /// <summary>
         /// Logs a binding error.
         /// </summary>
         /// <param name="property">The property the error occurred on.</param>
@@ -40,7 +47,5 @@ namespace Avalonia
         /// Ensures that the current thread is the UI thread.
         /// </summary>
         void VerifyAccess();
-
-        DeferredSetter<object> Setter { get; }
     }
 }
