@@ -19,13 +19,20 @@ namespace Avalonia.X11.Dbus
         {
             this._sysDbus = Connection.System;
             this.udisk2Manager = _sysDbus.CreateProxy<IObjectManager>("org.freedesktop.UDisks2", "/org/freedesktop/UDisks2");
+
+            Start();
         }
 
+        async void Start()
+        {
+            Disposables = new[] {
+                await udisk2Manager.WatchInterfacesAddedAsync(delegate { Poll(); }),
+                await udisk2Manager.WatchInterfacesRemovedAsync( delegate { Poll(); })
+            };
+
+            Poll();
+        }
         public ObservableCollection<MountedDriveInfo> CurrentDrives { get; } = new ObservableCollection<MountedDriveInfo>();
-
-        private bool _isMonitoring;
-        public bool IsMonitoring => _isMonitoring;
-
         private async void Poll()
         {
             var newDriveList = new List<MountedDriveInfo>();
@@ -46,43 +53,51 @@ namespace Avalonia.X11.Dbus
 
             foreach (var block in res_blockdev)
             {
-
-                var iblock = _sysDbus.CreateProxy<IBlock>("org.freedesktop.UDisks2", block.Key);
-                var iblockProps = await iblock.GetAllAsync();
-
-                var block_drive = await iblock.GetDriveAsync();
-                if (!res_drives.Contains(block_drive)) continue;
-
-                var drive_key = res_drives.Single(x => x == block_drive);
-                var drives = _sysDbus.CreateProxy<IDrive>("org.freedesktop.UDisks2", drive_key);
-                var drivesProps = await drives.GetAllAsync();
-
-                var devRawBytes = iblockProps.Device.Take(iblockProps.Device.Length - 1).ToArray();
-                var devPath = System.Text.Encoding.UTF8.GetString(devRawBytes);
-
-                var blockLabel = iblockProps.IdLabel;
-                var blockSize = iblockProps.Size;
-                var driveName = drivesProps.Id;
-
-                // There should be something in udisks2 to 
-                // get this data but I have no idea where.
-                var mountPoint = fProcMounts.Select(x => x.Split(' '))
-                                            .Where(x => x[0] == devPath)
-                                            .Select(x => x[1])
-                                            .SingleOrDefault();
-
-                if (mountPoint is null) continue;
-
-                var k = new MountedDriveInfo()
+                try
                 {
-                    DriveLabel = blockLabel,
-                    DriveName = driveName,
-                    DriveSizeBytes = blockSize,
-                    DevicePath = devPath,
-                    MountPath = mountPoint
-                };
 
-                newDriveList.Add(k);
+
+                    var iblock = _sysDbus.CreateProxy<IBlock>("org.freedesktop.UDisks2", block.Key);
+                    var iblockProps = await iblock.GetAllAsync();
+
+                    var block_drive = await iblock.GetDriveAsync();
+                    if (!res_drives.Contains(block_drive)) continue;
+
+                    var drive_key = res_drives.Single(x => x == block_drive);
+                    var drives = _sysDbus.CreateProxy<IDrive>("org.freedesktop.UDisks2", drive_key);
+                    var drivesProps = await drives.GetAllAsync();
+
+                    var devRawBytes = iblockProps.Device.Take(iblockProps.Device.Length - 1).ToArray();
+                    var devPath = System.Text.Encoding.UTF8.GetString(devRawBytes);
+
+                    var blockLabel = iblockProps.IdLabel;
+                    var blockSize = iblockProps.Size;
+                    var driveName = drivesProps.Id;
+
+                    // There should be something in udisks2 to 
+                    // get this data but I have no idea where.
+                    var mountPoint = fProcMounts.Select(x => x.Split(' '))
+                                                .Where(x => x[0] == devPath)
+                                                .Select(x => x[1])
+                                                .SingleOrDefault();
+
+                    if (mountPoint is null) continue;
+
+                    var k = new MountedDriveInfo()
+                    {
+                        DriveLabel = blockLabel,
+                        DriveName = driveName,
+                        DriveSizeBytes = blockSize,
+                        DevicePath = devPath,
+                        MountPath = mountPoint
+                    };
+
+                    newDriveList.Add(k);
+                }
+                finally
+                {
+
+                }
             }
 
             UpdateCollection(newDriveList);
@@ -133,25 +148,26 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        public async void Start()
+
+        private bool disposedValue = false;
+        protected virtual void Dispose(bool disposing)
         {
-            Disposables = new[] {
-                    await udisk2Manager.WatchInterfacesAddedAsync(delegate { Poll(); }),
-                    await udisk2Manager.WatchInterfacesRemovedAsync( delegate { Poll(); })
-                };
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    foreach (var Disposable in Disposables)
+                        Disposable.Dispose();
 
-            Poll();
+                    CurrentDrives?.Clear();
+                }
 
-            _isMonitoring = true;
+                disposedValue = true;
+            }
         }
-
-        public void Stop()
+        public void Dispose()
         {
-            foreach (var Disposable in Disposables)
-                Disposable.Dispose();
-
-            CurrentDrives?.Clear();
-             _isMonitoring = false;
+            Dispose(true);
         }
     }
 }

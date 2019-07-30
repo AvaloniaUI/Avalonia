@@ -36,7 +36,7 @@ namespace Avalonia.X11.Dbus
     [Dictionary]
     class ManagerProperties
     {
-        private string _Version = default(string);
+        private string _Version = default (string);
         public string Version
         {
             get
@@ -50,7 +50,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string[] _SupportedFilesystems = default(string[]);
+        private string[] _SupportedFilesystems = default (string[]);
         public string[] SupportedFilesystems
         {
             get
@@ -92,7 +92,7 @@ namespace Avalonia.X11.Dbus
     [Dictionary]
     class AtaProperties
     {
-        private bool _SmartSupported = default(bool);
+        private bool _SmartSupported = default (bool);
         public bool SmartSupported
         {
             get
@@ -106,7 +106,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _SmartEnabled = default(bool);
+        private bool _SmartEnabled = default (bool);
         public bool SmartEnabled
         {
             get
@@ -120,7 +120,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private ulong _SmartUpdated = default(ulong);
+        private ulong _SmartUpdated = default (ulong);
         public ulong SmartUpdated
         {
             get
@@ -134,7 +134,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _SmartFailing = default(bool);
+        private bool _SmartFailing = default (bool);
         public bool SmartFailing
         {
             get
@@ -148,7 +148,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private ulong _SmartPowerOnSeconds = default(ulong);
+        private ulong _SmartPowerOnSeconds = default (ulong);
         public ulong SmartPowerOnSeconds
         {
             get
@@ -162,7 +162,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private double _SmartTemperature = default(double);
+        private double _SmartTemperature = default (double);
         public double SmartTemperature
         {
             get
@@ -176,7 +176,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private int _SmartNumAttributesFailing = default(int);
+        private int _SmartNumAttributesFailing = default (int);
         public int SmartNumAttributesFailing
         {
             get
@@ -190,7 +190,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private int _SmartNumAttributesFailedInThePast = default(int);
+        private int _SmartNumAttributesFailedInThePast = default (int);
         public int SmartNumAttributesFailedInThePast
         {
             get
@@ -204,7 +204,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private long _SmartNumBadSectors = default(long);
+        private long _SmartNumBadSectors = default (long);
         public long SmartNumBadSectors
         {
             get
@@ -218,7 +218,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _SmartSelftestStatus = default(string);
+        private string _SmartSelftestStatus = default (string);
         public string SmartSelftestStatus
         {
             get
@@ -232,7 +232,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private int _SmartSelftestPercentRemaining = default(int);
+        private int _SmartSelftestPercentRemaining = default (int);
         public int SmartSelftestPercentRemaining
         {
             get
@@ -246,7 +246,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _PmSupported = default(bool);
+        private bool _PmSupported = default (bool);
         public bool PmSupported
         {
             get
@@ -260,7 +260,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _PmEnabled = default(bool);
+        private bool _PmEnabled = default (bool);
         public bool PmEnabled
         {
             get
@@ -274,7 +274,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _ApmSupported = default(bool);
+        private bool _ApmSupported = default (bool);
         public bool ApmSupported
         {
             get
@@ -288,7 +288,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _ApmEnabled = default(bool);
+        private bool _ApmEnabled = default (bool);
         public bool ApmEnabled
         {
             get
@@ -302,7 +302,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _AamSupported = default(bool);
+        private bool _AamSupported = default (bool);
         public bool AamSupported
         {
             get
@@ -316,7 +316,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _AamEnabled = default(bool);
+        private bool _AamEnabled = default (bool);
         public bool AamEnabled
         {
             get
@@ -330,7 +330,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private int _AamVendorRecommendedValue = default(int);
+        private int _AamVendorRecommendedValue = default (int);
         public int AamVendorRecommendedValue
         {
             get
@@ -344,7 +344,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _WriteCacheSupported = default(bool);
+        private bool _WriteCacheSupported = default (bool);
         public bool WriteCacheSupported
         {
             get
@@ -358,7 +358,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _WriteCacheEnabled = default(bool);
+        private bool _WriteCacheEnabled = default (bool);
         public bool WriteCacheEnabled
         {
             get
@@ -372,7 +372,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _ReadLookaheadSupported = default(bool);
+        private bool _ReadLookaheadSupported = default (bool);
         public bool ReadLookaheadSupported
         {
             get
@@ -386,7 +386,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _ReadLookaheadEnabled = default(bool);
+        private bool _ReadLookaheadEnabled = default (bool);
         public bool ReadLookaheadEnabled
         {
             get
@@ -400,7 +400,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private int _SecurityEraseUnitMinutes = default(int);
+        private int _SecurityEraseUnitMinutes = default (int);
         public int SecurityEraseUnitMinutes
         {
             get
@@ -414,7 +414,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private int _SecurityEnhancedEraseUnitMinutes = default(int);
+        private int _SecurityEnhancedEraseUnitMinutes = default (int);
         public int SecurityEnhancedEraseUnitMinutes
         {
             get
@@ -428,7 +428,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _SecurityFrozen = default(bool);
+        private bool _SecurityFrozen = default (bool);
         public bool SecurityFrozen
         {
             get
@@ -487,7 +487,7 @@ namespace Avalonia.X11.Dbus
     [Dictionary]
     class DriveProperties
     {
-        private string _Vendor = default(string);
+        private string _Vendor = default (string);
         public string Vendor
         {
             get
@@ -501,7 +501,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _Model = default(string);
+        private string _Model = default (string);
         public string Model
         {
             get
@@ -515,7 +515,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _Revision = default(string);
+        private string _Revision = default (string);
         public string Revision
         {
             get
@@ -529,7 +529,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _Serial = default(string);
+        private string _Serial = default (string);
         public string Serial
         {
             get
@@ -543,7 +543,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _WWN = default(string);
+        private string _WWN = default (string);
         public string WWN
         {
             get
@@ -557,7 +557,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _Id = default(string);
+        private string _Id = default (string);
         public string Id
         {
             get
@@ -571,7 +571,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private IDictionary<string, object> _Configuration = default(IDictionary<string, object>);
+        private IDictionary<string, object> _Configuration = default (IDictionary<string, object>);
         public IDictionary<string, object> Configuration
         {
             get
@@ -585,7 +585,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _Media = default(string);
+        private string _Media = default (string);
         public string Media
         {
             get
@@ -599,7 +599,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string[] _MediaCompatibility = default(string[]);
+        private string[] _MediaCompatibility = default (string[]);
         public string[] MediaCompatibility
         {
             get
@@ -613,7 +613,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _MediaRemovable = default(bool);
+        private bool _MediaRemovable = default (bool);
         public bool MediaRemovable
         {
             get
@@ -627,7 +627,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _MediaAvailable = default(bool);
+        private bool _MediaAvailable = default (bool);
         public bool MediaAvailable
         {
             get
@@ -641,7 +641,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _MediaChangeDetected = default(bool);
+        private bool _MediaChangeDetected = default (bool);
         public bool MediaChangeDetected
         {
             get
@@ -655,7 +655,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private ulong _Size = default(ulong);
+        private ulong _Size = default (ulong);
         public ulong Size
         {
             get
@@ -669,7 +669,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private ulong _TimeDetected = default(ulong);
+        private ulong _TimeDetected = default (ulong);
         public ulong TimeDetected
         {
             get
@@ -683,7 +683,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private ulong _TimeMediaDetected = default(ulong);
+        private ulong _TimeMediaDetected = default (ulong);
         public ulong TimeMediaDetected
         {
             get
@@ -697,7 +697,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _Optical = default(bool);
+        private bool _Optical = default (bool);
         public bool Optical
         {
             get
@@ -711,7 +711,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _OpticalBlank = default(bool);
+        private bool _OpticalBlank = default (bool);
         public bool OpticalBlank
         {
             get
@@ -725,7 +725,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private uint _OpticalNumTracks = default(uint);
+        private uint _OpticalNumTracks = default (uint);
         public uint OpticalNumTracks
         {
             get
@@ -739,7 +739,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private uint _OpticalNumAudioTracks = default(uint);
+        private uint _OpticalNumAudioTracks = default (uint);
         public uint OpticalNumAudioTracks
         {
             get
@@ -753,7 +753,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private uint _OpticalNumDataTracks = default(uint);
+        private uint _OpticalNumDataTracks = default (uint);
         public uint OpticalNumDataTracks
         {
             get
@@ -767,7 +767,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private uint _OpticalNumSessions = default(uint);
+        private uint _OpticalNumSessions = default (uint);
         public uint OpticalNumSessions
         {
             get
@@ -781,7 +781,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private int _RotationRate = default(int);
+        private int _RotationRate = default (int);
         public int RotationRate
         {
             get
@@ -795,7 +795,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _ConnectionBus = default(string);
+        private string _ConnectionBus = default (string);
         public string ConnectionBus
         {
             get
@@ -809,7 +809,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _Seat = default(string);
+        private string _Seat = default (string);
         public string Seat
         {
             get
@@ -823,7 +823,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _Removable = default(bool);
+        private bool _Removable = default (bool);
         public bool Removable
         {
             get
@@ -837,7 +837,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _Ejectable = default(bool);
+        private bool _Ejectable = default (bool);
         public bool Ejectable
         {
             get
@@ -851,7 +851,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _SortKey = default(string);
+        private string _SortKey = default (string);
         public string SortKey
         {
             get
@@ -865,7 +865,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _CanPowerOff = default(bool);
+        private bool _CanPowerOff = default (bool);
         public bool CanPowerOff
         {
             get
@@ -879,7 +879,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _SiblingId = default(string);
+        private string _SiblingId = default (string);
         public string SiblingId
         {
             get
@@ -941,7 +941,7 @@ namespace Avalonia.X11.Dbus
     [Dictionary]
     class LoopProperties
     {
-        private byte[] _BackingFile = default(byte[]);
+        private byte[] _BackingFile = default (byte[]);
         public byte[] BackingFile
         {
             get
@@ -955,7 +955,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _Autoclear = default(bool);
+        private bool _Autoclear = default (bool);
         public bool Autoclear
         {
             get
@@ -969,7 +969,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private uint _SetupByUID = default(uint);
+        private uint _SetupByUID = default (uint);
         public uint SetupByUID
         {
             get
@@ -994,9 +994,9 @@ namespace Avalonia.X11.Dbus
     [DBusInterface("org.freedesktop.UDisks2.Block")]
     interface IBlock : IDBusObject
     {
-        Task AddConfigurationItemAsync((string, IDictionary<string, object>) Item, IDictionary<string, object> Options);
-        Task RemoveConfigurationItemAsync((string, IDictionary<string, object>) Item, IDictionary<string, object> Options);
-        Task UpdateConfigurationItemAsync((string, IDictionary<string, object>) OldItem, (string, IDictionary<string, object>) NewItem, IDictionary<string, object> Options);
+        Task AddConfigurationItemAsync((string, IDictionary<string, object>)Item, IDictionary<string, object> Options);
+        Task RemoveConfigurationItemAsync((string, IDictionary<string, object>)Item, IDictionary<string, object> Options);
+        Task UpdateConfigurationItemAsync((string, IDictionary<string, object>)OldItem, (string, IDictionary<string, object>)NewItem, IDictionary<string, object> Options);
         Task<(string, IDictionary<string, object>)[]> GetSecretConfigurationAsync(IDictionary<string, object> Options);
         Task FormatAsync(string Type, IDictionary<string, object> Options);
         Task<CloseSafeHandle> OpenForBackupAsync(IDictionary<string, object> Options);
@@ -1013,7 +1013,7 @@ namespace Avalonia.X11.Dbus
     [Dictionary]
     class BlockProperties
     {
-        private byte[] _Device = default(byte[]);
+        private byte[] _Device = default (byte[]);
         public byte[] Device
         {
             get
@@ -1027,7 +1027,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private byte[] _PreferredDevice = default(byte[]);
+        private byte[] _PreferredDevice = default (byte[]);
         public byte[] PreferredDevice
         {
             get
@@ -1041,7 +1041,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private byte[][] _Symlinks = default(byte[][]);
+        private byte[][] _Symlinks = default (byte[][]);
         public byte[][] Symlinks
         {
             get
@@ -1055,7 +1055,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private ulong _DeviceNumber = default(ulong);
+        private ulong _DeviceNumber = default (ulong);
         public ulong DeviceNumber
         {
             get
@@ -1069,7 +1069,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _Id = default(string);
+        private string _Id = default (string);
         public string Id
         {
             get
@@ -1083,7 +1083,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private ulong _Size = default(ulong);
+        private ulong _Size = default (ulong);
         public ulong Size
         {
             get
@@ -1097,7 +1097,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _ReadOnly = default(bool);
+        private bool _ReadOnly = default (bool);
         public bool ReadOnly
         {
             get
@@ -1111,7 +1111,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private ObjectPath _Drive = default(ObjectPath);
+        private ObjectPath _Drive = default (ObjectPath);
         public ObjectPath Drive
         {
             get
@@ -1125,7 +1125,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private ObjectPath _MDRaid = default(ObjectPath);
+        private ObjectPath _MDRaid = default (ObjectPath);
         public ObjectPath MDRaid
         {
             get
@@ -1139,7 +1139,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private ObjectPath _MDRaidMember = default(ObjectPath);
+        private ObjectPath _MDRaidMember = default (ObjectPath);
         public ObjectPath MDRaidMember
         {
             get
@@ -1153,7 +1153,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _IdUsage = default(string);
+        private string _IdUsage = default (string);
         public string IdUsage
         {
             get
@@ -1167,7 +1167,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _IdType = default(string);
+        private string _IdType = default (string);
         public string IdType
         {
             get
@@ -1181,7 +1181,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _IdVersion = default(string);
+        private string _IdVersion = default (string);
         public string IdVersion
         {
             get
@@ -1195,7 +1195,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _IdLabel = default(string);
+        private string _IdLabel = default (string);
         public string IdLabel
         {
             get
@@ -1209,7 +1209,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _IdUUID = default(string);
+        private string _IdUUID = default (string);
         public string IdUUID
         {
             get
@@ -1223,7 +1223,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private (string, IDictionary<string, object>)[] _Configuration = default((string, IDictionary<string, object>)[]);
+        private (string, IDictionary<string, object>)[] _Configuration = default ((string, IDictionary<string, object>)[]);
         public (string, IDictionary<string, object>)[] Configuration
         {
             get
@@ -1237,7 +1237,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private ObjectPath _CryptoBackingDevice = default(ObjectPath);
+        private ObjectPath _CryptoBackingDevice = default (ObjectPath);
         public ObjectPath CryptoBackingDevice
         {
             get
@@ -1251,7 +1251,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _HintPartitionable = default(bool);
+        private bool _HintPartitionable = default (bool);
         public bool HintPartitionable
         {
             get
@@ -1265,7 +1265,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _HintSystem = default(bool);
+        private bool _HintSystem = default (bool);
         public bool HintSystem
         {
             get
@@ -1279,7 +1279,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _HintIgnore = default(bool);
+        private bool _HintIgnore = default (bool);
         public bool HintIgnore
         {
             get
@@ -1293,7 +1293,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private bool _HintAuto = default(bool);
+        private bool _HintAuto = default (bool);
         public bool HintAuto
         {
             get
@@ -1307,7 +1307,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _HintName = default(string);
+        private string _HintName = default (string);
         public string HintName
         {
             get
@@ -1321,7 +1321,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _HintIconName = default(string);
+        private string _HintIconName = default (string);
         public string HintIconName
         {
             get
@@ -1335,7 +1335,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string _HintSymbolicIconName = default(string);
+        private string _HintSymbolicIconName = default (string);
         public string HintSymbolicIconName
         {
             get
@@ -1349,7 +1349,7 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-        private string[] _UserspaceMountOptions = default(string[]);
+        private string[] _UserspaceMountOptions = default (string[]);
         public string[] UserspaceMountOptions
         {
             get
@@ -1392,4 +1392,4 @@ namespace Avalonia.X11.Dbus
         public static Task<string> GetHintSymbolicIconNameAsync(this IBlock o) => o.GetAsync<string>("HintSymbolicIconName");
         public static Task<string[]> GetUserspaceMountOptionsAsync(this IBlock o) => o.GetAsync<string[]>("UserspaceMountOptions");
     }
-}
+ }
