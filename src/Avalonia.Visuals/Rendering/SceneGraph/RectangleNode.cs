@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 
@@ -25,7 +26,7 @@ namespace Avalonia.Rendering.SceneGraph
         public RectangleNode(
             Matrix transform,
             IBrush brush,
-            Pen pen,
+            IPen pen,
             Rect rect,
             float cornerRadius,
             IDictionary<IVisual, Scene> childScenes = null)
@@ -52,7 +53,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the stroke pen.
         /// </summary>
-        public Pen Pen { get; }
+        public ImmutablePen Pen { get; }
 
         /// <summary>
         /// Gets the rectangle to draw.
@@ -80,11 +81,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, Pen pen, Rect rect, float cornerRadius)
+        public bool Equals(Matrix transform, IBrush brush, IPen pen, Rect rect, float cornerRadius)
         {
             return transform == Transform &&
                 Equals(brush, Brush) &&
-                pen == Pen &&
+                Equals(Pen, pen) &&
                 rect == Rect &&
                 cornerRadius == CornerRadius;
         }
