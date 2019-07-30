@@ -1,25 +1,40 @@
+using System;
+
 namespace Avalonia.Dialogs
 {
     internal static class ByteSizeHelper
     {
+        private const string formatTemplate = "{0}{1:0.#} {2}";
+
         private static readonly string[] Prefixes =
         {
             "B",
             "KB",
             "MB",
             "GB",
-            "TB"
+            "TB",
+            "PB",
+            "EB",
+            "ZB",
+            "YB" 
         };
 
-        public static string ToString(long bytes)
+        public static string ToString(ulong bytes)
         {
-            var index = 0;
-            while (bytes >= 1000)
+            if (bytes == 0)
             {
-                bytes /= 1000;
-                ++index;
+                return string.Format(formatTemplate, null, 0, Prefixes[0]);
             }
-            return $"{bytes:N} {Prefixes[index]}";
+
+            var absSize = Math.Abs((double)bytes);
+            var fpPower = Math.Log(absSize, 1000);
+            var intPower = (int)fpPower;
+            var iUnit = intPower >= Prefixes.Length
+                ? Prefixes.Length - 1
+                : intPower;
+            var normSize = absSize / Math.Pow(1000, iUnit);
+
+            return string.Format(formatTemplate,bytes < 0 ? "-" : null, normSize, Prefixes[iUnit]);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Avalonia.Dialogs
         {
             if (value is long size && size > 0)
             {
-                return ByteSizeHelper.ToString(size);
+                return ByteSizeHelper.ToString((ulong)size);
             }
 
             return "";

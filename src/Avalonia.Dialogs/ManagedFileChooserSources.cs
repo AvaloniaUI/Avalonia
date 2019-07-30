@@ -36,9 +36,6 @@ namespace Avalonia.Dialogs
             Environment.SpecialFolder.MyVideos
         };
 
-        private static string[] s_sizeSuffixes = { "B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
-        private const string formatTemplate = "{0}{1:0.#} {2}";
-
         public static ManagedFileChooserNavigationItem[] DefaultGetUserDirectories()
         {
             return s_folders.Select(Environment.GetFolderPath).Distinct()
@@ -49,29 +46,6 @@ namespace Avalonia.Dialogs
                     Path = d,
                     DisplayName = Path.GetFileName(d)
                 }).ToArray();
-        }
-
-        public static event EventHandler SourcesChanged;
-
-        private static string ByteToHumanReadableUnits(ulong size)
-        {
-
-            if (size == 0)
-            {
-                return string.Format(formatTemplate, null, 0, s_sizeSuffixes[0]);
-            }
-
-            var absSize = Math.Abs((double)size);
-            var fpPower = Math.Log(absSize, 1000);
-            var intPower = (int)fpPower;
-            var iUnit = intPower >= s_sizeSuffixes.Length
-                ? s_sizeSuffixes.Length - 1
-                : intPower;
-            var normSize = absSize / Math.Pow(1000, iUnit);
-
-            return string.Format(
-                formatTemplate,
-                size < 0 ? "-" : null, normSize, s_sizeSuffixes[iUnit]);
         }
 
         public static ManagedFileChooserNavigationItem[] DefaultGetFileSystemRoots()
@@ -119,7 +93,7 @@ namespace Avalonia.Dialogs
                                return new ManagedFileChooserNavigationItem
                                {
 
-                                   DisplayName = dNameEmpty ? $"{ByteToHumanReadableUnits(x.DriveSizeBytes)} Volume"
+                                   DisplayName = dNameEmpty ? $"{ByteSizeHelper.ToString(x.DriveSizeBytes)} Volume"
                                                             : x.DriveLabel,
                                    Path = x.MountPath
                                };
