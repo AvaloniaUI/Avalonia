@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
-    public class EventTests
+    public class EventTests : XamlTestBase
     {
         [Fact]
         public void Event_Is_Attached()

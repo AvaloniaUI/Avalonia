@@ -8,7 +8,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MakrupExtensions
 {
     public class ResourceIncludeTests
     {
-        public class StaticResourceExtensionTests
+        public class StaticResourceExtensionTests : XamlTestBase
         {
             [Fact]
             public void ResourceInclude_Loads_ResourceDictionary()

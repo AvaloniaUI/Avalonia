@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
-    public class StyleTests
+    public class StyleTests : XamlTestBase
     {
         [Fact]
         public void Color_Can_Be_Added_To_Style_Resources()

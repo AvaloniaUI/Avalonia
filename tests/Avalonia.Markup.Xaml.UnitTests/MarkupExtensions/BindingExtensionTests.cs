@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
-    public class BindingExtensionTests
+    public class BindingExtensionTests : XamlTestBase
     {
 
         [Fact]
