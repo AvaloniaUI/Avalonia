@@ -534,6 +534,9 @@ namespace Avalonia.Layout
                 height = Math.Min(height, MaxHeight);
                 height = Math.Max(height, MinHeight);
 
+                width = Math.Min(width, availableSize.Width);
+                height = Math.Min(height, availableSize.Height);
+
                 if (UseLayoutRounding)
                 {
                     var scale = GetLayoutScale();
