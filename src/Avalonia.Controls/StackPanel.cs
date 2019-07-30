@@ -273,7 +273,7 @@ namespace Avalonia.Controls
                     previousChildSize += spacing;
                 }
 
-                child.Arrange(rcChild);
+                ArrangeChild(child, rcChild, finalSize, Orientation);
             }
 
             return finalSize;
