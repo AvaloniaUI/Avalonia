@@ -302,7 +302,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
 <UserControl 
     xmlns='https://github.com/avaloniaui'
     xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:DataContextType='{x:Type local:XamlIlBugTestsDataContext}' />");
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:DataContextType='local:XamlIlBugTestsDataContext' />");
             }
         }
 

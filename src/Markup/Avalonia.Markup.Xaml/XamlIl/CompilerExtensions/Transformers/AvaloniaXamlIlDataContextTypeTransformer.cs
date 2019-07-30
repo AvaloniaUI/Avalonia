@@ -30,13 +30,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     {
                         if (directive.Namespace == XamlNamespaces.Xaml2006
                             && directive.Name == "DataContextType"
-                            && directive.Values.Count == 1
-                            && directive.Values[0] is XamlIlAstTextNode text)
+                            && directive.Values.Count == 1)
                         {
-                            on.Children.Remove(child);
+                            on.Children.RemoveAt(i);
                             i--;
-                            directiveDataContextTypeNode = new AvaloniaXamlIlDataContextTypeMetadataNode(on,
-                                XamlIlTypeReferenceResolver.ResolveType(context, text.Text, isMarkupExtension: false, text, strict: true).Type);
+                            if (directive.Values[0] is XamlIlAstTextNode text)
+                            {
+                                directiveDataContextTypeNode = new AvaloniaXamlIlDataContextTypeMetadataNode(on,
+                                    XamlIlTypeReferenceResolver.ResolveType(context, text.Text, isMarkupExtension: false, text, strict: true).Type);
+                            }
+                            else
+                            {
+                                throw new XamlIlParseException("x:DataContextType should be set to a type name.", directive.Values[0]);
+                            }
                         }
                     }
                     else if (child is XamlIlAstXamlPropertyValueNode pv
