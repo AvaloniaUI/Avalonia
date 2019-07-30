@@ -22,7 +22,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
-    public class BasicTests
+    public class BasicTests : XamlTestBase
     {
         [Fact]
         public void Simple_Property_Is_Set()
