@@ -1,9 +1,8 @@
-using System.Reactive;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
-namespace Avalonia.Controls.UnitTests
+namespace Avalonia.UnitTests
 {
     public class MouseTestHelper
     {

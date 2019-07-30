@@ -15,8 +15,8 @@ namespace Avalonia.Diagnostics.Views
     /// </remarks>
     public class SimpleGrid : Panel
     {
-        private List<double> _columnWidths = new List<double>();
-        private List<double> _rowHeights = new List<double>();
+        private readonly List<double> _columnWidths = new List<double>();
+        private readonly List<double> _rowHeights = new List<double>();
         private double _totalWidth;
         private double _totalHeight;
 
@@ -31,7 +31,7 @@ namespace Avalonia.Diagnostics.Views
         /// </summary>
         public static readonly AttachedProperty<int> RowProperty =
             AvaloniaProperty.RegisterAttached<SimpleGrid, Control, int>("Row");
-        
+
         /// <summary>
         /// Gets the value of the Column attached property for a control.
         /// </summary>
@@ -62,7 +62,7 @@ namespace Avalonia.Diagnostics.Views
             control.SetValue(ColumnProperty, value);
         }
 
-        
+
         /// <summary>
         /// Sets the value of the Row attached property for a control.
         /// </summary>

@@ -164,6 +164,9 @@ namespace Avalonia.Rendering
         }
 
         /// <inheritdoc/>
+        public void RecalculateChildren(IVisual visual) => AddDirty(visual);
+
+        /// <inheritdoc/>
         public void Start()
         {
         }

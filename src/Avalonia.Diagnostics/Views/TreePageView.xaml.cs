@@ -19,7 +19,7 @@ namespace Avalonia.Diagnostics.Views
 
         public TreePageView()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             _tree.ItemContainerGenerator.Index.Materialized += TreeViewItemMaterialized;
         }
 
@@ -39,7 +39,7 @@ namespace Avalonia.Diagnostics.Views
                 _adorner = new Rectangle
                 {
                     Fill = new SolidColorBrush(0x80a0c5e8),
-                    [AdornerLayer.AdornedElementProperty] = node.Visual,
+                    [AdornerLayer.AdornedElementProperty] = node.Visual
                 };
 
                 layer.Children.Add(_adorner);
