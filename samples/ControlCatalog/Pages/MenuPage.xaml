@@ -10,10 +10,11 @@
               HorizontalAlignment="Center"
               Spacing="16">
             <StackPanel> 
-                <TextBlock Classes="h3" Margin="4 8">AppMenu Defined in XAML</TextBlock>
+              <TextBlock Classes="h3" Margin="4 8">AppMenu Defined in XAML</TextBlock>
+              <TextBlock Classes="h3" Margin="4 8" Text="{Binding Message}"/>
                 <NativeMenu>
                     <NativeMenuItem Text="File">
-                        <NativeMenuItem Text="New File"/>
+                        <NativeMenuItem Text="New File" Command="{Binding NewFileCommand} "/>
                         <NativeMenuItem Text="New Window"/>
                         <NativeMenuItem Text="Open Recent"> 
                             <NativeMenuItem Text="Recent File 1"/>

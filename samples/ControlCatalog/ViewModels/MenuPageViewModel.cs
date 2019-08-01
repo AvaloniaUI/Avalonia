@@ -8,7 +8,7 @@ using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
 {
-    public class MenuPageViewModel
+    public class MenuPageViewModel : ReactiveObject
     {
         public Control View { get; set; }
         public MenuPageViewModel()
@@ -16,6 +16,11 @@ namespace ControlCatalog.ViewModels
             OpenCommand = ReactiveCommand.CreateFromTask(Open);
             SaveCommand = ReactiveCommand.Create(Save, Observable.Return(false));
             OpenRecentCommand = ReactiveCommand.Create<string>(OpenRecent);
+
+            NewFileCommand = ReactiveCommand.Create(() =>
+            {
+                Message = "New File Menu Item Clicked";
+            });
 
             MenuItems = new[]
             {
@@ -64,6 +69,8 @@ namespace ControlCatalog.ViewModels
         public ReactiveCommand<Unit, Unit> OpenCommand { get; }
         public ReactiveCommand<Unit, Unit> SaveCommand { get; }
         public ReactiveCommand<string, Unit> OpenRecentCommand { get; }
+        
+        public  ReactiveCommand<Unit, Unit> NewFileCommand { get; }
 
         public async Task Open()
         {
@@ -90,6 +97,14 @@ namespace ControlCatalog.ViewModels
         public void OpenRecent(string path)
         {
             System.Diagnostics.Debug.WriteLine($"Open recent: {path}");
+        }
+
+        private string _message;
+
+        public string Message
+        {
+            get => _message;
+            set => this.RaiseAndSetIfChanged(ref _message, value);
         }
     }
 }
