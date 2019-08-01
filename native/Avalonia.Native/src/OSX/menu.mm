@@ -1,15 +1,11 @@
+
+
 #include "common.h"
 #include "IGetNative.h"
 
+#include "menu1.h"
 
-@interface AvnMenu : NSMenu // for some reason it doesnt detect nsmenu here but compiler doesnt complain
--(void) myaction;
 
-@end
-
-@interface AvnMenuItem : NSMenuItem
--(void) myaction; // added myaction method
-@end
 
 @implementation AvnMenu
 
@@ -18,95 +14,43 @@
     return YES;
 }
 
-- (void)myaction
-{
-    
-}
-
 @end
 
 @implementation AvnMenuItem
+{
+    AvnAppMenuItem* _item;
+}
+
+- (id) initWithAvnAppMenuItem: (AvnAppMenuItem*)menuItem
+{
+    if(self != nil)
+    {
+        _item = menuItem;
+        self = [super initWithTitle:@""
+                             action:@selector(didSelectItem:)
+                      keyEquivalent:@""];
+        
+        [self setEnabled:YES];
+        
+        [self setTarget:self];
+    }
+    
+    return self;
+}
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
     return YES;
 }
 
-- (void)myaction
+- (void)didSelectItem:(nullable id)sender
 {
-    // here its implemented...
+    _item->RaiseOnClicked();
 }
 
 @end
 
-class AvnAppMenuItem : public ComSingleObject<IAvnAppMenuItem, &IID_IAvnAppMenuItem>, public IGetNative
-{
-private:
-    AvnMenuItem* _native; // here we hold a pointer to an AvnMenuItem
-    IAvnActionCallback* _callback;
-public:
-    FORWARD_IUNKNOWN()
-    
-    AvnAppMenuItem()
-    {
-            /*id appMenu = [NSMenu new];
-            [appMenu setTitle:@"MenuTitle"];
-            
-            id testMenuItem = [[NSMenuItem alloc] initWithTitle:@"Test" action:NULL keyEquivalent:@""];
-            [appMenu addItem:testMenuItem];
-            
-            
-            id appMenuItem = [NSMenuItem new];
-            [[NSApp mainMenu] addItem:appMenuItem];
-            
-            [appMenuItem setSubmenu:appMenu];*/
-        
-        
-        _native = [AvnMenuItem new];
-        [_native setKeyEquivalent:@" "];
-        [_native setEnabled:YES];
-        
-        _callback = nullptr;
-    }
-    
-    void* GetNative() override
-    {
-        return (__bridge void*) _native;
-    }
-    
-    virtual HRESULT SetSubMenu (IAvnAppMenu* menu) override
-    {
-        auto nsMenu = (__bridge AvnMenu*) dynamic_cast<IGetNative*>(menu)->GetNative();
-        
-        [_native setSubmenu: nsMenu];
-        
-        return S_OK;
-    }
-    
-    virtual HRESULT SetTitle (void* utf8String) override
-    {
-        [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
-        
-        // here I want to call my method...
-        [_native myaction];
-        
-        return S_OK;
-    }
-    
-    virtual HRESULT SetGesture (void* utf8String) override
-    {
-        return S_OK;
-    }
-    
-    virtual HRESULT SetAction (IAvnActionCallback* callback) override
-    {
-        auto cb = [[ActionCallback alloc] initWithCallback:callback];
-        [_native setTarget:_native];
-        [_native setAction:@selector(myaction:)];
-        [_native setEnabled:YES];
-        return S_OK;
-    }
-};
+
 
 class AvnAppMenu : public ComSingleObject<IAvnAppMenu, &IID_IAvnAppMenu>, public IGetNative
 {
@@ -119,7 +63,6 @@ public:
     AvnAppMenu()
     {
         _native = [AvnMenu new];
-        [_native setAutoenablesItems:YES];
     }
     
     AvnAppMenu(AvnMenu* native)
@@ -138,6 +81,7 @@ public:
         
         if(avnMenuItem != nullptr)
         {
+            
             [_native addItem: (__bridge AvnMenuItem*)avnMenuItem->GetNative()];
         }
         
@@ -174,26 +118,80 @@ extern IAvnAppMenu* GetAppMenu()
     {
         if(s_AppMenu == nullptr)
         {
-            id appMenu = [AvnMenu new];
-            [appMenu setTitle:@"AppMenu"];
+            NSMenu* const mainMenu = [[NSMenu alloc] initWithTitle:@"NSMainMenu"];
             
-            s_AppMenu = new AvnAppMenu(appMenu);
+            NSMenuItem* menuItem = [mainMenu addItemWithTitle:@"Apple" action:nil keyEquivalent:@""];
+            NSMenu* submenu = [[NSMenu alloc] initWithTitle:@"Apple"];
             
-            id appName = [[NSProcessInfo processInfo] processName];
+            // todo populate app menu submenu!!!
+            NSString * const applicationName = @"root";
             
-            //id quitTitle = [@"Quit " stringByAppendingString:appName];
-            //d quitMenuItem = [[NSMenuItem alloc] initWithTitle:quitTitle
-            //                                          action:@selector(terminate:) keyEquivalent:@"q"];
+            NSMenuItem* menuItem1 = [submenu addItemWithTitle : [NSString stringWithFormat : @"%@ %@",
+                                                    NSLocalizedString(@"About", nil), applicationName]
+                                          action : @selector(orderFrontStandardAboutPanel:) keyEquivalent : @""];
+            [menuItem1 setTarget : NSApp];
+            [submenu addItem : [NSMenuItem separatorItem]];
             
+            menuItem1 = [submenu addItemWithTitle : [NSString stringWithFormat : @"%@ %@",
+                                                    NSLocalizedString(@"Hide", nil), applicationName] action : @selector(hide:) keyEquivalent : @"h"];
+            [menuItem1 setTarget : NSApp];
             
-            //id testMenuItem = [[NSMenuItem alloc] initWithTitle:@"Test" action:NULL keyEquivalent:@""];
-            //[appMenu addItem:testMenuItem];
-            //   [appMenu addItem:quitMenuItem];
+            //menuItem = [submenu addItemWithTitle : NSLocalizedString(@"Hide Others", nil)
+              //                            action : @selector(hideOtherApplications:) keyEquivalent : @"h"];
+            //[menuItem setKeyEquivalentModifierMask : Details::kCommandKeyMask | Details::kAlternateKeyMask];
+            //[menuItem setTarget : NSApp];
             
-            id appMenuItem = [AvnMenuItem new];
-            [[NSApp mainMenu] addItem:appMenuItem];
+            menuItem1 = [submenu addItemWithTitle : NSLocalizedString(@"Show All", nil)
+                                          action : @selector(unhideAllApplications:) keyEquivalent : @""];
+            [menuItem1 setTarget : NSApp];
             
-            [appMenuItem setSubmenu:appMenu];
+            [submenu addItem : [NSMenuItem separatorItem]];
+            menuItem1 = [submenu addItemWithTitle : [NSString stringWithFormat : @"%@ %@",
+                                                    NSLocalizedString(@"Quit", nil), applicationName] action : @selector(terminate:) keyEquivalent : @"q"];
+            //[menuItem1 setTarget : NSApp];
+            //AvnMenuItem* testItem = [[AvnMenuItem alloc] initWithAvnAppMenuItem:this];
+            //[testItem setTitle:@"TestItem"];
+            //[submenu addItem: testItem];
+            //
+            
+            [mainMenu setSubmenu:submenu forItem:menuItem];
+            
+            menuItem = [mainMenu addItemWithTitle : @"Window" action : nil keyEquivalent : @""];
+            submenu = [[NSMenu alloc] initWithTitle : NSLocalizedString(@"Window", @"The Window menu")];
+            
+            //PopulateWindowMenu(submenu);
+            [mainMenu setSubmenu : submenu forItem : menuItem];
+            [NSApp setWindowsMenu : submenu];
+            
+            menuItem = [mainMenu addItemWithTitle:@"Help" action:NULL keyEquivalent:@""];
+            submenu = [[NSMenu alloc] initWithTitle:NSLocalizedString(@"Help", @"The Help menu")];
+            
+            //PopulateHelpMenu(submenu);
+            [mainMenu setSubmenu : submenu forItem : menuItem];
+            
+            [NSApp setMainMenu : mainMenu];
+            [NSMenu setMenuBarVisible : YES];
+            /*id appMenu = [AvnMenu new];
+             [appMenu setTitle:@"AppMenu"];
+             
+             s_AppMenu = new AvnAppMenu(appMenu);
+             
+             id appName = [[NSProcessInfo processInfo] processName];
+             
+             id quitTitle = [@"Quit " stringByAppendingString:appName];
+             id quitMenuItem = [[NSMenuItem alloc] initWithTitle:quitTitle
+             action:@selector(terminate:) keyEquivalent:@"q"];
+             
+             
+             id testMenuItem = [[NSMenuItem alloc] initWithTitle:@"Test" action:NULL keyEquivalent:@""];
+             [appMenu addItem:testMenuItem];
+             [appMenu addItem:quitMenuItem];
+             
+             [NSApp setMainMenu:appMenu];
+             
+             
+             
+             //[appMenuItem setSubmenu:appMenu];*/
         }
         
         return s_AppMenu;

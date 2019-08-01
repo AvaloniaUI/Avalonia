@@ -54,7 +54,6 @@ public:
     FORWARD_IUNKNOWN()
     virtual ~WindowBaseImpl()
     {
-        NSDebugLog(@"~WindowBaseImpl()");
         View = NULL;
         Window = NULL;
     }
@@ -417,7 +416,6 @@ private:
     INTERFACE_MAP_ENTRY(IAvnWindow, IID_IAvnWindow)
     END_INTERFACE_MAP()
     virtual ~WindowImpl(){
-        NSDebugLog(@"~WindowImpl");
     }
     
     ComPtr<IAvnWindowEvents> WindowEvents;
@@ -664,7 +662,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)dealloc
 {
-    NSDebugLog(@"AvnView dealloc");
 }
 
 
@@ -1067,7 +1064,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)dealloc
 {
-    NSDebugLog(@"AvnWindow dealloc");
 }
 
 - (void)pollModalSession:(nonnull NSModalSession)session
