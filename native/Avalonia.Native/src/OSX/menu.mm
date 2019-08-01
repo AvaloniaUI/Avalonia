@@ -9,10 +9,6 @@
 
 @implementation AvnMenu
 
-- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
-{
-    return YES;
-}
 
 @end
 
@@ -40,7 +36,12 @@
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-    return YES;
+    if([self submenu] != nil)
+    {
+        return YES;
+    }
+    
+    return _item->EvaluateItemEnabled();
 }
 
 - (void)didSelectItem:(nullable id)sender

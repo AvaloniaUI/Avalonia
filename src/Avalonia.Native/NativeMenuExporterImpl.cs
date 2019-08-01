@@ -21,6 +21,21 @@ namespace Avalonia.Native
             _action?.Invoke();
         }
     }
+    
+    public class PredicateCallback : CallbackBase, IAvnPredicateCallback
+    {
+        private Func<bool> _predicate;
+
+        public PredicateCallback(Func<bool> predicate)
+        {
+            _predicate = predicate;
+        }
+        
+        bool IAvnPredicateCallback.Evaluate()
+        {
+            return _predicate();
+        }
+    }
 
     public class NativeMenuExporterImpl : INativeMenuExporter
     {
@@ -51,7 +66,15 @@ namespace Avalonia.Native
                     menuItem.Title = buffer.DangerousGetHandle();
                 }
 
-                menuItem.SetAction(new MenuActionCallback(()=>{item.RaiseClick();}));
+                menuItem.SetAction(new PredicateCallback(() =>
+                {
+                    if (item.Command != null)
+                    {
+                        return item.Command.CanExecute(null);
+                    }
+
+                    return false;
+                }), new MenuActionCallback(()=>{item.RaiseClick();}));
                 menu.AddItem(menuItem);
 
                 if (item.SubItems.Count > 0)
@@ -76,7 +99,15 @@ namespace Avalonia.Native
             {
                 var menuItem = _factory.CreateMenuItem();
                 
-                menuItem.SetAction(new MenuActionCallback(()=>item.RaiseClick()));
+                menuItem.SetAction(new PredicateCallback(() =>
+                {
+                    if (item.Command != null)
+                    {
+                        return item.Command.CanExecute(null);
+                    }
+
+                    return false;
+                }), new MenuActionCallback(()=>{item.RaiseClick();}));
 
                 if (item.SubItems.Count > 0 || isMainMenu)
                 {

@@ -15,14 +15,12 @@
 class AvnAppMenuItem;
 
 @interface AvnMenu : NSMenu // for some reason it doesnt detect nsmenu here but compiler doesnt complain
--(void) myaction;
 
 @end
 
 @interface AvnMenuItem : NSMenuItem
 - (id) initWithAvnAppMenuItem: (AvnAppMenuItem*)menuItem;
 - (void)didSelectItem:(id)sender;
-- (void)terminate:(nullable id)sender;
 @end
 
 class AvnAppMenuItem : public ComSingleObject<IAvnAppMenuItem, &IID_IAvnAppMenuItem>, public IGetNative
@@ -30,6 +28,8 @@ class AvnAppMenuItem : public ComSingleObject<IAvnAppMenuItem, &IID_IAvnAppMenuI
 private:
     AvnMenuItem* _native; // here we hold a pointer to an AvnMenuItem
     IAvnActionCallback* _callback;
+    IAvnPredicateCallback* _predicate;
+    
 public:
     FORWARD_IUNKNOWN()
     
@@ -65,10 +65,23 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT SetAction (IAvnActionCallback* callback) override
+    virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) override
     {
+        _predicate = predicate;
         _callback = callback;
         return S_OK;
+    }
+    
+    bool EvaluateItemEnabled()
+    {
+        if(_predicate != nullptr)
+        {
+            auto result = _predicate->Evaluate ();
+            
+            return result;
+        }
+        
+        return false;
     }
     
     void RaiseOnClicked()

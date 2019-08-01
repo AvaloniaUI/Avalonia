@@ -46,7 +46,7 @@ template<typename T> inline T* objc_cast(id from) {
 
 @interface ActionCallback : NSObject
 - (ActionCallback*) initWithCallback: (IAvnActionCallback*) callback;
-+ (void) action;
+- (void) action;
 @end
 
 #endif
