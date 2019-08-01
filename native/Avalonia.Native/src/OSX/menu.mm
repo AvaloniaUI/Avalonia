@@ -1,10 +1,45 @@
 #include "common.h"
+#include "menu.h"
 #include "IGetNative.h"
+
+@implementation AvnMenu
+{
+    
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+    return YES;
+}
+
++ (void)myaction
+{
+    
+}
+
+@end
+
+@implementation AvnMenuItem
+{
+    
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+    return YES;
+}
+
++ (void)myaction
+{
+    
+}
+
+@end
 
 class AvnAppMenuItem : public ComSingleObject<IAvnAppMenuItem, &IID_IAvnAppMenuItem>, public IGetNative
 {
 private:
-    NSMenuItem* _native;
+    AvnMenuItem* _native;
     IAvnActionCallback* _callback;
 public:
     FORWARD_IUNKNOWN()
@@ -24,7 +59,7 @@ public:
             [appMenuItem setSubmenu:appMenu];*/
         
         
-        _native = [NSMenuItem new];
+        _native = [AvnMenuItem new];
         [_native setKeyEquivalent:@" "];
         [_native setEnabled:YES];
         
@@ -38,7 +73,7 @@ public:
     
     virtual HRESULT SetSubMenu (IAvnAppMenu* menu) override
     {
-        auto nsMenu = (__bridge NSMenu*) dynamic_cast<IGetNative*>(menu)->GetNative();
+        auto nsMenu = (__bridge AvnMenu*) dynamic_cast<IGetNative*>(menu)->GetNative();
         
         [_native setSubmenu: nsMenu];
         
@@ -48,6 +83,8 @@ public:
     virtual HRESULT SetTitle (void* utf8String) override
     {
         [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+        
+        [_native action]
         
         return S_OK;
     }
@@ -60,7 +97,7 @@ public:
     virtual HRESULT SetAction (IAvnActionCallback* callback) override
     {
         auto cb = [[ActionCallback alloc] initWithCallback:callback];
-        [_native setTarget:cb];
+        [_native setTarget:_native];
         [_native setAction:@selector(action:)];
         return S_OK;
     }
@@ -69,18 +106,17 @@ public:
 class AvnAppMenu : public ComSingleObject<IAvnAppMenu, &IID_IAvnAppMenu>, public IGetNative
 {
 private:
-    NSMenu* _native;
+    AvnMenu* _native;
     
 public:
     FORWARD_IUNKNOWN()
     
     AvnAppMenu()
     {
-        _native = [NSMenu new];
-        [_native setAutoenablesItems:NO];
+        _native = [AvnMenu new];
     }
     
-    AvnAppMenu(NSMenu* native)
+    AvnAppMenu(AvnMenu* native)
     {
         _native = native;
     }
@@ -96,7 +132,7 @@ public:
         
         if(avnMenuItem != nullptr)
         {
-            [_native addItem: (__bridge NSMenuItem*)avnMenuItem->GetNative()];
+            [_native addItem: (__bridge AvnMenuItem*)avnMenuItem->GetNative()];
         }
         
         return S_OK;
@@ -108,7 +144,7 @@ public:
         
         if(avnMenuItem != nullptr)
         {
-            [_native removeItem:(__bridge NSMenuItem*)avnMenuItem->GetNative()];
+            [_native removeItem:(__bridge AvnMenuItem*)avnMenuItem->GetNative()];
         }
         
         return S_OK;
@@ -132,7 +168,7 @@ extern IAvnAppMenu* GetAppMenu()
     {
         if(s_AppMenu == nullptr)
         {
-            id appMenu = [NSMenu new];
+            id appMenu = [AvnMenu new];
             [appMenu setTitle:@"AppMenu"];
             
             s_AppMenu = new AvnAppMenu(appMenu);
@@ -148,7 +184,7 @@ extern IAvnAppMenu* GetAppMenu()
             //[appMenu addItem:testMenuItem];
             //   [appMenu addItem:quitMenuItem];
             
-            id appMenuItem = [NSMenuItem new];
+            id appMenuItem = [AvnMenuItem new];
             [[NSApp mainMenu] addItem:appMenuItem];
             
             [appMenuItem setSubmenu:appMenu];
@@ -186,3 +222,5 @@ extern IAvnAppMenuItem* CreateAppMenuItem()
         return new AvnAppMenuItem();
     }
 }
+
+
