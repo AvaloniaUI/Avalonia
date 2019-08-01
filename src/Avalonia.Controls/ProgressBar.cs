@@ -3,6 +3,7 @@
 
 
 using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -33,8 +34,8 @@ namespace Avalonia.Controls
 
         static ProgressBar()
         {
-            PseudoClass<ProgressBar, Orientation>(OrientationProperty, o => o == Avalonia.Controls.Orientation.Vertical, ":vertical");
-            PseudoClass<ProgressBar, Orientation>(OrientationProperty, o => o == Avalonia.Controls.Orientation.Horizontal, ":horizontal");
+            PseudoClass<ProgressBar, Orientation>(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
+            PseudoClass<ProgressBar, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
             PseudoClass<ProgressBar>(IsIndeterminateProperty, ":indeterminate");
 
             ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.UpdateIndicatorWhenPropChanged);

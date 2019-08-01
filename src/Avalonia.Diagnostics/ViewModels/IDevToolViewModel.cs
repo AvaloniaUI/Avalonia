@@ -1,21 +1,16 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-namespace Avalonia.Controls
+namespace Avalonia.Diagnostics.ViewModels
 {
     /// <summary>
-    /// Defines vertical or horizontal orientation.
+    /// View model interface for tool showing up in DevTools
     /// </summary>
-    public enum Orientation
+    public interface IDevToolViewModel
     {
         /// <summary>
-        /// Horizontal orientation.
+        /// Name of a tool.
         /// </summary>
-        Horizontal,
-
-        /// <summary>
-        /// Vertical orientation.
-        /// </summary>
-        Vertical,
+        string Name { get; }
     }
 }

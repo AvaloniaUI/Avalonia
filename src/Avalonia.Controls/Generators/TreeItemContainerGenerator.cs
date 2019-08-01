@@ -117,10 +117,7 @@ namespace Avalonia.Controls.Generators
             return base.RemoveRange(startingIndex, count);
         }
 
-        public override bool TryRecycle(int oldIndex, int newIndex, object item, IMemberSelector selector)
-        {
-            return false;
-        }
+        public override bool TryRecycle(int oldIndex, int newIndex, object item) => false;
 
         class WrapperTreeDataTemplate : ITreeDataTemplate
         {

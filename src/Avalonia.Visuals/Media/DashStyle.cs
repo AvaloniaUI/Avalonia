@@ -1,72 +1,114 @@
 namespace Avalonia.Media
 {
+    using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Avalonia.Animation;
+    using Avalonia.Media.Immutable;
 
-    public class DashStyle : Animatable
+    /// <summary>
+    /// Represents the sequence of dashes and gaps that will be applied by a <see cref="Pen"/>.
+    /// </summary>
+    public class DashStyle : Animatable, IDashStyle, IAffectsRender
     {
-        private static DashStyle dash;
-        public static DashStyle Dash
+        /// <summary>
+        /// Defines the <see cref="Dashes"/> property.
+        /// </summary>
+        public static readonly AvaloniaProperty<IReadOnlyList<double>> DashesProperty =
+            AvaloniaProperty.Register<DashStyle, IReadOnlyList<double>>(nameof(Dashes));
+
+        /// <summary>
+        /// Defines the <see cref="Offset"/> property.
+        /// </summary>
+        public static readonly AvaloniaProperty<double> OffsetProperty =
+            AvaloniaProperty.Register<DashStyle, double>(nameof(Offset));
+
+        private static ImmutableDashStyle s_dash;
+        private static ImmutableDashStyle s_dot;
+        private static ImmutableDashStyle s_dashDot;
+        private static ImmutableDashStyle s_dashDotDot;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DashStyle"/> class.
+        /// </summary>
+        public DashStyle()
+            : this(null, 0)
         {
-            get
-            {
-                if (dashDotDot == null)
-                {
-                    dash = new DashStyle(new double[] { 2, 2 }, 1);
-                }
-
-                return dash;
-            }
-        }
-
-
-
-        private static DashStyle dot;
-        public static DashStyle Dot
-        {
-            get { return dot ?? (dot = new DashStyle(new double[] {0, 2}, 0)); }
-        }
-
-        private static DashStyle dashDot;
-        public static DashStyle DashDot
-        {
-            get
-            {
-                if (dashDot == null)
-                {
-                    dashDot = new DashStyle(new double[] { 2, 2, 0, 2 }, 1);
-                }
-
-                return dashDot;
-            }
-        }
-
-        private static DashStyle dashDotDot;
-        public static DashStyle DashDotDot
-        {
-            get
-            {
-                if (dashDotDot == null)
-                {
-                    dashDotDot = new DashStyle(new double[] { 2, 2, 0, 2, 0, 2 }, 1);
-                }
-
-                return dashDotDot;
-            }
-        }
-
-
-        public DashStyle(IReadOnlyList<double> dashes = null, double offset = 0.0)
-        {
-            this.Dashes = dashes;
-            this.Offset = offset;
         }
 
         /// <summary>
-        /// Gets and sets the length of alternating dashes and gaps.
+        /// Initializes a new instance of the <see cref="DashStyle"/> class.
         /// </summary>
-        public IReadOnlyList<double> Dashes { get; }
+        /// <param name="dashes">The dashes collection.</param>
+        /// <param name="offset">The dash sequence offset.</param>
+        public DashStyle(IEnumerable<double> dashes, double offset)
+        {
+            Dashes = (IReadOnlyList<double>)dashes?.ToList() ?? Array.Empty<double>();
+            Offset = offset;
+        }
 
-        public double Offset { get; }
+        static DashStyle()
+        {
+            void RaiseInvalidated(AvaloniaPropertyChangedEventArgs e)
+            {
+                ((DashStyle)e.Sender).Invalidated?.Invoke(e.Sender, EventArgs.Empty);
+            }
+
+            DashesProperty.Changed.Subscribe(RaiseInvalidated);
+            OffsetProperty.Changed.Subscribe(RaiseInvalidated);
+        }
+
+        /// <summary>
+        /// Represents a dashed <see cref="DashStyle"/>.
+        /// </summary>
+        public static IDashStyle Dash =>
+            s_dash ?? (s_dash = new ImmutableDashStyle(new double[] { 2, 2 }, 1));
+
+        /// <summary>
+        /// Represents a dotted <see cref="DashStyle"/>.
+        /// </summary>
+        public static IDashStyle Dot =>
+            s_dot ?? (s_dot = new ImmutableDashStyle(new double[] { 0, 2 }, 0));
+
+        /// <summary>
+        /// Represents a dashed dotted <see cref="DashStyle"/>.
+        /// </summary>
+        public static IDashStyle DashDot =>
+            s_dashDot ?? (s_dashDot = new ImmutableDashStyle(new double[] { 2, 2, 0, 2 }, 1));
+
+        /// <summary>
+        /// Represents a dashed double dotted <see cref="DashStyle"/>.
+        /// </summary>
+        public static IDashStyle DashDotDot =>
+            s_dashDotDot ?? (s_dashDotDot = new ImmutableDashStyle(new double[] { 2, 2, 0, 2, 0, 2 }, 1));
+
+        /// <summary>
+        /// Gets or sets the length of alternating dashes and gaps.
+        /// </summary>
+        public IReadOnlyList<double> Dashes
+        {
+            get => GetValue(DashesProperty);
+            set => SetValue(DashesProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets how far in the dash sequence the stroke will start.
+        /// </summary>
+        public double Offset
+        {
+            get => GetValue(OffsetProperty);
+            set => SetValue(OffsetProperty, value);
+        }
+
+        /// <summary>
+        /// Raised when the dash style changes.
+        /// </summary>
+        public event EventHandler Invalidated;
+
+        /// <summary>
+        /// Returns an immutable clone of the <see cref="DashStyle"/>.
+        /// </summary>
+        /// <returns></returns>
+        public ImmutableDashStyle ToImmutable() => new ImmutableDashStyle(Dashes, Offset);
     }
 }

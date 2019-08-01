@@ -8,8 +8,8 @@ namespace Avalonia.Rendering
 {
     public class RenderLayers : IEnumerable<RenderLayer>
     {
-        private List<RenderLayer> _inner = new List<RenderLayer>();
-        private Dictionary<IVisual, RenderLayer> _index = new Dictionary<IVisual, RenderLayer>();
+        private readonly List<RenderLayer> _inner = new List<RenderLayer>();
+        private readonly Dictionary<IVisual, RenderLayer> _index = new Dictionary<IVisual, RenderLayer>();
         
         public int Count => _inner.Count;
         public RenderLayer this[IVisual layerRoot] => _index[layerRoot];
@@ -56,6 +56,7 @@ namespace Avalonia.Rendering
             }
 
             _index.Clear();
+            _inner.Clear();
         }
 
         public bool TryGetValue(IVisual layerRoot, out RenderLayer value)

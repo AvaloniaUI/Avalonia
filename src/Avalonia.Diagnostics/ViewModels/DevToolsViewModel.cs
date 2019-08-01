@@ -2,7 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive.Linq;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 
@@ -10,21 +11,23 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class DevToolsViewModel : ViewModelBase
     {
-        private ViewModelBase _content;
-        private int _selectedTab;
-        private TreePageViewModel _logicalTree;
-        private TreePageViewModel _visualTree;
-        private EventsViewModel _eventsView;
+        private IDevToolViewModel _selectedTool;
         private string _focusedControl;
         private string _pointerOverElement;
 
         public DevToolsViewModel(IControl root)
         {
-            _logicalTree = new TreePageViewModel(LogicalTreeNode.Create(root));
-            _visualTree = new TreePageViewModel(VisualTreeNode.Create(root));
-            _eventsView = new EventsViewModel(root);
+            Tools = new ObservableCollection<IDevToolViewModel>
+            {
+                new TreePageViewModel(LogicalTreeNode.Create(root), "Logical Tree"),
+                new TreePageViewModel(VisualTreeNode.Create(root), "Visual Tree"),
+                new EventsViewModel(root)
+            };
+
+            SelectedTool = Tools.First();
 
             UpdateFocusedControl();
+
             KeyboardDevice.Instance.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(KeyboardDevice.Instance.FocusedElement))
@@ -33,58 +36,33 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
             };
 
-            SelectedTab = 0;
             root.GetObservable(TopLevel.PointerOverElementProperty)
                 .Subscribe(x => PointerOverElement = x?.GetType().Name);
         }
 
-        public ViewModelBase Content
+        public IDevToolViewModel SelectedTool
         {
-            get { return _content; }
-            private set { RaiseAndSetIfChanged(ref _content, value); }
+            get => _selectedTool;
+            set => RaiseAndSetIfChanged(ref _selectedTool, value);
         }
 
-        public int SelectedTab
-        {
-            get { return _selectedTab; }
-            set
-            {
-                _selectedTab = value;
-
-                switch (value)
-                {
-                    case 0:
-                        Content = _logicalTree;
-                        break;
-                    case 1:
-                        Content = _visualTree;
-                        break;
-                    case 2:
-                        Content = _eventsView;
-                        break;
-                }
-
-                RaisePropertyChanged();
-            }
-        }
+        public ObservableCollection<IDevToolViewModel> Tools { get; }
 
         public string FocusedControl
         {
-            get { return _focusedControl; }
-            private set { RaiseAndSetIfChanged(ref _focusedControl, value); }
+            get => _focusedControl;
+            private set => RaiseAndSetIfChanged(ref _focusedControl, value);
         }
 
         public string PointerOverElement
         {
-            get { return _pointerOverElement; }
-            private set { RaiseAndSetIfChanged(ref _pointerOverElement, value); }
+            get => _pointerOverElement;
+            private set => RaiseAndSetIfChanged(ref _pointerOverElement, value);
         }
 
         public void SelectControl(IControl control)
         {
-            var tree = Content as TreePageViewModel;
-
-            if (tree != null)
+            if (SelectedTool is TreePageViewModel tree)
             {
                 tree.SelectControl(control);
             }

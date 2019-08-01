@@ -154,7 +154,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawLine(Pen pen, Point p1, Point p2)
+        public void DrawLine(IPen pen, Point p1, Point p2)
         {
             using (var paint = CreatePaint(pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
@@ -163,7 +163,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
         {
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
@@ -184,7 +184,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
+        public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0)
         {
             using (var paint = CreatePaint(pen, rect.Size))
             {
@@ -561,7 +561,7 @@ namespace Avalonia.Skia
         /// <param name="pen">Source pen.</param>
         /// <param name="targetSize">Target size.</param>
         /// <returns></returns>
-        private PaintWrapper CreatePaint(Pen pen, Size targetSize)
+        private PaintWrapper CreatePaint(IPen pen, Size targetSize)
         {
             // In Skia 0 thickness means - use hairline rendering
             // and for us it means - there is nothing rendered.

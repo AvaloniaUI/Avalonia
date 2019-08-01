@@ -12,9 +12,9 @@ namespace Avalonia.Diagnostics.Models
         {
             Contract.Requires<ArgumentNullException>(handler != null);
 
-            this.Handler = handler;
-            this.Handled = handled;
-            this.Route = route;
+            Handler = handler;
+            Handled = handled;
+            Route = route;
         }
 
         public object Handler { get; }
@@ -27,6 +27,7 @@ namespace Avalonia.Diagnostics.Models
                 {
                     return named.Name + " (" + Handler.GetType().Name + ")";
                 }
+
                 return Handler.GetType().Name;
             }
         }

@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
-    public class ConverterTests
+    public class ConverterTests : XamlTestBase
     {
         [Fact]
         public void Bug_2228_Relative_Uris_Should_Be_Correctly_Parsed()

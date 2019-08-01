@@ -282,5 +282,52 @@ namespace Avalonia.Visuals.UnitTests
 
             Assert.True(called);
         }
+
+        [Fact]
+        public void Changing_ZIndex_Should_InvalidateVisual()
+        {
+            Canvas canvas1;
+            var renderer = new Mock<IRenderer>();
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (canvas1 = new Canvas()),
+                        new Canvas(),
+                    },
+                },
+            };
+
+            root.Renderer = renderer.Object;
+            canvas1.ZIndex = 10;
+
+            renderer.Verify(x => x.AddDirty(canvas1));
+        }
+
+        [Fact]
+        public void Changing_ZIndex_Should_Recalculate_Parent_Children()
+        {
+            Canvas canvas1;
+            StackPanel stackPanel;
+            var renderer = new Mock<IRenderer>();
+            var root = new TestRoot
+            {
+                Child = stackPanel = new StackPanel
+                {
+                    Children =
+                    {
+                        (canvas1 = new Canvas()),
+                        new Canvas(),
+                    },
+                },
+            };
+
+            root.Renderer = renderer.Object;
+            canvas1.ZIndex = 10;
+
+            renderer.Verify(x => x.RecalculateChildren(stackPanel));
+        }
     }
 }

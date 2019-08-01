@@ -3,7 +3,6 @@
     <Setter Property="Template">
       <ControlTemplate>
         <ItemsPresenter Name="PART_ItemsPresenter"
-                        MemberSelector="{TemplateBinding MemberSelector}"
                         Items="{TemplateBinding Items}"
                         ItemsPanel="{TemplateBinding ItemsPanel}"
                         ItemTemplate="{TemplateBinding ItemTemplate}"/>

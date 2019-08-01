@@ -27,9 +27,9 @@ namespace Avalonia.Diagnostics.ViewModels
                 var classesChanged = Observable.FromEventPattern<
                         NotifyCollectionChangedEventHandler,
                         NotifyCollectionChangedEventArgs>(
-                    x => styleable.Classes.CollectionChanged += x,
-                    x => styleable.Classes.CollectionChanged -= x)
-                    .TakeUntil(((IStyleable)styleable).StyleDetach);
+                        x => styleable.Classes.CollectionChanged += x,
+                        x => styleable.Classes.CollectionChanged -= x)
+                    .TakeUntil(styleable.StyleDetach);
 
                 classesChanged.Select(_ => Unit.Default)
                     .StartWith(Unit.Default)
@@ -55,8 +55,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public string Classes
         {
-            get { return _classes; }
-            private set { RaiseAndSetIfChanged(ref _classes, value); }
+            get => _classes;
+            private set => RaiseAndSetIfChanged(ref _classes, value);
         }
 
         public IVisual Visual
@@ -66,8 +66,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public bool IsExpanded
         {
-            get { return _isExpanded; }
-            set { RaiseAndSetIfChanged(ref _isExpanded, value); }
+            get => _isExpanded;
+            set => RaiseAndSetIfChanged(ref _isExpanded, value);
         }
 
         public TreeNode Parent
@@ -78,7 +78,6 @@ namespace Avalonia.Diagnostics.ViewModels
         public string Type
         {
             get;
-            private set;
         }
     }
 }
