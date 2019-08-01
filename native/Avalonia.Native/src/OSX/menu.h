@@ -6,17 +6,15 @@
 //  Copyright © 2019 Avalonia. All rights reserved.
 //
 
-#ifndef menu_h
-#define menu_h
-
-#include "common.h"
-
-@interface AvnMenu : NSMenu
+//#ifndef menu_h
+//#define menu_h
+
+@interface AvnMenu : NSMenu // for some reason it doesnt detect nsmenu here but compiler doesnt complain
 +(void) myaction;
 @end
 
 @interface AvnMenuItem : NSMenuItem
-+(void) myaction;
++(void) myaction; // added myaction method
 @end
 
-#endif /* menu_h */
+//#endif /* menu_h */

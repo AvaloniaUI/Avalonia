@@ -1,18 +1,24 @@
 #include "common.h"
-#include "menu.h"
 #include "IGetNative.h"
 
+
+@interface AvnMenu : NSMenu // for some reason it doesnt detect nsmenu here but compiler doesnt complain
+-(void) myaction;
+
+@end
+
+@interface AvnMenuItem : NSMenuItem
+-(void) myaction; // added myaction method
+@end
+
 @implementation AvnMenu
-{
-    
-}
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
     return YES;
 }
 
-+ (void)myaction
+- (void)myaction
 {
     
 }
@@ -20,18 +26,15 @@
 @end
 
 @implementation AvnMenuItem
-{
-    
-}
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
     return YES;
 }
 
-+ (void)myaction
+- (void)myaction
 {
-    
+    // here its implemented...
 }
 
 @end
@@ -39,7 +42,7 @@
 class AvnAppMenuItem : public ComSingleObject<IAvnAppMenuItem, &IID_IAvnAppMenuItem>, public IGetNative
 {
 private:
-    AvnMenuItem* _native;
+    AvnMenuItem* _native; // here we hold a pointer to an AvnMenuItem
     IAvnActionCallback* _callback;
 public:
     FORWARD_IUNKNOWN()
@@ -84,7 +87,8 @@ public:
     {
         [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
         
-        [_native action]
+        // here I want to call my method...
+        [_native myaction];
         
         return S_OK;
     }
@@ -98,7 +102,8 @@ public:
     {
         auto cb = [[ActionCallback alloc] initWithCallback:callback];
         [_native setTarget:_native];
-        [_native setAction:@selector(action:)];
+        [_native setAction:@selector(myaction:)];
+        [_native setEnabled:YES];
         return S_OK;
     }
 };
@@ -114,6 +119,7 @@ public:
     AvnAppMenu()
     {
         _native = [AvnMenu new];
+        [_native setAutoenablesItems:YES];
     }
     
     AvnAppMenu(AvnMenu* native)
