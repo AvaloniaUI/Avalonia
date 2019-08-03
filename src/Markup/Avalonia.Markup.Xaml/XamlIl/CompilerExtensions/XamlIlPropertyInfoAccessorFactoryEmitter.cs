@@ -11,8 +11,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
     class XamlIlPropertyInfoAccessorFactoryEmitter
     {
+        private const string IndexerClosureFactoryMethodName = "CreateAccessor";
+        private readonly IXamlIlTypeBuilder _indexerClosureTypeBuilder;
+        private IXamlIlType _indexerClosureType;
         public XamlIlPropertyInfoAccessorFactoryEmitter(IXamlIlTypeBuilder indexerClosureType)
         {
+            _indexerClosureTypeBuilder = indexerClosureType;
         }
 
         public IXamlIlType EmitLoadInpcPropertyAccessorFactory(XamlIlEmitContext context, IXamlIlEmitter codeGen)
@@ -42,14 +46,55 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         public IXamlIlType EmitLoadIndexerAccessorFactory(XamlIlEmitContext context, IXamlIlEmitter codeGen, IXamlIlAstValueNode value)
         {
-            const string IndexerClosureFactoryMethodName = "CreateAccessor";
             var intType = context.Configuration.TypeSystem.GetType("System.Int32");
-            var indexerClosureType = context.GetAvaloniaTypes().IndexerPropertyAccessorHelper;
+            if (_indexerClosureType is null)
+            {
+                _indexerClosureType = InitializeClosureType(context);
+            }
 
             context.Emit(value, codeGen, intType);
-            codeGen.Newobj(indexerClosureType.FindConstructor(new List<IXamlIlType> { intType }));
-            EmitLoadPropertyAccessorFactory(context, codeGen, indexerClosureType, IndexerClosureFactoryMethodName, isStatic: false);
+            codeGen.Newobj(_indexerClosureType.FindConstructor(new List<IXamlIlType> { intType }));
+            EmitLoadPropertyAccessorFactory(context, codeGen, _indexerClosureType, IndexerClosureFactoryMethodName, isStatic: false);
             return EmitCreateAccessorFactoryDelegate(context, codeGen);
+        }
+
+        private IXamlIlType InitializeClosureType(XamlIlEmitContext context)
+        {
+            var types = context.GetAvaloniaTypes();
+            var intType = context.Configuration.TypeSystem.GetType("System.Int32");
+            var weakReferenceType = context.Configuration.TypeSystem.GetType("System.WeakReference");
+            var indexAccessorFactoryMethod = context.GetAvaloniaTypes().PropertyInfoAccessorFactory.GetMethod(
+                    new FindMethodMethodSignature(
+                        "CreateIndexerPropertyAccessor",
+                        types.IPropertyAccessor,
+                        weakReferenceType,
+                        types.IPropertyInfo,
+                        intType)
+                    {
+                        IsStatic = true
+                    });
+            var indexField = _indexerClosureTypeBuilder.DefineField(intType, "_index", false, false);
+            var ctor = _indexerClosureTypeBuilder.DefineConstructor(false, intType);
+            ctor.Generator
+                .Ldarg_0()
+                .Ldarg(1)
+                .Stfld(indexField)
+                .Ret();
+            _indexerClosureTypeBuilder.DefineMethod(
+                types.IPropertyAccessor,
+                new[] { weakReferenceType, types.IPropertyInfo },
+                IndexerClosureFactoryMethodName,
+                isPublic: true,
+                isStatic: false,
+                isInterfaceImpl: false)
+                .Generator
+                .Ldarg(1)
+                .Ldarg(2)
+                .LdThisFld(indexField)
+                .EmitCall(indexAccessorFactoryMethod)
+                .Ret();
+
+            return _indexerClosureTypeBuilder.CreateType();
         }
 
         private IXamlIlType EmitCreateAccessorFactoryDelegate(XamlIlEmitContext context, IXamlIlEmitter codeGen)
