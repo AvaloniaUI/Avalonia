@@ -29,12 +29,11 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public bool IsInTemplate { get; private set; }
+        public bool IsInTemplate { get; }
 
         public static VisualTreeNode[] Create(object control)
         {
-            var visual = control as IVisual;
-            return visual != null ? new[] { new VisualTreeNode(visual, null) } : null;
+            return control is IVisual visual ? new[] { new VisualTreeNode(visual, null) } : null;
         }
     }
 }

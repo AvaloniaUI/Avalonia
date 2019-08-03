@@ -32,9 +32,6 @@ Install-Package Avalonia.Desktop
 
 ## Bleeding Edge Builds
 
-Try out the latest build of Avalonia available for download here:
-https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master/artifacts
-
 or use nightly build feeds as described here:
 https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed
 

@@ -89,6 +89,29 @@ partial class Build : NukeBuild
 
     }
 
+    IReadOnlyCollection<Output> MsBuildCommon(
+        string projectFile,
+        Configure<MSBuildSettings> configurator = null)
+    {
+        return MSBuild(projectFile, c =>
+        {
+            // This is required for VS2019 image on Azure Pipelines
+            if (Parameters.IsRunningOnWindows && Parameters.IsRunningOnAzure)
+            {
+                var javaSdk = Environment.GetEnvironmentVariable("JAVA_HOME_8_X64");
+                if (javaSdk != null)
+                    c = c.AddProperty("JavaSdkDirectory", javaSdk);
+            }
+
+            c = c.AddProperty("PackageVersion", Parameters.Version)
+                .AddProperty("iOSRoslynPathHackRequired", "true")
+                .SetToolPath(MsBuildExe.Value)
+                .SetConfiguration(Parameters.Configuration)
+                .SetVerbosity(MSBuildVerbosity.Minimal);
+            c = configurator?.Invoke(c) ?? c;
+            return c;
+        });
+    }
     Target Clean => _ => _.Executes(() =>
     {
         DeleteDirectories(Parameters.BuildDirs);
@@ -105,13 +128,8 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             if (Parameters.IsRunningOnWindows)
-                MSBuild(Parameters.MSBuildSolution, c => c
+                MsBuildCommon(Parameters.MSBuildSolution, c => c
                     .SetArgumentConfigurator(a => a.Add("/r"))
-                    .SetConfiguration(Parameters.Configuration)
-                    .SetVerbosity(MSBuildVerbosity.Minimal)
-                    .AddProperty("PackageVersion", Parameters.Version)
-                    .AddProperty("iOSRoslynPathHackRequired", "true")
-                    .SetToolPath(MsBuildExe.Value)
                     .AddTargets("Build")
                 );
 
@@ -237,12 +255,7 @@ partial class Build : NukeBuild
         {
             if (Parameters.IsRunningOnWindows)
 
-                MSBuild(Parameters.MSBuildSolution, c => c
-                    .SetConfiguration(Parameters.Configuration)
-                    .SetVerbosity(MSBuildVerbosity.Minimal)
-                    .AddProperty("PackageVersion", Parameters.Version)
-                    .AddProperty("iOSRoslynPathHackRequired", "true")
-                    .SetToolPath(MsBuildExe.Value)
+                MsBuildCommon(Parameters.MSBuildSolution, c => c
                     .AddTargets("Pack"));
             else
                 DotNetPack(Parameters.MSBuildSolution, c =>

@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Data
 {
-    public class BindingTests
+    public class BindingTests : XamlTestBase
     {
         [Fact]
         public void Binding_With_Null_Path_Works()

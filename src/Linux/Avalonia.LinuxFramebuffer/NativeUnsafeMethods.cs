@@ -33,6 +33,10 @@ namespace Avalonia.LinuxFramebuffer
         [DllImport("libc", EntryPoint = "select", SetLastError = true)]
         public static extern int select(int nfds, void* rfds, void* wfds, void* exfds, IntPtr* timevals);
 
+
+        [DllImport("libc", EntryPoint = "poll", SetLastError = true)]
+        public static extern int poll(pollfd* fds, IntPtr nfds, int timeout);
+
         [DllImport("libevdev.so.2", EntryPoint = "libevdev_new_from_fd", SetLastError = true)]
         public static extern int libevdev_new_from_fd(int fd, out IntPtr dev);
 
@@ -48,6 +52,13 @@ namespace Avalonia.LinuxFramebuffer
         public static extern input_absinfo* libevdev_get_abs_info(IntPtr dev, int code);
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    struct pollfd {
+        public int   fd;         /* file descriptor */
+        public short events;     /* requested events */
+        public short revents;    /* returned events */
+    };
+    
     enum FbIoCtl : uint
     {
         FBIOGET_VSCREENINFO = 0x4600,
@@ -188,7 +199,7 @@ namespace Avalonia.LinuxFramebuffer
     unsafe struct fd_set
     {
         public int count;
-        public fixed int fds [256];
+        public fixed byte fds [256];
     }
 
     enum AxisEventCode

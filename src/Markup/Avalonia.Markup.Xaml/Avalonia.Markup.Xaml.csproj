@@ -12,7 +12,6 @@
         <Compile Include="AvaloniaXamlLoader.cs" />
         <Compile Include="Converters\AvaloniaUriTypeConverter.cs" />
         <Compile Include="Converters\FontFamilyTypeConverter.cs" />
-        <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />
         <Compile Include="Extensions.cs" />
         <Compile Include="MarkupExtension.cs" />
@@ -40,7 +39,6 @@
         <Compile Include="Templates\DataTemplate.cs" />
         <Compile Include="Templates\FocusAdornerTemplate.cs" />
         <Compile Include="Templates\ItemsPanelTemplate.cs" />
-        <Compile Include="Templates\MemberSelector.cs" />
         <Compile Include="Templates\Template.cs" />
         <Compile Include="Templates\TemplateContent.cs" />
         <Compile Include="Templates\TreeDataTemplate.cs" />

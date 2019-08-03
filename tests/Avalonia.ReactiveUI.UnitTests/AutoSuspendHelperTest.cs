@@ -61,6 +61,28 @@ namespace Avalonia.ReactiveUI.UnitTests
         }
 
         [Fact]
+        public void AutoSuspendHelper_Should_Throw_When_Not_Supported_Lifetime_Is_Used()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            using (var lifetime = new ExoticApplicationLifetimeWithoutLifecycleEvents()) 
+            {
+                var application = AvaloniaLocator.Current.GetService<Application>();
+                application.ApplicationLifetime = lifetime;
+                Assert.Throws<NotSupportedException>(() => new AutoSuspendHelper(application.ApplicationLifetime));
+            }
+        }
+
+        [Fact]
+        public void AutoSuspendHelper_Should_Throw_When_Lifetime_Is_Null()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            {
+                var application = AvaloniaLocator.Current.GetService<Application>();
+                Assert.Throws<ArgumentNullException>(() => new AutoSuspendHelper(application.ApplicationLifetime));
+            }
+        }
+
+        [Fact]
         public void ShouldPersistState_Should_Fire_On_App_Exit_When_SuspensionDriver_Is_Initialized() 
         {
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
@@ -80,18 +102,6 @@ namespace Avalonia.ReactiveUI.UnitTests
                 lifetime.Shutdown();
                 Assert.True(shouldPersistReceived);
                 Assert.Equal("Foo", RxApp.SuspensionHost.GetAppState<AppState>().Example);
-            }
-        }
-
-        [Fact]
-        public void AutoSuspendHelper_Should_Throw_For_Not_Supported_Lifetimes()
-        {
-            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
-            using (var lifetime = new ExoticApplicationLifetimeWithoutLifecycleEvents()) 
-            {
-                var application = AvaloniaLocator.Current.GetService<Application>();
-                application.ApplicationLifetime = lifetime;
-                Assert.Throws<NotSupportedException>(() => new AutoSuspendHelper(application.ApplicationLifetime));
             }
         }
     }

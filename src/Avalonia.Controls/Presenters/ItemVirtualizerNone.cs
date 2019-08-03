@@ -90,7 +90,7 @@ namespace Avalonia.Controls.Presenters
 
             foreach (var item in items)
             {
-                var i = generator.Materialize(index++, item, Owner.MemberSelector);
+                var i = generator.Materialize(index++, item);
 
                 if (i.ContainerControl != null)
                 {
