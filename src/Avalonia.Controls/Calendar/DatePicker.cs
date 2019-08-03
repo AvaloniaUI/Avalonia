@@ -130,6 +130,7 @@ namespace Avalonia.Controls
         private Popup _popUp;
         private TextBox _textBox;
         private IDisposable _textBoxTextChangedSubscription;
+        private IDisposable _textBoxFocusChangedSubscription;
         private IDisposable _buttonPointerPressedSubscription;
 
         private DateTime? _onOpenSelectedDate;
@@ -483,6 +484,7 @@ namespace Avalonia.Controls
             {
                 _textBox.KeyDown -= TextBox_KeyDown;
                 _textBox.GotFocus -= TextBox_GotFocus;
+                _textBoxFocusChangedSubscription?.Dispose();
                 _textBoxTextChangedSubscription?.Dispose();
             }
             _textBox = e.NameScope.Find<TextBox>(ElementTextBox);
@@ -496,6 +498,8 @@ namespace Avalonia.Controls
             {
                 _textBox.KeyDown += TextBox_KeyDown;
                 _textBox.GotFocus += TextBox_GotFocus;
+
+                _textBoxFocusChangedSubscription = _textBox.GetObservable(IsFocusedProperty).Subscribe(b => IsFocused = b);
                 _textBoxTextChangedSubscription = _textBox.GetObservable(TextBox.TextProperty).Subscribe(txt => TextBox_TextChanged());
 
                 if(SelectedDate.HasValue)
@@ -536,7 +540,6 @@ namespace Avalonia.Controls
         }
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
-            base.OnGotFocus(e);
             if(IsEnabled && _textBox != null && e.NavigationMethod == NavigationMethod.Tab)
             {
                 _textBox.Focus();
@@ -550,8 +553,6 @@ namespace Avalonia.Controls
         }
         protected override void OnLostFocus(RoutedEventArgs e)
         {
-            base.OnLostFocus(e);
-
             SetSelectedDate();
         }
         

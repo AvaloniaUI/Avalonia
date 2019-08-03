@@ -347,7 +347,7 @@ namespace Avalonia.Input
         public bool IsFocused
         {
             get { return _isFocused; }
-            private set { SetAndRaise(IsFocusedProperty, ref _isFocused, value); }
+            set { SetAndRaise(IsFocusedProperty, ref _isFocused, value); }
         }
 
         /// <summary>
