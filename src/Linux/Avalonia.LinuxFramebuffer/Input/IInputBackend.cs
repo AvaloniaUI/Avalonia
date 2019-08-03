@@ -8,5 +8,8 @@ namespace Avalonia.LinuxFramebuffer.Input
     {
         void Initialize(IScreenInfoProvider info, Action<RawInputEventArgs> onInput);
         void SetInputRoot(IInputRoot root);
+        void SetMouse(IMouseDevice mouse);
+        void SetKeyboard(IKeyboardDevice kbd);
+        void SetTouch(TouchDevice touch);
     }
 }

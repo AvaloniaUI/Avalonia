@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -9,13 +10,14 @@ using Avalonia.Threading;
 using static Avalonia.LinuxFramebuffer.Input.LibInput.LibInputNativeUnsafeMethods; 
 namespace Avalonia.LinuxFramebuffer.Input.LibInput
 {
-    public class LibInputBackend : IInputBackend
+    public partial class LibInputBackend : IInputBackend
     {
         private IScreenInfoProvider _screen;
         private IInputRoot _inputRoot;
         private readonly Queue<Action> _inputThreadActions = new Queue<Action>();
-        private TouchDevice _touch = new TouchDevice();
-        private MouseDevice _mouse = new MouseDevice();
+        private IMouseDevice _mouse;
+        private IKeyboardDevice _kbd;
+        private TouchDevice _touch;
         private Point _mousePosition;
         
         private readonly Queue<RawInputEventArgs> _inputQueue = new Queue<RawInputEventArgs>();
@@ -27,6 +29,11 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             var ctx = libinput_path_create_context();
             
             new Thread(()=>InputThread(ctx)).Start();
+        }
+
+        static LibInputBackend()
+        {
+            KeyLookup = KeyMap.ToLookup(p => p.Value, p => p.Key);
         }
 
         
@@ -56,7 +63,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                     if (type >= LibInputEventType.LIBINPUT_EVENT_POINTER_MOTION
                         && type <= LibInputEventType.LIBINPUT_EVENT_POINTER_AXIS)
                         HandlePointer(ev, type);
-                    
+
+                    if (type == LibInputEventType.LIBINPUT_EVENT_KEYBOARD_KEY) HandleKey(ev, type);
+
                     libinput_event_destroy(ev);
                     libinput_dispatch(ctx);
                 }
@@ -166,8 +175,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             }
             
         }
-            
-        
+
 
         public void Initialize(IScreenInfoProvider screen, Action<RawInputEventArgs> onInput)
         {
@@ -179,5 +187,21 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         {
             _inputRoot = root;
         }
+
+        public void SetMouse(IMouseDevice mouse)
+        {
+            _mouse = mouse;
+        }
+
+        public void SetKeyboard(IKeyboardDevice kbd)
+        {
+            _kbd = kbd;
+        }
+
+        public void SetTouch(TouchDevice touch)
+        {
+            _touch = touch;
+        }
+
     }
 }

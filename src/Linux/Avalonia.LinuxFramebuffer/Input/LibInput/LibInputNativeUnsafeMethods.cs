@@ -98,6 +98,12 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             LIBINPUT_EVENT_SWITCH_TOGGLE = 900,
         }
         
+        public enum LibInputKeyState
+        {
+            LIBINPUT_KEY_STATE_RELEASED = 0,
+            LIBINPUT_KEY_STATE_PRESSED
+        }
+        
         
         [DllImport(LibInput)]
         public extern static void libinput_event_destroy(IntPtr ev);
@@ -135,5 +141,23 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         
         [DllImport(LibInput)]
         public extern static int libinput_event_pointer_get_button_state(IntPtr ev);
+
+        [DllImport(LibInput)]
+        public extern static uint libinput_event_keyboard_get_time(IntPtr ev);
+        
+        [DllImport(LibInput)]
+        public extern static ulong libinput_event_keyboard_get_time_usec(IntPtr ev);
+        
+        [DllImport(LibInput)]
+        public extern static LibInputKeyCodes libinput_event_keyboard_get_key(IntPtr ev);
+        
+        [DllImport(LibInput)]
+        public extern static LibInputKeyState libinput_event_keyboard_get_key_state(IntPtr ev);
+        
+        [DllImport(LibInput)]
+        public extern static IntPtr libinput_event_keyboard_get_base_event(IntPtr ev);
+        
+        [DllImport(LibInput)]
+        public extern static uint libinput_event_keyboard_get_seat_key_count(IntPtr ev);
     }
 }
