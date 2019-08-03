@@ -22,6 +22,21 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             => new IndexerAccessor(target, property, argument);
     }
 
+    public class IndexerPropertyAccessorHelper
+    {
+        private readonly int _index;
+
+        public IndexerPropertyAccessorHelper(int index)
+        {
+            _index = index;
+        }
+
+        public IPropertyAccessor CreateAccessor(WeakReference target, IPropertyInfo property)
+        {
+            return PropertyInfoAccessorFactory.CreateIndexerPropertyAccessor(target, property, _index);
+        }
+    }
+
     internal class AvaloniaPropertyAccessor : PropertyAccessorBase
     {
         private readonly WeakReference<AvaloniaObject> _reference;
