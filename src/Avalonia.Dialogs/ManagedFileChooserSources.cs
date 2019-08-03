@@ -72,7 +72,7 @@ namespace Avalonia.Dialogs
             {
                 var drivesInfos = AvaloniaLocator.CurrentMutable
                                 .GetService<IMountedDriveInfoProvider>()
-                                .CurrentDrives;
+                                .MountedDrives;
 
                 return drivesInfos
                        .Where(x => !x.MountPath.StartsWith("/boot"))

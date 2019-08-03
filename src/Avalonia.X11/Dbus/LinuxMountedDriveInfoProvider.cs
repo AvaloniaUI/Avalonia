@@ -18,6 +18,7 @@ namespace Avalonia.X11.Dbus
         public LinuxMountedDriveInfoProvider()
         {
             this._sysDbus = Connection.System;
+
             this.udisk2Manager = _sysDbus.CreateProxy<IObjectManager>("org.freedesktop.UDisks2", "/org/freedesktop/UDisks2");
 
             Start();
@@ -32,7 +33,8 @@ namespace Avalonia.X11.Dbus
 
             Poll();
         }
-        public ObservableCollection<MountedDriveInfo> CurrentDrives { get; } = new ObservableCollection<MountedDriveInfo>();
+        
+        public ObservableCollection<MountedDriveInfo> MountedDrives { get; } = new ObservableCollection<MountedDriveInfo>();
         private async void Poll()
         {
             var newDriveList = new List<MountedDriveInfo>();
@@ -55,8 +57,6 @@ namespace Avalonia.X11.Dbus
             {
                 try
                 {
-
-
                     var iblock = _sysDbus.CreateProxy<IBlock>("org.freedesktop.UDisks2", block.Key);
                     var iblockProps = await iblock.GetAllAsync();
 
@@ -107,7 +107,7 @@ namespace Avalonia.X11.Dbus
         private void UpdateCollection(IEnumerable<MountedDriveInfo> newCollection)
         {
             var newCollectionEnumerator = newCollection.GetEnumerator();
-            var collectionEnumerator = CurrentDrives.GetEnumerator();
+            var collectionEnumerator = MountedDrives.GetEnumerator();
 
             var itemsToDelete = new Collection<MountedDriveInfo>();
             while (collectionEnumerator.MoveNext())
@@ -124,7 +124,7 @@ namespace Avalonia.X11.Dbus
             // Handle item to delete.
             foreach (var itemToDelete in itemsToDelete)
             {
-                CurrentDrives.Remove(itemToDelete);
+                MountedDrives.Remove(itemToDelete);
             }
 
             var i = 0;
@@ -133,16 +133,16 @@ namespace Avalonia.X11.Dbus
                 var item = newCollectionEnumerator.Current;
 
                 // Handle new item.
-                if (!CurrentDrives.Contains(item))
+                if (!MountedDrives.Contains(item))
                 {
-                    CurrentDrives.Insert(i, item);
+                    MountedDrives.Insert(i, item);
                 }
 
                 // Handle existing item, move at the good index.
-                if (CurrentDrives.Contains(item))
+                if (MountedDrives.Contains(item))
                 {
-                    int oldIndex = CurrentDrives.IndexOf(item);
-                    CurrentDrives.Move(oldIndex, i);
+                    int oldIndex = MountedDrives.IndexOf(item);
+                    MountedDrives.Move(oldIndex, i);
                 }
                 i++;
             }
@@ -159,7 +159,7 @@ namespace Avalonia.X11.Dbus
                     foreach (var Disposable in Disposables)
                         Disposable.Dispose();
 
-                    CurrentDrives?.Clear();
+                    MountedDrives?.Clear();
                 }
 
                 disposedValue = true;

@@ -16,6 +16,6 @@ namespace Avalonia.Controls.Platform
         /// <summary>
         /// Observable list of currently-mounted drives.
         /// </summary>
-        ObservableCollection<MountedDriveInfo> CurrentDrives { get; }
+        ObservableCollection<MountedDriveInfo> MountedDrives { get; }
     }
 }
