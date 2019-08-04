@@ -94,9 +94,6 @@
                      DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
                      Grid.Column="0">
               <TextBox.Styles>
-                <Style Selector="TextBox:pointerover /template/ Border">
-                  <Setter Property="BorderBrush" Value="Transparent"/>
-                </Style>
                 <Style Selector="TextBox:pointerover /template/ Border#border">
                   <Setter Property="BorderBrush" Value="Transparent"/>
                 </Style>
