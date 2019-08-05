@@ -10,9 +10,10 @@
 #define menu_h
 
 #include "common.h"
-#include "IGetNative.h"
 
 class AvnAppMenuItem;
+class AvnAppMenu;
+
 
 @interface AvnMenu : NSMenu // for some reason it doesnt detect nsmenu here but compiler doesnt complain
 
@@ -23,7 +24,7 @@ class AvnAppMenuItem;
 - (void)didSelectItem:(id)sender;
 @end
 
-class AvnAppMenuItem : public ComSingleObject<IAvnAppMenuItem, &IID_IAvnAppMenuItem>, public IGetNative
+class AvnAppMenuItem : public ComSingleObject<IAvnAppMenuItem, &IID_IAvnAppMenuItem>
 {
 private:
     AvnMenuItem* _native; // here we hold a pointer to an AvnMenuItem
@@ -33,65 +34,45 @@ private:
 public:
     FORWARD_IUNKNOWN()
     
-    AvnAppMenuItem()
-    {
-        _native = [[AvnMenuItem alloc] initWithAvnAppMenuItem: this];
-        _callback = nullptr;
-    }
+    AvnAppMenuItem();
     
-    void* GetNative() override
-    {
-        return (__bridge void*) _native;
-    }
+    AvnMenuItem* GetNative();
     
-    virtual HRESULT SetSubMenu (IAvnAppMenu* menu) override
-    {
-        auto nsMenu = (__bridge AvnMenu*) dynamic_cast<IGetNative*>(menu)->GetNative();
-        
-        [_native setSubmenu: nsMenu];
-        
-        return S_OK;
-    }
+    virtual HRESULT SetSubMenu (IAvnAppMenu* menu) override;
     
-    virtual HRESULT SetTitle (void* utf8String) override
-    {
-        [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
-        
-        return S_OK;
-    }
+    virtual HRESULT SetTitle (void* utf8String) override;
     
-    virtual HRESULT SetGesture (void* utf8String) override
-    {
-        return S_OK;
-    }
+    virtual HRESULT SetGesture (void* utf8String) override;
     
-    virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) override
-    {
-        _predicate = predicate;
-        _callback = callback;
-        return S_OK;
-    }
+    virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) override;
     
-    bool EvaluateItemEnabled()
-    {
-        if(_predicate != nullptr)
-        {
-            auto result = _predicate->Evaluate ();
-            
-            return result;
-        }
-        
-        return false;
-    }
+    bool EvaluateItemEnabled();
     
-    void RaiseOnClicked()
-    {
-        if(_callback != nullptr)
-        {
-            _callback->Run();
-        }
-    }
+    void RaiseOnClicked();
 };
+
+
+class AvnAppMenu : public ComSingleObject<IAvnAppMenu, &IID_IAvnAppMenu>
+{
+private:
+    AvnMenu* _native;
+    
+public:
+    FORWARD_IUNKNOWN()
+    
+    AvnAppMenu();
+    
+    AvnAppMenu(AvnMenu* native);
+    
+    AvnMenu* GetNative();
+    
+    virtual HRESULT AddItem (IAvnAppMenuItem* item) override;
+    
+    virtual HRESULT RemoveItem (IAvnAppMenuItem* item) override;
+    
+    virtual HRESULT SetTitle (void* utf8String) override;
+};
+
 
 #endif
 

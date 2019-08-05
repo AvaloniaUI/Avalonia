@@ -51,63 +51,111 @@
 
 @end
 
-
-
-class AvnAppMenu : public ComSingleObject<IAvnAppMenu, &IID_IAvnAppMenu>, public IGetNative
+AvnAppMenuItem::AvnAppMenuItem()
 {
-private:
-    AvnMenu* _native;
+    _native = [[AvnMenuItem alloc] initWithAvnAppMenuItem: this];
+    _callback = nullptr;
+}
+
+AvnMenuItem* AvnAppMenuItem::GetNative()
+{
+    return _native;
+}
+
+HRESULT AvnAppMenuItem::SetSubMenu (IAvnAppMenu* menu)
+{
+    auto nsMenu = dynamic_cast<AvnAppMenu*>(menu)->GetNative();
     
-public:
-    FORWARD_IUNKNOWN()
+    [_native setSubmenu: nsMenu];
     
-    AvnAppMenu()
+    return S_OK;
+}
+
+HRESULT AvnAppMenuItem::SetTitle (void* utf8String)
+{
+    [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+    
+    return S_OK;
+}
+
+HRESULT AvnAppMenuItem::SetGesture (void* utf8String)
+{
+    return S_OK;
+}
+
+HRESULT AvnAppMenuItem::SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback)
+{
+    _predicate = predicate;
+    _callback = callback;
+    return S_OK;
+}
+
+bool AvnAppMenuItem::EvaluateItemEnabled()
+{
+    if(_predicate != nullptr)
     {
-        _native = [AvnMenu new];
-    }
-    
-    AvnAppMenu(AvnMenu* native)
-    {
-        _native = native;
-    }
-    
-    void* GetNative() override
-    {
-        return (__bridge void*) _native;
-    }
-    
-    virtual HRESULT AddItem (IAvnAppMenuItem* item) override
-    {
-        auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
+        auto result = _predicate->Evaluate ();
         
-        if(avnMenuItem != nullptr)
-        {
-            
-            [_native addItem: (__bridge AvnMenuItem*)avnMenuItem->GetNative()];
-        }
-        
-        return S_OK;
+        return result;
     }
     
-    virtual HRESULT RemoveItem (IAvnAppMenuItem* item) override
+    return false;
+}
+
+void AvnAppMenuItem::RaiseOnClicked()
+{
+    if(_callback != nullptr)
     {
-        auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
+        _callback->Run();
+    }
+}
+
+AvnAppMenu::AvnAppMenu()
+{
+    _native = [AvnMenu new];
+}
+
+AvnAppMenu::AvnAppMenu(AvnMenu* native)
+{
+    _native = native;
+}
+
+AvnMenu* AvnAppMenu::GetNative()
+{
+    return _native;
+}
+
+HRESULT AvnAppMenu::AddItem (IAvnAppMenuItem* item)
+{
+    auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
+    
+    if(avnMenuItem != nullptr)
+    {
         
-        if(avnMenuItem != nullptr)
-        {
-            [_native removeItem:(__bridge AvnMenuItem*)avnMenuItem->GetNative()];
-        }
-        
-        return S_OK;
+        [_native addItem: avnMenuItem->GetNative()];
     }
     
-    virtual HRESULT SetTitle (void* utf8String) override
+    return S_OK;
+}
+
+HRESULT AvnAppMenu::RemoveItem (IAvnAppMenuItem* item)
+{
+    auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
+    
+    if(avnMenuItem != nullptr)
     {
-        [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
-        
-        return S_OK;
+        [_native removeItem:avnMenuItem->GetNative()];
     }
-};
+    
+    return S_OK;
+}
+
+HRESULT AvnAppMenu::SetTitle (void* utf8String)
+{
+    [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+    
+    return S_OK;
+}
 
 static IAvnAppMenu* s_AppBar = nullptr;
 
