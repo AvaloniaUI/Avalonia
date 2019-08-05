@@ -1,15 +1,9 @@
 
-
 #include "common.h"
 #include "IGetNative.h"
-
-#include "menu1.h"
-
-
+#include "menu.h"
 
 @implementation AvnMenu
-
-
 @end
 
 @implementation AvnMenuItem
@@ -48,7 +42,6 @@
 {
     _item->RaiseOnClicked();
 }
-
 @end
 
 AvnAppMenuItem::AvnAppMenuItem()
@@ -275,5 +268,3 @@ extern IAvnAppMenuItem* CreateAppMenuItem()
         return new AvnAppMenuItem();
     }
 }
-
-
