@@ -61,7 +61,7 @@ namespace Avalonia.LinuxFramebuffer
         public IMouseDevice MouseDevice => new MouseDevice();
         public IPopupImpl CreatePopup() => null;
 
-        public double Scaling => 1;
+        public double Scaling => _outputBackend.Scaling;
         public IEnumerable<object> Surfaces => new object[] {_outputBackend};
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
