@@ -2,7 +2,12 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Disposables;
+using Avalonia.Controls.Presenters;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
@@ -42,7 +47,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="ObeyScreenEdges"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> ObeyScreenEdgesProperty =
-            AvaloniaProperty.Register<Popup, bool>(nameof(ObeyScreenEdges));
+            AvaloniaProperty.Register<Popup, bool>(nameof(ObeyScreenEdges), true);
 
         /// <summary>
         /// Defines the <see cref="HorizontalOffset"/> property.
@@ -75,10 +80,12 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, bool>(nameof(Topmost));
 
         private bool _isOpen;
-        private PopupRoot _popupRoot;
+        private IPopupHost _popupHost;
         private TopLevel _topLevel;
         private IDisposable _nonClientListener;
+        private IDisposable _presenterSubscription;
         bool _ignoreIsOpenChanged = false;
+        private List<IDisposable> _bindings = new List<IDisposable>();
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
@@ -88,7 +95,11 @@ namespace Avalonia.Controls.Primitives
             IsHitTestVisibleProperty.OverrideDefaultValue<Popup>(false);
             ChildProperty.Changed.AddClassHandler<Popup>(x => x.ChildChanged);
             IsOpenProperty.Changed.AddClassHandler<Popup>(x => x.IsOpenChanged);
-            TopmostProperty.Changed.AddClassHandler<Popup>((p, e) => p.PopupRoot.Topmost = (bool)e.NewValue);
+        }
+
+        public Popup()
+        {
+            
         }
 
         /// <summary>
@@ -101,10 +112,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler Opened;
 
-        /// <summary>
-        /// Raised when the popup root has been created, but before it has been shown.
-        /// </summary>
-        public event EventHandler PopupRootCreated;
+        public IPopupHost Host => _popupHost;
 
         /// <summary>
         /// Gets or sets the control to display in the popup.
@@ -147,10 +155,7 @@ namespace Avalonia.Controls.Primitives
             set { SetValue(PlacementModeProperty, value); }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the popup positions itself within the nearest screen boundary
-        /// when its opened at a position where it would otherwise overlap the screen edge.
-        /// </summary>
+        [Obsolete("This property has no effect")]
         public bool ObeyScreenEdges
         {
             get => GetValue(ObeyScreenEdgesProperty);
@@ -185,11 +190,6 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets the root of the popup window.
-        /// </summary>
-        public PopupRoot PopupRoot => _popupRoot;
-
-        /// <summary>
         /// Gets or sets a value indicating whether the popup should stay open when the popup is
         /// pressed or loses focus.
         /// </summary>
@@ -211,63 +211,58 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the root of the popup window.
         /// </summary>
-        IVisual IVisualTreeHost.Root => _popupRoot;
+        IVisual IVisualTreeHost.Root => _popupHost?.HostedVisualTreeRoot;
 
         /// <summary>
         /// Opens the popup.
         /// </summary>
         public void Open()
         {
-            if (_popupRoot == null)
-            {
-                _popupRoot = new PopupRoot(DependencyResolver)
-                {
-                    [~ContentControl.ContentProperty] = this[~ChildProperty],
-                    [~WidthProperty] = this[~WidthProperty],
-                    [~HeightProperty] = this[~HeightProperty],
-                    [~MinWidthProperty] = this[~MinWidthProperty],
-                    [~MaxWidthProperty] = this[~MaxWidthProperty],
-                    [~MinHeightProperty] = this[~MinHeightProperty],
-                    [~MaxHeightProperty] = this[~MaxHeightProperty],
-                };
-
-                ((ISetLogicalParent)_popupRoot).SetParent(this);
-            }
-
-            _popupRoot.Position = GetPosition();
-
-            if (_topLevel == null && PlacementTarget != null)
-            {
-                _topLevel = PlacementTarget.GetSelfAndLogicalAncestors().First(x => x is TopLevel) as TopLevel;
-            }
-
+            // Popup is currently open
             if (_topLevel != null)
+                return;
+            CloseCurrent();
+            var placementTarget = PlacementTarget ?? this.GetLogicalAncestors().OfType<IVisual>().FirstOrDefault();
+            if (placementTarget == null)
+                throw new InvalidOperationException("Popup has no logical parent and PlacementTarget is null");
+            
+            _topLevel = placementTarget.GetVisualRoot() as TopLevel;
+
+            if (_topLevel == null)
             {
-                var window = _topLevel as Window;
-                if (window != null)
-                {
-                    window.Deactivated += WindowDeactivated;
-                }
-                else
-                {
-                    var parentPopuproot = _topLevel as PopupRoot;
-                    if (parentPopuproot?.Parent is Popup popup)
-                    {
-                        popup.Closed += ParentClosed;
-                    }
-                }
-                _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
-                _nonClientListener = InputManager.Instance.Process.Subscribe(ListenForNonClientClick);
+                throw new InvalidOperationException(
+                    "Attempted to open a popup not attached to a TopLevel");
             }
 
-            PopupRootCreated?.Invoke(this, EventArgs.Empty);
+            _popupHost = OverlayPopupHost.CreatePopupHost(placementTarget, DependencyResolver);
 
-            _popupRoot.Show();
+            _bindings.Add(_popupHost.BindConstraints(this, WidthProperty, MinWidthProperty, MaxWidthProperty,
+                HeightProperty, MinHeightProperty, MaxHeightProperty, TopmostProperty));
 
-            if (ObeyScreenEdges)
+            _popupHost.SetChild(Child);
+            ((ISetLogicalParent)_popupHost).SetParent(this);
+            _popupHost.ConfigurePosition(placementTarget,
+                PlacementMode, new Point(HorizontalOffset, VerticalOffset));
+            _popupHost.TemplateApplied += RootTemplateApplied;
+            
+            var window = _topLevel as Window;
+            if (window != null)
             {
-                _popupRoot.SnapInsideScreenEdges();
+                window.Deactivated += WindowDeactivated;
             }
+            else
+            {
+                var parentPopuproot = _topLevel as PopupRoot;
+                if (parentPopuproot?.Parent is Popup popup)
+                {
+                    popup.Closed += ParentClosed;
+                }
+            }
+            _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
+            _nonClientListener = InputManager.Instance?.Process.Subscribe(ListenForNonClientClick);
+        
+
+            _popupHost.Show();
 
             using (BeginIgnoringIsOpen())
             {
@@ -282,35 +277,55 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public void Close()
         {
-            if (_popupRoot != null)
+            if (_popupHost != null)
             {
-                if (_topLevel != null)
-                {
-                    _topLevel.RemoveHandler(PointerPressedEvent, PointerPressedOutside);
-                    var window = _topLevel as Window;
-                    if (window != null)
-                        window.Deactivated -= WindowDeactivated;
-                    else
-                    {
-                        var parentPopuproot = _topLevel as PopupRoot;
-                        if (parentPopuproot?.Parent is Popup popup)
-                        {
-                            popup.Closed -= ParentClosed;
-                        }
-                    }
-                    _nonClientListener?.Dispose();
-                    _nonClientListener = null;
-                }
-
-                _popupRoot.Hide();
+                _popupHost.TemplateApplied -= RootTemplateApplied;
             }
 
+            _presenterSubscription?.Dispose();
+
+            CloseCurrent();
             using (BeginIgnoringIsOpen())
             {
                 IsOpen = false;
             }
 
             Closed?.Invoke(this, EventArgs.Empty);
+        }
+
+        void CloseCurrent()
+        {
+            if (_topLevel != null)
+            {
+                _topLevel.RemoveHandler(PointerPressedEvent, PointerPressedOutside);
+                var window = _topLevel as Window;
+                if (window != null)
+                    window.Deactivated -= WindowDeactivated;
+                else
+                {
+                    var parentPopuproot = _topLevel as PopupRoot;
+                    if (parentPopuproot?.Parent is Popup popup)
+                    {
+                        popup.Closed -= ParentClosed;
+                    }
+                }
+                _nonClientListener?.Dispose();
+                _nonClientListener = null;
+                
+                _topLevel = null;
+            }
+            if (_popupHost != null)
+            {
+                foreach(var b in _bindings)
+                    b.Dispose();
+                _bindings.Clear();
+                _popupHost.SetChild(null);
+                _popupHost.Hide();
+                ((ISetLogicalParent)_popupHost).SetParent(null);
+                _popupHost.Dispose();
+                _popupHost = null;
+            }
+
         }
 
         /// <summary>
@@ -324,25 +339,12 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToLogicalTree(e);
-            _topLevel = e.Root as TopLevel;
-        }
-
-        /// <inheritdoc/>
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromLogicalTree(e);
-            _topLevel = null;
-
-            if (_popupRoot != null)
-            {
-                ((ISetLogicalParent)_popupRoot).SetParent(null);
-                _popupRoot.Dispose();
-                _popupRoot = null;
-            }
+            Close();
         }
+
 
         /// <summary>
         /// Called when the <see cref="IsOpen"/> property changes.
@@ -380,49 +382,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        /// <summary>
-        /// Gets the position for the popup based on the placement properties.
-        /// </summary>
-        /// <returns>The popup's position in screen coordinates.</returns>
-        protected virtual PixelPoint GetPosition()
-        {
-            var result = GetPosition(PlacementTarget ?? this.GetVisualParent<Control>(), PlacementMode, PopupRoot,
-                HorizontalOffset, VerticalOffset);
-
-            return result;
-        }
-
-        internal static PixelPoint GetPosition(Control target, PlacementMode placement, PopupRoot popupRoot, double horizontalOffset, double verticalOffset)
-        {
-            var root = target?.GetVisualRoot();
-            var mode = root != null ? placement : PlacementMode.Pointer;
-            var scaling = root?.RenderScaling ?? 1;
-
-            switch (mode)
-            {
-                case PlacementMode.Pointer:
-                    if (popupRoot != null)
-                    {
-                        var screenOffset = PixelPoint.FromPoint(new Point(horizontalOffset, verticalOffset), scaling);
-                        var mouseOffset = ((IInputRoot)popupRoot)?.MouseDevice?.Position ?? default;
-                        return new PixelPoint(
-                            screenOffset.X + mouseOffset.X,
-                            screenOffset.Y + mouseOffset.Y);
-                    }
-
-                    return default;
-
-                case PlacementMode.Bottom:
-                    return target?.PointToScreen(new Point(0 + horizontalOffset, target.Bounds.Height + verticalOffset)) ?? default;
-
-                case PlacementMode.Right:
-                    return target?.PointToScreen(new Point(target.Bounds.Width + horizontalOffset, 0 + verticalOffset)) ?? default;
-
-                default:
-                    throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
-            }
-        }
-
         private void ListenForNonClientClick(RawInputEventArgs e)
         {
             var mouse = e as RawPointerEventArgs;
@@ -445,16 +404,61 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        private void RootTemplateApplied(object sender, TemplateAppliedEventArgs e)
+        {
+            _popupHost.TemplateApplied -= RootTemplateApplied;
+
+            if (_presenterSubscription != null)
+            {
+                _presenterSubscription.Dispose();
+                _presenterSubscription = null;
+            }
+
+            // If the Popup appears in a control template, then the child controls
+            // that appear in the popup host need to have their TemplatedParent
+            // properties set.
+            if (TemplatedParent != null)
+            {
+                _popupHost.Presenter?.ApplyTemplate();
+                _popupHost.Presenter?.GetObservable(ContentPresenter.ChildProperty)
+                    .Subscribe(SetTemplatedParentAndApplyChildTemplates);
+            }
+        }
+
+        private void SetTemplatedParentAndApplyChildTemplates(IControl control)
+        {
+            if (control != null)
+            {
+                var templatedParent = TemplatedParent;
+
+                if (control.TemplatedParent == null)
+                {
+                    control.SetValue(TemplatedParentProperty, templatedParent);
+                }
+
+                control.ApplyTemplate();
+
+                if (!(control is IPresenter) && control.TemplatedParent == templatedParent)
+                {
+                    foreach (IControl child in control.GetVisualChildren())
+                    {
+                        SetTemplatedParentAndApplyChildTemplates(child);
+                    }
+                }
+            }
+        }
+
         private bool IsChildOrThis(IVisual child)
         {
-            IVisual root = child.GetVisualRoot();
-            while (root is PopupRoot)
-            {
-                if (root == PopupRoot) return true;
-                root = ((PopupRoot)root).Parent.GetVisualRoot();
-            }
-            return false;
+            return _popupHost != null && ((IVisual)_popupHost).FindCommonVisualAncestor(child) == _popupHost;
         }
+        
+        public bool IsInsidePopup(IVisual visual)
+        {
+            return _popupHost != null && ((IVisual)_popupHost)?.IsVisualAncestorOf(visual) == true;
+        }
+
+        public bool IsPointerOverPopup => ((IInputElement)_popupHost).IsPointerOver;
 
         private void WindowDeactivated(object sender, EventArgs e)
         {

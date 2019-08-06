@@ -97,11 +97,6 @@ namespace Avalonia.Native
         {
             throw new NotImplementedException();
         }
-
-        public IPopupImpl CreatePopup()
-        {
-            return new PopupImpl(_factory, _options);
-        }
     }
 
     public class AvaloniaNativeMacOptions

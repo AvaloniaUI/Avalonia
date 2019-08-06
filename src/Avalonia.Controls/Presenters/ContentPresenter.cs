@@ -229,6 +229,7 @@ namespace Avalonia.Controls.Presenters
                 if (oldChild != null)
                 {
                     VisualChildren.Remove(oldChild);
+                    ((ISetInheritanceParent)oldChild).SetParent(oldChild.Parent);
                 }
 
                 if (oldChild?.Parent == this)

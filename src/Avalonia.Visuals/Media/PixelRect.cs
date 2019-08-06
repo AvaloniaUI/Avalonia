@@ -261,6 +261,16 @@ namespace Avalonia
         {
             return (rect.X < Right) && (X < rect.Right) && (rect.Y < Bottom) && (Y < rect.Bottom);
         }
+        
+        /// <summary>
+        /// Translates the rectangle by an offset.
+        /// </summary>
+        /// <param name="offset">The offset.</param>
+        /// <returns>The translated rectangle.</returns>
+        public PixelRect Translate(PixelVector offset)
+        {
+            return new PixelRect(Position + offset, Size);
+        }
 
         /// <summary>
         /// Gets the union of two rectangles.
