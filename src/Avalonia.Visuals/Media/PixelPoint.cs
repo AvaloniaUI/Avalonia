@@ -160,8 +160,6 @@ namespace Avalonia
             }
         }
         
-        
-
         /// <summary>
         /// Returns a new <see cref="PixelPoint"/> with the same Y co-ordinate and the specified X co-ordinate.
         /// </summary>

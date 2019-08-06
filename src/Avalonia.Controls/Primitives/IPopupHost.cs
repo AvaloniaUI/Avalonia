@@ -7,9 +7,9 @@ namespace Avalonia.Controls.Primitives
 {
     public interface IPopupHost : IDisposable
     {
-        void SetContent(IControl control);
+        void SetChild(IControl control);
         IContentPresenter Presenter { get; }
-        IVisual VisualRoot { get; }
+        IVisual HostedVisualTreeRoot { get; }
 
         event EventHandler<TemplateAppliedEventArgs> TemplateApplied;
 

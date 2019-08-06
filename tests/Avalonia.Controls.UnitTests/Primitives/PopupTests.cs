@@ -252,6 +252,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.Equal(
                     new[]
                     {
+                        "VisualLayerManager",
                         "ContentPresenter",
                         "ContentPresenter",
                         "Border",
@@ -265,6 +266,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.Equal(
                     new object[]
                     {
+                        popupRoot,
                         popupRoot,
                         target,
                         null,
@@ -320,7 +322,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.Open();
                 if (UsePopupHost)
-                    Assert.IsType<PopupHost>(target.Host);
+                    Assert.IsType<OverlayPopupHost>(target.Host);
                 else
                     Assert.IsType<PopupRoot>(target.Host);
             }

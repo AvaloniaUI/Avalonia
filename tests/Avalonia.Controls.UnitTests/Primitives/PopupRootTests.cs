@@ -75,10 +75,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.Single(((Visual)target.Host).GetVisualChildren());
 
                 var templatedChild = ((Visual)target.Host).GetVisualChildren().Single();
-                Assert.IsType<ContentPresenter>(templatedChild);
+                
+                Assert.IsType<VisualLayerManager>(templatedChild);
+                var contentPresenter = templatedChild.VisualChildren.Single();
+                Assert.IsType<ContentPresenter>(contentPresenter);
                 
                 
                 Assert.Equal((PopupRoot)target.Host, ((IControl)templatedChild).TemplatedParent);
+                Assert.Equal((PopupRoot)target.Host, ((IControl)contentPresenter).TemplatedParent);
             }
         }
         

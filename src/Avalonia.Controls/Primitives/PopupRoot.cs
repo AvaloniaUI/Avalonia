@@ -77,7 +77,7 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         public void Dispose() => PlatformImpl?.Dispose();
 
-        void UpdatePosition()
+        private void UpdatePosition()
         {
             PlatformImpl?.PopupPositioner.Update(_positionerParameters);
         }
@@ -93,9 +93,9 @@ namespace Avalonia.Controls.Primitives
                 UpdatePosition();
         }
 
-        public void SetContent(IControl control) => Content = control;
+        public void SetChild(IControl control) => Content = control;
 
-        IVisual IPopupHost.VisualRoot => this;
+        IVisual IPopupHost.HostedVisualTreeRoot => this;
         
         public IDisposable BindConstraints(AvaloniaObject popup, StyledProperty<double> widthProperty, StyledProperty<double> minWidthProperty,
             StyledProperty<double> maxWidthProperty, StyledProperty<double> heightProperty, StyledProperty<double> minHeightProperty,

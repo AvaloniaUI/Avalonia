@@ -8,14 +8,12 @@ namespace Avalonia.Controls.Primitives
     {
         private const int AdornerZIndex = int.MaxValue - 100;
         private const int OverlayZIndex = int.MaxValue - 99;
+        private IStyleHost _styleRoot;
+        private readonly List<Control> _layers = new List<Control>();
+        
 
-        private bool _isAttachedToLogicalTree;
-        private IStyleHost _styleHost;
         public bool IsPopup { get; set; }
         
-        List<Control> _layers = new List<Control>();
-        
-
         public AdornerLayer AdornerLayer
         {
             get
@@ -54,8 +52,8 @@ namespace Avalonia.Controls.Primitives
             ((ISetLogicalParent)layer).SetParent(this);
             layer.ZIndex = zindex;
             VisualChildren.Add(layer);
-            if (_isAttachedToLogicalTree)
-                ((ILogical)layer).NotifyAttachedToLogicalTree(new LogicalTreeAttachmentEventArgs(_styleHost));
+            if (((ILogical)this).IsAttachedToLogicalTree)
+                ((ILogical)layer).NotifyAttachedToLogicalTree(new LogicalTreeAttachmentEventArgs(_styleRoot));
             InvalidateArrange();
         }
         
@@ -63,8 +61,7 @@ namespace Avalonia.Controls.Primitives
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
-            _isAttachedToLogicalTree = true;
-            _styleHost = e.Root;
+            _styleRoot = e.Root;
 
             foreach (var l in _layers)
                 ((ILogical)l).NotifyAttachedToLogicalTree(e);
@@ -72,8 +69,7 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            _styleHost = null;
-            _isAttachedToLogicalTree = false;
+            _styleRoot = null;
             base.OnDetachedFromLogicalTree(e);
             foreach (var l in _layers)
                 ((ILogical)l).NotifyDetachedFromLogicalTree(e);

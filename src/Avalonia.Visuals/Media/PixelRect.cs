@@ -272,7 +272,6 @@ namespace Avalonia
             return new PixelRect(Position + offset, Size);
         }
 
-
         /// <summary>
         /// Gets the union of two rectangles.
         /// </summary>

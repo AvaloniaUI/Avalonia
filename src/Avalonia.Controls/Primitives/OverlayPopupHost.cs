@@ -9,25 +9,26 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class PopupHost : ContentControl, IPopupHost, IInteractive, IManagedPopupPositionerPopup
+    public class OverlayPopupHost : ContentControl, IPopupHost, IInteractive, IManagedPopupPositionerPopup
     {
         private readonly OverlayLayer _overlayLayer;
         private PopupPositionerParameters _positionerParameters = new PopupPositionerParameters();
         private ManagedPopupPositioner _positioner;
+        private Point _lastRequestedPosition;
         private bool _shown;
 
-        public PopupHost(OverlayLayer overlayLayer)
+        public OverlayPopupHost(OverlayLayer overlayLayer)
         {
             _overlayLayer = overlayLayer;
             _positioner = new ManagedPopupPositioner(this);
         }
 
-        public void SetContent(IControl control)
+        public void SetChild(IControl control)
         {
             Content = control;
         }
 
-        public IVisual VisualRoot => null;
+        public IVisual HostedVisualTreeRoot => null;
         
         /// <inheritdoc/>
         IInteractive IInteractive.InteractiveParent => Parent;
@@ -88,7 +89,7 @@ namespace Avalonia.Controls.Primitives
         }
 
 
-        void UpdatePosition()
+        private void UpdatePosition()
         {
             // Don't bother the positioner with layout system artifacts
             if (_positionerParameters.Size.Width == 0 || _positionerParameters.Size.Height == 0)
@@ -111,7 +112,6 @@ namespace Avalonia.Controls.Primitives
         Rect IManagedPopupPositionerPopup.ParentClientAreaScreenGeometry =>
             new Rect(default, _overlayLayer.Bounds.Size);
 
-        private Point _lastRequestedPosition;
         void IManagedPopupPositionerPopup.MoveAndResize(Point devicePoint, Size virtualSize)
         {
             _lastRequestedPosition = devicePoint;
@@ -138,7 +138,7 @@ namespace Avalonia.Controls.Primitives
                     "Unable to create IPopupImpl and no overlay layer is found for the target control");
 
 
-            return new PopupHost(overlayLayer);
+            return new OverlayPopupHost(overlayLayer);
         }
 
         public override void Render(DrawingContext context)

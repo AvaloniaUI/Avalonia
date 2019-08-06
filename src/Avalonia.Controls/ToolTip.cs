@@ -235,8 +235,8 @@ namespace Avalonia.Controls
         {
             Close();
 
-            _popup = PopupHost.CreatePopupHost(control, null);
-            _popup.SetContent(this);
+            _popup = OverlayPopupHost.CreatePopupHost(control, null);
+            _popup.SetChild(this);
             ((ISetLogicalParent)_popup).SetParent(control);
             
             _popup.ConfigurePosition(control, GetPlacement(control), 
@@ -248,7 +248,7 @@ namespace Avalonia.Controls
         {
             if (_popup != null)
             {
-                _popup.SetContent(null);
+                _popup.SetChild(null);
                 _popup.Hide();
                 _popup = null;
             }

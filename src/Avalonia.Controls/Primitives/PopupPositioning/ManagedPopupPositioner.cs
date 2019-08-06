@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         }
 
 
-        static Point GetAnchorPoint(Rect anchorRect, PopupPositioningEdge edge)
+        private static Point GetAnchorPoint(Rect anchorRect, PopupPositioningEdge edge)
         {
             double x, y;
             if ((edge & PopupPositioningEdge.Left) != 0)
@@ -54,7 +54,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             return new Point(x, y);
         }
 
-        static Point Gravitate(Point anchorPoint, Size size, PopupPositioningEdge gravity)
+        private static Point Gravitate(Point anchorPoint, Size size, PopupPositioningEdge gravity)
         {
             double x, y;
             if ((gravity & PopupPositioningEdge.Left) != 0)
@@ -84,7 +84,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         }
 
         
-        void Update(Size translatedSize, Size originalSize,
+        private void Update(Size translatedSize, Size originalSize,
             Rect anchorRect, PopupPositioningEdge anchor, PopupPositioningEdge gravity,
             PopupPositionerConstraintAdjustment constraintAdjustment, Point offset)
         {

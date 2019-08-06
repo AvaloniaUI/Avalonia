@@ -130,9 +130,7 @@ namespace Avalonia
         /// <returns></returns>
         public bool Equals(PixelVector other)
         {
-            // ReSharper disable CompareOfFloatsByEqualityOperator
             return _x == other._x && _y == other._y;
-            // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
         /// <summary>
