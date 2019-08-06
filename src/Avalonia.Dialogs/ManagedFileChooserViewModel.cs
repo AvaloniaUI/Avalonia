@@ -2,9 +2,12 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Threading;
 
 namespace Avalonia.Dialogs
@@ -34,6 +37,7 @@ namespace Avalonia.Dialogs
         private bool _savingFile;
         private bool _scheduledSelectionValidation;
         private string _defaultExtension;
+        private CompositeDisposable _disposables;
 
         public string Location
         {
@@ -92,7 +96,7 @@ namespace Avalonia.Dialogs
             }
         }
 
-        public ManagedFileChooserViewModel(FileSystemDialog dialog)
+        private void RefreshQuickLinks()
         {
             var quickSources = AvaloniaLocator.Current.GetService<ManagedFileChooserSources>()
                            ?? new ManagedFileChooserSources();
@@ -100,6 +104,27 @@ namespace Avalonia.Dialogs
             QuickLinks.Clear();
 
             QuickLinks.AddRange(quickSources.GetAllItems().Select(i => new ManagedFileChooserItemViewModel(i)));
+        }
+
+        public ManagedFileChooserViewModel(FileSystemDialog dialog)
+        {
+            _disposables = new CompositeDisposable();
+
+            var drivesInfoSrv = AvaloniaLocator.Current.GetService<IMountedDriveInfoProvider>()
+                             .MountedDrives;
+
+            var sub1 = Observable.FromEventPattern(drivesInfoSrv, nameof(drivesInfoSrv.CollectionChanged))
+                                 .Subscribe((_) =>
+                                 {
+                                     Dispatcher.UIThread.InvokeAsync(RefreshQuickLinks);
+                                 });
+
+            _disposables.Add(sub1);
+
+            CancelRequested += delegate { _disposables.Dispose(); };
+            CompleteRequested += delegate { _disposables.Dispose(); };
+
+            RefreshQuickLinks();
 
             Title = dialog.Title ?? (
                         dialog is OpenFileDialog ? "Open file"

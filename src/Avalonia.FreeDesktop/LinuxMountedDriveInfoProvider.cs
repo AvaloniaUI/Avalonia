@@ -7,41 +7,42 @@ using System.Collections.ObjectModel;
 using Avalonia.Controls.Platform;
 using Tmds.DBus;
 
-namespace Avalonia.X11.Dbus
+namespace Avalonia.FreeDesktop.Dbus
 {
     public class LinuxMountedDriveInfoProvider : IMountedDriveInfoProvider
     {
-        private IDisposable[] Disposables;
+        private IDisposable[] _disposables;
         private readonly Connection _sysDbus;
-        private readonly IObjectManager udisk2Manager;
+        private readonly IObjectManager _udisk2Manager;
 
         public LinuxMountedDriveInfoProvider()
         {
             this._sysDbus = Connection.System;
 
-            this.udisk2Manager = _sysDbus.CreateProxy<IObjectManager>("org.freedesktop.UDisks2", "/org/freedesktop/UDisks2");
+            this._udisk2Manager = _sysDbus.CreateProxy<IObjectManager>("org.freedesktop.UDisks2", "/org/freedesktop/UDisks2");
 
             Start();
         }
 
         async void Start()
         {
-            Disposables = new[] {
-                await udisk2Manager.WatchInterfacesAddedAsync(delegate { Poll(); }),
-                await udisk2Manager.WatchInterfacesRemovedAsync( delegate { Poll(); })
+            _disposables = new[] {
+                await _udisk2Manager.WatchInterfacesAddedAsync(delegate { Poll(); }),
+                await _udisk2Manager.WatchInterfacesRemovedAsync( delegate { Poll(); })
             };
 
             Poll();
         }
-        
+
         public ObservableCollection<MountedDriveInfo> MountedDrives { get; } = new ObservableCollection<MountedDriveInfo>();
+
         private async void Poll()
         {
             var newDriveList = new List<MountedDriveInfo>();
 
             var fProcMounts = File.ReadAllLines("/proc/mounts");
 
-            var managedObj = await udisk2Manager.GetManagedObjectsAsync();
+            var managedObj = await _udisk2Manager.GetManagedObjectsAsync();
 
             var res_drives = managedObj.Where(x => x.Key.ToString().Contains("/org/freedesktop/UDisks2/drives/"))
                                  .Select(x => x.Key);
@@ -74,8 +75,8 @@ namespace Avalonia.X11.Dbus
                     var blockSize = iblockProps.Size;
                     var driveName = drivesProps.Id;
 
-                    // There should be something in udisks2 to 
-                    // get this data but I have no idea where.
+                    // HACK:    There should be something in udisks2 to 
+                    //          get this data but I have no idea where.
                     var mountPoint = fProcMounts.Select(x => x.Split(' '))
                                                 .Where(x => x[0] == devPath)
                                                 .Select(x => x[1])
@@ -114,32 +115,26 @@ namespace Avalonia.X11.Dbus
             {
                 var item = collectionEnumerator.Current;
 
-                // Store item to delete (we can't do it while parse collection.
                 if (!newCollection.Contains(item))
-                {
                     itemsToDelete.Add(item);
-                }
             }
 
-            // Handle item to delete.
             foreach (var itemToDelete in itemsToDelete)
             {
                 MountedDrives.Remove(itemToDelete);
             }
 
             var i = 0;
+
             while (newCollectionEnumerator.MoveNext())
             {
                 var item = newCollectionEnumerator.Current;
 
-                // Handle new item.
                 if (!MountedDrives.Contains(item))
                 {
                     MountedDrives.Insert(i, item);
                 }
-
-                // Handle existing item, move at the good index.
-                if (MountedDrives.Contains(item))
+                else
                 {
                     int oldIndex = MountedDrives.IndexOf(item);
                     MountedDrives.Move(oldIndex, i);
@@ -148,7 +143,6 @@ namespace Avalonia.X11.Dbus
             }
         }
 
-
         private bool disposedValue = false;
         protected virtual void Dispose(bool disposing)
         {
@@ -156,7 +150,7 @@ namespace Avalonia.X11.Dbus
             {
                 if (disposing)
                 {
-                    foreach (var Disposable in Disposables)
+                    foreach (var Disposable in _disposables)
                         Disposable.Dispose();
 
                     MountedDrives?.Clear();

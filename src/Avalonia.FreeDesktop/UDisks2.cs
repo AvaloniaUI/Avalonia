@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Tmds.DBus;
 
 [assembly: InternalsVisibleTo(Tmds.DBus.Connection.DynamicAssemblyName)]
-namespace Avalonia.X11.Dbus
+namespace Avalonia.FreeDesktop.Dbus
 {
     [DBusInterface("org.freedesktop.DBus.ObjectManager")]
     interface IObjectManager : IDBusObject

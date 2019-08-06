@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.FreeDesktop.Dbus;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.X11;
-using Avalonia.X11.Dbus;
 using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
+
 namespace Avalonia.X11
 {
     class AvaloniaX11Platform : IWindowingPlatform
