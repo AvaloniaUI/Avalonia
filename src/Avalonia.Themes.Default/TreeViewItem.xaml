@@ -32,8 +32,7 @@
                     <ItemsPresenter Name="PART_ItemsPresenter"
                                     IsVisible="{TemplateBinding IsExpanded}"
                                     Items="{TemplateBinding Items}"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}"
-                                    MemberSelector="{TemplateBinding MemberSelector}"/>
+                                    ItemsPanel="{TemplateBinding ItemsPanel}"/>
                 </StackPanel>
             </ControlTemplate>
         </Setter>

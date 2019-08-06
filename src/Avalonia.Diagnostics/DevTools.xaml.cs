@@ -1,10 +1,12 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -15,22 +17,22 @@ using Avalonia.VisualTree;
 
 namespace Avalonia
 {
-	public static class DevToolsExtensions
-	{
-		public static void AttachDevTools(this TopLevel control)
-		{
-			Avalonia.Diagnostics.DevTools.Attach(control);
-		}
-	}
+    public static class DevToolsExtensions
+    {
+        public static void AttachDevTools(this TopLevel control)
+        {
+            Diagnostics.DevTools.Attach(control);
+        }
+    }
 }
 
 namespace Avalonia.Diagnostics
 {
-	public class DevTools : UserControl
+    public class DevTools : UserControl
     {
-        private static Dictionary<TopLevel, Window> s_open = new Dictionary<TopLevel, Window>();
-        private static HashSet<IRenderRoot> s_visualTreeRoots = new HashSet<IRenderRoot>();
-        private IDisposable _keySubscription;
+        private static readonly Dictionary<TopLevel, Window> s_open = new Dictionary<TopLevel, Window>();
+        private static readonly HashSet<IRenderRoot> s_visualTreeRoots = new HashSet<IRenderRoot>();
+        private readonly IDisposable _keySubscription;
 
         public DevTools(IControl root)
         {
@@ -46,7 +48,6 @@ namespace Avalonia.Diagnostics
         // HACK: needed for XAMLIL, will fix that later
         public DevTools()
         {
-            
         }
 
         public IControl Root { get; }
@@ -64,9 +65,8 @@ namespace Avalonia.Diagnostics
             if (e.Key == Key.F12)
             {
                 var control = (TopLevel)sender;
-                var devToolsWindow = default(Window);
 
-                if (s_open.TryGetValue(control, out devToolsWindow))
+                if (s_open.TryGetValue(control, out var devToolsWindow))
                 {
                     devToolsWindow.Activate();
                 }
@@ -79,10 +79,8 @@ namespace Avalonia.Diagnostics
                         Width = 1024,
                         Height = 512,
                         Content = devTools,
-                        DataTemplates =
-                        {
-                            new ViewLocator<ViewModelBase>(),
-                        }
+                        DataTemplates = { new ViewLocator<ViewModelBase>() },
+                        Title = "Avalonia DevTools"
                     };
 
                     devToolsWindow.Closed += devTools.DevToolsClosed;
@@ -114,7 +112,6 @@ namespace Avalonia.Diagnostics
 
             if ((e.Modifiers) == modifiers)
             {
-
                 var point = (Root.VisualRoot as IInputRoot)?.MouseDevice?.GetPosition(Root) ?? default(Point);
                 var control = Root.GetVisualsAt(point, x => (!(x is AdornerLayer) && x.IsVisible))
                     .FirstOrDefault();

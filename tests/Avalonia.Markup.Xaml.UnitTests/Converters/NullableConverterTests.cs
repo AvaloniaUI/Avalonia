@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -10,7 +11,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         public Orientation? Orientation { get; set; }
     }
     
-    public class NullableConverterTests
+    public class NullableConverterTests : XamlTestBase
     {
         [Fact]
         public void Nullable_Types_Should_Still_Be_Converted_Properly()

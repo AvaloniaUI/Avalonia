@@ -22,10 +22,10 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="Button:pointerover">
+  <Style Selector="Button:pointerover /template/ ContentPresenter">
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
   </Style>
-  <Style Selector="Button:pressed">
+  <Style Selector="Button:pressed  /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ThemeControlHighBrush}"/>
   </Style>
   <Style Selector="Button:disabled">

@@ -4,14 +4,13 @@
 using System.Linq;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
-    public class TreeDataTemplateTests
+    public class TreeDataTemplateTests : XamlTestBase
     {
         [Fact]
         public void Binding_Should_Be_Assigned_To_ItemsSource_Instead_Of_Bound()

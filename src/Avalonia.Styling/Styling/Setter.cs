@@ -99,7 +99,6 @@ namespace Avalonia.Styling
                 if (template != null && !isPropertyOfTypeITemplate)
                 {
                     var materialized = template.Build();
-                    NameScope.SetNameScope((StyledElement)materialized, new NameScope());
                     value = materialized;
                 }
 

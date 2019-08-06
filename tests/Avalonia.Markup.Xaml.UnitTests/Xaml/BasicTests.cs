@@ -22,7 +22,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
-    public class BasicTests
+    public class BasicTests : XamlTestBase
     {
         [Fact]
         public void Simple_Property_Is_Set()
@@ -296,7 +296,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 ";
             var template = AvaloniaXamlLoader.Parse<ControlTemplate>(xaml);
 
-            var parent = (ContentControl)template.Build(new ContentControl());
+            var parent = (ContentControl)template.Build(new ContentControl()).Control;
 
             Assert.Equal("parent", parent.Name);
 
@@ -320,7 +320,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 ";
             var template = AvaloniaXamlLoader.Parse<ControlTemplate>(xaml);
 
-            var panel = (Panel)template.Build(new ContentControl());
+            var panel = (Panel)template.Build(new ContentControl()).Control;
 
             Assert.Equal(2, panel.Children.Count);
 
@@ -681,7 +681,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var control = new ContentControl();
 
-            var result = (ContentPresenter)template.Build(control);
+            var result = (ContentPresenter)template.Build(control).Control;
 
             Assert.NotNull(result);
         }

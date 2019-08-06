@@ -30,7 +30,9 @@ namespace Avalonia
         private readonly SingleOrDictionary<int, PriorityLevel> _levels = new SingleOrDictionary<int, PriorityLevel>();
 
         private readonly Func<object, object> _validate;
+        private readonly SetAndNotifyCallback<(object, int)> _setAndNotifyCallback;
         private (object value, int priority) _value;
+        private DeferredSetter<object> _setter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.
@@ -50,6 +52,7 @@ namespace Avalonia
             _valueType = valueType;
             _value = (AvaloniaProperty.UnsetValue, int.MaxValue);
             _validate = validate;
+            _setAndNotifyCallback = SetAndNotify;
         }
 
         /// <summary>
@@ -242,22 +245,22 @@ namespace Avalonia
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
-            Owner.Setter.SetAndNotify(Property,
-                ref _value,
-                UpdateCore,
-                (value, priority));
+            var newValue = (value, priority);
+
+            if (newValue == _value)
+            {
+                return;
+            }
+
+            if (_setter == null)
+            {
+                _setter = Owner.GetNonDirectDeferredSetter(Property);
+            }
+
+            _setter.SetAndNotifyCallback(Property, _setAndNotifyCallback, ref _value, newValue);
         }
 
-        private bool UpdateCore(
-            object update,
-            ref (object value, int priority) backing,
-            Action<Action> notify)
-            => UpdateCore(((object, int))update, ref backing, notify);
-
-        private bool UpdateCore(
-            (object value, int priority) update,
-            ref (object value, int priority) backing,
-            Action<Action> notify)
+        private void SetAndNotify(AvaloniaProperty property, ref (object value, int priority) backing, (object value, int priority) update)
         {
             var val = update.value;
             var notification = val as BindingNotification;
@@ -286,7 +289,7 @@ namespace Avalonia
 
                 if (notification == null || notification.HasValue)
                 {
-                    notify(() => Owner?.Changed(Property, ValuePriority, old, Value));
+                    Owner?.Changed(Property, ValuePriority, old, Value);
                 }
 
                 if (notification != null)
@@ -305,7 +308,6 @@ namespace Avalonia
                     val,
                     val?.GetType());
             }
-            return true;
         }
     }
 }

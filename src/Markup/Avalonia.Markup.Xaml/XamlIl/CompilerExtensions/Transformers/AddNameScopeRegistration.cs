@@ -15,7 +15,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 && pa.Property.DeclaringType.FullName == "Avalonia.StyledElement")
             {
                 if (context.ParentNodes().FirstOrDefault() is XamlIlManipulationGroupNode mg
-                    && mg.Children.OfType<ScopeRegistrationNode>().Any())
+                    && mg.Children.OfType<AvaloniaNameScopeRegistrationXamlIlNode>().Any())
                     return node;
                 
                 IXamlIlAstValueNode value = null;
@@ -41,54 +41,99 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         Children =
                         {
                             pa,
-                            new ScopeRegistrationNode(value)
+                            new AvaloniaNameScopeRegistrationXamlIlNode(value, context.GetAvaloniaTypes())
                         }
                     };
             }
 
+            if (!context.ParentNodes().Any()
+                && node is XamlIlValueWithManipulationNode mnode)
+            {
+                mnode.Manipulation = new XamlIlManipulationGroupNode(mnode,
+                    new[]
+                    {
+                        mnode.Manipulation,
+                        new HandleRootObjectScopeNode(mnode, context.GetAvaloniaTypes())
+                    });
+            }
             return node;
         }
 
-        class ScopeRegistrationNode : XamlIlAstNode, IXamlIlAstManipulationNode, IXamlIlAstEmitableNode
+        class HandleRootObjectScopeNode : XamlIlAstNode, IXamlIlAstManipulationNode, IXamlIlAstEmitableNode
         {
-            public IXamlIlAstValueNode Value { get; set; }
-            public ScopeRegistrationNode(IXamlIlAstValueNode value) : base(value)
-            {
-                Value = value;
-            }
+            private readonly AvaloniaXamlIlWellKnownTypes _types;
 
-            public override void VisitChildren(IXamlIlAstVisitor visitor)
-                => Value = (IXamlIlAstValueNode)Value.Visit(visitor);
+            public HandleRootObjectScopeNode(IXamlIlLineInfo lineInfo,
+                AvaloniaXamlIlWellKnownTypes types) : base(lineInfo)
+            {
+                _types = types;
+            }
 
             public XamlIlNodeEmitResult Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
             {
-                var exts = context.Configuration.TypeSystem.GetType("Avalonia.Controls.NameScopeExtensions");
-                var findNameScope = exts.FindMethod(m => m.Name == "FindNameScope");
-                var registerMethod = findNameScope.ReturnType.FindMethod(m => m.Name == "Register");
-                using (var targetLoc = context.GetLocal(context.Configuration.WellKnownTypes.Object))
-                using (var nameScopeLoc = context.GetLocal(findNameScope.ReturnType))
+                var next = codeGen.DefineLabel();
+                var scopeField = context.RuntimeContext.ContextType.Fields.First(f =>
+                    f.Name == AvaloniaXamlIlLanguage.ContextNameScopeFieldName);
+                using (var local = codeGen.LocalsPool.GetLocal(_types.StyledElement))
                 {
-                    var exit = codeGen.DefineLabel();
                     codeGen
-                        // var target = {pop}    
-                        .Stloc(targetLoc.Local)
-                        // var scope = target.FindNameScope()
-                        .Ldloc(targetLoc.Local)
-                        .Castclass(findNameScope.Parameters[0])
-                        .EmitCall(findNameScope)
-                        .Stloc(nameScopeLoc.Local)
-                        // if({scope} != null) goto call;
-                        .Ldloc(nameScopeLoc.Local)
-                        .Brfalse(exit)
-                        .Ldloc(nameScopeLoc.Local);
-                    context.Emit(Value, codeGen, Value.Type.GetClrType());
-                    codeGen
-                        .Ldloc(targetLoc.Local)
-                        .EmitCall(registerMethod)
-                        .MarkLabel(exit);
+                        .Isinst(_types.StyledElement)
+                        .Dup()
+                        .Stloc(local.Local)
+                        .Brfalse(next)
+                        .Ldloc(local.Local)
+                        .Ldloc(context.ContextLocal)
+                        .Ldfld(scopeField)
+                        .EmitCall(_types.NameScopeSetNameScope, true)
+                        .MarkLabel(next)
+                        .Ldloc(context.ContextLocal)
+                        .Ldfld(scopeField)
+                        .EmitCall(_types.INameScopeComplete, true);
                 }
+
                 return XamlIlNodeEmitResult.Void(1);
+
             }
+        }
+    }
+
+    class AvaloniaNameScopeRegistrationXamlIlNode : XamlIlAstNode, IXamlIlAstManipulationNode, IXamlIlAstEmitableNode
+    {
+        private readonly AvaloniaXamlIlWellKnownTypes _types;
+        public IXamlIlAstValueNode Name { get; set; }
+
+        public AvaloniaNameScopeRegistrationXamlIlNode(IXamlIlAstValueNode name, AvaloniaXamlIlWellKnownTypes types) : base(name)
+        {
+            _types = types;
+            Name = name;
+        }
+
+        public override void VisitChildren(IXamlIlAstVisitor visitor)
+            => Name = (IXamlIlAstValueNode)Name.Visit(visitor);
+
+        public XamlIlNodeEmitResult Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+        {
+            var scopeField = context.RuntimeContext.ContextType.Fields.First(f =>
+                f.Name == AvaloniaXamlIlLanguage.ContextNameScopeFieldName);
+            
+            using (var targetLoc = context.GetLocal(context.Configuration.WellKnownTypes.Object))
+            {
+
+                codeGen
+                    // var target = {pop}
+                    .Stloc(targetLoc.Local)
+                    // _context.NameScope.Register(Name, target)
+                    .Ldloc(context.ContextLocal)
+                    .Ldfld(scopeField);
+                    
+                context.Emit(Name, codeGen, Name.Type.GetClrType());
+                
+                codeGen
+                    .Ldloc(targetLoc.Local)
+                    .EmitCall(_types.INameScopeRegister, true);
+            }
+
+            return XamlIlNodeEmitResult.Void(1);
         }
     }
 }

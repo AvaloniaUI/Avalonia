@@ -9,12 +9,14 @@ namespace Avalonia.OpenGL
     public class GlInterface : GlInterfaceBase
     {
         public string Version { get; }
+        public string Vendor { get; }
+        public string Renderer { get; }
 
         public GlInterface(Func<string, bool, IntPtr> getProcAddress) : base(getProcAddress)
         {
-            var versionPtr = GetString(GlConsts.GL_VERSION);
-            if (versionPtr != IntPtr.Zero)
-                Version = Marshal.PtrToStringAnsi(versionPtr);
+            Version = GetString(GlConsts.GL_VERSION);
+            Renderer = GetString(GlConsts.GL_RENDERER);
+            Vendor = GetString(GlConsts.GL_VENDOR);
         }
 
         public GlInterface(Func<Utf8Buffer, IntPtr> n) : this(ConvertNative(n))
@@ -37,7 +39,7 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("glClearStencil")]
         public GlClearStencil ClearStencil { get; }
 
-        public delegate void GlClearColor(int r, int g, int b, int a);
+        public delegate void GlClearColor(float r, float g, float b, float a);
         [GlEntryPoint("glClearColor")]
         public GlClearColor ClearColor { get; }
 
@@ -54,7 +56,15 @@ namespace Avalonia.OpenGL
 
         public delegate IntPtr GlGetString(int v);
         [GlEntryPoint("glGetString")]
-        public GlGetString GetString { get; }
+        public GlGetString GetStringNative { get; }
+
+        public string GetString(int v)
+        {
+            var ptr = GetStringNative(v);
+            if (ptr != IntPtr.Zero)
+                return Marshal.PtrToStringAnsi(ptr);
+            return null;
+        }
 
         public delegate void GlGetIntegerv(int name, out int rv);
         [GlEntryPoint("glGetIntegerv")]

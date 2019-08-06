@@ -59,13 +59,13 @@ namespace Avalonia.Controls.UnitTests.Utils
 
         private FuncControlTemplate CreateWindowTemplate()
         {
-            return new FuncControlTemplate<Window>(parent =>
+            return new FuncControlTemplate<Window>((parent, scope) =>
             {
                 return new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
                     [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
-                };
+                }.RegisterInNameScope(scope);
             });
         }
     }

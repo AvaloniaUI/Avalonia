@@ -325,12 +325,6 @@ namespace Avalonia.Controls.Presenters
                 {
                     _dataTemplate = dataTemplate;
                     newChild = _dataTemplate.Build(content);
-
-                    // Give the new control its own name scope.
-                    if (newChild is Control controlResult)
-                    {
-                        NameScope.SetNameScope(controlResult, new NameScope());
-                    }
                 }
             }
             else

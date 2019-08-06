@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.ObjectModel;
-
 using Avalonia.Diagnostics.Models;
 using Avalonia.Interactivity;
 
@@ -11,7 +10,7 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class FiredEvent : ViewModelBase
     {
-        private RoutedEventArgs _eventArgs;
+        private readonly RoutedEventArgs _eventArgs;
         private EventChainLink _handledBy;
 
         public FiredEvent(RoutedEventArgs eventArgs, EventChainLink originator)
@@ -19,8 +18,8 @@ namespace Avalonia.Diagnostics.ViewModels
             Contract.Requires<ArgumentNullException>(eventArgs != null);
             Contract.Requires<ArgumentNullException>(originator != null);
 
-            this._eventArgs = eventArgs;
-            this.Originator = originator;
+            _eventArgs = eventArgs;
+            Originator = originator;
             AddToChain(originator);
         }
 
@@ -42,8 +41,9 @@ namespace Avalonia.Diagnostics.ViewModels
                 if (IsHandled)
                 {
                     return $"{Event.Name} on {Originator.HandlerName};" + Environment.NewLine +
-                        $"strategies: {Event.RoutingStrategies}; handled by: {HandledBy.HandlerName}";
+                           $"strategies: {Event.RoutingStrategies}; handled by: {HandledBy.HandlerName}";
                 }
+
                 return $"{Event.Name} on {Originator.HandlerName}; strategies: {Event.RoutingStrategies}";
             }
         }
@@ -52,7 +52,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public EventChainLink HandledBy
         {
-            get { return _handledBy; }
+            get => _handledBy;
             set
             {
                 if (_handledBy != value)

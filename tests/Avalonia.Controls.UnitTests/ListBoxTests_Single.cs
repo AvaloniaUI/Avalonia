@@ -9,8 +9,8 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
-using Avalonia.Markup.Data;
 using Avalonia.Styling;
+using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -245,7 +245,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private Control CreateListBoxTemplate(ITemplatedControl parent)
+        private Control CreateListBoxTemplate(ITemplatedControl parent, INameScope scope)
         {
             return new ScrollViewer
             {
@@ -254,17 +254,18 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Name = "PART_ItemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
-                }
+                }.RegisterInNameScope(scope)
             };
         }
 
-        private Control CreateScrollViewerTemplate(ITemplatedControl parent)
+        private Control CreateScrollViewerTemplate(ITemplatedControl parent, INameScope scope)
         {
             return new ScrollContentPresenter
             {
                 Name = "PART_ContentPresenter",
-                [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty).ToBinding(),
-            };
+                [~ContentPresenter.ContentProperty] =
+                    parent.GetObservable(ContentControl.ContentProperty).ToBinding(),
+            }.RegisterInNameScope(scope);
         }
 
         private void ApplyTemplate(ListBox target)

@@ -156,7 +156,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 {
                     overrideField.SetValue(null,
                         new Action<object>(
-                            target => { populateCb(XamlIlRuntimeHelpers.RootServiceProviderV1, target); }));
+                            target => { populateCb(XamlIlRuntimeHelpers.CreateRootServiceProviderV2(), target); }));
                     try
                     {
                         return Activator.CreateInstance(targetType);
@@ -170,11 +170,11 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 var createCb = Expression.Lambda<Func<IServiceProvider, object>>(
                     Expression.Convert(Expression.Call(
                         created.GetMethod(AvaloniaXamlIlCompiler.BuildName), isp), typeof(object)), isp).Compile();
-                return createCb(XamlIlRuntimeHelpers.RootServiceProviderV1);
+                return createCb(XamlIlRuntimeHelpers.CreateRootServiceProviderV2());
             }
             else
             {
-                populateCb(XamlIlRuntimeHelpers.RootServiceProviderV1, rootInstance);
+                populateCb(XamlIlRuntimeHelpers.CreateRootServiceProviderV2(), rootInstance);
                 return rootInstance;
             }
         }

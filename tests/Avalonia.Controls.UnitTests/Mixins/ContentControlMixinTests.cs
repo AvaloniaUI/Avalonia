@@ -21,15 +21,16 @@ namespace Avalonia.Controls.UnitTests.Mixins
         {
             var target = new TestControl()
             {
-                Template = new FuncControlTemplate(_ => new Panel
+                Template = new FuncControlTemplate((_, scope) => new Panel
                 {
                     Children =
                     {
-                        new ContentPresenter { Name = "Content_1_Presenter" },
-                        new ContentPresenter { Name = "Content_2_Presenter" }
+                        new ContentPresenter {Name = "Content_1_Presenter"}.RegisterInNameScope(scope),
+                        new ContentPresenter {Name = "Content_2_Presenter"}.RegisterInNameScope(scope)
                     }
                 })
             };
+            
 
             var ex = Record.Exception(() => target.ApplyTemplate());
 
@@ -43,12 +44,12 @@ namespace Avalonia.Controls.UnitTests.Mixins
             var p2 = new ContentPresenter { Name = "Content_2_Presenter" };
             var target = new TestControl
             {
-                Template = new FuncControlTemplate(_ => new Panel
+                Template = new FuncControlTemplate((_, scope) => new Panel
                 {
                     Children =
                     {
-                        p1,
-                        p2
+                        p1.RegisterInNameScope(scope),
+                        p2.RegisterInNameScope(scope)
                     }
                 })
             };

@@ -10,6 +10,8 @@ namespace Avalonia.Data
 {
     public static class BindingOperations
     {
+        public static readonly object DoNothing = new object();
+
         /// <summary>
         /// Applies an <see cref="InstancedBinding"/> a property on an <see cref="IAvaloniaObject"/>.
         /// </summary>
