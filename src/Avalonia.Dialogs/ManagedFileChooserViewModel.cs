@@ -37,7 +37,6 @@ namespace Avalonia.Dialogs
         private bool _savingFile;
         private bool _scheduledSelectionValidation;
         private string _defaultExtension;
-        private CompositeDisposable _disposables;
 
         public string Location
         {
@@ -96,33 +95,28 @@ namespace Avalonia.Dialogs
             }
         }
 
-        private void RefreshQuickLinks()
+        private void RefreshQuickLinks(object _ = null)
         {
-            var quickSources = AvaloniaLocator.Current.GetService<ManagedFileChooserSources>()
-                           ?? new ManagedFileChooserSources();
+            var quickSources = AvaloniaLocator.Current
+                                              .GetService<ManagedFileChooserSources>()
+                                              ?? new ManagedFileChooserSources();
 
             QuickLinks.Clear();
-
             QuickLinks.AddRange(quickSources.GetAllItems().Select(i => new ManagedFileChooserItemViewModel(i)));
         }
 
         public ManagedFileChooserViewModel(FileSystemDialog dialog)
         {
-            _disposables = new CompositeDisposable();
-
-            var drivesInfoSrv = AvaloniaLocator.Current.GetService<IMountedDriveInfoProvider>()
-                             .MountedDrives;
+            var drivesInfoSrv = AvaloniaLocator.Current
+                                               .GetService<IMountedDriveInfoProvider>()
+                                               .MountedDrives;
 
             var sub1 = Observable.FromEventPattern(drivesInfoSrv, nameof(drivesInfoSrv.CollectionChanged))
-                                 .Subscribe((_) =>
-                                 {
-                                     Dispatcher.UIThread.InvokeAsync(RefreshQuickLinks);
-                                 });
+                                 .ObserveOn(AvaloniaScheduler.Instance)
+                                 .Subscribe(RefreshQuickLinks);
 
-            _disposables.Add(sub1);
-
-            CancelRequested += delegate { _disposables.Dispose(); };
-            CompleteRequested += delegate { _disposables.Dispose(); };
+            CompleteRequested += delegate { sub1?.Dispose(); };
+            CancelRequested += delegate { sub1?.Dispose(); };
 
             RefreshQuickLinks();
 
@@ -200,7 +194,7 @@ namespace Avalonia.Dialogs
                     }
                     else
                     {
-                        var invalidItems = SelectedItems.Where(i => i.IsDirectory).ToList();
+                        var invalidItems = SelectedItems.Where(i => i.ItemType == ManagedFileChooserItemType.Folder).ToList();
                         foreach (var item in invalidItems)
                         {
                             SelectedItems.Remove(item);
@@ -283,17 +277,18 @@ namespace Avalonia.Dialogs
                     {
                         DisplayName = info.Name,
                         Path = info.FullName,
-                        IsDirectory = info is DirectoryInfo,
                         Type = info is FileInfo ? info.Extension : "File Folder",
+                        ItemType = info is FileInfo ? ManagedFileChooserItemType.File
+                                                     : ManagedFileChooserItemType.Folder,
                         Size = info is FileInfo f ? f.Length : 0,
                         Modified = info.LastWriteTime
                     })
-                    .OrderByDescending(x => x.IsDirectory)
+                    .OrderByDescending(x => x.ItemType == ManagedFileChooserItemType.Folder)
                     .ThenBy(x => x.DisplayName, StringComparer.InvariantCultureIgnoreCase));
 
                     if (initialSelectionName != null)
                     {
-                        var sel = Items.FirstOrDefault(i => !i.IsDirectory && i.DisplayName == initialSelectionName);
+                        var sel = Items.FirstOrDefault(i => i.ItemType == ManagedFileChooserItemType.File && i.DisplayName == initialSelectionName);
 
                         if (sel != null)
                         {

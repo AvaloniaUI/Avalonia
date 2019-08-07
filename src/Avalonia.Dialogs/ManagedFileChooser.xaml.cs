@@ -37,13 +37,13 @@ namespace Avalonia.Dialogs
             var isQuickLink = _quickLinksRoot.IsLogicalParentOf(e.Source as Control);
             if (e.ClickCount == 2 || isQuickLink)
             {
-                if (model.IsDirectory)
+                if (model.ItemType == ManagedFileChooserItemType.File)
                 {
-                    Model?.Navigate(model.Path);
+                    Model?.SelectSingleFile(model);
                 }
                 else
                 {
-                    Model?.SelectSingleFile(model);
+                    Model?.Navigate(model.Path);
                 }
 
                 e.Handled = true;

@@ -6,10 +6,10 @@ namespace Avalonia.Dialogs
     {
         private string _displayName;
         private string _path;
-        private bool _isDirectory;
-        private DateTime _modified;
+         private DateTime _modified;
         private string _type;
         private long _size;
+        private ManagedFileChooserItemType _itemType;
 
         public string DisplayName
         {
@@ -41,27 +41,35 @@ namespace Avalonia.Dialogs
             set => this.RaiseAndSetIfChanged(ref _size, value);
         }
 
-        public string IconKey => IsDirectory ? "Icon_Folder" : "Icon_File";
-
-        public bool IsDirectory
+        public ManagedFileChooserItemType ItemType
         {
-            get => _isDirectory;
-            set
+            get => _itemType;
+            set => this.RaiseAndSetIfChanged(ref _itemType, value);
+        }
+
+        public string IconKey
+        {
+            get
             {
-                if (this.RaiseAndSetIfChanged(ref _isDirectory, value))
+                switch (ItemType)
                 {
-                    this.RaisePropertyChanged(nameof(IconKey));
+                    case ManagedFileChooserItemType.Folder:
+                        return "Icon_Folder";
+                    case ManagedFileChooserItemType.Volume:
+                        return "Icon_Volume";
+                    default:
+                        return "Icon_File";
                 }
             }
         }
-
+ 
         public ManagedFileChooserItemViewModel()
         {
         }
 
         public ManagedFileChooserItemViewModel(ManagedFileChooserNavigationItem item)
         {
-            IsDirectory = true;
+            ItemType = item.ItemType;
             Path = item.Path;
             DisplayName = item.DisplayName;
         }

@@ -43,6 +43,7 @@ namespace Avalonia.Dialogs
                 .Where(Directory.Exists)
                 .Select(d => new ManagedFileChooserNavigationItem
                 {
+                    ItemType = ManagedFileChooserItemType.Folder,
                     Path = d,
                     DisplayName = Path.GetFileName(d)
                 }).ToArray();
@@ -54,6 +55,7 @@ namespace Avalonia.Dialogs
             {
                 return DriveInfo.GetDrives().Select(d => new ManagedFileChooserNavigationItem
                 {
+                    ItemType = ManagedFileChooserItemType.Volume,
                     DisplayName = d.Name,
                     Path = d.RootDirectory.FullName
                 }).ToArray();
@@ -64,6 +66,7 @@ namespace Avalonia.Dialogs
 
                 return paths.Select(x => new ManagedFileChooserNavigationItem
                 {
+                    ItemType = ManagedFileChooserItemType.Volume,
                     DisplayName = Path.GetFileName(x),
                     Path = x
                 }).ToArray();
@@ -82,6 +85,7 @@ namespace Avalonia.Dialogs
                            {
                                return new ManagedFileChooserNavigationItem
                                {
+                                   ItemType = ManagedFileChooserItemType.Volume,
                                    DisplayName = "File System",
                                    Path = "/"
                                };
@@ -92,7 +96,7 @@ namespace Avalonia.Dialogs
 
                                return new ManagedFileChooserNavigationItem
                                {
-
+                                   ItemType = ManagedFileChooserItemType.Volume,
                                    DisplayName = dNameEmpty ? $"{ByteSizeHelper.ToString(x.DriveSizeBytes)} Volume"
                                                             : x.DriveLabel,
                                    Path = x.MountPath
