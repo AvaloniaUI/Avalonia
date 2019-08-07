@@ -72,12 +72,6 @@ namespace Avalonia.Layout
 
                     _cachedFirstElement.Measure(availableSize);
 
-                    // This doesn't need to be done in the UWP version and I'm not sure why. If we
-                    // don't do this here, and we receive a recycled element then it will be shown
-                    // at its previous arrange point, but we don't want it shown at all until its
-                    // arranged.
-                    _cachedFirstElement.Arrange(new Rect(-10000.0, -10000.0, 0, 0));
-
                     SetSize(_cachedFirstElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing);
 
                     // See if we can move ownership to the flow algorithm. If we can, we do not need a local cache.
