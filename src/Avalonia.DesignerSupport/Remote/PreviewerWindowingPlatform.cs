@@ -40,8 +40,6 @@ namespace Avalonia.DesignerSupport.Remote
             return s_lastWindow;
         }
 
-        public IPopupImpl CreatePopup() => new WindowStub();
-
         public static void Initialize(IAvaloniaRemoteTransportConnection transport)
         {
             s_transport = transport;
