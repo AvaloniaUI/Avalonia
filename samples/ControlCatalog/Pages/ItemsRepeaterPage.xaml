@@ -19,7 +19,7 @@
       <ScrollViewer Name="scroller"
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollBarVisibility="Auto">
-        <ItemsRepeater Name="repeater" Items="{Binding Items}"/>
+        <ItemsRepeater Name="repeater" Background="Transparent" Items="{Binding Items}"/>
       </ScrollViewer>
     </Border>
   </DockPanel>

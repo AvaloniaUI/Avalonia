@@ -16,9 +16,12 @@ namespace ControlCatalog.ViewModels
 
         public ObservableCollection<string> Items { get; }
 
+        public string SelectedItem { get; set; }
+
         public void AddItem()
         {
-            Items.Insert(0, $"New Item {newItemIndex++}");
+            var index = SelectedItem != null ? Items.IndexOf(SelectedItem) : -1;
+            Items.Insert(index + 1, $"New Item {newItemIndex++}");
         }
     }
 }
