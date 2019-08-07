@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
+using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
@@ -16,7 +17,7 @@ namespace ControlCatalog.Pages
             this.InitializeComponent();
             _repeater = this.FindControl<ItemsRepeater>("repeater");
             _scroller = this.FindControl<ScrollViewer>("scroller");
-            DataContext = Enumerable.Range(1, 100000).Select(i => $"Item {i}" ).ToArray();
+            DataContext = new ItemsRepeaterPageViewModel();
         }
 
         private void InitializeComponent()
