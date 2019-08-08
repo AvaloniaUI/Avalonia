@@ -191,6 +191,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
         }
 
+        public IPopupImpl CreatePopup() => null;
+
         ILockedFramebuffer IFramebufferPlatformSurface.Lock()=>new AndroidFramebuffer(_view.Holder.Surface);
     }
 }

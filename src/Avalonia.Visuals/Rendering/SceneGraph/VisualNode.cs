@@ -179,7 +179,12 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="scene">The scene that the node is a part of.</param>
         public void SortChildren(Scene scene)
         {
-            var keys = new List<long>();
+            if (_children == null || _children.Count <= 1)
+            {
+                return;
+            }
+
+            var keys = new List<long>(Visual.VisualChildren.Count);
 
             for (var i = 0; i < Visual.VisualChildren.Count; ++i)
             {

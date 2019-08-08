@@ -1,8 +1,11 @@
+using System;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
+using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
@@ -16,7 +19,8 @@ namespace ControlCatalog.Pages
             this.InitializeComponent();
             _repeater = this.FindControl<ItemsRepeater>("repeater");
             _scroller = this.FindControl<ScrollViewer>("scroller");
-            DataContext = Enumerable.Range(1, 100000).Select(i => $"Item {i}" ).ToArray();
+            _repeater.PointerPressed += RepeaterClick;
+            DataContext = new ItemsRepeaterPageViewModel();
         }
 
         private void InitializeComponent()
@@ -66,6 +70,12 @@ namespace ControlCatalog.Pages
                     };
                     break;
             }
+        }
+
+        private void RepeaterClick(object sender, PointerPressedEventArgs e)
+        {
+            var item = (e.Source as TextBlock)?.DataContext as string;
+            ((ItemsRepeaterPageViewModel)DataContext).SelectedItem = item;
         }
     }
 }

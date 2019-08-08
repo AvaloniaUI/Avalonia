@@ -4,6 +4,5 @@ namespace Avalonia.Platform
     {
         IWindowImpl CreateWindow();
         IEmbeddableWindowImpl CreateEmbeddableWindow();
-        IPopupImpl CreatePopup();
     }
 }

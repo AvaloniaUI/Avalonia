@@ -281,6 +281,37 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Content = 42;
         }
 
+        [Fact]
+        public void Should_Set_InheritanceParent_Even_When_LogicalParent_Is_Already_Set()
+        {
+            var logicalParent = new Canvas();
+            var child = new TextBlock();
+            var (target, host) = CreateTarget();
+
+            ((ISetLogicalParent)child).SetParent(logicalParent);
+            target.Content = child;
+
+            Assert.Same(logicalParent, child.Parent);
+
+            // InheritanceParent is exposed via StylingParent.
+            Assert.Same(target, ((IStyledElement)child).StylingParent);
+        }
+
+        [Fact]
+        public void Should_Reset_InheritanceParent_When_Child_Removed()
+        {
+            var logicalParent = new Canvas();
+            var child = new TextBlock();
+            var (target, _) = CreateTarget();
+
+            ((ISetLogicalParent)child).SetParent(logicalParent);
+            target.Content = child;
+            target.Content = null;
+
+            // InheritanceParent is exposed via StylingParent.
+            Assert.Same(logicalParent, ((IStyledElement)child).StylingParent);
+        }
+
         (ContentPresenter presenter, ContentControl templatedParent) CreateTarget()
         {
             var templatedParent = new ContentControl

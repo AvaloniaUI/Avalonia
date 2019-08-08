@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
-    public class BindingTests_RelativeSource
+    public class BindingTests_RelativeSource : XamlTestBase
     {
         [Fact]
         public void Binding_To_DataContext_Works()
