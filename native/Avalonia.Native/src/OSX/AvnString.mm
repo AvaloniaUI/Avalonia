@@ -11,7 +11,7 @@
 class AvnStringImpl : public virtual ComSingleObject<IAvnString, &IID_IAvnString>
 {
 private:
-    NSString* _string;
+    int _length;
     const char* _cstring;
     
 public:
@@ -19,8 +19,11 @@ public:
     
     AvnStringImpl(NSString* string)
     {
-        _string = string;
-        _cstring = [_string cStringUsingEncoding:NSUTF8StringEncoding];
+        auto cstring = [string cStringUsingEncoding:NSUTF8StringEncoding];
+        _length = (int)[string lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+        
+        _cstring = (const char*)malloc(_length);
+        memcpy((void*)_cstring, (void*)cstring, _length);
     }
     
     virtual HRESULT Pointer(void**retOut) override
@@ -45,7 +48,7 @@ public:
             return E_POINTER;
         }
         
-        *retOut = (int)[_string lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+        *retOut = _length;
         
         return S_OK;
     }
