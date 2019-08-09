@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -20,6 +21,7 @@ namespace Avalonia.Dialogs
             = DefaultGetAllItems;
 
         public ManagedFileChooserNavigationItem[] GetAllItems() => GetAllItemsDelegate(this);
+        public static readonly ObservableCollection<MountedVolumeInfo> MountedVolumes = new ObservableCollection<MountedVolumeInfo>();
 
         public static ManagedFileChooserNavigationItem[] DefaultGetAllItems(ManagedFileChooserSources sources)
         {
@@ -73,11 +75,7 @@ namespace Avalonia.Dialogs
             }
             else
             {
-                var drivesInfos = AvaloniaLocator.CurrentMutable
-                                .GetService<IMountedDriveInfoProvider>()
-                                .MountedDrives;
-
-                return drivesInfos
+                return MountedVolumes
                        .Where(x => !x.MountPath.StartsWith("/boot"))
                        .Select(x =>
                        {
@@ -92,13 +90,13 @@ namespace Avalonia.Dialogs
                            }
                            else
                            {
-                               var dNameEmpty = string.IsNullOrEmpty(x.DriveLabel.Trim());
+                               var dNameEmpty = string.IsNullOrEmpty(x.VolumeLabel.Trim());
 
                                return new ManagedFileChooserNavigationItem
                                {
                                    ItemType = ManagedFileChooserItemType.Volume,
-                                   DisplayName = dNameEmpty ? $"{ByteSizeHelper.ToString(x.DriveSizeBytes)} Volume"
-                                                            : x.DriveLabel,
+                                   DisplayName = dNameEmpty ? $"{ByteSizeHelper.ToString(x.VolumeSizeBytes)} Volume"
+                                                            : x.VolumeLabel,
                                    Path = x.MountPath
                                };
                            }

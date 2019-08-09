@@ -23,12 +23,16 @@ namespace Avalonia.Dialogs
                     DataContext = model
                 };
 
+                dialog.Closed += delegate { model.Cancel(); };
+
                 string[] result = null;
+                
                 model.CompleteRequested += items =>
                 {
                     result = items;
                     dialog.Close();
                 };
+
                 model.CancelRequested += dialog.Close;
 
                 await dialog.ShowDialog<object>(parent);

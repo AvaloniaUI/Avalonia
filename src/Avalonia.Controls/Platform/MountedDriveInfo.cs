@@ -8,19 +8,19 @@ namespace Avalonia.Controls.Platform
     /// <summary>
     /// Describes a Drive's properties.
     /// </summary>
-    public class MountedDriveInfo : IEquatable<MountedDriveInfo>
+    public class MountedVolumeInfo : IEquatable<MountedVolumeInfo>
     {
-        public string DriveLabel { get; set; }
-        public string DriveName { get; set; }
-        public ulong DriveSizeBytes { get; set; }
+        public string VolumeLabel { get; set; }
+        public string VolumeName { get; set; }
+        public ulong VolumeSizeBytes { get; set; }
         public string DevicePath { get; set; }
         public string MountPath { get; set; }
 
-        public bool Equals(MountedDriveInfo other)
+        public bool Equals(MountedVolumeInfo other)
         {
-            return this.DriveLabel.Equals(other.DriveLabel) &&
-                   this.DriveName.Equals(other.DriveName) &&
-                   this.DriveSizeBytes.Equals(other.DriveSizeBytes) &&
+            return this.VolumeLabel.Equals(other.VolumeLabel) &&
+                   this.VolumeName.Equals(other.VolumeName) &&
+                   this.VolumeSizeBytes.Equals(other.VolumeSizeBytes) &&
                    this.DevicePath.Equals(other.DevicePath) &&
                    this.MountPath.Equals(other.MountPath);
         }

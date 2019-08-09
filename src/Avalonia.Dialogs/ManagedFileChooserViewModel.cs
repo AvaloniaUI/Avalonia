@@ -36,7 +36,9 @@ namespace Avalonia.Dialogs
         private bool _selectingDirectory;
         private bool _savingFile;
         private bool _scheduledSelectionValidation;
+        private bool _alreadyCancelled = false;
         private string _defaultExtension;
+        private CompositeDisposable _disposables;
 
         public string Location
         {
@@ -95,30 +97,36 @@ namespace Avalonia.Dialogs
             }
         }
 
-        private void RefreshQuickLinks(object _ = null)
+        private void RefreshQuickLinks(ManagedFileChooserSources quickSources)
         {
-            var quickSources = AvaloniaLocator.Current
-                                              .GetService<ManagedFileChooserSources>()
-                                              ?? new ManagedFileChooserSources();
-
             QuickLinks.Clear();
             QuickLinks.AddRange(quickSources.GetAllItems().Select(i => new ManagedFileChooserItemViewModel(i)));
         }
 
         public ManagedFileChooserViewModel(FileSystemDialog dialog)
         {
-            var drivesInfoSrv = AvaloniaLocator.Current
-                                               .GetService<IMountedDriveInfoProvider>()
-                                               .MountedDrives;
+            _disposables = new CompositeDisposable();
 
-            var sub1 = Observable.FromEventPattern(drivesInfoSrv, nameof(drivesInfoSrv.CollectionChanged))
+            var quickSources = AvaloniaLocator.Current
+                                              .GetService<ManagedFileChooserSources>()
+                                              ?? new ManagedFileChooserSources();
+
+            var sub1 = AvaloniaLocator.Current
+                                      .GetService<IMountedVolumeInfoProvider>()
+                                      .Listen(ManagedFileChooserSources.MountedVolumes);
+
+            var sub2 = Observable.FromEventPattern(ManagedFileChooserSources.MountedVolumes,
+                                            nameof(ManagedFileChooserSources.MountedVolumes.CollectionChanged))
                                  .ObserveOn(AvaloniaScheduler.Instance)
-                                 .Subscribe(RefreshQuickLinks);
+                                 .Subscribe(x => RefreshQuickLinks(quickSources));
 
-            CompleteRequested += delegate { sub1?.Dispose(); };
-            CancelRequested += delegate { sub1?.Dispose(); };
+            _disposables.Add(sub1);
+            _disposables.Add(sub2);
 
-            RefreshQuickLinks();
+            CompleteRequested += delegate { _disposables?.Dispose(); };
+            CancelRequested += delegate { _disposables?.Dispose(); };
+
+            RefreshQuickLinks(quickSources);
 
             Title = dialog.Title ?? (
                         dialog is OpenFileDialog ? "Open file"
@@ -318,7 +326,14 @@ namespace Avalonia.Dialogs
 
         public void Cancel()
         {
-            CancelRequested?.Invoke();
+            if (!_alreadyCancelled)
+            {
+                // INFO: Don't misplace this check or it might cause
+                //       StackOverflowException because of recursive
+                //       event invokes.
+                _alreadyCancelled = true;
+                CancelRequested?.Invoke();
+            }
         }
 
         public void Ok()
