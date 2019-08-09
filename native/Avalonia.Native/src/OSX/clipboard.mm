@@ -12,8 +12,7 @@ public:
     Clipboard()
     {
         NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-        [pasteBoard clearContents];
-        [pasteBoard setString:@"" forType:NSPasteboardTypeString];
+        [pasteBoard stringForType:NSPasteboardTypeString];
     }
     
     virtual HRESULT GetText (IAvnString**ppv) override
