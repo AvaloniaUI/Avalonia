@@ -18,12 +18,19 @@ public:
     FORWARD_IUNKNOWN()
     
     AvnStringImpl(NSString* string)
-    {
+    { 
         auto cstring = [string cStringUsingEncoding:NSUTF8StringEncoding];
         _length = (int)[string lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
         
-        _cstring = (const char*)malloc(_length);
+        _cstring = (const char*)malloc(_length + 5);
+        
+        memset((void*)_cstring, 0, _length + 5);
         memcpy((void*)_cstring, (void*)cstring, _length);
+    }
+    
+    virtual ~AvnStringImpl()
+    {
+        free((void*)_cstring);
     }
     
     virtual HRESULT Pointer(void**retOut) override
