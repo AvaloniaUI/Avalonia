@@ -74,17 +74,12 @@ namespace Avalonia.X11
         public IntPtr Display { get; set; }
         public IWindowImpl CreateWindow()
         {
-            return new X11Window(this, false);
+            return new X11Window(this, null);
         }
 
         public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
             throw new NotSupportedException();
-        }
-
-        public IPopupImpl CreatePopup()
-        {
-            return new X11Window(this, true);
         }
     }
 }
@@ -96,6 +91,7 @@ namespace Avalonia
     {
         public bool UseEGL { get; set; }
         public bool UseGpu { get; set; } = true;
+        public bool OverlayPopups { get; set; }
 
         public List<string> GlxRendererBlacklist { get; set; } = new List<string>
         {

@@ -150,7 +150,7 @@ namespace Avalonia.Controls.Notifications
         private void Install(Window host)
         {
             var adornerLayer = host.GetVisualDescendants()
-                .OfType<AdornerDecorator>()
+                .OfType<VisualLayerManager>()
                 .FirstOrDefault()
                 ?.AdornerLayer;
 

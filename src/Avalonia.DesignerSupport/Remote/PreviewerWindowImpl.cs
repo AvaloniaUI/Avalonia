@@ -72,6 +72,11 @@ namespace Avalonia.DesignerSupport.Remote
             RenderIfNeeded();
         }
 
+        public void Move(PixelPoint point)
+        {
+            
+        }
+
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
         }

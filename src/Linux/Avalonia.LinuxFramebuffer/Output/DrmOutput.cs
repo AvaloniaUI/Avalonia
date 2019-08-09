@@ -14,7 +14,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         private DrmCard _card;
         private readonly EglGlPlatformSurface _eglPlatformSurface;
         public PixelSize PixelSize => _mode.Resolution;
-
+        public double Scaling { get; set; }
         public DrmOutput(string path = null)
         {
             var card = new DrmCard(path);
@@ -233,7 +233,7 @@ namespace Avalonia.LinuxFramebuffer.Output
 
                 public PixelSize Size => _parent._mode.Resolution;
 
-                public double Scaling => 1;
+                public double Scaling => _parent.Scaling;
             }
 
             public IGlPlatformSurfaceRenderingSession BeginDraw()
@@ -241,6 +241,8 @@ namespace Avalonia.LinuxFramebuffer.Output
                 _parent._deferredContext.MakeCurrent(_parent._eglSurface);
                 return new RenderSession(_parent);
             }
+            
+            
         }
 
         IGlContext IWindowingPlatformGlFeature.ImmediateContext => _immediateContext;
