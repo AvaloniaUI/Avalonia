@@ -47,7 +47,9 @@ public:
     {
         @autoreleasepool
         {
-            [[NSPasteboard generalPasteboard] clearContents];
+            NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
+            [pasteBoard clearContents];
+            [pasteBoard setString:@"" forType:NSPasteboardTypeString];
         }
         
         return S_OK;
