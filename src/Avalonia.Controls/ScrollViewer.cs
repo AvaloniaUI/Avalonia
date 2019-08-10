@@ -152,6 +152,12 @@ namespace Avalonia.Controls
                 nameof(VerticalScrollBarVisibility),
                 ScrollBarVisibility.Auto);
 
+        public static readonly StyledProperty<ScrollMeasureMode> HorizontalScrollMeasureModeProperty =
+            AvaloniaProperty.Register<ScrollViewer, ScrollMeasureMode>(nameof(HorizontalScrollMeasureMode));
+
+        public static readonly StyledProperty<ScrollMeasureMode> VerticalScrollMeasureModeProperty =
+            AvaloniaProperty.Register<ScrollViewer, ScrollMeasureMode>(nameof(VerticalScrollMeasureMode));
+
         private Size _extent;
         private Vector _offset;
         private Size _viewport;
@@ -251,6 +257,22 @@ namespace Avalonia.Controls
             set { SetValue(VerticalScrollBarVisibilityProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the vertical scroll measure mode.
+        /// </summary>
+        public ScrollMeasureMode VerticalScrollMeasureMode
+        {
+            get => GetValue(VerticalScrollMeasureModeProperty);
+            set => SetValue(VerticalScrollMeasureModeProperty, value);
+        }
+
+        /// Gets or sets the horizontal scroll measure mode.
+        public ScrollMeasureMode HorizontalScrollMeasureMode
+        {
+            get => GetValue(HorizontalScrollMeasureModeProperty);
+            set => SetValue(HorizontalScrollMeasureModeProperty, value);
+        }
+        
         /// <summary>
         /// Gets a value indicating whether the viewer can scroll horizontally.
         /// </summary>

@@ -36,6 +36,25 @@ namespace Avalonia.Controls.Presenters
                 (o, v) => o.CanVerticallyScroll = v);
 
         /// <summary>
+        /// Defines the <see cref="HorizontalScrollMeasureMode"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollContentPresenter, ScrollMeasureMode>
+            HorizontalScrollMeasureModeProperty =
+                AvaloniaProperty.RegisterDirect<ScrollContentPresenter, ScrollMeasureMode>(
+                    nameof(HorizontalScrollMeasureMode), o => o.HorizontalScrollMeasureMode,
+                    (o, v) => o.HorizontalScrollMeasureMode = v);
+
+        /// <summary>
+        /// Defines the <see cref="VerticalScrollMeasureMode"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollContentPresenter, ScrollMeasureMode>
+            VerticalScrollMeasureModeProperty =
+                AvaloniaProperty.RegisterDirect<ScrollContentPresenter, ScrollMeasureMode>(
+                    nameof(VerticalScrollMeasureMode), o => o.VerticalScrollMeasureMode,
+                    (o, v) => o.VerticalScrollMeasureMode = v);
+
+        
+        /// <summary>
         /// Defines the <see cref="Extent"/> property.
         /// </summary>
         public static readonly DirectProperty<ScrollContentPresenter, Size> ExtentProperty =
@@ -61,6 +80,8 @@ namespace Avalonia.Controls.Presenters
 
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
+        private ScrollMeasureMode _horizontalScrollMeasureMode;
+        private ScrollMeasureMode _verticalScrollMeasureMode;
         private Size _extent;
         private Vector _offset;
         private IDisposable _logicalScrollSubscription;
@@ -106,6 +127,20 @@ namespace Avalonia.Controls.Presenters
             set { SetAndRaise(CanVerticallyScrollProperty, ref _canVerticallyScroll, value); }
         }
 
+        /// Gets or sets the vertical scroll measure mode.
+        public ScrollMeasureMode VerticalScrollMeasureMode
+        {
+            get => _verticalScrollMeasureMode;
+            set => SetAndRaise(VerticalScrollMeasureModeProperty, ref _verticalScrollMeasureMode, value);
+        }
+
+        /// Gets or sets the horizontal scroll measure mode.
+        public ScrollMeasureMode HorizontalScrollMeasureMode
+        {
+            get => _horizontalScrollMeasureMode;
+            set => SetAndRaise(HorizontalScrollMeasureModeProperty, ref _horizontalScrollMeasureMode, value);
+        }
+        
         /// <summary>
         /// Gets the extent of the scrollable content.
         /// </summary>
@@ -206,8 +241,12 @@ namespace Avalonia.Controls.Presenters
             }
 
             var constraint = new Size(
-                CanHorizontallyScroll ? double.PositiveInfinity : availableSize.Width,
-                CanVerticallyScroll ? double.PositiveInfinity : availableSize.Height);
+                (CanHorizontallyScroll && HorizontalScrollMeasureMode == ScrollMeasureMode.Unconstrained) ?
+                    double.PositiveInfinity :
+                    availableSize.Width,
+                (CanVerticallyScroll && VerticalScrollMeasureMode == ScrollMeasureMode.Unconstrained) ?
+                    double.PositiveInfinity :
+                    availableSize.Height);
 
             Child.Measure(constraint);
             return Child.DesiredSize.Constrain(availableSize);

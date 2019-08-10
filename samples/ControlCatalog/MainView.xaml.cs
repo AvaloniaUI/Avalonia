@@ -16,6 +16,7 @@ namespace ControlCatalog
         public MainView()
         {
             AvaloniaXamlLoader.Load(this);
+            return;
             if (AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().IsDesktop)
             {
                 IList tabItems = ((IList)this.FindControl<TabControl>("Sidebar").Items);

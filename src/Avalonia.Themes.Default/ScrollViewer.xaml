@@ -8,6 +8,8 @@
                                 Background="{TemplateBinding Background}"
                                 CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
                                 CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
+                                HorizontalScrollMeasureMode="{TemplateBinding HorizontalScrollMeasureMode}"
+                                VerticalScrollMeasureMode="{TemplateBinding VerticalScrollMeasureMode}"
                                 Content="{TemplateBinding Content}"
                                 Extent="{TemplateBinding Extent, Mode=TwoWay}"
                                 Margin="{TemplateBinding Padding}"

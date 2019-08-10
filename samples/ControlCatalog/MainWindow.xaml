@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui" MinWidth="500" MinHeight="300"
+﻿<Window xmlns="https://github.com/avaloniaui" Width="500" Height="300"
         xmlns:pages="clr-namespace:ControlCatalog.Pages"
         Title="Avalonia Control Gallery"
         Icon="/Assets/test_icon.ico"

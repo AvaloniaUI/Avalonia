@@ -522,7 +522,8 @@ namespace Avalonia.Layout
                 {
                     width = Width;
                 }
-
+                // FREEDOM
+                //width = Math.Min(width, availableSize.Width);
                 width = Math.Min(width, MaxWidth);
                 width = Math.Max(width, MinWidth);
 
@@ -530,12 +531,11 @@ namespace Avalonia.Layout
                 {
                     height = Height;
                 }
-
+                
+                // FREEDOM
+                //height = Math.Min(height, availableSize.Height);
                 height = Math.Min(height, MaxHeight);
                 height = Math.Max(height, MinHeight);
-
-                width = Math.Min(width, availableSize.Width);
-                height = Math.Min(height, availableSize.Height);
 
                 if (UseLayoutRounding)
                 {
