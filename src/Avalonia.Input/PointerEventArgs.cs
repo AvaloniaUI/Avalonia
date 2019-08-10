@@ -72,21 +72,6 @@ namespace Avalonia.Input
                     mods |= InputModifiers.MiddleMouseButton;
                 if (_properties.IsRightButtonPressed)
                     mods |= InputModifiers.RightMouseButton;
-
-                // The old InputModifiers has indicated the *previous* state, so we are emulating this legacy behavior
-                if (_properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
-                    mods &= ~InputModifiers.LeftMouseButton;
-                if (_properties.PointerUpdateKind == PointerUpdateKind.MiddleButtonPressed)
-                    mods &= ~InputModifiers.MiddleMouseButton;
-                if (_properties.PointerUpdateKind == PointerUpdateKind.RightButtonPressed)
-                    mods &= ~InputModifiers.RightMouseButton;
-
-                if (_properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
-                    mods |= InputModifiers.LeftMouseButton;
-                if (_properties.PointerUpdateKind == PointerUpdateKind.MiddleButtonReleased)
-                    mods |= InputModifiers.MiddleMouseButton;
-                if (_properties.PointerUpdateKind == PointerUpdateKind.RightButtonReleased)
-                    mods |= InputModifiers.RightMouseButton;
                 
                 return mods;
             }
