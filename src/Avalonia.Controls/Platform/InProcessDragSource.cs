@@ -57,11 +57,15 @@ namespace Avalonia.Platform
         }
 
 
-        private DragDropEffects RaiseEventAndUpdateCursor(RawDragEventType type, IInputElement root, Point pt, InputModifiers modifiers)
+        private DragDropEffects RaiseEventAndUpdateCursor(RawDragEventType type, IInputElement root, Point pt,
+            InputModifiers modifiers)
+            => RaiseEventAndUpdateCursor(type, root, pt, (RawInputModifiers)modifiers);
+        
+        private DragDropEffects RaiseEventAndUpdateCursor(RawDragEventType type, IInputElement root, Point pt, RawInputModifiers modifiers)
         {
             _lastPosition = pt;
 
-            RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData, _allowedEffects, modifiers);
+            RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData, _allowedEffects, (InputModifiers)modifiers);
             var tl = root.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
             tl.PlatformImpl?.Input(rawEvent);
 
@@ -70,13 +74,13 @@ namespace Avalonia.Platform
             return effect;
         }
 
-        private DragDropEffects GetPreferredEffect(DragDropEffects effect, InputModifiers modifiers)
+        private DragDropEffects GetPreferredEffect(DragDropEffects effect, RawInputModifiers modifiers)
         {
             if (effect == DragDropEffects.Copy || effect == DragDropEffects.Move || effect == DragDropEffects.Link || effect == DragDropEffects.None)
                 return effect; // No need to check for the modifiers.
-            if (effect.HasFlag(DragDropEffects.Link) && modifiers.HasFlag(InputModifiers.Alt))
+            if (effect.HasFlag(DragDropEffects.Link) && modifiers.HasFlag(RawInputModifiers.Alt))
                 return DragDropEffects.Link;
-            if (effect.HasFlag(DragDropEffects.Copy) && modifiers.HasFlag(InputModifiers.Control))
+            if (effect.HasFlag(DragDropEffects.Copy) && modifiers.HasFlag(RawInputModifiers.Control))
                 return DragDropEffects.Copy;
             return DragDropEffects.Move;
         }
@@ -132,7 +136,7 @@ namespace Avalonia.Platform
         private void CancelDragging()
         {
             if (_lastRoot != null)
-                RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastRoot, _lastPosition, InputModifiers.None);
+                RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastRoot, _lastPosition, RawInputModifiers.None);
             UpdateCursor(null, DragDropEffects.None);
             _result.OnNext(DragDropEffects.None);
         }

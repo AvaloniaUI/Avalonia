@@ -57,6 +57,10 @@ namespace Avalonia.Controls.Remote.Server
             }
         }
 
+        private static RawInputModifiers GetAvaloniaRawInputModifiers(
+            Avalonia.Remote.Protocol.Input.InputModifiers[] modifiers)
+            => (RawInputModifiers)GetAvaloniaInputModifiers(modifiers);
+        
         private static InputModifiers GetAvaloniaInputModifiers (Avalonia.Remote.Protocol.Input.InputModifiers[] modifiers)
         {
             var result = InputModifiers.None;
@@ -225,7 +229,7 @@ namespace Avalonia.Controls.Remote.Server
                             0,
                             key.IsDown ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                             (Key)key.Key,
-                            GetAvaloniaInputModifiers(key.Modifiers)));
+                            GetAvaloniaRawInputModifiers(key.Modifiers)));
                     }, DispatcherPriority.Input);
                 }
                 if(obj is TextInputEventMessage text)

@@ -14,6 +14,7 @@ namespace Avalonia.Win32.Input
 
         public new static WindowsKeyboardDevice Instance { get; } = new WindowsKeyboardDevice();
 
+        public RawInputModifiers RawModifiers => (RawInputModifiers)Modifiers;
         public InputModifiers Modifiers
         {
             get

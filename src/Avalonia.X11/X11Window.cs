@@ -438,7 +438,7 @@ namespace Avalonia.X11
                 
                 ScheduleInput(new RawKeyEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(),
                     ev.type == XEventName.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-                    X11KeyTransform.ConvertKey(key), TranslateModifiers(ev.KeyEvent.state)), ref ev);
+                    X11KeyTransform.ConvertKey(key), TranslateRawModifiers(ev.KeyEvent.state)), ref ev);
 
                 if (ev.type == XEventName.KeyPress)
                 {
@@ -559,6 +559,7 @@ namespace Avalonia.X11
         }
 
 
+        RawInputModifiers TranslateRawModifiers(XModifierMask state) => (RawInputModifiers)TranslateModifiers(state);
         InputModifiers TranslateModifiers(XModifierMask state)
         {
             var rv = default(InputModifiers);
