@@ -14,7 +14,7 @@ namespace Avalonia.Platform
 {
     class InProcessDragSource : IPlatformDragSource
     {
-        private const InputModifiers MOUSE_INPUTMODIFIERS = InputModifiers.LeftMouseButton|InputModifiers.MiddleMouseButton|InputModifiers.RightMouseButton;
+        private const RawInputModifiers MOUSE_INPUTMODIFIERS = RawInputModifiers.LeftMouseButton|RawInputModifiers.MiddleMouseButton|RawInputModifiers.RightMouseButton;
         private readonly IDragDropDevice _dragDrop;
         private readonly IInputManager _inputManager;
         private readonly Subject<DragDropEffects> _result = new Subject<DragDropEffects>();
@@ -25,7 +25,7 @@ namespace Avalonia.Platform
         private Point _lastPosition;
         private StandardCursorType _lastCursorType;
         private object _originalCursor;
-        private InputModifiers? _initialInputModifiers;
+        private RawInputModifiers? _initialInputModifiers;
 
         public InProcessDragSource()
         {

@@ -762,16 +762,16 @@ namespace Avalonia.Win32
                 return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
-        static InputModifiers GetMouseModifiers(IntPtr wParam)
+        static RawInputModifiers GetMouseModifiers(IntPtr wParam)
         {
             var keys = (UnmanagedMethods.ModifierKeys)ToInt32(wParam);
             var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
             if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_LBUTTON))
-                modifiers |= InputModifiers.LeftMouseButton;
+                modifiers |= RawInputModifiers.LeftMouseButton;
             if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_RBUTTON))
-                modifiers |= InputModifiers.RightMouseButton;
+                modifiers |= RawInputModifiers.RightMouseButton;
             if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_MBUTTON))
-                modifiers |= InputModifiers.MiddleMouseButton;
+                modifiers |= RawInputModifiers.MiddleMouseButton;
             return modifiers;
         }
 

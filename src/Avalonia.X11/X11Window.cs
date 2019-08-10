@@ -560,23 +560,23 @@ namespace Avalonia.X11
 
 
         RawInputModifiers TranslateRawModifiers(XModifierMask state) => (RawInputModifiers)TranslateModifiers(state);
-        InputModifiers TranslateModifiers(XModifierMask state)
+        RawInputModifiers TranslateModifiers(XModifierMask state)
         {
-            var rv = default(InputModifiers);
+            var rv = default(RawInputModifiers);
             if (state.HasFlag(XModifierMask.Button1Mask))
-                rv |= InputModifiers.LeftMouseButton;
+                rv |= RawInputModifiers.LeftMouseButton;
             if (state.HasFlag(XModifierMask.Button2Mask))
-                rv |= InputModifiers.RightMouseButton;
+                rv |= RawInputModifiers.RightMouseButton;
             if (state.HasFlag(XModifierMask.Button2Mask))
-                rv |= InputModifiers.MiddleMouseButton;
+                rv |= RawInputModifiers.MiddleMouseButton;
             if (state.HasFlag(XModifierMask.ShiftMask))
-                rv |= InputModifiers.Shift;
+                rv |= RawInputModifiers.Shift;
             if (state.HasFlag(XModifierMask.ControlMask))
-                rv |= InputModifiers.Control;
+                rv |= RawInputModifiers.Control;
             if (state.HasFlag(XModifierMask.Mod1Mask))
-                rv |= InputModifiers.Alt;
+                rv |= RawInputModifiers.Alt;
             if (state.HasFlag(XModifierMask.Mod4Mask))
-                rv |= InputModifiers.Windows;
+                rv |= RawInputModifiers.Meta;
             return rv;
         }
         

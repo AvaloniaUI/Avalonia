@@ -37,6 +37,7 @@ namespace Avalonia.Input
         Toggled = 2,
     }
 
+    [Flags]
     public enum RawInputModifiers
     {
         None = 0,

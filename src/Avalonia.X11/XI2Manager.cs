@@ -247,7 +247,7 @@ namespace Avalonia.X11
     unsafe class ParsedDeviceEvent
     {
         public XiEventType Type { get; }
-        public InputModifiers Modifiers { get; }
+        public RawInputModifiers Modifiers { get; }
         public ulong Timestamp { get; }
         public Point Position { get; }
         public int Button { get; set; }
@@ -260,25 +260,25 @@ namespace Avalonia.X11
             Timestamp = (ulong)ev->time.ToInt64();
             var state = (XModifierMask)ev->mods.Effective;
             if (state.HasFlag(XModifierMask.ShiftMask))
-                Modifiers |= InputModifiers.Shift;
+                Modifiers |= RawInputModifiers.Shift;
             if (state.HasFlag(XModifierMask.ControlMask))
-                Modifiers |= InputModifiers.Control;
+                Modifiers |= RawInputModifiers.Control;
             if (state.HasFlag(XModifierMask.Mod1Mask))
-                Modifiers |= InputModifiers.Alt;
+                Modifiers |= RawInputModifiers.Alt;
             if (state.HasFlag(XModifierMask.Mod4Mask))
-                Modifiers |= InputModifiers.Windows;
+                Modifiers |= RawInputModifiers.Meta;
 
             if (ev->buttons.MaskLen > 0)
             {
                 var buttons = ev->buttons.Mask;
                 if (XIMaskIsSet(buttons, 1))
-                    Modifiers |= InputModifiers.LeftMouseButton;
+                    Modifiers |= RawInputModifiers.LeftMouseButton;
                 
                 if (XIMaskIsSet(buttons, 2))
-                    Modifiers |= InputModifiers.MiddleMouseButton;
+                    Modifiers |= RawInputModifiers.MiddleMouseButton;
                 
                 if (XIMaskIsSet(buttons, 3))
-                    Modifiers |= InputModifiers.RightMouseButton;
+                    Modifiers |= RawInputModifiers.RightMouseButton;
             }
 
             Valuators = new Dictionary<int, double>();

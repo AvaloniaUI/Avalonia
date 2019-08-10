@@ -339,7 +339,7 @@ namespace Avalonia.Controls
 
             var point = e.GetPointerPoint(null);
             RaiseEvent(new PointerEventArgs(PointerEnterItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
-                e.Timestamp, point.Properties, e.InputModifiers));
+                e.Timestamp, point.Properties, e.KeyModifiers));
         }
 
         /// <inheritdoc/>
@@ -349,7 +349,7 @@ namespace Avalonia.Controls
 
             var point = e.GetPointerPoint(null);
             RaiseEvent(new PointerEventArgs(PointerLeaveItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
-                e.Timestamp, point.Properties, e.InputModifiers));
+                e.Timestamp, point.Properties, e.KeyModifiers));
         }
 
         /// <summary>
