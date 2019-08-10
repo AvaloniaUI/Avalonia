@@ -56,16 +56,11 @@ namespace Avalonia.Platform
             return DragDropEffects.None;
         }
 
-
-        private DragDropEffects RaiseEventAndUpdateCursor(RawDragEventType type, IInputElement root, Point pt,
-            InputModifiers modifiers)
-            => RaiseEventAndUpdateCursor(type, root, pt, (RawInputModifiers)modifiers);
-        
         private DragDropEffects RaiseEventAndUpdateCursor(RawDragEventType type, IInputElement root, Point pt, RawInputModifiers modifiers)
         {
             _lastPosition = pt;
 
-            RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData, _allowedEffects, (InputModifiers)modifiers);
+            RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData, _allowedEffects, modifiers);
             var tl = root.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
             tl.PlatformImpl?.Input(rawEvent);
 
@@ -164,7 +159,7 @@ namespace Avalonia.Platform
                 _initialInputModifiers = e.InputModifiers & MOUSE_INPUTMODIFIERS;
 
             
-            void CheckDraggingAccepted(InputModifiers changedMouseButton)
+            void CheckDraggingAccepted(RawInputModifiers changedMouseButton)
             {
                 if (_initialInputModifiers.Value.HasFlag(changedMouseButton))
                 {
@@ -189,11 +184,11 @@ namespace Avalonia.Platform
                 case RawPointerEventType.LeaveWindow:
                     RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, e.Root, e.Position,  e.InputModifiers); break;
                 case RawPointerEventType.LeftButtonUp:
-                    CheckDraggingAccepted(InputModifiers.LeftMouseButton); break;
+                    CheckDraggingAccepted(RawInputModifiers.LeftMouseButton); break;
                 case RawPointerEventType.MiddleButtonUp:
-                    CheckDraggingAccepted(InputModifiers.MiddleMouseButton); break;
+                    CheckDraggingAccepted(RawInputModifiers.MiddleMouseButton); break;
                 case RawPointerEventType.RightButtonUp:
-                    CheckDraggingAccepted(InputModifiers.RightMouseButton); break;
+                    CheckDraggingAccepted(RawInputModifiers.RightMouseButton); break;
                 case RawPointerEventType.Move:
                     var mods = e.InputModifiers & MOUSE_INPUTMODIFIERS;
                     if (_initialInputModifiers.Value != mods)
