@@ -123,7 +123,8 @@ namespace Avalonia.Input
         [Obsolete("Use DoubleTapped or DoubleRightTapped event instead")]
         public int ClickCount => _obsoleteClickCount;
 
-        [Obsolete] public MouseButton MouseButton => GetPointerPoint(null).Properties.GetObsoleteMouseButton();
+        [Obsolete("Use PointerUpdateKind")]
+        public MouseButton MouseButton => Properties.GetObsoleteMouseButton();
     }
 
     public class PointerReleasedEventArgs : PointerEventArgs
