@@ -8,6 +8,10 @@ namespace Avalonia.Controls
 {
     public class NativeMenuItem : AvaloniaObject
     {
+        private string _header;
+        private AvaloniaList<NativeMenuItem> _items;
+        private bool _enabled = true;
+
         class CanExecuteChangedSubscriber : IWeakSubscriber<EventArgs>
         {
             private readonly NativeMenuItem _parent;
@@ -28,31 +32,27 @@ namespace Avalonia.Controls
         {
             _canExecuteChangedSubscriber = new CanExecuteChangedSubscriber(this);
 
-            _subItems = new AvaloniaList<NativeMenuItem>();
+            _items = new AvaloniaList<NativeMenuItem>();
         }
 
-        private string _text;
-        public static readonly DirectProperty<NativeMenuItem, string> TextProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, string>(nameof(Text), o => o._text, (o, v) => o._text = v);
+        public static readonly DirectProperty<NativeMenuItem, string> HeaderProperty =
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, string>(nameof(Header), o => o._header, (o, v) => o._header = v);
 
-        public string Text
+        public string Header
         {
-            get => GetValue(TextProperty);
-            set => SetValue(TextProperty, value);
+            get => GetValue(HeaderProperty);
+            set => SetValue(HeaderProperty, value);
         }
 
-
-        private AvaloniaList<NativeMenuItem> _subItems;
-
-        public static readonly DirectProperty<NativeMenuItem, AvaloniaList<NativeMenuItem>> SubItemsProperty =
+        public static readonly DirectProperty<NativeMenuItem, AvaloniaList<NativeMenuItem>> ItemsProperty =
            AvaloniaProperty.RegisterDirect<NativeMenuItem, AvaloniaList<NativeMenuItem>>(
-               nameof(SubItems), o => o._subItems, (o, v) => o._subItems = v);
+               nameof(Items), o => o._items, (o, v) => o._items = v);
 
         [Content]
-        public AvaloniaList<NativeMenuItem> SubItems
+        public AvaloniaList<NativeMenuItem> Items
         {
-            get => GetValue(SubItemsProperty);
-            set => SetValue(SubItemsProperty, value);
+            get => GetValue(ItemsProperty);
+            set => SetValue(ItemsProperty, value);
         }
 
 
@@ -72,8 +72,11 @@ namespace Avalonia.Controls
                    o.CanExecuteChanged();
                });
 
-
-        private bool _enabled = true;
+        /// <summary>
+        /// Defines the <see cref="CommandParameter"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object> CommandParameterProperty =
+            Button.CommandParameterProperty.AddOwner<MenuItem>();
 
         public static readonly DirectProperty<NativeMenuItem, bool> EnabledProperty =
            AvaloniaProperty.RegisterDirect<NativeMenuItem, bool>(nameof(Enabled), o => o._enabled,
@@ -84,8 +87,6 @@ namespace Avalonia.Controls
             get => GetValue(EnabledProperty);
             set => SetValue(EnabledProperty, value);
         }
-
-
 
         void CanExecuteChanged()
         {
@@ -98,13 +99,27 @@ namespace Avalonia.Controls
             set => SetValue(CommandProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the parameter to pass to the <see cref="Command"/> property of a
+        /// <see cref="NativeMenuItem"/>.
+        /// </summary>
+        public object CommandParameter
+        {
+            get { return GetValue(CommandParameterProperty); }
+            set { SetValue(CommandParameterProperty, value); }
+        }
+
+
         public event EventHandler Clicked;
 
         public void RaiseClick()
         {
             Clicked?.Invoke(this, new EventArgs());
-            if (Command?.CanExecute(null) == true)
-                Command.Execute(null);
+
+            if (Command?.CanExecute(CommandParameter) == true)
+            {
+                Command.Execute(CommandParameter);
+            }
         }
     }
 }

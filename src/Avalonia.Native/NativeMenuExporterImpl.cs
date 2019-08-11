@@ -61,7 +61,7 @@ namespace Avalonia.Native
             {
                 var menuItem = _factory.CreateMenuItem();
 
-                using (var buffer = new Utf8Buffer(item.Text))
+                using (var buffer = new Utf8Buffer(item.Header))
                 {
                     menuItem.Title = buffer.DangerousGetHandle();
                 }
@@ -77,18 +77,18 @@ namespace Avalonia.Native
                 }), new MenuActionCallback(()=>{item.RaiseClick();}));
                 menu.AddItem(menuItem);
 
-                if (item.SubItems.Count > 0)
+                if (item.Items.Count > 0)
                 {
                     var submenu = _factory.CreateMenu();
 
-                    using (var buffer = new Utf8Buffer(item.Text))
+                    using (var buffer = new Utf8Buffer(item.Header))
                     {
                         submenu.Title = buffer.DangerousGetHandle();
                     }
 
                     menuItem.SetSubMenu(submenu);
                     
-                    AddItemsToMenu(submenu, item.SubItems);
+                    AddItemsToMenu(submenu, item.Items);
                 }
             }
         }
@@ -109,20 +109,20 @@ namespace Avalonia.Native
                     return false;
                 }), new MenuActionCallback(()=>{item.RaiseClick();}));
 
-                if (item.SubItems.Count > 0 || isMainMenu)
+                if (item.Items.Count > 0 || isMainMenu)
                 {
-                    var subMenu = CreateSubmenu(item.SubItems);
+                    var subMenu = CreateSubmenu(item.Items);
 
                     menuItem.SetSubMenu(subMenu);
                     
-                    using (var buffer = new Utf8Buffer(item.Text))
+                    using (var buffer = new Utf8Buffer(item.Header))
                     {
                         subMenu.Title = buffer.DangerousGetHandle();
                     }
                 }
                 else
                 {
-                    using (var buffer = new Utf8Buffer(item.Text))
+                    using (var buffer = new Utf8Buffer(item.Header))
                     {
                         menuItem.Title = buffer.DangerousGetHandle();
                     }
@@ -132,41 +132,10 @@ namespace Avalonia.Native
             }
         }
 
-        public void SetMenu(ICollection<NativeMenuItem> menuItems)
+        public void SetMenu(IEnumerable<NativeMenuItem> menuItems)
         {
             var mainMenu = _factory.ObtainAppMenu();
             AddItemsToMenu(_factory.ObtainAppBar(), menuItems);
-            /*var mainMenu = _factory.ObtainMainAppMenu();
-
-
-            foreach (var menuItem in menuItems)
-            {
-                if (menuItem.SubItems.Count > 0)
-                {
-                    var menu = _factory.CreateMenu();
-
-
-                    var item = _factory.CreateMenuItem();
-
-                    using (var buffer = new Utf8Buffer(menuItem.Text))
-                    {
-
-                        menu.Title = buffer.DangerousGetHandle();
-                    }
-
-                    using (var buffer = new Utf8Buffer("ItemTitle"))
-                    {
-
-                        item.Title = buffer.DangerousGetHandle();
-                    }
-
-                    mainMenu.AddItem(item);
-
-                    item.SetSubMenu(menu);
-                    
-                    SetChildren(menu, menuItem.SubItems);
-                }
-            }*/
         }
     }
 }

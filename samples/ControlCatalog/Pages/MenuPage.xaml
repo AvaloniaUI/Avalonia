@@ -12,8 +12,18 @@
             <StackPanel> 
               <TextBlock Classes="h3" Margin="4 8">AppMenu Defined in XAML</TextBlock>
               <TextBlock Classes="h3" Margin="4 8" Text="{Binding Message}"/>
-                <NativeMenu>
-                    <NativeMenuItem Text="File">
+        <NativeMenu Items="{Binding MenuItems}">
+
+          <NativeMenu.Styles>
+            <Style Selector="NativeMenuItem">
+                <Setter Property="Header" Value="{Binding Header}"/>
+                <Setter Property="Items" Value="{Binding Items}"/>
+                <Setter Property="Command" Value="{Binding Command}"/>
+              <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
+            </Style>
+            </NativeMenu.Styles>
+          
+         <!-- <NativeMenuItem Text="File">
                         <NativeMenuItem Text="New File" Command="{Binding NewFileCommand} "/>
                         <NativeMenuItem Text="New Window"/>
                         <NativeMenuItem Text="Open Recent"> 
@@ -28,7 +38,7 @@
                         <NativeMenuItem Text="Copy"/>
                         <NativeMenuItem Text="Paste"/>
                         <NativeMenuItem Text="Find"/>
-                    </NativeMenuItem>
+                    </NativeMenuItem>-->
                 </NativeMenu>
             </StackPanel>
             
