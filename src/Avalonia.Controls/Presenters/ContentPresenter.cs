@@ -229,7 +229,6 @@ namespace Avalonia.Controls.Presenters
                 if (oldChild != null)
                 {
                     VisualChildren.Remove(oldChild);
-                    ((ISetInheritanceParent)oldChild).SetParent(oldChild.Parent);
                 }
 
                 if (oldChild?.Parent == this)
@@ -238,7 +237,7 @@ namespace Avalonia.Controls.Presenters
                     // template.
                     LogicalChildren.Remove(oldChild);
                 }
-                else
+                else if (TemplatedParent != null)
                 {
                     // If we're in a ContentControl's template then invoke ChildChanging to let
                     // ContentControlMixin handle removing the logical child.
@@ -248,6 +247,10 @@ namespace Avalonia.Controls.Presenters
                         oldChild,
                         newChild,
                         BindingPriority.LocalValue));
+                }
+                else if (oldChild != null)
+                {
+                    ((ISetInheritanceParent)oldChild).SetParent(oldChild.Parent);
                 }
             }
 
@@ -434,6 +437,7 @@ namespace Avalonia.Controls.Presenters
             {
                 VisualChildren.Remove(Child);
                 LogicalChildren.Remove(Child);
+                ((ISetInheritanceParent)Child).SetParent(Child.Parent);
                 Child = null;
                 _dataTemplate = null;
             }
