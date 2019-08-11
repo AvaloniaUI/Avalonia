@@ -6,10 +6,13 @@
         Foreground="{DynamicResource ThemeForegroundBrush}"
         FontSize="{DynamicResource FontSizeNormal}">
   <Grid>
-    <ComboBox x:Name="Themes" SelectedIndex="0" Width="100" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-      <ComboBoxItem>Light</ComboBoxItem>
-      <ComboBoxItem>Dark</ComboBoxItem>
-    </ComboBox>
+    <Grid.Styles>
+        <Style Selector="TextBlock.h2">
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="MaxWidth" Value="400"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+    </Grid.Styles>  
     <TabControl Classes="sidebar" Name="Sidebar">
       <TabItem Header="AutoCompleteBox"><pages:AutoCompleteBoxPage/></TabItem>
       <TabItem Header="Border"><pages:BorderPage/></TabItem>
@@ -21,7 +24,12 @@
       <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
       <TabItem Header="ComboBox"><pages:ComboBoxPage/></TabItem>
       <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
-      <TabItem Header="DataGrid"><pages:DataGridPage/></TabItem>
+      <!-- DataGrid is our special snowflake -->  
+      <TabItem Header="DataGrid" 
+               ScrollViewer.VerticalScrollBarVisibility="Disabled"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+          <pages:DataGridPage/>
+      </TabItem>
       <TabItem Header="DatePicker"><pages:DatePickerPage/></TabItem>
       <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
       <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
@@ -42,6 +50,12 @@
       <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
       <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
       <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
+    <TabControl.Tag>
+        <ComboBox x:Name="Themes" SelectedIndex="0" Width="100" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+            <ComboBoxItem>Light</ComboBoxItem>
+            <ComboBoxItem>Dark</ComboBoxItem>
+        </ComboBox>
+    </TabControl.Tag>
     </TabControl>
   </Grid>
 </UserControl>
