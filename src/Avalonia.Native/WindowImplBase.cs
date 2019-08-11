@@ -15,7 +15,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
-    public class WindowBaseImpl : IWindowBaseImpl,
+    public abstract class WindowBaseImpl : IWindowBaseImpl,
         IFramebufferPlatformSurface
     {
         IInputRoot _inputRoot;
@@ -91,6 +91,7 @@ namespace Avalonia.Native
         public Action<Size> Resized { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice => AvaloniaNativePlatform.MouseDevice;
+        public abstract IPopupImpl CreatePopup();
 
 
         class FramebufferWrapper : ILockedFramebuffer

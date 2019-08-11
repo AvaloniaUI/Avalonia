@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
-    public class ValueConverterTests
+    public class ValueConverterTests : XamlTestBase
     {
         [Fact]
         public void ValueConverter_Special_Values_Work()

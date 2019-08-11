@@ -96,7 +96,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            return result.Constrain(availableSize);
+            return result;
         }
 
         /// <inheritdoc/>

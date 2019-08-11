@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests
 {
-    public class StyleTests
+    public class StyleTests : XamlTestBase
     {
         [Fact]
         public void Binding_Should_Be_Assigned_To_Setter_Value_Instead_Of_Bound()

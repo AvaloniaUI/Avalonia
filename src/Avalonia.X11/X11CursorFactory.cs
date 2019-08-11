@@ -24,7 +24,7 @@ namespace Avalonia.X11
                 {StandardCursorType.No, CursorFontShape.XC_X_cursor},
                 {StandardCursorType.Wait, CursorFontShape.XC_watch},
                 {StandardCursorType.AppStarting, CursorFontShape.XC_watch},
-                {StandardCursorType.BottomSize, CursorFontShape.XC_bottom_side},
+                {StandardCursorType.BottomSide, CursorFontShape.XC_bottom_side},
                 {StandardCursorType.DragCopy, CursorFontShape.XC_center_ptr},
                 {StandardCursorType.DragLink, CursorFontShape.XC_fleur},
                 {StandardCursorType.DragMove, CursorFontShape.XC_diamond_cross},

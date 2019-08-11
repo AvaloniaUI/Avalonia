@@ -277,8 +277,7 @@ namespace Avalonia.Controls.UnitTests
             var screens = new Mock<IScreenImpl>();
             screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object, screen2.Object });
 
-            var windowImpl = new Mock<IWindowImpl>();
-            windowImpl.SetupProperty(x => x.Position);
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
             windowImpl.Setup(x => x.Scaling).Returns(1);
             windowImpl.Setup(x => x.Screen).Returns(screens.Object);
@@ -302,14 +301,12 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Be_Centered_Relative_To_Owner_When_WindowStartupLocation_Is_CenterOwner()
         {
-            var parentWindowImpl = new Mock<IWindowImpl>();
-            parentWindowImpl.SetupProperty(x => x.Position);
+            var parentWindowImpl = MockWindowingPlatform.CreateWindowMock();
             parentWindowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
             parentWindowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1920, 1080));
             parentWindowImpl.Setup(x => x.Scaling).Returns(1);
 
-            var windowImpl = new Mock<IWindowImpl>();
-            windowImpl.SetupProperty(x => x.Position);
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(320, 200));
             windowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1920, 1080));
             windowImpl.Setup(x => x.Scaling).Returns(1);

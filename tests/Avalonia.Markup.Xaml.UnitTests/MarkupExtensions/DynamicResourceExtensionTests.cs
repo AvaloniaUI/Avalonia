@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
-    public class DynamicResourceExtensionTests
+    public class DynamicResourceExtensionTests : XamlTestBase
     {
         [Fact]
         public void DynamicResource_Can_Be_Assigned_To_Property()

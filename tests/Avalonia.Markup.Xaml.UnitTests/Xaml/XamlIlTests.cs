@@ -5,10 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Data.Converters;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
@@ -18,7 +15,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests
 {
-    public class XamlIlTests
+    public class XamlIlTests : XamlTestBase
     {
         [Fact]
         public void Binding_Button_IsPressed_ShouldWork()

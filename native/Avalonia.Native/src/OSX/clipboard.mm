@@ -8,6 +8,13 @@ class Clipboard : public ComSingleObject<IAvnClipboard, &IID_IAvnClipboard>
 {
 public:
     FORWARD_IUNKNOWN()
+    
+    Clipboard()
+    {
+        NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
+        [pasteBoard stringForType:NSPasteboardTypeString];
+    }
+    
     virtual HRESULT GetText (IAvnString**ppv) override
     {
         @autoreleasepool
@@ -39,7 +46,9 @@ public:
     {
         @autoreleasepool
         {
-            [[NSPasteboard generalPasteboard] clearContents];
+            NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
+            [pasteBoard clearContents];
+            [pasteBoard setString:@"" forType:NSPasteboardTypeString];
         }
         
         return S_OK;

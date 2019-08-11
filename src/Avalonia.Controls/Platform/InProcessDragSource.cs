@@ -33,9 +33,10 @@ namespace Avalonia.Platform
             _dragDrop = AvaloniaLocator.Current.GetService<IDragDropDevice>();
         }
 
-        public async Task<DragDropEffects> DoDragDrop(IDataObject data, DragDropEffects allowedEffects)
+        public async Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent, IDataObject data, DragDropEffects allowedEffects)
         {
             Dispatcher.UIThread.VerifyAccess();
+            triggerEvent.Pointer.Capture(null);
             if (_draggedData == null)
             {
                 _draggedData = data;
