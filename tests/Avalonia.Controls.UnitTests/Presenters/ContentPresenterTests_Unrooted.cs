@@ -98,5 +98,22 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.ApplyTemplate();
             Assert.IsType<Decorator>(target.Child);
         }
+
+        [Fact]
+        public void Should_Reset_InheritanceParent_When_Child_Removed()
+        {
+            var logicalParent = new Canvas();
+            var child = new TextBlock();
+            var target = new ContentPresenter();
+
+            ((ISetLogicalParent)child).SetParent(logicalParent);
+            target.Content = child;
+            target.UpdateChild();
+            target.Content = null;
+            target.UpdateChild();
+
+            // InheritanceParent is exposed via StylingParent.
+            Assert.Same(logicalParent, ((IStyledElement)child).StylingParent);
+        }
     }
 }

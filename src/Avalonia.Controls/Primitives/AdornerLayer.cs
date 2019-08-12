@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Primitives
         public static AdornerLayer GetAdornerLayer(IVisual visual)
         {
             return visual.GetVisualAncestors()
-                .OfType<AdornerDecorator>()
+                .OfType<VisualLayerManager>()
                 .FirstOrDefault()
                 ?.AdornerLayer;
         }

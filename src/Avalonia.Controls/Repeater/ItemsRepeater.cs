@@ -707,9 +707,9 @@ namespace Avalonia.Controls
             }
         }
 
-        private void InvalidateArrangeForLayout(object sender, EventArgs e) => InvalidateMeasure();
+        private void InvalidateMeasureForLayout(object sender, EventArgs e) => InvalidateMeasure();
 
-        private void InvalidateMeasureForLayout(object sender, EventArgs e) => InvalidateArrange();
+        private void InvalidateArrangeForLayout(object sender, EventArgs e) => InvalidateArrange();
 
         private VirtualizingLayoutContext GetLayoutContext()
         {

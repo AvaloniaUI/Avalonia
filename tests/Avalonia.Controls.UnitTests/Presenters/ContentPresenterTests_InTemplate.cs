@@ -1,7 +1,11 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -256,7 +260,6 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.IsType<Canvas>(target.Child);
         }
 
-
         [Fact]
         public void Should_Not_Bind_Old_Child_To_New_DataContext()
         {
@@ -281,6 +284,65 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Content = 42;
         }
 
+        [Fact]
+        public void Should_Not_Bind_Child_To_Wrong_DataContext_When_Removing()
+        {
+            // Test for issue #2823
+            var canvas = new Canvas();
+            var (target, host) = CreateTarget();
+            var viewModel = new TestViewModel { Content = "foo" };
+            var dataContexts = new List<object>();
+
+            target.Bind(ContentPresenter.ContentProperty, (IBinding)new TemplateBinding(ContentControl.ContentProperty));
+            canvas.GetObservable(ContentPresenter.DataContextProperty).Subscribe(x => dataContexts.Add(x));
+
+            host.DataTemplates.Add(new FuncDataTemplate<string>((_, __) => canvas));
+            host.Bind(ContentControl.ContentProperty, new Binding(nameof(TestViewModel.Content)));
+            host.DataContext = viewModel;
+
+            Assert.Same(canvas, target.Child);
+
+            viewModel.Content = 42;
+
+            Assert.Equal(new object[]
+            {
+                null,
+                "foo",
+                null,
+            }, dataContexts);
+        }
+
+        [Fact]
+        public void Should_Set_InheritanceParent_Even_When_LogicalParent_Is_Already_Set()
+        {
+            var logicalParent = new Canvas();
+            var child = new TextBlock();
+            var (target, host) = CreateTarget();
+
+            ((ISetLogicalParent)child).SetParent(logicalParent);
+            target.Content = child;
+
+            Assert.Same(logicalParent, child.Parent);
+
+            // InheritanceParent is exposed via StylingParent.
+            Assert.Same(target, ((IStyledElement)child).StylingParent);
+        }
+
+        [Fact]
+        public void Should_Reset_InheritanceParent_When_Child_Removed()
+        {
+            var logicalParent = new Canvas();
+            var child = new TextBlock();
+            var (target, _) = CreateTarget();
+
+            ((ISetLogicalParent)child).SetParent(logicalParent);
+            target.Content = child;
+            target.Content = null;
+
+            // InheritanceParent is exposed via StylingParent.
+            Assert.Same(logicalParent, ((IStyledElement)child).StylingParent);
+        }
+
         (ContentPresenter presenter, ContentControl templatedParent) CreateTarget()
         {
             var templatedParent = new ContentControl
@@ -301,6 +363,26 @@ namespace Avalonia.Controls.UnitTests.Presenters
         private class TestContentControl : ContentControl
         {
             public IControl Child { get; set; }
+        }
+
+        private class TestViewModel : INotifyPropertyChanged
+        {
+            private object _content;
+
+            public object Content
+            {
+                get => _content;
+                set
+                {
+                    if (_content != value)
+                    {
+                        _content = value;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Content)));
+                    }
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
         }
     }
 }
