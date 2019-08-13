@@ -5,10 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Data.Converters;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
@@ -18,7 +15,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests
 {
-    public class XamlIlTests
+    public class XamlIlTests : XamlTestBase
     {
         [Fact]
         public void Binding_Button_IsPressed_ShouldWork()
@@ -232,6 +229,38 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 parsed.Show();
                 tb.ApplyTemplate();
                 Assert.Equal(100, XamlIlBugTestsStaticClassWithAttachedProperty.GetTestInt(tb));
+            }
+        }
+
+        [Fact]
+        public void DataTemplates_Should_Resolve_Named_Controls_From_Parent_Scope()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parsed = (Window)AvaloniaXamlLoader.Parse(@"
+<Window
+  xmlns='https://github.com/avaloniaui'
+  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+>
+  <StackPanel>
+    <StackPanel.DataTemplates>
+      <DataTemplate DataType='{x:Type x:String}'>
+       <TextBlock Classes='target' Text='{Binding #txt.Text}'/>
+      </DataTemplate>
+    </StackPanel.DataTemplates>
+    <TextBlock Text='Test' Name='txt'/>
+    <ContentControl Content='tst'/>
+  </StackPanel>
+</Window>
+");
+                parsed.DataContext = new List<string>() {"Test"};
+                parsed.Show();
+                parsed.ApplyTemplate();
+                var cc = ((ContentControl)((StackPanel)parsed.Content).Children.Last());
+                cc.ApplyTemplate();
+                var templated = cc.GetVisualDescendants().OfType<TextBlock>()
+                    .First(x => x.Classes.Contains("target"));
+                Assert.Equal("Test", templated.Text);
             }
         }
     }

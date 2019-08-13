@@ -150,6 +150,7 @@ namespace Avalonia.Controls.Mixins
                 if (oldValue is IControl child)
                 {
                     logicalChildren.Remove(child);
+                    ((ISetInheritanceParent)child).SetParent(child.Parent);
                 }
 
                 child = newValue as IControl;

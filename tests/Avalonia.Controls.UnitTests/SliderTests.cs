@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.Layout;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests

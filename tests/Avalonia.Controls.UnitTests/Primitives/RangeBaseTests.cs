@@ -6,6 +6,7 @@ using System.ComponentModel;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Layout;
 using Avalonia.Markup.Data;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -111,7 +112,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var target = new TestRange()
             {
-                Template = new FuncControlTemplate<RangeBase>(c =>
+                Template = new FuncControlTemplate<RangeBase>((c, scope) =>
                 {
                     track = new Track()
                     {
@@ -122,7 +123,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                         Name = "PART_Track",
                         Thumb = new Thumb()
-                    };
+                    }.RegisterInNameScope(scope);
 
                     if (useXamlBinding)
                     {

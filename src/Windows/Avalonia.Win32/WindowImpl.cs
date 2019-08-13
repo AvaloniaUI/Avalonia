@@ -131,6 +131,8 @@ namespace Avalonia.Win32
             }
         }
 
+        public void Move(PixelPoint point) => Position = point;
+
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
             _minSize = minSize;
@@ -248,10 +250,7 @@ namespace Avalonia.Win32
             UnmanagedMethods.SetActiveWindow(_hwnd);
         }
 
-        public IPopupImpl CreatePopup()
-        {
-            return new PopupImpl();
-        }
+        public IPopupImpl CreatePopup() => Win32Platform.UseOverlayPopups ? null : new PopupImpl(this);
 
         public void Dispose()
         {
@@ -513,6 +512,10 @@ namespace Avalonia.Win32
                             RawKeyEventType.KeyDown,
                             KeyInterop.KeyFromVirtualKey(ToInt32(wParam)), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
+
+                case UnmanagedMethods.WindowsMessage.WM_MENUCHAR:
+                    // mute the system beep
+                    return (IntPtr)((Int32)UnmanagedMethods.MenuCharParam.MNC_CLOSE << 16);
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYUP:
                 case UnmanagedMethods.WindowsMessage.WM_SYSKEYUP:

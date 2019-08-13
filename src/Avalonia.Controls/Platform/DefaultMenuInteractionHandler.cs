@@ -396,7 +396,7 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void WindowDeactivated(object sender, EventArgs e)
         {
-            Menu.Close();
+            Menu?.Close();
         }
 
         protected void Click(IMenuItem item)

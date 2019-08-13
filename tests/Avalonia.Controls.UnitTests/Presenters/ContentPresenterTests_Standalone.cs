@@ -54,7 +54,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var target = new ContentPresenter
             {
                 ContentTemplate =
-                    new FuncDataTemplate<string>(t => new ContentControl() { Content = t }, false)
+                    new FuncDataTemplate<string>((t, _) => new ContentControl() { Content = t }, false)
             };
 
             var parentMock = new Mock<Control>();
@@ -93,14 +93,14 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             var contentControl = new ContentControl
             {
-                Template = new FuncControlTemplate<ContentControl>(c => new ContentPresenter()
+                Template = new FuncControlTemplate<ContentControl>((c, scope) => new ContentPresenter()
                 {
                     Name = "PART_ContentPresenter",
                     [~ContentPresenter.ContentProperty] = c[~ContentControl.ContentProperty],
                     [~ContentPresenter.ContentTemplateProperty] = c[~ContentControl.ContentTemplateProperty]
-                }),
+                }.RegisterInNameScope(scope)),
                 ContentTemplate =
-                    new FuncDataTemplate<string>(t => new ContentControl() { Content = t }, false)
+                    new FuncDataTemplate<string>((t, _) => new ContentControl() { Content = t }, false)
             };
 
             var parentMock = new Mock<Control>();
@@ -144,7 +144,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var target = new ContentPresenter
             {
                 ContentTemplate =
-                    new FuncDataTemplate<string>(t => new ContentControl() { Content = t }, false)
+                    new FuncDataTemplate<string>((t, _) => new ContentControl() { Content = t }, false)
             };
 
             var parentMock = new Mock<Control>();
@@ -179,7 +179,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var target = new ContentPresenter
             {
                 ContentTemplate =
-                    new FuncDataTemplate<string>(t => new ContentControl() { Content = t }, false)
+                    new FuncDataTemplate<string>((t, _) => new ContentControl() { Content = t }, false)
             };
 
             target.Content = "foo";
@@ -235,8 +235,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 DataTemplates =
                 {
-                    new FuncDataTemplate<string>(x => textBlock),
-                    new FuncDataTemplate<int>(x => new Canvas()),
+                    new FuncDataTemplate<string>((x, _) => textBlock),
+                    new FuncDataTemplate<int>((x, _) => new Canvas()),
                 },
             };
 
@@ -250,6 +250,22 @@ namespace Avalonia.Controls.UnitTests.Presenters
             };
 
             target.Content = 42;
+        }
+
+        [Fact]
+        public void Should_Reset_InheritanceParent_When_Child_Removed()
+        {
+            var logicalParent = new Canvas();
+            var child = new TextBlock();
+            var target = new ContentPresenter();
+            var root = new TestRoot(target);
+
+            ((ISetLogicalParent)child).SetParent(logicalParent);
+            target.Content = child;
+            target.Content = null;
+
+            // InheritanceParent is exposed via StylingParent.
+            Assert.Same(logicalParent, ((IStyledElement)child).StylingParent);
         }
     }
 }

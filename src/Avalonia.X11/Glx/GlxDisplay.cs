@@ -90,6 +90,19 @@ namespace Avalonia.X11.Glx
             GlInterface = new GlInterface(GlxInterface.GlxGetProcAddress);
             if (GlInterface.Version == null)
                 throw new OpenGlException("GL version string is null, aborting");
+            if (GlInterface.Renderer == null)
+                throw new OpenGlException("GL renderer string is null, aborting");
+
+            if (Environment.GetEnvironmentVariable("AVALONIA_GLX_IGNORE_RENDERER_BLACKLIST") != "1")
+            {
+                var blacklist = AvaloniaLocator.Current.GetService<X11PlatformOptions>()
+                    ?.GlxRendererBlacklist;
+                if (blacklist != null)
+                    foreach(var item in blacklist)
+                        if (GlInterface.Renderer.Contains(item))
+                            throw new OpenGlException($"Renderer '{GlInterface.Renderer}' is blacklisted by '{item}'");
+            }
+            
         }
 
         public void ClearContext() => Glx.MakeContextCurrent(_x11.Display,

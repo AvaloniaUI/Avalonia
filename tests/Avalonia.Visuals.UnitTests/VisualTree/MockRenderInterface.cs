@@ -96,7 +96,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 return _impl.FillContains(point);
             }
 
-            public Rect GetRenderBounds(Pen pen)
+            public Rect GetRenderBounds(IPen pen)
             {
                 throw new NotImplementedException();
             }
@@ -111,7 +111,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 return _impl;
             }
 
-            public bool StrokeContains(Pen pen, Point point)
+            public bool StrokeContains(IPen pen, Point point)
             {
                 throw new NotImplementedException();
             }

@@ -94,7 +94,7 @@ namespace Avalonia.Media
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p2">The second point of the line.</param>
-        public void DrawLine(Pen pen, Point p1, Point p2)
+        public void DrawLine(IPen pen, Point p1, Point p2)
         {
             if (PenIsVisible(pen))
             {
@@ -108,7 +108,7 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
+        public void DrawGeometry(IBrush brush, IPen pen, Geometry geometry)
         {
             Contract.Requires<ArgumentNullException>(geometry != null);
 
@@ -124,7 +124,7 @@ namespace Avalonia.Media
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f)
+        public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0.0f)
         {
             if (PenIsVisible(pen))
             {
@@ -328,7 +328,7 @@ namespace Avalonia.Media
                 PlatformImpl.Dispose();
         }
 
-        private static bool PenIsVisible(Pen pen)
+        private static bool PenIsVisible(IPen pen)
         {
             return pen?.Brush != null && pen.Thickness > 0;
         }

@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Data
 {
-    public class BindingTests_TemplatedParent
+    public class BindingTests_TemplatedParent : XamlTestBase
     {
         [Fact]
         public void TemplateBinding_With_Null_Path_Works()

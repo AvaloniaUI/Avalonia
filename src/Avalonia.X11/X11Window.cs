@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Text;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
@@ -21,6 +22,7 @@ namespace Avalonia.X11
     unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client
     {
         private readonly AvaloniaX11Platform _platform;
+        private readonly IWindowImpl _popupParent;
         private readonly bool _popup;
         private readonly X11Info _x11;
         private bool _invalidated;
@@ -38,6 +40,7 @@ namespace Avalonia.X11
         private bool _mapped;
         private HashSet<X11Window> _transientChildren = new HashSet<X11Window>();
         private X11Window _transientParent;
+        private double? _scalingOverride;
         public object SyncRoot { get; } = new object();
 
         class InputEventContainer
@@ -47,10 +50,10 @@ namespace Avalonia.X11
         private readonly Queue<InputEventContainer> _inputQueue = new Queue<InputEventContainer>();
         private InputEventContainer _lastEvent;
         private bool _useRenderWindow = false;
-        public X11Window(AvaloniaX11Platform platform, bool popup)
+        public X11Window(AvaloniaX11Platform platform, IWindowImpl popupParent)
         {
             _platform = platform;
-            _popup = popup;
+            _popup = popupParent != null;
             _x11 = platform.Info;
             _mouse = platform.MouseDevice;
             _keyboard = platform.KeyboardDevice;
@@ -66,7 +69,7 @@ namespace Avalonia.X11
                          | SetWindowValuemask.BackPixmap | SetWindowValuemask.BackingStore
                          | SetWindowValuemask.BitGravity | SetWindowValuemask.WinGravity;
 
-            if (popup)
+            if (_popup)
             {
                 attr.override_redirect = true;
                 valueMask |= SetWindowValuemask.OverrideRedirect;
@@ -150,6 +153,8 @@ namespace Avalonia.X11
             _xic = XCreateIC(_x11.Xim, XNames.XNInputStyle, XIMProperties.XIMPreeditNothing | XIMProperties.XIMStatusNothing,
                 XNames.XNClientWindow, _handle, IntPtr.Zero);
             XFlush(_x11.Display);
+            if(_popup)
+                PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
         }
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -419,10 +424,21 @@ namespace Avalonia.X11
                     return;
                 var buffer = stackalloc byte[40];
 
-                var latinKeysym = XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, 0);
+                var index = ev.KeyEvent.state.HasFlag(XModifierMask.ShiftMask);
+                
+                // We need the latin key, since it's mainly used for hotkeys, we use a different API for text anyway
+                var key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 1 : 0).ToInt32();
+                
+                // Manually switch the Shift index for the keypad,
+                // there should be a proper way to do this
+                if (ev.KeyEvent.state.HasFlag(XModifierMask.Mod2Mask)
+                    && key > X11Key.Num_Lock && key <= X11Key.KP_9)
+                    key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 0 : 1).ToInt32();
+                
+                
                 ScheduleInput(new RawKeyEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(),
                     ev.type == XEventName.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-                    X11KeyTransform.ConvertKey(latinKeysym), TranslateModifiers(ev.KeyEvent.state)), ref ev);
+                    X11KeyTransform.ConvertKey(key), TranslateModifiers(ev.KeyEvent.state)), ref ev);
 
                 if (ev.type == XEventName.KeyPress)
                 {
@@ -442,22 +458,28 @@ namespace Avalonia.X11
             }
         }
 
-        private bool UpdateScaling()
+        private bool UpdateScaling(bool skipResize = false)
         {
             lock (SyncRoot)
             {
-                var monitor = _platform.X11Screens.Screens.OrderBy(x => x.PixelDensity)
-                    .FirstOrDefault(m => m.Bounds.Contains(Position));
-                var newScaling = monitor?.PixelDensity ?? Scaling;
+                double newScaling;
+                if (_scalingOverride.HasValue)
+                    newScaling = _scalingOverride.Value;
+                else
+                {
+                    var monitor = _platform.X11Screens.Screens.OrderBy(x => x.PixelDensity)
+                        .FirstOrDefault(m => m.Bounds.Contains(Position));
+                    newScaling = monitor?.PixelDensity ?? Scaling;
+                }
+
                 if (Scaling != newScaling)
                 {
-                    Console.WriteLine(
-                        $"Updating scaling from {Scaling} to {newScaling} as a response to position change to {Position}");
                     var oldScaledSize = ClientSize;
                     Scaling = newScaling;
                     ScalingChanged?.Invoke(Scaling);
                     SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
-                    Resize(oldScaledSize, true);
+                    if(!skipResize)
+                        Resize(oldScaledSize, true);
                     return true;
                 }
 
@@ -719,6 +741,14 @@ namespace Avalonia.X11
 
 
         public void Resize(Size clientSize) => Resize(clientSize, false);
+        public void Move(PixelPoint point) => Position = point;
+        private void MoveResize(PixelPoint position, Size size, double scaling)
+        {
+            Move(position);
+            _scalingOverride = scaling;
+            UpdateScaling(true);
+            Resize(size, true);
+        }
 
         PixelSize ToPixelSize(Size size) => new PixelSize((int)(size.Width * Scaling), (int)(size.Height * Scaling));
         
@@ -782,7 +812,9 @@ namespace Avalonia.X11
         }
 
         public IMouseDevice MouseDevice => _mouse;
-       
+        public IPopupImpl CreatePopup() 
+            => _platform.Options.OverlayPopups ? null : new X11Window(_platform, this);
+
         public void Activate()
         {
             if (_x11.Atoms._NET_ACTIVE_WINDOW != IntPtr.Zero)
@@ -926,6 +958,8 @@ namespace Avalonia.X11
         {
             SendNetWMMessage(_x11.Atoms._NET_WM_STATE,
                 (IntPtr)(value ? 0 : 1), _x11.Atoms._NET_WM_STATE_SKIP_TASKBAR, IntPtr.Zero);
-        }        
+        }
+
+        public IPopupPositioner PopupPositioner { get; }
     }
 }

@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
-    public class BindingTests
+    public class BindingTests : XamlTestBase
     {
         [Fact]
         public void Binding_To_DataContext_Works()
@@ -331,6 +331,35 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
+        [Fact(Skip="Issue #2592")]
+        public void MultiBinding_To_TextBlock_Text_With_StringConverter_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TextBlock Name='textBlock'>
+        <TextBlock.Text>
+            <MultiBinding StringFormat='\{0\} \{1\}!'>
+                <Binding Path='Greeting1'/>
+                <Binding Path='Greeting2'/>
+            </MultiBinding>
+        </TextBlock.Text>
+    </TextBlock> 
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                textBlock.DataContext = new WindowViewModel();
+                window.ApplyTemplate();
+
+                Assert.Equal("Hello World!", textBlock.Text);
+            }
+        }
+
         [Fact]
         public void Binding_OneWayToSource_Works()
         {
@@ -356,6 +385,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         private class WindowViewModel
         {
             public bool ShowInTaskbar { get; set; }
+            public string Greeting1 { get; set; } = "Hello";
+            public string Greeting2 { get; set; } = "World";
         }
     }
 }

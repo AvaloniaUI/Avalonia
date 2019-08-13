@@ -16,20 +16,9 @@ namespace Avalonia.Platform
         void Hide();
 
         /// <summary>
-        /// Starts moving a window with left button being held. Should be called from left mouse button press event handler.
-        /// </summary>
-        void BeginMoveDrag();
-
-        /// <summary>
-        /// Starts resizing a window. This function is used if an application has window resizing controls. 
-        /// Should be called from left mouse button press event handler
-        /// </summary>
-        void BeginResizeDrag(WindowEdge edge);
-
-        /// <summary>
         /// Gets the position of the window in device pixels.
         /// </summary>
-        PixelPoint Position { get; set; }
+        PixelPoint Position { get; }
         
         /// <summary>
         /// Gets or sets a method called when the window's position changes.
@@ -60,17 +49,6 @@ namespace Avalonia.Platform
         /// Gets the maximum size of a window on the system.
         /// </summary>
         Size MaxClientSize { get; }
-
-        /// <summary>
-        /// Sets the client size of the top level.
-        /// </summary>
-        void Resize(Size clientSize);
-
-        /// <summary>
-        /// Minimum width of the window.
-        /// </summary>
-        /// 
-        void SetMinMaxSize(Size minSize, Size maxSize);
 
         /// <summary>
         /// Sets whether this window appears on top of all other windows

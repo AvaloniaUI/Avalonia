@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
@@ -13,7 +14,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.DesignerSupport.Remote
 {
-    class WindowStub : IPopupImpl, IWindowImpl
+    class WindowStub : IWindowImpl, IPopupImpl
     {
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
@@ -29,10 +30,23 @@ namespace Avalonia.DesignerSupport.Remote
         public Func<bool> Closing { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
+        public IPopupImpl CreatePopup() => new WindowStub(this);
+
         public PixelPoint Position { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
+
+        public WindowStub(IWindowImpl parent = null)
+        {
+            if (parent != null)
+                PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent,
+                    (_, size, __) =>
+                    {
+                        Resize(size);
+                    }));
+        }
+        
         public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
         public void Dispose()
         {
@@ -77,6 +91,11 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void Move(PixelPoint point)
+        {
+            
+        }
+
         public IScreenImpl Screen { get; } = new ScreenStub();
 
         public void SetMinMaxSize(Size minSize, Size maxSize)
@@ -110,6 +129,8 @@ namespace Avalonia.DesignerSupport.Remote
         public void SetTopmost(bool value)
         {
         }
+
+        public IPopupPositioner PopupPositioner { get; }
     }
 
     class ClipboardStub : IClipboard

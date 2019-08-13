@@ -202,7 +202,7 @@ namespace Avalonia.Controls
         {
             if (!e.Handled)
             {
-                if (_popup?.PopupRoot != null && ((IVisual)e.Source).GetVisualRoot() == _popup?.PopupRoot)
+                if (_popup?.IsInsidePopup((IVisual)e.Source) == true)
                 {
                     if (UpdateSelectionFromEventSource(e.Source))
                     {
@@ -333,8 +333,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                var selector = MemberSelector;
-                SelectionBoxItem = selector != null ? selector.Select(item) : item;
+                SelectionBoxItem = item;
             }
         }
 

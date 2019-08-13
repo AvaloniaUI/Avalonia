@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -10,7 +11,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
-    public class BindingExtensionTests
+    public class BindingExtensionTests : XamlTestBase
     {
 
         [Fact]
@@ -58,11 +59,15 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 {
                     new Setter(
                         Window.TemplateProperty,
-                        new FuncControlTemplate<Window>(x =>
-                            new ContentPresenter
+                        new FuncControlTemplate<Window>((x, scope) =>
+                            new VisualLayerManager
                             {
-                                Name = "PART_ContentPresenter",
-                                [!ContentPresenter.ContentProperty] = x[!Window.ContentProperty],
+                                Child =
+                                    new ContentPresenter
+                                    {
+                                        Name = "PART_ContentPresenter",
+                                        [!ContentPresenter.ContentProperty] = x[!Window.ContentProperty],
+                                    }.RegisterInNameScope(scope)
                             }))
                 }
             };

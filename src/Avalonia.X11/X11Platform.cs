@@ -74,17 +74,12 @@ namespace Avalonia.X11
         public IntPtr Display { get; set; }
         public IWindowImpl CreateWindow()
         {
-            return new X11Window(this, false);
+            return new X11Window(this, null);
         }
 
         public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
             throw new NotSupportedException();
-        }
-
-        public IPopupImpl CreatePopup()
-        {
-            return new X11Window(this, true);
         }
     }
 }
@@ -96,6 +91,15 @@ namespace Avalonia
     {
         public bool UseEGL { get; set; }
         public bool UseGpu { get; set; } = true;
+        public bool OverlayPopups { get; set; }
+
+        public List<string> GlxRendererBlacklist { get; set; } = new List<string>
+        {
+            // llvmpipe is a software GL rasterizer. If it's returned by glGetString,
+            // that usually means that something in the system is horribly misconfigured
+            // and sometimes attempts to use GLX might cause a segfault
+            "llvmpipe"
+        };
         public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "AvaloniaApplication";
         public bool? EnableMultiTouch { get; set; }
     }
