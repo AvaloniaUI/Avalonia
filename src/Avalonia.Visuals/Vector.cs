@@ -283,5 +283,29 @@ namespace Avalonia
         /// <returns>The scaled vector.</returns>
         public static Vector Negate(Vector vector)
             => new Vector(-vector._x, -vector._y);
+
+        /// <summary>
+        /// Returnes the vector (0.0, 0.0)
+        /// </summary>
+        public static Vector Zero
+            => new Vector(0, 0);
+
+        /// <summary>
+        /// Returnes the vector (1.0, 1.0)
+        /// </summary>
+        public static Vector One
+            => new Vector(1, 1);
+
+        /// <summary>
+        /// Returnes the vector (1.0, 0.0)
+        /// </summary>
+        public static Vector UnitX
+            => new Vector(1, 0);
+
+        /// <summary>
+        /// Returnes the vector (0.0, 1.0)
+        /// </summary>
+        public static Vector UnitY
+            => new Vector(0, 1);
     }
 }
