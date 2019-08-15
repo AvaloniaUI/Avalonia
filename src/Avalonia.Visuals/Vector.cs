@@ -91,6 +91,11 @@ namespace Avalonia
         public double Length => Math.Sqrt(X * X + Y * Y);
 
         /// <summary>
+        /// Squared Length of the vector
+        /// </summary>
+        public double SquaredLength => Math.Sqrt(Length);
+
+        /// <summary>
         /// Negates a vector.
         /// </summary>
         /// <param name="a">The vector.</param>
