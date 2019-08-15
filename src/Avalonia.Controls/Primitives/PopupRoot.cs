@@ -2,8 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Controls.Platform;
-using Avalonia.Controls.Presenters;
+using System.Collections.Generic;
+using System.Reactive.Disposables;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -16,9 +17,10 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost
+    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
     {
-        private IDisposable _presenterSubscription;
+        private readonly TopLevel _parent;
+        private PopupPositionerParameters _positionerParameters;
 
         /// <summary>
         /// Initializes static members of the <see cref="PopupRoot"/> class.
@@ -31,8 +33,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Initializes a new instance of the <see cref="PopupRoot"/> class.
         /// </summary>
-        public PopupRoot()
-            : this(null)
+        public PopupRoot(TopLevel parent, IPopupImpl impl)
+            : this(parent, impl,null)
         {
         }
 
@@ -42,9 +44,10 @@ namespace Avalonia.Controls.Primitives
         /// <param name="dependencyResolver">
         /// The dependency resolver to use. If null the default dependency resolver will be used.
         /// </param>
-        public PopupRoot(IAvaloniaDependencyResolver dependencyResolver)
-            : base(PlatformManager.CreatePopup(), dependencyResolver)
+        public PopupRoot(TopLevel parent, IPopupImpl impl, IAvaloniaDependencyResolver dependencyResolver)
+            : base(impl, dependencyResolver)
         {
+            _parent = parent;
         }
 
         /// <summary>
@@ -74,73 +77,61 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         public void Dispose() => PlatformImpl?.Dispose();
 
+        private void UpdatePosition()
+        {
+            PlatformImpl?.PopupPositioner.Update(_positionerParameters);
+        }
+
+        public void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
+            PopupPositioningEdge anchor = PopupPositioningEdge.None,
+            PopupPositioningEdge gravity = PopupPositioningEdge.None)
+        {
+            _positionerParameters.ConfigurePosition(_parent, target,
+                placement, offset, anchor, gravity);
+
+            if (_positionerParameters.Size != default)
+                UpdatePosition();
+        }
+
+        public void SetChild(IControl control) => Content = control;
+
+        IVisual IPopupHost.HostedVisualTreeRoot => this;
+        
+        public IDisposable BindConstraints(AvaloniaObject popup, StyledProperty<double> widthProperty, StyledProperty<double> minWidthProperty,
+            StyledProperty<double> maxWidthProperty, StyledProperty<double> heightProperty, StyledProperty<double> minHeightProperty,
+            StyledProperty<double> maxHeightProperty, StyledProperty<bool> topmostProperty)
+        {
+            var bindings = new List<IDisposable>();
+
+            void Bind(AvaloniaProperty what, AvaloniaProperty to) => bindings.Add(this.Bind(what, popup[~to]));
+            Bind(WidthProperty, widthProperty);
+            Bind(MinWidthProperty, minWidthProperty);
+            Bind(MaxWidthProperty, maxWidthProperty);
+            Bind(HeightProperty, heightProperty);
+            Bind(MinHeightProperty, minHeightProperty);
+            Bind(MaxHeightProperty, maxHeightProperty);
+            Bind(TopmostProperty, topmostProperty);
+            return Disposable.Create(() =>
+            {
+                foreach (var x in bindings)
+                    x.Dispose();
+            });
+        }
+
         /// <summary>
-        /// Moves the Popups position so that it doesnt overlap screen edges.
-        /// This method can be called immediately after Show has been called.
+        /// Carries out the arrange pass of the window.
         /// </summary>
-        public void SnapInsideScreenEdges()
+        /// <param name="finalSize">The final window size.</param>
+        /// <returns>The <paramref name="finalSize"/> parameter unchanged.</returns>
+        protected override Size ArrangeOverride(Size finalSize)
         {
-            var screen = (VisualRoot as WindowBase)?.Screens?.ScreenFromPoint(Position);
-
-            if (screen != null)
+            using (BeginAutoSizing())
             {
-                var scaling = VisualRoot.RenderScaling;
-                var bounds = PixelRect.FromRect(Bounds, scaling);
-                var screenX = Position.X + bounds.Width - screen.Bounds.X;
-                var screenY = Position.Y + bounds.Height - screen.Bounds.Y;
-
-                if (screenX > screen.Bounds.Width)
-                {
-                    Position = Position.WithX(Position.X - (screenX - screen.Bounds.Width));
-                }
-
-                if (screenY > screen.Bounds.Height)
-                {
-                    Position = Position.WithY(Position.Y - (screenY - screen.Bounds.Height));
-                }
+                _positionerParameters.Size = finalSize;
+                UpdatePosition();
             }
-        }
 
-        /// <inheritdoc/>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
-        {
-            base.OnTemplateApplied(e);
-
-            if (Parent?.TemplatedParent != null)
-            {
-                if (_presenterSubscription != null)
-                {
-                    _presenterSubscription.Dispose();
-                    _presenterSubscription = null;
-                }
-
-                Presenter?.ApplyTemplate();
-                Presenter?.GetObservable(ContentPresenter.ChildProperty)
-                    .Subscribe(SetTemplatedParentAndApplyChildTemplates);
-            }
-        }
-
-        private void SetTemplatedParentAndApplyChildTemplates(IControl control)
-        {
-            if (control != null)
-            {
-                var templatedParent = Parent.TemplatedParent;
-
-                if (control.TemplatedParent == null)
-                {
-                    control.SetValue(TemplatedParentProperty, templatedParent);
-                }
-
-                control.ApplyTemplate();
-
-                if (!(control is IPresenter) && control.TemplatedParent == templatedParent)
-                {
-                    foreach (IControl child in control.GetVisualChildren())
-                    {
-                        SetTemplatedParentAndApplyChildTemplates(child);
-                    }
-                }
-            }
+            return base.ArrangeOverride(PlatformImpl?.ClientSize ?? default(Size));
         }
     }
 }

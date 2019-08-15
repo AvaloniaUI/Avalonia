@@ -4,6 +4,7 @@
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Primitives
 {

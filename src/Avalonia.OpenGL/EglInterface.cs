@@ -11,6 +11,11 @@ namespace Avalonia.OpenGL
         {
             
         }
+
+        public EglInterface(Func<Utf8Buffer,IntPtr> getProcAddress) : base(getProcAddress)
+        {
+            
+        }
         
         public EglInterface(string library) : base(Load(library))
         {

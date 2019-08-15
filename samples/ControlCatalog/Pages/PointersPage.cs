@@ -69,16 +69,25 @@ namespace ControlCatalog.Pages
         {
             UpdatePointer(e);
             e.Pointer.Capture(this);
+            e.Handled = true;
             base.OnPointerPressed(e);
         }
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
             UpdatePointer(e);
+            e.Handled = true;
             base.OnPointerMoved(e);
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            _pointers.Remove(e.Pointer);
+            e.Handled = true;
+            InvalidateVisual();
+        }
+
+        protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
             _pointers.Remove(e.Pointer);
             InvalidateVisual();

@@ -4,12 +4,12 @@
   <Setter Property="Template">
     <ControlTemplate>
       <Border Background="{TemplateBinding Background}">
-        <AdornerDecorator>
+        <VisualLayerManager>
           <ContentPresenter Name="PART_ContentPresenter" 
                             ContentTemplate="{TemplateBinding ContentTemplate}"
                             Content="{TemplateBinding Content}" 
                             Margin="{TemplateBinding Padding}"/>
-        </AdornerDecorator>
+        </VisualLayerManager>
       </Border>
     </ControlTemplate>
   </Setter>

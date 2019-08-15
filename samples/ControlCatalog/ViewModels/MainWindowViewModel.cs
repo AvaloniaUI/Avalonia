@@ -1,11 +1,10 @@
 using System.Reactive;
 using Avalonia.Controls.Notifications;
-using Avalonia.Diagnostics.ViewModels;
 using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
 {
-    class MainWindowViewModel : ViewModelBase
+    class MainWindowViewModel : ReactiveObject
     {
         private IManagedNotificationManager _notificationManager;
 

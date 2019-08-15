@@ -7,6 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
@@ -90,6 +91,8 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         public void Open(Control control)
         {
+            if (control == null)
+                throw new ArgumentNullException(nameof(control));
             if (IsOpen)
             {
                 return;
