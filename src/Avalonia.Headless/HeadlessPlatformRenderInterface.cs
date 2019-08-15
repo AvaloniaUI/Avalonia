@@ -19,7 +19,7 @@ namespace Avalonia.Headless
                 .Bind<IPlatformRenderInterface>().ToConstant(new HeadlessPlatformRenderInterface());
         }
 
-        public IEnumerable<string> InstalledFontNames { get; } = new[] {"Tahoma"};
+        public IEnumerable<string> InstalledFontNames { get; } = new[] { "Tahoma" };
 
         public IFormattedTextImpl CreateFormattedText(string text, Typeface typeface, TextAlignment textAlignment,
             TextWrapping wrapping, Size constraint, IReadOnlyList<FormattedTextStyleSpan> spans)
@@ -76,14 +76,22 @@ namespace Avalonia.Headless
             {
                 Bounds = bounds;
             }
+
             public Rect Bounds { get; set; }
-            public virtual Rect GetRenderBounds(Pen pen) => Bounds.Inflate(pen.Thickness / 2);
             public virtual bool FillContains(Point point) => Bounds.Contains(point);
 
-            public IGeometryImpl Intersect(IGeometryImpl geometry) 
-                => new HeadlessGeometryStub(geometry.Bounds.Intersect(Bounds));
+            public Rect GetRenderBounds(IPen pen)
+            {
+                return Bounds.Inflate(pen.Thickness / 2);
+            }
 
-            public bool StrokeContains(Pen pen, Point point) => false;
+            public bool StrokeContains(IPen pen, Point point)
+            {
+                return false;
+            }
+
+            public IGeometryImpl Intersect(IGeometryImpl geometry)
+                => new HeadlessGeometryStub(geometry.Bounds.Intersect(Bounds));
 
             public ITransformedGeometryImpl WithTransform(Matrix transform) =>
                 new HeadlessTransformedGeometryStub(this, transform);
@@ -93,7 +101,7 @@ namespace Avalonia.Headless
         {
             public HeadlessTransformedGeometryStub(IGeometryImpl b, Matrix transform) : this(Fix(b, transform))
             {
-                
+
             }
 
             static (IGeometryImpl, Matrix, Rect) Fix(IGeometryImpl b, Matrix transform)
@@ -160,7 +168,7 @@ namespace Avalonia.Headless
                     _parent.Bounds = new Rect(_x1, _y1, _x2 - _x1, _y2 - _y1);
                 }
 
-                public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection) 
+                public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
                     => Track(point);
 
                 public void BeginFigure(Point startPoint, bool isFilled = true) => Track(startPoint);
@@ -187,7 +195,7 @@ namespace Avalonia.Headless
 
                 public void SetFillRule(FillRule fillRule)
                 {
-                    
+
                 }
             }
         }
@@ -203,17 +211,17 @@ namespace Avalonia.Headless
                 var pixel = Size * (Dpi / 96);
                 PixelSize = new PixelSize(Math.Max(1, (int)pixel.Width), Math.Max(1, (int)pixel.Height));
             }
-            
+
             public HeadlessBitmapStub(PixelSize size, Vector dpi)
             {
                 PixelSize = size;
                 Dpi = dpi;
                 Size = PixelSize.ToSizeWithDpi(dpi);
             }
-            
+
             public void Dispose()
             {
-                
+
             }
 
             public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
@@ -226,12 +234,12 @@ namespace Avalonia.Headless
             public int Version { get; set; }
             public void Save(string fileName)
             {
-                
+
             }
 
             public void Save(Stream stream)
             {
-                
+
             }
 
             public ILockedFramebuffer Lock()
@@ -247,49 +255,49 @@ namespace Avalonia.Headless
         {
             public void Dispose()
             {
-                
+
             }
 
             public Matrix Transform { get; set; }
             public void Clear(Color color)
             {
-                
+
             }
 
             public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
                 BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
             {
-                
+
             }
 
             public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
             {
-                
+
             }
 
             public void DrawLine(Pen pen, Point p1, Point p2)
             {
-                
+
             }
 
             public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
             {
-                
+
             }
 
             public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
             {
-                
+
             }
 
             public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
             {
-                
+
             }
 
             public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0)
             {
-                
+
             }
 
             public IRenderTargetBitmapImpl CreateLayer(Size size)
@@ -299,47 +307,60 @@ namespace Avalonia.Headless
 
             public void PushClip(Rect clip)
             {
-                
+
             }
 
             public void PopClip()
             {
-                
+
             }
 
             public void PushOpacity(double opacity)
             {
-                
+
             }
 
             public void PopOpacity()
             {
-                
+
             }
 
             public void PushOpacityMask(IBrush mask, Rect bounds)
             {
-                
+
             }
 
             public void PopOpacityMask()
             {
-                
+
             }
 
             public void PushGeometryClip(IGeometryImpl clip)
             {
-                
+
             }
 
             public void PopGeometryClip()
             {
-                
+
             }
 
             public void Custom(ICustomDrawOperation custom)
             {
-                
+
+            }
+
+            public void DrawLine(IPen pen, Point p1, Point p2)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
+            {
+            }
+
+            public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0)
+            {
             }
         }
 
@@ -347,7 +368,7 @@ namespace Avalonia.Headless
         {
             public void Dispose()
             {
-                
+
             }
 
             public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
@@ -364,15 +385,15 @@ namespace Avalonia.Headless
                 Constraint = constraint;
                 Bounds = new Rect(Constraint.Constrain(new Size(50, 50)));
             }
-            
+
             public Size Constraint { get; }
             public Rect Bounds { get; }
             public string Text { get; }
 
-            
+
             public IEnumerable<FormattedTextLine> GetLines()
             {
-                return new[] {new FormattedTextLine(Text.Length, 10)};
+                return new[] { new FormattedTextLine(Text.Length, 10) };
             }
 
             public TextHitTestResult HitTestPoint(Point point) => new TextHitTestResult();

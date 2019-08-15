@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
@@ -25,7 +26,7 @@ namespace Avalonia.Headless
         public HeadlessWindowImpl(bool isPopup)
         {
             IsPopup = isPopup;
-            Surfaces = new object[] {this};
+            Surfaces = new object[] { this };
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mousePointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
             MouseDevice = new MouseDevice(_mousePointer);
@@ -46,8 +47,8 @@ namespace Avalonia.Headless
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
-        
-        public IRenderer CreateRenderer(IRenderRoot root) 
+
+        public IRenderer CreateRenderer(IRenderRoot root)
             => new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
 
         public void Invalidate(Rect rect)
@@ -67,7 +68,7 @@ namespace Avalonia.Headless
 
         public void SetCursor(IPlatformHandle cursor)
         {
-            
+
         }
 
         public Action Closed { get; set; }
@@ -85,12 +86,12 @@ namespace Avalonia.Headless
 
         public void BeginMoveDrag()
         {
-            
+
         }
 
         public void BeginResizeDrag(WindowEdge edge)
         {
-            
+
         }
 
         public PixelPoint Position { get; set; }
@@ -128,12 +129,12 @@ namespace Avalonia.Headless
 
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
-            
+
         }
 
         public void SetTopmost(bool value)
         {
-            
+
         }
 
         public IScreenImpl Screen { get; } = new HeadlessScreensStub();
@@ -141,7 +142,7 @@ namespace Avalonia.Headless
         public Action<WindowState> WindowStateChanged { get; set; }
         public void SetTitle(string title)
         {
-            
+
         }
 
         public void ShowDialog(IWindowImpl parent)
@@ -151,22 +152,22 @@ namespace Avalonia.Headless
 
         public void SetSystemDecorations(bool enabled)
         {
-            
+
         }
 
         public void SetIcon(IWindowIconImpl icon)
         {
-            
+
         }
 
         public void ShowTaskbarIcon(bool value)
         {
-            
+
         }
 
         public void CanResize(bool value)
         {
-            
+
         }
 
         public Func<bool> Closing { get; set; }
@@ -184,7 +185,7 @@ namespace Avalonia.Headless
             }
             public void Dispose()
             {
-                if(_disposed)
+                if (_disposed)
                     return;
                 _disposed = true;
                 _fb.Dispose();
@@ -197,7 +198,7 @@ namespace Avalonia.Headless
             public Vector Dpi => _fb.Dpi;
             public PixelFormat Format => _fb.Format;
         }
-        
+
         public ILockedFramebuffer Lock()
         {
             var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, Scaling), new Vector(96, 96) * Scaling);
@@ -217,9 +218,12 @@ namespace Avalonia.Headless
             lock (_sync)
                 return _lastRenderedFrame?.PlatformImpl?.CloneAs<IWriteableBitmapImpl>();
         }
-        
+
         private ulong Timestamp => (ulong)_st.ElapsedMilliseconds;
-        
+
+        // TODO: Hook recent Popup changes. 
+        IPopupPositioner IPopupImpl.PopupPositioner => null;
+
         void IHeadlessWindow.KeyPress(Key key, InputModifiers modifiers)
         {
             Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, RawKeyEventType.KeyDown, key, modifiers));
@@ -250,6 +254,17 @@ namespace Avalonia.Headless
                 button == 0 ? RawPointerEventType.LeftButtonUp :
                 button == 1 ? RawPointerEventType.MiddleButtonUp : RawPointerEventType.RightButtonUp,
                 point, modifiers));
+        }
+
+        void IWindowImpl.Move(PixelPoint point)
+        {
+
+        }
+
+        public IPopupImpl CreatePopup()
+        {
+            // TODO: Hook recent Popup changes. 
+            return null;
         }
     }
 }
