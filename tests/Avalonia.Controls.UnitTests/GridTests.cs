@@ -1357,5 +1357,36 @@ namespace Avalonia.Controls.UnitTests
             PrintColumnDefinitions(grid);
             Assert.All(grid.ColumnDefinitions.Where(cd => cd.SharedSizeGroup == null), cd => Assert.Equal(50, cd.ActualWidth));
         }
+
+        [Fact]
+        public void Correct_Grid_Bounds_When_Child_Control_Has_DesiredSize_Larger_Than_Available_Space()
+        {
+            // Issue #2746
+            var grid = new Grid
+            {
+                RowDefinitions = RowDefinitions.Parse("Auto"),
+                Children =
+                {
+                    new TestControl
+                    {
+                        MeasureSize = new Size(150, 150),
+                    }
+                }
+            };
+
+            var parent = new Decorator { Child = grid };
+
+            parent.Measure(new Size(100, 100));
+            parent.Arrange(new Rect(grid.DesiredSize));
+
+            Assert.Equal(new Size(100, 100), grid.Bounds.Size);
+        }
+
+        private class TestControl : Control
+        {
+            public Size MeasureSize { get; set; }
+
+            protected override Size MeasureOverride(Size availableSize) => MeasureSize;
+        }
     }
 }

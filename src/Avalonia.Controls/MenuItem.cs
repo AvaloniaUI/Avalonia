@@ -224,7 +224,7 @@ namespace Avalonia.Controls
         public bool IsTopLevel => Parent is Menu;
 
         /// <inheritdoc/>
-        bool IMenuItem.IsPointerOverSubMenu => _popup.PopupRoot?.IsPointerOver ?? false;
+        bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false; 
 
         /// <inheritdoc/>
         IMenuElement IMenuItem.Parent => Parent as IMenuElement;

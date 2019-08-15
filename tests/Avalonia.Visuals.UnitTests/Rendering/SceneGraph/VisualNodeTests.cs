@@ -92,5 +92,14 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             Assert.Same(node1.DrawOperations[0].Item, node2.DrawOperations[0].Item);
             Assert.NotSame(node1.DrawOperations[0], node2.DrawOperations[0]);
         }
+
+        [Fact]
+        public void SortChildren_Does_Not_Throw_On_Null_Children()
+        {
+            var node = new VisualNode(Mock.Of<IVisual>(), null);
+            var scene = new Scene(Mock.Of<IVisual>());
+
+            node.SortChildren(scene);
+        }
     }
 }

@@ -100,7 +100,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
         {
             var next = NextDrawAs<GeometryNode>();
 
@@ -137,7 +137,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawLine(Pen pen, Point p1, Point p2)
+        public void DrawLine(IPen pen, Point p1, Point p2)
         {
             var next = NextDrawAs<LineNode>();
 
@@ -152,7 +152,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
+        public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0)
         {
             var next = NextDrawAs<RectangleNode>();
 

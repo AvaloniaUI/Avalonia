@@ -15,10 +15,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Tracks a named control relative to another control.
         /// </summary>
-        /// <param name="relativeTo">
-        /// The control relative from which the other control should be found.
-        /// </param>
-        /// <param name="name">The name of the control to find.</param>
+        /// <param name="scope">The scope relative from which the object should be resolved.</param>
+        /// <param name="name">The name of the object to find.</param>
         public static IObservable<object> Track(INameScope scope, string name)
         {
             return new NeverEndingSynchronousCompletionAsyncResultObservable<object>(scope.FindAsync(name));

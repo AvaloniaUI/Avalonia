@@ -164,6 +164,37 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Compares two objects using reference equality.
+        /// </summary>
+        /// <param name="obj">The object to compare.</param>
+        /// <remarks>
+        /// Overriding Equals and GetHashCode on an AvaloniaObject is disallowed for two reasons:
+        /// 
+        /// - AvaloniaObjects are by their nature mutable
+        /// - The presence of attached properties means that the semantics of equality are
+        ///   difficult to define
+        /// 
+        /// See https://github.com/AvaloniaUI/Avalonia/pull/2747 for the discussion that prompted
+        /// this.
+        /// </remarks>
+        public sealed override bool Equals(object obj) => base.Equals(obj);
+
+        /// <summary>
+        /// Gets the hash code for the object.
+        /// </summary>
+        /// <remarks>
+        /// Overriding Equals and GetHashCode on an AvaloniaObject is disallowed for two reasons:
+        /// 
+        /// - AvaloniaObjects are by their nature mutable
+        /// - The presence of attached properties means that the semantics of equality are
+        ///   difficult to define
+        /// 
+        /// See https://github.com/AvaloniaUI/Avalonia/pull/2747 for the discussion that prompted
+        /// this.
+        /// </remarks>
+        public sealed override int GetHashCode() => base.GetHashCode();
+
+        /// <summary>
         /// Gets a <see cref="AvaloniaProperty"/> value.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -466,7 +497,7 @@ namespace Avalonia
         /// <param name="oldValue">The old property value.</param>
         /// <param name="newValue">The new property value.</param>
         /// <param name="priority">The priority of the binding that produced the value.</param>
-        protected void RaisePropertyChanged(
+        protected internal void RaisePropertyChanged(
             AvaloniaProperty property,
             object oldValue,
             object newValue,
@@ -509,45 +540,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// A callback type for encapsulating complex logic for setting direct properties.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="value">The value to which to set the property.</param>
-        /// <param name="field">The backing field for the property.</param>
-        /// <param name="notifyWrapper">A wrapper for the property-changed notification.</param>
-        protected delegate void SetAndRaiseCallback<T>(T value, ref T field, Action<Action> notifyWrapper);
-
-        /// <summary>
-        /// Sets the backing field for a direct avalonia property, raising the 
-        /// <see cref="PropertyChanged"/> event if the value has changed.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="field">The backing field.</param>
-        /// <param name="setterCallback">A callback called to actually set the value to the backing field.</param>
-        /// <param name="value">The value.</param>
-        /// <returns>
-        /// True if the value changed, otherwise false.
-        /// </returns>
-        protected bool SetAndRaise<T>(
-            AvaloniaProperty<T> property,
-            ref T field,
-            SetAndRaiseCallback<T> setterCallback,
-            T value)
-        {
-            Contract.Requires<ArgumentNullException>(setterCallback != null);
-            return Values.Setter.SetAndNotify(
-                property,
-                ref field,
-                (object update, ref T backing, Action<Action> notify) =>
-                {
-                    setterCallback((T)update, ref backing, notify);
-                    return true;
-                },
-                value);
-        }
-
-        /// <summary>
         /// Sets the backing field for a direct avalonia property, raising the 
         /// <see cref="PropertyChanged"/> event if the value has changed.
         /// </summary>
@@ -561,32 +553,15 @@ namespace Avalonia
         protected bool SetAndRaise<T>(AvaloniaProperty<T> property, ref T field, T value)
         {
             VerifyAccess();
-            return SetAndRaise(
-                property,
-                ref field,
-                (T val, ref T backing, Action<Action> notifyWrapper)
-                    => SetAndRaiseCore(property, ref backing, val, notifyWrapper),
-                value);
-        }
 
-        /// <summary>
-        /// Default assignment logic for SetAndRaise.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="field">The backing field.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="notifyWrapper">A wrapper for the property-changed notification.</param>
-        /// <returns>
-        /// True if the value changed, otherwise false.
-        /// </returns>
-        private bool SetAndRaiseCore<T>(AvaloniaProperty property, ref T field, T value, Action<Action> notifyWrapper)
-        {
-            var old = field;
-            field = value;
+            if (EqualityComparer<T>.Default.Equals(field, value))
+            {
+                return false;
+            }
 
-            notifyWrapper(() => RaisePropertyChanged(property, old, value, BindingPriority.LocalValue));
-            return true;
+            DeferredSetter<T> setter = Values.GetDirectDeferredSetter(property);
+
+            return setter.SetAndNotify(this, property, ref field, value);
         }
 
         /// <summary>

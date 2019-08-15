@@ -20,16 +20,6 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public IEnumerable<string> Classes
-        {
-            get;
-            private set;
-        }
-
-        public IEnumerable<PropertyDetails> Properties
-        {
-            get;
-            private set;
-        }
+        public IEnumerable<PropertyDetails> Properties { get; }
     }
 }

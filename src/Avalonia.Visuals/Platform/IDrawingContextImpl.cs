@@ -50,7 +50,7 @@ namespace Avalonia.Platform
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p2">The second point of the line.</param>
-        void DrawLine(Pen pen, Point p1, Point p2);
+        void DrawLine(IPen pen, Point p1, Point p2);
 
         /// <summary>
         /// Draws a geometry.
@@ -58,7 +58,7 @@ namespace Avalonia.Platform
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry);
+        void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry);
 
         /// <summary>
         /// Draws the outline of a rectangle.
@@ -66,7 +66,7 @@ namespace Avalonia.Platform
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f);
+        void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0.0f);
 
         /// <summary>
         /// Draws text.

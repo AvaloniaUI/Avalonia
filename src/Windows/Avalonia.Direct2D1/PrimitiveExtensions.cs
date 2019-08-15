@@ -109,7 +109,7 @@ namespace Avalonia.Direct2D1
         /// <param name="pen">The pen to convert.</param>
         /// <param name="renderTarget">The render target.</param>
         /// <returns>The Direct2D brush.</returns>
-        public static StrokeStyle ToDirect2DStrokeStyle(this Avalonia.Media.Pen pen, SharpDX.Direct2D1.RenderTarget renderTarget)
+        public static StrokeStyle ToDirect2DStrokeStyle(this Avalonia.Media.IPen pen, SharpDX.Direct2D1.RenderTarget renderTarget)
         {
             return pen.ToDirect2DStrokeStyle(renderTarget.Factory);
         }
@@ -120,7 +120,7 @@ namespace Avalonia.Direct2D1
         /// <param name="pen">The pen to convert.</param>
         /// <param name="factory">The factory associated with this resource.</param>
         /// <returns>The Direct2D brush.</returns>
-        public static StrokeStyle ToDirect2DStrokeStyle(this Avalonia.Media.Pen pen, Factory factory)
+        public static StrokeStyle ToDirect2DStrokeStyle(this Avalonia.Media.IPen pen, Factory factory)
         {
             var d2dLineCap = pen.LineCap.ToDirect2D();
 

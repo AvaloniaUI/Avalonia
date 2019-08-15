@@ -240,5 +240,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 return new Vector(1, 1);
             return new Vector(src.TransformToDevice.M11, src.TransformToDevice.M22);
         }
+
+        public IPopupImpl CreatePopup() => null;
     }
 }

@@ -2,22 +2,22 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Platform;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    public sealed unsafe class LinuxFramebuffer : IFramebufferPlatformSurface, IDisposable
+    public sealed unsafe class FbdevOutput : IFramebufferPlatformSurface, IDisposable, IOutputBackend
     {
-        private readonly Vector _dpi;
         private int _fd;
         private fb_fix_screeninfo _fixedInfo;
         private fb_var_screeninfo _varInfo;
         private IntPtr _mappedLength;
         private IntPtr _mappedAddress;
+        public double Scaling { get; set; }
 
-        public LinuxFramebuffer(string fileName = null, Vector? dpi = null)
+        public FbdevOutput(string fileName = null)
         {
-            _dpi = dpi ?? new Vector(96, 96);
             fileName = fileName ?? Environment.GetEnvironmentVariable("FRAMEBUFFER") ?? "/dev/fb0";
             _fd = NativeUnsafeMethods.open(fileName, 2, 0);
             if (_fd <= 0)
@@ -85,14 +85,14 @@ namespace Avalonia.LinuxFramebuffer
 
         public string Id { get; private set; }
 
-        public Size PixelSize
+        public PixelSize PixelSize
         {
             get
             {
                 fb_var_screeninfo nfo;
                 if (-1 == NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOGET_VSCREENINFO, &nfo))
                     throw new Exception("FBIOGET_VSCREENINFO error: " + Marshal.GetLastWin32Error());
-                return new Size(nfo.xres, nfo.yres);
+                return new PixelSize((int)nfo.xres, (int)nfo.yres);
             }
         }
 
@@ -100,7 +100,7 @@ namespace Avalonia.LinuxFramebuffer
         {
             if (_fd <= 0)
                 throw new ObjectDisposedException("LinuxFramebuffer");
-            return new LockedFramebuffer(_fd, _fixedInfo, _varInfo, _mappedAddress, _dpi);
+            return new LockedFramebuffer(_fd, _fixedInfo, _varInfo, _mappedAddress, new Vector(96, 96) * Scaling);
         }
 
 
@@ -123,7 +123,7 @@ namespace Avalonia.LinuxFramebuffer
             GC.SuppressFinalize(this);
         }
 
-        ~LinuxFramebuffer()
+        ~FbdevOutput()
         {
             ReleaseUnmanagedResources();
         }
