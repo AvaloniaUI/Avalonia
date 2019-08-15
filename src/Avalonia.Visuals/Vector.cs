@@ -88,12 +88,12 @@ namespace Avalonia
         /// <summary>
         /// Length of the vector
         /// </summary>
-        public double Length => Math.Sqrt(X * X + Y * Y);
+        public double Length => Math.Sqrt(_x * _x + _y * _y);
 
         /// <summary>
         /// Squared Length of the vector
         /// </summary>
-        public double SquaredLength => Math.Sqrt(Length);
+        public double SquaredLength => _x * _x + _y * _y;
 
         /// <summary>
         /// Negates a vector.
@@ -200,6 +200,20 @@ namespace Avalonia
         {
             return new Vector(_x, y);
         }
+
+        /// <summary>
+        /// Returns a normalized version of this vector.
+        /// </summary>
+        /// <returns>The normalized vector.</returns>
+        public Vector Normalize()
+            => Normalize(this);
+
+        /// <summary>
+        /// Returns a negated version of this vector.
+        /// </summary>
+        /// <returns>The negated vector.</returns>
+        public Vector Negate()
+            => Negate(this);
 
         /// <summary>
         /// Returns the dot product of two vectors.
