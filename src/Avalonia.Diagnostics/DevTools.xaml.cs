@@ -116,9 +116,9 @@ namespace Avalonia.Diagnostics
 
         private void RawKeyDown(RawKeyEventArgs e)
         {
-            const InputModifiers modifiers = InputModifiers.Control | InputModifiers.Shift;
+            const RawInputModifiers modifiers = RawInputModifiers.Control | RawInputModifiers.Shift;
 
-            if ((e.Modifiers) == modifiers)
+            if (e.Modifiers == modifiers)
             {
                 var point = (Root.VisualRoot as IInputRoot)?.MouseDevice?.GetPosition(Root) ?? default(Point);
                 var control = Root.GetVisualsAt(point, x => (!(x is AdornerLayer) && x.IsVisible))

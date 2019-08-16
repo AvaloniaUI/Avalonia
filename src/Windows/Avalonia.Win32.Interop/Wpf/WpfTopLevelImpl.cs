@@ -142,27 +142,33 @@ namespace Avalonia.Win32.Interop.Wpf
         protected override void OnLostFocus(RoutedEventArgs e) => LostFocus?.Invoke();
 
 
-        InputModifiers GetModifiers()
+        RawInputModifiers GetModifiers(MouseEventArgs e)
         {
             var state = Keyboard.Modifiers;
-            var rv = default(InputModifiers);
+            var rv = default(RawInputModifiers);
             if (state.HasFlag(ModifierKeys.Windows))
-                rv |= InputModifiers.Windows;
+                rv |= RawInputModifiers.Meta;
             if (state.HasFlag(ModifierKeys.Alt))
-                rv |= InputModifiers.Alt;
+                rv |= RawInputModifiers.Alt;
             if (state.HasFlag(ModifierKeys.Control))
-                rv |= InputModifiers.Control;
+                rv |= RawInputModifiers.Control;
             if (state.HasFlag(ModifierKeys.Shift))
-                rv |= InputModifiers.Shift;
-            //TODO: mouse modifiers
-
-
+                rv |= RawInputModifiers.Shift;
+            if (e != null)
+            {
+                if (e.LeftButton == MouseButtonState.Pressed)
+                    rv |= RawInputModifiers.LeftMouseButton;
+                if (e.RightButton == MouseButtonState.Pressed)
+                    rv |= RawInputModifiers.RightMouseButton;
+                if (e.MiddleButton == MouseButtonState.Pressed)
+                    rv |= RawInputModifiers.MiddleMouseButton;
+            }
             return rv;
         }
 
         void MouseEvent(RawPointerEventType type, MouseEventArgs e)
             => _ttl.Input?.Invoke(new RawPointerEventArgs(_mouse, (uint)e.Timestamp, _inputRoot, type,
-            e.GetPosition(this).ToAvaloniaPoint(), GetModifiers()));
+            e.GetPosition(this).ToAvaloniaPoint(), GetModifiers(e)));
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
@@ -201,19 +207,19 @@ namespace Avalonia.Win32.Interop.Wpf
 
         protected override void OnMouseWheel(MouseWheelEventArgs e) =>
             _ttl.Input?.Invoke(new RawMouseWheelEventArgs(_mouse, (uint) e.Timestamp, _inputRoot,
-                e.GetPosition(this).ToAvaloniaPoint(), new Vector(0, e.Delta), GetModifiers()));
+                e.GetPosition(this).ToAvaloniaPoint(), new Vector(0, e.Delta), GetModifiers(e)));
 
         protected override void OnMouseLeave(MouseEventArgs e) => MouseEvent(RawPointerEventType.LeaveWindow, e);
 
         protected override void OnKeyDown(KeyEventArgs e)
             => _ttl.Input?.Invoke(new RawKeyEventArgs(_keyboard, (uint) e.Timestamp, RawKeyEventType.KeyDown,
                 (Key) e.Key,
-                GetModifiers()));
+                GetModifiers(null)));
 
         protected override void OnKeyUp(KeyEventArgs e)
             => _ttl.Input?.Invoke(new RawKeyEventArgs(_keyboard, (uint)e.Timestamp, RawKeyEventType.KeyUp,
                 (Key)e.Key,
-                GetModifiers()));
+                GetModifiers(null)));
 
         protected override void OnTextInput(TextCompositionEventArgs e) 
             => _ttl.Input?.Invoke(new RawTextInputEventArgs(_keyboard, (uint) e.Timestamp, e.Text));

@@ -4,6 +4,6 @@ namespace Avalonia.Input.Platform
 {
     public interface IPlatformDragSource
     {
-        Task<DragDropEffects> DoDragDrop(IDataObject data, DragDropEffects allowedEffects);
+        Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent, IDataObject data, DragDropEffects allowedEffects);
     }
 }
