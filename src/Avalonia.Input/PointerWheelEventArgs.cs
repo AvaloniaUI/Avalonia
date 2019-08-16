@@ -12,7 +12,7 @@ namespace Avalonia.Input
 
         public PointerWheelEventArgs(IInteractive source, IPointer pointer, IVisual rootVisual,
             Point rootVisualPosition, ulong timestamp,
-            PointerPointProperties properties, InputModifiers modifiers, Vector delta) 
+            PointerPointProperties properties, KeyModifiers modifiers, Vector delta) 
             : base(InputElement.PointerWheelChangedEvent, source, pointer, rootVisual, rootVisualPosition,
                 timestamp, properties, modifiers)
         {

@@ -6,7 +6,7 @@ using System.ComponentModel;
 
 namespace Avalonia.Input
 {
-    [Flags]
+    [Flags, Obsolete("Use KeyModifiers and PointerPointProperties")]
     public enum InputModifiers
     {
         None = 0,
@@ -20,11 +20,41 @@ namespace Avalonia.Input
     }
 
     [Flags]
+    public enum KeyModifiers
+    {
+        None = 0,
+        Alt = 1,
+        Control = 2,
+        Shift = 4,
+        Meta = 8,
+    }
+
+    [Flags]
     public enum KeyStates
     {
         None = 0,
         Down = 1,
         Toggled = 2,
+    }
+
+    [Flags]
+    public enum RawInputModifiers
+    {
+        None = 0,
+        Alt = 1,
+        Control = 2,
+        Shift = 4,
+        Meta = 8,
+        LeftMouseButton = 16,
+        RightMouseButton = 32,
+        MiddleMouseButton = 64,
+        KeyboardMask = Alt | Control | Shift | Meta
+    }
+
+    internal static class KeyModifiersUtils
+    {
+        public static KeyModifiers ConvertToKey(RawInputModifiers modifiers) =>
+            (KeyModifiers)(modifiers & RawInputModifiers.KeyboardMask);
     }
 
     public interface IKeyboardDevice : IInputDevice, INotifyPropertyChanged
