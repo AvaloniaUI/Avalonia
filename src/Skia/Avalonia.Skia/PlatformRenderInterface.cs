@@ -75,7 +75,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public IBitmapImpl LoadBitmap(Stream stream)
         {
-            return new ImmutableBitmap(stream);
+            return new ImmutableBitmap(GrContext, stream);
         }
 
         /// <inheritdoc />
@@ -90,7 +90,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
-            return new ImmutableBitmap(size, dpi, stride, format, data);
+            return new ImmutableBitmap(GrContext, size, dpi, stride, format, data);
         }
 
         /// <inheritdoc />

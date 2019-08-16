@@ -19,8 +19,9 @@ namespace Avalonia.Skia
         /// <summary>
         /// Create immutable bitmap from given stream.
         /// </summary>
+        /// <param name="grContext">A valid GRContext if this bitmap should be created on the GPU; null otherwise.</param>
         /// <param name="stream">Stream containing encoded data.</param>
-        public ImmutableBitmap(Stream stream)
+        public ImmutableBitmap(GRContext grContext, Stream stream)
         {
             using (var skiaStream = new SKManagedStream(stream))
             {
@@ -30,6 +31,23 @@ namespace Avalonia.Skia
                 if (_image == null)
                 {
                     throw new ArgumentException("Unable to load bitmap from provided data");
+                }
+
+                if (grContext != null)
+                {
+                    var imageInfo = new SKImageInfo(
+                        _image.Width, _image.Height, SKColorType.Bgra8888, _image.AlphaType, _image.ColorSpace);
+
+                    using (var surface = SKSurface.Create(grContext, false, imageInfo, 1, GRSurfaceOrigin.TopLeft))
+                    {
+                        if (surface != null)
+                        {
+                            surface.Canvas.DrawImage(_image, 0, 0);
+                            surface.Canvas.Flush();
+                            _image.Dispose();
+                            _image = surface.Snapshot();
+                        }
+                    }
                 }
 
                 PixelSize = new PixelSize(_image.Width, _image.Height);
@@ -42,16 +60,40 @@ namespace Avalonia.Skia
         /// <summary>
         /// Create immutable bitmap from given pixel data copy.
         /// </summary>
+        /// <param name="grContext">A valid GRContext if this bitmap should be created on the GPU; null otherwise.</param>
         /// <param name="size">Size of the bitmap.</param>
         /// <param name="dpi">DPI of the bitmap.</param>
         /// <param name="stride">Stride of data pixels.</param>
         /// <param name="format">Format of data pixels.</param>
         /// <param name="data">Data pixels.</param>
-        public ImmutableBitmap(PixelSize size, Vector dpi, int stride, PixelFormat format, IntPtr data)
+        public ImmutableBitmap(
+            GRContext grContext, PixelSize size, Vector dpi, int stride, PixelFormat format, IntPtr data)
         {
             var imageInfo = new SKImageInfo(size.Width, size.Height, format.ToSkColorType(), SKAlphaType.Premul);
 
-            _image = SKImage.FromPixelCopy(imageInfo, data, stride);
+            if (grContext != null)
+            {
+                var targetImageInfo =
+                    new SKImageInfo(size.Width, size.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+
+                using (var surface = SKSurface.Create(grContext, false, targetImageInfo, 1, GRSurfaceOrigin.TopLeft))
+                {
+                    if (surface != null)
+                    {
+                        using (var tempImage = SKImage.FromPixels(imageInfo, data, stride))
+                        {
+                            surface.Canvas.DrawImage(tempImage, 0, 0);
+                            surface.Canvas.Flush();
+                            _image = surface.Snapshot();
+                        }
+                    }
+                }
+            }
+            
+            if (_image == null)
+            {
+                _image = SKImage.FromPixelCopy(imageInfo, data, stride);
+            }
 
             if (_image == null)
             {
