@@ -16,20 +16,25 @@ namespace Avalonia.Skia
     internal class WriteableBitmapImpl : IWriteableBitmapImpl, IDrawableBitmapImpl
     {
         private static readonly SKBitmapReleaseDelegate s_releaseDelegate = ReleaseProc;
-        private readonly SKBitmap _bitmap;
         private readonly object _lock = new object();
+        private readonly SKBitmap _bitmap;
+        private SKSurface _surface;
+        private GRContext _grContext;
+        private int _lastVersion;
 
         /// <summary>
         /// Create new writeable bitmap.
         /// </summary>
+        /// <param name="grContext">A valid GRContext if this bitmap should be created on the GPU; null otherwise.</param>
         /// <param name="size">The size of the bitmap in device pixels.</param>
         /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="format">The pixel format.</param>
-        public WriteableBitmapImpl(PixelSize size, Vector dpi, PixelFormat? format = null)
+        public WriteableBitmapImpl(GRContext grContext, PixelSize size, Vector dpi, PixelFormat? format = null)
         {
+            _grContext = grContext;
             PixelSize = size;
             Dpi = dpi;
-
+            
             var colorType = PixelFormatHelper.ResolveColorType(format);
             
             var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
@@ -62,12 +67,39 @@ namespace Avalonia.Skia
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {
             lock (_lock)
-                context.Canvas.DrawBitmap(_bitmap, sourceRect, destRect, paint);
+            {
+                if (_grContext != null)
+                {
+                    var imageInfo = new SKImageInfo(
+                        _bitmap.Width, _bitmap.Height, SKColorType.Bgra8888, _bitmap.AlphaType, _bitmap.ColorSpace);
+
+                    _surface = SKSurface.Create(_grContext, false, imageInfo, 1, GRSurfaceOrigin.TopLeft);
+                    _grContext = null;
+                }
+
+                if (_surface != null)
+                {
+                    if (Version > _lastVersion)
+                    {
+                        _surface.Canvas.Clear();
+                        _surface.Canvas.DrawBitmap(
+                            _bitmap, sourceRect, SKRect.Create(0, 0, sourceRect.Width, sourceRect.Height));
+                        _lastVersion = Version;
+                    }
+                    
+                    _surface.Draw(context.Canvas, destRect.Left, destRect.Top, paint);
+                }
+                else
+                {
+                    context.Canvas.DrawBitmap(_bitmap, sourceRect, destRect, paint);
+                }
+            }
         }
 
         /// <inheritdoc />
         public void Dispose()
         {
+            _surface?.Dispose();
             _bitmap.Dispose();
         }
 
@@ -129,6 +161,10 @@ namespace Avalonia.Skia
             {
                 _parent = parent;
                 _bitmap = bitmap;
+                Address = _bitmap.GetPixels();
+                Size = new PixelSize(_bitmap.Width, _bitmap.Height);
+                RowBytes = _bitmap.RowBytes;
+                Format = _bitmap.ColorType.ToPixelFormat();
                 Monitor.Enter(parent._lock);
             }
 
@@ -143,19 +179,19 @@ namespace Avalonia.Skia
             }
             
             /// <inheritdoc />
-            public IntPtr Address => _bitmap.GetPixels();
+            public IntPtr Address { get; }
 
             /// <inheritdoc />
-            public PixelSize Size => new PixelSize(_bitmap.Width, _bitmap.Height);
+            public PixelSize Size { get; }
 
             /// <inheritdoc />
-            public int RowBytes => _bitmap.RowBytes;
+            public int RowBytes { get; }
 
             /// <inheritdoc />
             public Vector Dpi { get; } = SkiaPlatform.DefaultDpi;
 
             /// <inheritdoc />
-            public PixelFormat Format => _bitmap.ColorType.ToPixelFormat();
+            public PixelFormat Format { get; }
         }
     }
 }

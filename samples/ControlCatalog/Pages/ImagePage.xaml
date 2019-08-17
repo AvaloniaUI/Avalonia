@@ -41,5 +41,9 @@
       <TextBlock>Window Icon as an Image</TextBlock>
       <Image Name="Icon" Width="100" Height="200" Stretch="None" />
     </StackPanel>
+    <StackPanel Orientation="Vertical">
+      <TextBlock>WriteableBitmap</TextBlock>
+      <Image Name="WriteableBitmapImage" Width="300" Height="200" Stretch="None" />
+    </StackPanel>
   </StackPanel>
 </UserControl>

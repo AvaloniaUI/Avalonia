@@ -14,8 +14,9 @@ namespace Avalonia.Skia
     /// </summary>
     internal class ImmutableBitmap : IDrawableBitmapImpl
     {
-        private readonly SKImage _image;
-
+        private GRContext _grContext;
+        private SKImage _image;
+        
         /// <summary>
         /// Create immutable bitmap from given stream.
         /// </summary>
@@ -23,6 +24,8 @@ namespace Avalonia.Skia
         /// <param name="stream">Stream containing encoded data.</param>
         public ImmutableBitmap(GRContext grContext, Stream stream)
         {
+            _grContext = grContext;
+
             using (var skiaStream = new SKManagedStream(stream))
             {
                 using (var data = SKData.Create(skiaStream))
@@ -31,23 +34,6 @@ namespace Avalonia.Skia
                 if (_image == null)
                 {
                     throw new ArgumentException("Unable to load bitmap from provided data");
-                }
-
-                if (grContext != null)
-                {
-                    var imageInfo = new SKImageInfo(
-                        _image.Width, _image.Height, SKColorType.Bgra8888, _image.AlphaType, _image.ColorSpace);
-
-                    using (var surface = SKSurface.Create(grContext, false, imageInfo, 1, GRSurfaceOrigin.TopLeft))
-                    {
-                        if (surface != null)
-                        {
-                            surface.Canvas.DrawImage(_image, 0, 0);
-                            surface.Canvas.Flush();
-                            _image.Dispose();
-                            _image = surface.Snapshot();
-                        }
-                    }
                 }
 
                 PixelSize = new PixelSize(_image.Width, _image.Height);
@@ -69,32 +55,13 @@ namespace Avalonia.Skia
         public ImmutableBitmap(
             GRContext grContext, PixelSize size, Vector dpi, int stride, PixelFormat format, IntPtr data)
         {
-            var imageInfo = new SKImageInfo(size.Width, size.Height, format.ToSkColorType(), SKAlphaType.Premul);
+            _grContext = grContext;
 
-            if (grContext != null)
-            {
-                var targetImageInfo =
-                    new SKImageInfo(size.Width, size.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
-
-                using (var surface = SKSurface.Create(grContext, false, targetImageInfo, 1, GRSurfaceOrigin.TopLeft))
-                {
-                    if (surface != null)
-                    {
-                        using (var tempImage = SKImage.FromPixels(imageInfo, data, stride))
-                        {
-                            surface.Canvas.DrawImage(tempImage, 0, 0);
-                            surface.Canvas.Flush();
-                            _image = surface.Snapshot();
-                        }
-                    }
-                }
-            }
+            _image = SKImage.FromPixelCopy(
+                new SKImageInfo(size.Width, size.Height, format.ToSkColorType(), SKAlphaType.Premul),
+                data,
+                stride);
             
-            if (_image == null)
-            {
-                _image = SKImage.FromPixelCopy(imageInfo, data, stride);
-            }
-
             if (_image == null)
             {
                 throw new ArgumentException("Unable to create bitmap from provided data");
@@ -130,6 +97,25 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {
+            if (_grContext != null)
+            {
+                var imageInfo = new SKImageInfo(
+                    _image.Width, _image.Height, SKColorType.Bgra8888, _image.AlphaType, _image.ColorSpace);
+
+                using (var surface = SKSurface.Create(_grContext, false, imageInfo, 1, GRSurfaceOrigin.TopLeft))
+                {
+                    if (surface != null)
+                    {
+                        surface.Canvas.DrawImage(_image, 0, 0);
+                        surface.Canvas.Flush();
+                        _image.Dispose();
+                        _image = surface.Snapshot();
+                    }
+                }
+
+                _grContext = null;
+            }
+
             context.Canvas.DrawImage(_image, sourceRect, destRect, paint);
         }
     }

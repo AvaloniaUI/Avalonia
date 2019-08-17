@@ -149,7 +149,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
         {
-            return new WriteableBitmapImpl(size, dpi, format);
+            return new WriteableBitmapImpl(GrContext, size, dpi, format);
         }
     }
 }
