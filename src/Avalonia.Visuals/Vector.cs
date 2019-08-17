@@ -88,7 +88,7 @@ namespace Avalonia
         /// <summary>
         /// Length of the vector
         /// </summary>
-        public double Length => Math.Sqrt(_x * _x + _y * _y);
+        public double Length => Math.Sqrt(SquaredLength);
 
         /// <summary>
         /// Squared Length of the vector
