@@ -51,7 +51,14 @@ namespace Avalonia.Input
 
         public Key Key { get; set; }
 
-        public InputModifiers Modifiers { get; set; }
+        [Obsolete("Use KeyModifiers")]
+        public InputModifiers Modifiers
+        {
+            get => (InputModifiers)KeyModifiers;
+            set => KeyModifiers = (KeyModifiers)(((int)value) & 0xf);
+        }
+        
+        public KeyModifiers KeyModifiers { get; set; }
 
         
         static readonly Dictionary<string, Key> KeySynonyms = new Dictionary<string, Key>
