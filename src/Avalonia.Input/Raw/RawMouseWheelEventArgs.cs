@@ -11,7 +11,7 @@ namespace Avalonia.Input.Raw
             ulong timestamp,
             IInputRoot root,
             Point position,
-            Vector delta, InputModifiers inputModifiers)
+            Vector delta, RawInputModifiers inputModifiers)
             : base(device, timestamp, root, RawPointerEventType.Wheel, position, inputModifiers)
         {
             Delta = delta;

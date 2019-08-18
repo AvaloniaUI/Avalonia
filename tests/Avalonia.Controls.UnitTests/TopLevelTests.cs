@@ -183,7 +183,7 @@ namespace Avalonia.Controls.UnitTests
                     new Mock<IKeyboardDevice>().Object,
                     0,
                     RawKeyEventType.KeyDown,
-                    Key.A, InputModifiers.None);
+                    Key.A, RawInputModifiers.None);
                 impl.Object.Input(input);
 
                 inputManagerMock.Verify(x => x.ProcessInput(input));
