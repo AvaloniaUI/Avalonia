@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Collections;
 using Avalonia.Controls.Platform;
@@ -16,6 +17,20 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<NativeMenu, IEnumerable<NativeMenuItem>> ItemsProperty =
             AvaloniaProperty.RegisterDirect<NativeMenu, IEnumerable<NativeMenuItem>>(nameof(Items), o => o.Items, (o, v) => o.Items = v);
 
+        public NativeMenu()
+        {
+            this.GetObservable(ItemsProperty)
+                .Subscribe(x =>
+                {
+                    var exporter = AvaloniaLocator.Current.GetService<INativeMenuExporter>();
+
+                    if (exporter != null)
+                    {
+                        exporter.SetMenu(x);
+                    }
+                });
+        }
+
         /// <summary>
         /// Gets or sets the items to display.
         /// </summary>
@@ -24,18 +39,6 @@ namespace Avalonia.Controls
         {
             get { return _items; }
             set { SetAndRaise(ItemsProperty, ref _items, value); }
-        }
-
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-
-            var exporter = AvaloniaLocator.Current.GetService<INativeMenuExporter>();
-
-            if (exporter != null)
-            {
-                exporter.SetMenu(Items);
-            }
         }
     }
 }
