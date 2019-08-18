@@ -619,7 +619,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     RoutedEvent = InputElement.KeyDownEvent,
                     Key = selectAllGesture.Key,
-                    Modifiers = selectAllGesture.Modifiers
+                    KeyModifiers = selectAllGesture.KeyModifiers
                 };
 
                 target.RaiseEvent(keyEvent);
@@ -665,7 +665,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     RoutedEvent = InputElement.KeyDownEvent,
                     Key = selectAllGesture.Key,
-                    Modifiers = selectAllGesture.Modifiers
+                    KeyModifiers = selectAllGesture.KeyModifiers
                 };
 
                 target.RaiseEvent(keyEvent);
@@ -711,7 +711,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     RoutedEvent = InputElement.KeyDownEvent,
                     Key = selectAllGesture.Key,
-                    Modifiers = selectAllGesture.Modifiers
+                    KeyModifiers = selectAllGesture.KeyModifiers
                 };
 
                 target.RaiseEvent(keyEvent);

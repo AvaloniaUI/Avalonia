@@ -209,7 +209,7 @@ namespace Avalonia.Native
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawKeyEventArgs(_keyboard, timeStamp, (RawKeyEventType)type, (Key)key, (InputModifiers)modifiers);
+            var args = new RawKeyEventArgs(_keyboard, timeStamp, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
 
             Input?.Invoke(args);
 
@@ -223,11 +223,11 @@ namespace Avalonia.Native
             switch (type)
             {
                 case AvnRawMouseEventType.Wheel:
-                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (InputModifiers)modifiers));
+                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
                     break;
 
                 default:
-                    Input?.Invoke(new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (InputModifiers)modifiers));
+                    Input?.Invoke(new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers));
                     break;
             }
         }
