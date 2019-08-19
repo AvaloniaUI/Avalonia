@@ -12,32 +12,22 @@
             <StackPanel> 
               <TextBlock Classes="h3" Margin="4 8">AppMenu Defined in XAML</TextBlock>
               <TextBlock Classes="h3" Margin="4 8" Text="{Binding Message}"/>
-        <NativeMenu Items="{Binding MenuItems}">
-
-          <NativeMenu.Styles>
-            <Style Selector="NativeMenuItem">
-                <Setter Property="Header" Value="{Binding Header}"/>
-                <Setter Property="Items" Value="{Binding Items}"/>
-                <Setter Property="Command" Value="{Binding Command}"/>
-              <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
-            </Style>
-            </NativeMenu.Styles>
-          
-         <!-- <NativeMenuItem Text="File">
-                        <NativeMenuItem Text="New File" Command="{Binding NewFileCommand} "/>
-                        <NativeMenuItem Text="New Window"/>
-                        <NativeMenuItem Text="Open Recent"> 
-                            <NativeMenuItem Text="Recent File 1"/>
-                            <NativeMenuItem Text="Recent File 2"/>
+        <NativeMenu Items="{Binding NativeMenuItems}">
+         <!--<NativeMenuItem Header="File">
+                        <NativeMenuItem Header="New File" Command="{Binding NewFileCommand} "/>
+                        <NativeMenuItem Header="New Window"/>
+                        <NativeMenuItem Header="Open Recent"> 
+                            <NativeMenuItem Header="Recent File 1"/>
+                            <NativeMenuItem Header="Recent File 2"/>
                         </NativeMenuItem>
-                        <NativeMenuItem Text="Open"/>
-                        <NativeMenuItem Text="Close Solution"/>
+                        <NativeMenuItem Header="Open"/>
+                        <NativeMenuItem Header="Close Solution"/>
 
                     </NativeMenuItem>
-                    <NativeMenuItem Text="Edit"> 
-                        <NativeMenuItem Text="Copy"/>
-                        <NativeMenuItem Text="Paste"/>
-                        <NativeMenuItem Text="Find"/>
+                    <NativeMenuItem Header="Edit"> 
+                        <NativeMenuItem Header="Copy"/>
+                        <NativeMenuItem Header="Paste"/>
+                        <NativeMenuItem Header="Find"/>
                     </NativeMenuItem>-->
                 </NativeMenu>
             </StackPanel>

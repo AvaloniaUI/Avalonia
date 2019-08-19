@@ -378,6 +378,7 @@ AVNCOM(IAvnAppMenu, 17) : IUnknown
     virtual HRESULT AddItem (IAvnAppMenuItem* item) = 0;
     virtual HRESULT RemoveItem (IAvnAppMenuItem* item) = 0;
     virtual HRESULT SetTitle (void* utf8String) = 0;
+    virtual HRESULT Clear () = 0;
 };
 
 AVNCOM(IAvnPredicateCallback, 18) : IUnknown

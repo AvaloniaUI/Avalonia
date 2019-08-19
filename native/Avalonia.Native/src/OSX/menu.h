@@ -70,6 +70,8 @@ public:
     virtual HRESULT RemoveItem (IAvnAppMenuItem* item) override;
     
     virtual HRESULT SetTitle (void* utf8String) override;
+    
+    virtual HRESULT Clear () override;
 };
 
 

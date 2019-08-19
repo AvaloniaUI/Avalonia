@@ -5,6 +5,6 @@ namespace Avalonia.Controls.Platform
 {
     public interface INativeMenuExporter
     {
-        void SetMenu(IEnumerable<NativeMenuItem> menu);
+        void SetMenu(ICollection<NativeMenuItem> menu);
     }
 }

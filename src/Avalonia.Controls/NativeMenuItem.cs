@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Input;
 using Avalonia.Collections;
 using Avalonia.Metadata;
@@ -9,7 +10,7 @@ namespace Avalonia.Controls
     public class NativeMenuItem : AvaloniaObject
     {
         private string _header;
-        private AvaloniaList<NativeMenuItem> _items;
+        private ICollection<NativeMenuItem> _items;
         private bool _enabled = true;
 
         class CanExecuteChangedSubscriber : IWeakSubscriber<EventArgs>
@@ -44,12 +45,12 @@ namespace Avalonia.Controls
             set => SetValue(HeaderProperty, value);
         }
 
-        public static readonly DirectProperty<NativeMenuItem, AvaloniaList<NativeMenuItem>> ItemsProperty =
-           AvaloniaProperty.RegisterDirect<NativeMenuItem, AvaloniaList<NativeMenuItem>>(
+        public static readonly DirectProperty<NativeMenuItem, ICollection<NativeMenuItem>> ItemsProperty =
+           AvaloniaProperty.RegisterDirect<NativeMenuItem, ICollection<NativeMenuItem>>(
                nameof(Items), o => o._items, (o, v) => o._items = v);
 
         [Content]
-        public AvaloniaList<NativeMenuItem> Items
+        public ICollection<NativeMenuItem> Items
         {
             get => GetValue(ItemsProperty);
             set => SetValue(ItemsProperty, value);

@@ -150,6 +150,12 @@ HRESULT AvnAppMenu::SetTitle (void* utf8String)
     return S_OK;
 }
 
+HRESULT AvnAppMenu::Clear()
+{
+    [_native removeAllItems];
+    return S_OK;
+}
+
 static IAvnAppMenu* s_AppBar = nullptr;
 
 static IAvnAppMenu* s_AppMenu = nullptr;
@@ -160,80 +166,26 @@ extern IAvnAppMenu* GetAppMenu()
     {
         if(s_AppMenu == nullptr)
         {
-            NSMenu* const mainMenu = [[NSMenu alloc] initWithTitle:@"NSMainMenu"];
+            id appMenu = [AvnMenu new];
+            [appMenu setTitle:@"AppMenu"];
             
-            NSMenuItem* menuItem = [mainMenu addItemWithTitle:@"Apple" action:nil keyEquivalent:@""];
-            NSMenu* submenu = [[NSMenu alloc] initWithTitle:@"Apple"];
+            s_AppMenu = new AvnAppMenu(appMenu);
             
-            // todo populate app menu submenu!!!
-            NSString * const applicationName = @"root";
+            id appName = [[NSProcessInfo processInfo] processName];
             
-            NSMenuItem* menuItem1 = [submenu addItemWithTitle : [NSString stringWithFormat : @"%@ %@",
-                                                    NSLocalizedString(@"About", nil), applicationName]
-                                          action : @selector(orderFrontStandardAboutPanel:) keyEquivalent : @""];
-            [menuItem1 setTarget : NSApp];
-            [submenu addItem : [NSMenuItem separatorItem]];
+            //id quitTitle = [@"Quit " stringByAppendingString:appName];
+            //d quitMenuItem = [[NSMenuItem alloc] initWithTitle:quitTitle
+            //                                          action:@selector(terminate:) keyEquivalent:@"q"];
             
-            menuItem1 = [submenu addItemWithTitle : [NSString stringWithFormat : @"%@ %@",
-                                                    NSLocalizedString(@"Hide", nil), applicationName] action : @selector(hide:) keyEquivalent : @"h"];
-            [menuItem1 setTarget : NSApp];
             
-            //menuItem = [submenu addItemWithTitle : NSLocalizedString(@"Hide Others", nil)
-              //                            action : @selector(hideOtherApplications:) keyEquivalent : @"h"];
-            //[menuItem setKeyEquivalentModifierMask : Details::kCommandKeyMask | Details::kAlternateKeyMask];
-            //[menuItem setTarget : NSApp];
+            //id testMenuItem = [[NSMenuItem alloc] initWithTitle:@"Test" action:NULL keyEquivalent:@""];
+            //[appMenu addItem:testMenuItem];
+            //   [appMenu addItem:quitMenuItem];
             
-            menuItem1 = [submenu addItemWithTitle : NSLocalizedString(@"Show All", nil)
-                                          action : @selector(unhideAllApplications:) keyEquivalent : @""];
-            [menuItem1 setTarget : NSApp];
+            id appMenuItem = [AvnMenuItem new];
+            [[NSApp mainMenu] addItem:appMenuItem];
             
-            [submenu addItem : [NSMenuItem separatorItem]];
-            menuItem1 = [submenu addItemWithTitle : [NSString stringWithFormat : @"%@ %@",
-                                                    NSLocalizedString(@"Quit", nil), applicationName] action : @selector(terminate:) keyEquivalent : @"q"];
-            //[menuItem1 setTarget : NSApp];
-            //AvnMenuItem* testItem = [[AvnMenuItem alloc] initWithAvnAppMenuItem:this];
-            //[testItem setTitle:@"TestItem"];
-            //[submenu addItem: testItem];
-            //
-            
-            [mainMenu setSubmenu:submenu forItem:menuItem];
-            
-            menuItem = [mainMenu addItemWithTitle : @"Window" action : nil keyEquivalent : @""];
-            submenu = [[NSMenu alloc] initWithTitle : NSLocalizedString(@"Window", @"The Window menu")];
-            
-            //PopulateWindowMenu(submenu);
-            [mainMenu setSubmenu : submenu forItem : menuItem];
-            [NSApp setWindowsMenu : submenu];
-            
-            menuItem = [mainMenu addItemWithTitle:@"Help" action:NULL keyEquivalent:@""];
-            submenu = [[NSMenu alloc] initWithTitle:NSLocalizedString(@"Help", @"The Help menu")];
-            
-            //PopulateHelpMenu(submenu);
-            [mainMenu setSubmenu : submenu forItem : menuItem];
-            
-            [NSApp setMainMenu : mainMenu];
-            [NSMenu setMenuBarVisible : YES];
-            /*id appMenu = [AvnMenu new];
-             [appMenu setTitle:@"AppMenu"];
-             
-             s_AppMenu = new AvnAppMenu(appMenu);
-             
-             id appName = [[NSProcessInfo processInfo] processName];
-             
-             id quitTitle = [@"Quit " stringByAppendingString:appName];
-             id quitMenuItem = [[NSMenuItem alloc] initWithTitle:quitTitle
-             action:@selector(terminate:) keyEquivalent:@"q"];
-             
-             
-             id testMenuItem = [[NSMenuItem alloc] initWithTitle:@"Test" action:NULL keyEquivalent:@""];
-             [appMenu addItem:testMenuItem];
-             [appMenu addItem:quitMenuItem];
-             
-             [NSApp setMainMenu:appMenu];
-             
-             
-             
-             //[appMenuItem setSubmenu:appMenu];*/
+            [appMenuItem setSubmenu:appMenu];
         }
         
         return s_AppMenu;

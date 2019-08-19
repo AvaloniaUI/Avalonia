@@ -21,6 +21,48 @@ namespace ControlCatalog.ViewModels
             {
                 Message = "New File Menu Item Clicked";
             });
+            
+            NativeMenuItems = new List<NativeMenuItem>
+            {
+                new NativeMenuItem()
+                {
+                    Header = "_File",
+                    Items = new List<NativeMenuItem>
+                    {
+                        new NativeMenuItem() { Header = "_Open...", Command = OpenCommand },
+                        new NativeMenuItem { Header = "Save", Command = SaveCommand },
+                        new NativeMenuItem { Header = "-" },
+                        new NativeMenuItem
+                        {
+                            Header = "Recent",
+                            Items = new List<NativeMenuItem>
+                            {
+                                new NativeMenuItem
+                                {
+                                    Header = "File1.txt",
+                                    Command = OpenRecentCommand,
+                                    CommandParameter = @"c:\foo\File1.txt"
+                                },
+                                new NativeMenuItem
+                                {
+                                    Header = "File2.txt",
+                                    Command = OpenRecentCommand,
+                                    CommandParameter = @"c:\foo\File2.txt"
+                                },
+                            }
+                        },
+                    }
+                },
+                new NativeMenuItem
+                {
+                    Header = "_Edit",
+                    Items = new List<NativeMenuItem>
+                    {
+                        new NativeMenuItem { Header = "_Copy" },
+                        new NativeMenuItem { Header = "_Paste" },
+                    }
+                }
+            };
 
             MenuItems = new[]
             {
@@ -64,6 +106,8 @@ namespace ControlCatalog.ViewModels
                 }
             };
         }
+        
+        public  IReadOnlyList<NativeMenuItem> NativeMenuItems { get; set; }
 
         public IReadOnlyList<MenuItemViewModel> MenuItems { get; set; }
         public ReactiveCommand<Unit, Unit> OpenCommand { get; }
