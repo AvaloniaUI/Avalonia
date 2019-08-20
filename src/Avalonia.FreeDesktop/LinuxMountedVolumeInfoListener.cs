@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using Avalonia.Controls.Platform;
 using Tmds.DBus;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 
 namespace Avalonia.FreeDesktop.Dbus
 {
@@ -22,13 +23,44 @@ namespace Avalonia.FreeDesktop.Dbus
 
             public LinuxMountedVolumeInfoListener(ref ObservableCollection<MountedVolumeInfo> target)
             {
-                this._sysDbus = Connection.System;
-                this._udisk2Manager = _sysDbus.CreateProxy<IObjectManager>("org.freedesktop.UDisks2", "/org/freedesktop/UDisks2");
+                _disposables = new CompositeDisposable();
                 this._targetObs = target;
-                Start();
+
+                try
+                {
+                    this._sysDbus = Connection.System;
+                    this._udisk2Manager = _sysDbus.CreateProxy<IObjectManager>("org.freedesktop.UDisks2", "/org/freedesktop/UDisks2");
+
+                    // Test if DBus works.
+                    var _ = _udisk2Manager.GetManagedObjectsAsync().Result;
+
+                    StartDbus();
+                }
+                catch (Exception ex)
+                {
+                    Logging.Logger.Warning("Linux Volume Listener", this,
+                                           "Exception while initializing DBus connection: {0}; {1}"
+                                           , ex.Message, ex.StackTrace);
+                    StartFallback();
+                }
             }
 
-            private async void Poll()
+            private void StartFallback()
+            {
+                var pollTimer = Observable.Interval(TimeSpan.FromSeconds(1))
+                                          .Subscribe(PollFallback);
+
+                _disposables.Add(pollTimer);
+
+                PollFallback(0);
+            }
+
+            private void PollFallback(long _)
+            {
+
+            }
+
+            private async void PollDbus()
             {
                 var newDriveList = new List<MountedVolumeInfo>();
 
@@ -97,17 +129,15 @@ namespace Avalonia.FreeDesktop.Dbus
                 UpdateCollection(_targetObs, newDriveList);
             }
 
-            private async void Start()
+            private async void StartDbus()
             {
-                _disposables = new CompositeDisposable();
-
-                var sub1 = await _udisk2Manager.WatchInterfacesAddedAsync(delegate { Poll(); });
-                var sub2 = await _udisk2Manager.WatchInterfacesRemovedAsync(delegate { Poll(); });
+                var sub1 = await _udisk2Manager.WatchInterfacesAddedAsync(delegate { PollDbus(); });
+                var sub2 = await _udisk2Manager.WatchInterfacesRemovedAsync(delegate { PollDbus(); });
 
                 _disposables.Add(sub1);
                 _disposables.Add(sub2);
 
-                Poll();
+                PollDbus();
             }
 
             protected virtual void Dispose(bool disposing)
