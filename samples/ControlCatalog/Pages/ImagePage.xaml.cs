@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace ControlCatalog.Pages
@@ -27,16 +28,16 @@ namespace ControlCatalog.Pages
             _image = this.Get<Image>("WriteableBitmapImage");
             _image.Source = writeableBitmap;
 
-            using (var context = new FramebufferContext(writeableBitmap))
+            using (var framebuffer = writeableBitmap.Lock())
             {
-                for (int y = 0; y < context.Framebuffer.Size.Height; ++y)
+                for (int y = 0; y < framebuffer.Size.Height; ++y)
                 {
-                    for (int x = 0; x < context.Framebuffer.Size.Width; ++x)
+                    for (int x = 0; x < framebuffer.Size.Width; ++x)
                     {
-                        var pixel = context.GetPixel(x, y);
+                        var pixel = framebuffer.GetPixel(x, y);
 
-                        pixel[0] = (byte)(((double)x / context.Framebuffer.Size.Width) * 255);
-                        pixel[1] = (byte)(((double)y / context.Framebuffer.Size.Height) * 255);
+                        pixel[0] = (byte)(((double)x / framebuffer.Size.Width) * 255);
+                        pixel[1] = (byte)(((double)y / framebuffer.Size.Height) * 255);
                         pixel[3] = 255;
                     }
                 }
@@ -51,13 +52,13 @@ namespace ControlCatalog.Pages
 
         private void Callback(object sender, EventArgs e)
         {
-            using (var context = new FramebufferContext(writeableBitmap))
+            using (var framebuffer = writeableBitmap.Lock())
             {
                 for (int y = 80; y < 120; ++y)
                 {
                     for (int x = 125; x < 175; ++x)
                     {
-                        var pixel = context.GetPixel(x, y);
+                        var pixel = framebuffer.GetPixel(x, y);
 
                         pixel[0] = (byte)(random.NextDouble() * 255);
                         pixel[1] = (byte)(random.NextDouble() * 255);

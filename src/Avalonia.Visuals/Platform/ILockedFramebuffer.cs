@@ -12,18 +12,18 @@ namespace Avalonia.Platform
         /// <summary>
         /// Gets the framebuffer size in device pixels.
         /// </summary>
-        PixelSize Size{ get; }
-        
+        PixelSize Size { get; }
+
         /// <summary>
         /// Number of bytes per row
         /// </summary>
         int RowBytes { get; }
-        
+
         /// <summary>
         /// DPI of underling screen
         /// </summary>
         Vector Dpi { get; }
-        
+
         /// <summary>
         /// Pixel format
         /// </summary>
