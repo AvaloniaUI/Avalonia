@@ -85,8 +85,9 @@ namespace Avalonia.Data.Core.Plugins
                 if (target != null)
                 {
                     var errors = target.GetErrors(_name)?
-                        .Cast<String>()
-                        .Where(x => x != null).ToList();
+                        .Cast<object>()
+                        .Where(x => x != null)
+                        .ToList();
 
                     if (errors?.Count > 0)
                     {
@@ -100,16 +101,16 @@ namespace Avalonia.Data.Core.Plugins
                 return new BindingNotification(value);
             }
 
-            private Exception GenerateException(IList<string> errors)
+            private Exception GenerateException(IList<object> errors)
             {
                 if (errors.Count == 1)
                 {
-                    return new Exception(errors[0]);
+                    return new DataValidationException(errors[0]);
                 }
                 else
                 {
                     return new AggregateException(
-                        errors.Select(x => new Exception(x)));
+                        errors.Select(x => new DataValidationException(x)));
                 }
             }
         }
