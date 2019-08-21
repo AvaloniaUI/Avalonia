@@ -53,44 +53,15 @@ namespace Avalonia.Dialogs
 
         public static ManagedFileChooserNavigationItem[] DefaultGetFileSystemRoots()
         {
-            // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            // {
-            //     return DriveInfo.GetDrives().Select(d => new ManagedFileChooserNavigationItem
-            //     {
-            //         ItemType = ManagedFileChooserItemType.Volume,
-            //         DisplayName = d.Name,
-            //         Path = d.RootDirectory.FullName
-            //     }).ToArray();
-            // }
-            // else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            // {
-            //     var paths = Directory.GetDirectories("/Volumes");
-
-            //     return paths.Select(x => new ManagedFileChooserNavigationItem
-            //     {
-            //         ItemType = ManagedFileChooserItemType.Volume,
-            //         DisplayName = Path.GetFileName(x),
-            //         Path = x
-            //     }).ToArray();
-            // }
-            // else
-            // {
             return MountedVolumes
                    .Select(x =>
                    {
                        var displayName = x.VolumeLabel;
 
-                       if (displayName == null)
+                       if (displayName == null & x.VolumeSizeBytes > 0)
                        {
-                           if (x.VolumePath == "/")
-                           {
-                               displayName = "File System";
-                           }
-                           else if (x.VolumeSizeBytes > 0)
-                           {
-                               displayName = $"{ByteSizeHelper.ToString(x.VolumeSizeBytes)} Volume";
-                           };
-                       }
+                           displayName = $"{ByteSizeHelper.ToString(x.VolumeSizeBytes)} Volume";
+                       };
 
                        try
                        {
@@ -110,7 +81,6 @@ namespace Avalonia.Dialogs
                    })
                    .Where(x => x != null)
                    .ToArray();
-            // }
         }
     }
 }

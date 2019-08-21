@@ -10,27 +10,13 @@ using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Avalonia.FreeDesktop.Dbus
+namespace Avalonia.FreeDesktop
 {
     internal class LinuxMountedVolumeInfoListener : IDisposable
     {
         private const string DevByLabelDir = "/dev/disk/by-label/";
         private const string ProcPartitionsDir = "/proc/partitions";
         private const string ProcMountsDir = "/proc/mounts";
-
-        [DllImport("libc", SetLastError = true)]
-        private static extern long readlink([MarshalAs(UnmanagedType.LPArray)]
-                                            byte[] filename, [MarshalAs(UnmanagedType.LPArray)] byte[] buffer, long buflen);
-
-        private string ReadLink(string path)
-        {
-            var symlink = Encoding.UTF8.GetBytes(path);
-            var results = new byte[4095];
-            readlink(symlink, results, results.Length);
-            var rawstr = Encoding.UTF8.GetString(results);
-            return rawstr.Substring(0, rawstr.IndexOf('\0')); ;
-        }
-
         private CompositeDisposable _disposables;
         private ObservableCollection<MountedVolumeInfo> _targetObs;
         private bool _beenDisposed = false;
@@ -40,7 +26,7 @@ namespace Avalonia.FreeDesktop.Dbus
             _disposables = new CompositeDisposable();
             this._targetObs = target;
 
-            var pollTimer = Observable.Interval(TimeSpan.FromSeconds(2))
+            var pollTimer = Observable.Interval(TimeSpan.FromSeconds(1))
                                       .Subscribe(Poll);
 
             _disposables.Add(pollTimer);
@@ -48,7 +34,7 @@ namespace Avalonia.FreeDesktop.Dbus
             Poll(0);
         }
 
-        private string GetSymlinkTarget(string x) => Path.GetFullPath(Path.Combine(DevByLabelDir, ReadLink(x)));
+        private string GetSymlinkTarget(string x) => Path.GetFullPath(Path.Combine(DevByLabelDir, NativeMethods.ReadLink(x)));
 
         private void Poll(long _)
         {
@@ -82,7 +68,8 @@ namespace Avalonia.FreeDesktop.Dbus
 
             var mountVolInfos = q1.ToArray();
 
-            if (_targetObs.SequenceEqual(mountVolInfos)) return;
+            if (_targetObs.SequenceEqual(mountVolInfos))
+                return;
             else
             {
                 _targetObs.Clear();

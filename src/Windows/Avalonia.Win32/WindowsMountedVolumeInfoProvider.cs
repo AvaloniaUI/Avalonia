@@ -1,16 +1,15 @@
 using System;
 using System.Collections.ObjectModel;
-
 using Avalonia.Controls.Platform;
 
-namespace Avalonia.FreeDesktop
+namespace Avalonia.Win32
 {
-    public class LinuxMountedVolumeInfoProvider : IMountedVolumeInfoProvider
+    public class WindowsMountedVolumeInfoProvider : IMountedVolumeInfoProvider
     {
         public IDisposable Listen(ObservableCollection<MountedVolumeInfo> mountedDrives)
         {
             Contract.Requires<ArgumentNullException>(mountedDrives != null);
-            return new LinuxMountedVolumeInfoListener(ref mountedDrives);
+            return new WindowsMountedVolumeInfoListener(mountedDrives);
         }
     }
 }
