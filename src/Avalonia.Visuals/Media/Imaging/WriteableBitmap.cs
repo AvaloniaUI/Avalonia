@@ -1,12 +1,11 @@
 ﻿using Avalonia.Platform;
-using Avalonia.Rendering;
 
 namespace Avalonia.Media.Imaging
 {
     /// <summary>
     /// Holds a writeable bitmap image.
     /// </summary>
-    public class WriteableBitmap : Bitmap, IFramebufferSurface
+    public class WriteableBitmap : Bitmap
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WriteableBitmap"/> class.

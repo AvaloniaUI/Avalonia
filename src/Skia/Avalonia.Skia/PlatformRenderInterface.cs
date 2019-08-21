@@ -137,7 +137,7 @@ namespace Avalonia.Skia
                 {
                     return new GlRenderTarget(GrContext, glSurface);
                 }
-                if (surface is IFramebufferSurface framebufferSurface)
+                if (surface is IFramebufferPlatformSurface framebufferSurface)
                 {
                     return new FramebufferRenderTarget(framebufferSurface);
                 }

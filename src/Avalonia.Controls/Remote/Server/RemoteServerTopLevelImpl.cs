@@ -19,7 +19,7 @@ using ProtocolPixelFormat = Avalonia.Remote.Protocol.Viewport.PixelFormat;
 
 namespace Avalonia.Controls.Remote.Server
 {
-    public class RemoteServerTopLevelImpl : OffscreenTopLevelImplBase, IFramebufferSurface
+    public class RemoteServerTopLevelImpl : OffscreenTopLevelImplBase, IFramebufferPlatformSurface
     {
         private readonly IAvaloniaRemoteTransportConnection _transport;
         private LockedFramebuffer _framebuffer;

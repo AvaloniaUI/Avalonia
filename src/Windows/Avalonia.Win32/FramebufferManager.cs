@@ -6,7 +6,7 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    class FramebufferManager : IFramebufferSurface
+    class FramebufferManager : IFramebufferPlatformSurface
     {
         private readonly IntPtr _hwnd;
         private WindowFramebuffer _fb;

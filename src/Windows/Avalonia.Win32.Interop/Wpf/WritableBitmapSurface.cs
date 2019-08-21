@@ -9,7 +9,7 @@ using WriteableBitmap = System.Windows.Media.Imaging.WriteableBitmap;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    class WritableBitmapSurface : IFramebufferSurface
+    class WritableBitmapSurface : IFramebufferPlatformSurface
     {
         private readonly WpfTopLevelImpl _impl;
         private WriteableBitmap _bitmap;

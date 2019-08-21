@@ -165,7 +165,7 @@ namespace Avalonia.Direct2D1
                     return new ExternalRenderTarget(external);
                 }
 
-                if (s is IFramebufferSurface fb)
+                if (s is IFramebufferPlatformSurface fb)
                 {
                     return new FramebufferShimRenderTarget(fb);
                 }

@@ -15,7 +15,7 @@ namespace Avalonia.Skia
     /// </summary>
     internal class FramebufferRenderTarget : IRenderTarget
     {
-        private readonly IFramebufferSurface _platformSurface;
+        private readonly IFramebufferPlatformSurface _platformSurface;
         private SKImageInfo _currentImageInfo;
         private IntPtr _currentFramebufferAddress;
         private SKSurface _framebufferSurface;
@@ -26,7 +26,7 @@ namespace Avalonia.Skia
         /// Create new framebuffer render target using a target surface.
         /// </summary>
         /// <param name="platformSurface">Target surface.</param>
-        public FramebufferRenderTarget(IFramebufferSurface platformSurface)
+        public FramebufferRenderTarget(IFramebufferPlatformSurface platformSurface)
         {
             _platformSurface = platformSurface;
         }

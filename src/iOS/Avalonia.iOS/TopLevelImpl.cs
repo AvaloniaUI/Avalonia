@@ -14,7 +14,7 @@ using UIKit;
 namespace Avalonia.iOS
 {
     [Adopts("UIKeyInput")]
-    class TopLevelImpl : UIView, ITopLevelImpl, IFramebufferSurface
+    class TopLevelImpl : UIView, ITopLevelImpl, IFramebufferPlatformSurface
     {
         private IInputRoot _inputRoot;
         private readonly KeyboardEventsHelper<TopLevelImpl> _keyboardHelper;

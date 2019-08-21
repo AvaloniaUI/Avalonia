@@ -27,7 +27,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             Directory.CreateDirectory(OutputPath);
         }
 
-        class Framebuffer : ILockedFramebuffer, IFramebufferSurface
+        class Framebuffer : ILockedFramebuffer, IFramebufferPlatformSurface
         {
             public Framebuffer(PixelFormat fmt, PixelSize size)
             {

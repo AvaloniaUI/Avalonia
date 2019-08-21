@@ -11,9 +11,9 @@ namespace Avalonia.Direct2D1
 {
     class FramebufferShimRenderTarget : IRenderTarget
     {
-        private readonly IFramebufferSurface _surface;
+        private readonly IFramebufferPlatformSurface _surface;
 
-        public FramebufferShimRenderTarget(IFramebufferSurface surface)
+        public FramebufferShimRenderTarget(IFramebufferPlatformSurface surface)
         {
             _surface = surface;
         }

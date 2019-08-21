@@ -8,7 +8,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    public sealed unsafe class FbdevOutput : IFramebufferSurface, IDisposable, IOutputBackend
+    public sealed unsafe class FbdevOutput : IFramebufferPlatformSurface, IDisposable, IOutputBackend
     {
         private int _fd;
         private fb_fix_screeninfo _fixedInfo;

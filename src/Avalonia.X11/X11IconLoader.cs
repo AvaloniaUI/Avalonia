@@ -39,7 +39,7 @@ namespace Avalonia.X11
         }
     }
     
-    unsafe class X11IconData : IWindowIconImpl, IFramebufferSurface
+    unsafe class X11IconData : IWindowIconImpl, IFramebufferPlatformSurface
     {
         private int _width;
         private int _height;
