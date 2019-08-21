@@ -130,8 +130,3 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         }
     }
 }
-);
-
-        }
-    }
-}
