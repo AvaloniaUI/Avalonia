@@ -11,18 +11,14 @@ namespace Avalonia.Controls.Platform
     public class MountedVolumeInfo : IEquatable<MountedVolumeInfo>
     {
         public string VolumeLabel { get; set; }
-        public string VolumeName { get; set; }
+        public string VolumePath { get; set; }
         public ulong VolumeSizeBytes { get; set; }
-        public string DevicePath { get; set; }
-        public string MountPath { get; set; }
 
         public bool Equals(MountedVolumeInfo other)
         {
-            return this.VolumeLabel.Equals(other.VolumeLabel) &&
-                   this.VolumeName.Equals(other.VolumeName) &&
-                   this.VolumeSizeBytes.Equals(other.VolumeSizeBytes) &&
-                   this.DevicePath.Equals(other.DevicePath) &&
-                   this.MountPath.Equals(other.MountPath);
+            return this.VolumeSizeBytes.Equals(other.VolumeSizeBytes) &&
+                   this.VolumePath.Equals(other.VolumePath) &&
+                   (this.VolumeLabel ?? string.Empty).Equals(other.VolumeLabel ?? string.Empty);
         }
     }
 }

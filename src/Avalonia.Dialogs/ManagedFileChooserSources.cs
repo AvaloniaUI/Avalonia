@@ -53,56 +53,64 @@ namespace Avalonia.Dialogs
 
         public static ManagedFileChooserNavigationItem[] DefaultGetFileSystemRoots()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return DriveInfo.GetDrives().Select(d => new ManagedFileChooserNavigationItem
-                {
-                    ItemType = ManagedFileChooserItemType.Volume,
-                    DisplayName = d.Name,
-                    Path = d.RootDirectory.FullName
-                }).ToArray();
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                var paths = Directory.GetDirectories("/Volumes");
+            // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // {
+            //     return DriveInfo.GetDrives().Select(d => new ManagedFileChooserNavigationItem
+            //     {
+            //         ItemType = ManagedFileChooserItemType.Volume,
+            //         DisplayName = d.Name,
+            //         Path = d.RootDirectory.FullName
+            //     }).ToArray();
+            // }
+            // else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            // {
+            //     var paths = Directory.GetDirectories("/Volumes");
 
-                return paths.Select(x => new ManagedFileChooserNavigationItem
-                {
-                    ItemType = ManagedFileChooserItemType.Volume,
-                    DisplayName = Path.GetFileName(x),
-                    Path = x
-                }).ToArray();
-            }
-            else
-            {
-                return MountedVolumes
-                       .Where(x => !x.MountPath.StartsWith("/boot"))
-                       .Select(x =>
+            //     return paths.Select(x => new ManagedFileChooserNavigationItem
+            //     {
+            //         ItemType = ManagedFileChooserItemType.Volume,
+            //         DisplayName = Path.GetFileName(x),
+            //         Path = x
+            //     }).ToArray();
+            // }
+            // else
+            // {
+            return MountedVolumes
+                   .Select(x =>
+                   {
+                       var displayName = x.VolumeLabel;
+
+                       if (displayName == null)
                        {
-                           if (x.MountPath == "/")
+                           if (x.VolumePath == "/")
                            {
-                               return new ManagedFileChooserNavigationItem
-                               {
-                                   ItemType = ManagedFileChooserItemType.Volume,
-                                   DisplayName = "File System",
-                                   Path = "/"
-                               };
+                               displayName = "File System";
                            }
-                           else
+                           else if (x.VolumeSizeBytes > 0)
                            {
-                               var dNameEmpty = string.IsNullOrEmpty(x.VolumeLabel.Trim());
+                               displayName = $"{ByteSizeHelper.ToString(x.VolumeSizeBytes)} Volume";
+                           };
+                       }
 
-                               return new ManagedFileChooserNavigationItem
-                               {
-                                   ItemType = ManagedFileChooserItemType.Volume,
-                                   DisplayName = dNameEmpty ? $"{ByteSizeHelper.ToString(x.VolumeSizeBytes)} Volume"
-                                                            : x.VolumeLabel,
-                                   Path = x.MountPath
-                               };
-                           }
-                       })
-                       .ToArray();
-            }
+                       try
+                       {
+                           Directory.GetFiles(x.VolumePath);
+                       }
+                       catch (UnauthorizedAccessException _)
+                       {
+                           return null;
+                       }
+
+                       return new ManagedFileChooserNavigationItem
+                       {
+                           ItemType = ManagedFileChooserItemType.Volume,
+                           DisplayName = displayName,
+                           Path = x.VolumePath
+                       };
+                   })
+                   .Where(x => x != null)
+                   .ToArray();
+            // }
         }
     }
 }
