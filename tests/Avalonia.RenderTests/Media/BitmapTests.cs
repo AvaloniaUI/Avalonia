@@ -5,12 +5,12 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Xunit;
 
 #if AVALONIA_SKIA
@@ -27,7 +27,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             Directory.CreateDirectory(OutputPath);
         }
 
-        class Framebuffer : ILockedFramebuffer, IFramebufferPlatformSurface
+        class Framebuffer : ILockedFramebuffer, IFramebufferSurface
         {
             public Framebuffer(PixelFormat fmt, PixelSize size)
             {
@@ -126,6 +126,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
             writeableBitmap.Save(System.IO.Path.Combine(OutputPath, name + ".out.png"));
             CompareImagesNoRenderer(name);
+
+        }
+    }
+}
+);
 
         }
     }

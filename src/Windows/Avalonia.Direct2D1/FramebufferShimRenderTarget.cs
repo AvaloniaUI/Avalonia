@@ -1,6 +1,6 @@
 ﻿using System;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Direct2D1.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Win32.Interop;
@@ -11,9 +11,9 @@ namespace Avalonia.Direct2D1
 {
     class FramebufferShimRenderTarget : IRenderTarget
     {
-        private readonly IFramebufferPlatformSurface _surface;
+        private readonly IFramebufferSurface _surface;
 
-        public FramebufferShimRenderTarget(IFramebufferPlatformSurface surface)
+        public FramebufferShimRenderTarget(IFramebufferSurface surface)
         {
             _surface = surface;
         }

@@ -1,14 +1,14 @@
 ﻿using Avalonia.Platform;
 
-namespace Avalonia.Controls.Platform.Surfaces
+namespace Avalonia.Rendering
 {
-    public interface IFramebufferPlatformSurface
+    public interface IFramebufferSurface
     {
         /// <summary>
         /// Provides a framebuffer descriptor for drawing.
         /// </summary>
         /// <remarks>
-        /// Contents should be drawn on actual window after disposing
+        /// Contents should be drawn on actual surface after disposing.
         /// </remarks>
         ILockedFramebuffer Lock();
     }

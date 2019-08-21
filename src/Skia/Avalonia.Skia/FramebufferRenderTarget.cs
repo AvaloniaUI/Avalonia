@@ -3,7 +3,7 @@
 
 using System;
 using System.Reactive.Disposables;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SkiaSharp;
@@ -15,7 +15,7 @@ namespace Avalonia.Skia
     /// </summary>
     internal class FramebufferRenderTarget : IRenderTarget
     {
-        private readonly IFramebufferPlatformSurface _platformSurface;
+        private readonly IFramebufferSurface _platformSurface;
         private SKImageInfo _currentImageInfo;
         private IntPtr _currentFramebufferAddress;
         private SKSurface _framebufferSurface;
@@ -26,7 +26,7 @@ namespace Avalonia.Skia
         /// Create new framebuffer render target using a target surface.
         /// </summary>
         /// <param name="platformSurface">Target surface.</param>
-        public FramebufferRenderTarget(IFramebufferPlatformSurface platformSurface)
+        public FramebufferRenderTarget(IFramebufferSurface platformSurface)
         {
             _platformSurface = platformSurface;
         }

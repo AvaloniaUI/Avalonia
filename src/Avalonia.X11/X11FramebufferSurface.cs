@@ -1,10 +1,11 @@
 using System;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {
-    public class X11FramebufferSurface : IFramebufferPlatformSurface
+    public class X11FramebufferSurface : IFramebufferSurface
     {
         private readonly IntPtr _display;
         private readonly IntPtr _xid;

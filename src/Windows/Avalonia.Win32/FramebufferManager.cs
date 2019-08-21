@@ -1,11 +1,12 @@
 ﻿using System;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    class FramebufferManager : IFramebufferPlatformSurface
+    class FramebufferManager : IFramebufferSurface
     {
         private readonly IntPtr _hwnd;
         private WindowFramebuffer _fb;

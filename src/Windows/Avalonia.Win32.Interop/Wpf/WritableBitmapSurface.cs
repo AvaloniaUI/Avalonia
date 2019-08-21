@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using PixelFormat = Avalonia.Platform.PixelFormat;
+using WriteableBitmap = System.Windows.Media.Imaging.WriteableBitmap;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    class WritableBitmapSurface : IFramebufferPlatformSurface
+    class WritableBitmapSurface : IFramebufferSurface
     {
         private readonly WpfTopLevelImpl _impl;
         private WriteableBitmap _bitmap;

@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Media.Imaging;
 using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
@@ -16,7 +16,7 @@ using Avalonia.Threading;
 namespace Avalonia.Native
 {
     public abstract class WindowBaseImpl : IWindowBaseImpl,
-        IFramebufferPlatformSurface
+        IFramebufferSurface
     {
         IInputRoot _inputRoot;
         IAvnWindowBase _native;

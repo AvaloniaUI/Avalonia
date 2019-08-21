@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.iOS.Specific;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using CoreGraphics;
@@ -14,7 +14,7 @@ using UIKit;
 namespace Avalonia.iOS
 {
     [Adopts("UIKeyInput")]
-    class TopLevelImpl : UIView, ITopLevelImpl, IFramebufferPlatformSurface
+    class TopLevelImpl : UIView, ITopLevelImpl, IFramebufferSurface
     {
         private IInputRoot _inputRoot;
         private readonly KeyboardEventsHelper<TopLevelImpl> _keyboardHelper;

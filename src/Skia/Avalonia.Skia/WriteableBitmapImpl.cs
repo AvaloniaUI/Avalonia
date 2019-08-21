@@ -15,9 +15,11 @@ namespace Avalonia.Skia
     /// </summary>
     internal class WriteableBitmapImpl : IWriteableBitmapImpl, IDrawableBitmapImpl
     {
-        private static readonly SKBitmapReleaseDelegate s_releaseDelegate = ReleaseProc;
+        private readonly SKImage _image;
         private readonly SKBitmap _bitmap;
-        private readonly object _lock = new object();
+        private readonly SKPixmap _pixMap;
+        private readonly IUnmanagedBlob _blob;
+        internal readonly object _lock = new object();
 
         /// <summary>
         /// Create new writeable bitmap.
@@ -31,24 +33,35 @@ namespace Avalonia.Skia
             Dpi = dpi;
 
             var colorType = PixelFormatHelper.ResolveColorType(format);
-            
+
             var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
-            
+
             if (runtimePlatform != null)
             {
+                var nfo = new SKImageInfo(size.Width, size.Height, colorType, SKAlphaType.Premul);
+
+                _blob = runtimePlatform.AllocBlob(nfo.BytesSize);
+
+                _pixMap = new SKPixmap(nfo, _blob.Address, nfo.RowBytes);
+
                 _bitmap = new SKBitmap();
 
-                var nfo = new SKImageInfo(size.Width, size.Height, colorType, SKAlphaType.Premul);
-                var blob = runtimePlatform.AllocBlob(nfo.BytesSize);
+                _bitmap.InstallPixels(_pixMap);
 
-                _bitmap.InstallPixels(nfo, blob.Address, nfo.RowBytes, s_releaseDelegate, blob);
+                _bitmap.SetImmutable();
+
+                _image = SKImage.FromBitmap(_bitmap);
             }
             else
             {
                 _bitmap = new SKBitmap(size.Width, size.Height, colorType, SKAlphaType.Premul);
+
+                _pixMap = _bitmap.PeekPixels();
+
+                _image = SKImage.FromBitmap(_bitmap);
             }
 
-            _bitmap.Erase(SKColor.Empty);
+            _pixMap.Erase(SKColor.Empty);
         }
 
         public Vector Dpi { get; }
@@ -56,19 +69,22 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public PixelSize PixelSize { get; }
 
-        public int Version { get; private set; } = 1;
+        public int Version { get; internal set; } = 1;
 
         /// <inheritdoc />
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {
             lock (_lock)
-                context.Canvas.DrawBitmap(_bitmap, sourceRect, destRect, paint);
+                context.Canvas.DrawImage(_image, sourceRect, destRect, paint);
         }
 
         /// <inheritdoc />
         public void Dispose()
         {
+            _image.Dispose();
             _bitmap.Dispose();
+            _pixMap.Dispose();
+            _blob.Dispose();
         }
 
         /// <inheritdoc />
@@ -99,63 +115,59 @@ namespace Avalonia.Skia
         public SKImage GetSnapshot()
         {
             lock (_lock)
-                return SKImage.FromPixels(_bitmap.Info, _bitmap.GetPixels(), _bitmap.RowBytes);
+                return SKImage.FromPixelCopy(_pixMap);
         }
+    }
+
+    /// <summary>
+    /// Framebuffer for Pixmap.
+    /// </summary>
+    public class BitmapFramebuffer : ILockedFramebuffer
+    {
+        private WriteableBitmapImpl _parent;
+        private SKBitmap _bitmap;
 
         /// <summary>
-        /// Release given unmanaged blob.
+        /// Create framebuffer from given bitmap.
         /// </summary>
-        /// <param name="address">Blob address.</param>
-        /// <param name="ctx">Blob.</param>
-        private static void ReleaseProc(IntPtr address, object ctx)
+        /// <param name="parent">Parent bitmap impl.</param>
+        /// <param name="bitmap">Bitmap</param>
+        internal BitmapFramebuffer(WriteableBitmapImpl parent, SKBitmap bitmap)
         {
-            ((IUnmanagedBlob)ctx).Dispose();
+            _parent = parent;
+            _bitmap = bitmap;
+            var pixmap = bitmap.PeekPixels();
+            Address = pixmap.GetPixels();
+            Size = new PixelSize(pixmap.Width, pixmap.Height);
+            RowBytes = pixmap.RowBytes;
+            Dpi = SkiaPlatform.DefaultDpi;
+            Format = pixmap.ColorType.ToPixelFormat();
+            Monitor.Enter(parent._lock);
         }
 
-        /// <summary>
-        /// Framebuffer for bitmap.
-        /// </summary>
-        private class BitmapFramebuffer : ILockedFramebuffer
+        /// <inheritdoc />
+        public void Dispose()
         {
-            private WriteableBitmapImpl _parent;
-            private SKBitmap _bitmap;
-
-            /// <summary>
-            /// Create framebuffer from given bitmap.
-            /// </summary>
-            /// <param name="parent">Parent bitmap impl.</param>
-            /// <param name="bitmap">Bitmap.</param>
-            public BitmapFramebuffer(WriteableBitmapImpl parent, SKBitmap bitmap)
-            {
-                _parent = parent;
-                _bitmap = bitmap;
-                Monitor.Enter(parent._lock);
-            }
-
-            /// <inheritdoc />
-            public void Dispose()
-            {
-                _bitmap.NotifyPixelsChanged();
-                _parent.Version++;
-                Monitor.Exit(_parent._lock);
-                _bitmap = null;
-                _parent = null;
-            }
-            
-            /// <inheritdoc />
-            public IntPtr Address => _bitmap.GetPixels();
-
-            /// <inheritdoc />
-            public PixelSize Size => new PixelSize(_bitmap.Width, _bitmap.Height);
-
-            /// <inheritdoc />
-            public int RowBytes => _bitmap.RowBytes;
-
-            /// <inheritdoc />
-            public Vector Dpi { get; } = SkiaPlatform.DefaultDpi;
-
-            /// <inheritdoc />
-            public PixelFormat Format => _bitmap.ColorType.ToPixelFormat();
+            _bitmap.NotifyPixelsChanged();
+            _parent.Version++;
+            Monitor.Exit(_parent._lock);
+            _bitmap = null;
+            _parent = null;
         }
+
+        /// <inheritdoc />
+        public IntPtr Address { get; }
+
+        /// <inheritdoc />
+        public PixelSize Size { get; }
+
+        /// <inheritdoc />
+        public int RowBytes { get; }
+
+        /// <inheritdoc />
+        public Vector Dpi { get; }
+
+        /// <inheritdoc />
+        public PixelFormat Format { get; }
     }
 }

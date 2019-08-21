@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Controls.Embedding.Offscreen;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Input;
 using Avalonia.Remote.Protocol.Viewport;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 using InputModifiers = Avalonia.Input.InputModifiers;
 using Key = Avalonia.Input.Key;
@@ -18,7 +19,7 @@ using ProtocolPixelFormat = Avalonia.Remote.Protocol.Viewport.PixelFormat;
 
 namespace Avalonia.Controls.Remote.Server
 {
-    public class RemoteServerTopLevelImpl : OffscreenTopLevelImplBase, IFramebufferPlatformSurface
+    public class RemoteServerTopLevelImpl : OffscreenTopLevelImplBase, IFramebufferSurface
     {
         private readonly IAvaloniaRemoteTransportConnection _transport;
         private LockedFramebuffer _framebuffer;

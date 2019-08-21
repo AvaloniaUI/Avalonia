@@ -6,15 +6,15 @@ using Android.Views;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : IAndroidView, ITopLevelImpl,  IFramebufferPlatformSurface
+    class TopLevelImpl : IAndroidView, ITopLevelImpl,  IFramebufferSurface
 
     {
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
@@ -193,6 +193,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IPopupImpl CreatePopup() => null;
 
-        ILockedFramebuffer IFramebufferPlatformSurface.Lock()=>new AndroidFramebuffer(_view.Holder.Surface);
+        ILockedFramebuffer IFramebufferSurface.Lock()=>new AndroidFramebuffer(_view.Holder.Surface);
     }
 }

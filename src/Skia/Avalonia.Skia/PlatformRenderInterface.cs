@@ -4,10 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -136,7 +137,7 @@ namespace Avalonia.Skia
                 {
                     return new GlRenderTarget(GrContext, glSurface);
                 }
-                if (surface is IFramebufferPlatformSurface framebufferSurface)
+                if (surface is IFramebufferSurface framebufferSurface)
                 {
                     return new FramebufferRenderTarget(framebufferSurface);
                 }

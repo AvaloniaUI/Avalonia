@@ -5,11 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia
 {
@@ -164,7 +165,7 @@ namespace Avalonia.Direct2D1
                     return new ExternalRenderTarget(external);
                 }
 
-                if (s is IFramebufferPlatformSurface fb)
+                if (s is IFramebufferSurface fb)
                 {
                     return new FramebufferShimRenderTarget(fb);
                 }

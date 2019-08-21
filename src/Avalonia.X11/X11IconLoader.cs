@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
 using static Avalonia.X11.XLib;
@@ -39,7 +39,7 @@ namespace Avalonia.X11
         }
     }
     
-    unsafe class X11IconData : IWindowIconImpl, IFramebufferPlatformSurface
+    unsafe class X11IconData : IWindowIconImpl, IFramebufferSurface
     {
         private int _width;
         private int _height;
