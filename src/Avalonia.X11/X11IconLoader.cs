@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
 using static Avalonia.X11.XLib;

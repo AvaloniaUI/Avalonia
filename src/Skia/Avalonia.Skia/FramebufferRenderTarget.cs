@@ -3,7 +3,6 @@
 
 using System;
 using System.Reactive.Disposables;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SkiaSharp;

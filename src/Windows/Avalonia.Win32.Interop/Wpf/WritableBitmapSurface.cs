@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Media;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using PixelFormat = Avalonia.Platform.PixelFormat;
 using WriteableBitmap = System.Windows.Media.Imaging.WriteableBitmap;
 

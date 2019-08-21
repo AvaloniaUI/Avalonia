@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.iOS.Specific;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using CoreGraphics;

@@ -1,6 +1,5 @@
 ﻿using System;
 using Avalonia.Direct2D1.Media;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Win32.Interop;
