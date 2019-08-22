@@ -42,16 +42,16 @@ namespace Avalonia.Platform
                     break;
 
                 case PixelFormat.Rgba8888:
-                    pixel[0] = (byte)((color.R - (1 - alpha) * 255) / alpha);
-                    pixel[1] = (byte)((color.G - (1 - alpha) * 255) / alpha);
-                    pixel[2] = (byte)((color.B - (1 - alpha) * 255) / alpha);
+                    pixel[0] = (byte)(color.R * alpha);
+                    pixel[1] = (byte)(color.G * alpha);
+                    pixel[2] = (byte)(color.B * alpha);
                     pixel[3] = color.A;
                     break;
 
                 case PixelFormat.Bgra8888:
-                    pixel[0] = (byte)((color.B - (1 - alpha) * 255) / alpha);
-                    pixel[1] = (byte)((color.G - (1 - alpha) * 255) / alpha);
-                    pixel[2] = (byte)((color.R - (1 - alpha) * 255) / alpha);
+                    pixel[0] = (byte)(color.B * alpha);
+                    pixel[1] = (byte)(color.G * alpha);
+                    pixel[2] = (byte)(color.R * alpha);
                     pixel[3] = color.A;
                     break;
 
