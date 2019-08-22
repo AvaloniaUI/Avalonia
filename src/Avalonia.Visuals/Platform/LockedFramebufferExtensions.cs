@@ -36,9 +36,9 @@ namespace Avalonia.Platform
             switch (framebuffer.Format)
             {
                 case PixelFormat.Rgb565:
-                    pixel[0] = color.R;
-                    pixel[1] = color.G;
-                    pixel[2] = color.B;
+                    var value = (((color.R & 0b11111000) << 8) + ((color.G & 0b11111100) << 3) + (color.B >> 3));
+                    pixel[0] = (byte)value;
+                    pixel[1] = (byte)(value >> 8);
                     break;
 
                 case PixelFormat.Rgba8888:

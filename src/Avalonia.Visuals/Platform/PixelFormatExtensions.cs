@@ -12,7 +12,7 @@ namespace Avalonia.Platform
             switch (pixelFormat)
             {
                 case PixelFormat.Rgb565:
-                    return 3;
+                    return 2;
                 case PixelFormat.Rgba8888:
                 case PixelFormat.Bgra8888:
                     return 4;

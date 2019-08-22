@@ -13,7 +13,8 @@ namespace ControlCatalog.Pages
     public class ImagePage : UserControl
     {
         private Image iconImage;
-        private WriteableBitmap writeableBitmap = new WriteableBitmap(new PixelSize(300, 200), new Vector(96, 96));
+        private readonly WriteableBitmap writeableBitmap =
+            new WriteableBitmap(new PixelSize(300, 200), new Vector(96, 96));
         private Image _image;
 
         public ImagePage()
@@ -30,15 +31,14 @@ namespace ControlCatalog.Pages
 
             using (var framebuffer = writeableBitmap.Lock())
             {
-                for (int y = 0; y < framebuffer.Size.Height; ++y)
+                for (var y = 0; y < framebuffer.Size.Height; ++y)
                 {
-                    for (int x = 0; x < framebuffer.Size.Width; ++x)
+                    for (var x = 0; x < framebuffer.Size.Width; ++x)
                     {
-                        var pixel = framebuffer.GetPixel(x, y);
+                        var color = new Color(255, (byte)((double)x / framebuffer.Size.Width * 255),
+                            (byte)((double)y / framebuffer.Size.Height * 255), 0);
 
-                        pixel[0] = (byte)(((double)x / framebuffer.Size.Width) * 255);
-                        pixel[1] = (byte)(((double)y / framebuffer.Size.Height) * 255);
-                        pixel[3] = 255;
+                        framebuffer.SetPixel(x, y, color);
                     }
                 }
             }
@@ -57,9 +57,9 @@ namespace ControlCatalog.Pages
 
             using (var framebuffer = writeableBitmap.Lock())
             {
-                for (int y = 80; y < 120; ++y)
+                for (var y = 80; y < 120; ++y)
                 {
-                    for (int x = 125; x < 175; ++x)
+                    for (var x = 125; x < 175; ++x)
                     {
                         framebuffer.SetPixel(x, y, color);
                     }
