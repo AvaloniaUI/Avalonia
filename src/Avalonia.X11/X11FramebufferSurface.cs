@@ -1,7 +1,5 @@
 using System;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {

@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia

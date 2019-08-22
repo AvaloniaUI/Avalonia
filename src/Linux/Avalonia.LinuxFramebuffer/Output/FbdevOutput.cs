@@ -2,9 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.LinuxFramebuffer.Output;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 
 namespace Avalonia.LinuxFramebuffer
 {
