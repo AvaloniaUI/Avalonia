@@ -37,13 +37,13 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
                 new BindingNotification(6),
                 
                 // Then the ErrorsChanged event is fired.
-                new BindingNotification(new Exception("Must be less than Maximum"), BindingErrorType.DataValidationError, 6),
+                new BindingNotification(new DataValidationException("Must be less than Maximum"), BindingErrorType.DataValidationError, 6),
 
                 // Maximum is changed to 10 so value is now valid.
                 new BindingNotification(6),
 
                 // And Maximum is changed back to 5.
-                new BindingNotification(new Exception("Must be less than Maximum"), BindingErrorType.DataValidationError, 6),
+                new BindingNotification(new DataValidationException("Must be less than Maximum"), BindingErrorType.DataValidationError, 6),
             }, result);
         }
 
