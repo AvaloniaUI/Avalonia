@@ -14,10 +14,16 @@ namespace ControlCatalog
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
+            {
                 desktopLifetime.MainWindow = new MainWindow();
+                Name = desktopLifetime.MainWindow.Title;
+            }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
+            {
                 singleViewLifetime.MainView = new MainView();
-            
+                Name = singleViewLifetime.MainView.Name;
+            }
+
             base.OnFrameworkInitializationCompleted();
         }
     }

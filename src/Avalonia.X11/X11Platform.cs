@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications.Native;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
+using Avalonia.FreeDesktop.Dbus.Notifications;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
@@ -51,7 +53,8 @@ namespace Avalonia.X11
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
                 .Bind<ISystemDialogImpl>().ToConstant(new GtkSystemDialog())
-                .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider());
+                .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
+                .Bind<INativeNotificationManager>().ToConstant(new FreeDesktopNotificationManager());
             
             X11Screens = Avalonia.X11.X11Screens.Init(this);
             Screens = new X11Screens(X11Screens);

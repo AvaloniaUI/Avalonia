@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Reactive.Concurrency;
 using System.Threading;
 using Avalonia.Animation;
@@ -44,6 +45,7 @@ namespace Avalonia
         private readonly Styler _styler = new Styler();
         private Styles _styles;
         private IResourceDictionary _resources;
+        private string _name;
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
@@ -162,6 +164,21 @@ namespace Avalonia
         public IApplicationLifetime ApplicationLifetime { get; set; }
 
         /// <summary>
+        /// Application's Name<para/>
+        /// If not specified will use the current process name 
+        /// </summary>
+        public string Name
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(_name))
+                    _name = GetNameFromProcess();
+                return _name;
+            }
+            set => _name = value;
+        }
+
+        /// <summary>
         /// Initializes the application by loading XAML etc.
         /// </summary>
         public virtual void Initialize() { }
@@ -209,6 +226,14 @@ namespace Avalonia
         private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
         {
             ResourcesChanged?.Invoke(this, e);
+        }
+
+        private string GetNameFromProcess()
+        {
+            using (var currentProcess = Process.GetCurrentProcess())
+            {
+                return currentProcess.ProcessName;
+            }
         }
     }
 }

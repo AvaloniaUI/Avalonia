@@ -8,13 +8,12 @@ using ControlCatalog.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Controls.Notifications.Native;
 
 namespace ControlCatalog
 {
     public class MainWindow : Window
     {
-        private WindowNotificationManager _notificationArea;
-
         public MainWindow()
         {
             this.InitializeComponent();
@@ -22,13 +21,14 @@ namespace ControlCatalog
             //Renderer.DrawFps = true;
             //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
 
-            _notificationArea = new WindowNotificationManager(this)
+            var notificationArea = new WindowNotificationManager(this)
             {
                 Position = NotificationPosition.TopRight,
                 MaxItems = 3
             };
+            var nativeNotification = AvaloniaLocator.Current.GetService<INativeNotificationManager>();
 
-            DataContext = new MainWindowViewModel(_notificationArea);
+            DataContext = new MainWindowViewModel(notificationArea, nativeNotification);
         }
 
         private void InitializeComponent()
