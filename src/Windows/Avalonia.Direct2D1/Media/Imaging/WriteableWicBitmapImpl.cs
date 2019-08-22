@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using SharpDX.WIC;
 using PixelFormat = Avalonia.Platform.PixelFormat;
 
@@ -45,5 +46,10 @@ namespace Avalonia.Direct2D1.Media.Imaging
 
         public ILockedFramebuffer Lock() =>
             new LockedBitmap(this, WicImpl.Lock(BitmapLockFlags.Write), PixelFormat.Value);
+
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

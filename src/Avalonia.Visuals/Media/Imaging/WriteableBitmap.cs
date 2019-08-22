@@ -14,11 +14,16 @@ namespace Avalonia.Media.Imaging
         /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="format">The pixel format (optional).</param>
         /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
-        public WriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null) 
+        public WriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
             : base(AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().CreateWriteableBitmap(size, dpi, format))
         {
         }
-        
-        public ILockedFramebuffer Lock() => ((IWriteableBitmapImpl) PlatformImpl.Item).Lock();
+
+        public ILockedFramebuffer Lock() => ((IWriteableBitmapImpl)PlatformImpl.Item).Lock();
+
+        public IDrawingContextImpl CreateDrawingContext()
+        {
+            return ((IWriteableBitmapImpl)PlatformImpl.Item).CreateDrawingContext(null);
+        }
     }
 }

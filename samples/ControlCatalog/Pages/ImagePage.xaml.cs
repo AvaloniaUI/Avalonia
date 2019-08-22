@@ -55,15 +55,10 @@ namespace ControlCatalog.Pages
             var color = new Color((byte)(random.NextDouble() * 255), (byte)(random.NextDouble() * 255),
                 (byte)(random.NextDouble() * 255), (byte)(random.NextDouble() * 255));
 
-            using (var framebuffer = writeableBitmap.Lock())
+            using (var context = writeableBitmap.CreateDrawingContext())
             {
-                for (var y = 80; y < 120; ++y)
-                {
-                    for (var x = 125; x < 175; ++x)
-                    {
-                        framebuffer.SetPixel(x, y, color);
-                    }
-                }
+                var rect = new Rect(new Point(125, 80), new Size(50, 40));
+                context.FillRectangle(new SolidColorBrush(color), rect);
             }
 
             _image.InvalidateVisual();

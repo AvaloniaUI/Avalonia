@@ -3,8 +3,10 @@
 
 using System;
 using System.IO;
+using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Skia.Helpers;
 using SkiaSharp;
 
@@ -17,8 +19,11 @@ namespace Avalonia.Skia
     {
         private readonly SKImage _image;
         private readonly SKBitmap _bitmap;
-        private readonly SKPixmap _pixMap;
+        private readonly SKPixmap _pixmap;
         private readonly IUnmanagedBlob _blob;
+
+        private SKSurface _surface;
+
         internal readonly object _lock = new object();
 
         /// <summary>
@@ -42,11 +47,11 @@ namespace Avalonia.Skia
 
                 _blob = runtimePlatform.AllocBlob(nfo.BytesSize);
 
-                _pixMap = new SKPixmap(nfo, _blob.Address, nfo.RowBytes);
+                _pixmap = new SKPixmap(nfo, _blob.Address, nfo.RowBytes);
 
                 _bitmap = new SKBitmap();
 
-                _bitmap.InstallPixels(_pixMap);
+                _bitmap.InstallPixels(_pixmap);
 
                 _bitmap.SetImmutable();
 
@@ -56,12 +61,12 @@ namespace Avalonia.Skia
             {
                 _bitmap = new SKBitmap(size.Width, size.Height, colorType, SKAlphaType.Premul);
 
-                _pixMap = _bitmap.PeekPixels();
+                _pixmap = _bitmap.PeekPixels();
 
                 _image = SKImage.FromBitmap(_bitmap);
             }
 
-            _pixMap.Erase(SKColor.Empty);
+            _pixmap.Erase(SKColor.Empty);
         }
 
         public Vector Dpi { get; }
@@ -81,10 +86,28 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void Dispose()
         {
+            _surface?.Dispose();
             _image.Dispose();
             _bitmap.Dispose();
-            _pixMap.Dispose();
+            _pixmap.Dispose();
             _blob.Dispose();
+        }
+
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        {
+            if (_surface == null)
+            {
+                _surface = SKSurface.Create(_pixmap);
+            }
+
+            var createInfo = new DrawingContextImpl.CreateInfo
+            {
+                Canvas = _surface.Canvas,
+                Dpi = Dpi,
+                VisualBrushRenderer = visualBrushRenderer
+            };
+
+            return new DrawingContextImpl(createInfo, Disposable.Create(() => _bitmap.NotifyPixelsChanged()));
         }
 
         /// <inheritdoc />
@@ -115,7 +138,7 @@ namespace Avalonia.Skia
         public SKImage GetSnapshot()
         {
             lock (_lock)
-                return SKImage.FromPixelCopy(_pixMap);
+                return SKImage.FromPixelCopy(_pixmap);
         }
     }
 

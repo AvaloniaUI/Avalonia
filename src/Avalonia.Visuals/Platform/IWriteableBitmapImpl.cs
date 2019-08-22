@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines the platform-specific interface for a <see cref="Avalonia.Media.Imaging.WriteableBitmap"/>.
     /// </summary>
-    public interface IWriteableBitmapImpl : IBitmapImpl
+    public interface IWriteableBitmapImpl : IBitmapImpl, IRenderTarget
     {
         ILockedFramebuffer Lock();
     }
