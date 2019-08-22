@@ -8,7 +8,6 @@ using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 

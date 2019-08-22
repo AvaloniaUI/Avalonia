@@ -43,7 +43,7 @@ namespace ControlCatalog.Pages
                 }
             }
 
-            var timer = new DispatcherTimer(TimeSpan.FromSeconds(3), DispatcherPriority.Background, Callback);
+            var timer = new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.Background, Callback);
 
             timer.Start();
         }
@@ -52,17 +52,16 @@ namespace ControlCatalog.Pages
 
         private void Callback(object sender, EventArgs e)
         {
+            var color = new Color((byte)(random.NextDouble() * 255), (byte)(random.NextDouble() * 255),
+                (byte)(random.NextDouble() * 255), (byte)(random.NextDouble() * 255));
+
             using (var framebuffer = writeableBitmap.Lock())
             {
                 for (int y = 80; y < 120; ++y)
                 {
                     for (int x = 125; x < 175; ++x)
                     {
-                        var pixel = framebuffer.GetPixel(x, y);
-
-                        pixel[0] = (byte)(random.NextDouble() * 255);
-                        pixel[1] = (byte)(random.NextDouble() * 255);
-                        pixel[3] = 255;
+                        framebuffer.SetPixel(x, y, color);
                     }
                 }
             }
