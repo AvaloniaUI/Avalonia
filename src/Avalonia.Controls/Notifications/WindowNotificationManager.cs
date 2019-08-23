@@ -92,7 +92,8 @@ namespace Avalonia.Controls.Notifications
                 x => x == NotificationPosition.BottomRight, ":bottomright");
 
             HorizontalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(
-                HorizontalAlignment.Stretch
+                HorizontalAlignment
+                .Stretch
             );
             VerticalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(
                 VerticalAlignment.Stretch

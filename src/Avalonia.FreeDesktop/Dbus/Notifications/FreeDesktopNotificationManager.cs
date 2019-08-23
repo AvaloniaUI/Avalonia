@@ -123,7 +123,7 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
         private Dictionary<string, object> GetHintsFromNotification(INotification notification)
         {
             byte urgency;
-            
+
             //TODO: Change this into an enum
             switch (notification.Type)
             {
@@ -139,7 +139,7 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
                     urgency = 0;
                     break;
             }
-            
+
             return new Dictionary<string, object>
             {
                 { "urgency", urgency },

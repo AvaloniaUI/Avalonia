@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Avalonia.Controls;
-using Avalonia.Controls.Notifications.Native;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.Dbus.Notifications;

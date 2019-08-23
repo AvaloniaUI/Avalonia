@@ -8,6 +8,15 @@
       <Button Content="Show Standard Managed Notification" Command="{Binding ShowManagedNotificationCommand}" />
       <Button Content="Show Custom Managed Notification" Command="{Binding ShowCustomManagedNotificationCommand}" />
       <Button Content="Show Native Notification" Command="{Binding ShowNativeNotificationCommand}" />
+        <TextBlock Classes="h1">Native notifications info</TextBlock>
+        <TextBlock Text="{Binding NativeServerInfo}" />
+        <ListBox Items="{Binding NativeServerCapabilities}" Width="250" Height="350">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding }"/>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
     </StackPanel>
     <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Left">
       <TextBlock Classes="h1">Native notification server information</TextBlock>
