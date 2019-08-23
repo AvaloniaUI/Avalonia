@@ -35,9 +35,11 @@ namespace Avalonia.Controls
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            _inner = source as IList;
-
-            if (_inner == null && source is IEnumerable<object> objectEnumerable)
+            if (source is IList list)
+            {
+                _inner = list;
+            }
+            else if (source is IEnumerable<object> objectEnumerable)
             {
                 _inner = new List<object>(objectEnumerable);
             }

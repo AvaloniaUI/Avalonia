@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
-    public class StaticResourceExtensionTests
+    public class StaticResourceExtensionTests : XamlTestBase
     {
         [Fact]
         public void StaticResource_Can_Be_Assigned_To_Property()

@@ -15,31 +15,61 @@ namespace Avalonia.Input
 
     public sealed class PointerPointProperties
     {
-        public bool IsLeftButtonPressed { get; set; }
-        public bool IsMiddleButtonPressed { get; set; }
-        public bool IsRightButtonPressed { get; set; }
-
-        public PointerPointProperties()
+        public bool IsLeftButtonPressed { get; }
+        public bool IsMiddleButtonPressed { get; }
+        public bool IsRightButtonPressed { get; }
+        public PointerUpdateKind PointerUpdateKind { get; }
+        private PointerPointProperties()
         {
             
         }
         
-        public PointerPointProperties(InputModifiers modifiers)
+        public PointerPointProperties(RawInputModifiers modifiers, PointerUpdateKind kind)
         {
-            IsLeftButtonPressed = modifiers.HasFlag(InputModifiers.LeftMouseButton);
-            IsMiddleButtonPressed = modifiers.HasFlag(InputModifiers.MiddleMouseButton);
-            IsRightButtonPressed = modifiers.HasFlag(InputModifiers.RightMouseButton);
+            PointerUpdateKind = kind;
+            IsLeftButtonPressed = modifiers.HasFlag(RawInputModifiers.LeftMouseButton);
+            IsMiddleButtonPressed = modifiers.HasFlag(RawInputModifiers.MiddleMouseButton);
+            IsRightButtonPressed = modifiers.HasFlag(RawInputModifiers.RightMouseButton);
+
+            // The underlying input source might be reporting the previous state,
+            // so make sure that we reflect the current state
+            
+            if (kind == PointerUpdateKind.LeftButtonPressed)
+                IsLeftButtonPressed = true;
+            if (kind == PointerUpdateKind.LeftButtonReleased)
+                IsLeftButtonPressed = false;
+            if (kind == PointerUpdateKind.MiddleButtonPressed)
+                IsMiddleButtonPressed = true;
+            if (kind == PointerUpdateKind.MiddleButtonReleased)
+                IsMiddleButtonPressed = false;
+            if (kind == PointerUpdateKind.RightButtonPressed)
+                IsRightButtonPressed = true;
+            if (kind == PointerUpdateKind.RightButtonReleased)
+                IsRightButtonPressed = false;
         }
+
+        public static PointerPointProperties None { get; } = new PointerPointProperties();
         
         public MouseButton GetObsoleteMouseButton()
         {
-            if (IsLeftButtonPressed)
+            if (PointerUpdateKind == PointerUpdateKind.LeftButtonPressed || PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
                 return MouseButton.Left;
-            if (IsMiddleButtonPressed)
+            if (PointerUpdateKind == PointerUpdateKind.MiddleButtonPressed || PointerUpdateKind == PointerUpdateKind.MiddleButtonReleased)
                 return MouseButton.Middle;
-            if (IsRightButtonPressed)
+            if (PointerUpdateKind == PointerUpdateKind.RightButtonPressed || PointerUpdateKind == PointerUpdateKind.RightButtonReleased)
                 return MouseButton.Right;
             return MouseButton.None;
         }
+    }
+
+    public enum PointerUpdateKind
+    {
+        LeftButtonPressed,
+        MiddleButtonPressed,
+        RightButtonPressed,
+        LeftButtonReleased,
+        MiddleButtonReleased,
+        RightButtonReleased,
+        Other
     }
 }

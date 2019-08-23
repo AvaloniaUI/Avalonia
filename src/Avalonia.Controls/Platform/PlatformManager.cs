@@ -41,10 +41,5 @@ namespace Avalonia.Controls.Platform
                 throw new Exception("Could not CreateEmbeddableWindow(): IWindowingPlatform is not registered.");
             return platform.CreateEmbeddableWindow();
         }
-
-        public static IPopupImpl CreatePopup()
-        {
-            return AvaloniaLocator.Current.GetService<IWindowingPlatform>().CreatePopup();
-        }
     }
 }

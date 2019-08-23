@@ -45,10 +45,10 @@ namespace Avalonia.Input
         /// Starts a dragging operation with the given <see cref="IDataObject"/> and returns the applied drop effect from the target.
         /// <seealso cref="DataObject"/>
         /// </summary>
-        public static Task<DragDropEffects> DoDragDrop(IDataObject data, DragDropEffects allowedEffects)
+        public static Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent, IDataObject data, DragDropEffects allowedEffects)
         {
             var src = AvaloniaLocator.Current.GetService<IPlatformDragSource>();
-            return src?.DoDragDrop(data, allowedEffects) ?? Task.FromResult(DragDropEffects.None);
+            return src?.DoDragDrop(triggerEvent, data, allowedEffects) ?? Task.FromResult(DragDropEffects.None);
         }
     }
 }

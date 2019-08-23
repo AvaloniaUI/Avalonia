@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
-    public class DataTemplateTests
+    public class DataTemplateTests : XamlTestBase
     {
         [Fact]
         public void DataTemplate_Can_Contain_Name()

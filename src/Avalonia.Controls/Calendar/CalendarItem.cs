@@ -4,6 +4,7 @@
 // All other rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Data;
@@ -193,6 +194,9 @@ namespace Avalonia.Controls.Primitives
         {
             if (MonthView != null)
             {
+                var childCount = Calendar.RowsPerMonth + Calendar.RowsPerMonth * Calendar.ColumnsPerMonth;
+                var children = new List<IControl>(childCount);
+
                 for (int i = 0; i < Calendar.RowsPerMonth; i++)
                 {
                     if (_dayTitleTemplate != null)
@@ -201,7 +205,7 @@ namespace Avalonia.Controls.Primitives
                         cell.DataContext = string.Empty;
                         cell.SetValue(Grid.RowProperty, 0);
                         cell.SetValue(Grid.ColumnProperty, i);
-                        MonthView.Children.Add(cell);
+                        children.Add(cell);
                     }
                 }
 
@@ -222,13 +226,18 @@ namespace Avalonia.Controls.Primitives
                         cell.PointerEnter += Cell_MouseEnter;
                         cell.PointerLeave += Cell_MouseLeave;
                         cell.Click += Cell_Click;
-                        MonthView.Children.Add(cell);
+                        children.Add(cell);
                     }
                 }
+                
+                MonthView.Children.AddRange(children);
             }
 
             if (YearView != null)
             {
+                var childCount = Calendar.RowsPerYear * Calendar.ColumnsPerYear;
+                var children = new List<IControl>(childCount);
+
                 CalendarButton month;
                 for (int i = 0; i < Calendar.RowsPerYear; i++)
                 {
@@ -246,9 +255,11 @@ namespace Avalonia.Controls.Primitives
                         month.CalendarLeftMouseButtonUp += Month_CalendarButtonMouseUp;
                         month.PointerEnter += Month_MouseEnter;
                         month.PointerLeave += Month_MouseLeave;
-                        YearView.Children.Add(month);
+                        children.Add(month);
                     }
                 }
+
+                YearView.Children.AddRange(children);
             }
         }
 

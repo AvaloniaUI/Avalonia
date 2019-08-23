@@ -318,7 +318,7 @@ namespace Avalonia.Controls
 
         private void DecideCaretVisibility()
         {
-            _presenter.ShowCaret();
+            _presenter?.ShowCaret();
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
