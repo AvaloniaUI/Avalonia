@@ -8,6 +8,9 @@ using Avalonia.Controls;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Skia;
 using Avalonia.ReactiveUI;
+using Avalonia.Dialogs;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ControlCatalog.NetCore
 {
@@ -51,21 +54,22 @@ namespace ControlCatalog.NetCore
             else
                 return builder.StartWithClassicDesktopLifetime(args);
         }
-        
+
         /// <summary>
         /// This method is needed for IDE previewer infrastructure
         /// </summary>
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .With(new X11PlatformOptions {EnableMultiTouch = true})
+                .With(new X11PlatformOptions { EnableMultiTouch = true })
                 .With(new Win32PlatformOptions
                 {
                     EnableMultitouch = true,
                     AllowEglInitialization = true
                 })
                 .UseSkia()
-                .UseReactiveUI();
+                .UseReactiveUI()
+                .UseManagedSystemDialogs();
 
         static void SilenceConsole()
         {
@@ -74,7 +78,8 @@ namespace ControlCatalog.NetCore
                 Console.CursorVisible = false;
                 while (true)
                     Console.ReadKey(true);
-            }) {IsBackground = true}.Start();
+            })
+            { IsBackground = true }.Start();
         }
     }
 }
