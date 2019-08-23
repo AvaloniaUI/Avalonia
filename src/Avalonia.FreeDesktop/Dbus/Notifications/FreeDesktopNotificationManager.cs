@@ -9,8 +9,16 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
 {
     public class FreeDesktopNotificationManager : INativeNotificationManager, IDisposable
     {
-        internal const int FREE_DESKTOP_NOTIFICATION_DEFAULT_EXPIRATION = 0;
-        internal const int FREE_DESKTOP_NOTIFICATION_DEFAULT_FOREVER = -1;
+        /// <summary>
+        /// The notification's expiration time is dependent on the notification server's settings,
+        /// and may vary for the type of notification.
+        /// </summary>
+        public const int DEFAULT_NOTIFICATION_EXPIRATION = -1;
+        
+        /// <summary>
+        /// Never expire
+        /// </summary>
+        public const int FOREVER_NOTIFICATION_EXPIRATION = 0;
 
         private readonly IFreeDesktopNotificationsProxy _proxy;
         private IDisposable _actionWatcher;
@@ -38,7 +46,7 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
         public void Show(INotification notification)
         {
             var expirationInMs = notification.Expiration == TimeSpan.Zero ?
-                FREE_DESKTOP_NOTIFICATION_DEFAULT_EXPIRATION :
+                DEFAULT_NOTIFICATION_EXPIRATION :
                 notification.Expiration.Milliseconds;
 
             _proxy.NotifyAsync(
