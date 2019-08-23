@@ -36,9 +36,9 @@ namespace Avalonia.Skia
             Dpi = dpi;
 
             var colorType = PixelFormatHelper.ResolveColorType(format);
-
+            
             var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
-
+            
             if (runtimePlatform != null)
             {
                 _bitmap = new SKBitmap();
@@ -63,7 +63,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public PixelSize PixelSize { get; }
 
-        public int Version { get; internal set; } = 1;
+        public int Version { get; private set; } = 1;
 
         /// <inheritdoc />
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
