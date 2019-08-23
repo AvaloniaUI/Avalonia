@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Avalonia.Controls.Notifications;
-using Avalonia.Controls.Notifications.Native;
+using Avalonia.Notifications;
+using Avalonia.Notifications.Native;
 using Tmds.DBus;
 
 namespace Avalonia.FreeDesktop.Dbus.Notifications
@@ -14,7 +14,7 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
         /// and may vary for the type of notification.
         /// </summary>
         public const int DEFAULT_NOTIFICATION_EXPIRATION = -1;
-        
+
         /// <summary>
         /// Never expire
         /// </summary>
@@ -45,11 +45,19 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
 
         public void Show(INotification notification)
         {
+            throw new NotSupportedException("Use the async version");
+        }
+
+        public async Task ShowAsync(INotification notification)
+        {
+            if (notification.Id != default)
+                throw new ArgumentException("This was previously used.", nameof(notification));
+
             var expirationInMs = notification.Expiration == TimeSpan.Zero ?
                 DEFAULT_NOTIFICATION_EXPIRATION :
                 notification.Expiration.Milliseconds;
 
-            _proxy.NotifyAsync(
+            await _proxy.NotifyAsync(
                 Application.Current.Name,
                 //TODO: Maybe a control to always replace
                 0,
@@ -57,10 +65,37 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
                 string.Empty,
                 notification.Title,
                 notification.Message,
-                new string[0],
-                GetHintsFromNotification(notification), 
+                new string[] { "click", "click" },
+                GetHintsFromNotification(notification),
                 expirationInMs
-            );
+            ).ConfigureAwait(false);
+        }
+
+        public void Close(INotification notification)
+        {
+            throw new NotSupportedException("Use the async version");
+        }
+
+        public async Task CloseAsync(INotification notification)
+        {
+            if (notification.Id == default)
+                throw new ArgumentException("This notification does not have an id.", nameof(notification));
+
+            await _proxy.CloseNotificationAsync(notification.Id)
+                .ConfigureAwait(false);
+        }
+
+        public Task<string[]> GetCapabilitiesAsync()
+        {
+            return _proxy.GetCapabilitiesAsync();
+        }
+
+        public async Task<ServerInfo> GetServerInfoAsync()
+        {
+            var (name, vendor, version, specVersion) = await _proxy.GetServerInformationAsync()
+                .ConfigureAwait(false);
+
+            return new ServerInfo(name, vendor, version, specVersion);
         }
 
         public void Dispose()
@@ -72,7 +107,7 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
         private Dictionary<string, object> GetHintsFromNotification(INotification notification)
         {
             byte urgency;
-            
+
             //TODO: Change this into an enum
             switch (notification.Type)
             {
@@ -88,10 +123,10 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
                     urgency = 0;
                     break;
             }
-            
+
             return new Dictionary<string, object>
             {
-                { "urgency",  urgency },
+                { "urgency", urgency },
                 //TODO: The others (http://www.galago-project.org/specs/notification/0.9/x344.html)
             };
         }
@@ -127,6 +162,7 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
                     reason = "Unknown reason";
                     break;
             }
+
             Console.WriteLine("Notification closed signal: {0} {1}:{2}", e.id.ToString(), e.reason.ToString(), reason);
         }
 

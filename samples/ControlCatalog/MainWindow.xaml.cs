@@ -8,7 +8,8 @@ using ControlCatalog.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Avalonia.Controls.Notifications.Native;
+using Avalonia.Notifications;
+using Avalonia.Notifications.Native;
 
 namespace ControlCatalog
 {

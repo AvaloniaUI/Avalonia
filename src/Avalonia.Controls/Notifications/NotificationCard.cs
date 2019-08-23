@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Notifications;
 
 namespace Avalonia.Controls.Notifications
 {
@@ -120,6 +121,11 @@ namespace Avalonia.Controls.Notifications
         public static readonly AvaloniaProperty CloseOnClickProperty =
           AvaloniaProperty.RegisterAttached<Button, bool>("CloseOnClick", typeof(NotificationCard), validate: CloseOnClickChanged);
 
+        /// <summary>
+        /// Id for manager control
+        /// </summary>
+        internal uint Id;
+
         private static bool CloseOnClickChanged(Button button, bool value)
         {
             if (value)
@@ -155,6 +161,11 @@ namespace Avalonia.Controls.Notifications
             }
 
             IsClosing = true;
+        }
+
+        internal void SetId(uint id)
+        {
+            Id = id;
         }
     }
 }

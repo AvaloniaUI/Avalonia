@@ -2,18 +2,21 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Threading.Tasks;
 
-namespace Avalonia.Controls.Notifications
+namespace Avalonia.Notifications
 {
     /// <summary>
     /// A notification that can be shown in a window or by the host operating system.
     /// </summary>
     /// <remarks>
     /// This class represents a notification that can be displayed either in a window using
-    /// <see cref="WindowNotificationManager"/> or by the host operating system (to be implemented).
+    /// <see cref="INotificationManager"/> and its implementations.
     /// </remarks>
     public class Notification : INotification
     {
+        protected INotificationManager _notificationManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Notification"/> class.
         /// </summary>
@@ -40,21 +43,57 @@ namespace Avalonia.Controls.Notifications
         }
 
         /// <inheritdoc/>
-        public string Title { get; private set; }
+        public virtual uint Id { get; private set; }
 
         /// <inheritdoc/>
-        public string Message { get; private set; }
+        public virtual string Title { get; private set; }
 
         /// <inheritdoc/>
-        public NotificationType Type { get; private set; }
+        public virtual string Message { get; private set; }
 
         /// <inheritdoc/>
-        public TimeSpan Expiration { get; private set; }
+        public virtual NotificationType Type { get; private set; }
 
         /// <inheritdoc/>
-        public Action OnClick { get; private set; }
+        public virtual TimeSpan Expiration { get; private set; }
 
         /// <inheritdoc/>
-        public Action OnClose { get; private set; }
+        public virtual Action OnClick { get; private set; }
+
+        /// <inheritdoc/>
+        public virtual Action OnClose { get; private set; }
+
+        /// <inheritdoc/>
+        public virtual Task CloseAsync()
+        {
+            _notificationManager.Close(this);
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc/>
+        public virtual void Close()
+        {
+            _notificationManager.Close(this);
+        }
+
+        /// <inheritdoc/>
+        public virtual INotification Clone()
+        {
+            return new Notification(
+                Title,
+                Message,
+                Type,
+                Expiration,
+                OnClick,
+                OnClose
+            );
+        }
+
+        /// <inheritdoc/>
+        public virtual void SetId(uint id, INotificationManager notificationManager)
+        {
+            Id = id;
+            _notificationManager = notificationManager;
+        }
     }
 }

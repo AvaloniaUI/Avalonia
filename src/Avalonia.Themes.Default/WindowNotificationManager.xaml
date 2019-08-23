@@ -1,12 +1,13 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:notifications="clr-namespace:Avalonia.Notifications;assembly=Avalonia.Base">
     <Style Selector="WindowNotificationManager">
         <Setter Property="Margin" Value="0 0 8 8"/>
         <Setter Property="Template">
             <ControlTemplate>
                 <ReversibleStackPanel Name="PART_Items">
                     <ReversibleStackPanel.DataTemplates>
-                        <DataTemplate DataType="INotification">
+                        <DataTemplate DataType="notifications:INotification">
                             <StackPanel Spacing="8" Margin="12">
                                 <TextBlock Text="{Binding Title}" FontWeight="Medium" />
                                 <TextBlock MaxHeight="80" Text="{Binding Message}" TextWrapping="Wrap" Margin="0,0,12,0"/>

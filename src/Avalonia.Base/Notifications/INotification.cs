@@ -2,14 +2,20 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Threading.Tasks;
 
-namespace Avalonia.Controls.Notifications
+namespace Avalonia.Notifications
 {
     /// <summary>
     /// Represents a notification that can be shown in a window or by the host operating system.
     /// </summary>
     public interface INotification
     {
+        /// <summary>
+        /// The id for <see cref="INotificationManager"/> control
+        /// </summary>
+        uint Id { get; }
+
         /// <summary>
         /// Gets the Title of the notification.
         /// </summary>
@@ -40,5 +46,23 @@ namespace Avalonia.Controls.Notifications
         /// Gets an Action to be run when the notification is closed.
         /// </summary>
         Action OnClose { get; }
+
+        /// <summary>
+        /// Closes this notification
+        /// </summary>
+        Task CloseAsync();
+
+        /// <inheritdoc cref="CloseAsync"/>
+        void Close();
+
+        /// <summary>
+        /// Clones this notification
+        /// </summary>
+        INotification Clone();
+
+        /// <summary>
+        /// Sets the id of the notification
+        /// </summary>
+        void SetId(uint id, INotificationManager notificationManager);
     }
 }

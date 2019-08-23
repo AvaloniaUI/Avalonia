@@ -7,6 +7,9 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
+using Avalonia.Notifications;
+using Avalonia.Notifications.Managed;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Notifications
@@ -17,12 +20,15 @@ namespace Avalonia.Controls.Notifications
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
     {
         private IList _items;
+        private readonly object _notificationIdLock = new object();
+        private uint _lastNotificationId;
 
         /// <summary>
         /// Defines the <see cref="Position"/> property.
         /// </summary>
         public static readonly StyledProperty<NotificationPosition> PositionProperty =
-          AvaloniaProperty.Register<WindowNotificationManager, NotificationPosition>(nameof(Position), NotificationPosition.TopRight);
+            AvaloniaProperty.Register<WindowNotificationManager, NotificationPosition>(nameof(Position),
+                NotificationPosition.TopRight);
 
         /// <summary>
         /// Defines which corner of the screen notifications can be displayed in.
@@ -38,7 +44,7 @@ namespace Avalonia.Controls.Notifications
         /// Defines the <see cref="MaxItems"/> property.
         /// </summary>
         public static readonly StyledProperty<int> MaxItemsProperty =
-          AvaloniaProperty.Register<WindowNotificationManager, int>(nameof(MaxItems), 5);
+            AvaloniaProperty.Register<WindowNotificationManager, int>(nameof(MaxItems), 5);
 
         /// <summary>
         /// Defines the maximum number of notifications visible at once.
@@ -71,12 +77,17 @@ namespace Avalonia.Controls.Notifications
 
         static WindowNotificationManager()
         {
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopLeft, ":topleft");
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopRight, ":topright");
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomLeft, ":bottomleft");
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomRight, ":bottomright");
+            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty,
+                x => x == NotificationPosition.TopLeft, ":topleft");
+            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty,
+                x => x == NotificationPosition.TopRight, ":topright");
+            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty,
+                x => x == NotificationPosition.BottomLeft, ":bottomleft");
+            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty,
+                x => x == NotificationPosition.BottomRight, ":bottomright");
 
-            HorizontalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(Layout.HorizontalAlignment.Stretch);
+            HorizontalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(Layout.HorizontalAlignment
+                .Stretch);
             VerticalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(Layout.VerticalAlignment.Stretch);
         }
 
@@ -95,32 +106,38 @@ namespace Avalonia.Controls.Notifications
             Show(content as object);
         }
 
-        /// <inheritdoc/>
-        public async void Show(object content)
+        public void Close(INotification notification)
+        {
+            if (notification.Id == default)
+                return;
+
+            var id = ((Notification)notification).Id;
+
+            _items.OfType<NotificationCard>()
+                .FirstOrDefault(n => n.Id == id)
+                ?.Close();
+        }
+
+        /// <inheritdoc />
+        public void Show(object content)
         {
             var notification = content as INotification;
 
-            var notificationControl = new NotificationCard
+            if (notification.Id != default)
+                return;
+
+            var notificationControl = new NotificationCard { Content = content };
+
+            notificationControl.NotificationClosed += (sender, __) =>
             {
-                Content = content
+                notification.OnClose?.Invoke();
+
+                _items.Remove(sender as NotificationCard);
             };
 
-            if (notification != null)
+            notificationControl.PointerPressed += (sender, __) =>
             {
-                notificationControl.NotificationClosed += (sender, args) =>
-                {
-                    notification.OnClose?.Invoke();
-
-                    _items.Remove(sender);
-                };
-            }
-
-            notificationControl.PointerPressed += (sender, args) =>
-            {
-                if (notification != null && notification.OnClick != null)
-                {
-                    notification.OnClick.Invoke();
-                }
+                notification?.OnClick?.Invoke();
 
                 (sender as NotificationCard)?.Close();
             };
@@ -132,14 +149,27 @@ namespace Avalonia.Controls.Notifications
                 _items.OfType<NotificationCard>().First(i => !i.IsClosing).Close();
             }
 
-            if (notification != null && notification.Expiration == TimeSpan.Zero)
+            var _ = Task.Delay(notification?.Expiration ?? TimeSpan.FromSeconds(5))
+                .ContinueWith(__ => Dispatcher.UIThread.InvokeAsync(notificationControl.Close))
+                .ConfigureAwait(false);
+
+            var id = GetNextNotificationId();
+            notificationControl.SetId(id);
+            notification.SetId(id, this);
+        }
+
+        /// <summary>
+        /// Generates a new id for a notification
+        /// </summary>
+        /// <returns>Next id</returns>
+        private uint GetNextNotificationId()
+        {
+            lock (_notificationIdLock)
             {
-                return;
+                if (_lastNotificationId == uint.MaxValue)
+                    return _lastNotificationId = 1;
+                return ++_lastNotificationId;
             }
-
-            await Task.Delay(notification?.Expiration ?? TimeSpan.FromSeconds(5));
-
-            notificationControl.Close();
         }
 
         /// <summary>

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Avalonia.Controls;
-using Avalonia.Controls.Notifications.Native;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.Dbus.Notifications;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Notifications.Native;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
