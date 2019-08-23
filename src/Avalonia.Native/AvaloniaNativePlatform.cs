@@ -84,8 +84,8 @@ namespace Avalonia.Native
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
                 .Bind<IWindowingPlatformGlFeature>().ToConstant(new GlPlatformFeature(_factory.ObtainGlFeature()))
-                .Bind<PlatformHotkeyConfiguration>()
-                .ToConstant(new PlatformHotkeyConfiguration(InputModifiers.Windows));
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(InputModifiers.Windows))
+                .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider());
         }
 
         public IWindowImpl CreateWindow()
