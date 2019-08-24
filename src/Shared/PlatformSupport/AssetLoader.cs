@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Web;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Platform;
@@ -242,6 +243,7 @@ namespace Avalonia.Shared.PlatformSupport
                     throw new InvalidOperationException(
                         $"Assembly {name} needs to be referenced and explicitly loaded before loading resources");
 #else
+                    name = HttpUtility.UrlDecode(name);
                     AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
 #endif
                 }
