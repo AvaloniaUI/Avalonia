@@ -460,6 +460,24 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Text_Box_MaxLength_Work_Properly()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "abc",
+                    MaxLength = 3,
+                };
+
+                RaiseKeyEvent(target, Key.D, KeyModifiers.None);
+
+                Assert.Equal("abc", target.Text);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
