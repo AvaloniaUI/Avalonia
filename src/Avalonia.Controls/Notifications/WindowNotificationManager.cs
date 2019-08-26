@@ -2,11 +2,12 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Collections;
 using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
 using Avalonia.Notifications;
 using Avalonia.Notifications.Managed;
 using Avalonia.Threading;
@@ -19,7 +20,7 @@ namespace Avalonia.Controls.Notifications
     /// </summary>
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
     {
-        private IList _items;
+        private AvaloniaList<IControl> _items;
         private readonly object _notificationIdLock = new object();
         private uint _lastNotificationId;
 
@@ -67,10 +68,14 @@ namespace Avalonia.Controls.Notifications
             }
             else
             {
-                Observable.FromEventPattern<TemplateAppliedEventArgs>(host, nameof(host.TemplateApplied)).Take(1)
+                IDisposable unsub = null;
+                unsub = Observable.FromEventPattern<TemplateAppliedEventArgs>(host, nameof(host.TemplateApplied))
+                    .Take(1)
                     .Subscribe(_ =>
                     {
                         Install(host);
+                        // ReSharper disable once AccessToModifiedClosure
+                        unsub?.Dispose();
                     });
             }
         }
@@ -86,9 +91,12 @@ namespace Avalonia.Controls.Notifications
             PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty,
                 x => x == NotificationPosition.BottomRight, ":bottomright");
 
-            HorizontalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(Layout.HorizontalAlignment
-                .Stretch);
-            VerticalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(Layout.VerticalAlignment.Stretch);
+            HorizontalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(
+                HorizontalAlignment.Stretch
+            );
+            VerticalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(
+                VerticalAlignment.Stretch
+            );
         }
 
         /// <inheritdoc/>
@@ -123,14 +131,14 @@ namespace Avalonia.Controls.Notifications
         {
             var notification = content as INotification;
 
-            if (notification.Id != default)
+            if (notification != null && notification.Id != default)
                 return;
 
             var notificationControl = new NotificationCard { Content = content };
 
             notificationControl.NotificationClosed += (sender, __) =>
             {
-                notification.OnClose?.Invoke();
+                notification?.OnClose?.Invoke();
 
                 _items.Remove(sender as NotificationCard);
             };
@@ -155,7 +163,7 @@ namespace Avalonia.Controls.Notifications
 
             var id = GetNextNotificationId();
             notificationControl.SetId(id);
-            notification.SetId(id, this);
+            notification?.SetId(id, this);
         }
 
         /// <summary>

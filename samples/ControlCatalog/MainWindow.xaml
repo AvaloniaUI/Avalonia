@@ -9,7 +9,7 @@
         xmlns:v="clr-namespace:ControlCatalog.Views"
         x:Class="ControlCatalog.MainWindow">
     <Window.DataTemplates>
-        <DataTemplate DataType="vm:NotificationViewModel">
+        <DataTemplate DataType="vm:CustomNotificationViewModel">
             <v:CustomNotificationView />
         </DataTemplate>
     </Window.DataTemplates>

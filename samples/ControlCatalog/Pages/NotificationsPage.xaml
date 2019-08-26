@@ -1,19 +1,19 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.NotificationsPage">
-  <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Left">
-        <TextBlock Classes="h1">Notifications</TextBlock>
-        <Button Content="Show Standard Managed Notification" Command="{Binding ShowManagedNotificationCommand}" />
-        <Button Content="Show Custom Managed Notification" Command="{Binding ShowCustomManagedNotificationCommand}" />
-        <Button Content="Show Native Notification" Command="{Binding ShowNativeNotificationCommand}" />
-        <TextBlock Classes="h1">Native notifications info</TextBlock>
-        <TextBlock Text="{Binding NativeServerInfo}" />
-        <ListBox Items="{Binding NativeServerCapabilities}" Width="250" Height="350">
-          <ListBox.ItemTemplate>
-            <DataTemplate>
-              <TextBlock Text="{Binding }"/>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
+             x:Class="ControlCatalog.Pages.NotificationsPage"
+             Padding="20">
+  <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Left">
+    <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Left">
+      <TextBlock Classes="h1">Notifications</TextBlock>
+      <Button Content="Show Standard Managed Notification" Command="{Binding ShowManagedNotificationCommand}" />
+      <Button Content="Show Custom Managed Notification" Command="{Binding ShowCustomManagedNotificationCommand}" />
+      <Button Content="Show Native Notification" Command="{Binding ShowNativeNotificationCommand}" />
     </StackPanel>
+    <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Left">
+      <TextBlock Classes="h1">Native notification server information</TextBlock>
+      <TextBlock Text="{Binding NativeServerInfo}" />
+      <ListBox Items="{Binding NativeServerCapabilities, Mode=OneWay}" SelectionMode="Single"
+               HorizontalAlignment="Stretch" Height="75" />
+    </StackPanel>
+  </StackPanel>
 </UserControl>
