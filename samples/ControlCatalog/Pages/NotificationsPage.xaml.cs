@@ -27,7 +27,8 @@ namespace ControlCatalog.Pages
                 var mainWindow = (MainWindow)VisualRoot;
                 var notificationArea = new WindowNotificationManager(mainWindow)
                 {
-                    Position = NotificationPosition.TopRight, MaxItems = 3
+                    Position = NotificationPosition.TopRight,
+                    MaxItems = 3
                 };
                 //dunno
                 mainWindow.ApplyTemplate();
