@@ -10,4 +10,7 @@
       <Compile Remove="$(AndroidResgenFile)"/>
     </ItemGroup>
   </Target>
+  <PropertyGroup>
+    <DesignTimeBuild>false</DesignTimeBuild>
+  </PropertyGroup>
 </Project>
