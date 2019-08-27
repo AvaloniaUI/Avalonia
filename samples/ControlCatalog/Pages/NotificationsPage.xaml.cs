@@ -27,8 +27,7 @@ namespace ControlCatalog.Pages
                 var mainWindow = (MainWindow)VisualRoot;
                 var notificationArea = new WindowNotificationManager(mainWindow)
                 {
-                    Position = NotificationPosition.TopRight,
-                    MaxItems = 3
+                    Position = NotificationPosition.TopRight, MaxItems = 3
                 };
                 //dunno
                 mainWindow.ApplyTemplate();
@@ -50,6 +49,7 @@ namespace ControlCatalog.Pages
             private readonly IManagedNotificationManager _notificationManager;
             private readonly INativeNotificationManager _nativeNotificationManager;
             private string _nativeInfo;
+            private bool _isNativeNotificationAvailable;
             private ObservableCollection<string> _nativeServerCapabilities;
 
             public NotificationPageViewModel(
@@ -63,6 +63,12 @@ namespace ControlCatalog.Pages
                 InitializeCommands();
 
                 FetchNativeNotificationServerInformation();
+            }
+
+            public bool IsNativeNotificationAvailable
+            {
+                get { return _isNativeNotificationAvailable; }
+                private set { this.RaiseAndSetIfChanged(ref _isNativeNotificationAvailable, value); }
             }
 
             public string NativeServerInfo
@@ -99,7 +105,6 @@ namespace ControlCatalog.Pages
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
-                        throw;
                     }
                 });
 
@@ -129,8 +134,12 @@ namespace ControlCatalog.Pages
             private void FetchNativeNotificationServerInformation()
             {
                 _nativeNotificationManager
+                    .IsAvailable()
+                    .ContinueWith(t => IsNativeNotificationAvailable = t.Result);
+
+                _nativeNotificationManager
                     .GetServerInfoAsync()
-                    .ContinueWith(t => { NativeServerInfo = t.Result.ToString(); });
+                    .ContinueWith(t => NativeServerInfo = t.Result.ToString());
 
                 _nativeNotificationManager
                     .GetCapabilitiesAsync()

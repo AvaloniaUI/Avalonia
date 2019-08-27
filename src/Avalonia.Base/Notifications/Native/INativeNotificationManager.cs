@@ -20,5 +20,7 @@ namespace Avalonia.Notifications.Native
         Task<string[]> GetCapabilitiesAsync();
 
         Task<ServerInfo> GetServerInfoAsync();
+
+        Task<bool> IsAvailable();
     }
 }

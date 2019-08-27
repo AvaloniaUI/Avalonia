@@ -16,12 +16,17 @@ namespace ControlCatalog.NetCore
         {
             if (args.Contains("--wait-for-attach"))
             {
-                Console.WriteLine("Attach debugger and use 'Set next statement'");
+                Console.WriteLine("Waiting for debugger to attach");
+                using (var currentProcess = Process.GetCurrentProcess())
+                    Console.WriteLine("Connect to PID: {0}", currentProcess.Id);
                 while (true)
                 {
                     Thread.Sleep(100);
                     if (Debugger.IsAttached)
+                    {
+                        Debugger.Break();
                         break;
+                    }
                 }
             }
 

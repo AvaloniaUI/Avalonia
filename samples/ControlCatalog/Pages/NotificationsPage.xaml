@@ -11,6 +11,8 @@
     </StackPanel>
     <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Left">
       <TextBlock Classes="h1">Native notification server information</TextBlock>
+      <TextBlock Classes="h2">Is Available:</TextBlock>
+      <TextBlock FontWeight="Bold" Text="{Binding IsNativeNotificationAvailable}" />
       <TextBlock Text="{Binding NativeServerInfo}" />
       <ListBox Items="{Binding NativeServerCapabilities, Mode=OneWay}" SelectionMode="Single"
                HorizontalAlignment="Stretch" Height="75" />

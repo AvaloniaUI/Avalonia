@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Notifications;
 using Avalonia.Notifications.Native;
@@ -23,9 +24,13 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
         private readonly IFreeDesktopNotificationsProxy _proxy;
         private IDisposable _actionWatcher;
         private IDisposable _closeNotificationWatcher;
+        private volatile bool _isConnected;
 
         public FreeDesktopNotificationManager()
         {
+            IsAvailable()
+                .ContinueWith(t => _isConnected = t.Result, TaskContinuationOptions.OnlyOnRanToCompletion);
+
             _proxy = Connection.Session.CreateProxy<IFreeDesktopNotificationsProxy>(
                 FreeDesktopDbusInfo.NotificationsService,
                 FreeDesktopDbusInfo.NotificationsPath
@@ -50,6 +55,12 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
 
         public async Task ShowAsync(INotification notification)
         {
+            if (!_isConnected)
+            {
+                await ShowNotConnectedErrorOnConsole();
+                return;
+            }
+
             if (notification.Id != default)
                 throw new ArgumentException("This was previously used.", nameof(notification));
 
@@ -96,6 +107,11 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
                 .ConfigureAwait(false);
 
             return new ServerInfo(name, vendor, version, specVersion);
+        }
+
+        public Task<bool> IsAvailable()
+        {
+            return Connection.Session.IsServiceActiveAsync(FreeDesktopDbusInfo.NotificationsService);
         }
 
         public void Dispose()
@@ -190,9 +206,22 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
             }
 
             actionWatcherTask
-                .ContinueWith(t => _actionWatcher = HandleContinuedTask(t));
+                .ContinueWith(
+                    t => _actionWatcher = HandleContinuedTask(t),
+                    TaskContinuationOptions.OnlyOnRanToCompletion
+                );
             closeNotificationWatcherTask
-                .ContinueWith(t => _closeNotificationWatcher = HandleContinuedTask(t));
+                .ContinueWith(
+                    t => _closeNotificationWatcher = HandleContinuedTask(t),
+                    TaskContinuationOptions.OnlyOnRanToCompletion
+                );
+        }
+
+        private static ConfiguredTaskAwaitable ShowNotConnectedErrorOnConsole()
+        {
+            return Console.Error
+                .WriteLineAsync("The notification manager is not connected to the current DBus session.")
+                .ConfigureAwait(false);
         }
     }
 }
