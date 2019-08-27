@@ -36,7 +36,9 @@ namespace Avalonia.Data.Core
         {
             try
             {
-                _setDelegate.DynamicInvoke(Target.Target, value);
+                Target.TryGetTarget(out object target);
+
+                _setDelegate.DynamicInvoke(target, value);
                 return true;
             }
             catch (Exception)
@@ -64,6 +66,11 @@ namespace Avalonia.Data.Core
             return _expression.Indexer == null || _expression.Indexer.Name == e.PropertyName;
         }
 
-        protected override int? TryGetFirstArgumentAsInt() => _firstArgumentDelegate.DynamicInvoke(Target.Target) as int?;
+        protected override int? TryGetFirstArgumentAsInt()
+        {
+            Target.TryGetTarget(out object target);
+
+            return _firstArgumentDelegate.DynamicInvoke(target) as int?;
+        } 
     }
 }

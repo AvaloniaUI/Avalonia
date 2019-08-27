@@ -26,9 +26,11 @@ namespace Avalonia.Markup.Parsers.Nodes
 
         protected override bool SetTargetValueCore(object value, BindingPriority priority)
         {
-            var typeInfo = Target.Target.GetType().GetTypeInfo();
-            var list = Target.Target as IList;
-            var dictionary = Target.Target as IDictionary;
+            Target.TryGetTarget(out object target);
+
+            var typeInfo = target.GetType().GetTypeInfo();
+            var list = target as IList;
+            var dictionary = target as IDictionary;
             var indexerProperty = GetIndexer(typeInfo);
             var indexerParameters = indexerProperty?.GetIndexParameters();
 
@@ -53,7 +55,7 @@ namespace Avalonia.Markup.Parsers.Nodes
                 // Try special cases where we can validate indices
                 if (typeInfo.IsArray)
                 {
-                    return SetValueInArray((Array)Target.Target, intArgs, value);
+                    return SetValueInArray((Array)target, intArgs, value);
                 }
                 else if (Arguments.Count == 1)
                 {
@@ -83,14 +85,14 @@ namespace Avalonia.Markup.Parsers.Nodes
                     else
                     {
                         // Fallback to unchecked access
-                        indexerProperty.SetValue(Target.Target, value, convertedObjectArray);
+                        indexerProperty.SetValue(target, value, convertedObjectArray);
                         return true;
                     }
                 }
                 else
                 {
                     // Fallback to unchecked access
-                    indexerProperty.SetValue(Target.Target, value, convertedObjectArray);
+                    indexerProperty.SetValue(target, value, convertedObjectArray);
                     return true;
                 }
             }
@@ -98,7 +100,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             // multidimensional indexer, which doesn't take the same number of arguments
             else if (typeInfo.IsArray)
             {
-                SetValueInArray((Array)Target.Target, value);
+                SetValueInArray((Array)target, value);
                 return true;
             }
             return false;
@@ -126,7 +128,15 @@ namespace Avalonia.Markup.Parsers.Nodes
 
         public IList<string> Arguments { get; }
 
-        public override Type PropertyType => GetIndexer(Target.Target.GetType().GetTypeInfo())?.PropertyType;
+        public override Type PropertyType
+        {
+            get
+            {
+                Target.TryGetTarget(out object target);
+
+                return GetIndexer(target.GetType().GetTypeInfo())?.PropertyType;
+            }
+        }
 
         protected override object GetValue(object target)
         {
