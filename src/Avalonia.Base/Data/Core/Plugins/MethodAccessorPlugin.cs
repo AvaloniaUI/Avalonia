@@ -9,12 +9,12 @@ namespace Avalonia.Data.Core.Plugins
         public bool Match(object obj, string methodName)
             => obj.GetType().GetRuntimeMethods().Any(x => x.Name == methodName);
 
-        public IPropertyAccessor Start(WeakReference reference, string methodName)
+        public IPropertyAccessor Start(WeakReference<object> reference, string methodName)
         {
             Contract.Requires<ArgumentNullException>(reference != null);
             Contract.Requires<ArgumentNullException>(methodName != null);
 
-            var instance = reference.Target;
+            reference.TryGetTarget(out object instance);
             var method = instance.GetType().GetRuntimeMethods().FirstOrDefault(x => x.Name == methodName);
 
             if (method != null)
@@ -35,9 +35,9 @@ namespace Avalonia.Data.Core.Plugins
             }
         }
 
-        private class Accessor : PropertyAccessorBase
+        private sealed class Accessor : PropertyAccessorBase
         {
-            public Accessor(WeakReference reference, MethodInfo method)
+            public Accessor(WeakReference<object> reference, MethodInfo method)
             {
                 Contract.Requires<ArgumentNullException>(reference != null);
                 Contract.Requires<ArgumentNullException>(method != null);
@@ -61,8 +61,17 @@ namespace Avalonia.Data.Core.Plugins
                     var genericTypeParameters = paramTypes.Concat(new[] { returnType }).ToArray();
                     PropertyType = Type.GetType($"System.Func`{genericTypeParameters.Length}").MakeGenericType(genericTypeParameters);
                 }
-                
-                Value = method.IsStatic ? method.CreateDelegate(PropertyType) : method.CreateDelegate(PropertyType, reference.Target);
+
+                if (method.IsStatic)
+                {
+                    Value = method.CreateDelegate(PropertyType);
+                }
+                else
+                {
+                    reference.TryGetTarget(out object target);
+
+                    Value = method.CreateDelegate(PropertyType, target);
+                }
             }
 
             public override Type PropertyType { get; }

@@ -18,8 +18,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new IndeiValidationPlugin();
             var data = new Data { Maximum = 5 };
-            var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.Value));
-            var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.Value), accessor);
+            var accessor = inpcAccessorPlugin.Start(new WeakReference<object>(data), nameof(data.Value));
+            var validator = validatorPlugin.Start(new WeakReference<object>(data), nameof(data.Value), accessor);
             var result = new List<object>();
 
             validator.Subscribe(x => result.Add(x));
@@ -53,8 +53,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new IndeiValidationPlugin();
             var data = new Data { Maximum = 5 };
-            var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.Value));
-            var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.Value), accessor);
+            var accessor = inpcAccessorPlugin.Start(new WeakReference<object>(data), nameof(data.Value));
+            var validator = validatorPlugin.Start(new WeakReference<object>(data), nameof(data.Value), accessor);
 
             Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
             validator.Subscribe(_ => { });

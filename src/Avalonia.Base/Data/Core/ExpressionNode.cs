@@ -8,27 +8,27 @@ namespace Avalonia.Data.Core
     public abstract class ExpressionNode
     {
         private static readonly object CacheInvalid = new object();
-        protected static readonly WeakReference UnsetReference = 
-            new WeakReference(AvaloniaProperty.UnsetValue);
+        protected static readonly WeakReference<object> UnsetReference = 
+            new WeakReference<object>(AvaloniaProperty.UnsetValue);
 
-        private WeakReference _target = UnsetReference;
+        private WeakReference<object> _target = UnsetReference;
         private Action<object> _subscriber;
         private bool _listening;
 
-        protected WeakReference LastValue { get; private set; }
+        protected WeakReference<object> LastValue { get; private set; }
 
         public abstract string Description { get; }
         public ExpressionNode Next { get; set; }
 
-        public WeakReference Target
+        public WeakReference<object> Target
         {
             get { return _target; }
             set
             {
                 Contract.Requires<ArgumentNullException>(value != null);
 
-                var oldTarget = _target?.Target;
-                var newTarget = value.Target;
+                _target.TryGetTarget(out var oldTarget);
+                value.TryGetTarget(out object newTarget);
 
                 if (!ReferenceEquals(oldTarget, newTarget))
                 {
@@ -72,9 +72,11 @@ namespace Avalonia.Data.Core
             _subscriber = null;
         }
 
-        protected virtual void StartListeningCore(WeakReference reference)
+        protected virtual void StartListeningCore(WeakReference<object> reference)
         {
-            ValueChanged(reference.Target);
+            reference.TryGetTarget(out object target);
+
+            ValueChanged(target);
         }
 
         protected virtual void StopListeningCore()
@@ -96,7 +98,7 @@ namespace Avalonia.Data.Core
 
             if (notification == null)
             {
-                LastValue = new WeakReference(value);
+                LastValue = new WeakReference<object>(value);
 
                 if (Next != null)
                 {
@@ -109,7 +111,7 @@ namespace Avalonia.Data.Core
             }
             else
             {
-                LastValue = new WeakReference(notification.Value);
+                LastValue = new WeakReference<object>(notification.Value);
 
                 if (Next != null)
                 {
@@ -125,7 +127,7 @@ namespace Avalonia.Data.Core
 
         private void StartListening()
         {
-            var target = _target.Target;
+            _target.TryGetTarget(out object target);
 
             if (target == null)
             {

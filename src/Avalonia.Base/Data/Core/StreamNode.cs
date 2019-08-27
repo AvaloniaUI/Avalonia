@@ -12,7 +12,7 @@ namespace Avalonia.Data.Core
 
         public override string Description => "^";
 
-        protected override void StartListeningCore(WeakReference reference)
+        protected override void StartListeningCore(WeakReference<object> reference)
         {
             foreach (var plugin in ExpressionObserver.StreamHandlers)
             {

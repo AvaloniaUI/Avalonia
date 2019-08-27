@@ -61,6 +61,80 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public void TwoWay_Binding_Should_Be_Set_Up_GC_Collect()
+        {
+            var source = new WeakRefSource { Foo = null };
+            var target = new TestControl { DataContext = source };
+
+            var binding = new Binding
+            {
+                Path = "Foo",
+                Mode = BindingMode.TwoWay
+            };
+
+            target.Bind(TestControl.ValueProperty, binding);
+
+            var ref1 = AssignValue(target, "ref1");
+
+            Assert.Equal(ref1.Target, source.Foo);
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            var ref2 = AssignValue(target, "ref2");
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            target.Value = null;
+
+            Assert.Null(source.Foo);
+        }
+
+        private class DummyObject : ICloneable
+        {
+            private readonly string _val;
+
+            public DummyObject(string val)
+            {
+                _val = val;
+            }
+
+            public object Clone()
+            {
+                return new DummyObject(_val);
+            }
+
+            protected bool Equals(DummyObject other)
+            {
+                return string.Equals(_val, other._val);
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != this.GetType()) return false;
+                return Equals((DummyObject) obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return (_val != null ? _val.GetHashCode() : 0);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private WeakReference AssignValue(TestControl source, string val)
+        {
+            var obj = new DummyObject(val);
+
+            source.Value = obj;
+
+            return new WeakReference(obj);
+        }
+
+        [Fact]
         public void OneTime_Binding_Should_Be_Set_Up()
         {
             var source = new Source { Foo = "foo" };
@@ -568,10 +642,68 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
+        public class WeakRefSource : INotifyPropertyChanged
+        {
+            private WeakReference<object> _foo;
+
+            public object Foo
+            {
+                get
+                {
+                    if (_foo == null)
+                    {
+                        return null;
+                    }
+
+                    if (_foo.TryGetTarget(out object target))
+                    {
+                        if (target is ICloneable cloneable)
+                        {
+                            return cloneable.Clone();
+                        }
+
+                        return target;
+                    }
+
+                    return null;
+                }
+                set
+                {
+                    _foo = new WeakReference<object>(value);
+
+                    RaisePropertyChanged();
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            private void RaisePropertyChanged([CallerMemberName] string prop = "")
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+            }
+        }
+
         private class OldDataContextViewModel
         {
             public int Foo { get; set; } = 1;
             public int Bar { get; set; } = 2;
+        }
+
+        private class TestControl : Control
+        {
+            public static readonly DirectProperty<TestControl, object> ValueProperty =
+                AvaloniaProperty.RegisterDirect<TestControl, object>(
+                    nameof(Value),
+                    o => o.Value,
+                    (o, v) => o.Value = v);
+
+            private object _value;
+
+            public object Value
+            {
+                get => _value;
+                set => SetAndRaise(ValueProperty, ref _value, value);
+            }
         }
 
         private class OldDataContextTest : Control
