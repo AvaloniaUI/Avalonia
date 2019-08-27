@@ -335,8 +335,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
-        [Fact]
-        public void MultiBinding_To_TextBlock_Text_With_StringConverter_Works()
+        [Theory,
+            InlineData("{}{0} {1}!"),
+            InlineData(@"\{0\} \{1\}!")]
+        public void MultiBinding_To_TextBlock_Text_With_StringConverter_Works(string fmt)
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -346,7 +348,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <TextBlock Name='textBlock'>
         <TextBlock.Text>
-            <MultiBinding StringFormat='{}{0} {1}!'>
+            <MultiBinding StringFormat='" + fmt + @"'>
                 <Binding Path='Greeting1'/>
                 <Binding Path='Greeting2'/>
             </MultiBinding>
