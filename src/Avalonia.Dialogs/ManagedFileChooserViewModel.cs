@@ -255,7 +255,7 @@ namespace Avalonia.Dialogs
                     {
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
-                            infos = infos.Where(i => (i.Attributes & (FileAttributes.Hidden | FileAttributes.System)) != 0);
+                            infos = infos.Where(i => (i.Attributes & (FileAttributes.Hidden | FileAttributes.System)) == 0);
                         }
                         else
                         {
