@@ -11,7 +11,7 @@ namespace Avalonia.Win32
     internal class WindowsMountedVolumeInfoListener : IDisposable
     {
         private readonly CompositeDisposable _disposables;
-        private readonly ObservableCollection<MountedVolumeInfo> _targetObs;
+        private readonly ObservableCollection<MountedVolumeInfo> _targetObs = new ObservableCollection<MountedVolumeInfo>();
         private bool _beenDisposed = false;
         private ObservableCollection<MountedVolumeInfo> mountedDrives;
 
