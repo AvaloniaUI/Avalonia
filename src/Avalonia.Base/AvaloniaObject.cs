@@ -587,7 +587,7 @@ namespace Avalonia
         private object GetDefaultValue(AvaloniaProperty property)
         {
             if (property.Inherits && InheritanceParent is AvaloniaObject aobj)
-                return aobj.GetValueOrDefault(property);
+                return aobj.GetValueOrDefaultUnChecked(property);
             return ((IStyledPropertyAccessor) property).GetDefaultValue(GetType());
         }
 
