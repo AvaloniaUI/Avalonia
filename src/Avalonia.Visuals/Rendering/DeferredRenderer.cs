@@ -354,9 +354,12 @@ namespace Avalonia.Rendering
 
                     foreach (var operation in node.DrawOperations)
                     {
-                        _currentDraw = operation;
-                        operation.Item.Render(context);
-                        _currentDraw = null;
+                        if (operation.Item != null)
+                        {
+                            _currentDraw = operation;
+                            operation.Item.Render(context);
+                            _currentDraw = null;
+                        }
                     }
 
                     foreach (var child in node.Children)
