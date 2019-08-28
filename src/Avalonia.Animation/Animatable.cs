@@ -45,16 +45,16 @@ namespace Avalonia.Animation
         {
             get
             {
+                return _transitions;
+            }
+            set
+            {
                 if (_transitions == null)
                     _transitions = new Transitions();
 
                 if (_previousTransitions == null)
                     _previousTransitions = new Dictionary<AvaloniaProperty, IDisposable>();
 
-                return _transitions;
-            }
-            set
-            {
                 SetAndRaise(TransitionsProperty, ref _transitions, value);
             }
         }
