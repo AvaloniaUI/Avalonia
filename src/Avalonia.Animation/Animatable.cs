@@ -49,10 +49,10 @@ namespace Avalonia.Animation
             }
             set
             {
-                if (_transitions == null)
-                    _transitions = new Transitions();
+                if (value is null)
+                    return;
 
-                if (_previousTransitions == null)
+                if (_previousTransitions is null)
                     _previousTransitions = new Dictionary<AvaloniaProperty, IDisposable>();
 
                 SetAndRaise(TransitionsProperty, ref _transitions, value);
@@ -66,19 +66,18 @@ namespace Avalonia.Animation
         /// <param name="e">The event args.</param>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Priority != BindingPriority.Animation && Transitions != null && _previousTransitions != null)
+            if (Transitions is null ||  e.Priority == BindingPriority.Animation) return;
+
+            var match = Transitions.FirstOrDefault(x => x.Property == e.Property);
+
+            if (match != null)
             {
-                var match = Transitions.FirstOrDefault(x => x.Property == e.Property);
+                if (_previousTransitions.TryGetValue(e.Property, out var dispose))
+                    dispose.Dispose();
 
-                if (match != null)
-                {
-                    if (_previousTransitions.TryGetValue(e.Property, out var dispose))
-                        dispose.Dispose();
+                var instance = match.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
 
-                    var instance = match.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
-
-                    _previousTransitions[e.Property] = instance;
-                }
+                _previousTransitions[e.Property] = instance;
             }
         }
     }
