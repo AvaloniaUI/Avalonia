@@ -20,7 +20,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             var target = new DataAnnotationsValidationPlugin();
             var data = new Data();
 
-            Assert.True(target.Match(new WeakReference(data), nameof(Data.Between5And10)));
+            Assert.True(target.Match(new WeakReference<object>(data), nameof(Data.Between5And10)));
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             var target = new DataAnnotationsValidationPlugin();
             var data = new Data();
 
-            Assert.True(target.Match(new WeakReference(data), nameof(Data.PhoneNumber)));
+            Assert.True(target.Match(new WeakReference<object>(data), nameof(Data.PhoneNumber)));
         }
 
         [Fact]
@@ -38,7 +38,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             var target = new DataAnnotationsValidationPlugin();
             var data = new Data();
 
-            Assert.False(target.Match(new WeakReference(data), nameof(Data.Unvalidated)));
+            Assert.False(target.Match(new WeakReference<object>(data), nameof(Data.Unvalidated)));
         }
 
         [Fact]
@@ -47,8 +47,8 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new DataAnnotationsValidationPlugin();
             var data = new Data();
-            var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.Between5And10));
-            var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.Between5And10), accessor);
+            var accessor = inpcAccessorPlugin.Start(new WeakReference<object>(data), nameof(data.Between5And10));
+            var validator = validatorPlugin.Start(new WeakReference<object>(data), nameof(data.Between5And10), accessor);
             var result = new List<object>();
             
             var errmsg = new RangeAttribute(5, 10).FormatErrorMessage(nameof(Data.Between5And10));
@@ -79,8 +79,8 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new DataAnnotationsValidationPlugin();
             var data = new Data();
-            var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.PhoneNumber));
-            var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.PhoneNumber), accessor);
+            var accessor = inpcAccessorPlugin.Start(new WeakReference<object>(data), nameof(data.PhoneNumber));
+            var validator = validatorPlugin.Start(new WeakReference<object>(data), nameof(data.PhoneNumber), accessor);
             var result = new List<object>();
 
             validator.Subscribe(x => result.Add(x));
