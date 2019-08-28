@@ -19,8 +19,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new ExceptionValidationPlugin();
             var data = new Data();
-            var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive));
-            var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive), accessor);
+            var accessor = inpcAccessorPlugin.Start(new WeakReference<object>(data), nameof(data.MustBePositive));
+            var validator = validatorPlugin.Start(new WeakReference<object>(data), nameof(data.MustBePositive), accessor);
             var result = new List<object>();
 
             validator.Subscribe(x => result.Add(x));

@@ -149,6 +149,23 @@ namespace Avalonia.Base.UnitTests.Collections
         }
 
         [Fact]
+        public void AddRange_Items_Should_Raise_Correct_CollectionChanged()
+        {
+            var target = new AvaloniaList<object>();
+
+            var eventItems = new List<object>();
+
+            target.CollectionChanged += (sender, args) =>
+            {
+                eventItems.AddRange(args.NewItems.Cast<object>());
+            };
+            
+            target.AddRange(Enumerable.Range(0,10).Select(i => new object()));
+
+            Assert.Equal(eventItems, target);
+        }
+
+        [Fact]
         public void Replacing_Item_Should_Raise_CollectionChanged()
         {
             var target = new AvaloniaList<int>(new[] { 1, 2 });

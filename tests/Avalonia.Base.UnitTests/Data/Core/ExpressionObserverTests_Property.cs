@@ -574,7 +574,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var source = new Class1 { Foo = "foo" };
             var target = new PropertyAccessorNode("Foo", false);
             Assert.NotNull(target);
-            target.Target = new WeakReference(source);
+            target.Target = new WeakReference<object>(source);
             target.Subscribe(_ => { });
             target.Unsubscribe();
             target.Unsubscribe();
