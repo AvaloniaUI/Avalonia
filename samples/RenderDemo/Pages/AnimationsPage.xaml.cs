@@ -22,149 +22,127 @@ using System.Linq.Expressions;
 
 namespace RenderDemo.Pages
 {
+    public class AnimationsPage : UserControl
+    {
+        private ContentPresenter _headerSection;
 
-	public class AnimationsPage : UserControl
-	{
-		private ContentPresenter _headerSection;
+        public AnimationsPage()
+        {
+            InitializeComponent();
+            var vm = new AnimationsPageViewModel();
+            this.DataContext = vm;
+            this._headerSection = this.FindControl<ContentPresenter>("HeaderSection");
 
-		public AnimationsPage()
-		{
-			InitializeComponent();
-			var vm = new AnimationsPageViewModel();
-			this.DataContext = vm;
-			this._headerSection = this.FindControl<ContentPresenter>("HeaderSection");
+            vm.WhenAnyValue(x => x.DataHeaderDescriptors)
+              .Where(x => x != null)
+              .Do(GenerateHeaders)
+              .Do(ActivateItemTemplateFunc)
+              .Subscribe();
 
-			vm.WhenAnyValue(x => x.DataHeaderDescriptors)
-			  .Where(x => x != null)
-			  .Do(GenerateHeaders)
-			  .Do(ActivateItemTemplateFunc)
-			  .Subscribe();
+        }
 
-		}
+        private void ActivateItemTemplateFunc(XDataGridHeaderDescriptors[] obj)
+        {
+            this.FindControl<ItemsRepeater>("repeater").ItemTemplate
+                 = new FuncDataTemplate<object>((rowData, _) =>
+                 {
+                     return GenerateCellDataTemplate(rowData, obj);
+                 });
+        }
 
-		private void ActivateItemTemplateFunc(XDataGridHeaderDescriptors[] obj)
-		{
-			this.FindControl<ItemsRepeater>("repeater").ItemTemplate
-				 = new FuncDataTemplate<object>((rowData, _) =>
-				 {
-					 return GenerateCellDataTemplate(rowData, obj);
-				 });
-		}
+        public class DataCellValueWrapper : AvaloniaObject
+        {
+            public static readonly DirectProperty<DataCellValueWrapper, object> ValueProperty =
+                   AvaloniaProperty.RegisterDirect<DataCellValueWrapper, object>(
+                       nameof(Value),
+                       o => o.Value,
+                       (o, v) => o.Value = v);
 
-		private IControl GenerateCellDataTemplate(object rowData, XDataGridHeaderDescriptors[] obj)
-		{
-			var rowRoot = new Grid
-			{
-				DataContext = rowData
-			};
+            private object _value;
 
-			var rowCellList = new List<IControl>();
+            public object Value
+            {
+                get { return _value; }
+                set { SetAndRaise(ValueProperty, ref _value, value); }
+            }
+        }
 
-			for (int i = 0; i < obj.Length; i++)
-			{
-				var headerDesc = obj[i];
-				var colDefHeaderCell = new ColumnDefinition(GridLength.Parse("*"));
-				var headerColWidthBinding = HeaderColWidths[i];
+        private IControl GenerateCellDataTemplate(object rowData, XDataGridHeaderDescriptors[] obj)
+        {
+            var rowRoot = new Grid
+            {
+                DataContext = rowData
+            };
 
-				headerColWidthBinding.WhenAnyValue(x => x.Width)
-									 .Do(x => colDefHeaderCell.Width = x)
-									 .Subscribe();
+            var rowCellList = new List<IControl>();
 
-				var colDefGridSplitter = new ColumnDefinition(GridLength.Parse("Auto"));
+            for (int i = 0; i < obj.Length; i++)
+            {
+                var headerDesc = obj[i];
+                var colDefHeaderCell = new ColumnDefinition(new GridLength(headerDesc.ColumnWidth));
 
-				rowRoot.ColumnDefinitions.AddRange(new[] { colDefHeaderCell, colDefGridSplitter });
+                rowRoot.ColumnDefinitions.AddRange(new[] { colDefHeaderCell });
 
-				var rowCell = new Grid();
-				var boundCellContent = new TextBlock();
-				var newBind = new Binding(headerDesc.PropertyName);
-				boundCellContent.Bind(TextBlock.TextProperty, newBind);
-
-				rowCell.Children.Add(boundCellContent);
-
-				Grid.SetColumn(rowCell, headerDesc.ColumnDefinitionIndex);
-
-				rowCellList.Add(rowCell);
-			}
+                var rowCell = new Grid();
 
 
-			headerRoot.WhenAnyValue(x => x.Width)
-			.Subscribe(x => rowRoot.Width = x);
+                var newBind = new Binding(headerDesc.PropertyName);
+                var boundCellContent = new ContentPresenter();
 
-			rowRoot.Children.AddRange(rowCellList);
+                // boundCellContent.Bind(ContentPresenter.ContentProperty, newBind);
 
-			return rowRoot;
-		}
+                rowCell.Children.Add(boundCellContent);
 
-		public class BoundColumnWidth : ReactiveObject
-		{
-			GridLength _width;
-			public GridLength Width
-			{
-				get => _width;
-				set => this.RaiseAndSetIfChanged(ref _width, value);
-			}
-		}
+                Grid.SetColumn(rowCell, headerDesc.ColumnDefinitionIndex);
 
-		public Dictionary<int, BoundColumnWidth> HeaderColWidths
-		  = new Dictionary<int, BoundColumnWidth>();
-		private DockPanel dock;
-		private Grid headerRoot;
+                rowCellList.Add(rowCell);
+            }
 
-		private void GenerateHeaders(XDataGridHeaderDescriptors[] headerDesc)
-		{
-			var colCount = headerDesc.Length;
 
-			this.headerRoot = new Grid();
-			var k = 0;
-			this.dock = this.FindControl<DockPanel>("dock");
-			dock.WhenAnyValue(x => x.Bounds)
-                .DistinctUntilChanged()
-                .Take(20)
-                .ObserveOn(RxApp.MainThreadScheduler)
-				.Subscribe(x => headerRoot.Width = x.Width);
+            headerRoot.WhenAnyValue(x => x.Width)
+            .Subscribe(x => rowRoot.Width = x);
 
-			headerRoot.HorizontalAlignment = HorizontalAlignment.Left;
+            rowRoot.Children.AddRange(rowCellList);
 
-			for (int i = 0; i < colCount; i++)
-			{
-				var curDesc = headerDesc[i];
+            return rowRoot;
+        }
 
-				var colDefHeaderCell = new ColumnDefinition(GridLength.Parse("*"));
-				HeaderColWidths.Add(curDesc.Index, new BoundColumnWidth());
+        private DockPanel dock;
+        private Grid headerRoot;
 
-				colDefHeaderCell.WhenAnyValue(x => x.Width)
-								.Do(x => HeaderColWidths[curDesc.Index].Width = x)
-								.Subscribe();
+        private void GenerateHeaders(XDataGridHeaderDescriptors[] headerDesc)
+        {
+            var colCount = headerDesc.Length;
 
-				var colDefGridSplitter = new ColumnDefinition(GridLength.Parse("Auto"));
+            this.headerRoot = new Grid();
+            this.dock = this.FindControl<DockPanel>("dock");
 
-				headerRoot.ColumnDefinitions.AddRange(new[] { colDefHeaderCell, colDefGridSplitter });
+            headerRoot.HorizontalAlignment = HorizontalAlignment.Left;
 
-				// Can be replaced with a DataHeaderCell class then
-				// adding the binding as DataContext.
-				var headerCell = new Grid();
-				headerCell.Children.Add(new TextBlock() { Text = curDesc.HeaderText });
-				curDesc.ColumnDefinitionIndex = k;
-				Grid.SetColumn(headerCell, k);
-				Grid.SetColumnSpan(headerCell, 1);
-				k++;
+            for (int i = 0; i < colCount; i++)
+            {
+                var curDesc = headerDesc[i];
 
-				var gridSplitter = new GridSplitter();
-				Grid.SetColumn(gridSplitter, k);
-				Grid.SetColumnSpan(gridSplitter, 1);
-				k++;
+                var colDefHeaderCell = new ColumnDefinition(new GridLength(curDesc.ColumnWidth));
 
-				headerRoot.Children.AddRange(new IControl[] { headerCell, gridSplitter });
-			}
+                headerRoot.ColumnDefinitions.AddRange(new[] { colDefHeaderCell });
 
-			headerRoot.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Parse("*")));
+                // Can be replaced with a DataHeaderCell class then
+                // adding the binding as DataContext.
+                var headerCell = new Grid();
+                headerCell.Children.Add(new TextBlock() { Text = curDesc.HeaderText });
+                curDesc.ColumnDefinitionIndex = i;
+                Grid.SetColumn(headerCell, i);
+                Grid.SetColumnSpan(headerCell, 1);
+                headerRoot.Children.AddRange(new IControl[] { headerCell });
+            }
 
-			_headerSection.Content = headerRoot;
-		}
+            _headerSection.Content = headerRoot;
+        }
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
-	}
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+    }
 }

@@ -1,11 +1,19 @@
 <local:AnimationsPage xmlns="https://github.com/avaloniaui" 
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
-  xmlns:local="clr-namespace:RenderDemo.Pages"
-  x:Class="RenderDemo.Pages.AnimationsPage">
-  <Grid x:Name="RootGrid"> 
+  xmlns:local="clr-namespace:RenderDemo.Pages" x:Class="RenderDemo.Pages.AnimationsPage">
+
+  <local:AnimationsPage.DataTemplates>
+    <DataTemplate DataType="{x:Type x:String}">
+      <TextBlock Foreground="Red" Text="{Binding }"/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type x:Boolean}">
+      <CheckBox IsChecked="{Binding }"/>
+    </DataTemplate>
+  </local:AnimationsPage.DataTemplates>
+  <Grid x:Name="RootGrid">
     <ScrollViewer Name="h_scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
       <DockPanel x:Name="dock" LastChildFill="True">
-        <Grid DockPanel.Dock="Top" VerticalAlignment="Top" HorizontalAlignment="Stretch" Background="Gray">
+        <Grid DockPanel.Dock="Top" VerticalAlignment="Top" HorizontalAlignment="Stretch">
           <ContentPresenter x:Name="HeaderSection"/>
         </Grid>
         <ScrollViewer Name="v_scroller" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
