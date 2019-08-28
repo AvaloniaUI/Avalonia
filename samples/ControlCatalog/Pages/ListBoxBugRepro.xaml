@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ListBoxBugRepro">
+    <DockPanel LastChildFill="True">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+            <Button Content="Remove" Command="{Binding RemoveFirstItem}" Margin="10"/>
+            <TextBlock Text="{Binding #t.SelectedIndex}" Margin="10"/>
+            <TextBlock Text="{Binding #t.SelectedItem}" Margin="10"/>
+        </StackPanel>
+        <ListBox Name="t" SelectionMode="AlwaysSelected" Items="{Binding List}"/>
+    </DockPanel>
+</UserControl>
