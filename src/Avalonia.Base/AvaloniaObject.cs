@@ -210,7 +210,7 @@ namespace Avalonia
             }
             else
             {
-                return GetValueOrDefault(property);
+                return GetValueOrDefaultUnChecked(property);
             }
         }
 
@@ -596,7 +596,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>The default value.</returns>
-        private object GetValueOrDefault(AvaloniaProperty property)
+        private object GetValueOrDefaultUnChecked(AvaloniaProperty property)
         {
             var aobj = this;
             if (aobj.Values != null)
