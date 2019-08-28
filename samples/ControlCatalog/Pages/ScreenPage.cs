@@ -22,7 +22,10 @@ namespace ControlCatalog.Pages
         public override void Render(DrawingContext context)
         {
             base.Render(context);
-            Window w = (Window)VisualRoot;
+            if (!(VisualRoot is Window w))
+            {
+                return;                
+            }
             var screens = w.Screens.All;
             var scaling = ((IRenderRoot)w).RenderScaling;
 

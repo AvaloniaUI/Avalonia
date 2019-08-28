@@ -24,6 +24,7 @@ namespace Avalonia
     {
         public bool UseDeferredRendering { get; set; } = true;
         public bool UseGpu { get; set; } = true;
+        public bool OverlayPopups { get; set; }
         public string AvaloniaNativeLibraryPath { get; set; }
     }
 

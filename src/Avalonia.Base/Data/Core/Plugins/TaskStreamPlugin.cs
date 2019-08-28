@@ -19,7 +19,12 @@ namespace Avalonia.Data.Core.Plugins
         /// </summary>
         /// <param name="reference">A weak reference to the value.</param>
         /// <returns>True if the plugin can handle the value; otherwise false.</returns>
-        public virtual bool Match(WeakReference reference) => reference.Target is Task;
+        public virtual bool Match(WeakReference<object> reference)
+        {
+            reference.TryGetTarget(out object target);
+
+            return target is Task;
+        } 
 
         /// <summary>
         /// Starts producing output based on the specified value.
@@ -28,11 +33,11 @@ namespace Avalonia.Data.Core.Plugins
         /// <returns>
         /// An observable that produces the output for the value.
         /// </returns>
-        public virtual IObservable<object> Start(WeakReference reference)
+        public virtual IObservable<object> Start(WeakReference<object> reference)
         {
-            var task = reference.Target as Task;
+            reference.TryGetTarget(out object target);
 
-            if (task != null)
+            if (target is Task task)
             {
                 var resultProperty = task.GetType().GetRuntimeProperty("Result");
 

@@ -14,31 +14,31 @@ namespace Avalonia.Win32.Input
 
         public new static WindowsKeyboardDevice Instance { get; } = new WindowsKeyboardDevice();
 
-        public InputModifiers Modifiers
+        public RawInputModifiers Modifiers
         {
             get
             {
                 UpdateKeyStates();
-                InputModifiers result = 0;
+                RawInputModifiers result = 0;
 
                 if (IsDown(Key.LeftAlt) || IsDown(Key.RightAlt))
                 {
-                    result |= InputModifiers.Alt;
+                    result |= RawInputModifiers.Alt;
                 }
 
                 if (IsDown(Key.LeftCtrl) || IsDown(Key.RightCtrl))
                 {
-                    result |= InputModifiers.Control;
+                    result |= RawInputModifiers.Control;
                 }
 
                 if (IsDown(Key.LeftShift) || IsDown(Key.RightShift))
                 {
-                    result |= InputModifiers.Shift;
+                    result |= RawInputModifiers.Shift;
                 }
 
                 if (IsDown(Key.LWin) || IsDown(Key.RWin))
                 {
-                    result |= InputModifiers.Windows;
+                    result |= RawInputModifiers.Meta;
                 }
 
                 return result;

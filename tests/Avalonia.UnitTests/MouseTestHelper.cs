@@ -1,9 +1,8 @@
-using System.Reactive;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
-namespace Avalonia.Controls.UnitTests
+namespace Avalonia.UnitTests
 {
     public class MouseTestHelper
     {
@@ -33,7 +32,8 @@ namespace Avalonia.Controls.UnitTests
 
         private MouseButton _pressedButton;
 
-        InputModifiers GetModifiers(InputModifiers modifiers) => modifiers | _pressedButtons;
+        KeyModifiers GetModifiers(InputModifiers modifiers) =>
+            (KeyModifiers)((int)modifiers & (int)RawInputModifiers.KeyboardMask);
         
         public void Down(IInteractive target, MouseButton mouseButton = MouseButton.Left, Point position = default,
             InputModifiers modifiers = default, int clickCount = 1)
@@ -45,7 +45,11 @@ namespace Avalonia.Controls.UnitTests
             Point position = default, InputModifiers modifiers = default, int clickCount = 1)
         {
             _pressedButtons |= Convert(mouseButton);
-            var props = new PointerPointProperties(_pressedButtons);
+            var props = new PointerPointProperties((RawInputModifiers)_pressedButtons,
+                mouseButton == MouseButton.Left ? PointerUpdateKind.LeftButtonPressed
+                : mouseButton == MouseButton.Middle ? PointerUpdateKind.MiddleButtonPressed
+                : mouseButton == MouseButton.Right ? PointerUpdateKind.RightButtonPressed : PointerUpdateKind.Other
+            );
             if (ButtonCount(props) > 1)
                 Move(target, source, position);
             else
@@ -61,7 +65,7 @@ namespace Avalonia.Controls.UnitTests
         public void Move(IInteractive target, IInteractive source, in Point position, InputModifiers modifiers = default)
         {
             target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (IVisual)target, position,
-                Timestamp(), new PointerPointProperties(_pressedButtons), GetModifiers(modifiers)));
+                Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), GetModifiers(modifiers)));
         }
 
         public void Up(IInteractive target, MouseButton mouseButton = MouseButton.Left, Point position = default,
@@ -73,13 +77,17 @@ namespace Avalonia.Controls.UnitTests
         {
             var conv = Convert(mouseButton);
             _pressedButtons = (_pressedButtons | conv) ^ conv;
-            var props = new PointerPointProperties(_pressedButtons);
+            var props = new PointerPointProperties((RawInputModifiers)_pressedButtons,
+                mouseButton == MouseButton.Left ? PointerUpdateKind.LeftButtonReleased
+                : mouseButton == MouseButton.Middle ? PointerUpdateKind.MiddleButtonReleased
+                : mouseButton == MouseButton.Right ? PointerUpdateKind.RightButtonReleased : PointerUpdateKind.Other
+            );
             if (ButtonCount(props) == 0)
             {
                 _pointer.Capture(null);
                 target.RaiseEvent(new PointerReleasedEventArgs(source, _pointer, (IVisual)target, position,
                     Timestamp(), props,
-                    GetModifiers(modifiers), _pressedButton));
+                    GetModifiers(modifiers)));
             }
             else
                 Move(target, source, position);
@@ -98,13 +106,13 @@ namespace Avalonia.Controls.UnitTests
         public void Enter(IInteractive target)
         {
             target.RaiseEvent(new PointerEventArgs(InputElement.PointerEnterEvent, target, _pointer, (IVisual)target, default,
-                Timestamp(), new PointerPointProperties(_pressedButtons), _pressedButtons));
+                Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), KeyModifiers.None));
         }
 
         public void Leave(IInteractive target)
         {
             target.RaiseEvent(new PointerEventArgs(InputElement.PointerLeaveEvent, target, _pointer, (IVisual)target, default,
-                Timestamp(), new PointerPointProperties(_pressedButtons), _pressedButtons));
+                Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), KeyModifiers.None));
         }
 
     }

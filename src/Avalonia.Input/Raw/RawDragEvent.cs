@@ -10,7 +10,7 @@
         public InputModifiers Modifiers { get; }
 
         public RawDragEvent(IDragDropDevice inputDevice, RawDragEventType type, 
-            IInputElement inputRoot, Point location, IDataObject data, DragDropEffects effects, InputModifiers modifiers)
+            IInputElement inputRoot, Point location, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
             :base(inputDevice, 0)
         {
             Type = type;
@@ -18,7 +18,7 @@
             Location = location;
             Data = data;
             Effects = effects;
-            Modifiers = modifiers;
+            Modifiers = (InputModifiers)modifiers;
         }
     }
 }

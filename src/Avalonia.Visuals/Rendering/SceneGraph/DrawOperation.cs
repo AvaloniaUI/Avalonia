@@ -9,7 +9,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// </summary>
     internal abstract class DrawOperation : IDrawOperation
     {
-        public DrawOperation(Rect bounds, Matrix transform, Pen pen)
+        public DrawOperation(Rect bounds, Matrix transform, IPen pen)
         {
             bounds = bounds.Inflate((pen?.Thickness ?? 0) / 2).TransformToAABB(transform);
             Bounds = new Rect(

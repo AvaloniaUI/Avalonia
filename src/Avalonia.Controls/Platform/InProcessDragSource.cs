@@ -14,7 +14,7 @@ namespace Avalonia.Platform
 {
     class InProcessDragSource : IPlatformDragSource
     {
-        private const InputModifiers MOUSE_INPUTMODIFIERS = InputModifiers.LeftMouseButton|InputModifiers.MiddleMouseButton|InputModifiers.RightMouseButton;
+        private const RawInputModifiers MOUSE_INPUTMODIFIERS = RawInputModifiers.LeftMouseButton|RawInputModifiers.MiddleMouseButton|RawInputModifiers.RightMouseButton;
         private readonly IDragDropDevice _dragDrop;
         private readonly IInputManager _inputManager;
         private readonly Subject<DragDropEffects> _result = new Subject<DragDropEffects>();
@@ -25,7 +25,7 @@ namespace Avalonia.Platform
         private Point _lastPosition;
         private StandardCursorType _lastCursorType;
         private object _originalCursor;
-        private InputModifiers? _initialInputModifiers;
+        private RawInputModifiers? _initialInputModifiers;
 
         public InProcessDragSource()
         {
@@ -33,9 +33,10 @@ namespace Avalonia.Platform
             _dragDrop = AvaloniaLocator.Current.GetService<IDragDropDevice>();
         }
 
-        public async Task<DragDropEffects> DoDragDrop(IDataObject data, DragDropEffects allowedEffects)
+        public async Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent, IDataObject data, DragDropEffects allowedEffects)
         {
             Dispatcher.UIThread.VerifyAccess();
+            triggerEvent.Pointer.Capture(null);
             if (_draggedData == null)
             {
                 _draggedData = data;
@@ -55,8 +56,7 @@ namespace Avalonia.Platform
             return DragDropEffects.None;
         }
 
-
-        private DragDropEffects RaiseEventAndUpdateCursor(RawDragEventType type, IInputElement root, Point pt, InputModifiers modifiers)
+        private DragDropEffects RaiseEventAndUpdateCursor(RawDragEventType type, IInputElement root, Point pt, RawInputModifiers modifiers)
         {
             _lastPosition = pt;
 
@@ -69,13 +69,13 @@ namespace Avalonia.Platform
             return effect;
         }
 
-        private DragDropEffects GetPreferredEffect(DragDropEffects effect, InputModifiers modifiers)
+        private DragDropEffects GetPreferredEffect(DragDropEffects effect, RawInputModifiers modifiers)
         {
             if (effect == DragDropEffects.Copy || effect == DragDropEffects.Move || effect == DragDropEffects.Link || effect == DragDropEffects.None)
                 return effect; // No need to check for the modifiers.
-            if (effect.HasFlag(DragDropEffects.Link) && modifiers.HasFlag(InputModifiers.Alt))
+            if (effect.HasFlag(DragDropEffects.Link) && modifiers.HasFlag(RawInputModifiers.Alt))
                 return DragDropEffects.Link;
-            if (effect.HasFlag(DragDropEffects.Copy) && modifiers.HasFlag(InputModifiers.Control))
+            if (effect.HasFlag(DragDropEffects.Copy) && modifiers.HasFlag(RawInputModifiers.Control))
                 return DragDropEffects.Copy;
             return DragDropEffects.Move;
         }
@@ -131,7 +131,7 @@ namespace Avalonia.Platform
         private void CancelDragging()
         {
             if (_lastRoot != null)
-                RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastRoot, _lastPosition, InputModifiers.None);
+                RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastRoot, _lastPosition, RawInputModifiers.None);
             UpdateCursor(null, DragDropEffects.None);
             _result.OnNext(DragDropEffects.None);
         }
@@ -159,7 +159,7 @@ namespace Avalonia.Platform
                 _initialInputModifiers = e.InputModifiers & MOUSE_INPUTMODIFIERS;
 
             
-            void CheckDraggingAccepted(InputModifiers changedMouseButton)
+            void CheckDraggingAccepted(RawInputModifiers changedMouseButton)
             {
                 if (_initialInputModifiers.Value.HasFlag(changedMouseButton))
                 {
@@ -184,11 +184,11 @@ namespace Avalonia.Platform
                 case RawPointerEventType.LeaveWindow:
                     RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, e.Root, e.Position,  e.InputModifiers); break;
                 case RawPointerEventType.LeftButtonUp:
-                    CheckDraggingAccepted(InputModifiers.LeftMouseButton); break;
+                    CheckDraggingAccepted(RawInputModifiers.LeftMouseButton); break;
                 case RawPointerEventType.MiddleButtonUp:
-                    CheckDraggingAccepted(InputModifiers.MiddleMouseButton); break;
+                    CheckDraggingAccepted(RawInputModifiers.MiddleMouseButton); break;
                 case RawPointerEventType.RightButtonUp:
-                    CheckDraggingAccepted(InputModifiers.RightMouseButton); break;
+                    CheckDraggingAccepted(RawInputModifiers.RightMouseButton); break;
                 case RawPointerEventType.Move:
                     var mods = e.InputModifiers & MOUSE_INPUTMODIFIERS;
                     if (_initialInputModifiers.Value != mods)

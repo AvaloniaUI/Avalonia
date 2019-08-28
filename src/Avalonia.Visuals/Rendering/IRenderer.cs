@@ -51,6 +51,12 @@ namespace Avalonia.Rendering
         IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter);
 
         /// <summary>
+        /// Informs the renderer that the z-ordering of a visual's children has changed.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        void RecalculateChildren(IVisual visual);
+
+        /// <summary>
         /// Called when a resize notification is received by the control being rendered.
         /// </summary>
         /// <param name="size">The new size of the window.</param>

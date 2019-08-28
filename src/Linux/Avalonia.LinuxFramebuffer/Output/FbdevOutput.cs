@@ -9,16 +9,15 @@ namespace Avalonia.LinuxFramebuffer
 {
     public sealed unsafe class FbdevOutput : IFramebufferPlatformSurface, IDisposable, IOutputBackend
     {
-        private readonly Vector _dpi;
         private int _fd;
         private fb_fix_screeninfo _fixedInfo;
         private fb_var_screeninfo _varInfo;
         private IntPtr _mappedLength;
         private IntPtr _mappedAddress;
+        public double Scaling { get; set; }
 
-        public FbdevOutput(string fileName = null, Vector? dpi = null)
+        public FbdevOutput(string fileName = null)
         {
-            _dpi = dpi ?? new Vector(96, 96);
             fileName = fileName ?? Environment.GetEnvironmentVariable("FRAMEBUFFER") ?? "/dev/fb0";
             _fd = NativeUnsafeMethods.open(fileName, 2, 0);
             if (_fd <= 0)
@@ -101,7 +100,7 @@ namespace Avalonia.LinuxFramebuffer
         {
             if (_fd <= 0)
                 throw new ObjectDisposedException("LinuxFramebuffer");
-            return new LockedFramebuffer(_fd, _fixedInfo, _varInfo, _mappedAddress, _dpi);
+            return new LockedFramebuffer(_fd, _fixedInfo, _varInfo, _mappedAddress, new Vector(96, 96) * Scaling);
         }
 
 

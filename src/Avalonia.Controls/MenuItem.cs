@@ -224,7 +224,7 @@ namespace Avalonia.Controls
         public bool IsTopLevel => Parent is Menu;
 
         /// <inheritdoc/>
-        bool IMenuItem.IsPointerOverSubMenu => _popup.PopupRoot?.IsPointerOver ?? false;
+        bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false; 
 
         /// <inheritdoc/>
         IMenuElement IMenuItem.Parent => Parent as IMenuElement;
@@ -339,7 +339,7 @@ namespace Avalonia.Controls
 
             var point = e.GetPointerPoint(null);
             RaiseEvent(new PointerEventArgs(PointerEnterItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
-                e.Timestamp, point.Properties, e.InputModifiers));
+                e.Timestamp, point.Properties, e.KeyModifiers));
         }
 
         /// <inheritdoc/>
@@ -349,7 +349,7 @@ namespace Avalonia.Controls
 
             var point = e.GetPointerPoint(null);
             RaiseEvent(new PointerEventArgs(PointerLeaveItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
-                e.Timestamp, point.Properties, e.InputModifiers));
+                e.Timestamp, point.Properties, e.KeyModifiers));
         }
 
         /// <summary>

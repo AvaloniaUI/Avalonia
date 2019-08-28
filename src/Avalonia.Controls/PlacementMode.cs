@@ -23,6 +23,21 @@ namespace Avalonia.Controls
         /// <summary>
         /// The popup is placed at the top right of its target.
         /// </summary>
-        Right
+        Right,
+        
+        /// <summary>
+        /// The popup is placed at the top left of its target.
+        /// </summary>
+        Left,
+        
+        /// <summary>
+        /// The popup is placed at the top left of its target.
+        /// </summary>
+        Top,
+        
+        /// <summary>
+        /// The popup is placed according to anchor and gravity rules
+        /// </summary>
+        AnchorAndGravity
     }
 }

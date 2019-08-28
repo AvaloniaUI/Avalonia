@@ -21,7 +21,12 @@ namespace Avalonia
     {
         public static void AttachDevTools(this TopLevel control)
         {
-            Diagnostics.DevTools.Attach(control);
+            Diagnostics.DevTools.Attach(control, new KeyGesture(Key.F12));
+        }
+
+        public static void AttachDevTools(this TopLevel control, KeyGesture gesture)
+        {
+            Diagnostics.DevTools.Attach(control, gesture);
         }
     }
 }
@@ -52,42 +57,45 @@ namespace Avalonia.Diagnostics
 
         public IControl Root { get; }
 
-        public static IDisposable Attach(TopLevel control)
+        public static IDisposable Attach(TopLevel control, KeyGesture gesture)
         {
+            void PreviewKeyDown(object sender, KeyEventArgs e)
+            {
+                if (gesture.Matches(e))
+                {
+                    OpenDevTools(control);
+                }
+            }
+
             return control.AddHandler(
                 KeyDownEvent,
-                WindowPreviewKeyDown,
+                PreviewKeyDown,
                 RoutingStrategies.Tunnel);
         }
 
-        private static void WindowPreviewKeyDown(object sender, KeyEventArgs e)
+        private static void OpenDevTools(TopLevel control)
         {
-            if (e.Key == Key.F12)
+            if (s_open.TryGetValue(control, out var devToolsWindow))
             {
-                var control = (TopLevel)sender;
+                devToolsWindow.Activate();
+            }
+            else
+            {
+                var devTools = new DevTools(control);
 
-                if (s_open.TryGetValue(control, out var devToolsWindow))
+                devToolsWindow = new Window
                 {
-                    devToolsWindow.Activate();
-                }
-                else
-                {
-                    var devTools = new DevTools(control);
+                    Width = 1024,
+                    Height = 512,
+                    Content = devTools,
+                    DataTemplates = { new ViewLocator<ViewModelBase>() },
+                    Title = "Avalonia DevTools"
+                };
 
-                    devToolsWindow = new Window
-                    {
-                        Width = 1024,
-                        Height = 512,
-                        Content = devTools,
-                        DataTemplates = { new ViewLocator<ViewModelBase>() },
-                        Title = "Avalonia DevTools"
-                    };
-
-                    devToolsWindow.Closed += devTools.DevToolsClosed;
-                    s_open.Add(control, devToolsWindow);
-                    MarkAsDevTool(devToolsWindow);
-                    devToolsWindow.Show();
-                }
+                devToolsWindow.Closed += devTools.DevToolsClosed;
+                s_open.Add(control, devToolsWindow);
+                MarkAsDevTool(devToolsWindow);
+                devToolsWindow.Show();
             }
         }
 
@@ -108,9 +116,9 @@ namespace Avalonia.Diagnostics
 
         private void RawKeyDown(RawKeyEventArgs e)
         {
-            const InputModifiers modifiers = InputModifiers.Control | InputModifiers.Shift;
+            const RawInputModifiers modifiers = RawInputModifiers.Control | RawInputModifiers.Shift;
 
-            if ((e.Modifiers) == modifiers)
+            if (e.Modifiers == modifiers)
             {
                 var point = (Root.VisualRoot as IInputRoot)?.MouseDevice?.GetPosition(Root) ?? default(Point);
                 var control = Root.GetVisualsAt(point, x => (!(x is AdornerLayer) && x.IsVisible))
