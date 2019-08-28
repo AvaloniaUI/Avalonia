@@ -814,33 +814,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
             Assert.Equal(new[] { ":selected" }, target.Presenter.Panel.Children[3].Classes);
-        }
-
-        [Fact]
-        public void Removing_First_Item_Should_Select_Second_Item()
-        {
-            var items = new ObservableCollection<string>
-            {
-               "Foo",
-               "Bar"
-            };
-
-            var target = new ListBox
-            {
-                Template = Template(),
-                Items = items,
-                SelectedIndex = 0,
-                SelectionMode = SelectionMode.AlwaysSelected
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-            items.RemoveAt(0);
-
-            Assert.Equal("Bar", target.SelectedItem);
-        }
-
+        } 
+        
         [Fact]
         public void Adding_Item_Before_SelectedItem_Should_Update_SelectedIndex()
         {
