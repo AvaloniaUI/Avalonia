@@ -20,9 +20,11 @@ namespace Avalonia.Data.Core.Plugins
         /// </summary>
         /// <param name="reference">A weak reference to the value.</param>
         /// <returns>True if the plugin can handle the value; otherwise false.</returns>
-        public virtual bool Match(WeakReference reference)
+        public virtual bool Match(WeakReference<object> reference)
         {
-            return reference.Target.GetType().GetInterfaces().Any(x =>
+            reference.TryGetTarget(out object target);
+
+            return target != null && target.GetType().GetInterfaces().Any(x =>
               x.IsGenericType &&
               x.GetGenericTypeDefinition() == typeof(IObservable<>));
         }
@@ -34,9 +36,9 @@ namespace Avalonia.Data.Core.Plugins
         /// <returns>
         /// An observable that produces the output for the value.
         /// </returns>
-        public virtual IObservable<object> Start(WeakReference reference)
+        public virtual IObservable<object> Start(WeakReference<object> reference)
         {
-            var target = reference.Target;
+            reference.TryGetTarget(out object target);
 
             // If the observable returns a reference type then we can cast it.
             if (target is IObservable<object> result)
@@ -46,7 +48,7 @@ namespace Avalonia.Data.Core.Plugins
 
             // If the observable returns a value type then we need to call Observable.Select on it.
             // First get the type of T in `IObservable<T>`.
-            var sourceType = reference.Target.GetType().GetInterfaces().First(x =>
+            var sourceType = target.GetType().GetInterfaces().First(x =>
                   x.IsGenericType &&
                   x.GetGenericTypeDefinition() == typeof(IObservable<>)).GetGenericArguments()[0];
 
