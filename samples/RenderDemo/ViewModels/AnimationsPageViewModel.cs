@@ -7,6 +7,12 @@ using System.ComponentModel;
 using Avalonia.Collections;
 using System.Reactive.Linq;
 using Avalonia.Markup.Xaml.Templates;
+using System.Linq.Expressions;
+using System.Reflection;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using System.Collections.Specialized;
+using System.Collections;
 
 namespace RenderDemo.ViewModels
 {
@@ -65,6 +71,11 @@ namespace RenderDemo.ViewModels
         }
     }
 
+    public static class LinqExtensions
+    {
+
+    }
+
 
     public class AnimationsPageViewModel : ReactiveObject
     {
@@ -82,7 +93,7 @@ namespace RenderDemo.ViewModels
                 .Where(x => x != null)
                 .Subscribe(AutoGenerateHeaders);
 
-            var k = new AvaloniaList<object>();
+            var k = new List<SampleData>();
             var r = new Random();
 
             for (int i = 0; i < 2_000; i++)
@@ -90,7 +101,7 @@ namespace RenderDemo.ViewModels
                 var l = new SampleData()
                 {
                     Index = i,
-                    Allow = r.Next(0,1) == 1,
+                    Allow = r.NextDouble() > 0.5,
                     SomeText = RandomString(10),
                     RndNum1 = r.NextDouble().ToString(),
                     RndNum2 = r.NextDouble().ToString(),
@@ -100,9 +111,35 @@ namespace RenderDemo.ViewModels
                 k.Add(l);
             }
 
+
+            
+
+
+
+            DataRows = new AvaloniaList<object>(k.OrderByDescending(x => x.Index).ToArray().Cast<object>());
             DataType = typeof(SampleData);
-            DataRows = k;
+
         }
+
+
+
+        private Func<T, object> GetOrderByExpression<T>(string sortColumn, Type dataType)
+        {
+            Func<T, object> orderByExpr = null;
+
+            if (!String.IsNullOrEmpty(sortColumn))
+            {
+                Type sponsorResultType = dataType;
+
+                if (sponsorResultType.GetProperties().Any(prop => prop.Name == sortColumn))
+                {
+                    PropertyInfo pinfo = sponsorResultType.GetProperty(sortColumn);
+                    orderByExpr = (data => pinfo.GetValue(data, null));
+                }
+            }
+            return orderByExpr;
+        }
+
 
         private void AutoGenerateHeaders(Type obj)
         {
@@ -144,7 +181,7 @@ namespace RenderDemo.ViewModels
         public Type DataType
         {
             get => dataType;
-            set => this.RaiseAndSetIfChanged(ref dataType, value);
+            internal set => this.RaiseAndSetIfChanged(ref dataType, value);
         }
 
         XDataGridHeaderDescriptors[] dataHeaderDescriptors;
@@ -154,12 +191,16 @@ namespace RenderDemo.ViewModels
             set => this.RaiseAndSetIfChanged(ref dataHeaderDescriptors, value);
         }
 
-        IAvaloniaList<object> dataRows;
+        AvaloniaList<object> dataRows;
 
-        public IAvaloniaList<object> DataRows
+        public AvaloniaList<object> DataRows
         {
             get => dataRows;
-            set => this.RaiseAndSetIfChanged(ref dataRows, value);
+            set
+            {
+                DataType = value.GetType().GetGenericArguments()[0];
+                this.RaiseAndSetIfChanged(ref dataRows, value);
+            }
         }
     }
 }

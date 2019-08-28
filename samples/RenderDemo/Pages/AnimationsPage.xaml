@@ -4,10 +4,10 @@
 
   <local:AnimationsPage.DataTemplates>
     <DataTemplate DataType="{x:Type x:String}">
-      <TextBlock Foreground="Red" Text="{Binding }"/>
+      <TextBlock Foreground="Red" Text="{Binding ., Mode=OneWay}"/>
     </DataTemplate>
     <DataTemplate DataType="{x:Type x:Boolean}">
-      <CheckBox IsChecked="{Binding }"/>
+      <CheckBox IsChecked="{Binding}" IsEnabled="False"/>
     </DataTemplate>
   </local:AnimationsPage.DataTemplates>
   <Grid x:Name="RootGrid">
