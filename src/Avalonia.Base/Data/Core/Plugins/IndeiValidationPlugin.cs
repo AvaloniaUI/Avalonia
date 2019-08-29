@@ -15,20 +15,25 @@ namespace Avalonia.Data.Core.Plugins
     public class IndeiValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
-        public bool Match(WeakReference reference, string memberName) => reference.Target is INotifyDataErrorInfo;
+        public bool Match(WeakReference<object> reference, string memberName)
+        {
+            reference.TryGetTarget(out object target);
+
+            return target is INotifyDataErrorInfo;
+        }
 
         /// <inheritdoc/>
-        public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor)
+        public IPropertyAccessor Start(WeakReference<object> reference, string name, IPropertyAccessor accessor)
         {
             return new Validator(reference, name, accessor);
         }
 
         private class Validator : DataValidationBase, IWeakSubscriber<DataErrorsChangedEventArgs>
         {
-            WeakReference _reference;
-            string _name;
+            private readonly WeakReference<object> _reference;
+            private readonly string _name;
 
-            public Validator(WeakReference reference, string name, IPropertyAccessor inner)
+            public Validator(WeakReference<object> reference, string name, IPropertyAccessor inner)
                 : base(inner)
             {
                 _reference = reference;
@@ -45,7 +50,7 @@ namespace Avalonia.Data.Core.Plugins
 
             protected override void SubscribeCore()
             {
-                var target = _reference.Target as INotifyDataErrorInfo;
+                var target = GetReferenceTarget() as INotifyDataErrorInfo;
 
                 if (target != null)
                 {
@@ -60,7 +65,7 @@ namespace Avalonia.Data.Core.Plugins
 
             protected override void UnsubscribeCore()
             {
-                var target = _reference.Target as INotifyDataErrorInfo;
+                var target = GetReferenceTarget() as INotifyDataErrorInfo;
 
                 if (target != null)
                 {
@@ -80,13 +85,14 @@ namespace Avalonia.Data.Core.Plugins
 
             private BindingNotification CreateBindingNotification(object value)
             {
-                var target = (INotifyDataErrorInfo)_reference.Target;
+                var target = (INotifyDataErrorInfo)GetReferenceTarget();
 
                 if (target != null)
                 {
                     var errors = target.GetErrors(_name)?
-                        .Cast<String>()
-                        .Where(x => x != null).ToList();
+                        .Cast<object>()
+                        .Where(x => x != null)
+                        .ToList();
 
                     if (errors?.Count > 0)
                     {
@@ -100,16 +106,23 @@ namespace Avalonia.Data.Core.Plugins
                 return new BindingNotification(value);
             }
 
-            private Exception GenerateException(IList<string> errors)
+            private object GetReferenceTarget()
+            {
+                _reference.TryGetTarget(out object target);
+
+                return target;
+            }
+
+            private Exception GenerateException(IList<object> errors)
             {
                 if (errors.Count == 1)
                 {
-                    return new Exception(errors[0]);
+                    return new DataValidationException(errors[0]);
                 }
                 else
                 {
                     return new AggregateException(
-                        errors.Select(x => new Exception(x)));
+                        errors.Select(x => new DataValidationException(x)));
                 }
             }
         }
