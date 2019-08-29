@@ -59,6 +59,9 @@ namespace Avalonia.Controls
                 o => o.SelectionEnd,
                 (o, v) => o.SelectionEnd = v);
 
+        public static readonly StyledProperty<int> MaxLengthProperty =
+            AvaloniaProperty.Register<TextBox, int>(nameof(MaxLength), defaultValue: 0);
+
         public static readonly DirectProperty<TextBox, string> TextProperty =
             TextBlock.TextProperty.AddOwner<TextBox>(
                 o => o.Text,
@@ -232,6 +235,12 @@ namespace Avalonia.Controls
             }
         }
 
+        public int MaxLength
+        {
+            get { return GetValue(MaxLengthProperty); }
+            set { SetValue(MaxLengthProperty, value); }
+        }
+
         [Content]
         public string Text
         {
@@ -345,7 +354,7 @@ namespace Avalonia.Controls
                 input = RemoveInvalidCharacters(input);
                 string text = Text ?? string.Empty;
                 int caretIndex = CaretIndex;
-                if (!string.IsNullOrEmpty(input))
+                if (!string.IsNullOrEmpty(input) && (MaxLength == 0 || input.Length + text.Length - (Math.Abs(SelectionStart - SelectionEnd)) <= MaxLength))
                 {
                     DeleteSelection();
                     caretIndex = CaretIndex;
