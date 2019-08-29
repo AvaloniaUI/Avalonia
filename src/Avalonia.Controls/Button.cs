@@ -423,7 +423,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Starts listening for the Enter key when the button <see cref="IsCancel"/>.
+        /// Starts listening for the Escape key when the button <see cref="IsCancel"/>.
         /// </summary>
         /// <param name="root">The input root.</param>
         private void ListenForCancel(IInputElement root)
