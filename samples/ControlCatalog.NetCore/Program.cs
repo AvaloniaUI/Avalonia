@@ -4,22 +4,16 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.LinuxFramebuffer.Output;
-using Avalonia.Skia;
 using Avalonia.ReactiveUI;
 using Avalonia.Dialogs;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ControlCatalog.NetCore
 {
     static class Program
     {
-
+        [STAThread]
         static int Main(string[] args)
         {
-            Thread.CurrentThread.TrySetApartmentState(ApartmentState.STA);
             if (args.Contains("--wait-for-attach"))
             {
                 Console.WriteLine("Attach debugger and use 'Set next statement'");
