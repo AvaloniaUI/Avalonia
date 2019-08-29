@@ -35,7 +35,7 @@ namespace Avalonia.Animation
                 (o, v) => o.Transitions = v);
 
         private Transitions _transitions;
-
+        private bool _isTransitionsSet = false;
         private Dictionary<AvaloniaProperty, IDisposable> _previousTransitions;
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Avalonia.Animation
         /// <param name="e">The event args.</param>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (Transitions is null ||  e.Priority == BindingPriority.Animation) return;
+            if (_transitions is null || _previousTransitions is null || e.Priority == BindingPriority.Animation) return;
 
             var match = Transitions.FirstOrDefault(x => x.Property == e.Property);
 
