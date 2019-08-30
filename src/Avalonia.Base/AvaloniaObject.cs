@@ -210,7 +210,7 @@ namespace Avalonia
             }
             else
             {
-                return GetValueOrDefaultUnChecked(property);
+                return GetValueOrDefaultUnchecked(property);
             }
         }
 
@@ -587,7 +587,7 @@ namespace Avalonia
         private object GetDefaultValue(AvaloniaProperty property)
         {
             if (property.Inherits && InheritanceParent is AvaloniaObject aobj)
-                return aobj.GetValueOrDefaultUnChecked(property);
+                return aobj.GetValueOrDefaultUnchecked(property);
             return ((IStyledPropertyAccessor) property).GetDefaultValue(GetType());
         }
 
@@ -596,7 +596,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>The default value.</returns>
-        private object GetValueOrDefaultUnChecked(AvaloniaProperty property)
+        private object GetValueOrDefaultUnchecked(AvaloniaProperty property)
         {
             var aobj = this;
             if (aobj.Values != null)
