@@ -599,9 +599,10 @@ namespace Avalonia
         private object GetValueOrDefaultUnchecked(AvaloniaProperty property)
         {
             var aobj = this;
-            if (aobj._values != null)
+            var valuestore = aobj._values;
+            if (valuestore != null)
             {
-                var result = aobj._values.GetValue(property);
+                var result = valuestore.GetValue(property);
                 if (result != AvaloniaProperty.UnsetValue)
                 {
                     return result;
@@ -612,9 +613,10 @@ namespace Avalonia
                 while(aobj.InheritanceParent is AvaloniaObject parent)
                 {
                     aobj = parent;
-                    if (aobj._values != null)
+                    valuestore = aobj._values;
+                    if (valuestore != null)
                     {
-                        var result = aobj._values.GetValue(property);
+                        var result = valuestore.GetValue(property);
                         if (result != AvaloniaProperty.UnsetValue)
                         {
                             return result;
