@@ -493,6 +493,11 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// True if <see cref="Initialized"/> has any observers.
+        /// </summary>
+        internal bool HasNotifyInitializedObservers => _initialized.HasObservers;
+
+        /// <summary>
         /// Notifies the <see cref="Initialized"/> observable.
         /// </summary>
         /// <param name="e">The observable arguments.</param>
