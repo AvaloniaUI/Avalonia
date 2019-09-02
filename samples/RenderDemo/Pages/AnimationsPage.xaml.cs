@@ -22,103 +22,104 @@ using System.Linq.Expressions;
 
 namespace RenderDemo.Pages
 {
+
+
+
+
     public class AnimationsPage : UserControl
     {
-        private ContentPresenter _headerSection;
+        // private ContentPresenter _headerSection;
 
-        public AnimationsPage()
-        {
-            InitializeComponent();
-            var vm = new AnimationsPageViewModel();
-            this.DataContext = vm;
-            this._headerSection = this.FindControl<ContentPresenter>("HeaderSection");
+        // public AnimationsPage()
+        // {
+        //     InitializeComponent();
+        //     var vm = new AnimationsPageViewModel();
+        //     this.DataContext = vm;
+        //     this._headerSection = this.FindControl<ContentPresenter>("HeaderSection");
 
-            vm.WhenAnyValue(x => x.DataHeaderDescriptors)
-              .Where(x => x != null)
-              .Do(GenerateHeaders)
-              .Do(ActivateItemTemplateFunc)
-              .Subscribe();
-        }
+        //     vm.WhenAnyValue(x => x.DataHeaderDescriptors)
+        //       .Where(x => x != null)
+        //       .DistinctUntilChanged()
+        //       .Do(GenerateHeaders)
+        //     //   .Do(ActivateItemTemplateFunc)
+        //       .Subscribe();
+        // }
 
-        private void ActivateItemTemplateFunc(XDataGridHeaderDescriptors[] obj)
-        {
-            this.FindControl<ItemsRepeater>("repeater").ItemTemplate
-                 = new FuncDataTemplate<object>((rowData, _) =>
-                 {
-                     return GenerateCellDataTemplate(rowData, obj);
-                 });
-        }
+        // private void ActivateItemTemplateFunc(XDataGridHeaderDescriptors[] obj)
+        // {
+        //     // this.FindControl<ItemsRepeater>("repeater").ItemTemplate
+        //     //      = new FuncDataTemplate<object>((rowData, _) =>
+        //     //      {
+        //     //          return GenerateCellDataTemplate(rowData, obj);
+        //     //      });
+        // }
 
-        public static object GetPropValue(object src, string propName)
-        {
-            return src.GetType().GetProperty(propName).GetValue(src, null);
-        }
+        // public static object GetPropValue(object src, string propName)
+        // {
+        //     return src.GetType().GetProperty(propName).GetValue(src, null);
+        // }
 
-        private IControl GenerateCellDataTemplate(object rowData, XDataGridHeaderDescriptors[] obj)
-        {
-            var rowRoot = new Grid();
+        // private IControl GenerateCellDataTemplate(object rowData, XDataGridHeaderDescriptors[] obj)
+        // {
+        //     var rowRoot = new Grid();
 
-            var rowCellList = new List<IControl>();
+        //     for (int i = 0; i < obj.Length; i++)
+        //     {
+        //         var headerDesc = obj[i];
 
-            for (int i = 0; i < obj.Length; i++)
-            {
-                var headerDesc = obj[i];
+        //         var colDefHeaderCell = new ColumnDefinition(new GridLength(headerDesc.ColumnWidth));
 
-                var colDefHeaderCell = new ColumnDefinition(new GridLength(headerDesc.ColumnWidth));
+        //         rowRoot.ColumnDefinitions.Add(colDefHeaderCell);
 
-                rowRoot.ColumnDefinitions.Add(colDefHeaderCell);
+        //         var rowValue = GetPropValue(rowData, headerDesc.PropertyName);
 
-                var rowValue = GetPropValue(rowData, headerDesc.PropertyName);
+        //         var boundCellContent = new ContentPresenter();
 
-                var boundCellContent = new ContentPresenter();
+        //         boundCellContent.Content = rowValue;
 
-                boundCellContent.Content = rowValue;
+        //         Grid.SetColumn(boundCellContent, headerDesc.ColumnDefinitionIndex);
 
-                Grid.SetColumn(boundCellContent, headerDesc.ColumnDefinitionIndex);
+        //         rowRoot.Children.Add(boundCellContent);
+        //     }
 
-                rowCellList.Add(boundCellContent);
-            }
+        //     // headerRoot.WhenAnyValue(x => x.Width)
+        //     //           .Subscribe(x => rowRoot.Width = x);
 
-            headerRoot.WhenAnyValue(x => x.Width)
-                      .Subscribe(x => rowRoot.Width = x);
+        //     return rowRoot;
+        // }
 
-            rowRoot.Children.AddRange(rowCellList);
+        // private DockPanel dock;
+        // private Grid headerRoot;
 
-            return rowRoot;
-        }
+        // private void GenerateHeaders(XDataGridHeaderDescriptors[] headerDesc)
+        // {
+        //     var colCount = headerDesc.Length;
 
-        private DockPanel dock;
-        private Grid headerRoot;
+        //     this.headerRoot = new Grid();
+        //     this.dock = this.FindControl<DockPanel>("dock");
 
-        private void GenerateHeaders(XDataGridHeaderDescriptors[] headerDesc)
-        {
-            var colCount = headerDesc.Length;
+        //     headerRoot.HorizontalAlignment = HorizontalAlignment.Left;
 
-            this.headerRoot = new Grid();
-            this.dock = this.FindControl<DockPanel>("dock");
+        //     for (int i = 0; i < colCount; i++)
+        //     {
+        //         var curDesc = headerDesc[i];
 
-            headerRoot.HorizontalAlignment = HorizontalAlignment.Left;
+        //         var colDefHeaderCell = new ColumnDefinition(new GridLength(curDesc.ColumnWidth));
 
-            for (int i = 0; i < colCount; i++)
-            {
-                var curDesc = headerDesc[i];
+        //         headerRoot.ColumnDefinitions.Add(colDefHeaderCell);
 
-                var colDefHeaderCell = new ColumnDefinition(new GridLength(curDesc.ColumnWidth));
+        //         // Can be replaced with a DataHeaderCell class then
+        //         // adding the binding as DataContext.
+        //         var headerCell = new Grid();
+        //         headerCell.Children.Add(new TextBlock() { Text = curDesc.HeaderText });
+        //         curDesc.ColumnDefinitionIndex = i;
+        //         Grid.SetColumn(headerCell, i);
+        //         Grid.SetColumnSpan(headerCell, 1);
+        //         headerRoot.Children.Add(headerCell);
+        //     }
 
-                headerRoot.ColumnDefinitions.Add(colDefHeaderCell);
-
-                // Can be replaced with a DataHeaderCell class then
-                // adding the binding as DataContext.
-                var headerCell = new Grid();
-                headerCell.Children.Add(new TextBlock() { Text = curDesc.HeaderText });
-                curDesc.ColumnDefinitionIndex = i;
-                Grid.SetColumn(headerCell, i);
-                Grid.SetColumnSpan(headerCell, 1);
-                headerRoot.Children.AddRange(new IControl[] { headerCell });
-            }
-
-            _headerSection.Content = headerRoot;
-        }
+        //     _headerSection.Content = headerRoot;
+        // }
 
         private void InitializeComponent()
         {
