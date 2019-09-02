@@ -86,10 +86,8 @@ namespace RenderDemo.Pages
 
                 var xdgh = new XDataGridHeaderDescriptor()
                 {
-                    ColumnDefinitionIndex = i,
                     HeaderText = dName,
                     PropertyName = property.Name,
-                    // ColumnWidth = colWidthAttrib.Width
                 };
 
                 i++;

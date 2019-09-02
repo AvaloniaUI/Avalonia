@@ -23,17 +23,14 @@
         <Grid>
           <ScrollViewer Name="PART_HorzScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <DockPanel x:Name="PART_Dock" LastChildFill="True">
-              <Grid DockPanel.Dock="Top" VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                <local:XDataGridHeader Name="PART_Header" HeaderDescriptors="{TemplateBinding HeaderDescriptors}"/>
+              <Grid DockPanel.Dock="Top" VerticalAlignment="Top" HorizontalAlignment="Left">
+                <local:XDataGridHeader Name="PART_Header" HeaderDescriptors="{TemplateBinding HeaderDescriptors}" Width="1200"/>
               </Grid>
-              <ScrollViewer Name="PART_VertScroller" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
+              <ScrollViewer Name="PART_VertScroller" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
                 <ItemsRepeater Name="PART_Repeater" Items="{TemplateBinding Items}">
                   <ItemsRepeater.ItemTemplate>
                     <DataTemplate>
-                      <StackPanel>
-                        <local:XDataGridRow HeaderDescriptors="{Binding #PART_Header.HeaderDescriptors}" 
-                                            DataContext="{Binding}"/>
-                      </StackPanel>
+                      <local:XDataGridRow HeaderDescriptors="{Binding #PART_Header.HeaderDescriptors}" HorizontalAlignment="Left" Width="1200"/>
                     </DataTemplate>
                   </ItemsRepeater.ItemTemplate>
                   <ItemsRepeater.Layout>

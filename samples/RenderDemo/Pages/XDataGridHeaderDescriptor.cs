@@ -22,19 +22,12 @@ namespace RenderDemo.Pages
             get => propName;
             set => this.RaiseAndSetIfChanged(ref propName, value);
         }
-
-        int colDefIndex;
-        public int ColumnDefinitionIndex
-        {
-            get => colDefIndex;
-            set => this.RaiseAndSetIfChanged(ref colDefIndex, value);
-        }
-
-        GridLength gridLength;
+ 
+        GridLength headerWidth;
         public GridLength HeaderWidth
         {
-            get => gridLength;
-            set => this.RaiseAndSetIfChanged(ref gridLength, value);
+            get => headerWidth;
+            set => this.RaiseAndSetIfChanged(ref headerWidth, value);
         }
     }
 }
