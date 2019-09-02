@@ -28,6 +28,13 @@ namespace RenderDemo.Pages
 
     public class AnimationsPage : UserControl
     {
+        public AnimationsPage()
+        {
+            AvaloniaXamlLoader.Load(this);
+
+            var vm = new AnimationsPageViewModel();
+            this.DataContext = vm;
+        }
         // private ContentPresenter _headerSection;
 
         // public AnimationsPage()

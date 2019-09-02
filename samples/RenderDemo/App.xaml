@@ -6,5 +6,6 @@
         <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml"/>
         <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"/>
         <StyleInclude Source="avares://RenderDemo/SideBar.xaml"/>
+        <StyleInclude Source="avares://RenderDemo/Pages/XDataGrid.xaml"/>
     </Application.Styles>
 </Application>

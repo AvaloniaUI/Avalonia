@@ -1,55 +1,9 @@
 <local:AnimationsPage xmlns="https://github.com/avaloniaui" 
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
-  xmlns:local="clr-namespace:RenderDemo.Pages" x:Class="RenderDemo.Pages.AnimationsPage">
-
-  <local:AnimationsPage.Styles>
-
-  </local:AnimationsPage.Styles>
-
-  <!-- <local:AnimationsPage.DataTemplates>
-    <DataTemplate DataType="{x:Type x:String}">
-      <TextBlock Foreground="Red" Text="{Binding ., Mode=OneWay}"/>
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type x:Boolean}">
-      <CheckBox IsChecked="{Binding}" IsEnabled="False"/>
-    </DataTemplate>
-  </local:AnimationsPage.DataTemplates> -->
+  xmlns:local="clr-namespace:RenderDemo.Pages;assembly=RenderDemo" x:Class="RenderDemo.Pages.AnimationsPage">
 
   <Grid>
-
-    <Grid.Styles>
-      <Style Selector="local|XDataGrid">
-        <Setter Property="Template">
-          <ControlTemplate>
-            <Grid Name="PART_RootGrid">
-              <Rectangle Height="100" Width="200" Fill="Red"/>
-              <ScrollViewer Name="h_scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                <DockPanel x:Name="PART_Dock" LastChildFill="True">
-                  <Grid DockPanel.Dock="Top" VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                    <local:XDataGridHeaderRenderer DataContext="{TemplateBinding DataType}"/>
-                  </Grid>
-                  <ScrollViewer Name="v_scroller" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
-                    <ItemsRepeater Name="PART_Repeater" Items="{TemplateBinding Items}">
-                      <ItemsRepeater.ItemTemplate>
-                        <DataTemplate>
-                          <local:XDataGridRowRenderer DataContext="{Binding}"/>
-                        </DataTemplate>
-                      </ItemsRepeater.ItemTemplate>
-                      <ItemsRepeater.Layout>
-                        <StackLayout Orientation="Vertical"/>
-                      </ItemsRepeater.Layout>
-                    </ItemsRepeater>
-                  </ScrollViewer>
-                </DockPanel>
-              </ScrollViewer>
-            </Grid>
-          </ControlTemplate>
-        </Setter>
-      </Style>
-    </Grid.Styles>
-
     <local:XDataGrid Items="{Binding DataRows}"/>
-
   </Grid>
 
 </local:AnimationsPage>
