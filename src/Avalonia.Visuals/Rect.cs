@@ -371,12 +371,12 @@ namespace Avalonia
         /// <returns>The bounding box</returns>
         public Rect TransformToAABB(Matrix matrix)
         {
-            var points = new[]
+            ReadOnlySpan<Point> points = stackalloc Point[4]
             {
                 TopLeft.Transform(matrix),
                 TopRight.Transform(matrix),
                 BottomRight.Transform(matrix),
-                BottomLeft.Transform(matrix),
+                BottomLeft.Transform(matrix)
             };
 
             var left = double.MaxValue;
