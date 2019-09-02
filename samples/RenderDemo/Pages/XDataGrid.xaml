@@ -1,8 +1,15 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui" 
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
   xmlns:local="clr-namespace:RenderDemo.Pages;assembly=RenderDemo">
-  <Style Selector="local|XDataGridHeaderRenderer">
+  <Style Selector="local|XDataGridCell">
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <ContentControl Content="{TemplateBinding Content}"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
   </Style>
   <Style Selector="local|XDataGrid">
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
@@ -13,15 +20,16 @@
           <ScrollViewer Name="h_scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <DockPanel x:Name="PART_Dock" LastChildFill="True">
               <Grid DockPanel.Dock="Top" VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                <local:XDataGridHeaderRenderer HeaderDescriptors="{TemplateBinding HeaderDescriptors}"/>
+                <local:XDataGridHeaderRenderer Name="PART_Header" HeaderDescriptors="{TemplateBinding HeaderDescriptors}">
+                  <TextBlock Text="Test"/>
+                </local:XDataGridHeaderRenderer>
               </Grid>
               <ScrollViewer Name="v_scroller" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
                 <ItemsRepeater Name="PART_Repeater" Items="{TemplateBinding Items}">
                   <ItemsRepeater.ItemTemplate>
                     <DataTemplate>
                       <StackPanel>
-                        <local:XDataGridRowRenderer HeaderDescriptors="{TemplateBinding HeaderDescriptors}" DataContext="{Binding}"/>
-                        <TextBlock Text="{Binding Index}"/>
+                        <local:XDataGridRowRenderer HeaderDescriptors="{Binding #PART_Header.HeaderDescriptors}" DataContext="{Binding}"/>
                       </StackPanel>
                     </DataTemplate>
                   </ItemsRepeater.ItemTemplate>

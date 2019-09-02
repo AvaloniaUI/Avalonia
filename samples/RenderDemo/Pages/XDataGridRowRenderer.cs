@@ -1,6 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
+using ReactiveUI;
 using System;
+using System.Reactive.Linq;
 
 namespace RenderDemo.Pages
 {
@@ -26,27 +29,20 @@ namespace RenderDemo.Pages
 
         public XDataGridRowRenderer()
         {
-            HeaderDescriptorsProperty.Changed.AddClassHandler<XDataGridHeaderRenderer>(HeaderDescriptorsChanged);
+            this.DataContextChanged += DTC;
 
+            this.WhenAnyValue(x=>x.HeaderDescriptors)
+                .DistinctUntilChanged()
+                .Subscribe(XD);
         }
 
-        protected override void OnDataContextChanged(EventArgs e)
+        private void XD(XDataGridHeaderDescriptors obj)
         {
-            var descriptor = HeaderDescriptors;
-
-            if (descriptor is null) return;
-
-            DescriptorsChanged(descriptor);
-
-            base.OnDataContextChanged(e);
+            DescriptorsChanged(obj);
         }
 
-        private void HeaderDescriptorsChanged(AvaloniaObject arg1, AvaloniaPropertyChangedEventArgs arg2)
+        private void DTC(object sender, EventArgs e)
         {
-            var descriptor = arg2.NewValue as XDataGridHeaderDescriptors;
-            if (descriptor is null) return;
-
-            DescriptorsChanged(descriptor);
         }
 
         public static object GetPropValue(object src, string propName)
@@ -56,6 +52,11 @@ namespace RenderDemo.Pages
 
         private void DescriptorsChanged(XDataGridHeaderDescriptors obj)
         {
+            if (obj == null) return;
+
+            this.ColumnDefinitions.Clear();
+            this.Children.Clear();
+
             for (int i = 0; i < obj.Count; i++)
             {
                 var headerDesc = obj[i];
@@ -64,16 +65,16 @@ namespace RenderDemo.Pages
 
                 this.ColumnDefinitions.Add(colDefHeaderCell);
 
-                var rowValue = GetPropValue(this.DataContext, headerDesc.PropertyName);
+				var boundCellContent = new XDataGridCell();
+				var newBind = new Binding(headerDesc.PropertyName);
+				boundCellContent.Bind(XDataGridCell.ContentProperty, newBind);
 
-                var boundCellContent = new XDataGridCell();
-
-                boundCellContent.Content = rowValue;
 
                 Grid.SetColumn(boundCellContent, headerDesc.ColumnDefinitionIndex);
 
                 this.Children.Add(boundCellContent);
             }
+ 
         }
 
         private void VisualDetached(object sender, VisualTreeAttachmentEventArgs e)

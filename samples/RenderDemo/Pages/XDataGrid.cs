@@ -42,6 +42,9 @@ namespace RenderDemo.Pages
         }
 
 
+
+
+
         public static readonly DirectProperty<XDataGrid, IEnumerable> ItemsProperty =
             AvaloniaProperty.RegisterDirect<XDataGrid, IEnumerable>(
                 nameof(Items),
@@ -83,7 +86,7 @@ namespace RenderDemo.Pages
 
                 var xdgh = new XDataGridHeaderDescriptor()
                 {
-                    Index = i,
+                    ColumnDefinitionIndex = i,
                     HeaderText = dName,
                     PropertyName = property.Name,
                     // ColumnWidth = colWidthAttrib.Width
