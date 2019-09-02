@@ -161,9 +161,16 @@ namespace Avalonia.Controls
             //       workaround.
 
             var target = e.Sender as LayoutTransformControl;
+            var hasUsedRenderTransform = (bool)e.OldValue;
             var shouldUseRenderTransform = (bool)e.NewValue;
             if (target != null)
             {
+                if (hasUsedRenderTransform)
+                {
+                    _renderTransformChangedEvent?.Dispose();
+                    LayoutTransform = null;
+                }
+
                 if (shouldUseRenderTransform)
                 {
                     _renderTransformChangedEvent = RenderTransformProperty.Changed
@@ -176,11 +183,6 @@ namespace Avalonia.Controls
                                         target2.LayoutTransform = target2.RenderTransform;
                                     }
                                 });
-                }
-                else
-                {
-                    _renderTransformChangedEvent?.Dispose();
-                    LayoutTransform = null;
                 }
             }
         }

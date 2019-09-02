@@ -360,17 +360,19 @@ namespace Avalonia.Controls
         private static void IsDefaultChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var button = e.Sender as Button;
+            var wasDefault = (bool)e.OldValue;
             var isDefault = (bool)e.NewValue;
 
             if (button?.VisualRoot is IInputElement inputRoot)
             {
+                if (wasDefault)
+                {
+                    button.StopListeningForDefault(inputRoot);
+                }
+
                 if (isDefault)
                 {
                     button.ListenForDefault(inputRoot);
-                }
-                else
-                {
-                    button.StopListeningForDefault(inputRoot);
                 }
             }
         }
@@ -382,17 +384,19 @@ namespace Avalonia.Controls
         private static void IsCancelChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var button = e.Sender as Button;
+            var wasCancelled = (bool)e.OldValue;
             var isCancel = (bool)e.NewValue;
 
             if (button?.VisualRoot is IInputElement inputRoot)
             {
+                if (wasCancelled)
+                {
+                    button.StopListeningForCancel(inputRoot);
+                }
+
                 if (isCancel)
                 {
                     button.ListenForCancel(inputRoot);
-                }
-                else
-                {
-                    button.StopListeningForCancel(inputRoot);
                 }
             }
         }
