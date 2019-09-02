@@ -16,49 +16,26 @@ using System.Collections;
 
 namespace RenderDemo.ViewModels
 {
-     public class SampleData
+    public class SampleData
     {
         [DisplayName("Index")]
-        // [ColumnWidth(50)]
         public int Index { get; set; }
 
         [DisplayName("Allow")]
-        // [ColumnWidth(50)]
         public bool Allow { get; set; }
 
         [DisplayName("Some Text")]
-        // [ColumnWidth(100)]
         public string SomeText { get; set; }
 
         [DisplayName("Random Number 1")]
-        // [ColumnWidth(150)]
         public string RndNum1 { get; set; }
 
         [DisplayName("Random Number 2")]
-        // [ColumnWidth(150)]
         public string RndNum2 { get; set; }
 
         [DisplayName("Random Number 3")]
-        // [ColumnWidth(150)]
         public string RndNum3 { get; set; }
     }
-
-
-    // [AttributeUsage(System.AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    // public sealed class ColumnWidthAttribute : Attribute
-    // {
-    //     readonly double _width;
-
-    //     public ColumnWidthAttribute(double width)
-    //     {
-    //         this._width = width;
-    //     }
-
-    //     public double Width
-    //     {
-    //         get { return _width; }
-    //     }
-    // }
 
     public static class LinqExtensions
     {
@@ -78,14 +55,10 @@ namespace RenderDemo.ViewModels
 
         public AnimationsPageViewModel()
         {
-            // this.WhenAnyValue(x => x.DataType)
-            //     .Where(x => x != null)
-            //     .Subscribe(AutoGenerateHeaders);
-
             var k = new List<SampleData>();
             var r = new Random();
 
-            for (int i = 0; i < 2_000; i++)
+            for (int i = 0; i < 1_000_000; i++)
             {
                 var l = new SampleData()
                 {
@@ -100,52 +73,12 @@ namespace RenderDemo.ViewModels
                 k.Add(l);
             }
 
-            var o = new List<object>();
-            foreach (var xzx in k.OrderBy(x => x.Index))
-                o.Add(xzx);
-
-            DataRows = o.ToList();
-            // DataType = typeof(SampleData);
+            DataRows = k.OrderByDescending(x => x.Index);
         }
 
+        IEnumerable dataRows;
 
-
-        private Func<T, object> GetOrderByExpression<T>(string sortColumn, Type dataType)
-        {
-            Func<T, object> orderByExpr = null;
-
-            if (!String.IsNullOrEmpty(sortColumn))
-            {
-                Type sponsorResultType = dataType;
-
-                if (sponsorResultType.GetProperties().Any(prop => prop.Name == sortColumn))
-                {
-                    PropertyInfo pinfo = sponsorResultType.GetProperty(sortColumn);
-                    orderByExpr = (data => pinfo.GetValue(data, null));
-                }
-            }
-            return orderByExpr;
-        }
-
-
-        // Type dataType;
-        // public Type DataType
-        // {
-        //     get => dataType;
-        //     internal set => this.RaiseAndSetIfChanged(ref dataType, value);
-        // }
-
-
-        // XDataGridHeaderDescriptors[] dataHeaderDescriptors;
-        // public XDataGridHeaderDescriptors[] DataHeaderDescriptors
-        // {
-        //     get => dataHeaderDescriptors;
-        //     set => this.RaiseAndSetIfChanged(ref dataHeaderDescriptors, value);
-        // }
-
-        List<dynamic> dataRows;
-
-        public List<dynamic> DataRows
+        public IEnumerable DataRows
         {
             get => dataRows;
             set

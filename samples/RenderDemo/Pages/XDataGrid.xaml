@@ -5,9 +5,7 @@
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid>
-          <ContentControl Content="{TemplateBinding Content}"/>
-        </Grid>
+        <ContentControl Content="{TemplateBinding Content}"/>
       </ControlTemplate>
     </Setter>
   </Style>
@@ -17,14 +15,12 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
-          <ScrollViewer Name="h_scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+          <ScrollViewer Name="PART_HorzScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <DockPanel x:Name="PART_Dock" LastChildFill="True">
               <Grid DockPanel.Dock="Top" VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                <local:XDataGridHeaderRenderer Name="PART_Header" HeaderDescriptors="{TemplateBinding HeaderDescriptors}">
-                  <TextBlock Text="Test"/>
-                </local:XDataGridHeaderRenderer>
+                <local:XDataGridHeaderRenderer Name="PART_Header" HeaderDescriptors="{TemplateBinding HeaderDescriptors}"/>
               </Grid>
-              <ScrollViewer Name="v_scroller" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
+              <ScrollViewer Name="PART_VertScroller" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
                 <ItemsRepeater Name="PART_Repeater" Items="{TemplateBinding Items}">
                   <ItemsRepeater.ItemTemplate>
                     <DataTemplate>
