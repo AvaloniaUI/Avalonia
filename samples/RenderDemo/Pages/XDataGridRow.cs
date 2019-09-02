@@ -7,10 +7,10 @@ using System.Reactive.Linq;
 
 namespace RenderDemo.Pages
 {
-    public class XDataGridRowRenderer : Grid
+    public class XDataGridRow : Grid
     {
-        internal static readonly DirectProperty<XDataGridRowRenderer, XDataGridHeaderDescriptors> HeaderDescriptorsProperty =
-            AvaloniaProperty.RegisterDirect<XDataGridRowRenderer, XDataGridHeaderDescriptors>(
+        internal static readonly DirectProperty<XDataGridRow, XDataGridHeaderDescriptors> HeaderDescriptorsProperty =
+            AvaloniaProperty.RegisterDirect<XDataGridRow, XDataGridHeaderDescriptors>(
                 nameof(HeaderDescriptors),
                 o => o.HeaderDescriptors,
                 (o, v) => o.HeaderDescriptors = v);
@@ -23,14 +23,11 @@ namespace RenderDemo.Pages
             set
             {
                 SetAndRaise(HeaderDescriptorsProperty, ref _headerDescriptors, value);
-
             }
         }
 
-        public XDataGridRowRenderer()
+        public XDataGridRow()
         {
-            this.DataContextChanged += DTC;
-
             this.WhenAnyValue(x=>x.HeaderDescriptors)
                 .DistinctUntilChanged()
                 .Subscribe(XD);
@@ -40,11 +37,7 @@ namespace RenderDemo.Pages
         {
             DescriptorsChanged(obj);
         }
-
-        private void DTC(object sender, EventArgs e)
-        {
-        }
-
+ 
         public static object GetPropValue(object src, string propName)
         {
             return src.GetType().GetProperty(propName).GetValue(src, null);
@@ -69,22 +62,10 @@ namespace RenderDemo.Pages
 				var newBind = new Binding(headerDesc.PropertyName);
 				boundCellContent.Bind(XDataGridCell.ContentProperty, newBind);
 
-
                 Grid.SetColumn(boundCellContent, headerDesc.ColumnDefinitionIndex);
 
                 this.Children.Add(boundCellContent);
             }
- 
-        }
-
-        private void VisualDetached(object sender, VisualTreeAttachmentEventArgs e)
-        {
-
-        }
-
-        private void VisualAttached(object sender, VisualTreeAttachmentEventArgs e)
-        {
-
         }
     }
 }

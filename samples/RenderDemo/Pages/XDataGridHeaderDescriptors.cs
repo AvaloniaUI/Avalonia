@@ -2,7 +2,7 @@ using Avalonia.Collections;
 
 namespace RenderDemo.Pages
 {
-    internal class XDataGridHeaderDescriptors : AvaloniaList<XDataGridHeaderDescriptor>
+    public class XDataGridHeaderDescriptors : AvaloniaList<XDataGridHeaderDescriptor>
     {
 
     }

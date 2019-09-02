@@ -1,14 +1,19 @@
-using System.Reactive.Linq;
+ 
+
+
 using Avalonia;
 using Avalonia.Controls;
-using System.Linq;
+using Avalonia.Data;
+using ReactiveUI;
+using System;
+using System.Reactive.Linq;
 
 namespace RenderDemo.Pages
 {
-    public class XDataGridHeaderRenderer : Grid
+    public class XDataGridHeader : Grid
     {
-        internal static readonly DirectProperty<XDataGridHeaderRenderer, XDataGridHeaderDescriptors> HeaderDescriptorsProperty =
-            AvaloniaProperty.RegisterDirect<XDataGridHeaderRenderer, XDataGridHeaderDescriptors>(
+        internal static readonly DirectProperty<XDataGridHeader, XDataGridHeaderDescriptors> HeaderDescriptorsProperty =
+            AvaloniaProperty.RegisterDirect<XDataGridHeader, XDataGridHeaderDescriptors>(
                 nameof(HeaderDescriptors),
                 o => o.HeaderDescriptors,
                 (o, v) => o.HeaderDescriptors = v);
@@ -21,21 +26,19 @@ namespace RenderDemo.Pages
             set
             {
                 SetAndRaise(HeaderDescriptorsProperty, ref _headerDescriptors, value);
-
             }
         }
 
-        public XDataGridHeaderRenderer()
+        public XDataGridHeader()
         {
-            HeaderDescriptorsProperty.Changed.AddClassHandler<XDataGridHeaderRenderer>(HeaderDescriptorsChanged);
+            this.WhenAnyValue(x => x.HeaderDescriptors)
+                .DistinctUntilChanged()
+                .Subscribe(XD);
         }
 
-        private void HeaderDescriptorsChanged(AvaloniaObject arg1, AvaloniaPropertyChangedEventArgs arg2)
+        private void XD(XDataGridHeaderDescriptors obj)
         {
-            var descriptor = arg2.NewValue as XDataGridHeaderDescriptors;
-            if (descriptor is null) return;
-
-            DescriptorsChanged(descriptor);
+            DescriptorsChanged(obj);
         }
 
         public static object GetPropValue(object src, string propName)
@@ -45,6 +48,9 @@ namespace RenderDemo.Pages
 
         private void DescriptorsChanged(XDataGridHeaderDescriptors obj)
         {
+            if (obj == null) return;
+
+            this.ColumnDefinitions.Clear();
             this.Children.Clear();
 
             for (int i = 0; i < obj.Count; i++)
@@ -55,17 +61,14 @@ namespace RenderDemo.Pages
 
                 this.ColumnDefinitions.Add(colDefHeaderCell);
 
-                var rowValue = headerDesc.PropertyName;
+				var boundCellContent = new XDataGridHeaderCell();
 
-                var boundCellContent = new XDataGridCell();
-
-                boundCellContent.Content = new TextBlock() { Text = rowValue };
+				boundCellContent.DataContext = headerDesc;
 
                 Grid.SetColumn(boundCellContent, headerDesc.ColumnDefinitionIndex);
 
                 this.Children.Add(boundCellContent);
             }
         }
-
     }
 }

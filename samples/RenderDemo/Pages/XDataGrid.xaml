@@ -1,8 +1,14 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui" 
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
   xmlns:local="clr-namespace:RenderDemo.Pages;assembly=RenderDemo">
+  <Style Selector="local|XDataGridHeaderCell">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <TextBlock Text="{Binding HeaderText}"/>
+      </ControlTemplate>
+    </Setter>
+  </Style>
   <Style Selector="local|XDataGridCell">
-    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="Template">
       <ControlTemplate>
         <ContentControl Content="{TemplateBinding Content}"/>
@@ -18,14 +24,15 @@
           <ScrollViewer Name="PART_HorzScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <DockPanel x:Name="PART_Dock" LastChildFill="True">
               <Grid DockPanel.Dock="Top" VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                <local:XDataGridHeaderRenderer Name="PART_Header" HeaderDescriptors="{TemplateBinding HeaderDescriptors}"/>
+                <local:XDataGridHeader Name="PART_Header" HeaderDescriptors="{TemplateBinding HeaderDescriptors}"/>
               </Grid>
               <ScrollViewer Name="PART_VertScroller" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
                 <ItemsRepeater Name="PART_Repeater" Items="{TemplateBinding Items}">
                   <ItemsRepeater.ItemTemplate>
                     <DataTemplate>
                       <StackPanel>
-                        <local:XDataGridRowRenderer HeaderDescriptors="{Binding #PART_Header.HeaderDescriptors}" DataContext="{Binding}"/>
+                        <local:XDataGridRow HeaderDescriptors="{Binding #PART_Header.HeaderDescriptors}" 
+                                            DataContext="{Binding}"/>
                       </StackPanel>
                     </DataTemplate>
                   </ItemsRepeater.ItemTemplate>

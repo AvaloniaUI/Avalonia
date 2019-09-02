@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using ReactiveUI;
 using System;
 using System.ComponentModel;
@@ -6,10 +7,8 @@ using System.Runtime.CompilerServices;
 
 namespace RenderDemo.Pages
 {
-    internal class XDataGridHeaderDescriptor : ReactiveObject
+    public class XDataGridHeaderDescriptor : ReactiveObject
     {
-         
- 
         string headerText;
         public string HeaderText
         {
@@ -29,6 +28,13 @@ namespace RenderDemo.Pages
         {
             get => colDefIndex;
             set => this.RaiseAndSetIfChanged(ref colDefIndex, value);
+        }
+
+        GridLength gridLength;
+        public GridLength HeaderWidth
+        {
+            get => gridLength;
+            set => this.RaiseAndSetIfChanged(ref gridLength, value);
         }
     }
 }
