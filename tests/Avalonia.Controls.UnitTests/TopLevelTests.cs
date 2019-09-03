@@ -224,6 +224,24 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Close_Should_Notify_MouseDevice()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                var mouseDevice = new Mock<IMouseDevice>();
+                impl.SetupAllProperties();
+                impl.Setup(x => x.MouseDevice).Returns(mouseDevice.Object);
+
+                var target = new TestTopLevel(impl.Object);
+
+                impl.Object.Closed();
+
+                mouseDevice.Verify(x => x.TopLevelClosed(target));
+            }
+        }
+
         private FuncControlTemplate<TestTopLevel> CreateTemplate()
         {
             return new FuncControlTemplate<TestTopLevel>((x, scope) =>
