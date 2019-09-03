@@ -18,8 +18,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new IndeiValidationPlugin();
             var data = new Data { Maximum = 5 };
-            var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.Value));
-            var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.Value), accessor);
+            var accessor = inpcAccessorPlugin.Start(new WeakReference<object>(data), nameof(data.Value));
+            var validator = validatorPlugin.Start(new WeakReference<object>(data), nameof(data.Value), accessor);
             var result = new List<object>();
 
             validator.Subscribe(x => result.Add(x));
@@ -37,13 +37,13 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
                 new BindingNotification(6),
                 
                 // Then the ErrorsChanged event is fired.
-                new BindingNotification(new Exception("Must be less than Maximum"), BindingErrorType.DataValidationError, 6),
+                new BindingNotification(new DataValidationException("Must be less than Maximum"), BindingErrorType.DataValidationError, 6),
 
                 // Maximum is changed to 10 so value is now valid.
                 new BindingNotification(6),
 
                 // And Maximum is changed back to 5.
-                new BindingNotification(new Exception("Must be less than Maximum"), BindingErrorType.DataValidationError, 6),
+                new BindingNotification(new DataValidationException("Must be less than Maximum"), BindingErrorType.DataValidationError, 6),
             }, result);
         }
 
@@ -53,8 +53,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new IndeiValidationPlugin();
             var data = new Data { Maximum = 5 };
-            var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.Value));
-            var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.Value), accessor);
+            var accessor = inpcAccessorPlugin.Start(new WeakReference<object>(data), nameof(data.Value));
+            var validator = validatorPlugin.Start(new WeakReference<object>(data), nameof(data.Value), accessor);
 
             Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
             validator.Subscribe(_ => { });

@@ -100,7 +100,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
                 // Value is first signalled without an error as validation hasn't been updated.
                 new BindingNotification(-5),
-                new BindingNotification(new Exception("Must be positive"), BindingErrorType.DataValidationError, -5),
+                new BindingNotification(new DataValidationException("Must be positive"), BindingErrorType.DataValidationError, -5),
 
                 // Exception is thrown by trying to set value to "foo".
                 new BindingNotification(
@@ -108,7 +108,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                     BindingErrorType.DataValidationError),
 
                 // Value is set then validation is updated.
-                new BindingNotification(new Exception("Must be positive"), BindingErrorType.DataValidationError, 5),
+                new BindingNotification(new DataValidationException("Must be positive"), BindingErrorType.DataValidationError, 5),
                 new BindingNotification(5),
             }, result);
 

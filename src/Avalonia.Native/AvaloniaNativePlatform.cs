@@ -85,8 +85,8 @@ namespace Avalonia.Native
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
                 .Bind<INativeMenuExporter>().ToConstant(new NativeMenuExporterImpl(_factory))
                 .Bind<IWindowingPlatformGlFeature>().ToConstant(new GlPlatformFeature(_factory.ObtainGlFeature()))
-                .Bind<PlatformHotkeyConfiguration>()
-                .ToConstant(new PlatformHotkeyConfiguration(InputModifiers.Windows));
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(InputModifiers.Windows))
+                .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider());
         }
 
         public IWindowImpl CreateWindow()

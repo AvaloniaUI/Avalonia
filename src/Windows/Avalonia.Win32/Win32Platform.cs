@@ -90,7 +90,9 @@ namespace Avalonia.Win32
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<IPlatformIconLoader>().ToConstant(s_instance);
+                .Bind<IPlatformIconLoader>().ToConstant(s_instance)
+                .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider());
+
             if (options.AllowEglInitialization)
                 Win32GlManager.Initialize();
             
