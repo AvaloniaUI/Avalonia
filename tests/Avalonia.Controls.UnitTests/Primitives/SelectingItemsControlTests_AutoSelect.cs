@@ -102,6 +102,25 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Null(target.SelectedItem);
         }
 
+        [Fact]
+        public void Removing_Selected_First_Item_Should_Select_Next_Item()
+        {
+            var items = new AvaloniaList<string>(new[] { "foo", "bar" });
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            items.RemoveAt(0);
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal("bar", target.SelectedItem);
+            Assert.Equal(new[] { ":selected" }, target.Presenter.Panel.Children[0].Classes);
+        }
+
         private FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
