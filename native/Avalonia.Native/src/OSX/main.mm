@@ -165,8 +165,6 @@ public:
     close(_fds[0]);
     close(_fds[1]);
 }
-
-
 @end
 
 
