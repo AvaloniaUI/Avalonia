@@ -331,6 +331,44 @@ namespace Avalonia.Controls.UnitTests
             Assert.Null(textBlock.GetLogicalParent());
         }
 
+        [Fact]
+        public void Should_Set_Child_LogicalParent_After_Removing_And_Adding_Back_To_Logical_Tree()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                var target = new ContentControl();
+                var root = new TestRoot
+                {
+                    Styles =
+                    {
+                        new Style(x => x.OfType<ContentControl>())
+                        {
+                            Setters =
+                            {
+                                new Setter(ContentControl.TemplateProperty, GetTemplate()),
+                            }
+                        }
+                    },
+                    Child = target
+                };
+
+                target.Content = "Foo";
+                target.ApplyTemplate();
+
+                Assert.Equal(target, target.Presenter.Child.LogicalParent);
+
+                root.Child = null;
+
+                Assert.Null(target.Template);
+
+                target.Content = null;
+                root.Child = target;
+                target.Content = "Bar";
+
+                Assert.Equal(target, target.Presenter.Child.LogicalParent);
+            }
+        }
+
         private FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<ContentControl>((parent, scope) =>
