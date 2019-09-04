@@ -263,6 +263,7 @@ AVNCOM(IAvnWindowEvents, 06) : IAvnWindowBaseEvents
 AVNCOM(IAvnMacOptions, 07) : IUnknown
 {
     virtual HRESULT SetShowInDock(int show) = 0;
+    virtual HRESULT SetApplicationTitle (void* utf8string) = 0;
 };
 
 AVNCOM(IAvnActionCallback, 08) : IUnknown

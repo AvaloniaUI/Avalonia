@@ -9,6 +9,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
+using Avalonia.Platform.Interop;
 using Avalonia.Rendering;
 
 namespace Avalonia.Native
@@ -67,6 +68,12 @@ namespace Avalonia.Native
             if (_factory.MacOptions != null)
             {
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
+
+                using (var buffer = new Utf8Buffer(Application.Current.Title))
+                {
+                    _factory.MacOptions.SetApplicationTitle(buffer.DangerousGetHandle());
+                }
+
                 _factory.MacOptions.ShowInDock = macOpts?.ShowInDock != false ? 1 : 0;
             }
 
