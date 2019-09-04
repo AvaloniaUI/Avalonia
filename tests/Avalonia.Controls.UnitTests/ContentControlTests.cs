@@ -50,6 +50,7 @@ namespace Avalonia.Controls.UnitTests
             root.Child = target;
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             styler.Verify(x => x.ApplyStyles(It.IsAny<ContentControl>()), Times.Once());
             styler.Verify(x => x.ApplyStyles(It.IsAny<Border>()), Times.Once());
@@ -354,6 +355,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Content = "Foo";
                 target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
 
                 Assert.Equal(target, target.Presenter.Child.LogicalParent);
 

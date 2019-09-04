@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Collections;
+using Avalonia.LogicalTree;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.Presenters
@@ -19,9 +21,18 @@ namespace Avalonia.Controls.Presenters
     public interface IContentPresenterHost : ITemplatedControl
     {
         /// <summary>
+        /// Gets a collection describing the logical children of the host control.
+        /// </summary>
+        IAvaloniaList<ILogical> LogicalChildren { get; }
+
+        /// <summary>
         /// Registers an <see cref="IContentPresenter"/> with a host control.
         /// </summary>
         /// <param name="presenter">The content presenter.</param>
-        void RegisterContentPresenter(IContentPresenter presenter);
+        /// <returns>
+        /// True if the content presenter should add its child to the logical children of the
+        /// host; otherwise false.
+        /// </returns>
+        bool RegisterContentPresenter(IContentPresenter presenter);
     }
 }

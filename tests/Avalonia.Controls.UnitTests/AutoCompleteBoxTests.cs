@@ -984,6 +984,7 @@ namespace Avalonia.Controls.UnitTests
                 TextBox textBox = GetTextBox(control);
                 var window = new Window {Content = control};
                 window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
                 Dispatcher.UIThread.RunJobs();
                 test.Invoke(control, textBox);
             }
