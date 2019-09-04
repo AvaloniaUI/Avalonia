@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Input;
 using Avalonia.Collections;
+using Avalonia.Input;
 using Avalonia.Metadata;
 using Avalonia.Utilities;
 
@@ -10,7 +11,7 @@ namespace Avalonia.Controls
     public class NativeMenuItem : AvaloniaObject
     {
         private string _header;
-        private string _gesture;
+        private KeyGesture _gesture;
         private ICollection<NativeMenuItem> _items;
         private bool _enabled = true;
 
@@ -46,10 +47,10 @@ namespace Avalonia.Controls
             set => SetValue(HeaderProperty, value);
         }
 
-        public static readonly DirectProperty<NativeMenuItem, string> GestureProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, string>(nameof(Gesture), o => o._gesture, (o,v)=> o._gesture = v);
+        public static readonly DirectProperty<NativeMenuItem, KeyGesture> GestureProperty =
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, KeyGesture>(nameof(Gesture), o => o._gesture, (o,v)=> o._gesture = v);
 
-        public string Gesture
+        public KeyGesture Gesture
         {
             get => GetValue(GestureProperty);
             set => SetValue(GestureProperty, value);
