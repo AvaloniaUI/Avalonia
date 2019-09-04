@@ -45,6 +45,8 @@ namespace Avalonia
         private Styles _styles;
         private IResourceDictionary _resources;
 
+        public virtual string Title { get; } = "Avalonia Application";
+
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 

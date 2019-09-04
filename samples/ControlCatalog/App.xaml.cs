@@ -11,6 +11,8 @@ namespace ControlCatalog
             AvaloniaXamlLoader.Load(this);
         }
 
+        public override string Title => "Control Catalog";
+
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
