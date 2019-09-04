@@ -144,15 +144,9 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT ObtainAppBar(IAvnAppMenu** ppv) override
-    {
-        *ppv = ::GetAppBar();
-        return  S_OK;
-    }
-    
     virtual HRESULT ObtainAppMenu(IAvnAppMenu** ppv) override
     {
-        //*ppv = ::GetAppMenu();
+        *ppv = ::GetAppMenu();
         return S_OK;
     }
     

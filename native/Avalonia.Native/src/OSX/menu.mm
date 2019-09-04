@@ -156,13 +156,13 @@ HRESULT AvnAppMenu::Clear()
     return S_OK;
 }
 
-static IAvnAppMenu* s_AppBar = nullptr;
+static IAvnAppMenu* s_AppMenu = nullptr;
 
-extern IAvnAppMenu* GetAppBar()
+extern IAvnAppMenu* GetAppMenu()
 {
     @autoreleasepool
     {
-        if(s_AppBar == nullptr)
+        if(s_AppMenu == nullptr)
         {
             id appName = [[NSProcessInfo processInfo] processName];
             
@@ -171,10 +171,10 @@ extern IAvnAppMenu* GetAppBar()
             
             [appMenuItem setSubmenu:[AvnMenu new]];
             
-            s_AppBar = new AvnAppMenu([[NSApplication sharedApplication] mainMenu]);
+            s_AppMenu = new AvnAppMenu([[NSApplication sharedApplication] mainMenu]);
         }
         
-        return s_AppBar;
+        return s_AppMenu;
     }
 }
 
