@@ -73,6 +73,7 @@ HRESULT AvnAppMenuItem::SetTitle (void* utf8String)
 
 HRESULT AvnAppMenuItem::SetGesture (void* utf8String)
 {
+    [_native setKeyEquivalent:[NSString stringWithUTF8String:(const char*)utf8String]];
     return S_OK;
 }
 

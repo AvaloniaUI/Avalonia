@@ -10,6 +10,7 @@ namespace Avalonia.Controls
     public class NativeMenuItem : AvaloniaObject
     {
         private string _header;
+        private string _gesture;
         private ICollection<NativeMenuItem> _items;
         private bool _enabled = true;
 
@@ -45,6 +46,15 @@ namespace Avalonia.Controls
             set => SetValue(HeaderProperty, value);
         }
 
+        public static readonly DirectProperty<NativeMenuItem, string> GestureProperty =
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, string>(nameof(Gesture), o => o._gesture, (o,v)=> o._gesture = v);
+
+        public string Gesture
+        {
+            get => GetValue(GestureProperty);
+            set => SetValue(GestureProperty, value);
+        }
+
         public static readonly DirectProperty<NativeMenuItem, ICollection<NativeMenuItem>> ItemsProperty =
            AvaloniaProperty.RegisterDirect<NativeMenuItem, ICollection<NativeMenuItem>>(
                nameof(Items), o => o._items, (o, v) => o._items = v);
@@ -55,7 +65,6 @@ namespace Avalonia.Controls
             get => GetValue(ItemsProperty);
             set => SetValue(ItemsProperty, value);
         }
-
 
         private ICommand _command;
 

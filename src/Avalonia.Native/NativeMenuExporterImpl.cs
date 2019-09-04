@@ -66,6 +66,14 @@ namespace Avalonia.Native
                     menuItem.Title = buffer.DangerousGetHandle();
                 }
 
+                if(item.Gesture != null)
+                {
+                    using (var buffer = new Utf8Buffer(item.Gesture))
+                    {
+                        menuItem.Gesture = buffer.DangerousGetHandle();
+                    }
+                }
+
                 menuItem.SetAction(new PredicateCallback(() =>
                 {
                     if (item.Command != null)
@@ -125,6 +133,14 @@ namespace Avalonia.Native
                     using (var buffer = new Utf8Buffer(item.Header))
                     {
                         menuItem.Title = buffer.DangerousGetHandle();
+                    }
+
+                    if(item.Gesture != null)
+                    {
+                        using (var buffer = new Utf8Buffer(item.Gesture))
+                        {
+                            menuItem.Gesture = buffer.DangerousGetHandle();
+                        }                        
                     }
                 }
 

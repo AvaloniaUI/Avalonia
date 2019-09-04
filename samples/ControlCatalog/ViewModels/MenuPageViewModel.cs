@@ -13,6 +13,10 @@ namespace ControlCatalog.ViewModels
         public Control View { get; set; }
         public MenuPageViewModel()
         {
+            QuitCommand = ReactiveCommand.Create(()=>{
+                System.Console.WriteLine("Quit Command");    
+            });
+
             OpenCommand = ReactiveCommand.CreateFromTask(Open);
             SaveCommand = ReactiveCommand.Create(Save, Observable.Return(false));
             OpenRecentCommand = ReactiveCommand.Create<string>(OpenRecent);
@@ -29,6 +33,7 @@ namespace ControlCatalog.ViewModels
                     Header = "_File",
                     Items = new List<NativeMenuItem>
                     {
+                        new NativeMenuItem() { Header = "Quit", Command = QuitCommand, Gesture = "q" },
                         new NativeMenuItem() { Header = "_Open...", Command = OpenCommand },
                         new NativeMenuItem { Header = "Save", Command = SaveCommand },
                         new NativeMenuItem { Header = "-" },
@@ -110,6 +115,8 @@ namespace ControlCatalog.ViewModels
         public  IReadOnlyList<NativeMenuItem> NativeMenuItems { get; set; }
 
         public IReadOnlyList<MenuItemViewModel> MenuItems { get; set; }
+
+        public ReactiveCommand<Unit, Unit> QuitCommand {get;}
         public ReactiveCommand<Unit, Unit> OpenCommand { get; }
         public ReactiveCommand<Unit, Unit> SaveCommand { get; }
         public ReactiveCommand<string, Unit> OpenRecentCommand { get; }
