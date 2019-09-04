@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Notifications;
@@ -25,6 +27,9 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
         private IDisposable _actionWatcher;
         private IDisposable _closeNotificationWatcher;
         private volatile bool _isConnected;
+
+        private ConcurrentDictionary<uint, INotification> _notificationsList
+            = new ConcurrentDictionary<uint, INotification>();
 
         public FreeDesktopNotificationManager()
         {
@@ -66,9 +71,9 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
 
             var expirationInMs = notification.Expiration == TimeSpan.Zero ?
                 DEFAULT_NOTIFICATION_EXPIRATION :
-                notification.Expiration.Milliseconds;
+                (int)notification.Expiration.TotalMilliseconds;
 
-            await _proxy.NotifyAsync(
+            var id = await _proxy.NotifyAsync(
                 Application.Current.Name,
                 //TODO: Maybe a control to always replace
                 0,
@@ -76,10 +81,30 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
                 string.Empty,
                 notification.Title,
                 notification.Message,
-                new string[] { "click", "click" },
+                GetActionsFromNotification(notification),
                 GetHintsFromNotification(notification),
                 expirationInMs
             ).ConfigureAwait(false);
+
+            _notificationsList[id] = notification;
+        }
+
+        private static string[] GetActionsFromNotification(INotification notification)
+        {
+            if (notification is NativeNotification nn)
+            {
+                var actionPair = new List<string> { "default", "default" };
+
+                foreach (var action in nn.Actions)
+                {
+                    actionPair.Add(action.Key);
+                    actionPair.Add(action.Label);
+                }
+
+                return actionPair.ToArray();
+            }
+
+            return new[] { "default", "default" };
         }
 
         public void Close(INotification notification)
@@ -133,18 +158,24 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
                 case NotificationType.Error:
                     urgency = 2;
                     break;
-                case NotificationType.Information:
-                case NotificationType.Success:
                 default:
                     urgency = 0;
                     break;
             }
 
-            return new Dictionary<string, object>
+            var hints = new Dictionary<string, object> { { "urgency", urgency } };
+
+            if (notification is NativeNotification nativeNotification)
             {
-                { "urgency", urgency },
-                //TODO: The others (http://www.galago-project.org/specs/notification/0.9/x344.html)
-            };
+                //TODO: The others https://developer.gnome.org/notification-spec/#id2825136
+                if (nativeNotification.Resident.HasValue)
+                    hints.Add("resident", (byte)(nativeNotification.Resident.Value ? 1 : 0));
+
+                if (nativeNotification.Transient.HasValue)
+                    hints.Add("transient", (byte)(nativeNotification.Transient.Value ? 1 : 0));
+            }
+
+            return hints;
         }
 
         private void OnNotificationActionInvokedError(Exception exception)
@@ -154,7 +185,26 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
 
         private void OnNotificationActionInvoked((uint id, string actionKey) e)
         {
-            Console.WriteLine("Action invoked signal: {0} {1}", e.id.ToString(), e.actionKey);
+            Debug.WriteLine("Action invoked signal: {0} {1}", e.id.ToString(), e.actionKey);
+            {
+                INotification notification;
+                while (!_notificationsList.TryGetValue(e.id, out notification)) ;
+
+                try
+                {
+                    if (e.actionKey == "default")
+                        notification.OnClick?.Invoke();
+                    else if (notification is NativeNotification nn)
+                    {
+                        nn.OnActionInvoked(new ActionInvokedHandlerArgs(e.actionKey));
+                    }
+                }
+                catch (Exception exception)
+                {
+                    //TODO: Impl better exception handling
+                    Console.WriteLine(exception);
+                }
+            }
         }
 
         private void OnNotificationClosed((uint id, uint reason) e)

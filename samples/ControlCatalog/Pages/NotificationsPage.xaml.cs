@@ -120,14 +120,32 @@ namespace ControlCatalog.Pages
 
                 ShowNativeNotificationCommand = ReactiveCommand.Create(async () =>
                 {
-                    await _nativeNotificationManager.ShowAsync(
-                        new Notification(
-                            "Native Notifications",
-                            "Fluid and natural native notifications",
-                            NotificationType.Information,
-                            expiration: TimeSpan.FromSeconds(7)
-                        )
-                    );
+                    void ActionInvoked(NativeNotificationAction action)
+                    {
+                        var actionNotification = new Notification(
+                            $"Action <b>{action.Label}</b> clicked!",
+                            $"Action <b>{action.Key}</b> was <i>invoked</i>."
+                        );
+
+                        _nativeNotificationManager.ShowAsync(actionNotification);
+                    }
+
+                    var notification = new NativeNotification(
+                        "Native Notifications",
+                        "<i>Fluid</i> and natural <b>native</b> notifications",
+                        NotificationType.Information,
+                        expiration: TimeSpan.FromSeconds(7)
+                    )
+                    {
+                        Actions = new[]
+                        {
+                            new NativeNotificationAction("Test", ActionInvoked),
+                            new NativeNotificationAction("test2", "TranslatedText", ActionInvoked)
+                        }
+                    };
+
+
+                    await _nativeNotificationManager.ShowAsync(notification);
                 });
             }
 
