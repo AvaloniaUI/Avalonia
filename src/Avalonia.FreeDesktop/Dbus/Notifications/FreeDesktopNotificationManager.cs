@@ -196,7 +196,7 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
                         notification.OnClick?.Invoke();
                     else if (notification is NativeNotification nn)
                     {
-                        nn.OnActionInvoked(new ActionInvokedHandlerArgs(e.actionKey));
+                        nn.OnActionInvoked(new ActionInvokedEventArgs(e.actionKey));
                     }
                 }
                 catch (Exception exception)

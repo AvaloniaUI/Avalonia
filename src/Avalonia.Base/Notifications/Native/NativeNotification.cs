@@ -30,13 +30,13 @@ namespace Avalonia.Notifications.Native
         /// </summary>
         public IReadOnlyList<NativeNotificationAction> Actions { get; set; }
 
-        public event EventHandler<ActionInvokedHandlerArgs> ActionInvoked;
+        public event EventHandler<ActionInvokedEventArgs> ActionInvoked;
 
         /// <summary>
         /// Event invoker for <see cref="ActionInvoked"/>
         /// </summary>
         /// <param name="e">The event args</param>
-        public virtual void OnActionInvoked(ActionInvokedHandlerArgs e)
+        public virtual void OnActionInvoked(ActionInvokedEventArgs e)
         {
             ActionInvoked?.Invoke(this, e);
 
@@ -47,7 +47,7 @@ namespace Avalonia.Notifications.Native
         /// Invokes the <see cref="NativeNotificationAction.Action"/> if able to find a <see cref="NativeNotificationAction.Key"/> that matches in <see cref="Actions"/>.
         /// </summary>
         /// <param name="e">The event args</param>
-        protected virtual void InvokeAction(ActionInvokedHandlerArgs e)
+        protected virtual void InvokeAction(ActionInvokedEventArgs e)
         {
             if (Actions == null)
                 return;
