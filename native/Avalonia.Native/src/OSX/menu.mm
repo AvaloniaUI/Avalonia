@@ -164,7 +164,9 @@ extern IAvnAppMenu* GetAppMenu()
     {
         if(s_AppMenu == nullptr)
         {
-            id appName = [[NSProcessInfo processInfo] processName];
+            id menubar = [NSMenu new];
+            [menubar setTitle:@"Test"];
+            [NSApp setMainMenu:menubar];
             
             id appMenuItem = [AvnMenuItem new];
             [[NSApp mainMenu] addItem:appMenuItem];

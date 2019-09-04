@@ -132,10 +132,6 @@ public:
         TransformProcessType(&psn, kProcessTransformToForegroundApplication);
         SetFrontProcess(&psn);
         
-        id menubar = [NSMenu new];
-        [menubar setTitle:@"Test"];
-        [NSApp setMainMenu:menubar];
-        
         [NSApp finishLaunching];
         return S_OK;
     }
