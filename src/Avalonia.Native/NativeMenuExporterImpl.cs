@@ -136,7 +136,7 @@ namespace Avalonia.Native
         {
             var mainMenu = _factory.ObtainAppMenu();
 
-            mainMenu.Clear();
+            //mainMenu.Clear();
             _factory.ObtainAppBar().Clear();
             
             AddItemsToMenu(_factory.ObtainAppBar(), menuItems);

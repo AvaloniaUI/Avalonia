@@ -96,8 +96,6 @@ public:
     virtual void RunLoop(IAvnLoopCancellation* cancel) override
     {
         @autoreleasepool {
-            GetAppMenu();
-            
             auto can = dynamic_cast<LoopCancellation*>(cancel);
             [[NSApplication sharedApplication] activateIgnoringOtherApps:true];
             while(true)
