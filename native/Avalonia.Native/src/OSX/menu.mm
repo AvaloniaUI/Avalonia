@@ -158,46 +158,19 @@ HRESULT AvnAppMenu::Clear()
 
 static IAvnAppMenu* s_AppBar = nullptr;
 
-static IAvnAppMenu* s_AppMenu = nullptr;
-
-extern IAvnAppMenu* GetAppMenu()
-{
-    @autoreleasepool
-    {
-        if(s_AppMenu == nullptr)
-        {
-            id appMenu = [AvnMenu new];
-            [appMenu setTitle:@"AppMenu"];
-            
-            s_AppMenu = new AvnAppMenu(appMenu);
-            
-            id appName = [[NSProcessInfo processInfo] processName];
-            
-            //id quitTitle = [@"Quit " stringByAppendingString:appName];
-            //d quitMenuItem = [[NSMenuItem alloc] initWithTitle:quitTitle
-            //                                          action:@selector(terminate:) keyEquivalent:@"q"];
-            
-            
-            //id testMenuItem = [[NSMenuItem alloc] initWithTitle:@"Test" action:NULL keyEquivalent:@""];
-            //[appMenu addItem:testMenuItem];
-            //   [appMenu addItem:quitMenuItem];
-            
-            id appMenuItem = [AvnMenuItem new];
-            [[NSApp mainMenu] addItem:appMenuItem];
-            
-            [appMenuItem setSubmenu:appMenu];
-        }
-        
-        return s_AppMenu;
-    }
-}
-
 extern IAvnAppMenu* GetAppBar()
 {
     @autoreleasepool
     {
         if(s_AppBar == nullptr)
         {
+            id appName = [[NSProcessInfo processInfo] processName];
+            
+            id appMenuItem = [AvnMenuItem new];
+            [[NSApp mainMenu] addItem:appMenuItem];
+            
+            [appMenuItem setSubmenu:[AvnMenu new]];
+            
             s_AppBar = new AvnAppMenu([[NSApplication sharedApplication] mainMenu]);
         }
         

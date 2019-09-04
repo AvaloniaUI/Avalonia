@@ -152,7 +152,7 @@ public:
     
     virtual HRESULT ObtainAppMenu(IAvnAppMenu** ppv) override
     {
-        *ppv = ::GetAppMenu();
+        //*ppv = ::GetAppMenu();
         return S_OK;
     }
     

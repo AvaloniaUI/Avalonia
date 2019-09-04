@@ -134,12 +134,11 @@ namespace Avalonia.Native
 
         public void SetMenu(ICollection<NativeMenuItem> menuItems)
         {
-            var mainMenu = _factory.ObtainAppMenu();
+            var appMenu = _factory.ObtainAppBar();
 
-            //mainMenu.Clear();
-            _factory.ObtainAppBar().Clear();
+            appMenu.Clear();
             
-            AddItemsToMenu(_factory.ObtainAppBar(), menuItems);
+            AddItemsToMenu(appMenu, menuItems);
         }
     }
 }
