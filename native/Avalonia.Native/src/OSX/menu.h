@@ -41,7 +41,7 @@ public:
     
     virtual HRESULT SetTitle (void* utf8String) override;
     
-    virtual HRESULT SetGesture (void* utf8String) override;
+    virtual HRESULT SetGesture (void* key, AvnInputModifiers modifiers) override;
     
     virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) override;
     

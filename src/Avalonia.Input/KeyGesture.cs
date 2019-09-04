@@ -81,6 +81,8 @@ namespace Avalonia.Input
         {
             if (modifier.Equals("ctrl", StringComparison.OrdinalIgnoreCase))
                 return InputModifiers.Control;
+            if(modifier.Equals("cmd", StringComparison.OrdinalIgnoreCase))
+                return InputModifiers.Windows;
             return (InputModifiers) Enum.Parse(typeof (InputModifiers), modifier, true);
         }
 

@@ -68,9 +68,9 @@ namespace Avalonia.Native
 
                 if(item.Gesture != null)
                 {
-                    using (var buffer = new Utf8Buffer(item.Gesture))
+                    using (var buffer = new Utf8Buffer(item.Gesture.Key.ToString().ToLower()))
                     {
-                        menuItem.Gesture = buffer.DangerousGetHandle();
+                        menuItem.SetGesture(buffer.DangerousGetHandle(), (AvnInputModifiers)item.Gesture.KeyModifiers);
                     }
                 }
 
@@ -137,10 +137,10 @@ namespace Avalonia.Native
 
                     if(item.Gesture != null)
                     {
-                        using (var buffer = new Utf8Buffer(item.Gesture))
+                        using (var buffer = new Utf8Buffer(item.Gesture.Key.ToString().ToLower()))
                         {
-                            menuItem.Gesture = buffer.DangerousGetHandle();
-                        }                        
+                            menuItem.SetGesture(buffer.DangerousGetHandle(), (AvnInputModifiers)item.Gesture.KeyModifiers);
+                        }                       
                     }
                 }
 

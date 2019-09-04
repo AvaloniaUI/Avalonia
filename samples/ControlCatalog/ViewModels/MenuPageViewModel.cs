@@ -3,6 +3,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.VisualTree;
 using ReactiveUI;
 
@@ -33,7 +34,7 @@ namespace ControlCatalog.ViewModels
                     Header = "_File",
                     Items = new List<NativeMenuItem>
                     {
-                        new NativeMenuItem() { Header = "Quit", Command = QuitCommand, Gesture = "q" },
+                        new NativeMenuItem() { Header = "Quit", Command = QuitCommand, Gesture = KeyGesture.Parse("CMD + Q") },
                         new NativeMenuItem() { Header = "_Open...", Command = OpenCommand },
                         new NativeMenuItem { Header = "Save", Command = SaveCommand },
                         new NativeMenuItem { Header = "-" },

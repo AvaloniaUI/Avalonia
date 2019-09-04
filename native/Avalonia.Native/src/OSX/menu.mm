@@ -71,9 +71,22 @@ HRESULT AvnAppMenuItem::SetTitle (void* utf8String)
     return S_OK;
 }
 
-HRESULT AvnAppMenuItem::SetGesture (void* utf8String)
+HRESULT AvnAppMenuItem::SetGesture (void* key, AvnInputModifiers modifiers)
 {
-    [_native setKeyEquivalent:[NSString stringWithUTF8String:(const char*)utf8String]];
+    NSEventModifierFlags flags = 0;
+    
+    if (modifiers & Control)
+        flags |= NSEventModifierFlagControl;
+    if (modifiers & Shift)
+        flags |= NSEventModifierFlagShift;
+    if (modifiers & Alt)
+        flags |= NSEventModifierFlagOption;
+    if (modifiers & Windows)
+        flags |= NSEventModifierFlagCommand;
+    
+    [_native setKeyEquivalent:[NSString stringWithUTF8String:(const char*)key]];
+    [_native setKeyEquivalentModifierMask:flags];
+    
     return S_OK;
 }
 
