@@ -13,6 +13,15 @@ namespace Avalonia.Controls
     {
         private ICollection<NativeMenuItem> _items = new AvaloniaList<NativeMenuItem>();
 
+        public static readonly StyledProperty<bool> MenuExportedProperty =
+            AvaloniaProperty.Register<NativeMenu ,bool>(nameof(MenuExported), true);
+
+        public bool MenuExported
+        {
+            get => GetValue(MenuExportedProperty);
+            set => SetValue(MenuExportedProperty, value);
+        }
+
         /// <summary>
         /// Defines the <see cref="Items"/> property.
         /// </summary>
@@ -35,8 +44,12 @@ namespace Avalonia.Controls
 
             if (exporter != null)
             {
-                
+                MenuExported = true;
                 exporter.SetMenu(items);
+            }
+            else
+            {
+                MenuExported = false;
             }
         }
 
