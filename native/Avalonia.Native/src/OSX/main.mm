@@ -64,8 +64,9 @@ public:
     {
         @autoreleasepool{
             [[ThreadingInitializer new] do];
-            return S_OK;
         }
+        InitializeAvnApp();
+        return S_OK;
     };
     
     virtual IAvnMacOptions* GetMacOptions()  override

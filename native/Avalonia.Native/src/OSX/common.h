@@ -19,7 +19,7 @@ extern IAvnClipboard* CreateClipboard();
 extern IAvnCursorFactory* CreateCursorFactory();
 extern IAvnGlFeature* GetGlFeature();
 extern IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(NSWindow* window, NSView* view);
-
+extern void InitializeAvnApp();
 extern NSPoint ToNSPoint (AvnPoint p);
 extern AvnPoint ToAvnPoint (NSPoint p);
 extern AvnPoint ConvertPointY (AvnPoint p);
