@@ -1,11 +1,11 @@
 #include "common.h"
 @interface AvnAppDelegate : NSObject<NSApplicationDelegate>
 @end
-
+extern NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationActivationPolicyRegular;
 @implementation AvnAppDelegate
 - (void)applicationWillFinishLaunching:(NSNotification *)notification
 {
-    
+    [[NSApplication sharedApplication] setActivationPolicy: AvnDesiredActivationPolicy];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification

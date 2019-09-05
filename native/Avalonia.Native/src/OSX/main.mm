@@ -5,21 +5,14 @@
 #define COM_GUIDS_MATERIALIZE
 #include "common.h"
 
-static BOOL ShowInDock = 1;
-
-static void SetActivationPolicy()
-{
-    [[NSApplication sharedApplication] setActivationPolicy: (ShowInDock ? NSApplicationActivationPolicyRegular : NSApplicationActivationPolicyAccessory)];
-}
-
 class MacOptions : public ComSingleObject<IAvnMacOptions, &IID_IAvnMacOptions>
 {
 public:
     FORWARD_IUNKNOWN()
     virtual HRESULT SetShowInDock(int show)  override
     {
-        ShowInDock = show;
-        SetActivationPolicy();
+        AvnDesiredActivationPolicy = show
+            ? NSApplicationActivationPolicyRegular : NSApplicationActivationPolicyAccessory;
         return S_OK;
     }
 };
