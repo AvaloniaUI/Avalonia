@@ -1,10 +1,11 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using ReactiveUI;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Threading;
+using ReactiveUI;
 
 namespace BindingDemo.ViewModels
 {
@@ -56,7 +57,7 @@ namespace BindingDemo.ViewModels
 
         public ObservableCollection<TestItem> Items { get; }
         public ObservableCollection<TestItem> SelectedItems { get; }
-        public ReactiveCommand ShuffleItems { get; }
+        public ReactiveCommand<Unit, Unit> ShuffleItems { get; }
 
         public string BooleanString
         {
@@ -89,7 +90,7 @@ namespace BindingDemo.ViewModels
         }
 
         public IObservable<string> CurrentTimeObservable { get; }
-        public ReactiveCommand StringValueCommand { get; }
+        public ReactiveCommand<object, Unit> StringValueCommand { get; }
 
         public DataAnnotationsErrorViewModel DataAnnotationsValidation { get; } = new DataAnnotationsErrorViewModel();
         public ExceptionErrorViewModel ExceptionDataValidation { get; } = new ExceptionErrorViewModel();
