@@ -7,9 +7,10 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using ReactiveUI.Legacy;
 using ReactiveUI;
 using Avalonia.Layout;
+using System.Reactive;
+using DynamicData.Binding;
 
 namespace VirtualizationDemo.ViewModels
 {
@@ -18,7 +19,7 @@ namespace VirtualizationDemo.ViewModels
         private int _itemCount = 200;
         private string _newItemString = "New Item";
         private int _newItemIndex;
-        private IReactiveList<ItemViewModel> _items;
+        private ObservableCollectionExtended<ItemViewModel> _items;
         private string _prefix = "Item";
         private ScrollBarVisibility _horizontalScrollBarVisibility = ScrollBarVisibility.Auto;
         private ScrollBarVisibility _verticalScrollBarVisibility = ScrollBarVisibility.Auto;
@@ -36,7 +37,7 @@ namespace VirtualizationDemo.ViewModels
 
             SelectFirstCommand = ReactiveCommand.Create(() => SelectItem(0));
 
-            SelectLastCommand = ReactiveCommand.Create(() => SelectItem(Items.Count - 1));
+            SelectLastCommand = ReactiveCommand.Create(() => SelectItem(Items.Count() - 1));
         }
 
         public string NewItemString
@@ -54,7 +55,7 @@ namespace VirtualizationDemo.ViewModels
         public AvaloniaList<ItemViewModel> SelectedItems { get; } 
             = new AvaloniaList<ItemViewModel>();
 
-        public IReactiveList<ItemViewModel> Items
+        public ObservableCollectionExtended<ItemViewModel> Items
         {
             get { return _items; }
             private set { this.RaiseAndSetIfChanged(ref _items, value); }
@@ -93,11 +94,11 @@ namespace VirtualizationDemo.ViewModels
         public IEnumerable<ItemVirtualizationMode> VirtualizationModes => 
             Enum.GetValues(typeof(ItemVirtualizationMode)).Cast<ItemVirtualizationMode>();
 
-        public ReactiveCommand AddItemCommand { get; private set; }
-        public ReactiveCommand RecreateCommand { get; private set; }
-        public ReactiveCommand RemoveItemCommand { get; private set; }
-        public ReactiveCommand SelectFirstCommand { get; private set; }
-        public ReactiveCommand SelectLastCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> AddItemCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> RecreateCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> RemoveItemCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> SelectFirstCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> SelectLastCommand { get; private set; }
 
         public void RandomizeSize()
         {
@@ -123,7 +124,7 @@ namespace VirtualizationDemo.ViewModels
             {
                 var items = Enumerable.Range(0, count)
                     .Select(x => new ItemViewModel(x));
-                Items = new ReactiveList<ItemViewModel>(items);
+                Items = new ObservableCollectionExtended<ItemViewModel>(items);
             }
             else if (count > Items.Count)
             {
@@ -151,10 +152,9 @@ namespace VirtualizationDemo.ViewModels
 
         private void Remove()
         {
-            if (SelectedItems.Count > 0)
-            {
-                Items.RemoveAll(SelectedItems);
-            }
+            if (SelectedItems.Count <= 0) return;
+            foreach (var item in SelectedItems)
+                Items.Remove(item);
         }
 
         private void Recreate()
@@ -162,7 +162,7 @@ namespace VirtualizationDemo.ViewModels
             _prefix = _prefix == "Item" ? "Recreated" : "Item";
             var items = Enumerable.Range(0, _itemCount)
                 .Select(x => new ItemViewModel(x, _prefix));
-            Items = new ReactiveList<ItemViewModel>(items);
+            Items = new ObservableCollectionExtended<ItemViewModel>(items);
         }
 
         private void SelectItem(int index)
