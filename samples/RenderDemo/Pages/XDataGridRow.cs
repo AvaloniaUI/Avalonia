@@ -8,7 +8,7 @@ using System.Reactive.Linq;
 
 namespace RenderDemo.Pages
 {
-    public class XDataGridRow : Grid
+    public class XDataGridRow : StackPanel
     {
         internal static readonly DirectProperty<XDataGridRow, XDataGridHeaderDescriptors> HeaderDescriptorsProperty =
             AvaloniaProperty.RegisterDirect<XDataGridRow, XDataGridHeaderDescriptors>(
@@ -31,27 +31,15 @@ namespace RenderDemo.Pages
         {
             this.WhenAnyValue(x => x.HeaderDescriptors)
                 .DistinctUntilChanged()
-                .Subscribe(XD);
+                .Subscribe(DescriptorsChanged);
         }
-
-        private void XD(XDataGridHeaderDescriptors obj)
-        {
-            DescriptorsChanged(obj);
-        }
-
-        public static object GetPropValue(object src, string propName)
-        {
-            return src.GetType().GetProperty(propName).GetValue(src, null);
-        }
-
+ 
         CompositeDisposable _disposables;
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
 
         }
-
-        static GridLength StarGridLength = GridLength.Parse("100*");
 
         private void DescriptorsChanged(XDataGridHeaderDescriptors obj)
         {
@@ -60,43 +48,31 @@ namespace RenderDemo.Pages
             _disposables?.Dispose();
             _disposables = new CompositeDisposable();
             
-            this.ColumnDefinitions.Clear();
+            // this.ColumnDefinitions.Clear();
             this.Children.Clear();
-            var actualColIndex = 0;
+            // var actualColIndex = 0;
 
             for (int i = 0; i < obj.Count; i++)
             {
                 var headerDesc = obj[i];
 
-                var colDefCellCol = new ColumnDefinition(headerDesc.HeaderWidth); //temporary
-                var colDefHeaderResizer = new ColumnDefinition(GridLength.Parse("5"));
+                var boundCellContent = new XDataGridCell();
 
                 headerDesc.WhenAnyValue(x => x.HeaderWidth)
                           .DistinctUntilChanged()
                           .Do(x =>
                           {
-                              colDefCellCol.Width = x;
+                              boundCellContent.CellContentWidth = x;
                           })
                           .Subscribe()
                           .DisposeWith(_disposables);
-
-                this.ColumnDefinitions.Add(colDefCellCol);
-                this.ColumnDefinitions.Add(colDefHeaderResizer);
-
-                var boundCellContent = new XDataGridCell();
+ 
 
                 var newBind = new Binding(headerDesc.PropertyName);
                 boundCellContent.Bind(XDataGridCell.ContentProperty, newBind);
 
-                Grid.SetColumn(boundCellContent, actualColIndex);
-
                 this.Children.Add(boundCellContent);
-
-                actualColIndex += 2;
             }
-
-            var colDefExtra = new ColumnDefinition(StarGridLength);
-            this.ColumnDefinitions.Add(colDefExtra);
         }
     }
 }

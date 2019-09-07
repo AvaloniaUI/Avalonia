@@ -1,6 +1,8 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui" 
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
   xmlns:local="clr-namespace:RenderDemo.Pages;assembly=RenderDemo">
+
+
   <Style Selector="local|XDataGridHeaderCell">
     <Setter Property="Template">
       <ControlTemplate>
@@ -8,29 +10,64 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="local|XDataGridCell">
+
+  <Style Selector="local|XDataGridHeader">
+    <Setter Property="StackPanel.Orientation" Value="Horizontal"/>
+  </Style>
+
+  <Style Selector="local|XDataGridRow">
+    <Setter Property="StackPanel.Orientation" Value="Horizontal"/>
+  </Style>
+
+  <Style Selector="local|XDataGridHeaderCell">
     <Setter Property="Template">
       <ControlTemplate>
-        <ContentControl Content="{TemplateBinding Content}"/>
+        <Grid ColumnDefinitions="Auto,3">
+          <ContentControl Name="PART_ContentControl" Width="100" Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding Content}" />
+          <Thumb Grid.Column="1" Name="PART_RightThumbResizer">
+            <Thumb.Template>
+              <ControlTemplate>
+                <Border Background="Black" Width="3" VerticalAlignment="Stretch"/>
+              </ControlTemplate>
+            </Thumb.Template>
+          </Thumb>
+        </Grid>
       </ControlTemplate>
     </Setter>
   </Style>
+
+  <Style Selector="local|XDataGridCell">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ColumnDefinitions="Auto,3">
+          <ContentControl Name="PART_ContentControl" Width="100" Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding Content}" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
   <Style Selector="local|XDataGrid">
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="BorderThickness" Value="1" />
+
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
+          <Grid.DataTemplates>
+            <DataTemplate DataType="local:XDataGridHeaderDescriptor">
+              <TextBlock Text="{Binding HeaderText}"/>
+            </DataTemplate>
+          </Grid.DataTemplates>
           <ScrollViewer Name="PART_HorzScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <DockPanel x:Name="PART_Dock" LastChildFill="True">
               <Grid DockPanel.Dock="Top" VerticalAlignment="Top" HorizontalAlignment="Left">
-                <local:XDataGridHeader Name="PART_Header" HeaderDescriptors="{TemplateBinding HeaderDescriptors}" Width="1200"/>
+                <local:XDataGridHeader Name="PART_Header" HeaderDescriptors="{TemplateBinding HeaderDescriptors}"/>
               </Grid>
               <ScrollViewer Name="PART_VertScroller" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
                 <ItemsRepeater Name="PART_Repeater" Items="{TemplateBinding Items}">
                   <ItemsRepeater.ItemTemplate>
                     <DataTemplate>
-                      <local:XDataGridRow HeaderDescriptors="{Binding #PART_Header.HeaderDescriptors}" HorizontalAlignment="Left" Width="1200"/>
+                      <local:XDataGridRow HeaderDescriptors="{Binding #PART_Header.HeaderDescriptors}" HorizontalAlignment="Left"/>
                     </DataTemplate>
                   </ItemsRepeater.ItemTemplate>
                   <ItemsRepeater.Layout>

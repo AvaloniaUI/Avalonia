@@ -23,8 +23,8 @@ namespace RenderDemo.Pages
             set => this.RaiseAndSetIfChanged(ref propName, value);
         }
  
-        GridLength headerWidth;
-        public GridLength HeaderWidth
+        double headerWidth;
+        public double HeaderWidth
         {
             get => headerWidth;
             set => this.RaiseAndSetIfChanged(ref headerWidth, value);
