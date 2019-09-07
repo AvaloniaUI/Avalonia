@@ -11,7 +11,7 @@ using System.Reactive.Linq;
 
 namespace RenderDemo.Pages
 {
-    public class XDataGridHeader : StackPanel
+    public class XDataGridHeader : XDataGridDockPanel
     {
         internal static readonly DirectProperty<XDataGridHeader, XDataGridHeaderDescriptors> HeaderDescriptorsProperty =
             AvaloniaProperty.RegisterDirect<XDataGridHeader, XDataGridHeaderDescriptors>(

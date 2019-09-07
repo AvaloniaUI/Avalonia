@@ -33,6 +33,7 @@ namespace RenderDemo.Pages
                                 .Throttle(TimeSpan.FromSeconds(1 / 24))
                                 .ObserveOn(RxApp.MainThreadScheduler)
                                 .Subscribe(x => content.HeaderWidth = x);
+
         }
 
         private void ResizerDragStarted(object sender, VectorEventArgs e)

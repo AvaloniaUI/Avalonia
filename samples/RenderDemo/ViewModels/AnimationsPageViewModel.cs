@@ -58,7 +58,7 @@ namespace RenderDemo.ViewModels
             var k = new List<SampleData>();
             var r = new Random();
 
-            for (int i = 0; i < 1_000_000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 var l = new SampleData()
                 {
@@ -73,7 +73,12 @@ namespace RenderDemo.ViewModels
                 k.Add(l);
             }
 
-            DataRows = k.OrderByDescending(x => x.Index);
+            DataRows = k; //.OrderByDescending(x => x.Index);
+        }
+
+        public void Bug()
+        {
+            
         }
 
         IEnumerable dataRows;

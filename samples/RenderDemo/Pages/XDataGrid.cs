@@ -23,6 +23,7 @@ using Avalonia.Styling;
 
 namespace RenderDemo.Pages
 {
+
     public class XDataGrid : TemplatedControl, IStyleable
     {
         Type IStyleable.StyleKey => typeof(XDataGrid);

@@ -8,7 +8,7 @@ using System.Reactive.Linq;
 
 namespace RenderDemo.Pages
 {
-    public class XDataGridRow : StackPanel
+    public class XDataGridRow : XDataGridDockPanel
     {
         internal static readonly DirectProperty<XDataGridRow, XDataGridHeaderDescriptors> HeaderDescriptorsProperty =
             AvaloniaProperty.RegisterDirect<XDataGridRow, XDataGridHeaderDescriptors>(
@@ -33,7 +33,7 @@ namespace RenderDemo.Pages
                 .DistinctUntilChanged()
                 .Subscribe(DescriptorsChanged);
         }
- 
+
         CompositeDisposable _disposables;
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -47,7 +47,7 @@ namespace RenderDemo.Pages
 
             _disposables?.Dispose();
             _disposables = new CompositeDisposable();
-            
+
             // this.ColumnDefinitions.Clear();
             this.Children.Clear();
             // var actualColIndex = 0;
@@ -66,12 +66,18 @@ namespace RenderDemo.Pages
                           })
                           .Subscribe()
                           .DisposeWith(_disposables);
- 
 
-                var newBind = new Binding(headerDesc.PropertyName);
+
+                var newBind = new Binding(headerDesc.PropertyName, BindingMode.TwoWay);
                 boundCellContent.Bind(XDataGridCell.ContentProperty, newBind);
 
+
+
                 this.Children.Add(boundCellContent);
+
+                
+                boundCellContent.CellContentWidth = headerDesc.HeaderWidth;
+
             }
         }
     }
