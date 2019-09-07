@@ -58,7 +58,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Null(DataValidationErrors.GetErrors(target));
                 target.Text = "20";
 
-                IEnumerable<Exception> errors = DataValidationErrors.GetErrors(target);
+                IEnumerable<object> errors = DataValidationErrors.GetErrors(target);
                 Assert.Single(errors);
                 Assert.IsType<InvalidOperationException>(errors.Single());
                 target.Text = "1";

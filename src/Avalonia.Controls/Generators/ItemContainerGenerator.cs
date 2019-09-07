@@ -128,6 +128,12 @@ namespace Avalonia.Controls.Generators
                 }
 
                 Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
+
+                if (toMove.Count > 0)
+                {
+                    var containers = toMove.Select(x => x.Value).ToList();
+                    Recycled?.Invoke(this, new ItemContainerEventArgs(containers[0].Index, containers));
+                }
             }
 
             return result;
