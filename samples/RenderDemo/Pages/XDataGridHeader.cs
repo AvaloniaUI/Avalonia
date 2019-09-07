@@ -58,6 +58,12 @@ namespace RenderDemo.Pages
 
                 boundCellContent.Content = headerDesc;
 
+
+                if (i + 1 == obj.Count)
+                {
+                    boundCellContent.Classes.Add("LastColumn");
+                }
+
                 this.Children.Add(boundCellContent);
             }
         }

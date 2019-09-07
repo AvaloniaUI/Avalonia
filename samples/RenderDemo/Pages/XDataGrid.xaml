@@ -14,12 +14,12 @@
   <Style Selector="local|XDataGridHeaderCell">
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="Auto,3">
+        <Grid ColumnDefinitions="Auto,6">
           <ContentControl Name="PART_ContentControl" Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding Content}" />
-          <Thumb Grid.Column="1" Name="PART_RightThumbResizer">
+          <Thumb Grid.Column="1" Name="PART_RightThumbResizer" HorizontalAlignment="Center">
             <Thumb.Template>
               <ControlTemplate>
-                <Border Background="Black" Width="3" VerticalAlignment="Stretch"/>
+                <Border Background="Black" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Center"/>
               </ControlTemplate>
             </Thumb.Template>
           </Thumb>
@@ -31,9 +31,25 @@
   <Style Selector="local|XDataGridCell">
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="Auto,3">
+        <Grid ColumnDefinitions="Auto,6">
           <ContentControl Name="PART_ContentControl" Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding Content}" />
         </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="local|XDataGridHeaderCell.LastColumn">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentControl Name="PART_ContentControl" Content="{TemplateBinding Content}" />
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  
+  <Style Selector="local|XDataGridCell.LastColumn">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentControl Name="PART_ContentControl" Content="{TemplateBinding Content}" />
       </ControlTemplate>
     </Setter>
   </Style>
@@ -52,7 +68,7 @@
           </Grid.DataTemplates>
           <ScrollViewer Name="PART_HorzScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <DockPanel x:Name="PART_Dock" LastChildFill="True">
-              <Grid DockPanel.Dock="Top" VerticalAlignment="Top" HorizontalAlignment="Stretch">
+              <Grid DockPanel.Dock="Top">
                 <local:XDataGridHeader Name="PART_Header" HeaderDescriptors="{TemplateBinding HeaderDescriptors}"/>
               </Grid>
               <ScrollViewer Name="PART_VertScroller" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">

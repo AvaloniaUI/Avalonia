@@ -6,11 +6,10 @@
     <local:XDataGrid Items="{Binding DataRows}">
       <local:XDataGrid.DataTemplates>
         <DataTemplate DataType="x:Boolean">
-          <CheckBox IsChecked="{Binding ., Mode=TwoWay}"/>
+          <CheckBox IsChecked="{Binding}"/>
         </DataTemplate>
       </local:XDataGrid.DataTemplates>
     </local:XDataGrid>
-    <!-- <Button Width="100" Height="100" Command="{Binding Bug}" /> -->
   </Grid>
 
 </local:AnimationsPage>

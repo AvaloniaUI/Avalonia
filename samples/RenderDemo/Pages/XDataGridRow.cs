@@ -1,8 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.LogicalTree;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 
@@ -32,14 +35,48 @@ namespace RenderDemo.Pages
             this.WhenAnyValue(x => x.HeaderDescriptors)
                 .DistinctUntilChanged()
                 .Subscribe(DescriptorsChanged);
+
+            this.WhenAnyValue(x => x.DataContext)
+                .Subscribe(x =>
+                {
+                    RefreshRowWidths();
+                });
+        }
+
+        protected override void ArrangeCore(Rect finalRect)
+        {
+            RefreshRowWidths();
+
+            base.ArrangeCore(finalRect);
+        }
+
+        private void HeaderDescriptorsChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(XDataGridHeaderDescriptor.HeaderWidth))
+            {
+                RefreshRowWidths();
+            }
+        }
+
+        private void RefreshRowWidths()
+        {
+            if (HeaderDescriptors is null || _curCells is null) return;
+
+            foreach (var desc in HeaderDescriptors)
+            {
+                var index = HeaderDescriptors.IndexOf(desc);
+
+                if (_curCells[index]._contentControl is ContentControl cell)
+                {
+                    if (cell.Width != desc.HeaderWidth)
+                        cell.Width = desc.HeaderWidth;
+                }
+            }
         }
 
         CompositeDisposable _disposables;
 
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-
-        }
+        List<XDataGridCell> _curCells = new List<XDataGridCell>();
 
         private void DescriptorsChanged(XDataGridHeaderDescriptors obj)
         {
@@ -48,37 +85,30 @@ namespace RenderDemo.Pages
             _disposables?.Dispose();
             _disposables = new CompositeDisposable();
 
-            // this.ColumnDefinitions.Clear();
             this.Children.Clear();
-            // var actualColIndex = 0;
+
 
             for (int i = 0; i < obj.Count; i++)
             {
                 var headerDesc = obj[i];
 
-                var boundCellContent = new XDataGridCell();
+                headerDesc.PropertyChanged += HeaderDescriptorsChanged;
 
-                headerDesc.WhenAnyValue(x => x.HeaderWidth)
-                          .DistinctUntilChanged()
-                          .Do(x =>
-                          {
-                              boundCellContent.CellContentWidth = x;
-                          })
-                          .Subscribe()
-                          .DisposeWith(_disposables);
-
+                var cell = new XDataGridCell();
 
                 var newBind = new Binding(headerDesc.PropertyName, BindingMode.TwoWay);
-                boundCellContent.Bind(XDataGridCell.ContentProperty, newBind);
 
+                cell.Bind(XDataGridCell.ContentProperty, newBind);
 
+                if (i + 1 == obj.Count)
+                {
+                    cell.Classes.Add("LastColumn");
+                }
 
-                this.Children.Add(boundCellContent);
-
-                
-                boundCellContent.CellContentWidth = headerDesc.HeaderWidth;
-
+                _curCells.Add(cell);
+                this.Children.Add(cell);
             }
+
         }
     }
 }

@@ -27,7 +27,8 @@ namespace RenderDemo.Pages
         public double HeaderWidth
         {
             get => headerWidth;
-            set => this.RaiseAndSetIfChanged(ref headerWidth, value);
+            set =>
+             this.RaiseAndSetIfChanged(ref headerWidth, value);
         }
     }
 }

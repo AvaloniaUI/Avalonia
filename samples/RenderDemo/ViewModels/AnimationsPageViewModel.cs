@@ -36,13 +36,7 @@ namespace RenderDemo.ViewModels
         [DisplayName("Random Number 3")]
         public string RndNum3 { get; set; }
     }
-
-    public static class LinqExtensions
-    {
-
-    }
-
-
+ 
     public class AnimationsPageViewModel : ReactiveObject
     {
         private static Random random = new Random();
@@ -58,7 +52,7 @@ namespace RenderDemo.ViewModels
             var k = new List<SampleData>();
             var r = new Random();
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1_000_000; i++)
             {
                 var l = new SampleData()
                 {
@@ -73,12 +67,7 @@ namespace RenderDemo.ViewModels
                 k.Add(l);
             }
 
-            DataRows = k; //.OrderByDescending(x => x.Index);
-        }
-
-        public void Bug()
-        {
-            
+            DataRows = k;
         }
 
         IEnumerable dataRows;
