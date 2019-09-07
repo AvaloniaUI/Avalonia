@@ -65,8 +65,12 @@ namespace RenderDemo.Pages
             foreach (var desc in HeaderDescriptors)
             {
                 var index = HeaderDescriptors.IndexOf(desc);
+                var target = _curCells[index];
 
-                if (_curCells[index]._contentControl is ContentControl cell)
+                if (target.Classes.Contains("LastColumn"))
+                    continue;
+                    
+                if (target._contentControl is ContentControl cell)
                 {
                     if (cell.Width != desc.HeaderWidth)
                         cell.Width = desc.HeaderWidth;
