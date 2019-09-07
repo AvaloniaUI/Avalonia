@@ -221,6 +221,8 @@ namespace Avalonia.Controls
 
         public void UpdatePin(IControl element, bool addPin)
         {
+            if(element is null) return;
+
             var parent = element.VisualParent;
             var child = (IVisual)element;
 
