@@ -30,7 +30,7 @@ namespace Avalonia.Rendering
             return new UnlockDisposable(_lock);
         }
 
-        private class UnlockDisposable : IDisposable
+        private sealed class UnlockDisposable : IDisposable
         {
             private object _lock;
 

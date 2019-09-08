@@ -24,7 +24,7 @@ namespace Avalonia.Native
             return null;
         }
 
-        private class UnlockDisposable : IDisposable
+        private sealed class UnlockDisposable : IDisposable
         {
             private IAvnWindowBase _window;
 
