@@ -34,14 +34,17 @@ namespace Avalonia.Controls
         {
             Contract.Requires<ArgumentNullException>(control != null);
 
-            var ev = new RequestBringIntoViewEventArgs
+            if (control.IsEffectivelyVisible)
             {
-                RoutedEvent = Control.RequestBringIntoViewEvent,
-                TargetObject = control,
-                TargetRect = rect,
-            };
+                var ev = new RequestBringIntoViewEventArgs
+                {
+                    RoutedEvent = Control.RequestBringIntoViewEvent,
+                    TargetObject = control,
+                    TargetRect = rect,
+                };
 
-            control.RaiseEvent(ev);
+                control.RaiseEvent(ev);
+            }
         }
 
         /// <summary>
