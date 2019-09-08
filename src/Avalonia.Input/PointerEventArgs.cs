@@ -20,7 +20,7 @@ namespace Avalonia.Input
             IVisual rootVisual, Point rootVisualPosition,
             ulong timestamp,
             PointerPointProperties properties,
-            InputModifiers modifiers)
+            KeyModifiers modifiers)
            : base(routedEvent)
         {
             Source = source;
@@ -29,7 +29,7 @@ namespace Avalonia.Input
             _properties = properties;
             Pointer = pointer;
             Timestamp = timestamp;
-            InputModifiers = modifiers;
+            KeyModifiers = modifiers;
         }
 
         class EmulatedDevice : IPointerDevice
@@ -60,7 +60,24 @@ namespace Avalonia.Input
         [Obsolete("Use Pointer to get pointer-specific information")]
         public IPointerDevice Device => _device ?? (_device = new EmulatedDevice(this));
 
-        public InputModifiers InputModifiers { get; }
+        [Obsolete("Use KeyModifiers and PointerPointProperties")]
+        public InputModifiers InputModifiers 
+        {
+            get
+            {
+                var mods = (InputModifiers)KeyModifiers;
+                if (_properties.IsLeftButtonPressed)
+                    mods |= InputModifiers.LeftMouseButton;
+                if (_properties.IsMiddleButtonPressed)
+                    mods |= InputModifiers.MiddleMouseButton;
+                if (_properties.IsRightButtonPressed)
+                    mods |= InputModifiers.RightMouseButton;
+                
+                return mods;
+            }
+        }
+        
+        public KeyModifiers KeyModifiers { get; }
 
         public Point GetPosition(IVisual relativeTo)
         {
@@ -73,6 +90,8 @@ namespace Avalonia.Input
 
         public PointerPoint GetPointerPoint(IVisual relativeTo)
             => new PointerPoint(Pointer, GetPosition(relativeTo), _properties);
+
+        protected PointerPointProperties Properties => _properties;
     }
     
     public enum MouseButton
@@ -93,7 +112,7 @@ namespace Avalonia.Input
             IVisual rootVisual, Point rootVisualPosition,
             ulong timestamp,
             PointerPointProperties properties,
-            InputModifiers modifiers,
+            KeyModifiers modifiers,
             int obsoleteClickCount = 1)
             : base(InputElement.PointerPressedEvent, source, pointer, rootVisual, rootVisualPosition,
                 timestamp, properties, modifiers)
@@ -104,7 +123,8 @@ namespace Avalonia.Input
         [Obsolete("Use DoubleTapped or DoubleRightTapped event instead")]
         public int ClickCount => _obsoleteClickCount;
 
-        [Obsolete] public MouseButton MouseButton => GetPointerPoint(null).Properties.GetObsoleteMouseButton();
+        [Obsolete("Use PointerUpdateKind")]
+        public MouseButton MouseButton => Properties.GetObsoleteMouseButton();
     }
 
     public class PointerReleasedEventArgs : PointerEventArgs
@@ -112,15 +132,15 @@ namespace Avalonia.Input
         public PointerReleasedEventArgs(
             IInteractive source, IPointer pointer,
             IVisual rootVisual, Point rootVisualPosition, ulong timestamp,
-            PointerPointProperties properties, InputModifiers modifiers, MouseButton obsoleteMouseButton)
+            PointerPointProperties properties, KeyModifiers modifiers)
             : base(InputElement.PointerReleasedEvent, source, pointer, rootVisual, rootVisualPosition,
                 timestamp, properties, modifiers)
         {
-            MouseButton = obsoleteMouseButton;
+            
         }
 
-        [Obsolete()]
-        public MouseButton MouseButton { get; private set; }
+        [Obsolete("Use PointerUpdateKind")] 
+        public MouseButton MouseButton => Properties.GetObsoleteMouseButton();
     }
 
     public class PointerCaptureLostEventArgs : RoutedEventArgs

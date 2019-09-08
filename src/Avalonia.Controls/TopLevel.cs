@@ -269,8 +269,8 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
+            (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
             PlatformImpl = null;
-
             Closed?.Invoke(this, EventArgs.Empty);
             Renderer?.Dispose();
             Renderer = null;

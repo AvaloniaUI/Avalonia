@@ -9,14 +9,14 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
     class TaskStreamPlugin<T> : IStreamPlugin
     {
-        public bool Match(WeakReference reference)
+        public bool Match(WeakReference<object> reference)
         {
-            return reference.Target is Task<T>;
+            return reference.TryGetTarget(out var target) && target is Task<T>;
         }
 
-        public IObservable<object> Start(WeakReference reference)
+        public IObservable<object> Start(WeakReference<object> reference)
         {
-            if (!(reference.Target is Task<T> task))
+            if(!(reference.TryGetTarget(out var target) && target is Task<T> task))
             {
                 return Observable.Empty<object>();
             }

@@ -105,11 +105,13 @@ namespace Avalonia.Controls
             get => _selectedItem;
             set
             {
+                var selectedItems = SelectedItems;
+
                 SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
 
                 if (value != null)
                 {
-                    if (SelectedItems.Count != 1 || SelectedItems[0] != value)
+                    if (selectedItems.Count != 1 || selectedItems[0] != value)
                     {
                         _syncingSelectedItems = true;
                         SelectSingleItem(value);

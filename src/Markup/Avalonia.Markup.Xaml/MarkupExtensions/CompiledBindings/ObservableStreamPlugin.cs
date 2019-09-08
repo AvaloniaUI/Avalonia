@@ -8,21 +8,23 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
     class ObservableStreamPlugin<T> : IStreamPlugin
     {
-        public bool Match(WeakReference reference)
+        public bool Match(WeakReference<object> reference)
         {
-            return reference is IObservable<T>;
+            return reference.TryGetTarget(out var target) && target is IObservable<T>;
         }
 
-        public IObservable<object> Start(WeakReference reference)
+        public IObservable<object> Start(WeakReference<object> reference)
         {
-            var target = reference.Target as IObservable<T>;
-
-            if (target is IObservable<object> obj)
+            if (!(reference.TryGetTarget(out var target) && target is IObservable<T> obs))
+            {
+                return Observable.Empty<object>();
+            }
+            else if (target is IObservable<object> obj)
             {
                 return obj;
             }
 
-            return target.Select(x => (object)x);
+            return obs.Select(x => (object)x);
         }
     }
 }

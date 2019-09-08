@@ -43,7 +43,7 @@ namespace Avalonia.Input.Raw
             IInputRoot root,
             RawPointerEventType type,
             Point position, 
-            InputModifiers inputModifiers)
+            RawInputModifiers inputModifiers)
             : base(device, timestamp)
         {
             Contract.Requires<ArgumentNullException>(device != null);
@@ -73,6 +73,6 @@ namespace Avalonia.Input.Raw
         /// <summary>
         /// Gets the input modifiers.
         /// </summary>
-        public InputModifiers InputModifiers { get; private set; }
+        public RawInputModifiers InputModifiers { get; private set; }
     }
 }

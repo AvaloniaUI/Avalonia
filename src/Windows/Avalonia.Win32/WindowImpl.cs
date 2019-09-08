@@ -131,6 +131,8 @@ namespace Avalonia.Win32
             }
         }
 
+        public void Move(PixelPoint point) => Position = point;
+
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
             _minSize = minSize;
@@ -248,10 +250,7 @@ namespace Avalonia.Win32
             UnmanagedMethods.SetActiveWindow(_hwnd);
         }
 
-        public IPopupImpl CreatePopup()
-        {
-            return new PopupImpl();
-        }
+        public IPopupImpl CreatePopup() => Win32Platform.UseOverlayPopups ? null : new PopupImpl(this);
 
         public void Dispose()
         {
@@ -763,16 +762,16 @@ namespace Avalonia.Win32
                 return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
-        static InputModifiers GetMouseModifiers(IntPtr wParam)
+        static RawInputModifiers GetMouseModifiers(IntPtr wParam)
         {
             var keys = (UnmanagedMethods.ModifierKeys)ToInt32(wParam);
             var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
             if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_LBUTTON))
-                modifiers |= InputModifiers.LeftMouseButton;
+                modifiers |= RawInputModifiers.LeftMouseButton;
             if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_RBUTTON))
-                modifiers |= InputModifiers.RightMouseButton;
+                modifiers |= RawInputModifiers.RightMouseButton;
             if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_MBUTTON))
-                modifiers |= InputModifiers.MiddleMouseButton;
+                modifiers |= RawInputModifiers.MiddleMouseButton;
             return modifiers;
         }
 

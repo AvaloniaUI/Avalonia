@@ -91,7 +91,7 @@ namespace Avalonia.Input
                                 RoutedEvent = routedEvent,
                                 Device = this,
                                 Key = keyInput.Key,
-                                Modifiers = keyInput.Modifiers,
+                                KeyModifiers = KeyModifiersUtils.ConvertToKey(keyInput.Modifiers),
                                 Source = element,
                             };
 

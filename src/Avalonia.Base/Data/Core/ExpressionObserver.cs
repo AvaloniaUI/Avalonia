@@ -79,7 +79,7 @@ namespace Avalonia.Data.Core
 
             _node = node;
             Description = description;
-            _root = new WeakReference(root);
+            _root = new WeakReference<object>(root);
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Avalonia.Data.Core
             Contract.Requires<ArgumentNullException>(update != null);
             Description = description;
             _node = node;
-            _node.Target = new WeakReference(rootGetter());
+            _node.Target = new WeakReference<object>(rootGetter());
             _root = update.Select(x => rootGetter());
         }
 
@@ -299,13 +299,13 @@ namespace Avalonia.Data.Core
             if (_root is IObservable<object> observable)
             {
                 _rootSubscription = observable.Subscribe(
-                    x => _node.Target = new WeakReference(x != AvaloniaProperty.UnsetValue ? x : null),
+                    x => _node.Target = new WeakReference<object>(x != AvaloniaProperty.UnsetValue ? x : null),
                     x => PublishCompleted(),
                     () => PublishCompleted());
             }
             else
             {
-                _node.Target = (WeakReference)_root;
+                _node.Target = (WeakReference<object>)_root;
             }
         }
 

@@ -22,17 +22,21 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             throw new InvalidOperationException("The ArrayElementPlugin does not support dynamic matching");
         }
 
-        public IPropertyAccessor Start(WeakReference reference, string propertyName)
+        public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)
         {
-            return new Accessor(reference, _indices, _elementType);
+            if (reference.TryGetTarget(out var target) && target is Array arr)
+            {
+                return new Accessor(new WeakReference<Array>(arr), _indices, _elementType);
+            }
+            return null;
         }
 
         class Accessor : PropertyAccessorBase
         {
             private readonly int[] _indices;
-            private readonly WeakReference _reference;
+            private readonly WeakReference<Array> _reference;
 
-            public Accessor(WeakReference reference, int[] indices, Type elementType)
+            public Accessor(WeakReference<Array> reference, int[] indices, Type elementType)
             {
                 _reference = reference;
                 _indices = indices;
@@ -41,11 +45,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
             public override Type PropertyType { get; }
 
-            public override object Value => _reference.Target is Array arr ? arr.GetValue(_indices) : null;
+            public override object Value => _reference.TryGetTarget(out var arr) ? arr.GetValue(_indices) : null;
 
             public override bool SetValue(object value, BindingPriority priority)
             {
-                if (_reference.Target is Array arr)
+                if (_reference.TryGetTarget(out var arr))
                 {
                     arr.SetValue(value, _indices);
                     return true;

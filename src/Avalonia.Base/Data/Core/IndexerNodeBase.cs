@@ -13,9 +13,10 @@ namespace Avalonia.Data.Core
     {
         private IDisposable _subscription;
         
-        protected override void StartListeningCore(WeakReference reference)
+        protected override void StartListeningCore(WeakReference<object> reference)
         {
-            var target = reference.Target;
+            reference.TryGetTarget(out object target);
+
             var incc = target as INotifyCollectionChanged;
             var inpc = target as INotifyPropertyChanged;
             var inputs = new List<IObservable<object>>();

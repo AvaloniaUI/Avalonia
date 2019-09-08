@@ -55,15 +55,15 @@ namespace Avalonia.Collections
     /// </remarks>
     public class AvaloniaList<T> : IAvaloniaList<T>, IList, INotifyCollectionChangedDebug
     {
-        private List<T> _inner;
+        private readonly List<T> _inner;
         private NotifyCollectionChangedEventHandler _collectionChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaList{T}"/> class.
         /// </summary>
         public AvaloniaList()
-            : this(Enumerable.Empty<T>())
         {
+            _inner = new List<T>();
         }
 
         /// <summary>
@@ -89,8 +89,8 @@ namespace Avalonia.Collections
         /// </summary>
         public event NotifyCollectionChangedEventHandler CollectionChanged
         {
-            add { _collectionChanged += value; }
-            remove { _collectionChanged -= value; }
+            add => _collectionChanged += value;
+            remove => _collectionChanged -= value;
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace Avalonia.Collections
 
                 T old = _inner[index];
 
-                if (!object.Equals(old, value))
+                if (!EqualityComparer<T>.Default.Equals(old, value))
                 {
                     _inner[index] = value;
 
@@ -187,45 +187,38 @@ namespace Avalonia.Collections
             Validate?.Invoke(item);
             int index = _inner.Count;
             _inner.Add(item);
-            NotifyAdd(new[] { item }, index);
+            NotifyAdd(item, index);
         }
 
         /// <summary>
         /// Adds multiple items to the collection.
         /// </summary>
         /// <param name="items">The items.</param>
-        public virtual void AddRange(IEnumerable<T> items)
-        {
-            Contract.Requires<ArgumentNullException>(items != null);
-
-            var list = (items as IList) ?? items.ToList();
-
-            if (list.Count > 0)
-            {
-                if (Validate != null)
-                {
-                    foreach (var item in list)
-                    {
-                        Validate((T)item);
-                    }
-                }
-
-                int index = _inner.Count;
-                _inner.AddRange(items);
-                NotifyAdd(list, index);
-            }
-        }
+        public virtual void AddRange(IEnumerable<T> items) => InsertRange(_inner.Count, items);
 
         /// <summary>
         /// Removes all items from the collection.
         /// </summary>
         public virtual void Clear()
         {
-            if (this.Count > 0)
+            if (Count > 0)
             {
-                var old = _inner;
-                _inner = new List<T>();
-                NotifyReset(old);
+                if (_collectionChanged != null)
+                {
+                    var e = ResetBehavior == ResetBehavior.Reset ?
+                        EventArgsCache.ResetCollectionChanged :
+                        new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, _inner.ToList(), 0);
+
+                    _inner.Clear();
+
+                    _collectionChanged(this, e);
+                }
+                else
+                {
+                    _inner.Clear();
+                }
+
+                NotifyCountChanged();
             }
         }
 
@@ -253,9 +246,20 @@ namespace Avalonia.Collections
         /// Returns an enumerator that enumerates the items in the collection.
         /// </summary>
         /// <returns>An <see cref="IEnumerator{T}"/>.</returns>
-        public IEnumerator<T> GetEnumerator()
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
-            return _inner.GetEnumerator();
+            return new Enumerator(_inner);
+        }
+
+        /// <inheritdoc/>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return new Enumerator(_inner);
+        }
+
+        public Enumerator GetEnumerator()
+        {
+            return new Enumerator(_inner);
         }
 
         /// <summary>
@@ -289,7 +293,7 @@ namespace Avalonia.Collections
         {
             Validate?.Invoke(item);
             _inner.Insert(index, item);
-            NotifyAdd(new[] { item }, index);
+            NotifyAdd(item, index);
         }
 
         /// <summary>
@@ -301,20 +305,83 @@ namespace Avalonia.Collections
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
-            var list = (items as IList) ?? items.ToList();
+            bool willRaiseCollectionChanged = _collectionChanged != null;
+            bool hasValidation = Validate != null;
 
-            if (list.Count > 0)
+            if (items is IList list)
             {
-                if (Validate != null)
+                if (list.Count > 0)
                 {
-                    foreach (var item in list)
+                    if (list is ICollection<T> collection)
                     {
-                        Validate((T)item);
+                        if (hasValidation)
+                        {
+                            foreach (T item in collection)
+                            {
+                                Validate(item);
+                            }
+                        }
+
+                        _inner.InsertRange(index, collection);
+                        NotifyAdd(list, index);
+                    }
+                    else
+                    {
+                        using (IEnumerator<T> en = items.GetEnumerator())
+                        {
+                            int insertIndex = index;
+
+                            while (en.MoveNext())
+                            {
+                                T item = en.Current;
+
+                                if (hasValidation)
+                                {
+                                    Validate(item);
+                                }
+
+                                _inner.Insert(insertIndex++, item);
+                            }
+                        }
+
+                        NotifyAdd(list, index);
                     }
                 }
+            }
+            else
+            {
+                using (IEnumerator<T> en = items.GetEnumerator())
+                {
+                    if (en.MoveNext())
+                    {
+                        // Avoid allocating list for collection notification if there is no event subscriptions.
+                        List<T> notificationItems = willRaiseCollectionChanged ?
+                            new List<T>() :
+                            null;
 
-                _inner.InsertRange(index, items);
-                NotifyAdd((items as IList) ?? items.ToList(), index);
+                        int insertIndex = index;
+
+                        do
+                        {
+                            T item = en.Current;
+
+                            if (hasValidation)
+                            {
+                                Validate(item);
+                            }
+
+                            _inner.Insert(insertIndex++, item);
+
+                            if (willRaiseCollectionChanged)
+                            {
+                                notificationItems.Add(item);
+                            }
+
+                        } while (en.MoveNext());
+
+                        NotifyAdd(notificationItems, index);
+                    }
+                }
             }
         }
 
@@ -382,7 +449,7 @@ namespace Avalonia.Collections
             if (index != -1)
             {
                 _inner.RemoveAt(index);
-                NotifyRemove(new[] { item }, index);
+                NotifyRemove(item , index);
                 return true;
             }
 
@@ -412,7 +479,7 @@ namespace Avalonia.Collections
         {
             T item = _inner[index];
             _inner.RemoveAt(index);
-            NotifyRemove(new[] { item }, index);
+            NotifyRemove(item , index);
         }
 
         /// <summary>
@@ -481,12 +548,6 @@ namespace Avalonia.Collections
         }
 
         /// <inheritdoc/>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _inner.GetEnumerator();
-        }
-
-        /// <inheritdoc/>
         Delegate[] INotifyCollectionChangedDebug.GetCollectionChangedSubscribers() => _collectionChanged?.GetInvocationList();
 
         /// <summary>
@@ -506,12 +567,28 @@ namespace Avalonia.Collections
         }
 
         /// <summary>
+        /// Raises the <see cref="CollectionChanged"/> event with a add action.
+        /// </summary>
+        /// <param name="item">The item that was added.</param>
+        /// <param name="index">The starting index.</param>
+        private void NotifyAdd(T item, int index)
+        {
+            if (_collectionChanged != null)
+            {
+                var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new[] { item }, index);
+                _collectionChanged(this, e);
+            }
+
+            NotifyCountChanged();
+        }
+
+        /// <summary>
         /// Raises the <see cref="PropertyChanged"/> event when the <see cref="Count"/> property
         /// changes.
         /// </summary>
         private void NotifyCountChanged()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
+            PropertyChanged?.Invoke(this, EventArgsCache.CountPropertyChanged);
         }
 
         /// <summary>
@@ -531,23 +608,57 @@ namespace Avalonia.Collections
         }
 
         /// <summary>
-        /// Raises the <see cref="CollectionChanged"/> event with a reset action.
+        /// Raises the <see cref="CollectionChanged"/> event with a remove action.
         /// </summary>
-        /// <param name="t">The items that were removed.</param>
-        private void NotifyReset(IList t)
+        /// <param name="item">The item that was removed.</param>
+        /// <param name="index">The starting index.</param>
+        private void NotifyRemove(T item, int index)
         {
             if (_collectionChanged != null)
             {
-                NotifyCollectionChangedEventArgs e;
-
-                e = ResetBehavior == ResetBehavior.Reset ? 
-                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset) : 
-                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, t, 0);
-
+                var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, new[] { item }, index);
                 _collectionChanged(this, e);
             }
 
             NotifyCountChanged();
         }
+
+        /// <summary>
+        /// Enumerates the elements of a <see cref="AvaloniaList{T}"/>.
+        /// </summary>
+        public struct Enumerator : IEnumerator<T>
+        {
+            private List<T>.Enumerator _innerEnumerator;
+
+            public Enumerator(List<T> inner)
+            {
+                _innerEnumerator = inner.GetEnumerator();
+            }
+
+            public bool MoveNext()
+            {
+                return _innerEnumerator.MoveNext();
+            }
+
+            void IEnumerator.Reset()
+            {
+                ((IEnumerator)_innerEnumerator).Reset();
+            }
+
+            public T Current => _innerEnumerator.Current;
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+                _innerEnumerator.Dispose();
+            }
+        }
+    }
+
+    internal static class EventArgsCache
+    {
+        internal static readonly PropertyChangedEventArgs CountPropertyChanged = new PropertyChangedEventArgs(nameof(AvaloniaList<object>.Count));
+        internal static readonly NotifyCollectionChangedEventArgs ResetCollectionChanged = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
     }
 }

@@ -36,7 +36,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         private void EmitLoadPropertyAccessorFactory(XamlIlEmitContext context, IXamlIlEmitter codeGen, IXamlIlType type, string accessorFactoryName, bool isStatic = true)
         {
             var types = context.GetAvaloniaTypes();
-            var weakReferenceType = context.Configuration.TypeSystem.GetType("System.WeakReference");
+            var weakReferenceType = context.Configuration.TypeSystem.GetType("System.WeakReference`1").MakeGenericType(context.Configuration.WellKnownTypes.Object);
             FindMethodMethodSignature accessorFactorySignature = new FindMethodMethodSignature(accessorFactoryName, types.IPropertyAccessor, weakReferenceType, types.IPropertyInfo)
             {
                 IsStatic = isStatic
@@ -62,7 +62,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         {
             var types = context.GetAvaloniaTypes();
             var intType = context.Configuration.TypeSystem.GetType("System.Int32");
-            var weakReferenceType = context.Configuration.TypeSystem.GetType("System.WeakReference");
+            var weakReferenceType = context.Configuration.TypeSystem.GetType("System.WeakReference`1").MakeGenericType(context.Configuration.WellKnownTypes.Object);
             var indexAccessorFactoryMethod = context.GetAvaloniaTypes().PropertyInfoAccessorFactory.GetMethod(
                     new FindMethodMethodSignature(
                         "CreateIndexerPropertyAccessor",
@@ -100,7 +100,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         private IXamlIlType EmitCreateAccessorFactoryDelegate(XamlIlEmitContext context, IXamlIlEmitter codeGen)
         {
             var types = context.GetAvaloniaTypes();
-            var weakReferenceType = context.Configuration.TypeSystem.GetType("System.WeakReference");
+            var weakReferenceType = context.Configuration.TypeSystem.GetType("System.WeakReference`1").MakeGenericType(context.Configuration.WellKnownTypes.Object);
             var funcType = context.Configuration.TypeSystem.GetType("System.Func`3").MakeGenericType(
                             weakReferenceType,
                             types.IPropertyInfo,

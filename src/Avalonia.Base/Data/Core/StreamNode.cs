@@ -21,7 +21,7 @@ namespace Avalonia.Data.Core
             _customPlugin = customPlugin;
         }
 
-        protected override void StartListeningCore(WeakReference reference)
+        protected override void StartListeningCore(WeakReference<object> reference)
         {
             GetPlugin(reference)?.Start(reference).Subscribe(ValueChanged);
         }
@@ -32,7 +32,7 @@ namespace Avalonia.Data.Core
             _subscription = null;
         }
 
-        private IStreamPlugin GetPlugin(WeakReference reference)
+        private IStreamPlugin GetPlugin(WeakReference<object> reference)
         {
             if (_customPlugin != null)
             {

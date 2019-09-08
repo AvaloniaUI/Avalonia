@@ -41,6 +41,7 @@ namespace Avalonia
         public bool UseDeferredRendering { get; set; } = true;
         public bool AllowEglInitialization { get; set; }
         public bool? EnableMultitouch { get; set; }
+        public bool OverlayPopups { get; set; }
     }
 }
 
@@ -61,6 +62,7 @@ namespace Avalonia.Win32
         }
 
         public static bool UseDeferredRendering => Options.UseDeferredRendering;
+        internal static bool UseOverlayPopups => Options.OverlayPopups;
         public static Win32PlatformOptions Options { get; private set; }
 
         public Size DoubleClickSize => new Size(
@@ -84,11 +86,13 @@ namespace Avalonia.Win32
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
+                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<IPlatformIconLoader>().ToConstant(s_instance);
+                .Bind<IPlatformIconLoader>().ToConstant(s_instance)
+                .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider());
+
             if (options.AllowEglInitialization)
                 Win32GlManager.Initialize();
             
@@ -208,11 +212,6 @@ namespace Avalonia.Win32
             var embedded = new EmbeddedWindowImpl();
             embedded.Show();
             return embedded;
-        }
-
-        public IPopupImpl CreatePopup()
-        {
-            return new PopupImpl();
         }
 
         public IWindowIconImpl LoadIcon(string fileName)

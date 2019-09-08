@@ -45,9 +45,11 @@ namespace Avalonia.Data.Core
             return false;
         }
 
-        protected override void StartListeningCore(WeakReference reference)
+        protected override void StartListeningCore(WeakReference<object> reference)
         {
-            var plugin = _customPlugin ?? GetPropertyAccessorPluginForObject(reference.Target);
+            reference.TryGetTarget(out object target);
+
+            var plugin = _customPlugin ?? GetPropertyAccessorPluginForObject(target);
             var accessor = plugin?.Start(reference, PropertyName);
 
             if (_enableValidation && Next == null)

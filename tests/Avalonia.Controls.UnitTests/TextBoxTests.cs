@@ -55,7 +55,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234"
                 };
 
-                RaiseKeyEvent(target, Key.A, InputModifiers.Control);
+                RaiseKeyEvent(target, Key.A, KeyModifiers.Control);
 
                 Assert.Equal(0, target.SelectionStart);
                 Assert.Equal(4, target.SelectionEnd);
@@ -72,7 +72,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate()
                 };
 
-                RaiseKeyEvent(target, Key.A, InputModifiers.Control);
+                RaiseKeyEvent(target, Key.A, KeyModifiers.Control);
 
                 Assert.Equal(0, target.SelectionStart);
                 Assert.Equal(0, target.SelectionEnd);
@@ -90,7 +90,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234"
                 };
 
-                RaiseKeyEvent(target, Key.Z, InputModifiers.Control);
+                RaiseKeyEvent(target, Key.Z, KeyModifiers.Control);
 
                 Assert.Equal("1234", target.Text);
             }
@@ -136,29 +136,29 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 // (First| Second Third Fourth)
-                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
                 Assert.Equal(" Second Third Fourth", textBox.Text);
 
                 // ( Second |Third Fourth)
                 textBox.CaretIndex = 8;
-                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
                 Assert.Equal(" Third Fourth", textBox.Text);
 
                 // ( Thi|rd Fourth)
                 textBox.CaretIndex = 4;
-                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
                 Assert.Equal(" rd Fourth", textBox.Text);
 
                 // ( rd F[ou]rth)
                 textBox.SelectionStart = 5;
                 textBox.SelectionEnd = 7;
 
-                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
                 Assert.Equal(" rd Frth", textBox.Text);
 
                 // ( |rd Frth)
                 textBox.CaretIndex = 1;
-                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
                 Assert.Equal("rd Frth", textBox.Text);
             }
         }
@@ -175,30 +175,30 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 // (First Second Third |Fourth)
-                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
                 Assert.Equal("First Second Third ", textBox.Text);
 
                 // (First Second |Third )
                 textBox.CaretIndex = 13;
-                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
                 Assert.Equal("First Second ", textBox.Text);
 
                 // (First Sec|ond )
                 textBox.CaretIndex = 9;
-                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
                 Assert.Equal("First Sec", textBox.Text);
 
                 // (Fi[rs]t Sec )
                 textBox.SelectionStart = 2;
                 textBox.SelectionEnd = 4;
 
-                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
                 Assert.Equal("Fit Sec", textBox.Text);
 
                 // (Fit Sec| )
                 textBox.Text += " ";
                 textBox.CaretIndex = 7;
-                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
                 Assert.Equal("Fit Sec", textBox.Text);
             }
         }
@@ -460,6 +460,24 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Text_Box_MaxLength_Work_Properly()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "abc",
+                    MaxLength = 3,
+                };
+
+                RaiseKeyEvent(target, Key.D, KeyModifiers.None);
+
+                Assert.Equal("abc", target.Text);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
@@ -486,12 +504,12 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private void RaiseKeyEvent(TextBox textBox, Key key, InputModifiers inputModifiers)
+        private void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
         {
             textBox.RaiseEvent(new KeyEventArgs
             {
                 RoutedEvent = InputElement.KeyDownEvent,
-                Modifiers = inputModifiers,
+                KeyModifiers = inputModifiers,
                 Key = key
             });
         }

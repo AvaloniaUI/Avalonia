@@ -12,13 +12,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
     public static class PropertyInfoAccessorFactory
     {
-        public static IPropertyAccessor CreateInpcPropertyAccessor(WeakReference target, IPropertyInfo property)
+        public static IPropertyAccessor CreateInpcPropertyAccessor(WeakReference<object> target, IPropertyInfo property)
             => new InpcPropertyAccessor(target, property);
 
-        public static IPropertyAccessor CreateAvaloniaPropertyAccessor(WeakReference target, IPropertyInfo property)
-            => new AvaloniaPropertyAccessor(new WeakReference<AvaloniaObject>((AvaloniaObject)target.Target), (AvaloniaProperty)property);
+        public static IPropertyAccessor CreateAvaloniaPropertyAccessor(WeakReference<object> target, IPropertyInfo property)
+            => new AvaloniaPropertyAccessor(new WeakReference<AvaloniaObject>((AvaloniaObject)(target.TryGetTarget(out var o) ? o : null)), (AvaloniaProperty)property);
 
-        public static IPropertyAccessor CreateIndexerPropertyAccessor(WeakReference target, IPropertyInfo property, int argument)
+        public static IPropertyAccessor CreateIndexerPropertyAccessor(WeakReference<object> target, IPropertyInfo property, int argument)
             => new IndexerAccessor(target, property, argument);
     }
 
@@ -74,10 +74,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     internal class InpcPropertyAccessor : PropertyAccessorBase
     {
-        protected readonly WeakReference _reference;
+        protected readonly WeakReference<object> _reference;
         private readonly IPropertyInfo _property;
 
-        public InpcPropertyAccessor(WeakReference reference, IPropertyInfo property)
+        public InpcPropertyAccessor(WeakReference<object> reference, IPropertyInfo property)
         {
             Contract.Requires<ArgumentNullException>(reference != null);
             Contract.Requires<ArgumentNullException>(property != null);
@@ -92,16 +92,15 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         {
             get
             {
-                var o = _reference.Target;
-                return (o != null) ? _property.Get(o) : null;
+                return _reference.TryGetTarget(out var o) ? _property.Get(o) : null;
             }
         }
 
         public override bool SetValue(object value, BindingPriority priority)
         {
-            if (_property.CanSet && _reference.IsAlive)
+            if (_property.CanSet && _reference.TryGetTarget(out var o))
             {
-                _property.Set(_reference.Target, value);
+                _property.Set(o, value);
 
                 SendCurrentValue();
 
@@ -127,9 +126,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         protected override void UnsubscribeCore()
         {
-            var inpc = _reference.Target as INotifyPropertyChanged;
-
-            if (inpc != null)
+            if (_reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
             {
                 WeakEventHandlerManager.Unsubscribe<PropertyChangedEventArgs, InpcPropertyAccessor>(
                     inpc,
@@ -150,9 +147,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         private void SubscribeToChanges()
         {
-            var inpc = _reference.Target as INotifyPropertyChanged;
-
-            if (inpc != null)
+            if (_reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
             {
                 WeakEventHandlerManager.Subscribe<INotifyPropertyChanged, PropertyChangedEventArgs, InpcPropertyAccessor>(
                     inpc,
@@ -166,7 +161,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
     {
         private int _index;
 
-        public IndexerAccessor(WeakReference target, IPropertyInfo basePropertyInfo, int argument)
+        public IndexerAccessor(WeakReference<object> target, IPropertyInfo basePropertyInfo, int argument)
             :base(target, basePropertyInfo)
         {
             _index = argument;
@@ -176,7 +171,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         protected override void SubscribeCore()
         {
             base.SubscribeCore();
-            if (_reference.Target is INotifyCollectionChanged incc)
+            if (_reference.TryGetTarget(out var o) && o is INotifyCollectionChanged incc)
             {
                 WeakEventHandlerManager.Subscribe<INotifyCollectionChanged, NotifyCollectionChangedEventArgs, IndexerAccessor>(
                   incc,
@@ -188,7 +183,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         protected override void UnsubscribeCore()
         {
             base.UnsubscribeCore();
-            if (_reference.Target is INotifyCollectionChanged incc)
+            if (_reference.TryGetTarget(out var o) && o is INotifyCollectionChanged incc)
             {
                 WeakEventHandlerManager.Unsubscribe<NotifyCollectionChangedEventArgs, IndexerAccessor>(
                   incc,

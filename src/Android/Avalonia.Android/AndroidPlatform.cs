@@ -71,10 +71,5 @@ namespace Avalonia.Android
         {
             throw new NotSupportedException();
         }
-
-        public IPopupImpl CreatePopup()
-        {
-            return new PopupImpl();
-        }
     }
 }

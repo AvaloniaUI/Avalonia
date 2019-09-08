@@ -72,7 +72,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
-        public CompiledBindingPathBuilder Property(IPropertyInfo info, Func<WeakReference, IPropertyInfo, IPropertyAccessor> accessorFactory)
+        public CompiledBindingPathBuilder Property(IPropertyInfo info, Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> accessorFactory)
         {
             _elements.Add(new PropertyElement(info, accessorFactory));
             return this;
@@ -130,7 +130,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     internal class PropertyElement : ICompiledBindingPathElement
     {
-        public PropertyElement(IPropertyInfo property, Func<WeakReference, IPropertyInfo, IPropertyAccessor> accessorFactory)
+        public PropertyElement(IPropertyInfo property, Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> accessorFactory)
         {
             Property = property;
             AccessorFactory = accessorFactory;
@@ -138,7 +138,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public IPropertyInfo Property { get; }
 
-        public Func<WeakReference, IPropertyInfo, IPropertyAccessor> AccessorFactory { get; }
+        public Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> AccessorFactory { get; }
     }
 
     internal interface IStronglyTypedStreamElement : ICompiledBindingPathElement
