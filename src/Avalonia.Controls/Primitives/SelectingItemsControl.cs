@@ -979,13 +979,14 @@ namespace Avalonia.Controls.Primitives
             }
 
             var item = ElementAt(Items, index);
+            var itemChanged = !Equals(item, oldItem);
             var added = -1;
             HashSet<int> removed = null;
 
             _selectedIndex = index;
             _selectedItem = item;
 
-            if (oldIndex != index || _selection.HasMultiple)
+            if (oldIndex != index || itemChanged || _selection.HasMultiple)
             {
                 if (clear)
                 {
@@ -1022,7 +1023,7 @@ namespace Avalonia.Controls.Primitives
                     index);
             }
 
-            if (!Equals(item, oldItem))
+            if (itemChanged)
             {
                 RaisePropertyChanged(
                     SelectedItemProperty,
