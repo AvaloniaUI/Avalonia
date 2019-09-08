@@ -16,7 +16,7 @@ namespace Avalonia.Interactivity
     {
         private Dictionary<RoutedEvent, List<EventSubscription>> _eventHandlers;
 
-        private static readonly Dictionary<Type, InvokeSignature> s_invokeCache = new Dictionary<Type, InvokeSignature>();
+        private static readonly Dictionary<Type, HandlerInvokeSignature> s_invokeHandlerCache = new Dictionary<Type, HandlerInvokeSignature>();
 
         /// <summary>
         /// Gets the interactive parent of the object for bubbling and tunneling events.
@@ -74,11 +74,11 @@ namespace Avalonia.Interactivity
             // that will cast our type erased instance and invoke it.
             Type eventArgsType = routedEvent.EventArgsType;
 
-            if (!s_invokeCache.TryGetValue(eventArgsType, out var invokeAdapter))
+            if (!s_invokeHandlerCache.TryGetValue(eventArgsType, out var invokeAdapter))
             {
-                void InvokeAdapter(Delegate func, object sender, RoutedEventArgs args)
+                void InvokeAdapter(Delegate baseHandler, object sender, RoutedEventArgs args)
                 {
-                    var typedHandler = (EventHandler<TEventArgs>)func;
+                    var typedHandler = (EventHandler<TEventArgs>)baseHandler;
                     var typedArgs = (TEventArgs)args;
 
                     typedHandler(sender, typedArgs);
@@ -86,7 +86,7 @@ namespace Avalonia.Interactivity
 
                 invokeAdapter = InvokeAdapter;
 
-                s_invokeCache.Add(eventArgsType, invokeAdapter);
+                s_invokeHandlerCache.Add(eventArgsType, invokeAdapter);
             }
 
             var subscription = new EventSubscription

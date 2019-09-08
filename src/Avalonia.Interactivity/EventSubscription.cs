@@ -5,11 +5,11 @@ using System;
 
 namespace Avalonia.Interactivity
 {
-    internal delegate void InvokeSignature(Delegate func, object sender, RoutedEventArgs args);
+    internal delegate void HandlerInvokeSignature(Delegate baseHandler, object sender, RoutedEventArgs args);
 
     internal class EventSubscription
     {
-        public InvokeSignature InvokeAdapter { get; set; }
+        public HandlerInvokeSignature InvokeAdapter { get; set; }
 
         public Delegate Handler { get; set; }
 
