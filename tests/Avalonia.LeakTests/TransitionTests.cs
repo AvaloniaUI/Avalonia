@@ -27,7 +27,7 @@ namespace Avalonia.LeakTests
                 {
                     var border = new Border
                     {
-                        Transitions = new Transitions
+                        Transitions = 
                         {
                             new DoubleTransition
                             {

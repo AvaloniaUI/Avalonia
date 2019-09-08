@@ -23,7 +23,7 @@ namespace Avalonia.Animation.UnitTests
             {
                 var border = new Border
                 {
-                    Transitions = new Transitions
+                    Transitions = 
                     {
                         new DoubleTransition
                         {
@@ -51,7 +51,7 @@ namespace Avalonia.Animation.UnitTests
             {
                 var border = new Border
                 {
-                    Transitions = new Transitions
+                    Transitions = 
                     {
                         new DoubleTransition
                         {
