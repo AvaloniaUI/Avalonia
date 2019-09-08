@@ -208,20 +208,9 @@ namespace Avalonia
             {
                 return ((IDirectPropertyAccessor)GetRegistered(property)).GetValue(this);
             }
-            else if (_values != null)
-            {
-                var result = Values.GetValue(property);
-
-                if (result == AvaloniaProperty.UnsetValue)
-                {
-                    result = GetDefaultValue(property);
-                }
-
-                return result;
-            }
             else
             {
-                return GetDefaultValue(property);
+                return GetValueOrDefaultUnchecked(property);
             }
         }
 
@@ -598,8 +587,44 @@ namespace Avalonia
         private object GetDefaultValue(AvaloniaProperty property)
         {
             if (property.Inherits && InheritanceParent is AvaloniaObject aobj)
-                return aobj.GetValue(property);
+                return aobj.GetValueOrDefaultUnchecked(property);
             return ((IStyledPropertyAccessor) property).GetDefaultValue(GetType());
+        }
+
+        /// <summary>
+        /// Gets the value or default value for a property.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>The default value.</returns>
+        private object GetValueOrDefaultUnchecked(AvaloniaProperty property)
+        {
+            var aobj = this;
+            var valuestore = aobj._values;
+            if (valuestore != null)
+            {
+                var result = valuestore.GetValue(property);
+                if (result != AvaloniaProperty.UnsetValue)
+                {
+                    return result;
+                }
+            }
+            if (property.Inherits)
+            {
+                while (aobj.InheritanceParent is AvaloniaObject parent)
+                {
+                    aobj = parent;
+                    valuestore = aobj._values;
+                    if (valuestore != null)
+                    {
+                        var result = valuestore.GetValue(property);
+                        if (result != AvaloniaProperty.UnsetValue)
+                        {
+                            return result;
+                        }
+                    }
+                }
+            }
+            return ((IStyledPropertyAccessor)property).GetDefaultValue(GetType());
         }
 
         /// <summary>
