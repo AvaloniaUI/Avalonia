@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Reflection.Emit;
 using Avalonia.Markup.Parsers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlIl.Ast;
@@ -492,7 +493,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             public void Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
             {
                 var intType = context.Configuration.TypeSystem.GetType("System.Int32");
-                var indices = codeGen.DefineLocal(context.Configuration.WellKnownTypes.Object.MakeArrayType(1));
+                var indices = codeGen.DefineLocal(intType.MakeArrayType(1));
                 codeGen.Ldc_I4(_values.Count)
                     .Newarr(intType)
                     .Stloc(indices);
@@ -501,7 +502,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     codeGen.Ldloc(indices)
                         .Ldc_I4(i)
                         .Ldc_I4(_values[i])
-                        .Stelem_ref();
+                        .Emit(OpCodes.Stelem_I4);
                 }
 
                 codeGen.Ldloc(indices)
