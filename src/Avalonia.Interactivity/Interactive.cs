@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Layout;
@@ -27,6 +28,10 @@ namespace Avalonia.Interactivity
         {
             get { return _eventHandlers ?? (_eventHandlers = new Dictionary<RoutedEvent, List<EventSubscription>>()); }
         }
+
+        
+
+        private static Dictionary<Type, InvokeSignature> s_invokeCache = new Dictionary<Type, InvokeSignature>();
 
         /// <summary>
         /// Adds a handler for the specified routed event.
@@ -53,8 +58,27 @@ namespace Avalonia.Interactivity
                 EventHandlers.Add(routedEvent, subscriptions);
             }
 
+            if (!s_invokeCache.TryGetValue(routedEvent.EventArgsType, out InvokeSignature raiseFunc))
+            {
+                ParameterExpression funcParameter = Expression.Parameter(typeof(Delegate), "func");
+                ParameterExpression senderParameter = Expression.Parameter(typeof(object), "sender");
+                ParameterExpression argsParameter = Expression.Parameter(typeof(RoutedEventArgs), "args");
+
+                UnaryExpression convertedFunc = Expression.Convert(funcParameter, typeof(EventHandler<>).MakeGenericType(routedEvent.EventArgsType));
+                UnaryExpression convertedArgs = Expression.Convert(argsParameter, routedEvent.EventArgsType);
+
+                InvocationExpression invokeDelegate = Expression.Invoke(convertedFunc, senderParameter, convertedArgs);
+
+                raiseFunc = Expression
+                    .Lambda<InvokeSignature>(invokeDelegate, funcParameter, senderParameter, argsParameter)
+                    .Compile();
+
+                s_invokeCache.Add(routedEvent.EventArgsType, raiseFunc);
+            }
+
             var sub = new EventSubscription
             {
+                RaiseHandler = raiseFunc,
                 Handler = handler,
                 Routes = routes,
                 AlsoIfHandled = handledEventsToo,
@@ -196,7 +220,7 @@ namespace Avalonia.Interactivity
 
                     if (correctRoute && notFinished)
                     {
-                        sub.Handler.DynamicInvoke(this, e);
+                        sub.RaiseHandler(sub.Handler, this, e);
                     }
                 }
             }
