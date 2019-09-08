@@ -1,3 +1,6 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System;
 using System.Threading;
 
@@ -6,12 +9,6 @@ namespace Avalonia.Rendering
     public class ManagedDeferredRendererLock : IDeferredRendererLock
     {
         private readonly object _lock = new object();
-        private readonly LockDisposable _lockDisposable;
-
-        public ManagedDeferredRendererLock()
-        {
-            _lockDisposable = new LockDisposable(_lock);
-        }
 
         /// <summary>
         /// Tries to lock the target surface or window
@@ -20,7 +17,7 @@ namespace Avalonia.Rendering
         public IDisposable TryLock()
         {
             if (Monitor.TryEnter(_lock))
-                return _lockDisposable;
+                return new UnlockDisposable(_lock);
             return null;
         }
 
@@ -30,21 +27,26 @@ namespace Avalonia.Rendering
         public IDisposable Lock()
         {
             Monitor.Enter(_lock);
-            return _lockDisposable;
+            return new UnlockDisposable(_lock);
         }
 
-        private class LockDisposable : IDisposable
+        private class UnlockDisposable : IDisposable
         {
-            private readonly object _lock;
+            private object _lock;
 
-            public LockDisposable(object @lock)
+            public UnlockDisposable(object @lock)
             {
                 _lock = @lock;
             }
 
             public void Dispose()
             {
-                Monitor.Exit(_lock);
+                object @lock = Interlocked.Exchange(ref _lock, null);
+
+                if (@lock != null)
+                {
+                    Monitor.Exit(@lock);
+                }
             }
         }
     }
