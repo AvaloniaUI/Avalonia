@@ -610,7 +610,7 @@ namespace Avalonia
             }
             if (property.Inherits)
             {
-                while(aobj.InheritanceParent is AvaloniaObject parent)
+                while (aobj.InheritanceParent is AvaloniaObject parent)
                 {
                     aobj = parent;
                     valuestore = aobj._values;
