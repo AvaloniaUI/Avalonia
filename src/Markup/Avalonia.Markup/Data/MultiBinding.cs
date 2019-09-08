@@ -76,7 +76,12 @@ namespace Avalonia.Data
             }
             
             var children = Bindings.Select(x => x.Initiate(target, null));
-            var input = children.Select(x => x.Observable).CombineLatest().Select(x => ConvertValue(x, targetType, converter));
+
+            var input = children.Select(x => x.Observable)
+                                .CombineLatest()
+                                .Select(x => ConvertValue(x, targetType, converter))
+                                .Where(x => x != BindingOperations.DoNothing);
+
             var mode = Mode == BindingMode.Default ?
                 targetProperty?.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
 
@@ -96,11 +101,6 @@ namespace Avalonia.Data
         {
             var culture = CultureInfo.CurrentCulture;
             var converted = converter.Convert(values, targetType, ConverterParameter, culture);
-
-            if (converted == BindingOperations.DoNothing)
-            {
-                return converted;
-            }
 
             if (converted == AvaloniaProperty.UnsetValue)
             {
