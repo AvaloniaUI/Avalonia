@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
@@ -19,19 +18,14 @@ namespace Avalonia.Interactivity
     {
         private Dictionary<RoutedEvent, List<EventSubscription>> _eventHandlers;
 
+        private static readonly Dictionary<Type, InvokeSignature> s_invokeCache = new Dictionary<Type, InvokeSignature>();
+
         /// <summary>
         /// Gets the interactive parent of the object for bubbling and tunneling events.
         /// </summary>
         IInteractive IInteractive.InteractiveParent => ((IVisual)this).VisualParent as IInteractive;
 
-        private Dictionary<RoutedEvent, List<EventSubscription>> EventHandlers
-        {
-            get { return _eventHandlers ?? (_eventHandlers = new Dictionary<RoutedEvent, List<EventSubscription>>()); }
-        }
-
-        
-
-        private static Dictionary<Type, InvokeSignature> s_invokeCache = new Dictionary<Type, InvokeSignature>();
+        private Dictionary<RoutedEvent, List<EventSubscription>> EventHandlers => _eventHandlers ?? (_eventHandlers = new Dictionary<RoutedEvent, List<EventSubscription>>());
 
         /// <summary>
         /// Adds a handler for the specified routed event.
@@ -58,14 +52,16 @@ namespace Avalonia.Interactivity
                 EventHandlers.Add(routedEvent, subscriptions);
             }
 
-            if (!s_invokeCache.TryGetValue(routedEvent.EventArgsType, out InvokeSignature raiseFunc))
+            Type eventArgsType = routedEvent.EventArgsType;
+
+            if (!s_invokeCache.TryGetValue(eventArgsType, out InvokeSignature raiseFunc))
             {
                 ParameterExpression funcParameter = Expression.Parameter(typeof(Delegate), "func");
                 ParameterExpression senderParameter = Expression.Parameter(typeof(object), "sender");
                 ParameterExpression argsParameter = Expression.Parameter(typeof(RoutedEventArgs), "args");
 
-                UnaryExpression convertedFunc = Expression.Convert(funcParameter, typeof(EventHandler<>).MakeGenericType(routedEvent.EventArgsType));
-                UnaryExpression convertedArgs = Expression.Convert(argsParameter, routedEvent.EventArgsType);
+                UnaryExpression convertedFunc = Expression.Convert(funcParameter, typeof(EventHandler<>).MakeGenericType(eventArgsType));
+                UnaryExpression convertedArgs = Expression.Convert(argsParameter, eventArgsType);
 
                 InvocationExpression invokeDelegate = Expression.Invoke(convertedFunc, senderParameter, convertedArgs);
 
@@ -73,7 +69,7 @@ namespace Avalonia.Interactivity
                     .Lambda<InvokeSignature>(invokeDelegate, funcParameter, senderParameter, argsParameter)
                     .Compile();
 
-                s_invokeCache.Add(routedEvent.EventArgsType, raiseFunc);
+                s_invokeCache.Add(eventArgsType, raiseFunc);
             }
 
             var sub = new EventSubscription
