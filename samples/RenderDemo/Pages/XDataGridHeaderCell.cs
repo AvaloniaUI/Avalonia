@@ -16,7 +16,6 @@ namespace RenderDemo.Pages
         public XDataGridHeaderCell()
         {
             this.TemplateApplied += TemplateAppliedCore;
-            this.Cursor = new Cursor(StandardCursorType.SizeWestEast);
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -47,6 +46,7 @@ namespace RenderDemo.Pages
             if (_rightThumbResizer == null) return;
             this._rightThumbResizer.DragDelta += ResizerDragDelta;
             this._rightThumbResizer.DragStarted += ResizerDragStarted;
+            this._rightThumbResizer.Cursor = new Cursor(StandardCursorType.SizeWestEast);
 
 
         }

@@ -10,16 +10,18 @@
       </ControlTemplate>
     </Setter>
   </Style>
- 
+
   <Style Selector="local|XDataGridHeaderCell">
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="Auto,6">
+        <Grid ColumnDefinitions="Auto,11">
           <ContentControl Name="PART_ContentControl" Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding Content}" />
-          <Thumb Grid.Column="1" Name="PART_RightThumbResizer" HorizontalAlignment="Center">
+          <Thumb Grid.Column="1" Name="PART_RightThumbResizer" HorizontalAlignment="Stretch">
             <Thumb.Template>
               <ControlTemplate>
-                <Border Background="Black" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Center"/>
+                <Grid Background="Transparent" HorizontalAlignment="Stretch">
+                  <Grid Background="Black" Width="1" VerticalAlignment="Stretch" HorizontalAlignment="Center"/>
+                </Grid>
               </ControlTemplate>
             </Thumb.Template>
           </Thumb>
@@ -31,8 +33,9 @@
   <Style Selector="local|XDataGridCell">
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="Auto,6">
+        <Grid ColumnDefinitions="Auto,11">
           <ContentControl Name="PART_ContentControl" Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding Content}" />
+          <Grid Background="Black" Grid.Column="1" Width="1" VerticalAlignment="Stretch" HorizontalAlignment="Center"/>
         </Grid>
       </ControlTemplate>
     </Setter>
@@ -45,7 +48,7 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  
+
   <Style Selector="local|XDataGridCell.LastColumn">
     <Setter Property="Template">
       <ControlTemplate>
@@ -60,7 +63,7 @@
 
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid>
+        <Grid Name="PART_RootGrid">
           <Grid.DataTemplates>
             <DataTemplate DataType="local:XDataGridHeaderDescriptor">
               <TextBlock Text="{Binding HeaderText}"/>
@@ -75,7 +78,14 @@
                 <ItemsRepeater Name="PART_Repeater" Items="{TemplateBinding Items}">
                   <ItemsRepeater.ItemTemplate>
                     <DataTemplate>
-                      <local:XDataGridRow HeaderDescriptors="{Binding #PART_Header.HeaderDescriptors}" HorizontalAlignment="Left"/>
+                      <Grid RowDefinitions="Auto,1" HorizontalAlignment="Stretch" ColumnDefinitions="*">
+                        <local:XDataGridRow Grid.Row="0" Grid.RowSpan="1" HeaderDescriptors="{Binding #PART_Header.HeaderDescriptors}" HorizontalAlignment="Left"/>
+                        <Grid Background="Black" Grid.Row="1" Height="1" Width="2" VerticalAlignment="Center">
+                          <Grid.RenderTransform>
+                            <ScaleTransform ScaleX="{Binding #PART_VertScroller.Viewport.Width}" ScaleY="1"/>
+                          </Grid.RenderTransform>
+                        </Grid>
+                      </Grid>
                     </DataTemplate>
                   </ItemsRepeater.ItemTemplate>
                   <ItemsRepeater.Layout>
