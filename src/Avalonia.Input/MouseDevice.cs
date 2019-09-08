@@ -86,6 +86,11 @@ namespace Avalonia.Input
                 ProcessRawEvent(margs);
         }
 
+        public void TopLevelClosed(IInputRoot root)
+        {
+            ClearPointerOver(this, 0, root, PointerPointProperties.None, KeyModifiers.None);
+        }
+
         public void SceneInvalidated(IInputRoot root, Rect rect)
         {
             var clientPoint = root.PointToClient(Position);

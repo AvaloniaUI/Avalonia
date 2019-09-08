@@ -280,7 +280,7 @@ AVNCOM(IAvnPlatformThreadingInterface, 0b) : IUnknown
     virtual bool GetCurrentThreadIsLoopThread() = 0;
     virtual void SetSignaledCallback(IAvnSignaledCallback* cb) = 0;
     virtual IAvnLoopCancellation* CreateLoopCancellation() = 0;
-    virtual void RunLoop(IAvnLoopCancellation* cancel) = 0;
+    virtual HRESULT RunLoop(IAvnLoopCancellation* cancel) = 0;
     // Can't pass int* to sharpgentools for some reason
     virtual void Signal(int priority) = 0;
     virtual IUnknown* StartTimer(int priority, int ms, IAvnActionCallback* callback) = 0;

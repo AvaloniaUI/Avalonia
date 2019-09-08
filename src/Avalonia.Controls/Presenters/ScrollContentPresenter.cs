@@ -141,7 +141,7 @@ namespace Avalonia.Controls.Presenters
         /// <returns>True if the scroll offset was changed; otherwise false.</returns>
         public bool BringDescendantIntoView(IVisual target, Rect targetRect)
         {
-            if (Child == null)
+            if (Child?.IsEffectivelyVisible != true)
             {
                 return false;
             }
