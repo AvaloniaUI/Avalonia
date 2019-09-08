@@ -9,7 +9,7 @@ namespace Avalonia.Interactivity
 
     internal class EventSubscription
     {
-        public InvokeSignature RaiseHandler { get; set; }
+        public InvokeSignature InvokeAdapter { get; set; }
 
         public Delegate Handler { get; set; }
 

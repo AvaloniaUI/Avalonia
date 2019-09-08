@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reactive.Disposables;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
@@ -44,45 +42,14 @@ namespace Avalonia.Interactivity
             Contract.Requires<ArgumentNullException>(routedEvent != null);
             Contract.Requires<ArgumentNullException>(handler != null);
 
-            List<EventSubscription> subscriptions;
-
-            if (!EventHandlers.TryGetValue(routedEvent, out subscriptions))
+            var subscription = new EventSubscription
             {
-                subscriptions = new List<EventSubscription>();
-                EventHandlers.Add(routedEvent, subscriptions);
-            }
-
-            Type eventArgsType = routedEvent.EventArgsType;
-
-            if (!s_invokeCache.TryGetValue(eventArgsType, out InvokeSignature raiseFunc))
-            {
-                ParameterExpression funcParameter = Expression.Parameter(typeof(Delegate), "func");
-                ParameterExpression senderParameter = Expression.Parameter(typeof(object), "sender");
-                ParameterExpression argsParameter = Expression.Parameter(typeof(RoutedEventArgs), "args");
-
-                UnaryExpression convertedFunc = Expression.Convert(funcParameter, typeof(EventHandler<>).MakeGenericType(eventArgsType));
-                UnaryExpression convertedArgs = Expression.Convert(argsParameter, eventArgsType);
-
-                InvocationExpression invokeDelegate = Expression.Invoke(convertedFunc, senderParameter, convertedArgs);
-
-                raiseFunc = Expression
-                    .Lambda<InvokeSignature>(invokeDelegate, funcParameter, senderParameter, argsParameter)
-                    .Compile();
-
-                s_invokeCache.Add(eventArgsType, raiseFunc);
-            }
-
-            var sub = new EventSubscription
-            {
-                RaiseHandler = raiseFunc,
                 Handler = handler,
                 Routes = routes,
                 AlsoIfHandled = handledEventsToo,
             };
 
-            subscriptions.Add(sub);
-
-            return Disposable.Create(() => subscriptions.Remove(sub));
+            return AddEventSubscription(routedEvent, subscription);
         }
 
         /// <summary>
@@ -100,7 +67,37 @@ namespace Avalonia.Interactivity
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false) where TEventArgs : RoutedEventArgs
         {
-            return AddHandler(routedEvent, (Delegate)handler, routes, handledEventsToo);
+            Contract.Requires<ArgumentNullException>(routedEvent != null);
+            Contract.Requires<ArgumentNullException>(handler != null);
+
+            // EventHandler delegate is not covariant, this forces us to create small wrapper
+            // that will cast our type erased instance and invoke it.
+            Type eventArgsType = routedEvent.EventArgsType;
+
+            if (!s_invokeCache.TryGetValue(eventArgsType, out var invokeAdapter))
+            {
+                void InvokeAdapter(Delegate func, object sender, RoutedEventArgs args)
+                {
+                    var typedHandler = (EventHandler<TEventArgs>)func;
+                    var typedArgs = (TEventArgs)args;
+
+                    typedHandler(sender, typedArgs);
+                }
+
+                invokeAdapter = InvokeAdapter;
+
+                s_invokeCache.Add(eventArgsType, invokeAdapter);
+            }
+
+            var subscription = new EventSubscription
+            {
+                InvokeAdapter = invokeAdapter,
+                Handler = handler,
+                Routes = routes,
+                AlsoIfHandled = handledEventsToo,
+            };
+
+            return AddEventSubscription(routedEvent, subscription);
         }
 
         /// <summary>
@@ -216,9 +213,53 @@ namespace Avalonia.Interactivity
 
                     if (correctRoute && notFinished)
                     {
-                        sub.RaiseHandler(sub.Handler, this, e);
+                        if (sub.InvokeAdapter != null)
+                        {
+                            sub.InvokeAdapter(sub.Handler, this, e);
+                        }
+                        else
+                        {
+                            sub.Handler.DynamicInvoke(this, e);
+                        }
                     }
                 }
+            }
+        }
+
+        private List<EventSubscription> GetEventSubscriptions(RoutedEvent routedEvent)
+        {
+            if (!EventHandlers.TryGetValue(routedEvent, out var subscriptions))
+            {
+                subscriptions = new List<EventSubscription>();
+                EventHandlers.Add(routedEvent, subscriptions);
+            }
+
+            return subscriptions;
+        }
+
+        private IDisposable AddEventSubscription(RoutedEvent routedEvent, EventSubscription subscription)
+        {
+            List<EventSubscription> subscriptions = GetEventSubscriptions(routedEvent);
+
+            subscriptions.Add(subscription);
+
+            return new UnsubscribeDisposable(subscriptions, subscription);
+        }
+
+        private sealed class UnsubscribeDisposable : IDisposable
+        {
+            private readonly List<EventSubscription> _subscriptions;
+            private readonly EventSubscription _subscription;
+
+            public UnsubscribeDisposable(List<EventSubscription> subscriptions, EventSubscription subscription)
+            {
+                _subscriptions = subscriptions;
+                _subscription = subscription;
+            }
+
+            public void Dispose()
+            {
+                _subscriptions.Remove(_subscription);
             }
         }
     }
