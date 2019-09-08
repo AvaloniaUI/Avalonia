@@ -68,16 +68,19 @@ namespace Avalonia.Animation
         {
             if (_transitions is null || _previousTransitions is null || e.Priority == BindingPriority.Animation) return;
 
-            var match = Transitions.FirstOrDefault(x => x.Property == e.Property);
-
-            if (match != null)
+            // PERF-SENSITIVE: Called on every property change. Don't use LINQ here (too many allocations).
+            foreach (var transition in Transitions)
             {
-                if (_previousTransitions.TryGetValue(e.Property, out var dispose))
-                    dispose.Dispose();
+                if (transition.Property == e.Property)
+                {
+                    if (_previousTransitions.TryGetValue(e.Property, out var dispose))
+                        dispose.Dispose();
 
-                var instance = match.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
+                    var instance = transition.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
 
-                _previousTransitions[e.Property] = instance;
+                    _previousTransitions[e.Property] = instance;
+                    return;
+                }
             }
         }
     }
