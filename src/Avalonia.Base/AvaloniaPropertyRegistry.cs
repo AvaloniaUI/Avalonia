@@ -26,6 +26,8 @@ namespace Avalonia
             new Dictionary<Type, List<AvaloniaProperty>>();
         private readonly Dictionary<Type, List<PropertyInitializationData>> _initializedCache =
             new Dictionary<Type, List<PropertyInitializationData>>();
+        private readonly Dictionary<Type, List<AvaloniaProperty>> _inheritedCache =
+            new Dictionary<Type, List<AvaloniaProperty>>();
 
         /// <summary>
         /// Gets the <see cref="AvaloniaPropertyRegistry"/> instance
@@ -100,6 +102,46 @@ namespace Avalonia
             }
 
             _attachedCache.Add(type, result);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets all inherited <see cref="AvaloniaProperty"/>s registered on a type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
+        public IEnumerable<AvaloniaProperty> GetRegisteredInherited(Type type)
+        {
+            Contract.Requires<ArgumentNullException>(type != null);
+
+            if (_inheritedCache.TryGetValue(type, out var result))
+            {
+                return result;
+            }
+
+            result = new List<AvaloniaProperty>();
+            var visited = new HashSet<AvaloniaProperty>();
+
+            foreach (var property in GetRegistered(type))
+            {
+                if (property.Inherits)
+                {
+                    result.Add(property);
+                    visited.Add(property);
+                }
+            }
+            foreach (var property in GetRegisteredAttached(type))
+            {
+                if (property.Inherits)
+                {
+                    if (!visited.Contains(property))
+                    {
+                        result.Add(property);
+                    }
+                }
+            }
+
+            _inheritedCache.Add(type, result);
             return result;
         }
 
@@ -230,6 +272,7 @@ namespace Avalonia
             
             _registeredCache.Clear();
             _initializedCache.Clear();
+            _inheritedCache.Clear();
         }
 
         /// <summary>
@@ -266,6 +309,7 @@ namespace Avalonia
             
             _attachedCache.Clear();
             _initializedCache.Clear();
+            _inheritedCache.Clear();
         }
 
         internal void NotifyInitialized(AvaloniaObject o)
