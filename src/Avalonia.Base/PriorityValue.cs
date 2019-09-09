@@ -24,13 +24,11 @@ namespace Avalonia
     /// <see cref="IPriorityValueOwner.Changed"/> method on the 
     /// owner object is fired with the old and new values.
     /// </remarks>
-    internal class PriorityValue
+    internal sealed class PriorityValue : ISetAndNotifyHandler<(object,int)>
     {
         private readonly Type _valueType;
         private readonly SingleOrDictionary<int, PriorityLevel> _levels = new SingleOrDictionary<int, PriorityLevel>();
-
         private readonly Func<object, object> _validate;
-        private readonly SetAndNotifyCallback<(object, int)> _setAndNotifyCallback;
         private (object value, int priority) _value;
         private DeferredSetter<object> _setter;
 
@@ -52,7 +50,6 @@ namespace Avalonia
             _valueType = valueType;
             _value = (AvaloniaProperty.UnsetValue, int.MaxValue);
             _validate = validate;
-            _setAndNotifyCallback = SetAndNotify;
         }
 
         /// <summary>
@@ -257,10 +254,15 @@ namespace Avalonia
                 _setter = Owner.GetNonDirectDeferredSetter(Property);
             }
 
-            _setter.SetAndNotifyCallback(Property, _setAndNotifyCallback, ref _value, newValue);
+            _setter.SetAndNotifyCallback(Property, this, ref _value, newValue);
         }
 
-        private void SetAndNotify(AvaloniaProperty property, ref (object value, int priority) backing, (object value, int priority) update)
+        void ISetAndNotifyHandler<(object, int)>.HandleSetAndNotify(AvaloniaProperty property, ref (object, int) backing, (object, int) value)
+        {
+            SetAndNotify(ref backing, value);
+        }
+
+        private void SetAndNotify(ref (object value, int priority) backing, (object value, int priority) update)
         {
             var val = update.value;
             var notification = val as BindingNotification;
