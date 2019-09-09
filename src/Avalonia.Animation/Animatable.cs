@@ -35,7 +35,7 @@ namespace Avalonia.Animation
                 (o, v) => o.Transitions = v);
 
         private Transitions _transitions;
-        private bool _isTransitionsSet = false;
+
         private Dictionary<AvaloniaProperty, IDisposable> _previousTransitions;
 
         /// <summary>
