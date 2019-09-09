@@ -31,12 +31,42 @@ namespace Avalonia.Input
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
 
-        private static WeakReference<IInteractive> s_lastPress;
+        private static WeakReference<IInteractive> s_lastPress = new WeakReference<IInteractive>(null);
 
         static Gestures()
         {
             InputElement.PointerPressedEvent.RouteFinished.Subscribe(PointerPressed);
             InputElement.PointerReleasedEvent.RouteFinished.Subscribe(PointerReleased);
+        }
+
+        public static void AddTappedHandler(IInteractive element, EventHandler<RoutedEventArgs> handler)
+        {
+            element.AddHandler(TappedEvent, handler);
+        }
+
+        public static void AddDoubleTappedHandler(IInteractive element, EventHandler<RoutedEventArgs> handler)
+        {
+            element.AddHandler(DoubleTappedEvent, handler);
+        }
+
+        public static void AddRightTappedHandler(IInteractive element, EventHandler<RoutedEventArgs> handler)
+        {
+            element.AddHandler(RightTappedEvent, handler);
+        }
+
+        public static void RemoveTappedHandler(IInteractive element, EventHandler<RoutedEventArgs> handler)
+        {
+            element.RemoveHandler(TappedEvent, handler);
+        }
+
+        public static void RemoveDoubleTappedHandler(IInteractive element, EventHandler<RoutedEventArgs> handler)
+        {
+            element.RemoveHandler(DoubleTappedEvent, handler);
+        }
+
+        public static void RemoveRightTappedHandler(IInteractive element, EventHandler<RoutedEventArgs> handler)
+        {
+            element.RemoveHandler(RightTappedEvent, handler);
         }
 
         private static void PointerPressed(RoutedEventArgs ev)
