@@ -68,7 +68,7 @@ namespace Avalonia
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
-            return GetMetadata(type).DefaultValue;
+            return GetMetadata(type).DefaultValue.Typed;
         }
 
         /// <summary>
@@ -164,7 +164,14 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        object IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultValue(type);
+        object IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
+
+        private object GetDefaultBoxedValue(Type type)
+        {
+            Contract.Requires<ArgumentNullException>(type != null);
+
+            return GetMetadata(type).DefaultValue.Boxed;
+        }
 
         [DebuggerHidden]
         private Func<IAvaloniaObject, TValue, TValue> Cast<THost>(Func<THost, TValue, TValue> validate)
