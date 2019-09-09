@@ -1042,7 +1042,7 @@ namespace Avalonia.Controls.Primitives
                 RaiseEvent(e);
             }
 
-            if(AutoScrollToSelectedItem)
+            if (AutoScrollToSelectedItem)
             {
                 ScrollIntoView(_selectedItem);
             }
