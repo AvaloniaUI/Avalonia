@@ -858,7 +858,7 @@ namespace Avalonia.Controls.Primitives
 
                     if (AutoScrollToSelectedItem)
                     {
-                        ScrollIntoView(_selectedIndex);
+                        ScrollIntoView(_selectedItem);
                     }
                 }
             }
@@ -1045,6 +1045,11 @@ namespace Avalonia.Controls.Primitives
                     added != -1 ? new[] { ElementAt(Items, added) } : Array.Empty<object>(),
                     removed?.Select(x => ElementAt(Items, x)).ToArray() ?? Array.Empty<object>());
                 RaiseEvent(e);
+            }
+
+            if(AutoScrollToSelectedItem)
+            {
+                ScrollIntoView(_selectedItem);
             }
         }
 
