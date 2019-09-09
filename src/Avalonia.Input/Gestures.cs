@@ -31,7 +31,7 @@ namespace Avalonia.Input
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
 
-        private static WeakReference<IInteractive> s_lastPress;
+        private static WeakReference<IInteractive> s_lastPress = new WeakReference<IInteractive>(null);
 
         static Gestures()
         {
