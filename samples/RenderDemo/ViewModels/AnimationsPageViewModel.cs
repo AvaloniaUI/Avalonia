@@ -13,16 +13,26 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using System.Collections.Specialized;
 using System.Collections;
+using Avalonia;
 
 namespace RenderDemo.ViewModels
 {
-    public class SampleData
+    public class SampleData : ReactiveObject
     {
         [DisplayName("Index")]
         public int Index { get; set; }
 
+
+
+        private bool _Allow;
+
         [DisplayName("Allow")]
-        public bool Allow { get; set; }
+
+        public bool Allow
+        {
+            get => _Allow;
+            set => this.RaiseAndSetIfChanged(ref _Allow, value);
+        }
 
         [DisplayName("Some Text")]
         public string SomeText { get; set; }
@@ -36,7 +46,7 @@ namespace RenderDemo.ViewModels
         [DisplayName("Random Number 3")]
         public string RndNum3 { get; set; }
     }
- 
+
     public class AnimationsPageViewModel : ReactiveObject
     {
         private static Random random = new Random();

@@ -43,9 +43,6 @@ namespace RenderDemo.Pages
         }
 
 
-
-
-
         public static readonly DirectProperty<XDataGrid, IEnumerable> ItemsProperty =
             AvaloniaProperty.RegisterDirect<XDataGrid, IEnumerable>(
                 nameof(Items),
@@ -75,11 +72,7 @@ namespace RenderDemo.Pages
                 var dispNameAttrib = (DisplayNameAttribute)property
                                         .GetCustomAttributes(typeof(DisplayNameAttribute), false)
                                         .SingleOrDefault();
-
-                // var colWidthAttrib = (ColumnWidthAttribute)property
-                //                         .GetCustomAttributes(typeof(ColumnWidthAttribute), false)
-                //                         .SingleOrDefault();
-
+ 
                 if (dispNameAttrib is null)
                     continue;
 
