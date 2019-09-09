@@ -10,8 +10,7 @@ namespace Avalonia.Win32
 {
     internal class WindowsMountedVolumeInfoListener : IDisposable
     {
-        private readonly CompositeDisposable _disposables;
-        private readonly ObservableCollection<MountedVolumeInfo> _targetObs = new ObservableCollection<MountedVolumeInfo>();
+        private readonly CompositeDisposable _disposables;        
         private bool _beenDisposed = false;
         private ObservableCollection<MountedVolumeInfo> mountedDrives;
 
@@ -41,14 +40,14 @@ namespace Avalonia.Win32
                                 })
                                 .ToArray();
 
-            if (_targetObs.SequenceEqual(mountVolInfos))
+            if (mountedDrives.SequenceEqual(mountVolInfos))
                 return;
             else
             {
-                _targetObs.Clear();
+                mountedDrives.Clear();
 
                 foreach (var i in mountVolInfos)
-                    _targetObs.Add(i);
+                    mountedDrives.Add(i);
             }
         }
 
