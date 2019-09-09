@@ -31,12 +31,12 @@ namespace Avalonia.Data.Core.Plugins
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
         /// </returns>
-        public IPropertyAccessor Start(WeakReference reference, string propertyName)
+        public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)
         {
             Contract.Requires<ArgumentNullException>(reference != null);
             Contract.Requires<ArgumentNullException>(propertyName != null);
 
-            var instance = reference.Target;
+            reference.TryGetTarget(out object instance);
             var o = (AvaloniaObject)instance;
             var p = LookupProperty(o, propertyName);
 

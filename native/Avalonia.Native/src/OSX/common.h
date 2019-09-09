@@ -19,12 +19,12 @@ extern IAvnClipboard* CreateClipboard();
 extern IAvnCursorFactory* CreateCursorFactory();
 extern IAvnGlFeature* GetGlFeature();
 extern IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(NSWindow* window, NSView* view);
-
+extern void InitializeAvnApp();
+extern NSApplicationActivationPolicy AvnDesiredActivationPolicy;
 extern NSPoint ToNSPoint (AvnPoint p);
 extern AvnPoint ToAvnPoint (NSPoint p);
 extern AvnPoint ConvertPointY (AvnPoint p);
 extern NSSize ToNSSize (AvnSize s);
-
 #ifdef DEBUG
 #define NSDebugLog(...) NSLog(__VA_ARGS__)
 #else

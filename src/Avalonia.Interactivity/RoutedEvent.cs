@@ -4,7 +4,6 @@
 using System;
 using System.Reactive.Subjects;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 
 namespace Avalonia.Interactivity
 {
@@ -18,8 +17,8 @@ namespace Avalonia.Interactivity
 
     public class RoutedEvent
     {
-        private Subject<Tuple<object, RoutedEventArgs>> _raised = new Subject<Tuple<object, RoutedEventArgs>>();
-        private Subject<RoutedEventArgs> _routeFinished = new Subject<RoutedEventArgs>();
+        private readonly Subject<(object, RoutedEventArgs)> _raised = new Subject<(object, RoutedEventArgs)>();
+        private readonly Subject<RoutedEventArgs> _routeFinished = new Subject<RoutedEventArgs>();
 
         public RoutedEvent(
             string name,
@@ -38,31 +37,15 @@ namespace Avalonia.Interactivity
             RoutingStrategies = routingStrategies;
         }
 
-        public Type EventArgsType
-        {
-            get;
-            private set;
-        }
+        public Type EventArgsType { get; }
 
-        public string Name
-        {
-            get;
-            private set;
-        }
+        public string Name { get; }
 
-        public Type OwnerType
-        {
-            get;
-            private set;
-        }
+        public Type OwnerType { get; }
 
-        public RoutingStrategies RoutingStrategies
-        {
-            get;
-            private set;
-        }
+        public RoutingStrategies RoutingStrategies { get; }
 
-        public IObservable<Tuple<object, RoutedEventArgs>> Raised => _raised;
+        public IObservable<(object, RoutedEventArgs)> Raised => _raised;
         public IObservable<RoutedEventArgs> RouteFinished => _routeFinished;
 
         public static RoutedEvent<TEventArgs> Register<TOwner, TEventArgs>(
@@ -98,29 +81,20 @@ namespace Avalonia.Interactivity
         {
             return Raised.Subscribe(args =>
             {
-                var sender = args.Item1;
-                var e = args.Item2;
+                (object sender, RoutedEventArgs e) = args;
 
-                if (targetType.GetTypeInfo().IsAssignableFrom(sender.GetType().GetTypeInfo()) &&
-                    ((e.Route == RoutingStrategies.Direct) || (e.Route & routes) != 0) &&
+                if (targetType.IsInstanceOfType(sender) &&
+                    (e.Route == RoutingStrategies.Direct || (e.Route & routes) != 0) &&
                     (!e.Handled || handledEventsToo))
                 {
-                    try
-                    {
-                        handler.DynamicInvoke(sender, e);
-                    }
-                    catch (TargetInvocationException ex)
-                    {
-                        // Unwrap the inner exception.
-                        ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                    }
+                    handler(sender, e);
                 }
             });
         }
 
         internal void InvokeRaised(object sender, RoutedEventArgs e)
         {
-            _raised.OnNext(Tuple.Create(sender, e));
+            _raised.OnNext((sender, e));
         }
 
         internal void InvokeRouteFinished(RoutedEventArgs e)
