@@ -3,18 +3,20 @@
 
 using System;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Avalonia.Notifications
 {
     /// <summary>
     /// Represents a notification that can be shown in a window or by the host operating system.
     /// </summary>
+    [PublicAPI]
     public interface INotification
     {
         /// <summary>
         /// The id for <see cref="INotificationManager"/> control
         /// </summary>
-        uint Id { get; }
+        uint? Id { get; }
 
         /// <summary>
         /// Gets the Title of the notification.

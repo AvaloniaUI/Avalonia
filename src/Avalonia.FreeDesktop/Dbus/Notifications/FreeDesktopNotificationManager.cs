@@ -58,54 +58,19 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
             throw new NotSupportedException("Use the async version");
         }
 
-        public async Task ShowAsync(INotification notification)
+        public Task ShowAsync(INotification notification)
         {
-            if (!_isConnected)
-            {
-                await ShowNotConnectedErrorOnConsole();
-                return;
-            }
-
-            if (notification.Id != default)
-                throw new ArgumentException("This was previously used.", nameof(notification));
-
-            var expirationInMs = notification.Expiration == TimeSpan.Zero ?
-                DEFAULT_NOTIFICATION_EXPIRATION :
-                (int)notification.Expiration.TotalMilliseconds;
-
-            var id = await _proxy.NotifyAsync(
-                Application.Current.Name,
-                //TODO: Maybe a control to always replace
-                0,
-                //TODO: Impl app icon
-                string.Empty,
-                notification.Title,
-                notification.Message,
-                GetActionsFromNotification(notification),
-                GetHintsFromNotification(notification),
-                expirationInMs
-            ).ConfigureAwait(false);
-
-            _notificationsList[id] = notification;
+            return ShowInternalAsync(notification);
         }
 
-        private static string[] GetActionsFromNotification(INotification notification)
+        public Task ReplaceAsync(INotification old, INotification @new)
         {
-            if (notification is NativeNotification nn)
-            {
-                var actionPair = new List<string> { "default", "default" };
+            if (!old.Id.HasValue)
+                throw new ArgumentException("Cannot replace a notification that was not shown.", nameof(old));
 
-                foreach (var action in nn.Actions)
-                {
-                    actionPair.Add(action.Key);
-                    actionPair.Add(action.Label);
-                }
-
-                return actionPair.ToArray();
-            }
-
-            return new[] { "default", "default" };
+            return ShowInternalAsync(@new, old.Id.Value);
         }
+
 
         public void Close(INotification notification)
         {
@@ -114,10 +79,10 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
 
         public async Task CloseAsync(INotification notification)
         {
-            if (notification.Id == default)
+            if (!notification.Id.HasValue)
                 throw new ArgumentException("This notification does not have an id.", nameof(notification));
 
-            await _proxy.CloseNotificationAsync(notification.Id)
+            await _proxy.CloseNotificationAsync(notification.Id.Value)
                 .ConfigureAwait(false);
         }
 
@@ -145,12 +110,90 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
             _closeNotificationWatcher?.Dispose();
         }
 
+        private async Task ShowInternalAsync(INotification notification, uint replaceId = 0)
+        {
+            if (!_isConnected)
+            {
+                await ShowNotConnectedErrorOnConsole();
+                return;
+            }
+
+            if (notification.Id.HasValue)
+                throw new ArgumentException("This notification was previously used.", nameof(notification));
+
+            var id = await _proxy.NotifyAsync(
+                Application.Current.Name,
+                replaceId,
+                //TODO: Impl app icon
+                string.Empty,
+                notification.Title,
+                notification.Message,
+                GetActionsFromNotification(notification),
+                GetHintsFromNotification(notification),
+                GetExpirationInMsFromNotification(notification)
+            ).ConfigureAwait(false);
+
+            _notificationsList[id] = notification;
+        }
+
+        private static string[] GetActionsFromNotification(INotification notification)
+        {
+            if (notification is NativeNotification nn && nn.Actions != null)
+            {
+                var actionPair = new List<string> { "default", "default" };
+
+                foreach (var action in nn.Actions)
+                {
+                    actionPair.Add(action.Key);
+                    actionPair.Add(action.Label);
+                }
+
+                return actionPair.ToArray();
+            }
+
+            return new[] { "default", "default" };
+        }
+
+        private static int GetExpirationInMsFromNotification(INotification notification)
+        {
+            if (notification.Expiration == TimeSpan.MaxValue)
+                return FOREVER_NOTIFICATION_EXPIRATION;
+            if (notification.Expiration == TimeSpan.MinValue)
+                return DEFAULT_NOTIFICATION_EXPIRATION;
+
+            var expirationInMs = notification.Expiration == TimeSpan.Zero ?
+                DEFAULT_NOTIFICATION_EXPIRATION :
+                (int)notification.Expiration.TotalMilliseconds;
+
+            return expirationInMs;
+        }
+
         private Dictionary<string, object> GetHintsFromNotification(INotification notification)
         {
+            if (notification is NativeNotification nn)
+            {
+                var hints = new Dictionary<string, object> { { "urgency", (byte)nn.Urgency } };
+
+                //TODO: The others https://developer.gnome.org/notification-spec/#id2825136
+                if (nn.Resident.HasValue)
+                    hints.Add("resident", (byte)(nn.Resident.Value ? 1 : 0));
+
+                if (nn.Transient.HasValue)
+                    hints.Add("transient", (byte)(nn.Transient.Value ? 1 : 0));
+
+                return hints;
+            }
+
+            var urgency = GetUrgencyFromType(notification.Type);
+            return new Dictionary<string, object>(1) { { "urgency", urgency } };
+        }
+
+        private static byte GetUrgencyFromType(NotificationType type)
+        {
+            //TODO: Move this method somewhere else
             byte urgency;
 
-            //TODO: Change this into an enum
-            switch (notification.Type)
+            switch (type)
             {
                 case NotificationType.Warning:
                     urgency = 1;
@@ -163,19 +206,7 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
                     break;
             }
 
-            var hints = new Dictionary<string, object> { { "urgency", urgency } };
-
-            if (notification is NativeNotification nativeNotification)
-            {
-                //TODO: The others https://developer.gnome.org/notification-spec/#id2825136
-                if (nativeNotification.Resident.HasValue)
-                    hints.Add("resident", (byte)(nativeNotification.Resident.Value ? 1 : 0));
-
-                if (nativeNotification.Transient.HasValue)
-                    hints.Add("transient", (byte)(nativeNotification.Transient.Value ? 1 : 0));
-            }
-
-            return hints;
+            return urgency;
         }
 
         private void OnNotificationActionInvokedError(Exception exception)
@@ -186,50 +217,53 @@ namespace Avalonia.FreeDesktop.Dbus.Notifications
         private void OnNotificationActionInvoked((uint id, string actionKey) e)
         {
             Debug.WriteLine("Action invoked signal: {0} {1}", e.id.ToString(), e.actionKey);
+
+            try
             {
                 INotification notification;
+                // ReSharper disable once EmptyEmbeddedStatement
                 while (!_notificationsList.TryGetValue(e.id, out notification)) ;
 
-                try
+                if (e.actionKey == "default")
+                    notification.OnClick?.Invoke();
+
+                if (notification is NativeNotification nn)
                 {
-                    if (e.actionKey == "default")
-                        notification.OnClick?.Invoke();
-                    else if (notification is NativeNotification nn)
-                    {
-                        nn.OnActionInvoked(new ActionInvokedEventArgs(e.actionKey));
-                    }
+                    nn.OnActionInvoked(new ActionInvokedEventArgs(e.actionKey));
                 }
-                catch (Exception exception)
-                {
-                    //TODO: Impl better exception handling
-                    Console.WriteLine(exception);
-                }
+            }
+            catch (Exception exception)
+            {
+                //TODO: Impl better exception handling
+                Console.WriteLine(exception);
             }
         }
 
         private void OnNotificationClosed((uint id, uint reason) e)
         {
-            string reason;
-            switch (e.reason)
-            {
-                case 1:
-                    reason = "The notification expired";
-                    break;
-                case 2:
-                    reason = "The notification was dismissed by the user";
-                    break;
-                case 3:
-                    reason = "The notification was closed by a call to CloseNotification";
-                    break;
-                case 4:
-                    reason = "Undefined/reserved reasons";
-                    break;
-                default:
-                    reason = "Unknown reason";
-                    break;
-            }
+            var reason = (NativeNotificationCloseReason)e.reason;
 
-            Console.WriteLine("Notification closed signal: {0} {1}:{2}", e.id.ToString(), e.reason.ToString(), reason);
+            Debug.WriteLine("Notification closed signal: {0} {1}:{2}", e.id.ToString(), e.reason.ToString(), reason);
+
+            if (!_notificationsList.ContainsKey(e.id))
+                return;
+
+            try
+            {
+                INotification notification;
+                // ReSharper disable once EmptyEmbeddedStatement
+                while (!_notificationsList.TryRemove(e.id, out notification)) ;
+
+                if (notification is NativeNotification nn)
+                    nn.OnClose?.Invoke(reason);
+                else
+                    notification.OnClose?.Invoke();
+            }
+            catch (Exception exception)
+            {
+                //TODO: Impl better exception handling
+                Console.WriteLine(exception);
+            }
         }
 
         private void OnNotificationClosedError(Exception exception)

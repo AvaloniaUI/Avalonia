@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Avalonia.Notifications
 {
@@ -15,7 +16,12 @@ namespace Avalonia.Notifications
     /// </remarks>
     public class Notification : INotification
     {
-        protected INotificationManager _notificationManager;
+        protected INotificationManager NotificationManager;
+
+        /// <summary>
+        /// Used if no expiration time is provided when creating a new instance of <see cref="Notification"/>
+        /// </summary>
+        public static TimeSpan DefaultExpiration = TimeSpan.FromSeconds(5);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Notification"/> class.
@@ -32,18 +38,19 @@ namespace Avalonia.Notifications
             NotificationType type = NotificationType.Information,
             TimeSpan? expiration = null,
             Action onClick = null,
-            Action onClose = null)
+            Action onClose = null
+        )
         {
             Title = title;
             Message = message;
             Type = type;
-            Expiration = expiration.HasValue ? expiration.Value : TimeSpan.FromSeconds(5);
+            Expiration = expiration.HasValue ? expiration.Value : DefaultExpiration;
             OnClick = onClick;
             OnClose = onClose;
         }
 
         /// <inheritdoc/>
-        public virtual uint Id { get; private set; }
+        public virtual uint? Id { get; private set; }
 
         /// <inheritdoc/>
         public virtual string Title { get; private set; }
@@ -66,14 +73,14 @@ namespace Avalonia.Notifications
         /// <inheritdoc/>
         public virtual Task CloseAsync()
         {
-            _notificationManager.Close(this);
+            NotificationManager.Close(this);
             return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
         public virtual void Close()
         {
-            _notificationManager.Close(this);
+            NotificationManager.Close(this);
         }
 
         /// <inheritdoc/>
@@ -90,10 +97,13 @@ namespace Avalonia.Notifications
         }
 
         /// <inheritdoc/>
-        public virtual void SetId(uint id, INotificationManager notificationManager)
+        public virtual void SetId(uint id, [NotNull] INotificationManager notificationManager)
         {
+            if (id == 0)
+                throw new ArgumentOutOfRangeException(nameof(id));
+
             Id = id;
-            _notificationManager = notificationManager;
+            NotificationManager = notificationManager ?? throw new ArgumentNullException(nameof(notificationManager));
         }
     }
 }

@@ -120,12 +120,22 @@ namespace ControlCatalog.Pages
 
                 ShowNativeNotificationCommand = ReactiveCommand.Create(async () =>
                 {
+                    void NotificationClosed(NativeNotificationCloseReason reason)
+                    {
+                        var closedNotification = new NativeNotification(
+                            "Notification closed!",
+                            $"The notification was closed because: {reason}"
+                        ) { Transient = true, Resident = false };
+
+                        _nativeNotificationManager.ShowAsync(closedNotification);
+                    }
+
                     void ActionInvoked(NativeNotificationAction action)
                     {
-                        var actionNotification = new Notification(
+                        var actionNotification = new NativeNotification(
                             $"Action <b>{action.Label}</b> clicked!",
                             $"Action <b>{action.Key}</b> was <i>invoked</i>."
-                        );
+                        ) { Transient = true, Resident = false };
 
                         _nativeNotificationManager.ShowAsync(actionNotification);
                     }
@@ -133,8 +143,10 @@ namespace ControlCatalog.Pages
                     var notification = new NativeNotification(
                         "Native Notifications",
                         "<i>Fluid</i> and natural <b>native</b> notifications",
-                        NotificationType.Information,
-                        expiration: TimeSpan.FromSeconds(7)
+                        NotificationUrgency.Low,
+                        expiration: TimeSpan.FromSeconds(7),
+                        onClick: () => Debug.WriteLine("Notification clicked", nameof(NotificationsPage)),
+                        onClose: NotificationClosed
                     )
                     {
                         Actions = new[]

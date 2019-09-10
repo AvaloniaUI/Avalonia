@@ -13,7 +13,10 @@ namespace Avalonia.Notifications.Native
     {
         /// <param name="text">Used as <see cref="Key"/> and <see cref="Label"/>.</param>
         /// <param name="action">Callback</param>
-        public NativeNotificationAction(string text, Action<NativeNotificationAction> action)
+        public NativeNotificationAction(
+            [NotNull] string text,
+            [NotNull] Action<NativeNotificationAction> action
+        )
             : this(text, text, action)
         {
         }
@@ -35,16 +38,19 @@ namespace Avalonia.Notifications.Native
         /// <summary>
         /// Identifier
         /// </summary>
+        [NotNull]
         public string Key { get; }
 
         /// <summary>
         /// Displayed text (this will not be translated by the server)
         /// </summary>
+        [NotNull]
         public string Label { get; }
 
         /// <summary>
         /// Callback
         /// </summary>
+        [NotNull]
         public Action<NativeNotificationAction> Action { get; }
     }
 }

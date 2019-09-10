@@ -82,14 +82,22 @@ namespace Avalonia.Controls.Notifications
 
         static WindowNotificationManager()
         {
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty,
-                x => x == NotificationPosition.TopLeft, ":topleft");
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty,
-                x => x == NotificationPosition.TopRight, ":topright");
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty,
-                x => x == NotificationPosition.BottomLeft, ":bottomleft");
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty,
-                x => x == NotificationPosition.BottomRight, ":bottomright");
+            PseudoClass<WindowNotificationManager, NotificationPosition>(
+                PositionProperty,
+                x => x == NotificationPosition.TopLeft, ":topleft"
+            );
+            PseudoClass<WindowNotificationManager, NotificationPosition>(
+                PositionProperty,
+                x => x == NotificationPosition.TopRight, ":topright"
+            );
+            PseudoClass<WindowNotificationManager, NotificationPosition>(
+                PositionProperty,
+                x => x == NotificationPosition.BottomLeft, ":bottomleft"
+            );
+            PseudoClass<WindowNotificationManager, NotificationPosition>(
+                PositionProperty,
+                x => x == NotificationPosition.BottomRight, ":bottomright"
+            );
 
             HorizontalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(
                 HorizontalAlignment.Stretch
@@ -114,12 +122,13 @@ namespace Avalonia.Controls.Notifications
             Show(content as object);
         }
 
+        /// <inheritdoc />
         public void Close(INotification notification)
         {
             if (notification.Id == default)
                 return;
 
-            var id = ((Notification)notification).Id;
+            var id = notification.Id;
 
             _items.OfType<NotificationCard>()
                 .FirstOrDefault(n => n.Id == id)
