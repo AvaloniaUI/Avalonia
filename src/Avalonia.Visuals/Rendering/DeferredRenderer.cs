@@ -289,7 +289,7 @@ namespace Avalonia.Rendering
                 var scene = sceneRef.Item;
                 if (scene.Generation != _lastSceneId)
                 {
-                    context = context ?? CreateDrawingContext();
+                    EnsureDrawingContext(ref context);
 
                     Layers.Update(scene, context);
 
@@ -420,7 +420,7 @@ namespace Avalonia.Rendering
 
         private void RenderOverlay(Scene scene, ref IDrawingContextImpl parentContent)
         {
-            parentContent = parentContent ?? CreateDrawingContext();
+            EnsureDrawingContext(ref parentContent);
 
             if (DrawDirtyRects)
             {
@@ -450,7 +450,7 @@ namespace Avalonia.Rendering
 
         private void RenderComposite(Scene scene, ref IDrawingContextImpl context)
         {
-            context = context ?? CreateDrawingContext();
+            EnsureDrawingContext(ref context);
 
             context.Clear(Colors.Transparent);
 
@@ -493,8 +493,13 @@ namespace Avalonia.Rendering
             }
         }
 
-        private IDrawingContextImpl CreateDrawingContext()
+        private void EnsureDrawingContext(ref IDrawingContextImpl context)
         {
+            if (context != null)
+            {
+                return;
+            }
+
             if ((RenderTarget as IRenderTargetWithCorruptionInfo)?.IsCorrupted == true)
             {
                 RenderTarget.Dispose();
@@ -506,7 +511,7 @@ namespace Avalonia.Rendering
                 RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
             }
 
-            return RenderTarget.CreateDrawingContext(this);
+            context = RenderTarget.CreateDrawingContext(this);
         }
 
         private void UpdateScene()
