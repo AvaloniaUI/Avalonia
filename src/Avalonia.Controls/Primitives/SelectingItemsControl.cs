@@ -855,11 +855,6 @@ namespace Avalonia.Controls.Primitives
                     _selectedItem = ElementAt(Items, _selectedIndex);
                     RaisePropertyChanged(SelectedIndexProperty, -1, _selectedIndex, BindingPriority.LocalValue);
                     RaisePropertyChanged(SelectedItemProperty, null, _selectedItem, BindingPriority.LocalValue);
-
-                    if (AutoScrollToSelectedItem)
-                    {
-                        ScrollIntoView(_selectedIndex);
-                    }
                 }
             }
 
@@ -1045,6 +1040,11 @@ namespace Avalonia.Controls.Primitives
                     added != -1 ? new[] { ElementAt(Items, added) } : Array.Empty<object>(),
                     removed?.Select(x => ElementAt(Items, x)).ToArray() ?? Array.Empty<object>());
                 RaiseEvent(e);
+            }
+
+            if (AutoScrollToSelectedItem)
+            {
+                ScrollIntoView(_selectedItem);
             }
         }
 
