@@ -5,7 +5,6 @@ using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Notifications;
 using Avalonia.Markup.Xaml;
 using Avalonia.Notifications;
 using Avalonia.Notifications.Managed;
@@ -24,18 +23,11 @@ namespace ControlCatalog.Pages
 
             AttachedToVisualTree += delegate
             {
-                var mainWindow = (MainWindow)VisualRoot;
-                var notificationArea = new WindowNotificationManager(mainWindow)
-                {
-                    Position = NotificationPosition.TopRight, MaxItems = 3
-                };
-                //dunno
-                mainWindow.ApplyTemplate();
-                notificationArea.ApplyTemplate();
+                var window = (MainWindow)VisualRoot;
 
                 var nativeNotification = AvaloniaLocator.Current.GetService<INativeNotificationManager>();
 
-                DataContext = new NotificationPageViewModel(notificationArea, nativeNotification);
+                DataContext = new NotificationPageViewModel(window.WindowNotificationManager, nativeNotification);
             };
         }
 
@@ -63,6 +55,8 @@ namespace ControlCatalog.Pages
                 InitializeCommands();
 
                 FetchNativeNotificationServerInformation();
+
+                NativeServerCapabilities = new ObservableCollection<string>();
             }
 
             public bool IsNativeNotificationAvailable
@@ -98,14 +92,8 @@ namespace ControlCatalog.Pages
                         Title = "Hey There!",
                         Message = "Did you know that Avalonia now supports Custom In-Window Notifications?"
                     };
-                    try
-                    {
-                        _notificationManager.Show(customNotification);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
+
+                    _notificationManager.Show(customNotification);
                 });
 
                 ShowManagedNotificationCommand = ReactiveCommand.Create(() =>
@@ -115,34 +103,17 @@ namespace ControlCatalog.Pages
                         "Avalonia now supports Notifications.",
                         NotificationType.Information
                     );
+
                     _notificationManager.Show(notification);
                 });
 
                 ShowNativeNotificationCommand = ReactiveCommand.Create(async () =>
                 {
-                    void NotificationClosed(NativeNotificationCloseReason reason)
-                    {
-                        var closedNotification = new NativeNotification(
-                            "Notification closed!",
-                            $"The notification was closed because: {reason}"
-                        ) { Transient = true, Resident = false };
-
-                        _nativeNotificationManager.ShowAsync(closedNotification);
-                    }
-
-                    void ActionInvoked(NativeNotificationAction action)
-                    {
-                        var actionNotification = new NativeNotification(
-                            $"Action <b>{action.Label}</b> clicked!",
-                            $"Action <b>{action.Key}</b> was <i>invoked</i>."
-                        ) { Transient = true, Resident = false };
-
-                        _nativeNotificationManager.ShowAsync(actionNotification);
-                    }
-
                     var notification = new NativeNotification(
                         "Native Notifications",
-                        "<i>Fluid</i> and natural <b>native</b> notifications",
+                        "<i>Fluid</i> and natural <b>native</b> notifications\n" +
+                        "Learn more about them!\n" +
+                        "https://github.com/AvaloniaUI/Avalonia/wiki/Notifications",
                         NotificationUrgency.Low,
                         expiration: TimeSpan.FromSeconds(7),
                         onClick: () => Debug.WriteLine("Notification clicked", nameof(NotificationsPage)),
@@ -151,14 +122,28 @@ namespace ControlCatalog.Pages
                     {
                         Actions = new[]
                         {
-                            new NativeNotificationAction("Test", ActionInvoked),
-                            new NativeNotificationAction("test2", "TranslatedText", ActionInvoked)
+                            new NativeNotificationAction("Test", NotificationActionInvoked),
+                            new NativeNotificationAction("test2", "TranslatedText", NotificationActionInvoked)
                         }
                     };
 
 
                     await _nativeNotificationManager.ShowAsync(notification);
                 });
+            }
+
+            private void NotificationActionInvoked(NativeNotificationAction action)
+            {
+                var actionNotification = new NativeNotification($"Action <b>{action.Label}</b> clicked!", $"Action <b>{action.Key}</b> was <i>invoked</i>.") { Transient = true, Resident = false };
+
+                _nativeNotificationManager.ShowAsync(actionNotification);
+            }
+
+            private void NotificationClosed(NativeNotificationCloseReason reason)
+            {
+                var closedNotification = new NativeNotification("Notification closed!", $"The notification was closed because: {reason}") { Transient = true, Resident = false };
+
+                _nativeNotificationManager.ShowAsync(closedNotification);
             }
 
             private void FetchNativeNotificationServerInformation()

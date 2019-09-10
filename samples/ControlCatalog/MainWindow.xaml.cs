@@ -1,18 +1,28 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
 using Avalonia.Markup.Xaml;
+using Avalonia.Notifications;
 using Avalonia.Themes.Default;
 
 namespace ControlCatalog
 {
     public class MainWindow : Window
     {
+        internal WindowNotificationManager WindowNotificationManager;
+
         public MainWindow()
         {
             this.InitializeComponent();
             this.AttachDevTools(); 
             //Renderer.DrawFps = true;
             //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
+            
+            WindowNotificationManager = new WindowNotificationManager(this)
+            {
+                Position = NotificationPosition.TopRight,
+                MaxItems = 3
+            };
         }
 
         private void InitializeComponent()
