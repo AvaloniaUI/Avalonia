@@ -14,6 +14,7 @@ namespace ControlCatalog
     public class MainWindow : Window
     {
         private WindowNotificationManager _notificationArea;
+        private NativeMenu _recentMenu;
 
         public MainWindow()
         {
@@ -29,7 +30,20 @@ namespace ControlCatalog
             };
 
             DataContext = new MainWindowViewModel(_notificationArea);
+            _recentMenu = NativeMenu.GetMenu(this).Items[0].Menu.Items[1].Menu;
         }
+
+        public void OnOpenClicked(object sender, EventArgs args)
+        {
+            _recentMenu.Items.Insert(0, new NativeMenuItem("Item " + (_recentMenu.Items.Count + 1)));
+        }
+        
+        public void OnCloseClicked(object sender, EventArgs args)
+        {
+            Close();
+        }
+
+
 
         private void InitializeComponent()
         {

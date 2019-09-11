@@ -8,7 +8,34 @@
         xmlns:vm="clr-namespace:ControlCatalog.ViewModels"
         xmlns:v="clr-namespace:ControlCatalog.Views"
         x:Class="ControlCatalog.MainWindow">
-    <Window.DataTemplates>
+
+  <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="File">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Open" Clicked="OnOpenClicked"/>
+            <NativeMenuItem Header="Recent">
+              <NativeMenuItem.Menu>
+                <NativeMenu/>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Close" Clicked="OnCloseClicked"/>
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Edit">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Copy"/>
+            <NativeMenuItem Header="Paste"/>
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+    </NativeMenu>
+  </NativeMenu.Menu>
+
+  <Window.DataTemplates>
         <DataTemplate DataType="vm:NotificationViewModel">
             <v:CustomNotificationView />
         </DataTemplate>
