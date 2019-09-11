@@ -50,9 +50,6 @@ namespace Avalonia.FreeDesktop
 
         public static Exception TryInitialize(string dbusAddress = null)
         {
-
-            Dispatcher.UIThread.VerifyAccess();
-            AvaloniaSynchronizationContext.InstallIfNeeded();
             var oldContext = SynchronizationContext.Current;
             try
             {

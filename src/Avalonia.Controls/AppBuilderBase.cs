@@ -287,12 +287,12 @@ namespace Avalonia.Controls
             s_setupWasAlreadyCalled = true;
             _optionsInitializers?.Invoke();
             RuntimePlatformServicesInitializer();
-            Instance = _appFactory();
-            Instance.ApplicationLifetime = _lifetime;
-            AvaloniaLocator.CurrentMutable.BindToSelf(Instance);
             WindowingSubsystemInitializer();
             RenderingSubsystemInitializer();
             AfterPlatformServicesSetupCallback(Self);
+            Instance = _appFactory();
+            Instance.ApplicationLifetime = _lifetime;
+            AvaloniaLocator.CurrentMutable.BindToSelf(Instance);
             Instance.RegisterServices();
             Instance.Initialize();
             AfterSetupCallback(Self);
