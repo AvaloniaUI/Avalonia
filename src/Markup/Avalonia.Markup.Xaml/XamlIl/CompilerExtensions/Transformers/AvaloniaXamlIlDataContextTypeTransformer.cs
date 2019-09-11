@@ -18,10 +18,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         private const string AvaloniaNs = "https://github.com/avaloniaui";
         public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
         {
+            if (context.ParentNodes().FirstOrDefault() is AvaloniaXamlIlDataContextTypeMetadataNode)
+            {
+                // We've already resolved the data context type for this node.
+                return node;
+            }
+
             if (node is XamlIlAstObjectNode on)
             {
-                AvaloniaXamlIlDataContextTypeMetadataNode calculatedDataContextTypeNode = null;
+                AvaloniaXamlIlDataContextTypeMetadataNode inferredDataContextTypeNode = null;
                 AvaloniaXamlIlDataContextTypeMetadataNode directiveDataContextTypeNode = null;
+                bool isDataTemplate = on.Type.GetClrType().Equals(context.GetAvaloniaTypes().DataTemplate);
 
                 for (int i = 0; i < on.Children.Count; ++i)
                 {
@@ -45,51 +52,138 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             }
                         }
                     }
-                    else if (child is XamlIlAstXamlPropertyValueNode pv
-                        && pv.Property is XamlIlAstNamePropertyReference pref
-                        && pref.Name == "DataContext"
-                        && pref.DeclaringType is XamlIlAstXmlTypeReference tref
-                        && tref.Name == "StyledElement"
-                        && tref.XmlNamespace == AvaloniaNs)
+                    else if (child is XamlIlPropertyAssignmentNode pa)
                     {
-                        var bindingType = context.GetAvaloniaTypes().IBinding;
-                        if (!pv.Values[0].Type.GetClrType().GetAllInterfaces().Contains(bindingType))
+                        if (pa.Property.Name == "DataContext"
+                            && pa.Property.DeclaringType.Equals(context.GetAvaloniaTypes().StyledElement)
+                            && pa.Values[0] is XamlIlMarkupExtensionNode ext
+                            && ext.Value is XamlIlAstObjectNode obj)
                         {
-                            calculatedDataContextTypeNode = new AvaloniaXamlIlDataContextTypeMetadataNode(on, pv.Values[0].Type.GetClrType());
+                            inferredDataContextTypeNode = ParseDataContext(context, on, obj);
                         }
-                        else if(pv.Values[0].Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension)
-                            && pv.Values[0] is XamlIlAstObjectNode binding)
+                        else if(isDataTemplate
+                            && pa.Property.Name == "DataType"
+                            && pa.Values[0] is XamlIlTypeExtensionNode dataTypeNode)
                         {
-                            IXamlIlType startType;
-                            var parentDataContextNode = context.ParentNodes().OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
-                            if (parentDataContextNode is null)
-                            {
-                                throw new XamlIlParseException("Cannot parse a compiled binding without an explicit x:DataContextType directive to give a starting data type for bindings.", binding);
-                            }
-
-                            startType = parentDataContextNode.DataContextType;
-
-                            var bindingResultType = XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, binding, startType);
-                            calculatedDataContextTypeNode = new AvaloniaXamlIlDataContextTypeMetadataNode(on, bindingResultType);
+                            inferredDataContextTypeNode = new AvaloniaXamlIlDataContextTypeMetadataNode(on, dataTypeNode.Value.GetClrType());
                         }
                     }
                 }
-                return directiveDataContextTypeNode ?? calculatedDataContextTypeNode ?? node;
+
+                // If there is no x:DataContextType directive,
+                // do more specialized inference
+                if (directiveDataContextTypeNode is null)
+                {
+                    if (isDataTemplate && inferredDataContextTypeNode is null)
+                    {
+                        // Infer data type from collection binding on a control that displays items.
+                        var parentObject = context.ParentNodes().OfType<XamlIlAstObjectNode>().FirstOrDefault();
+                        if (parentObject != null && context.GetAvaloniaTypes().IItemsPresenterHost.IsDirectlyAssignableFrom(parentObject.Type.GetClrType()))
+                        {
+                            inferredDataContextTypeNode = InferDataContextOfPresentedItem(context, on, parentObject);
+                        }
+                        else
+                        {
+                            inferredDataContextTypeNode = new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
+                        }
+                    }
+                }
+
+                return directiveDataContextTypeNode ?? inferredDataContextTypeNode ?? node;
             }
-            // TODO: Add node for DataTemplate scope.
 
             return node;
+        }
+
+        private static AvaloniaXamlIlDataContextTypeMetadataNode InferDataContextOfPresentedItem(XamlIlAstTransformationContext context, XamlIlAstObjectNode on, XamlIlAstObjectNode parentObject)
+        {
+            var parentItemsValue = parentObject
+                                            .Children.OfType<XamlIlPropertyAssignmentNode>()
+                                            .FirstOrDefault(pa => pa.Property.Name == "Items")
+                                            ?.Values[0];
+            if (parentItemsValue is null)
+            {
+                // We can't infer the collection type and the currently calculated type is definitely wrong.
+                // Notify the user that we were unable to infer the data context type if they use a compiled binding.
+                return new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
+            }
+
+            IXamlIlType itemsCollectionType = null;
+            if (context.GetAvaloniaTypes().IBinding.IsAssignableFrom(parentItemsValue.Type.GetClrType()))
+            {
+                if (parentItemsValue.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension)
+                    && parentItemsValue is XamlIlMarkupExtensionNode ext && ext.Value is XamlIlAstObjectNode parentItemsBinding)
+                {
+                    var parentItemsDataContext = context.ParentNodes().SkipWhile(n => n != parentObject).OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
+                    if (parentItemsDataContext != null)
+                    {
+                        itemsCollectionType = XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, parentItemsBinding, parentItemsDataContext.DataContextType);
+                    }
+                }
+            }
+            else
+            {
+                itemsCollectionType = parentItemsValue.Type.GetClrType();
+            }
+
+            if (itemsCollectionType != null)
+            {
+                var elementType = itemsCollectionType
+                    .GetAllInterfaces()
+                    .FirstOrDefault(i =>
+                        i.GenericTypeDefinition?.Equals(context.Configuration.WellKnownTypes.IEnumerableT) == true)
+                    .GenericArguments[0];
+                return new AvaloniaXamlIlDataContextTypeMetadataNode(on, elementType);
+            }
+            // We can't infer the collection type and the currently calculated type is definitely wrong.
+            // Notify the user that we were unable to infer the data context type if they use a compiled binding.
+            return new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
+        }
+
+        private static AvaloniaXamlIlDataContextTypeMetadataNode ParseDataContext(XamlIlAstTransformationContext context, XamlIlAstObjectNode on, XamlIlAstObjectNode obj)
+        {
+            var bindingType = context.GetAvaloniaTypes().IBinding;
+            if (!bindingType.IsAssignableFrom(obj.Type.GetClrType()))
+            {
+                return new AvaloniaXamlIlDataContextTypeMetadataNode(on, obj.Type.GetClrType());
+            }
+            else if (obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension))
+            {
+                IXamlIlType startType;
+                var parentDataContextNode = context.ParentNodes().OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
+                if (parentDataContextNode is null)
+                {
+                    throw new XamlIlParseException("Cannot parse a compiled binding without an explicit x:DataContextType directive to give a starting data type for bindings.", obj);
+                }
+
+                startType = parentDataContextNode.DataContextType;
+
+                var bindingResultType = XamlIlBindingPathHelper.UpdateCompiledBindingExtension(context, obj, startType);
+                return new AvaloniaXamlIlDataContextTypeMetadataNode(on, bindingResultType);
+            }
+
+            return null;
         }
     }
 
     class AvaloniaXamlIlDataContextTypeMetadataNode : XamlIlValueWithSideEffectNodeBase
     {
-        public IXamlIlType DataContextType { get; set; }
+        public virtual IXamlIlType DataContextType { get; }
 
         public AvaloniaXamlIlDataContextTypeMetadataNode(IXamlIlAstValueNode value, IXamlIlType targetType)
             : base(value, value)
         {
             DataContextType = targetType;
         }
+    }
+
+    class AvaloniaXamlIlUninferrableDataContextMetadataNode : AvaloniaXamlIlDataContextTypeMetadataNode
+    {
+        public AvaloniaXamlIlUninferrableDataContextMetadataNode(IXamlIlAstValueNode value)
+            : base(value, null)
+        {
+        }
+
+        public override IXamlIlType DataContextType => throw new XamlIlTransformException("Unable to infer DataContext type for compiled bindings nested within this element.", Value);
     }
 }

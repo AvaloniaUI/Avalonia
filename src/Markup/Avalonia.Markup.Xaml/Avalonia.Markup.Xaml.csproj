@@ -51,7 +51,7 @@
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlDataContextTypeTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlDesignPropertiesTransformer.cs" />
-        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlNestedScopeMetadataRemover.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlCompiledBindingsMetadataRemover.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlMetadataRemover.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlPropertyPathTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlRootObjectScopeTransformer.cs" />

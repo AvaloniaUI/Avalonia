@@ -57,7 +57,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AddNameScopeRegistration(),
                 new AvaloniaXamlIlDataContextTypeTransformer(),
                 new AvaloniaXamlIlBindingPathTransformer(),
-                new AvaloniaXamlIlNestedScopeMetadataRemover()
+                new AvaloniaXamlIlCompiledBindingsMetadataRemover()
                 );
 
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());

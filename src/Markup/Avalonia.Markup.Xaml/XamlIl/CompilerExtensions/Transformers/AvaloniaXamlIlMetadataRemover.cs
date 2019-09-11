@@ -11,9 +11,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (node is AvaloniaXamlIlTargetTypeMetadataNode targetType)
                 return targetType.Value;
 
-            if (node is AvaloniaXamlIlDataContextTypeMetadataNode dataContextType)
-                return dataContextType.Value;
-
             return node;
         }
     }
