@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -47,6 +48,11 @@ namespace ControlCatalog.Pages
 
                     SelectedItem = Items[random.Next(Items.Count - 1)];
                 });
+
+                ClearItemsCommand = ReactiveCommand.Create(() =>
+                {
+                    Items.Clear();
+                });
             }
 
             public ObservableCollection<string> Items { get; }
@@ -60,13 +66,24 @@ namespace ControlCatalog.Pages
             }
 
 
-            public ObservableCollection<string> SelectedItems { get; }
+            private IList<string> _selectedItems;
+
+            public IList<string> SelectedItems
+            {
+                get { return _selectedItems; }
+                set { this.RaiseAndSetIfChanged(ref _selectedItems, value); }
+            }
+
 
             public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
 
             public ReactiveCommand<Unit, Unit> RemoveItemCommand { get; }
 
             public ReactiveCommand<Unit, Unit> SelectRandomItemCommand { get; }
+
+            public ReactiveCommand<Unit, Unit> ClearItemsCommand { get; }
+
+            public ReactiveCommand<Unit, Unit> PopulateItemsCommand { get; }
 
             public SelectionMode SelectionMode
             {
