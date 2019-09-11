@@ -112,7 +112,7 @@ namespace Avalonia.Controls.Primitives
         private bool _syncingSelectedItems;
         private int _updateCount;
         private int _updateSelectedIndex;
-        private IList _updateSelectedItems;
+        private object _updateSelectedItem;
 
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
@@ -160,7 +160,7 @@ namespace Avalonia.Controls.Primitives
                 else
                 {
                     _updateSelectedIndex = value;
-                    _updateSelectedItems = null;
+                    _updateSelectedItem = null;
                 }
             }
         }
@@ -183,7 +183,7 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    _updateSelectedItems = new AvaloniaList<object>(value);
+                    _updateSelectedItem = value;
                     _updateSelectedIndex = int.MinValue;
                 }
             }
@@ -1075,9 +1075,9 @@ namespace Avalonia.Controls.Primitives
             {
                 SelectedIndex = _updateSelectedIndex;
             }
-            else if (_updateSelectedItems != null)
+            else if (_updateSelectedItem != null)
             {
-                SelectedItems = _updateSelectedItems;
+                SelectedItem = _updateSelectedItem;
             }
         }
 
