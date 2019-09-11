@@ -112,7 +112,8 @@ namespace Avalonia.FreeDesktop
                 }
                 _idsToItems.Clear();
                 _itemsToIds.Clear();
-                LayoutUpdated?.Invoke((_revision++, 0));
+                _revision++;
+                LayoutUpdated?.Invoke((_revision, 0));
             }
 
             void QueueReset()
