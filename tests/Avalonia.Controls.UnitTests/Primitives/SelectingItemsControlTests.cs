@@ -921,6 +921,26 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.True(raised);
         }
 
+        [Fact]
+        public void Can_Set_Both_SelectedItem_And_SelectedItems_During_Initialization()
+        {
+            // Issue #2969.
+            var target = new ListBox();
+            var selectedItems = new List<object>();
+
+            target.BeginInit();
+            target.Template = Template();
+            target.Items = new[] { "Foo", "Bar", "Baz" };
+            target.SelectedItems = selectedItems;
+            target.SelectedItem = "Bar";
+            target.EndInit();
+
+            Assert.Equal("Bar", target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Same(selectedItems, target.SelectedItems);
+            Assert.Equal(new[] { "Bar" }, selectedItems);
+        }
+
         private FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>

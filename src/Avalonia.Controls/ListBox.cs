@@ -66,7 +66,11 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        public new IList SelectedItems => base.SelectedItems;
+        public new IList SelectedItems
+        {
+            get => base.SelectedItems;
+            set => base.SelectedItems = value;
+        }
 
         /// <summary>
         /// Gets or sets the selection mode.
