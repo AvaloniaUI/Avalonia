@@ -894,6 +894,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal("Qux", target.SelectedItem);
         }
 
+        [Fact]
+        public void AutoScrollToSelectedItem_Causes_Scroll_To_SelectedItem()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var raised = false;
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
+
+            target.SelectedIndex = 2;
+
+            Assert.True(raised);
+        }
+
         private FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
