@@ -78,7 +78,7 @@ namespace Avalonia.FreeDesktop
 
 
 
-            public bool IsNativeMenuExported { get; }
+            public bool IsNativeMenuExported { get; private set; }
             public event EventHandler OnIsNativeMenuExportedChanged;
 
             public void SetNativeMenu(NativeMenu menu)
@@ -255,6 +255,14 @@ namespace Avalonia.FreeDesktop
             {
                 var menu = GetMenu(ParentId);
                 var rv = (_revision, GetLayout(menu.item, menu.menu, RecursionDepth, PropertyNames));
+                if (!IsNativeMenuExported)
+                {
+                    IsNativeMenuExported = true;
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        OnIsNativeMenuExportedChanged?.Invoke(this, EventArgs.Empty);
+                    });
+                }
                 return Task.FromResult(rv);
             }
 
