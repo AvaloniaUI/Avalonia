@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
@@ -10,16 +11,17 @@ namespace ControlCatalog.Pages
         private Carousel _carousel;
         private Button _left;
         private Button _right;
-        private ComboBox _transition;
-        private ComboBox _orientation;
+        private Button _add;
 
         public CarouselPage()
         {
             this.InitializeComponent();
+
+            var vm = new ViewModel();
+            DataContext = vm;
             _left.Click += (s, e) => _carousel.Previous();
             _right.Click += (s, e) => _carousel.Next();
-            _transition.SelectionChanged += TransitionChanged;
-            _orientation.SelectionChanged += TransitionChanged;
+            _add.Click += (s, e) => vm.Items.Add("boo");
         }
 
         private void InitializeComponent()
@@ -28,24 +30,19 @@ namespace ControlCatalog.Pages
             _carousel = this.FindControl<Carousel>("carousel");
             _left = this.FindControl<Button>("left");
             _right = this.FindControl<Button>("right");
-            _transition = this.FindControl<ComboBox>("transition");
-            _orientation = this.FindControl<ComboBox>("orientation");
+            _add = this.FindControl<Button>("add");
         }
 
-        private void TransitionChanged(object sender, SelectionChangedEventArgs e)
+        private class ViewModel
         {
-            switch (_transition.SelectedIndex)
+            public ViewModel()
             {
-                case 0:
-                    _carousel.PageTransition = null;
-                    break;
-                case 1:
-                    _carousel.PageTransition = new PageSlide(TimeSpan.FromSeconds(0.25), _orientation.SelectedIndex == 0 ? PageSlide.SlideAxis.Horizontal : PageSlide.SlideAxis.Vertical);
-                    break;
-                case 2:
-                    _carousel.PageTransition = new CrossFade(TimeSpan.FromSeconds(0.25));
-                    break;
+                Items = new ObservableCollection<string> { "foo", "bar", "baz" };
             }
+
+            public ObservableCollection<string> Items { get; }
+
+            public object SelectedItem { get; set; } = "foo";
         }
     }
 }
