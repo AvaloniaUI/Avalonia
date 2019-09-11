@@ -27,7 +27,9 @@ namespace Avalonia.Controls.UnitTests
                     ContextMenu = sut
                 };
 
-                new Window { Content = target }.ApplyTemplate();
+                var window = new Window { Content = target };
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 int openedCount = 0;
 
@@ -53,7 +55,9 @@ namespace Avalonia.Controls.UnitTests
                     ContextMenu = sut
                 };
 
-                new Window { Content = target }.ApplyTemplate();
+                var window = new Window { Content = target };
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 sut.Open(target);
 
@@ -86,6 +90,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var window = new Window {Content = target};
                 window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 _mouse.Click(target, MouseButton.Right);
 
@@ -115,7 +120,8 @@ namespace Avalonia.Controls.UnitTests
 
                 var window = new Window {Content = target};
                 window.ApplyTemplate();
-                
+                window.Presenter.ApplyTemplate();
+
                 _mouse.Click(target, MouseButton.Right);
 
                 Assert.True(sut.IsOpen);

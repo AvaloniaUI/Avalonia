@@ -18,7 +18,7 @@ namespace Avalonia.Controls
             public static readonly RadioButtonGroupManager Default = new RadioButtonGroupManager();
             static readonly ConditionalWeakTable<IRenderRoot, RadioButtonGroupManager> s_registeredVisualRoots
                 = new ConditionalWeakTable<IRenderRoot, RadioButtonGroupManager>();
-            
+
             readonly Dictionary<string, List<WeakReference<RadioButton>>> s_registeredGroups
                 = new Dictionary<string, List<WeakReference<RadioButton>>>();
 
@@ -127,13 +127,11 @@ namespace Avalonia.Controls
         {
             if (!string.IsNullOrEmpty(GroupName))
             {
-                var manager = RadioButtonGroupManager.GetOrCreateForRoot(e.Root);
-                if (manager != _groupManager)
-                {
-                    _groupManager.Remove(this, _groupName);
-                    _groupManager = manager;
-                    manager.Add(this);
-                }
+                _groupManager?.Remove(this, _groupName);
+
+                _groupManager = RadioButtonGroupManager.GetOrCreateForRoot(e.Root);
+
+                _groupManager.Add(this);
             }
             base.OnAttachedToVisualTree(e);
         }
@@ -141,9 +139,10 @@ namespace Avalonia.Controls
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            if (!string.IsNullOrEmpty(GroupName) && _groupManager != null)
+
+            if (!string.IsNullOrEmpty(GroupName))
             {
-                _groupManager.Remove(this, _groupName);
+                _groupManager?.Remove(this, _groupName);
             }
         }
 
@@ -152,9 +151,9 @@ namespace Avalonia.Controls
             string oldGroupName = GroupName;
             if (newGroupName != oldGroupName)
             {
-                if (!string.IsNullOrEmpty(oldGroupName) && _groupManager != null)
+                if (!string.IsNullOrEmpty(oldGroupName))
                 {
-                    _groupManager.Remove(this, oldGroupName);
+                    _groupManager?.Remove(this, oldGroupName);
                 }
                 _groupName = newGroupName;
                 if (!string.IsNullOrEmpty(newGroupName))
@@ -181,7 +180,7 @@ namespace Avalonia.Controls
                         .GetVisualChildren()
                         .OfType<RadioButton>()
                         .Where(x => x != this);
-                    
+
                     foreach (var sibling in siblings)
                     {
                         if (sibling.IsChecked.GetValueOrDefault())

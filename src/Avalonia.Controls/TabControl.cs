@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
@@ -9,6 +10,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -16,7 +18,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A tab control that displays a tab strip along with the content of the selected tab.
     /// </summary>
-    public class TabControl : SelectingItemsControl
+    public class TabControl : SelectingItemsControl, IContentPresenterHost
     {
         /// <summary>
         /// Defines the <see cref="TabStripPlacement"/> property.
@@ -68,10 +70,6 @@ namespace Avalonia.Controls
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
-            ContentControlMixin.Attach<TabControl>(
-                SelectedContentProperty,
-                x => x.LogicalChildren,
-                "PART_SelectedContentHost");
         }
 
         /// <summary>
@@ -136,7 +134,31 @@ namespace Avalonia.Controls
 
         internal ItemsPresenter ItemsPresenterPart { get; private set; }
 
-        internal ContentPresenter ContentPart { get; private set; }
+        internal IContentPresenter ContentPart { get; private set; }
+
+        /// <inheritdoc/>
+        IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
+
+        /// <inheritdoc/>
+        bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
+        {
+            return RegisterContentPresenter(presenter);
+        }
+
+        /// <summary>
+        /// Called when an <see cref="IContentPresenter"/> is registered with the control.
+        /// </summary>
+        /// <param name="presenter">The presenter.</param>
+        protected virtual bool RegisterContentPresenter(IContentPresenter presenter)
+        {
+            if (presenter.Name == "PART_SelectedContentHost")
+            {
+                ContentPart = presenter;
+                return true;
+            }
+
+            return false;
+        }
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
@@ -148,8 +170,6 @@ namespace Avalonia.Controls
             base.OnTemplateApplied(e);
 
             ItemsPresenterPart = e.NameScope.Get<ItemsPresenter>("PART_ItemsPresenter");
-
-            ContentPart = e.NameScope.Get<ContentPresenter>("PART_SelectedContentHost");
         }
 
         /// <inheritdoc/>
