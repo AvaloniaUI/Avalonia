@@ -295,7 +295,7 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         public override void ScrollIntoView(object item)
         {
-            if(Items != null)
+            if (Items != null)
             {
                 var index = Items.IndexOf(item);
 
