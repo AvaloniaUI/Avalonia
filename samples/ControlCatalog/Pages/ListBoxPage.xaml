@@ -10,11 +10,13 @@
               HorizontalAlignment="Center"
               Spacing="16">
       <StackPanel Orientation="Vertical" Spacing="8">
-        <ListBox Items="{Binding Items}" SelectedItems="{Binding SelectedItems}" SelectionMode="{Binding SelectionMode}" Width="250" Height="350"></ListBox>
+        <ListBox Items="{Binding Items}" SelectedItem="{Binding SelectedItem}" AutoScrollToSelectedItem="True"  SelectedItems="{Binding SelectedItems}" SelectionMode="{Binding SelectionMode}" Width="250" Height="350"></ListBox>
 
         <Button Command="{Binding AddItemCommand}">Add</Button>
 
         <Button Command="{Binding RemoveItemCommand}">Remove</Button>
+
+        <Button Command="{Binding SelectRandomItemCommand}">Select Random Item</Button>
 
         <ComboBox SelectedIndex="{Binding SelectionMode, Mode=TwoWay}">
           <ComboBoxItem>Single</ComboBoxItem>

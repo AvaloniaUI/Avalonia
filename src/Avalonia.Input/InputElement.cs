@@ -565,9 +565,17 @@ namespace Avalonia.Input
         {
             IsEffectivelyEnabled = IsEnabledCore && (parent?.IsEffectivelyEnabled ?? true);
 
-            foreach (var child in this.GetVisualChildren().OfType<InputElement>())
+            // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
+            // will cause extra allocations and overhead.
+            
+            var children = VisualChildren;
+
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (int i = 0; i < children.Count; ++i)
             {
-                child.UpdateIsEffectivelyEnabled(this);
+                var child = children[i] as InputElement;
+
+                child?.UpdateIsEffectivelyEnabled(this);
             }
         }
     }
