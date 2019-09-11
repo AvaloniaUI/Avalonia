@@ -183,27 +183,27 @@ namespace Avalonia.Controls.UnitTests
 
             ApplyTemplate(target);
 
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             var dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = ((Button)target.ContentPart.Child).DataContext;
             Assert.Equal(items[1], dataContext);
 
             target.SelectedIndex = 2;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Base", dataContext);
 
             target.SelectedIndex = 3;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Qux", dataContext);
 
             target.SelectedIndex = 4;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = target.ContentPart.DataContext;
             Assert.Equal("Base", dataContext);
         }
@@ -279,7 +279,7 @@ namespace Avalonia.Controls.UnitTests
             };
 
             ApplyTemplate(target);
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
 
             var content = Assert.IsType<TextBlock>(target.ContentPart.Child);
             Assert.Equal("bar", content.Tag);
