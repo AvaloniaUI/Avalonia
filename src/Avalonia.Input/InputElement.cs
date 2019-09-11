@@ -565,9 +565,13 @@ namespace Avalonia.Input
         {
             IsEffectivelyEnabled = IsEnabledCore && (parent?.IsEffectivelyEnabled ?? true);
 
-            foreach (var child in this.GetVisualChildren().OfType<InputElement>())
+            var children = VisualChildren;
+
+            for (int i = 0; i < children.Count; ++i)
             {
-                child.UpdateIsEffectivelyEnabled(this);
+                var child = children[i] as InputElement;
+
+                child?.UpdateIsEffectivelyEnabled(this);
             }
         }
     }
