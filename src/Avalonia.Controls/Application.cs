@@ -32,7 +32,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
+    public class Application : AvaloniaObject, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
     {
         /// <summary>
         /// The application-global data templates.
