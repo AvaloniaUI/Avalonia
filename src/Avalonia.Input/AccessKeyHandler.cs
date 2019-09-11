@@ -231,15 +231,6 @@ namespace Avalonia.Input
                     }
 
                     break;
-
-                case Key.F10:
-                    _owner.ShowAccessKeys = _showingAccessKeys = true;
-                    if (MainMenu != null)
-                    {
-                        MainMenu.Open();
-                        e.Handled = true;
-                    }
-                    break;
             }
         }
 
