@@ -28,6 +28,11 @@ namespace Avalonia
         {
             Diagnostics.DevTools.Attach(control, gesture);
         }
+
+        public static void OpenDevTools(this TopLevel control)
+        {
+            Diagnostics.DevTools.OpenDevTools(control);
+        }
     }
 }
 
@@ -73,7 +78,7 @@ namespace Avalonia.Diagnostics
                 RoutingStrategies.Tunnel);
         }
 
-        private static void OpenDevTools(TopLevel control)
+        internal static void OpenDevTools(TopLevel control)
         {
             if (s_open.TryGetValue(control, out var devToolsWindow))
             {
