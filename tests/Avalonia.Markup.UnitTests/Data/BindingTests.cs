@@ -155,6 +155,18 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public void OneTime_Binding_Releases_Subscription_If_DataContext_Set_Later()
+        {
+            var target = new TextBlock();
+            var source = new Source { Foo = "foo" };
+
+            target.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneTime));
+            target.DataContext = source;
+
+            Assert.Equal(0, source.SubscriberCount);
+        }
+
+        [Fact]
         public void OneWayToSource_Binding_Should_Be_Set_Up()
         {
             var source = new Source { Foo = "foo" };
@@ -567,6 +579,23 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(expected, child.DoubleValue);
         }
 
+        [Fact]
+        public void Combined_OneTime_And_OneWayToSource_Bindings_Should_Release_Subscriptions()
+        {
+            var target1 = new TextBlock();
+            var target2 = new TextBlock();
+            var root = new Panel { Children = { target1, target2 } };
+            var source = new Source { Foo = "foo" };
+
+            using (target1.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneTime)))
+            using (target2.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneWayToSource)))
+            {
+                root.DataContext = source;
+            }
+
+            Assert.Equal(0, source.SubscriberCount);
+        }
+
         private class StyledPropertyClass : AvaloniaObject
         {
             public static readonly StyledProperty<double> DoubleValueProperty =
@@ -646,6 +675,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
         public class Source : INotifyPropertyChanged
         {
+            private PropertyChangedEventHandler _propertyChanged;
             private string _foo;
 
             public string Foo
@@ -661,11 +691,18 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public int FooSetCount { get; private set; }
 
-            public event PropertyChangedEventHandler PropertyChanged;
+
+            public int SubscriberCount { get; private set; }
+
+            public event PropertyChangedEventHandler PropertyChanged
+            {
+                add { _propertyChanged += value; ++SubscriberCount; }
+                remove { _propertyChanged += value; --SubscriberCount; }
+            }
 
             private void RaisePropertyChanged([CallerMemberName] string prop = "")
             {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+                _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
             }
         }
 
