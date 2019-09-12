@@ -8,8 +8,12 @@ namespace Avalonia.Data.Core
     public abstract class ExpressionNode
     {
         private static readonly object CacheInvalid = new object();
+
         protected static readonly WeakReference<object> UnsetReference = 
             new WeakReference<object>(AvaloniaProperty.UnsetValue);
+
+        protected static readonly WeakReference<object> NullReference =
+            new WeakReference<object>(null);
 
         private WeakReference<object> _target = UnsetReference;
         private Action<object> _subscriber;
@@ -98,7 +102,7 @@ namespace Avalonia.Data.Core
 
             if (notification == null)
             {
-                LastValue = new WeakReference<object>(value);
+                LastValue = value != null ? new WeakReference<object>(value) : NullReference;
 
                 if (Next != null)
                 {
@@ -111,7 +115,7 @@ namespace Avalonia.Data.Core
             }
             else
             {
-                LastValue = new WeakReference<object>(notification.Value);
+                LastValue = notification.Value != null ? new WeakReference<object>(notification.Value) : NullReference;
 
                 if (Next != null)
                 {

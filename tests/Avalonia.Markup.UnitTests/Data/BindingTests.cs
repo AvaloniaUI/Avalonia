@@ -216,7 +216,7 @@ namespace Avalonia.Markup.UnitTests.Data
             // When running tests under NCrunch, NCrunch replaces the standard StackOverflowException
             // with its own, which will be caught by our code. Detect the stackoverflow anyway, by
             // making sure the target property was only set once.
-            Assert.Equal(1, source.FooSetCount);
+            Assert.Equal(2, source.FooSetCount);
         }
 
         [Fact]
