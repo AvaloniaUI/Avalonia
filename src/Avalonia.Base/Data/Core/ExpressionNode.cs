@@ -140,8 +140,8 @@ namespace Avalonia.Data.Core
             }
             else if (target != AvaloniaProperty.UnsetValue)
             {
-                StartListeningCore(_target);
                 _listening = true;
+                StartListeningCore(_target);
             }
             else
             {
