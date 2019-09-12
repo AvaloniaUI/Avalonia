@@ -199,6 +199,7 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public void OneWayToSource_Binding_Should_Not_StackOverflow_With_Null_Value()
         {
+            // Issue #2912
             var target = new TextBlock { Text = null };
             var binding = new Binding
             {
