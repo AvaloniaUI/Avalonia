@@ -37,7 +37,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     if (child is XamlIlAstXmlDirective directive)
                     {
                         if (directive.Namespace == XamlNamespaces.Xaml2006
-                            && directive.Name == "DataContextType"
+                            && directive.Name == "DataType"
                             && directive.Values.Count == 1)
                         {
                             on.Children.RemoveAt(i);
@@ -49,7 +49,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             }
                             else
                             {
-                                throw new XamlIlParseException("x:DataContextType should be set to a type name.", directive.Values[0]);
+                                throw new XamlIlParseException("x:DataType should be set to a type name.", directive.Values[0]);
                             }
                         }
                     }
@@ -71,7 +71,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     }
                 }
 
-                // If there is no x:DataContextType directive,
+                // If there is no x:DataType directive,
                 // do more specialized inference
                 if (directiveDataContextTypeNode is null)
                 {
@@ -154,7 +154,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 var parentDataContextNode = context.ParentNodes().OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
                 if (parentDataContextNode is null)
                 {
-                    throw new XamlIlParseException("Cannot parse a compiled binding without an explicit x:DataContextType directive to give a starting data type for bindings.", obj);
+                    throw new XamlIlParseException("Cannot parse a compiled binding without an explicit x:DataType directive to give a starting data type for bindings.", obj);
                 }
 
                 startType = parentDataContextNode.DataContextType;

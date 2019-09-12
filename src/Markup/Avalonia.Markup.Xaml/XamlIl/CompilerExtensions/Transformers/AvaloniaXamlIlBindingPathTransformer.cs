@@ -19,7 +19,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 var parentDataContextNode = context.ParentNodes().OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
                 if (parentDataContextNode is null)
                 {
-                    throw new XamlIlParseException("Cannot parse a compiled binding without an explicit x:DataContextType directive to give a starting data type for bindings.", binding);
+                    throw new XamlIlParseException("Cannot parse a compiled binding without an explicit x:DataType directive to give a starting data type for bindings.", binding);
                 }
 
                 startType = parentDataContextNode.DataContextType;

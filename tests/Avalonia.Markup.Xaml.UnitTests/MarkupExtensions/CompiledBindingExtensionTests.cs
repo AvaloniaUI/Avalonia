@@ -25,7 +25,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        x:DataContextType='local:TestDataContext'>
+        x:DataType='local:TestDataContext'>
     <TextBlock Text='{CompiledBinding StringProperty}' Name='textBlock' />
 </Window>";
                 var loader = new AvaloniaXamlLoader();
@@ -54,7 +54,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        x:DataContextType='local:TestDataContext'>
+        x:DataType='local:TestDataContext'>
     <TextBlock Text='{CompiledBinding TaskProperty^}' Name='textBlock' />
 </Window>";
                 var loader = new AvaloniaXamlLoader();
@@ -83,7 +83,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        x:DataContextType='local:TestDataContext'>
+        x:DataType='local:TestDataContext'>
     <TextBlock Text='{CompiledBinding ObservableProperty^}' Name='textBlock' />
 </Window>";
                 var loader = new AvaloniaXamlLoader();
@@ -115,7 +115,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        x:DataContextType='local:TestDataContext'>
+        x:DataType='local:TestDataContext'>
     <TextBlock Text='{CompiledBinding ListProperty[3]}' Name='textBlock' />
 </Window>";
                 var loader = new AvaloniaXamlLoader();
@@ -142,7 +142,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        x:DataContextType='local:TestDataContext'>
+        x:DataType='local:TestDataContext'>
     <TextBlock Text='{CompiledBinding ArrayProperty[3]}' Name='textBlock' />
 </Window>";
                 var loader = new AvaloniaXamlLoader();
@@ -169,7 +169,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        x:DataContextType='local:TestDataContext'>
+        x:DataType='local:TestDataContext'>
     <TextBlock Text='{CompiledBinding ObservableCollectionProperty[3]}' Name='textBlock' />
 </Window>";
                 var loader = new AvaloniaXamlLoader();
@@ -200,7 +200,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        x:DataContextType='local:TestDataContext'>
+        x:DataType='local:TestDataContext'>
     <TextBlock DataContext='{CompiledBinding StringProperty}' Text='{CompiledBinding}' Name='textBlock' />
 </Window>";
                 var loader = new AvaloniaXamlLoader();
@@ -229,7 +229,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        x:DataContextType='local:TestDataContext'>
+        x:DataType='local:TestDataContext'>
     <TextBlock Text='{CompiledBinding NonIntegerIndexerProperty[Test]}' Name='textBlock' />
 </Window>";
                 var loader = new AvaloniaXamlLoader();
@@ -259,7 +259,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        x:DataContextType='local:TestDataContext'>
+        x:DataType='local:TestDataContext'>
     <Window.DataTemplates>
         <DataTemplate DataType='{x:Type x:String}'>
             <TextBlock Text='{CompiledBinding}' Name='textBlock' />
@@ -295,7 +295,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        x:DataContextType='local:TestDataContext'>
+        x:DataType='local:TestDataContext'>
     <Window.DataTemplates>
         <DataTemplate>
             <TextBlock Text='{CompiledBinding StringProperty}' Name='textBlock' />
@@ -317,7 +317,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        x:DataContextType='local:TestDataContext'>
+        x:DataType='local:TestDataContext'>
     <ItemsControl Items='{CompiledBinding ListProperty}' Name='target'>
         <ItemsControl.DataTemplates>
             <DataTemplate>
@@ -353,7 +353,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
-        x:DataContextType='local:TestDataContext'>
+        x:DataType='local:TestDataContext'>
     <ItemsControl Name='target'>
         <ItemsControl.DataTemplates>
             <DataTemplate>
