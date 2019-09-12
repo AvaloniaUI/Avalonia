@@ -9,10 +9,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
         {
             if (node is NestedScopeMetadataNode nestedScope)
-                return nestedScope.Value;
+                node = nestedScope.Value;
 
             if (node is AvaloniaXamlIlDataContextTypeMetadataNode dataContextType)
-                return dataContextType.Value;
+                node = dataContextType.Value;
 
             return node;
         }

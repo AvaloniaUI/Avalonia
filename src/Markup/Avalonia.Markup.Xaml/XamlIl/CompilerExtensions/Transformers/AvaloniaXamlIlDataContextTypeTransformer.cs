@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Avalonia.Markup.Parsers;
@@ -143,7 +144,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         private static AvaloniaXamlIlDataContextTypeMetadataNode ParseDataContext(XamlIlAstTransformationContext context, XamlIlAstObjectNode on, XamlIlAstObjectNode obj)
         {
             var bindingType = context.GetAvaloniaTypes().IBinding;
-            if (!bindingType.IsAssignableFrom(obj.Type.GetClrType()))
+            if (!bindingType.IsAssignableFrom(obj.Type.GetClrType()) && !obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().BindingExtension))
             {
                 return new AvaloniaXamlIlDataContextTypeMetadataNode(on, obj.Type.GetClrType());
             }
@@ -166,6 +167,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         }
     }
 
+    [DebuggerDisplay("DataType = {DataContextType}")]
     class AvaloniaXamlIlDataContextTypeMetadataNode : XamlIlValueWithSideEffectNodeBase
     {
         public virtual IXamlIlType DataContextType { get; }
@@ -177,6 +179,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         }
     }
 
+    [DebuggerDisplay("DataType = Unknown")]
     class AvaloniaXamlIlUninferrableDataContextMetadataNode : AvaloniaXamlIlDataContextTypeMetadataNode
     {
         public AvaloniaXamlIlUninferrableDataContextMetadataNode(IXamlIlAstValueNode value)
