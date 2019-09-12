@@ -39,6 +39,11 @@ namespace Avalonia.Controls
 
             foreach (Control child in children)
             {
+                if (!child.IsVisible)
+                {
+                    continue;
+                }
+
                 double childWidth = child.DesiredSize.Width;
                 double childHeight = child.DesiredSize.Height;
 
