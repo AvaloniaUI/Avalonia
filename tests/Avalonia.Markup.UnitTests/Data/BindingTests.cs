@@ -596,6 +596,29 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(0, source.SubscriberCount);
         }
 
+        [Fact]
+        public void OneWayToSource_Binding_Does_Not_Override_TwoWay_Binding()
+        {
+            // Issue #2983
+            var target1 = new TextBlock();
+            var target2 = new TextBlock { Text = "OneWayToSource" };
+            var source = new Source { Foo = "foo" };
+            var root = new Panel
+            {
+                DataContext = source,
+                Children = { target1, target2 }
+            };
+
+            target1.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.TwoWay));
+            target2.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneWayToSource));
+
+            Assert.Equal("OneWayToSource", source.Foo);
+
+            target1.Text = "TwoWay";
+
+            Assert.Equal("TwoWay", source.Foo);
+        }
+
         private class StyledPropertyClass : AvaloniaObject
         {
             public static readonly StyledProperty<double> DoubleValueProperty =
