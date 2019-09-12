@@ -197,6 +197,29 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public void OneWayToSource_Binding_Should_Not_StackOverflow_With_Null_Value()
+        {
+            var target = new TextBlock { Text = null };
+            var binding = new Binding
+            {
+                Path = "Foo",
+                Mode = BindingMode.OneWayToSource,
+            };
+
+            target.Bind(TextBox.TextProperty, binding);
+
+            var source = new Source { Foo = "foo" };
+            target.DataContext = source;
+
+            Assert.Null(source.Foo);
+
+            // When running tests under NCrunch, NCrunch replaces the standard StackOverflowException
+            // with its own, which will be caught by our code. Detect the stackoverflow anyway, by
+            // making sure the target property was only set once.
+            Assert.Equal(1, source.FooSetCount);
+        }
+
+        [Fact]
         public void Default_BindingMode_Should_Be_Used()
         {
             var source = new Source { Foo = "foo" };
@@ -630,9 +653,12 @@ namespace Avalonia.Markup.UnitTests.Data
                 set
                 {
                     _foo = value;
+                    ++FooSetCount;
                     RaisePropertyChanged();
                 }
             }
+
+            public int FooSetCount { get; private set; }
 
             public event PropertyChangedEventHandler PropertyChanged;
 
