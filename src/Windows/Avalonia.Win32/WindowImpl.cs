@@ -619,7 +619,7 @@ namespace Avalonia.Win32
                         timestamp,
                         _owner,
                         RawPointerEventType.LeaveWindow,
-                        new Point(), WindowsKeyboardDevice.Instance.Modifiers);
+                        new Point(-1,-1), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN:
@@ -634,7 +634,7 @@ namespace Avalonia.Win32
                             : msg == (int)UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN
                                 ? RawPointerEventType.RightButtonDown
                                 : RawPointerEventType.MiddleButtonDown,
-                        new Point(0, 0), GetMouseModifiers(wParam));
+                        PointToClient(PointFromLParam(lParam)), GetMouseModifiers(wParam));
                     break;
                 case WindowsMessage.WM_TOUCH:
                     var touchInputs = new TOUCHINPUT[wParam.ToInt32()];
