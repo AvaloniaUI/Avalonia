@@ -142,6 +142,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.DataContext = new { Foo = "foo" };
                 window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 Assert.Equal("foo", border.DataContext);
             }
