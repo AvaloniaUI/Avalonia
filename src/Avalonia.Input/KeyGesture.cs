@@ -17,10 +17,6 @@ namespace Avalonia.Input
             { "+", Key.OemPlus }, { "-", Key.OemMinus }, { ".", Key.OemPeriod }
         };
 
-        public KeyGesture()
-        {
-        }
-
         [Obsolete("Use constructor taking KeyModifiers")]
         public KeyGesture(Key key, InputModifiers modifiers)
         {
