@@ -163,7 +163,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 return new AvaloniaXamlIlDataContextTypeMetadataNode(on, bindingResultType);
             }
 
-            return null;
+            return new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
         }
     }
 

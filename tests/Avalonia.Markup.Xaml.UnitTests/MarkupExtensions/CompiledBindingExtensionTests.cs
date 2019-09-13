@@ -310,6 +310,25 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void ThrowsOnUninferrableDataTypeFromNonCompiledDataContextBindingWithCompiledBindingPath()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <ContentControl Name='target' DataContext='{Binding}'>
+        <TextBlock Text='{CompiledBinding StringProperty}' Name='textBlock' />
+    </ContentControl>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                Assert.Throws<XamlIlTransformException>(() => loader.Load(xaml));
+            }
+        }
+
+        [Fact]
         public void InfersDataTemplateTypeFromParentCollectionItemsType()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
