@@ -208,6 +208,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var textBlock = window.FindControl<TextBlock>("textBlock");
 
                 window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 var dataContext = new TestDataContext
                 {
