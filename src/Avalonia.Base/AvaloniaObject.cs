@@ -82,6 +82,7 @@ namespace Avalonia
 
             set
             {
+                VerifyAccess();
                 if (_inheritanceParent != value)
                 {
                     if (_inheritanceParent != null)
@@ -89,25 +90,33 @@ namespace Avalonia
                         _inheritanceParent.InheritablePropertyChanged -= ParentPropertyChanged;
                     }
 
-                    var properties = AvaloniaPropertyRegistry.Instance.GetRegistered(this)
-                        .Concat(AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(this.GetType()));
-                    var inherited = (from property in properties
-                                     where property.Inherits
-                                     select new
-                                     {
-                                         Property = property,
-                                         Value = GetValue(property),
-                                     }).ToList();
-
+                    var oldInheritanceParent = _inheritanceParent;
                     _inheritanceParent = value;
+                    var valuestore = _values;
 
-                    foreach (var i in inherited)
+                    foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegisteredInherited(GetType()))
                     {
-                        object newValue = GetValue(i.Property);
-
-                        if (!Equals(i.Value, newValue))
+                        if (valuestore != null && valuestore.GetValue(property) != AvaloniaProperty.UnsetValue)
                         {
-                            RaisePropertyChanged(i.Property, i.Value, newValue, BindingPriority.LocalValue);
+                            // if local value set there can be no change
+                            continue;
+                        }
+                        // get the value as it would have been with the previous InheritanceParent
+                        object oldValue;
+                        if (oldInheritanceParent is AvaloniaObject aobj)
+                        {
+                            oldValue = aobj.GetValueOrDefaultUnchecked(property);
+                        }
+                        else
+                        {
+                            oldValue = ((IStyledPropertyAccessor)property).GetDefaultValue(GetType());
+                        }
+
+                        object newValue = GetDefaultValue(property);
+
+                        if (!Equals(oldValue, newValue))
+                        {
+                            RaisePropertyChanged(property, oldValue, newValue, BindingPriority.LocalValue);
                         }
                     }
 

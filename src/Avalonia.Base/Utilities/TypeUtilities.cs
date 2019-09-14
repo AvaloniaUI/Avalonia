@@ -13,7 +13,7 @@ namespace Avalonia.Utilities
     /// </summary>
     public static class TypeUtilities
     {
-        private static int[] Conversions =
+        private static readonly int[] Conversions =
         {
             0b101111111111101, // Boolean
             0b100001111111110, // Char
@@ -32,7 +32,7 @@ namespace Avalonia.Utilities
             0b111111111111111, // String
         };
 
-        private static int[] ImplicitConversions =
+        private static readonly int[] ImplicitConversions =
         {
             0b000000000000001, // Boolean
             0b001110111100010, // Char
@@ -51,7 +51,7 @@ namespace Avalonia.Utilities
             0b100000000000000, // String
         };
 
-        private static Type[] InbuiltTypes =
+        private static readonly Type[] InbuiltTypes =
         {
             typeof(Boolean),
             typeof(Char),
@@ -70,7 +70,7 @@ namespace Avalonia.Utilities
             typeof(String),
         };
 
-        private static readonly Type[] NumericTypes = new[]
+        private static readonly Type[] NumericTypes =
         {
             typeof(Byte),
             typeof(Decimal),
@@ -188,8 +188,7 @@ namespace Avalonia.Utilities
                 }
             }
 
-            var cast = from.GetRuntimeMethods()
-                .FirstOrDefault(m => (m.Name == "op_Implicit" || m.Name == "op_Explicit") && m.ReturnType == to);
+            var cast = FindTypeConversionOperatorMethod(from, to, OperatorType.Implicit | OperatorType.Explicit);
 
             if (cast != null)
             {
@@ -253,8 +252,7 @@ namespace Avalonia.Utilities
                 }
             }
 
-            var cast = from.GetRuntimeMethods()
-                .FirstOrDefault(m => m.Name == "op_Implicit" && m.ReturnType == to);
+            var cast = FindTypeConversionOperatorMethod(from, to, OperatorType.Implicit);
 
             if (cast != null)
             {
@@ -334,6 +332,42 @@ namespace Avalonia.Utilities
             {
                 return NumericTypes.Contains(type);
             }
+        }
+
+        [Flags]
+        private enum OperatorType
+        {
+            Implicit = 1,
+            Explicit = 2
+        }
+
+        private static MethodInfo FindTypeConversionOperatorMethod(Type fromType, Type toType, OperatorType operatorType)
+        {
+            const string implicitName = "op_Implicit";
+            const string explicitName = "op_Explicit";
+
+            bool allowImplicit = (operatorType & OperatorType.Implicit) != 0;
+            bool allowExplicit = (operatorType & OperatorType.Explicit) != 0;
+
+            foreach (MethodInfo method in fromType.GetMethods())
+            {
+                if (!method.IsSpecialName || method.ReturnType != toType)
+                {
+                    continue;
+                }
+
+                if (allowImplicit && method.Name == implicitName)
+                {
+                    return method;
+                }
+
+                if (allowExplicit && method.Name == explicitName)
+                {
+                    return method;
+                }
+            }
+
+            return null;
         }
     }
 }

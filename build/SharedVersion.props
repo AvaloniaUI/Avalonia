@@ -4,11 +4,16 @@
     <Product>Avalonia</Product>
     <Version>0.8.999</Version>
     <Copyright>Copyright 2019 &#169; The AvaloniaUI Project</Copyright>
-    <PackageLicenseUrl>https://github.com/AvaloniaUI/Avalonia/blob/master/licence.md</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/AvaloniaUI/Avalonia/</PackageProjectUrl>
+    <PackageProjectUrl>https://avaloniaui.net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AvaloniaUI/Avalonia/</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>CS1591</NoWarn>
     <LangVersion>latest</LangVersion>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIconUrl>https://avatars2.githubusercontent.com/u/14075148?s=200</PackageIconUrl>
+    <PackageDescription>Avalonia is a WPF/UWP-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of Operating Systems such as Windows (.NET Framework, .NET Core), Linux (via Xorg), MacOS and with experimental support for Android and iOS.</PackageDescription>
+    <PackageTags>avalonia;avaloniaui;mvvm;rx;reactive extensions;android;ios;mac;forms;wpf;net;netstandard;net461;uwp;xamarin</PackageTags>
+    <PackageReleaseNotes>https://github.com/AvaloniaUI/Avalonia/releases</PackageReleaseNotes>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 </Project>

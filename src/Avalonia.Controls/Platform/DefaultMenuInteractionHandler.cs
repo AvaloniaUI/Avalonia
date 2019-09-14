@@ -377,7 +377,7 @@ namespace Avalonia.Controls.Platform
 
             if (mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
             {
-                Menu.Close();
+                Menu?.Close();
             }
         }
 

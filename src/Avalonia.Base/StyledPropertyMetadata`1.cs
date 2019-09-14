@@ -19,26 +19,26 @@ namespace Avalonia
         /// <param name="validate">A validation function.</param>
         /// <param name="defaultBindingMode">The default binding mode.</param>
         public StyledPropertyMetadata(
-            TValue defaultValue = default(TValue),
+            TValue defaultValue = default,
             Func<IAvaloniaObject, TValue, TValue> validate = null,
             BindingMode defaultBindingMode = BindingMode.Default)
                 : base(defaultBindingMode)
         {
-            DefaultValue = defaultValue;
+            DefaultValue = new BoxedValue<TValue>(defaultValue);
             Validate = validate;
         }
 
         /// <summary>
         /// Gets the default value for the property.
         /// </summary>
-        public TValue DefaultValue { get; private set; }
+        internal BoxedValue<TValue> DefaultValue { get; private set; }
 
         /// <summary>
         /// Gets the validation callback.
         /// </summary>
         public Func<IAvaloniaObject, TValue, TValue> Validate { get; private set; }
 
-        object IStyledPropertyMetadata.DefaultValue => DefaultValue;
+        object IStyledPropertyMetadata.DefaultValue => DefaultValue.Boxed;
 
         Func<IAvaloniaObject, object, object> IStyledPropertyMetadata.Validate => Cast(Validate);
 
@@ -47,11 +47,9 @@ namespace Avalonia
         {
             base.Merge(baseMetadata, property);
 
-            var src = baseMetadata as StyledPropertyMetadata<TValue>;
-
-            if (src != null)
+            if (baseMetadata is StyledPropertyMetadata<TValue> src)
             {
-                if (DefaultValue == null)
+                if (DefaultValue.Boxed == null)
                 {
                     DefaultValue = src.DefaultValue;
                 }
