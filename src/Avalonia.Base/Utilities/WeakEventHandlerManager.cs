@@ -162,7 +162,7 @@ namespace Avalonia.Utilities
                 {
                     var reference = _data[c].Subscriber;
 
-                    if (reference != null && reference.TryGetTarget(out TSubscriber instance) && instance == (TSubscriber)s.Target)
+                    if (reference != null && reference.TryGetTarget(out TSubscriber instance) && Equals(instance, s.Target))
                     {
                         _data[c] = default;
                         removed = true;
