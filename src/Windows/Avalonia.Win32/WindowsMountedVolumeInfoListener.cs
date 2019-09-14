@@ -36,7 +36,7 @@ namespace Avalonia.Win32
                                 .Select(p => new MountedVolumeInfo()
                                 {
                                     VolumeLabel = string.IsNullOrEmpty(p.VolumeLabel.Trim()) ? p.RootDirectory.FullName 
-                                                                                             : p.VolumeLabel,
+                                                                                             : $"{p.VolumeLabel} ({p.Name})",
                                     VolumePath = p.RootDirectory.FullName,
                                     VolumeSizeBytes = (ulong)p.TotalSize
                                 })
