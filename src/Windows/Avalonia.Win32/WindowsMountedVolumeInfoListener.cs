@@ -32,6 +32,7 @@ namespace Avalonia.Win32
             var allDrives = DriveInfo.GetDrives();
 
             var mountVolInfos = allDrives
+                                .Where(p => p.IsReady)
                                 .Select(p => new MountedVolumeInfo()
                                 {
                                     VolumeLabel = p.VolumeLabel,
