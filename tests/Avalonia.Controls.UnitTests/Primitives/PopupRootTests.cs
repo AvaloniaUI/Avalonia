@@ -51,6 +51,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 window.Content = target;
 
                 window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
                 target.ApplyTemplate();
                 target.Popup.Open();
 
@@ -167,6 +168,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 window.Content = target;
 
                 window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
                 target.ApplyTemplate();
                 target.Popup.Open();
                 target.PopupContent = null;
