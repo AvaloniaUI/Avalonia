@@ -69,8 +69,8 @@ namespace RenderDemo.Pages
 
                 if (target.Classes.Contains("LastColumn"))
                     continue;
-                    
-                if (target._contentControl is ContentControl cell)
+
+                if (target._cellContent is XDataGridCellContent cell)
                 {
                     if (cell.Width != desc.HeaderWidth)
                         cell.Width = desc.HeaderWidth;
@@ -100,9 +100,16 @@ namespace RenderDemo.Pages
 
                 var cell = new XDataGridCell();
 
-                var newBind = new Binding(headerDesc.PropertyName, BindingMode.TwoWay);
+                // var newBind = new Binding(headerDesc.PropertyName);
 
-                cell.Bind(XDataGridCell.ContentProperty, newBind);
+                // cell.RowData = this.DataContext;
+
+                // cell.Bind(XDataGridCell.CellValueProperty, newBind);
+
+                // cell.ColumnTarget = (headerDesc.PropertyName);
+
+                cell.TargetProperty = headerDesc.PropertyName;
+                cell.Classes.Add(headerDesc.PropertyName);
 
                 if (i + 1 == obj.Count)
                 {
@@ -112,7 +119,6 @@ namespace RenderDemo.Pages
                 _curCells.Add(cell);
                 this.Children.Add(cell);
             }
-
         }
     }
 }

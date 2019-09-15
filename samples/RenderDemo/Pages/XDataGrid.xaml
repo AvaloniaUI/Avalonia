@@ -30,29 +30,41 @@
     </Setter>
   </Style>
 
+  <Style Selector="local|XDataGridHeaderCell.LastColumn">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentControl Name="PART_ContentControl" />
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
   <Style Selector="local|XDataGridCell">
     <Setter Property="Template">
       <ControlTemplate>
         <Grid ColumnDefinitions="Auto,11">
-          <ContentControl Name="PART_ContentControl" Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding Content}" />
+          <local:XDataGridCellContent Name="PART_CellContent" Grid.Column="0" Grid.ColumnSpan="1"/>
           <Grid Background="Black" Grid.Column="1" Width="1" VerticalAlignment="Stretch" HorizontalAlignment="Center"/>
         </Grid>
       </ControlTemplate>
     </Setter>
   </Style>
 
-  <Style Selector="local|XDataGridHeaderCell.LastColumn">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <ContentControl Name="PART_ContentControl" Content="{TemplateBinding Content}" />
-      </ControlTemplate>
-    </Setter>
-  </Style>
+
+  <!--             <CheckBox IsChecked="{Binding Path=CellValue, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>  -->
+
 
   <Style Selector="local|XDataGridCell.LastColumn">
     <Setter Property="Template">
       <ControlTemplate>
-        <ContentControl Name="PART_ContentControl" Content="{TemplateBinding Content}" />
+        <local:XDataGridCellContent Name="PART_CellContent" />
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="local|XDataGridCellContent">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentControl Content="{TemplateBinding CellValue}"/>
       </ControlTemplate>
     </Setter>
   </Style>
@@ -60,7 +72,6 @@
   <Style Selector="local|XDataGrid">
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="BorderThickness" Value="1" />
-
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Name="PART_RootGrid">

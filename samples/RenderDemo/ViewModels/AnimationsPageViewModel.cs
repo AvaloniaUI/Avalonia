@@ -19,10 +19,14 @@ namespace RenderDemo.ViewModels
 {
     public class SampleData : ReactiveObject
     {
+        private int _index;
+
         [DisplayName("Index")]
-        public int Index { get; set; }
-
-
+        public int Index
+        {
+            get => _index;
+            set => this.RaiseAndSetIfChanged(ref _index, value);
+        }
 
         private bool _Allow;
 
@@ -34,8 +38,14 @@ namespace RenderDemo.ViewModels
             set => this.RaiseAndSetIfChanged(ref _Allow, value);
         }
 
+        string _someTxt;
+
         [DisplayName("Some Text")]
-        public string SomeText { get; set; }
+        public string SomeText
+        {
+            get => _someTxt;
+            set => this.RaiseAndSetIfChanged(ref _someTxt, value);
+        }
 
         [DisplayName("Random Number 1")]
         public string RndNum1 { get; set; }
@@ -62,13 +72,13 @@ namespace RenderDemo.ViewModels
             var k = new List<SampleData>();
             var r = new Random();
 
-            for (int i = 0; i < 1_000_000; i++)
+            for (int i = 0; i < 2_000; i++)
             {
                 var l = new SampleData()
                 {
                     Index = i,
                     Allow = r.NextDouble() > 0.5,
-                    SomeText = RandomString(10),
+                    SomeText = i.ToString(),
                     RndNum1 = r.NextDouble().ToString(),
                     RndNum2 = r.NextDouble().ToString(),
                     RndNum3 = r.NextDouble().ToString(),

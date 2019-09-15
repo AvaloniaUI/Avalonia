@@ -3,13 +3,38 @@
   xmlns:local="clr-namespace:RenderDemo.Pages;assembly=RenderDemo" x:Class="RenderDemo.Pages.AnimationsPage">
 
   <Grid>
-    <local:XDataGrid Items="{Binding DataRows}">
-      <local:XDataGrid.DataTemplates>
-        <DataTemplate DataType="x:Boolean">
-          <CheckBox IsChecked="{Binding}"/>
-        </DataTemplate>
-      </local:XDataGrid.DataTemplates>
-    </local:XDataGrid>
+
+    <Grid.Styles>
+
+
+      <!-- <Style Selector="local|XDataGridCellContent.Index">
+        <Setter Property="Template">
+          <ControlTemplate>
+            <TextBox Text="{Binding Index}"/>
+          </ControlTemplate>
+        </Setter>
+      </Style> -->
+
+      <Style Selector="local|XDataGridCellContent.Allow">
+        <Setter Property="Template">
+          <ControlTemplate>
+            <CheckBox IsChecked="{Binding Allow, Mode=TwoWay}"/>
+          </ControlTemplate>
+        </Setter>
+      </Style>
+
+      <Style Selector="local|XDataGridCellContent.SomeText">
+        <Setter Property="Template">
+          <ControlTemplate>
+            <TextBox Text="{Binding SomeText, Mode=TwoWay}"/>
+          </ControlTemplate>
+        </Setter>
+      </Style>
+
+    </Grid.Styles>
+
+    <local:XDataGrid Items="{Binding DataRows}"/>
+
   </Grid>
 
 </local:AnimationsPage>

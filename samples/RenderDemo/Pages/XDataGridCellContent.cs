@@ -1,0 +1,28 @@
+using Avalonia;
+using Avalonia.Controls;
+
+namespace RenderDemo.Pages
+{
+    public class XDataGridCellContent : ContentControl
+    {
+        public static readonly DirectProperty<XDataGridCellContent, object> CellValueProperty =
+            AvaloniaProperty.RegisterDirect<XDataGridCellContent, object>(
+                nameof(CellValue),
+                o => o._CellValue,
+                (o, v) => o._CellValue = v);
+
+        private object _CellValue;
+
+        public object CellValue
+        {
+            get
+            {
+                return _CellValue;
+            }
+            set
+            {
+                SetAndRaise(CellValueProperty, ref _CellValue, value);
+            }
+        }
+    }
+}
