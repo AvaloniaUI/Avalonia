@@ -104,8 +104,8 @@ namespace Avalonia.X11
             {X11Key.x, Key.X},
             {X11Key.y, Key.Y},
             {X11Key.z, Key.Z},
-            {X11Key.Meta_L, Key.LWin },
-            {X11Key.Meta_R, Key.RWin },
+            {X11Key.Super_L, Key.LWin },
+            {X11Key.Super_R, Key.RWin },
             {X11Key.Menu, Key.Apps},
             //{ X11Key.?, Key.Sleep }
             {X11Key.KP_0, Key.NumPad0},
