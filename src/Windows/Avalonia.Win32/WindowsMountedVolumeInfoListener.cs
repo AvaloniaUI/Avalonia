@@ -32,9 +32,11 @@ namespace Avalonia.Win32
             var allDrives = DriveInfo.GetDrives();
 
             var mountVolInfos = allDrives
+                                .Where(p => p.IsReady)
                                 .Select(p => new MountedVolumeInfo()
                                 {
-                                    VolumeLabel = p.VolumeLabel,
+                                    VolumeLabel = string.IsNullOrEmpty(p.VolumeLabel.Trim()) ? p.RootDirectory.FullName 
+                                                                                             : $"{p.VolumeLabel} ({p.Name})",
                                     VolumePath = p.RootDirectory.FullName,
                                     VolumeSizeBytes = (ulong)p.TotalSize
                                 })
