@@ -174,12 +174,12 @@ namespace Avalonia.Rendering.SceneGraph
 
         /// <summary>
         /// Sorts the <see cref="Children"/> collection according to the order of the visual's
-        /// children and their z-index.
+        /// children and their z-index and removes controls that are no longer children.
         /// </summary>
         /// <param name="scene">The scene that the node is a part of.</param>
-        public void SortChildren(Scene scene)
+        public void UpdateChildren(Scene scene)
         {
-            if (_children == null || _children.Count <= 1)
+            if (_children == null || _children.Count == 0)
             {
                 return;
             }
@@ -193,8 +193,11 @@ namespace Avalonia.Rendering.SceneGraph
                 keys.Add(((long)zIndex << 32) + i);
             }
 
+            var toRemove = _children.ToList();
+
             keys.Sort();
             _children.Clear();
+
 
             foreach (var i in keys)
             {
@@ -204,7 +207,13 @@ namespace Avalonia.Rendering.SceneGraph
                 if (node != null)
                 {
                     _children.Add(node);
+                    toRemove.Remove(node);
                 }
+            }
+
+            foreach (var node in toRemove)
+            {
+                scene.Remove(node);
             }
         }
 

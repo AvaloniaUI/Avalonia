@@ -521,8 +521,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 moveFromNode = (VisualNode)scene.FindNode(moveFrom);
                 moveToNode = (VisualNode)scene.FindNode(moveTo);
 
-                moveFromNode.SortChildren(scene);
-                moveToNode.SortChildren(scene);
+                moveFromNode.UpdateChildren(scene);
+                moveToNode.UpdateChildren(scene);
                 sceneBuilder.Update(scene, moveFrom);
                 sceneBuilder.Update(scene, moveTo);
                 sceneBuilder.Update(scene, moveMe);
