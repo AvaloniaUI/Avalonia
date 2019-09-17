@@ -91,7 +91,19 @@ namespace Avalonia.Rendering
             {
                 try
                 {
-                    if (_items.Any(item => item.NeedsUpdate) &&
+                    bool needsUpdate = false;
+
+                    foreach (IRenderLoopTask item in _items)
+                    {
+                        if (item.NeedsUpdate)
+                        {
+                            needsUpdate = true;
+
+                            break;
+                        }
+                    }
+
+                    if (needsUpdate &&
                         Interlocked.CompareExchange(ref _inUpdate, 1, 0) == 0)
                     {
                         _dispatcher.Post(() =>
