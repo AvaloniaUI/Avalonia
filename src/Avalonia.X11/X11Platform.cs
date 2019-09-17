@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
@@ -42,7 +43,7 @@ namespace Avalonia.X11
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new X11PlatformThreading(this))
-                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<IRenderTimer>().ToConstant(new X11HighResRenderTimer(60))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(InputModifiers.Control))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
@@ -52,7 +53,7 @@ namespace Avalonia.X11
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
                 .Bind<ISystemDialogImpl>().ToConstant(new GtkSystemDialog())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider());
-            
+
             X11Screens = Avalonia.X11.X11Screens.Init(this);
             Screens = new X11Screens(X11Screens);
             if (Info.XInputVersion != null)
@@ -70,7 +71,7 @@ namespace Avalonia.X11
                     GlxGlPlatformFeature.TryInitialize(Info);
             }
 
-            
+
         }
 
         public IntPtr DeferredDisplay { get; set; }
