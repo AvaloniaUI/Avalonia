@@ -102,9 +102,12 @@ namespace Avalonia.X11
 
             if (!_popup)
             {
+                var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
+                   .FirstOrDefault(m => m.Bounds.Contains(Position));
+
                 // Emulate Window 7+'s default window size behavior.
-                defaultWidth = (int)(MaxClientSize.Width * 0.75d);
-                defaultHeight = (int)(MaxClientSize.Height * 0.7d);
+                defaultWidth = (int)(monitor.WorkingArea.Width * 0.75d);
+                defaultHeight = (int)(monitor.WorkingArea.Height * 0.7d);
             }
 
             _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, defaultWidth, defaultHeight, 0,
