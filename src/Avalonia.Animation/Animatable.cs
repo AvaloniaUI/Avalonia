@@ -55,6 +55,11 @@ namespace Avalonia.Animation
             }
             set
             {
+                if (value is null)
+                    return;
+
+                if (_previousTransitions is null)
+                    _previousTransitions = new Dictionary<AvaloniaProperty, IDisposable>();
 
                 SetAndRaise(TransitionsProperty, ref _transitions, value);
             }
@@ -70,7 +75,7 @@ namespace Avalonia.Animation
             if (_transitions is null || _previousTransitions is null || e.Priority == BindingPriority.Animation) return;
 
             // PERF-SENSITIVE: Called on every property change. Don't use LINQ here (too many allocations).
-            foreach (var transition in Transitions)
+            foreach (var transition in _transitions)
             {
                 if (transition.Property == e.Property)
                 {
