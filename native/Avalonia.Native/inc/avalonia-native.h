@@ -52,7 +52,7 @@ struct AvnScreen
 {
     AvnRect Bounds;
     AvnRect WorkingArea;
-    float PixelDenisty;
+    float PixelDensity;
     bool Primary;
 };
 
