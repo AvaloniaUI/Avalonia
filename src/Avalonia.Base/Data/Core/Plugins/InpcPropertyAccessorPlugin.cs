@@ -103,8 +103,8 @@ namespace Avalonia.Data.Core.Plugins
 
             protected override void SubscribeCore()
             {
-                SendCurrentValue();
                 SubscribeToChanges();
+                SendCurrentValue();
             }
 
             protected override void UnsubscribeCore()

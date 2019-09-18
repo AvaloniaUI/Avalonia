@@ -332,6 +332,31 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(sizeWithTwoChildren, sizeWithThreeChildren);
         }
 
+        [Theory]
+        [InlineData(Orientation.Horizontal)]
+        [InlineData(Orientation.Vertical)]
+        public void Only_Arrange_Visible_Children(Orientation orientation)
+        {
+
+            var hiddenPanel = new Panel { Width = 10, Height = 10, IsVisible = false };
+            var panel = new Panel { Width = 10, Height = 10 };
+
+            var target = new StackPanel
+            {
+                Spacing = 40,
+                Orientation = orientation,
+                Children =
+                {
+                    hiddenPanel,
+                    panel
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+            Assert.Equal(new Rect(0, 0, 10, 10), panel.Bounds);
+        }
+
         private class TestControl : Control
         {
             public Size MeasureConstraint { get; private set; }

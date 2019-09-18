@@ -369,12 +369,9 @@ public:
 
     virtual void UpdateCursor()
     {
-        [View resetCursorRects];
         if (cursor != nil)
         {
-             auto rect = [Window frame];
-             [View addCursorRect:rect cursor:cursor];
-             [cursor set];
+            [cursor set];
         }
     }
     
@@ -425,6 +422,7 @@ private:
     {
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
+        [Window disableCursorRects];
     }
     
     virtual HRESULT Show () override
