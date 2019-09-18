@@ -97,24 +97,25 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Applies_ItemWidth_And_ItemHeight_Properties()
         {
-            var target = new WrapPanel
-            {
-                Width = 50,
-                ItemWidth = 20,
-                ItemHeight = 15,
-                Children =
-                {
-                    new Border(),
-                    new Border { Width = 50, Height = 50 },
-                }
-            };
+            var target = new WrapPanel()
+                        {
+                            Orientation = Orientation.Horizontal,
+                            Width = 50,
+                            ItemWidth = 20,
+                            ItemHeight = 15,
+                            Children =
+                            {
+                                new Border(),
+                                new Border { Width = 50, Height = 50 },
+                            }
+                        };
 
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
 
             Assert.Equal(new Size(50, 15), target.Bounds.Size);
             Assert.Equal(new Rect(0, 0, 20, 15), target.Children[0].Bounds);
-            Assert.Equal(new Rect(20, 15, 20, 15), target.Children[1].Bounds);
+            Assert.Equal(new Rect(20, 0, 20, 15), target.Children[1].Bounds);
         }
     }
 }
