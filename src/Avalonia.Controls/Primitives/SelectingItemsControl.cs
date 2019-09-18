@@ -304,6 +304,11 @@ namespace Avalonia.Controls.Primitives
         {
             base.ItemsCollectionChanged(sender, e);
 
+            if (_updateCount > 0)
+            {
+                return;
+            }
+
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -1071,13 +1076,16 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateFinished()
         {
-            if (_updateSelectedIndex != int.MinValue)
-            {
-                SelectedIndex = _updateSelectedIndex;
-            }
-            else if (_updateSelectedItem != null)
+            if (_updateSelectedItem != null)
             {
                 SelectedItem = _updateSelectedItem;
+            }
+            else
+            {
+                if (ItemCount > 0)
+                {
+                    SelectedIndex = _updateSelectedIndex != int.MinValue ? _updateSelectedIndex : 0;
+                }
             }
         }
 
