@@ -246,22 +246,7 @@ namespace Avalonia.Rendering
                 {
                     try
                     {
-                        IDrawingContextImpl GetContext()
-                        {
-                            if (context != null)
-                                return context;
-                            if ((RenderTarget as IRenderTargetWithCorruptionInfo)?.IsCorrupted == true)
-                            {
-                                RenderTarget.Dispose();
-                                RenderTarget = null;
-                            }
-                            if (RenderTarget == null)
-                                RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
-                            return context = RenderTarget.CreateDrawingContext(this);
-
-                        }
-
-                        var (scene, updated) = UpdateRenderLayersAndConsumeSceneIfNeeded(GetContext);
+                        var (scene, updated) = UpdateRenderLayersAndConsumeSceneIfNeeded(ref context);
 
                         using (scene)
                         {
@@ -271,9 +256,9 @@ namespace Avalonia.Rendering
                                 if (DrawDirtyRects)
                                     _dirtyRectsDisplay.Tick();
                                 if (overlay)
-                                    RenderOverlay(scene.Item, GetContext());
+                                    RenderOverlay(scene.Item, ref context);
                                 if (updated || forceComposite || overlay)
-                                    RenderComposite(scene.Item, GetContext());
+                                    RenderComposite(scene.Item, ref context);
                             }
                         }
                     }
@@ -291,7 +276,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        private (IRef<Scene> scene, bool updated) UpdateRenderLayersAndConsumeSceneIfNeeded(Func<IDrawingContextImpl> contextFactory,
+        private (IRef<Scene> scene, bool updated) UpdateRenderLayersAndConsumeSceneIfNeeded(ref IDrawingContextImpl context,
             bool recursiveCall = false)
         {
             IRef<Scene> sceneRef;
@@ -304,7 +289,8 @@ namespace Avalonia.Rendering
                 var scene = sceneRef.Item;
                 if (scene.Generation != _lastSceneId)
                 {
-                    var context = contextFactory();
+                    EnsureDrawingContext(ref context);
+
                     Layers.Update(scene, context);
 
                     RenderToLayers(scene);
@@ -325,7 +311,7 @@ namespace Avalonia.Rendering
                     if (!recursiveCall && Dispatcher.UIThread.CheckAccess() && NeedsUpdate)
                     {
                         UpdateScene();
-                        var (rs, _) = UpdateRenderLayersAndConsumeSceneIfNeeded(contextFactory, true);
+                        var (rs, _) = UpdateRenderLayersAndConsumeSceneIfNeeded(ref context, true);
                         return (rs, true);
                     }
 
@@ -432,8 +418,10 @@ namespace Avalonia.Rendering
                 
         }
 
-        private void RenderOverlay(Scene scene, IDrawingContextImpl parentContent)
+        private void RenderOverlay(Scene scene, ref IDrawingContextImpl parentContent)
         {
+            EnsureDrawingContext(ref parentContent);
+
             if (DrawDirtyRects)
             {
                 var overlay = GetOverlay(parentContent, scene.Size, scene.Scaling);
@@ -460,8 +448,10 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void RenderComposite(Scene scene, IDrawingContextImpl context)
+        private void RenderComposite(Scene scene, ref IDrawingContextImpl context)
         {
+            EnsureDrawingContext(ref context);
+
             context.Clear(Colors.Transparent);
 
             var clientRect = new Rect(scene.Size);
@@ -501,6 +491,27 @@ namespace Avalonia.Rendering
             {
                 RenderFps(context, clientRect, scene.Layers.Count);
             }
+        }
+
+        private void EnsureDrawingContext(ref IDrawingContextImpl context)
+        {
+            if (context != null)
+            {
+                return;
+            }
+
+            if ((RenderTarget as IRenderTargetWithCorruptionInfo)?.IsCorrupted == true)
+            {
+                RenderTarget.Dispose();
+                RenderTarget = null;
+            }
+
+            if (RenderTarget == null)
+            {
+                RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+            }
+
+            context = RenderTarget.CreateDrawingContext(this);
         }
 
         private void UpdateScene()
