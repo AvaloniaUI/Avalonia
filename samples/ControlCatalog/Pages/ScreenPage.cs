@@ -57,12 +57,15 @@ namespace ControlCatalog.Pages
                     
                     text.Text = $"WorkArea: {screen.WorkingArea.Width}:{screen.WorkingArea.Height}";
                     context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height + 20), text);
-                    
-                    text.Text = $"Primary: {screen.Primary}";
+
+                    text.Text = $"Scaling: {screen.PixelDenisty * 100}%";
                     context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height + 40), text);
                     
-                    text.Text = $"Current: {screen.Equals(w.Screens.ScreenFromBounds(new PixelRect(w.Position, PixelSize.FromSize(w.Bounds.Size, scaling))))}";
+                    text.Text = $"Primary: {screen.Primary}";
                     context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height + 60), text);
+                    
+                    text.Text = $"Current: {screen.Equals(w.Screens.ScreenFromBounds(new PixelRect(w.Position, PixelSize.FromSize(w.Bounds.Size, scaling))))}";
+                    context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height + 80), text);
                 }
 
             context.DrawRectangle(p, new Rect(w.Position.X / 10f + Math.Abs(_leftMost), w.Position.Y / 10, w.Bounds.Width / 10, w.Bounds.Height / 10));
