@@ -146,28 +146,28 @@ namespace Avalonia.Controls
                 var child = children[i];
                 if (child != null)
                 {
-                    //Flow passes its own constrint to children
+                    // Flow passes its own constraint to children
                     child.Measure(childConstraint);
 
-                    //this is the size of the child in UV space
+                    // This is the size of the child in UV space
                     var sz = new UVSize(orientation,
                         itemWidthSet ? itemWidth : child.DesiredSize.Width,
                         itemHeightSet ? itemHeight : child.DesiredSize.Height);
 
-                    if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvConstraint.U)) //need to switch to another line
+                    if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvConstraint.U)) // Need to switch to another line
                     {
                         panelSize.U = Max(curLineSize.U, panelSize.U);
                         panelSize.V += curLineSize.V;
                         curLineSize = sz;
 
-                        if (MathUtilities.GreaterThan(sz.U, uvConstraint.U)) //the element is wider then the constrint - give it a separate line                    
+                        if (MathUtilities.GreaterThan(sz.U, uvConstraint.U)) // The element is wider then the constraint - give it a separate line                    
                         {
                             panelSize.U = Max(sz.U, panelSize.U);
                             panelSize.V += sz.V;
                             curLineSize = new UVSize(orientation);
                         }
                     }
-                    else //continue to accumulate a line
+                    else // Continue to accumulate a line
                     {
                         curLineSize.U += sz.U;
                         curLineSize.V = Max(sz.V, curLineSize.V);
@@ -175,11 +175,11 @@ namespace Avalonia.Controls
                 }
             }
 
-            //the last line size, if any should be added
+            // The last line size, if any should be added
             panelSize.U = Max(curLineSize.U, panelSize.U);
             panelSize.V += curLineSize.V;
 
-            //go from UV space to W/H space
+            // Go from UV space to W/H space
             return new Size(panelSize.Width, panelSize.Height);
         }
 
@@ -208,16 +208,16 @@ namespace Avalonia.Controls
                         itemWidthSet ? itemWidth : child.DesiredSize.Width,
                         itemHeightSet ? itemHeight : child.DesiredSize.Height);
 
-                    if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvFinalSize.U)) //need to switch to another line
+                    if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvFinalSize.U)) // Need to switch to another line
                     {
                         ArrangeLine(accumulatedV, curLineSize.V, firstInLine, i, useItemU, itemU);
 
                         accumulatedV += curLineSize.V;
                         curLineSize = sz;
 
-                        if (MathUtilities.GreaterThan(sz.U, uvFinalSize.U)) //the element is wider then the constraint - give it a separate line                    
+                        if (MathUtilities.GreaterThan(sz.U, uvFinalSize.U)) // The element is wider then the constraint - give it a separate line                    
                         {
-                            //switch to next line which only contain one element
+                            // Switch to next line which only contain one element
                             ArrangeLine(accumulatedV, sz.V, i, ++i, useItemU, itemU);
 
                             accumulatedV += sz.V;
@@ -225,7 +225,7 @@ namespace Avalonia.Controls
                         }
                         firstInLine = i;
                     }
-                    else //continue to accumulate a line
+                    else // Continue to accumulate a line
                     {
                         curLineSize.U += sz.U;
                         curLineSize.V = Max(sz.V, curLineSize.V);
@@ -233,7 +233,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            //arrange the last line, if any
+            // Arrange the last line, if any
             if (firstInLine < children.Count)
             {
                 ArrangeLine(accumulatedV, curLineSize.V, firstInLine, children.Count, useItemU, itemU);
