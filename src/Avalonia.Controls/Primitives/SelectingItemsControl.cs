@@ -1082,7 +1082,11 @@ namespace Avalonia.Controls.Primitives
             }
             else
             {
-                if (ItemCount > 0)
+                if (ItemCount == 0 && SelectedIndex != -1)
+                {
+                    SelectedIndex = -1;
+                }
+                else
                 {
                     SelectedIndex = _updateSelectedIndex != int.MinValue ? _updateSelectedIndex : 0;
                 }
