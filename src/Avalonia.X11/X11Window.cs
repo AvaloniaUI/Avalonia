@@ -42,6 +42,7 @@ namespace Avalonia.X11
         private X11Window _transientParent;
         private double? _scalingOverride;
         public object SyncRoot { get; } = new object();
+        private int defaultWidth = 300, defaultHeight = 200;
 
         class InputEventContainer
         {
@@ -98,17 +99,6 @@ namespace Avalonia.X11
                 valueMask |= SetWindowValuemask.ColorMap;   
             }
 
-            int defaultWidth = 300, defaultHeight = 200;
-
-            if (!_popup)
-            {
-                var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
-                   .FirstOrDefault(m => m.Bounds.Contains(Position));
-
-                // Emulate Window 7+'s default window size behavior.
-                defaultWidth = (int)(monitor.WorkingArea.Width * 0.75d);
-                defaultHeight = (int)(monitor.WorkingArea.Height * 0.7d);
-            }
 
             _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, defaultWidth, defaultHeight, 0,
                 depth,
@@ -126,7 +116,7 @@ namespace Avalonia.X11
                 _renderHandle = _handle;
                 
             Handle = new PlatformHandle(_handle, "XID");
-            _realSize = new PixelSize(300, 200);
+            _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = OnEvent;
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
                                      | XEventMask.ResizeRedirectMask
@@ -167,7 +157,20 @@ namespace Avalonia.X11
             XFlush(_x11.Display);
             if(_popup)
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
+            else
+                sizingState = DefaultSizingState.Start;
+
         }
+
+        DefaultSizingState sizingState;
+
+        enum DefaultSizingState 
+        {
+            None,
+            Start,
+            End
+        }
+
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
         {
@@ -381,7 +384,23 @@ namespace Avalonia.X11
                     XTranslateCoordinates(_x11.Display, _handle, _x11.RootWindow,
                         0, 0,
                         out var tx, out var ty, out _);
+
                     _configurePoint = new PixelPoint(tx, ty);
+ 
+                    if (sizingState == DefaultSizingState.Start)
+                    {
+                        var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
+                           .FirstOrDefault(m => m.Bounds.Contains(new PixelPoint(tx, ty)));
+
+                        // Emulate Window 7+'s default window size behavior.
+                        var defW = (int)(monitor.WorkingArea.Width * 0.75d);
+                        var defH = (int)(monitor.WorkingArea.Height * 0.7d);
+
+                        var defSize = new Size(defW, defH);
+                        Resize(defSize);
+                    
+                        sizingState = DefaultSizingState.End;
+                    }
                 }
                 if (needEnqueue)
                     Dispatcher.UIThread.Post(() =>
@@ -765,6 +784,12 @@ namespace Avalonia.X11
         
         void Resize(Size clientSize, bool force)
         {
+            // It's a hack but ohwell...
+            if(sizingState == DefaultSizingState.Start 
+                        & clientSize.Width != defaultWidth 
+                        & clientSize.Height != defaultHeight)
+                sizingState = DefaultSizingState.End;
+
             if (!force && clientSize == ClientSize)
                 return;
             
@@ -782,6 +807,8 @@ namespace Avalonia.X11
                 _realSize = pixelSize;
                 Resized?.Invoke(ClientSize);
             }
+
+
         }
         
         public void CanResize(bool value)
