@@ -58,7 +58,7 @@ namespace ControlCatalog.Pages
                     text.Text = $"WorkArea: {screen.WorkingArea.Width}:{screen.WorkingArea.Height}";
                     context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height + 20), text);
 
-                    text.Text = $"Scaling: {screen.PixelDenisty * 100}%";
+                    text.Text = $"Scaling: {screen.PixelDensity * 100}%";
                     context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height + 40), text);
                     
                     text.Text = $"Primary: {screen.Primary}";
