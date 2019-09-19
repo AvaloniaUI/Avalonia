@@ -21,7 +21,7 @@ namespace Avalonia.Data.Core
         public T Value { get; }
 
         public Exception Error { get; }
-
+        
         public override string ToString() => Error?.Message.ToString() ?? Value?.ToString();
     }
 }

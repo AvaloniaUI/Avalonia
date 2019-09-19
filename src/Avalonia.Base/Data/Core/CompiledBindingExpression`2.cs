@@ -26,7 +26,7 @@ namespace Avalonia.Data.Core
             IObservable<TIn> root,
             Func<TIn, TOut> read,
             Action<TIn, TOut> write,
-            List<Func<TIn, object>> links)
+            Func<TIn, object>[] links)
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
@@ -36,9 +36,9 @@ namespace Avalonia.Data.Core
 
             if (links != null)
             {
-                _chain = new Link[links.Count];
+                _chain = new Link[links.Length];
 
-                for (var i = 0; i < links.Count; ++i)
+                for (var i = 0; i < links.Length; ++i)
                 {
                     _chain[i] = new Link(links[i]);
                 }

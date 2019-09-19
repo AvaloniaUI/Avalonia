@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Avalonia.Data.Core.Parsers
 {
-    internal class ExpressionChainVisitor<TIn> : ExpressionVisitor
+    public class ExpressionChainVisitor<TIn> : ExpressionVisitor
     {
         private readonly LambdaExpression _rootExpression;
         private List<Func<TIn, object>> _links = new List<Func<TIn, object>>();
@@ -14,12 +14,12 @@ namespace Avalonia.Data.Core.Parsers
             _rootExpression = expression;
         }
 
-        public static List<Func<TIn, object>> Build<TIn, TOut>(Expression<Func<TIn, TOut>> expression)
+        public static Func<TIn, object>[] Build<TIn, TOut>(Expression<Func<TIn, TOut>> expression)
         {
             var visitor = new ExpressionChainVisitor<TIn>(expression);
             visitor.Visit(expression);
             visitor._links.Reverse();
-            return visitor._links;
+            return visitor._links.ToArray();
         }
 
         protected override Expression VisitMember(MemberExpression node)
