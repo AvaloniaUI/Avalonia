@@ -99,37 +99,40 @@ namespace Avalonia
 
         void IObserver<object>.OnNext(object value)
         {
-            void Signal()
+            void Signal(PriorityBindingEntry instance, object newValue)
             {
-                var notification = value as BindingNotification;
+                var notification = newValue as BindingNotification;
 
                 if (notification != null)
                 {
                     if (notification.HasValue || notification.ErrorType == BindingErrorType.Error)
                     {
-                        Value = notification.Value;
-                        _owner.Changed(this);
+                        instance.Value = notification.Value;
+                        instance._owner.Changed(instance);
                     }
 
                     if (notification.ErrorType != BindingErrorType.None)
                     {
-                        _owner.Error(this, notification);
+                        instance._owner.Error(instance, notification);
                     }
                 }
                 else
                 {
-                    Value = value;
-                    _owner.Changed(this);
+                    instance.Value = newValue;
+                    instance._owner.Changed(instance);
                 }
             }
 
             if (Dispatcher.UIThread.CheckAccess())
             {
-                Signal();
+                Signal(this, value);
             }
             else
             {
-                Dispatcher.UIThread.Post(Signal);
+                var instance = this;
+                var newValue = value;
+
+                Dispatcher.UIThread.Post(() => Signal(instance, newValue));
             }
         }
 
