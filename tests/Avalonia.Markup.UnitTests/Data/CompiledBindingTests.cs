@@ -224,7 +224,6 @@ namespace Avalonia.Markup.UnitTests.Data
                 DataContext = new Source { Foo = "foo" },
             };
 
-            var root = new TestRoot(parent);
             var child = new Control();
 
             var binding = CompiledBinding<Source>.OneWay(x => x.Foo);
@@ -255,7 +254,7 @@ namespace Avalonia.Markup.UnitTests.Data
             // When binding to DataContext and the target isn't found, the binding should produce
             // null rather than UnsetValue in order to not propagate incorrect DataContexts from
             // parent controls while things are being set up. This logic is implemented in 
-            // `Avalonia.Markup.Data.Binding.Initiate`.
+            // `Avalonia.Data.CompiledBinding<TIn,TOut>.Initiate`.
             Assert.True(child.IsSet(Control.DataContextProperty));
 
             root.Child = child;

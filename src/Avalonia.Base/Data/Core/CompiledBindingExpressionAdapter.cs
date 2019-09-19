@@ -50,12 +50,11 @@ namespace Avalonia.Data.Core
 
             public void OnNext(BindingValue<T> value)
             {
+                var finalValue = value.HasValue ? value.Value : AvaloniaProperty.UnsetValue;
+
                 if (!_owner._enableDataValidation)
                 {
-                    if (value.Error == null)
-                    {
-                        _owner.PublishNext(value.Value);
-                    }
+                    _owner.PublishNext(finalValue);
                 }
                 else
                 {
@@ -66,7 +65,7 @@ namespace Avalonia.Data.Core
                         notification = new BindingNotification(
                             value.Error,
                             BindingErrorType.Error,
-                            value.Value);
+                            finalValue);
                     }
                     else
                     {

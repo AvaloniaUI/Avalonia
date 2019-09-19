@@ -1,24 +1,39 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Avalonia.Data.Core
 {
     public readonly struct BindingValue<T>
     {
+        private readonly T _value;
+
         public BindingValue(T value)
         {
-            Value = value;
+            _value = value;
+            HasValue = true;
             Error = null;
         }
 
-        public BindingValue(Exception error)
+        public BindingValue(Exception error, FallbackValue<T> fallbackValue)
         {
-            Value = default;
+            _value = fallbackValue.HasValue ? fallbackValue.Value : default;
+            HasValue = fallbackValue.HasValue;
             Error = error;
         }
 
-        public T Value { get; }
+        public bool HasValue { get; }
+
+        public T Value
+        {
+            get
+            {
+                if (!HasValue)
+                {
+                    throw new InvalidOperationException("BindingValue has no value.");
+                }
+
+                return _value;
+            }
+        }
 
         public Exception Error { get; }
         

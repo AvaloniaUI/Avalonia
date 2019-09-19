@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Reactive.Subjects;
@@ -17,6 +16,7 @@ namespace Avalonia.Data.Core
         private readonly Func<TIn, TOut> _read;
         private readonly Action<TIn, TOut> _write;
         private readonly Link[] _chain;
+        private readonly FallbackValue<TOut> _fallbackValue;
         private IDisposable _rootSourceSubsciption;
         private WeakReference<TIn> _root;
         private bool _rootHasFired;
@@ -26,13 +26,15 @@ namespace Avalonia.Data.Core
             IObservable<TIn> root,
             Func<TIn, TOut> read,
             Action<TIn, TOut> write,
-            Func<TIn, object>[] links)
+            Func<TIn, object>[] links,
+            FallbackValue<TOut> fallbackValue)
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
             _rootSource = root;
             _read = read;
             _write = write;
+            _fallbackValue = fallbackValue;
 
             if (links != null)
             {
@@ -235,12 +237,12 @@ namespace Avalonia.Data.Core
                 }
                 catch (Exception e)
                 {
-                    return new BindingValue<TOut>(e);
+                    return new BindingValue<TOut>(e, _fallbackValue);
                 }
             }
             else if (_rootHasFired)
             {
-                return new BindingValue<TOut>(new NullReferenceException());
+                return new BindingValue<TOut>(new NullReferenceException(), _fallbackValue);
             }
             else
             {

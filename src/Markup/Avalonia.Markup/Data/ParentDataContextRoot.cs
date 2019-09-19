@@ -16,15 +16,14 @@ namespace Avalonia.Data
 
         protected override void Subscribed()
         {
-            _source.AttachedToVisualTree += SourceAttachedToVisualTree;
-            _source.DetachedFromVisualTree += SourceDetachedFromVisualTree;
+            ((IAvaloniaObject)_source).PropertyChanged += SourcePropertyChanged;
             StartListeningToDataContext(_source.VisualParent);
             PublishValue();
         }
 
         protected override void Unsubscribed()
         {
-            _source.DetachedFromVisualTree -= SourceDetachedFromVisualTree;
+            ((IAvaloniaObject)_source).PropertyChanged -= SourcePropertyChanged;
         }
 
         private void PublishValue()
@@ -61,16 +60,14 @@ namespace Avalonia.Data
             }
         }
 
-        private void SourceAttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        private void SourcePropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
         {
-            StartListeningToDataContext(e.Parent);
-            PublishValue();
-        }
-
-        private void SourceDetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
-        {
-            StopListeningToDataContext(e.Parent);
-            PublishValue();
+            if (e.Property == Visual.VisualParentProperty)
+            {
+                StopListeningToDataContext(_source.VisualParent);
+                StartListeningToDataContext(_source.VisualParent);
+                PublishValue();
+            }
         }
 
         private void ParentPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)

@@ -72,6 +72,20 @@ namespace Avalonia.Base.UnitTests.Data.Core
         }
 
         [Fact]
+        public void Should_Produce_FallbackValue_When_Root_Null()
+        {
+            var source = new BehaviorSubject<Class1>(null);
+            var target = CompiledBindingExpression.OneWay(source, o => o.Foo, "fallback");
+            var result = new List<BindingValue<string>>();
+
+            target.Subscribe(x => result.Add(x));
+
+            Assert.Equal(1, result.Count);
+            Assert.IsType<NullReferenceException>(result[0].Error);
+            Assert.Equal("fallback", result[0].Value);
+        }
+
+        [Fact]
         public void Should_Produce_Error_When_Root_Changed_To_Null()
         {
             var source = new BehaviorSubject<Class1>(new Class1 { Foo = "foo" });
@@ -327,7 +341,6 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
             GC.KeepAlive(data);
         }
-
 
         [Fact]
         public void Should_Not_Keep_Source_Alive()
