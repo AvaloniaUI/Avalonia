@@ -160,22 +160,6 @@ public:
         }
     }
     
-    virtual HRESULT GetMaxClientSize(AvnSize* ret) override
-    {
-        @autoreleasepool
-        {
-            if(ret == nullptr)
-                return E_POINTER;
-            
-            auto size = [NSScreen.screens objectAtIndex:0].frame.size;
-            
-            ret->Height = size.height;
-            ret->Width = size.width;
-            
-            return S_OK;
-        }
-    }
-    
     virtual HRESULT GetScaling (double* ret) override
     {
         @autoreleasepool
@@ -412,7 +396,8 @@ private:
     INHERIT_INTERFACE_MAP(WindowBaseImpl)
     INTERFACE_MAP_ENTRY(IAvnWindow, IID_IAvnWindow)
     END_INTERFACE_MAP()
-    virtual ~WindowImpl(){
+    virtual ~WindowImpl()
+    {
     }
     
     ComPtr<IAvnWindowEvents> WindowEvents;
@@ -661,7 +646,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (void)dealloc
 {
 }
-
 
 - (void)onClosed
 {
