@@ -1,40 +1,16 @@
 <local:AnimationsPage xmlns="https://github.com/avaloniaui" 
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
   xmlns:local="clr-namespace:RenderDemo.Pages;assembly=RenderDemo" x:Class="RenderDemo.Pages.AnimationsPage">
-
   <Grid>
-
     <Grid.Styles>
-
-
-      <!-- <Style Selector="local|XDataGridCellContent.Index">
-        <Setter Property="Template">
-          <ControlTemplate>
-            <TextBox Text="{Binding Index}"/>
-          </ControlTemplate>
-        </Setter>
-      </Style> -->
-
       <Style Selector="local|XDataGridCellContent.Allow">
         <Setter Property="Template">
           <ControlTemplate>
-            <CheckBox IsChecked="{Binding Allow, Mode=TwoWay}"/>
+            <CheckBox IsChecked="{TemplateBinding CellValue, Mode=TwoWay}"/>
           </ControlTemplate>
         </Setter>
       </Style>
-
-      <Style Selector="local|XDataGridCellContent.SomeText">
-        <Setter Property="Template">
-          <ControlTemplate>
-            <TextBox Text="{Binding SomeText, Mode=TwoWay}"/>
-          </ControlTemplate>
-        </Setter>
-      </Style>
-
     </Grid.Styles>
-
     <local:XDataGrid Items="{Binding DataRows}"/>
-
   </Grid>
-
 </local:AnimationsPage>

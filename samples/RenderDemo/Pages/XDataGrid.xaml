@@ -33,7 +33,7 @@
   <Style Selector="local|XDataGridHeaderCell.LastColumn">
     <Setter Property="Template">
       <ControlTemplate>
-        <ContentControl Name="PART_ContentControl" />
+        <ContentControl Name="PART_ContentControl" Content="{TemplateBinding Content}" />
       </ControlTemplate>
     </Setter>
   </Style>
@@ -48,10 +48,6 @@
       </ControlTemplate>
     </Setter>
   </Style>
-
-
-  <!--             <CheckBox IsChecked="{Binding Path=CellValue, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>  -->
-
 
   <Style Selector="local|XDataGridCell.LastColumn">
     <Setter Property="Template">
