@@ -52,6 +52,7 @@ struct AvnScreen
 {
     AvnRect Bounds;
     AvnRect WorkingArea;
+    float PixelDensity;
     bool Primary;
 };
 
@@ -187,7 +188,6 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT Close() = 0;
     virtual HRESULT Activate () = 0;
     virtual HRESULT GetClientSize(AvnSize*ret) = 0;
-    virtual HRESULT GetMaxClientSize(AvnSize* ret) = 0;
     virtual HRESULT GetScaling(double*ret)=0;
     virtual HRESULT SetMinMaxSize(AvnSize minSize, AvnSize maxSize) = 0;
     virtual HRESULT Resize(double width, double height) = 0;
