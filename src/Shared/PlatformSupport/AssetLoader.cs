@@ -242,6 +242,7 @@ namespace Avalonia.Shared.PlatformSupport
                     throw new InvalidOperationException(
                         $"Assembly {name} needs to be referenced and explicitly loaded before loading resources");
 #else
+                    name = Uri.UnescapeDataString(name);
                     AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
 #endif
                 }
