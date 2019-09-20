@@ -71,15 +71,6 @@ namespace Avalonia.Input
 
         public KeyModifiers KeyModifiers { get; }
 
-        static InputModifiers ParseModifier(string modifier)
-        {
-            if (modifier.Equals("ctrl", StringComparison.OrdinalIgnoreCase))
-                return InputModifiers.Control;
-            if(modifier.Equals("cmd", StringComparison.OrdinalIgnoreCase))
-                return InputModifiers.Windows;
-            return (InputModifiers) Enum.Parse(typeof (InputModifiers), modifier, true);
-        }
-
         public static KeyGesture Parse(string gesture)
         {
             // string.Split can't be used here because "Ctrl++" is a perfectly valid key gesture
@@ -148,6 +139,11 @@ namespace Avalonia.Input
             if (modifier.Equals("ctrl".AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
                 return KeyModifiers.Control;
+            }
+
+            if (modifier.Equals("cmd".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                return KeyModifiers.Meta;
             }
 
             return (KeyModifiers)Enum.Parse(typeof(KeyModifiers), modifier.ToString(), true);
