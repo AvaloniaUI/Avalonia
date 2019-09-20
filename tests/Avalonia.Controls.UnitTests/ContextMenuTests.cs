@@ -198,7 +198,7 @@ namespace Avalonia.Controls.UnitTests
             var screen = new PixelRect(new PixelPoint(), new PixelSize(100, 100));
             var screenImpl = new Mock<IScreenImpl>();
             screenImpl.Setup(x => x.ScreenCount).Returns(1);
-            screenImpl.Setup(X => X.AllScreens).Returns( new[] { new Screen(screen, screen, true) });
+            screenImpl.Setup(X => X.AllScreens).Returns( new[] { new Screen(1, screen, screen, true) });
 
             popupImpl = MockWindowingPlatform.CreatePopupMock();
             popupImpl.SetupGet(x => x.Scaling).Returns(1);
