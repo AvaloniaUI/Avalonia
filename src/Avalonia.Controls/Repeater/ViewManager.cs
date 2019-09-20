@@ -128,8 +128,7 @@ namespace Avalonia.Controls
 
         private void MoveFocusFromClearedIndex(int clearedIndex)
         {
-            IControl focusedChild = null;
-            var focusCandidate = FindFocusCandidate(clearedIndex, focusedChild);
+            var focusCandidate = FindFocusCandidate(clearedIndex, out var focusedChild);
             if (focusCandidate != null)
             {
                 focusCandidate.Focus();
@@ -145,7 +144,7 @@ namespace Avalonia.Controls
             }
         }
 
-        IControl FindFocusCandidate(int clearedIndex, IControl focusedChild)
+        IControl FindFocusCandidate(int clearedIndex, out IControl focusedChild)
         {
             // Walk through all the children and find elements with index before and after the cleared index.
             // Note that during a delete the next element would now have the same index.
@@ -183,7 +182,7 @@ namespace Avalonia.Controls
 
             // TODO: Find the next element if one exists, if not use the previous element.
             // If the container itself is not focusable, find a descendent that is.
-
+            focusedChild = nextElement;
             return nextElement;
         }
 
@@ -221,8 +220,6 @@ namespace Avalonia.Controls
 
         public void UpdatePin(IControl element, bool addPin)
         {
-            if(element is null) return;
-
             var parent = element.VisualParent;
             var child = (IVisual)element;
 
