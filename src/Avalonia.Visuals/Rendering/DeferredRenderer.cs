@@ -540,7 +540,7 @@ namespace Avalonia.Rendering
                     foreach (var visual in _recalculateChildren)
                     {
                         var node = scene.FindNode(visual);
-                        ((VisualNode)node)?.SortChildren(scene);
+                        ((VisualNode)node)?.UpdateChildren(scene);
                     }
 
                     _recalculateChildren.Clear();
