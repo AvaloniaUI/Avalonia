@@ -202,8 +202,9 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Template = CreateTemplate();
                 target.Content = child;
+                target.ApplyTemplate();
 
-                Assert.Throws<InvalidOperationException>(() => target.ApplyTemplate());
+                Assert.Throws<InvalidOperationException>(() => target.Presenter.ApplyTemplate());
             }
         }
 

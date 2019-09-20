@@ -23,11 +23,12 @@ extern IAvnAppMenu* GetAppMenu();
 extern IAvnAppMenu* CreateAppMenu();
 extern IAvnAppMenuItem* CreateAppMenuItem();
 
+extern void InitializeAvnApp();
+extern NSApplicationActivationPolicy AvnDesiredActivationPolicy;
 extern NSPoint ToNSPoint (AvnPoint p);
 extern AvnPoint ToAvnPoint (NSPoint p);
 extern AvnPoint ConvertPointY (AvnPoint p);
 extern NSSize ToNSSize (AvnSize s);
-
 #ifdef DEBUG
 #define NSDebugLog(...) NSLog(__VA_ARGS__)
 #else

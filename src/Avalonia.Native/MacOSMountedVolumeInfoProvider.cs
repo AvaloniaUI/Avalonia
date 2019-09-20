@@ -8,16 +8,16 @@ using Avalonia.Controls.Platform;
 
 namespace Avalonia.Native
 {
-    internal class WindowsMountedVolumeInfoListener : IDisposable
+    internal class MacOSMountedVolumeInfoListener : IDisposable
     {
         private readonly CompositeDisposable _disposables;
-        private readonly ObservableCollection<MountedVolumeInfo> _targetObs;
         private bool _beenDisposed = false;
         private ObservableCollection<MountedVolumeInfo> mountedDrives;
 
-        public WindowsMountedVolumeInfoListener(ObservableCollection<MountedVolumeInfo> mountedDrives)
+        public MacOSMountedVolumeInfoListener(ObservableCollection<MountedVolumeInfo> mountedDrives)
         {
             this.mountedDrives = mountedDrives;
+
             _disposables = new CompositeDisposable();
 
             var pollTimer = Observable.Interval(TimeSpan.FromSeconds(1))
@@ -30,7 +30,8 @@ namespace Avalonia.Native
 
         private void Poll(long _)
         {
-            var mountVolInfos = Directory.GetDirectories("/Volumes")
+            var mountVolInfos = Directory.GetDirectories("/Volumes/")
+                                .Where(p=> p != null)
                                 .Select(p => new MountedVolumeInfo()
                                 {
                                     VolumeLabel = Path.GetFileName(p),
@@ -38,15 +39,15 @@ namespace Avalonia.Native
                                     VolumeSizeBytes = 0
                                 })
                                 .ToArray();
-
-            if (_targetObs.SequenceEqual(mountVolInfos))
+                                
+            if (mountedDrives.SequenceEqual(mountVolInfos))
                 return;
             else
             {
-                _targetObs.Clear();
+                mountedDrives.Clear();
 
                 foreach (var i in mountVolInfos)
-                    _targetObs.Add(i);
+                    mountedDrives.Add(i);
             }
         }
 
@@ -72,7 +73,7 @@ namespace Avalonia.Native
         public IDisposable Listen(ObservableCollection<MountedVolumeInfo> mountedDrives)
         {
             Contract.Requires<ArgumentNullException>(mountedDrives != null);
-            return new WindowsMountedVolumeInfoListener(mountedDrives);
+            return new MacOSMountedVolumeInfoListener(mountedDrives);
         }
     }
 }

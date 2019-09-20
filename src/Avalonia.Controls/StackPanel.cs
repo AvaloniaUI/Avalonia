@@ -251,7 +251,7 @@ namespace Avalonia.Controls
             {
                 var child = children[i];
 
-                if (child == null)
+                if (child == null || !child.IsVisible)
                 { continue; }
 
                 if (fHorizontal)
