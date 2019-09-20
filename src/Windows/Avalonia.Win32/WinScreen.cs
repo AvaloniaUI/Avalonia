@@ -7,7 +7,7 @@ namespace Avalonia.Win32
     {
         private readonly IntPtr _hMonitor;
 
-        public WinScreen(PixelRect bounds, PixelRect workingArea, bool primary, IntPtr hMonitor) : base(bounds, workingArea, primary)
+        public WinScreen(double pixelDensity, PixelRect bounds, PixelRect workingArea, bool primary, IntPtr hMonitor) : base(pixelDensity, bounds, workingArea, primary)
         {
             this._hMonitor = hMonitor;
         }
