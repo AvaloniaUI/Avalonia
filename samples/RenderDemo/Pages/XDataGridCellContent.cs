@@ -8,8 +8,8 @@ namespace RenderDemo.Pages
         public static readonly DirectProperty<XDataGridCellContent, object> CellValueProperty =
             AvaloniaProperty.RegisterDirect<XDataGridCellContent, object>(
                 nameof(CellValue),
-                o => o._CellValue,
-                (o, v) => o._CellValue = v);
+                o => o.CellValue,
+                (o, v) => o.CellValue = v);
 
         private object _CellValue;
 
