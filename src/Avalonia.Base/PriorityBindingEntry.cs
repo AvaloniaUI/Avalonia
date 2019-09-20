@@ -129,6 +129,8 @@ namespace Avalonia
             }
             else
             {
+                // To avoid allocating closure in the outer scope we need to capture variables
+                // locally. This allows us to skip most of the allocations when on UI thread.
                 var instance = this;
                 var newValue = value;
 
