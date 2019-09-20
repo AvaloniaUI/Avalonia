@@ -27,7 +27,9 @@ namespace Avalonia.Controls.UnitTests
                     ContextMenu = sut
                 };
 
-                new Window { Content = target }.ApplyTemplate();
+                var window = new Window { Content = target };
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 int openedCount = 0;
 
@@ -53,7 +55,9 @@ namespace Avalonia.Controls.UnitTests
                     ContextMenu = sut
                 };
 
-                new Window { Content = target }.ApplyTemplate();
+                var window = new Window { Content = target };
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 sut.Open(target);
 
@@ -86,6 +90,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var window = new Window {Content = target};
                 window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 _mouse.Click(target, MouseButton.Right);
 
@@ -115,7 +120,8 @@ namespace Avalonia.Controls.UnitTests
 
                 var window = new Window {Content = target};
                 window.ApplyTemplate();
-                
+                window.Presenter.ApplyTemplate();
+
                 _mouse.Click(target, MouseButton.Right);
 
                 Assert.True(sut.IsOpen);
@@ -192,7 +198,7 @@ namespace Avalonia.Controls.UnitTests
             var screen = new PixelRect(new PixelPoint(), new PixelSize(100, 100));
             var screenImpl = new Mock<IScreenImpl>();
             screenImpl.Setup(x => x.ScreenCount).Returns(1);
-            screenImpl.Setup(X => X.AllScreens).Returns( new[] { new Screen(screen, screen, true) });
+            screenImpl.Setup(X => X.AllScreens).Returns( new[] { new Screen(1, screen, screen, true) });
 
             popupImpl = MockWindowingPlatform.CreatePopupMock();
             popupImpl.SetupGet(x => x.Scaling).Returns(1);

@@ -100,14 +100,26 @@ namespace Avalonia.X11
                 valueMask |= SetWindowValuemask.ColorMap;   
             }
 
-            _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, 300, 200, 0,
+            int defaultWidth = 300, defaultHeight = 200;
+
+            if (!_popup)
+            {
+                var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
+                   .FirstOrDefault(m => m.Bounds.Contains(Position));
+
+                // Emulate Window 7+'s default window size behavior.
+                defaultWidth = (int)(monitor.WorkingArea.Width * 0.75d);
+                defaultHeight = (int)(monitor.WorkingArea.Height * 0.7d);
+            }
+
+            _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, defaultWidth, defaultHeight, 0,
                 depth,
                 (int)CreateWindowArgs.InputOutput, 
                 visual,
                 new UIntPtr((uint)valueMask), ref attr);
 
             if (_useRenderWindow)
-                _renderHandle = XCreateWindow(_x11.Display, _handle, 0, 0, 300, 200, 0, depth,
+                _renderHandle = XCreateWindow(_x11.Display, _handle, 0, 0, defaultWidth, defaultHeight, 0, depth,
                     (int)CreateWindowArgs.InputOutput,
                     visual,
                     new UIntPtr((uint)(SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
