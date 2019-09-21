@@ -19,40 +19,34 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         public static IXamlIlType UpdateCompiledBindingExtension(XamlIlAstTransformationContext context, XamlIlAstObjectNode binding, IXamlIlType startType)
         {
             IXamlIlType bindingResultType = null;
-            if (binding.Arguments.Count > 0 && binding.Arguments[0] is XamlIlAstTextNode bindingPathText)
+            if (binding.Arguments.Count > 0 && binding.Arguments[0] is ParsedBindingPathNode bindingPath)
             {
-                var reader = new CharacterReader(bindingPathText.Text.AsSpan());
-                var grammar = BindingExpressionGrammar.Parse(ref reader);
-
                 var transformed = TransformBindingPath(
                     context,
-                    bindingPathText,
+                    bindingPath,
                     startType,
-                    grammar.Nodes);
+                    bindingPath.Path);
 
                 bindingResultType = transformed.BindingResultType;
                 binding.Arguments[0] = transformed;
             }
             else
             {
-                var bindingPathAssignment = binding.Children.OfType<XamlIlAstXamlPropertyValueNode>()
-                    .FirstOrDefault(v => v.Property.GetClrProperty().Name == "Path");
+                var bindingPathAssignment = binding.Children.OfType<XamlIlPropertyAssignmentNode>()
+                    .FirstOrDefault(v => v.Property.Name == "Path");
 
                 if (bindingPathAssignment is null)
                 {
                     return startType;
                 }
 
-                if (bindingPathAssignment.Values[0] is XamlIlAstTextNode pathValue)
+                if (bindingPathAssignment.Values[0] is ParsedBindingPathNode bindingPathNode)
                 {
-                    var reader = new CharacterReader(pathValue.Text.AsSpan());
-                    var grammar = BindingExpressionGrammar.Parse(ref reader);
-
                     var transformed = TransformBindingPath(
                         context,
-                        pathValue,
+                        bindingPathNode,
                         startType,
-                        grammar.Nodes);
+                        bindingPathNode.Path);
 
                     bindingResultType = transformed.BindingResultType;
                     bindingPathAssignment.Values[0] = transformed;

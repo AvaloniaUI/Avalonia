@@ -32,7 +32,32 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var window = (Window)loader.Load(xaml);
                 var textBlock = window.FindControl<TextBlock>("textBlock");
 
-                DelayedBinding.ApplyBindings(textBlock);
+                var dataContext = new TestDataContext
+                {
+                    StringProperty = "foobar"
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.StringProperty, textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void ResolvesPathPassedByProperty()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{CompiledBinding Path=StringProperty}' Name='textBlock' />
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
 
                 var dataContext = new TestDataContext
                 {
@@ -60,8 +85,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var loader = new AvaloniaXamlLoader();
                 var window = (Window)loader.Load(xaml);
                 var textBlock = window.FindControl<TextBlock>("textBlock");
-
-                DelayedBinding.ApplyBindings(textBlock);
 
                 var dataContext = new TestDataContext
                 {

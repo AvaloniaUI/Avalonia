@@ -53,6 +53,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             // After everything else
 
+            InsertBefore<XamlIlConvertPropertyValuesToAssignmentsTransformer>(
+                new AvaloniaXamlIlBindingPathParser()
+            );
+
             InsertBefore<XamlIlNewObjectTransformer>(
                 new AddNameScopeRegistration(),
                 new AvaloniaXamlIlDataContextTypeTransformer(),

@@ -46,6 +46,7 @@
         <Compile Include="XamlIl\CompilerExtensions\AvaloniaXamlIlCompilerConfiguration.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaBindingExtensionHackTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlAvaloniaPropertyResolver.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlBindingPathParser.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlBindingPathTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlConstructorServiceProviderTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer.cs" />
