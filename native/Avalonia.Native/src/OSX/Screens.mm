@@ -38,6 +38,8 @@ class Screens : public ComSingleObject<IAvnScreens, &IID_IAvnScreens>
             ret->WorkingArea.Height = [screen visibleFrame].size.height;
             ret->WorkingArea.Width = [screen visibleFrame].size.width;
             
+            ret->PixelDensity = [screen backingScaleFactor];
+            
             ret->Primary = index == 0;
             
             return S_OK;

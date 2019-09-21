@@ -271,6 +271,56 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         }
 
         [Fact]
+        public void Should_Update_VisualNodes_When_Child_Moved_To_New_Parent()
+        {
+            var dispatcher = new ImmediateDispatcher();
+            var loop = new Mock<IRenderLoop>();
+
+            Decorator moveFrom;
+            Decorator moveTo;
+            Canvas moveMe;
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (moveFrom = new Decorator
+                        {
+                            Child = moveMe = new Canvas(),
+                        }),
+                        (moveTo = new Decorator()),
+                    }
+                }
+            };
+
+            var sceneBuilder = new SceneBuilder();
+            var target = new DeferredRenderer(
+                root,
+                loop.Object,
+                sceneBuilder: sceneBuilder,
+                dispatcher: dispatcher);
+
+            root.Renderer = target;
+            target.Start();
+            RunFrame(target);
+
+            moveFrom.Child = null;
+            moveTo.Child = moveMe;
+
+            RunFrame(target);
+
+            var scene = target.UnitTestScene();
+            var moveFromNode = (VisualNode)scene.FindNode(moveFrom);
+            var moveToNode = (VisualNode)scene.FindNode(moveTo);
+
+            Assert.Empty(moveFromNode.Children);
+            Assert.Equal(1, moveToNode.Children.Count);
+            Assert.Same(moveMe, moveToNode.Children[0].Visual);
+
+        }
+
+        [Fact]
         public void Should_Push_Opacity_For_Controls_With_Less_Than_1_Opacity()
         {
             var root = new TestRoot
