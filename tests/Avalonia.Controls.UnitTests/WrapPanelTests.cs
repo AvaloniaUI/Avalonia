@@ -106,7 +106,7 @@ namespace Avalonia.Controls.UnitTests
                             Children =
                             {
                                 new Border(),
-                                new Border { Width = 50, Height = 50 },
+                                new Border(),
                             }
                         };
 
