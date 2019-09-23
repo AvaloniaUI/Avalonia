@@ -41,7 +41,7 @@ namespace Avalonia.Controls
         /// </remarks>
         public void SetOwner(IInputRoot owner)
         {
-            Contract.Requires<ArgumentNullException>(owner != null);
+            Contract.RequireNotNull(owner);
 
             if (_owner != null)
             {

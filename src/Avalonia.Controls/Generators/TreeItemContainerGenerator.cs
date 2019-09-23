@@ -33,11 +33,11 @@ namespace Avalonia.Controls.Generators
             TreeContainerIndex index)
             : base(owner, contentProperty, contentTemplateProperty)
         {
-            Contract.Requires<ArgumentNullException>(owner != null);
-            Contract.Requires<ArgumentNullException>(contentProperty != null);
-            Contract.Requires<ArgumentNullException>(itemsProperty != null);
-            Contract.Requires<ArgumentNullException>(isExpandedProperty != null);
-            Contract.Requires<ArgumentNullException>(index != null);
+            Contract.RequireNotNull(owner);
+            Contract.RequireNotNull(contentProperty);
+            Contract.RequireNotNull(itemsProperty);
+            Contract.RequireNotNull(isExpandedProperty);
+            Contract.RequireNotNull(index);
 
             ItemsProperty = itemsProperty;
             IsExpandedProperty = isExpandedProperty;

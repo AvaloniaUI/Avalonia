@@ -35,7 +35,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="parent">The parent scene graph node, if any.</param>
         public VisualNode(IVisual visual, IVisualNode parent)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            Contract.RequireNotNull(visual);
 
             Visual = visual;
             Parent = parent;

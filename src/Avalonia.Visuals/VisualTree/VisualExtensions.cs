@@ -24,7 +24,7 @@ namespace Avalonia.VisualTree
         /// </returns>
         public static int CalculateDistanceFromAncestor(this IVisual visual, IVisual ancestor)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            Contract.RequireNotNull(visual);
 
             var result = 0;
 
@@ -45,7 +45,7 @@ namespace Avalonia.VisualTree
         /// <returns>The common ancestor, or null if not found.</returns>
         public static IVisual FindCommonVisualAncestor(this IVisual visual, IVisual target)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            Contract.RequireNotNull(visual);
 
             return visual.GetSelfAndVisualAncestors().Intersect(target.GetSelfAndVisualAncestors())
                 .FirstOrDefault();
@@ -58,7 +58,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual's ancestors.</returns>
         public static IEnumerable<IVisual> GetVisualAncestors(this IVisual visual)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            Contract.RequireNotNull(visual);
 
             visual = visual.VisualParent;
 
@@ -76,7 +76,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visual and its ancestors.</returns>
         public static IEnumerable<IVisual> GetSelfAndVisualAncestors(this IVisual visual)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            Contract.RequireNotNull(visual);
 
             yield return visual;
 
@@ -94,7 +94,7 @@ namespace Avalonia.VisualTree
         /// <returns>The visuals at the requested point.</returns>
         public static IVisual GetVisualAt(this IVisual visual, Point p)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            Contract.RequireNotNull(visual);
 
             return visual.GetVisualsAt(p).FirstOrDefault();
         }
@@ -109,7 +109,7 @@ namespace Avalonia.VisualTree
             this IVisual visual,
             Point p)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            Contract.RequireNotNull(visual);
 
             return visual.GetVisualsAt(p, x => x.IsVisible);
         }
@@ -129,7 +129,7 @@ namespace Avalonia.VisualTree
             Point p,
             Func<IVisual, bool> filter)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            Contract.RequireNotNull(visual);
 
             var root = visual.GetVisualRoot();
             var rootPoint = visual.TranslatePoint(p, root);
@@ -217,7 +217,7 @@ namespace Avalonia.VisualTree
         /// </returns>
         public static IRenderRoot GetVisualRoot(this IVisual visual)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            Contract.RequireNotNull(visual);
 
             return visual as IRenderRoot ?? visual.VisualRoot;
         }

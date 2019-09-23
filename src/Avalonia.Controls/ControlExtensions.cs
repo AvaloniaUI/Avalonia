@@ -20,7 +20,7 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         public static void BringIntoView(this IControl control)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            Contract.RequireNotNull(control);
 
             control.BringIntoView(new Rect(control.Bounds.Size));
         }
@@ -32,7 +32,7 @@ namespace Avalonia.Controls
         /// <param name="rect">The area of the control to being into view.</param>
         public static void BringIntoView(this IControl control, Rect rect)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            Contract.RequireNotNull(control);
 
             if (control.IsEffectivelyVisible)
             {
@@ -56,8 +56,8 @@ namespace Avalonia.Controls
         /// <returns>The control or null if not found.</returns>
         public static T FindControl<T>(this IControl control, string name) where T : class, IControl
         {
-            Contract.Requires<ArgumentNullException>(control != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(control);
+            Contract.RequireNotNull(name);
 
             var nameScope = control.FindNameScope();
 
@@ -77,7 +77,7 @@ namespace Avalonia.Controls
         /// <param name="value">True to add the pseudoclass or false to remove.</param>
         public static void Set(this IPseudoClasses classes, string name, bool value)
         {
-            Contract.Requires<ArgumentNullException>(classes != null);
+            Contract.RequireNotNull(classes);
 
             if (value)
             {
@@ -98,7 +98,7 @@ namespace Avalonia.Controls
         /// <returns>A disposable used to cancel the subscription.</returns>
         public static IDisposable Set(this IPseudoClasses classes, string name, IObservable<bool> trigger)
         {
-            Contract.Requires<ArgumentNullException>(classes != null);
+            Contract.RequireNotNull(classes);
 
             return trigger.Subscribe(x => classes.Set(name, x));
         }

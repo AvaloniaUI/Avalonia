@@ -20,7 +20,7 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         public void InvalidateMeasure(ILayoutable control)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            Contract.RequireNotNull(control);
             Dispatcher.UIThread.VerifyAccess();
 
             if (!control.IsAttachedToVisualTree)
@@ -41,7 +41,7 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         public void InvalidateArrange(ILayoutable control)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            Contract.RequireNotNull(control);
             Dispatcher.UIThread.VerifyAccess();
 
             if (!control.IsAttachedToVisualTree)

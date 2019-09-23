@@ -51,7 +51,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </returns>
         public UpdateState BeginUpdate(VisualNode node)
         {
-            Contract.Requires<ArgumentNullException>(node != null);
+            Contract.RequireNotNull(node);
 
             if (_node != null)
             {

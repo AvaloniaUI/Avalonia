@@ -33,7 +33,7 @@ namespace Avalonia.Data.Core.Plugins
         /// <inheritdoc/>
         public void Subscribe(Action<object> listener)
         {
-            Contract.Requires<ArgumentNullException>(listener != null);
+            Contract.RequireNotNull(listener);
 
             if (_listener != null)
             {

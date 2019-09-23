@@ -68,7 +68,7 @@ namespace Avalonia.Input
         /// <returns>The mouse position in the control's coordinates.</returns>
         public Point GetPosition(IVisual relativeTo)
         {
-            Contract.Requires<ArgumentNullException>(relativeTo != null);
+            Contract.RequireNotNull(relativeTo);
 
             if (relativeTo.VisualRoot == null)
             {
@@ -124,7 +124,7 @@ namespace Avalonia.Input
         
         private void ProcessRawEvent(RawPointerEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            Contract.RequireNotNull(e);
 
             var mouse = (IMouseDevice)e.Device;
 
@@ -165,8 +165,8 @@ namespace Avalonia.Input
         private void LeaveWindow(IMouseDevice device, ulong timestamp, IInputRoot root, PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.RequireNotNull(device);
+            Contract.RequireNotNull(root);
 
             ClearPointerOver(this, timestamp, root, properties, inputModifiers);
         }
@@ -198,8 +198,8 @@ namespace Avalonia.Input
             PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.RequireNotNull(device);
+            Contract.RequireNotNull(root);
 
             var hit = HitTest(root, p);
 
@@ -234,8 +234,8 @@ namespace Avalonia.Input
         private bool MouseMove(IMouseDevice device, ulong timestamp, IInputRoot root, Point p, PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.RequireNotNull(device);
+            Contract.RequireNotNull(root);
 
             IInputElement source;
 
@@ -259,8 +259,8 @@ namespace Avalonia.Input
         private bool MouseUp(IMouseDevice device, ulong timestamp, IInputRoot root, Point p, PointerPointProperties props,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.RequireNotNull(device);
+            Contract.RequireNotNull(root);
 
             var hit = HitTest(root, p);
 
@@ -281,8 +281,8 @@ namespace Avalonia.Input
             PointerPointProperties props,
             Vector delta, KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.RequireNotNull(device);
+            Contract.RequireNotNull(root);
 
             var hit = HitTest(root, p);
 
@@ -300,7 +300,7 @@ namespace Avalonia.Input
 
         private IInteractive GetSource(IVisual hit)
         {
-            Contract.Requires<ArgumentNullException>(hit != null);
+            Contract.RequireNotNull(hit);
 
             return _pointer.Captured ??
                 (hit as IInteractive) ??
@@ -309,7 +309,7 @@ namespace Avalonia.Input
 
         private IInputElement HitTest(IInputElement root, Point p)
         {
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.RequireNotNull(root);
 
             return _pointer.Captured ?? root.InputHitTest(p);
         }
@@ -326,8 +326,8 @@ namespace Avalonia.Input
             PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.RequireNotNull(device);
+            Contract.RequireNotNull(root);
 
             var element = root.PointerOverElement;
             var e = CreateSimpleEvent(InputElement.PointerLeaveEvent, timestamp, element, properties, inputModifiers);
@@ -371,8 +371,8 @@ namespace Avalonia.Input
             PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.RequireNotNull(device);
+            Contract.RequireNotNull(root);
 
             var element = root.InputHitTest(p);
 
@@ -395,9 +395,9 @@ namespace Avalonia.Input
             PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(device);
+            Contract.RequireNotNull(root);
+            Contract.RequireNotNull(element);
 
             IInputElement branch = null;
 

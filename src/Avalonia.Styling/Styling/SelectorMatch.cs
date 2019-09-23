@@ -72,7 +72,7 @@ namespace Avalonia.Styling
         /// <param name="match">The match activator.</param>
         public SelectorMatch(IObservable<bool> match)
         {
-            Contract.Requires<ArgumentNullException>(match != null);
+            Contract.RequireNotNull(match);
 
             Result = SelectorMatchResult.Sometimes;
             Activator = match;

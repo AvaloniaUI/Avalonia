@@ -23,8 +23,8 @@ namespace Avalonia.Controls
         public static T Find<T>(this INameScope nameScope, string name)
             where T : class
         {
-            Contract.Requires<ArgumentNullException>(nameScope != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(nameScope);
+            Contract.RequireNotNull(name);
 
             var result = nameScope.Find(name);
 
@@ -47,8 +47,8 @@ namespace Avalonia.Controls
         public static T Find<T>(this ILogical anchor, string name)
             where T : class
         {
-            Contract.Requires<ArgumentNullException>(anchor != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(anchor);
+            Contract.RequireNotNull(name);
             var styledAnchor = anchor as StyledElement;
             if (styledAnchor == null)
                 return null;
@@ -67,8 +67,8 @@ namespace Avalonia.Controls
         public static T Get<T>(this INameScope nameScope, string name)
             where T : class
         {
-            Contract.Requires<ArgumentNullException>(nameScope != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(nameScope);
+            Contract.RequireNotNull(name);
 
             var result = nameScope.Find(name);
 
@@ -97,8 +97,8 @@ namespace Avalonia.Controls
         public static T Get<T>(this ILogical anchor, string name)
             where T : class
         {
-            Contract.Requires<ArgumentNullException>(anchor != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(anchor);
+            Contract.RequireNotNull(name);
                
             var nameScope = (anchor as INameScope) ?? NameScope.GetNameScope((StyledElement)anchor);
             if (nameScope == null)
@@ -110,7 +110,7 @@ namespace Avalonia.Controls
         
         public static INameScope FindNameScope(this ILogical control)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            Contract.RequireNotNull(control);
 
             var scope = control.GetSelfAndLogicalAncestors()
                 .OfType<StyledElement>()

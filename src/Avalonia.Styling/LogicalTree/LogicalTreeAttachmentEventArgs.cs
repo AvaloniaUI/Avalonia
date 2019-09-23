@@ -18,7 +18,7 @@ namespace Avalonia.LogicalTree
         /// <param name="root">The root of the logical tree.</param>
         public LogicalTreeAttachmentEventArgs(IStyleHost root)
         {
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.RequireNotNull(root);
 
             Root = root;
         }

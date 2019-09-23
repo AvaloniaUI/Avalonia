@@ -42,8 +42,8 @@ namespace Avalonia.Logging.Serilog
             string messageTemplate,
             params object[] propertyValues)
         {
-            Contract.Requires<ArgumentNullException>(area != null);
-            Contract.Requires<ArgumentNullException>(messageTemplate != null);
+            Contract.RequireNotNull(area);
+            Contract.RequireNotNull(messageTemplate);
 
             using (LogContext.PushProperty("Area", area))
             using (LogContext.PushProperty("SourceType", source?.GetType()))

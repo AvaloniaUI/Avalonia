@@ -37,7 +37,7 @@ namespace Avalonia.Controls.Utils
 
         public static int IndexOf(this IEnumerable items, object item)
         {
-            Contract.Requires<ArgumentNullException>(items != null);
+            Contract.RequireNotNull(items);
 
             var list = items as IList;
 
@@ -65,7 +65,7 @@ namespace Avalonia.Controls.Utils
 
         public static object ElementAt(this IEnumerable items, int index)
         {
-            Contract.Requires<ArgumentNullException>(items != null);
+            Contract.RequireNotNull(items);
 
             var list = items as IList;
 

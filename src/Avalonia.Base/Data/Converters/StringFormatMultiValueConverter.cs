@@ -19,7 +19,7 @@ namespace Avalonia.Data.Converters
         /// </param>
         public StringFormatMultiValueConverter(string format, IMultiValueConverter inner)
         {
-            Contract.Requires<ArgumentNullException>(format != null);
+            Contract.RequireNotNull(format);
 
             Format = format;
             Inner = inner;

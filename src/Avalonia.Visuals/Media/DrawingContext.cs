@@ -83,7 +83,7 @@ namespace Avalonia.Media
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = default)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            Contract.RequireNotNull(source);
 
             PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect, bitmapInterpolationMode);
         }
@@ -110,7 +110,7 @@ namespace Avalonia.Media
         /// <param name="geometry">The geometry.</param>
         public void DrawGeometry(IBrush brush, IPen pen, Geometry geometry)
         {
-            Contract.Requires<ArgumentNullException>(geometry != null);
+            Contract.RequireNotNull(geometry);
 
             if (brush != null || PenIsVisible(pen))
             {
@@ -146,7 +146,7 @@ namespace Avalonia.Media
         /// <param name="text">The text.</param>
         public void DrawText(IBrush foreground, Point origin, FormattedText text)
         {
-            Contract.Requires<ArgumentNullException>(text != null);
+            Contract.RequireNotNull(text);
 
             if (foreground != null)
             {
@@ -241,7 +241,7 @@ namespace Avalonia.Media
         /// <returns>A disposable used to undo the clip geometry.</returns>
         public PushedState PushGeometryClip(Geometry clip)
         {
-            Contract.Requires<ArgumentNullException>(clip != null);
+            Contract.RequireNotNull(clip);
             PlatformImpl.PushGeometryClip(clip.PlatformImpl);
             return new PushedState(this, PushedState.PushedStateType.GeometryClip);
         }

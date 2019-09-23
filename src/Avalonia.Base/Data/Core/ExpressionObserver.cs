@@ -94,7 +94,7 @@ namespace Avalonia.Data.Core
             ExpressionNode node,
             string description)
         {
-            Contract.Requires<ArgumentNullException>(rootObservable != null);
+            Contract.RequireNotNull(rootObservable);
             
             _node = node;
             Description = description;
@@ -116,8 +116,8 @@ namespace Avalonia.Data.Core
             IObservable<Unit> update,
             string description)
         {
-            Contract.Requires<ArgumentNullException>(rootGetter != null);
-            Contract.Requires<ArgumentNullException>(update != null);
+            Contract.RequireNotNull(rootGetter);
+            Contract.RequireNotNull(update);
             Description = description;
             _node = node;
             _node.Target = new WeakReference<object>(rootGetter());
@@ -158,7 +158,7 @@ namespace Avalonia.Data.Core
             bool enableDataValidation = false,
             string description = null)
         {
-            Contract.Requires<ArgumentNullException>(rootObservable != null);
+            Contract.RequireNotNull(rootObservable);
             return new ExpressionObserver(
                 rootObservable.Select(o => (object)o),
                 Parse(expression, enableDataValidation),
@@ -182,7 +182,7 @@ namespace Avalonia.Data.Core
             bool enableDataValidation = false,
             string description = null)
         {
-            Contract.Requires<ArgumentNullException>(rootGetter != null);
+            Contract.RequireNotNull(rootGetter);
 
             return new ExpressionObserver(
                 () => rootGetter(),

@@ -72,7 +72,7 @@ namespace Avalonia.Native
     {
         public IDisposable Listen(ObservableCollection<MountedVolumeInfo> mountedDrives)
         {
-            Contract.Requires<ArgumentNullException>(mountedDrives != null);
+            Contract.RequireNotNull(mountedDrives);
             return new MacOSMountedVolumeInfoListener(mountedDrives);
         }
     }

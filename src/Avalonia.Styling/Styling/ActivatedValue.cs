@@ -33,7 +33,7 @@ namespace Avalonia.Styling
             object value,
             string description)
         {
-            Contract.Requires<ArgumentNullException>(activator != null);
+            Contract.RequireNotNull(activator);
 
             Activator = activator;
             Value = value;

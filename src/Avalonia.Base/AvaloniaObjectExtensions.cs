@@ -41,9 +41,6 @@ namespace Avalonia
         /// </remarks>
         public static IObservable<object> GetObservable(this IAvaloniaObject o, AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
             return new AvaloniaPropertyObservable<object>(o, property);
         }
 
@@ -62,9 +59,6 @@ namespace Avalonia
         /// </remarks>
         public static IObservable<T> GetObservable<T>(this IAvaloniaObject o, AvaloniaProperty<T> property)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
             return new AvaloniaPropertyObservable<T>(o, property);
         }
 
@@ -83,9 +77,6 @@ namespace Avalonia
             this IAvaloniaObject o, 
             AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
             return new AvaloniaPropertyChangedObservable(o, property);
         }
 
@@ -153,10 +144,6 @@ namespace Avalonia
             IBinding binding,
             object anchor = null)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(binding != null);
-
             var metadata = property.GetMetadata(target.GetType()) as IDirectPropertyMetadata;
 
             var result = binding.Initiate(

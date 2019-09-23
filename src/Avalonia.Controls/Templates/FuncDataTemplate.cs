@@ -71,7 +71,7 @@ namespace Avalonia.Controls.Templates
             bool supportsRecycling = false)
             : base(build)
         {
-            Contract.Requires<ArgumentNullException>(match != null);
+            Contract.RequireNotNull(match);
 
             _match = match;
             SupportsRecycling = supportsRecycling;

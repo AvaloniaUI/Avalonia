@@ -33,7 +33,7 @@ namespace Avalonia.Controls
         /// <param name="source">The data source.</param>
         public ItemsSourceView(IEnumerable source)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            Contract.RequireNotNull(source);
 
             if (source is IList list)
             {

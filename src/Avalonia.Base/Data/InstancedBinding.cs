@@ -31,7 +31,7 @@ namespace Avalonia.Data
         /// </remarks>
         public InstancedBinding(ISubject<object> subject, BindingMode mode, BindingPriority priority)
         {
-            Contract.Requires<ArgumentNullException>(subject != null);
+            Contract.RequireNotNull(subject);
 
             Mode = mode;
             Priority = priority;
@@ -93,7 +93,7 @@ namespace Avalonia.Data
             IObservable<object> observable,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(observable != null);
+            Contract.RequireNotNull(observable);
 
             return new InstancedBinding(observable, BindingMode.OneTime, priority);
         }
@@ -108,7 +108,7 @@ namespace Avalonia.Data
             IObservable<object> observable,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(observable != null);
+            Contract.RequireNotNull(observable);
 
             return new InstancedBinding(observable, BindingMode.OneWay, priority);
         }
@@ -123,7 +123,7 @@ namespace Avalonia.Data
             ISubject<object> subject,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(subject != null);
+            Contract.RequireNotNull(subject);
 
             return new InstancedBinding(subject, BindingMode.OneWayToSource, priority);
         }
@@ -138,7 +138,7 @@ namespace Avalonia.Data
             ISubject<object> subject,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(subject != null);
+            Contract.RequireNotNull(subject);
 
             return new InstancedBinding(subject, BindingMode.TwoWay, priority);
         }

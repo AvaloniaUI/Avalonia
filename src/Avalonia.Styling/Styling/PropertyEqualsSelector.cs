@@ -20,7 +20,7 @@ namespace Avalonia.Styling
 
         public PropertyEqualsSelector(Selector previous, AvaloniaProperty property, object value)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(property);
 
             _previous = previous;
             _property = property;

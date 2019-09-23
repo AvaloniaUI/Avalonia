@@ -76,9 +76,9 @@ namespace Avalonia.Data.Core
             object converterParameter = null,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(inner != null);
-            Contract.Requires<ArgumentNullException>(targetType != null);
-            Contract.Requires<ArgumentNullException>(converter != null);
+            Contract.RequireNotNull(inner);
+            Contract.RequireNotNull(targetType);
+            Contract.RequireNotNull(converter);
 
             _inner = inner;
             _targetType = targetType;

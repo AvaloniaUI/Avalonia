@@ -33,8 +33,8 @@ namespace Avalonia.Data.Core.Plugins
         /// </returns>
         public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)
         {
-            Contract.Requires<ArgumentNullException>(reference != null);
-            Contract.Requires<ArgumentNullException>(propertyName != null);
+            Contract.RequireNotNull(reference);
+            Contract.RequireNotNull(propertyName);
 
             reference.TryGetTarget(out object instance);
             var o = (AvaloniaObject)instance;
@@ -84,8 +84,8 @@ namespace Avalonia.Data.Core.Plugins
 
             public Accessor(WeakReference<AvaloniaObject> reference, AvaloniaProperty property)
             {
-                Contract.Requires<ArgumentNullException>(reference != null);
-                Contract.Requires<ArgumentNullException>(property != null);
+                Contract.RequireNotNull(reference);
+                Contract.RequireNotNull(property);
 
                 _reference = reference;
                 _property = property;

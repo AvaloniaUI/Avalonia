@@ -31,7 +31,7 @@ namespace Avalonia.Styling
             string description)
             : base(activator, AvaloniaProperty.UnsetValue, description)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            Contract.RequireNotNull(source);
 
             Source = source;
         }

@@ -68,7 +68,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>The created layer.</returns>
         public SceneLayer Add(IVisual layerRoot)
         {
-            Contract.Requires<ArgumentNullException>(layerRoot != null);
+            Contract.RequireNotNull(layerRoot);
 
             var distance = layerRoot.CalculateDistanceFromAncestor(_root);
             var layer = new SceneLayer(layerRoot, distance);
@@ -105,7 +105,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </returns>
         public bool Exists(IVisual layerRoot)
         {
-            Contract.Requires<ArgumentNullException>(layerRoot != null);
+            Contract.RequireNotNull(layerRoot);
 
             return _index.ContainsKey(layerRoot);
         }
@@ -129,7 +129,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>The layer.</returns>
         public SceneLayer GetOrAdd(IVisual layerRoot)
         {
-            Contract.Requires<ArgumentNullException>(layerRoot != null);
+            Contract.RequireNotNull(layerRoot);
 
             SceneLayer result;
 
@@ -148,7 +148,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>True if a matching layer was removed, otherwise false.</returns>
         public bool Remove(IVisual layerRoot)
         {
-            Contract.Requires<ArgumentNullException>(layerRoot != null);
+            Contract.RequireNotNull(layerRoot);
 
             SceneLayer layer;
 
@@ -167,7 +167,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>True if the layer was part of the scene, otherwise false.</returns>
         public bool Remove(SceneLayer layer)
         {
-            Contract.Requires<ArgumentNullException>(layer != null);
+            Contract.RequireNotNull(layer);
 
             _index.Remove(layer.LayerRoot);
             return _inner.Remove(layer);

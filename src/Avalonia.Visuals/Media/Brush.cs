@@ -38,7 +38,7 @@ namespace Avalonia.Media
         /// <returns>The <see cref="Color"/>.</returns>
         public static IBrush Parse(string s)
         {
-            Contract.Requires<ArgumentNullException>(s != null);
+            Contract.RequireNotNull(s);
             Contract.Requires<FormatException>(s.Length > 0);
 
             if (s[0] == '#')

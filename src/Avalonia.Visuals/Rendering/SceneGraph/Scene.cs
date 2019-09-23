@@ -31,7 +31,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         private Scene(VisualNode root, Dictionary<IVisual, IVisualNode> index, SceneLayers layers, int generation)
         {
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.RequireNotNull(root);
 
             var renderRoot = root.Visual as IRenderRoot;
 
@@ -73,7 +73,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="node">The node.</param>
         public void Add(IVisualNode node)
         {
-            Contract.Requires<ArgumentNullException>(node != null);
+            Contract.RequireNotNull(node);
 
             _index.Add(node.Visual, node);
         }
@@ -137,7 +137,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="node">The node.</param>
         public void Remove(IVisualNode node)
         {
-            Contract.Requires<ArgumentNullException>(node != null);
+            Contract.RequireNotNull(node);
 
             _index.Remove(node.Visual);
 

@@ -37,7 +37,7 @@ namespace Avalonia.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(Uri uri, Uri baseUri = null)
         {
-            Contract.Requires<ArgumentNullException>(uri != null);
+            Contract.RequireNotNull(uri);
 
             var assetLocator = AvaloniaLocator.Current.GetService<IAssetLoader>();
 
@@ -79,7 +79,7 @@ namespace Avalonia.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(string xaml, Assembly localAssembly = null, object rootInstance = null)
         {
-            Contract.Requires<ArgumentNullException>(xaml != null);
+            Contract.RequireNotNull(xaml);
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml)))
             {

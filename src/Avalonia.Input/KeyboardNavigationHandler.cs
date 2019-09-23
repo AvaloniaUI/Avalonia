@@ -27,7 +27,7 @@ namespace Avalonia.Input
         /// </remarks>
         public void SetOwner(IInputRoot owner)
         {
-            Contract.Requires<ArgumentNullException>(owner != null);
+            Contract.RequireNotNull(owner);
 
             if (_owner != null)
             {
@@ -52,7 +52,7 @@ namespace Avalonia.Input
             IInputElement element,
             NavigationDirection direction)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
 
             var customHandler = element.GetSelfAndVisualAncestors()
                 .OfType<ICustomKeyboardNavigation>()
@@ -100,7 +100,7 @@ namespace Avalonia.Input
             NavigationDirection direction,
             InputModifiers modifiers = InputModifiers.None)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
 
             var next = GetNext(element, direction);
 

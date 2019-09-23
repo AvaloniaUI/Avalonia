@@ -29,8 +29,8 @@ namespace Avalonia
             Action<IAvaloniaObject, bool> notifying = null)
                 : base(name, ownerType, metadata, notifying)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
+            Contract.RequireNotNull(name);
+            Contract.RequireNotNull(ownerType);
 
             if (name.Contains("."))
             {
@@ -66,7 +66,7 @@ namespace Avalonia
         /// <returns>The default value.</returns>
         public TValue GetDefaultValue(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            Contract.RequireNotNull(type);
 
             return GetMetadata(type).DefaultValue.Typed;
         }
@@ -159,7 +159,7 @@ namespace Avalonia
         /// <inheritdoc/>
         Func<IAvaloniaObject, object, object> IStyledPropertyAccessor.GetValidationFunc(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            Contract.RequireNotNull(type);
             return ((IStyledPropertyMetadata)base.GetMetadata(type)).Validate;
         }
 
@@ -168,7 +168,7 @@ namespace Avalonia
 
         private object GetDefaultBoxedValue(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            Contract.RequireNotNull(type);
 
             return GetMetadata(type).DefaultValue.Boxed;
         }

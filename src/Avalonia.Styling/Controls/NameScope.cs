@@ -35,7 +35,7 @@ namespace Avalonia.Controls
         /// <returns>The value of the NameScope attached property.</returns>
         public static INameScope GetNameScope(StyledElement styled)
         {
-            Contract.Requires<ArgumentNullException>(styled != null);
+            Contract.RequireNotNull(styled);
 
             return styled.GetValue(NameScopeProperty);
         }
@@ -47,7 +47,7 @@ namespace Avalonia.Controls
         /// <param name="value">The value to set.</param>
         public static void SetNameScope(StyledElement styled, INameScope value)
         {
-            Contract.Requires<ArgumentNullException>(styled != null);
+            Contract.RequireNotNull(styled);
 
             styled.SetValue(NameScopeProperty, value);
         }
@@ -57,8 +57,8 @@ namespace Avalonia.Controls
         {
             if (IsCompleted)
                 throw new InvalidOperationException("NameScope is completed, no further registrations are allowed");
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(name);
+            Contract.RequireNotNull(element);
 
             object existing;
 
@@ -97,7 +97,7 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         public object Find(string name)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(name);
 
             object result;
             _inner.TryGetValue(name, out result);

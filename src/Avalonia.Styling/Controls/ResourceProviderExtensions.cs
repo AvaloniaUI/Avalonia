@@ -30,8 +30,8 @@ namespace Avalonia.Controls
         /// <returns>True if the resource was found; otherwise false.</returns>
         public static bool TryFindResource(this IResourceNode control, object key, out object value)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
-            Contract.Requires<ArgumentNullException>(key != null);
+            Contract.RequireNotNull(control);
+            Contract.RequireNotNull(key);
 
             var current = control;
 

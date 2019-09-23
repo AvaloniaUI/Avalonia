@@ -19,8 +19,8 @@ namespace Avalonia.Styling
 
         private void ApplyStyles(IStyleable control, IStyleHost styleHost)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
-            Contract.Requires<ArgumentNullException>(styleHost != null);
+            Contract.RequireNotNull(control);
+            Contract.RequireNotNull(styleHost);
 
             var parentContainer = styleHost.StylingParent;
 

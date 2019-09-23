@@ -30,7 +30,7 @@ namespace Avalonia.Rendering
         /// <param name="root">The control to render.</param>
         public ImmediateRenderer(IVisual root)
         {
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.RequireNotNull(root);
 
             _root = root;
             _renderRoot = root as IRenderRoot;
@@ -218,7 +218,7 @@ namespace Avalonia.Rendering
            Point p,
            Func<IVisual, bool> filter)
         {
-            Contract.Requires<ArgumentNullException>(visual != null);
+            Contract.RequireNotNull(visual);
 
             if (filter?.Invoke(visual) != false)
             {

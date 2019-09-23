@@ -25,8 +25,8 @@ namespace Avalonia.Controls.Generators
             AvaloniaProperty contentTemplateProperty)
             : base(owner)
         {
-            Contract.Requires<ArgumentNullException>(owner != null);
-            Contract.Requires<ArgumentNullException>(contentProperty != null);
+            Contract.RequireNotNull(owner);
+            Contract.RequireNotNull(contentProperty);
 
             ContentProperty = contentProperty;
             ContentTemplateProperty = contentTemplateProperty;

@@ -73,7 +73,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsPressedProperty =
             AvaloniaProperty.Register<Button, bool>(nameof(IsPressed));
 
-        private ICommand _command;
+        private ICommand? _command;
         private bool _commandCanExecute = true;
 
         /// <summary>

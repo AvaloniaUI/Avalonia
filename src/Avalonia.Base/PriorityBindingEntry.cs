@@ -71,7 +71,7 @@ namespace Avalonia
         /// <param name="binding">The binding.</param>
         public void Start(IObservable<object> binding)
         {
-            Contract.Requires<ArgumentNullException>(binding != null);
+            Contract.RequireNotNull(binding);
 
             if (_subscription != null)
             {

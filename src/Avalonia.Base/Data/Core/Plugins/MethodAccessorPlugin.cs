@@ -11,8 +11,8 @@ namespace Avalonia.Data.Core.Plugins
 
         public IPropertyAccessor Start(WeakReference<object> reference, string methodName)
         {
-            Contract.Requires<ArgumentNullException>(reference != null);
-            Contract.Requires<ArgumentNullException>(methodName != null);
+            Contract.RequireNotNull(reference);
+            Contract.RequireNotNull(methodName);
 
             reference.TryGetTarget(out object instance);
             var method = instance.GetType().GetRuntimeMethods().FirstOrDefault(x => x.Name == methodName);
@@ -39,8 +39,8 @@ namespace Avalonia.Data.Core.Plugins
         {
             public Accessor(WeakReference<object> reference, MethodInfo method)
             {
-                Contract.Requires<ArgumentNullException>(reference != null);
-                Contract.Requires<ArgumentNullException>(method != null);
+                Contract.RequireNotNull(reference);
+                Contract.RequireNotNull(method);
 
                 var paramTypes = method.GetParameters().Select(param => param.ParameterType).ToArray();
                 var returnType = method.ReturnType;

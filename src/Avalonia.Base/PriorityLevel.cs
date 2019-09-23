@@ -44,7 +44,7 @@ namespace Avalonia
             PriorityValue owner,
             int priority)
         {
-            Contract.Requires<ArgumentNullException>(owner != null);
+            Contract.RequireNotNull(owner);
 
             Owner = owner;
             Priority = priority;
@@ -103,7 +103,7 @@ namespace Avalonia
         /// <returns>A disposable used to remove the binding.</returns>
         public IDisposable Add(IObservable<object> binding)
         {
-            Contract.Requires<ArgumentNullException>(binding != null);
+            Contract.RequireNotNull(binding);
 
             var entry = new PriorityBindingEntry(this, _nextIndex++);
             var node = Bindings.AddFirst(entry);

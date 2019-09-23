@@ -30,7 +30,7 @@ namespace Avalonia.Input.Navigation
             NavigationDirection direction,
             bool outsideElement = false)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
             Contract.Requires<ArgumentException>(
                 direction == NavigationDirection.Next ||
                 direction == NavigationDirection.Previous);

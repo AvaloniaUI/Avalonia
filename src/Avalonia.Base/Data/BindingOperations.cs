@@ -31,9 +31,9 @@ namespace Avalonia.Data
             InstancedBinding binding,
             object anchor)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(binding != null);
+            Contract.RequireNotNull(target);
+            Contract.RequireNotNull(property);
+            Contract.RequireNotNull(binding);
 
             var mode = binding.Mode;
 

@@ -29,7 +29,7 @@ namespace Avalonia.Data.Core
             get { return _target; }
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
+                Contract.RequireNotNull(value);
 
                 _target.TryGetTarget(out var oldTarget);
                 value.TryGetTarget(out object newTarget);

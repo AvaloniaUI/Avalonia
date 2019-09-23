@@ -303,7 +303,7 @@ namespace Avalonia.Collections
         /// <param name="items">The items.</param>
         public virtual void InsertRange(int index, IEnumerable<T> items)
         {
-            Contract.Requires<ArgumentNullException>(items != null);
+            Contract.RequireNotNull(items);
 
             bool willRaiseCollectionChanged = _collectionChanged != null;
             bool hasValidation = Validate != null;
@@ -462,7 +462,7 @@ namespace Avalonia.Collections
         /// <param name="items">The items.</param>
         public virtual void RemoveAll(IEnumerable<T> items)
         {
-            Contract.Requires<ArgumentNullException>(items != null);
+            Contract.RequireNotNull(items);
 
             foreach (var i in items)
             {

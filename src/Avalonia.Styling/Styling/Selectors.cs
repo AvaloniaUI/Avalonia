@@ -30,7 +30,7 @@ namespace Avalonia.Styling
         /// <returns>The selector.</returns>
         public static Selector Class(this Selector previous, string name)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(name);
             Contract.Requires<ArgumentException>(!string.IsNullOrWhiteSpace(name));
 
             var tac = previous as TypeNameAndClassSelector;
@@ -64,7 +64,7 @@ namespace Avalonia.Styling
         /// <returns>The selector.</returns>
         public static Selector Is(this Selector previous, Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            Contract.RequireNotNull(type);
 
             return TypeNameAndClassSelector.Is(previous, type);
         }
@@ -88,7 +88,7 @@ namespace Avalonia.Styling
         /// <returns>The selector.</returns>
         public static Selector Name(this Selector previous, string name)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(name);
             Contract.Requires<ArgumentException>(!string.IsNullOrWhiteSpace(name));
 
             var tac = previous as TypeNameAndClassSelector;
@@ -134,7 +134,7 @@ namespace Avalonia.Styling
         /// <returns>The selector.</returns>
         public static Selector OfType(this Selector previous, Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            Contract.RequireNotNull(type);
 
             return TypeNameAndClassSelector.OfType(previous, type);
         }
@@ -180,7 +180,7 @@ namespace Avalonia.Styling
         /// <returns>The selector.</returns>
         public static Selector PropertyEquals<T>(this Selector previous, AvaloniaProperty<T> property, object value)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(property);
 
             return new PropertyEqualsSelector(previous, property, value);
         }
@@ -194,7 +194,7 @@ namespace Avalonia.Styling
         /// <returns>The selector.</returns>
         public static Selector PropertyEquals(this Selector previous, AvaloniaProperty property, object value)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(property);
 
             return new PropertyEqualsSelector(previous, property, value);
         }

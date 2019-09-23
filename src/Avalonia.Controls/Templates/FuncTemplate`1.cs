@@ -20,7 +20,7 @@ namespace Avalonia.Controls.Templates
         /// <param name="func">The function used to create the control.</param>
         public FuncTemplate(Func<TControl> func)
         {
-            Contract.Requires<ArgumentNullException>(func != null);
+            Contract.RequireNotNull(func);
 
             _func = func;
         }

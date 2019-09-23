@@ -23,7 +23,7 @@ namespace Avalonia.Input.Raw
         /// <param name="timestamp">The event timestamp.</param>
         public RawInputEventArgs(IInputDevice device, ulong timestamp)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
+            Contract.RequireNotNull(device);
 
             Device = device;
             Timestamp = timestamp;

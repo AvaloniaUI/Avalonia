@@ -23,7 +23,7 @@ namespace Avalonia.Controls.Generators
         /// <param name="owner">The owner control.</param>
         public ItemContainerGenerator(IControl owner)
         {
-            Contract.Requires<ArgumentNullException>(owner != null);
+            Contract.RequireNotNull(owner);
 
             Owner = owner;
         }

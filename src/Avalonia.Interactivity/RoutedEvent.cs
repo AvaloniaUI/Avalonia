@@ -26,9 +26,9 @@ namespace Avalonia.Interactivity
             Type eventArgsType,
             Type ownerType)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(eventArgsType != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
+            Contract.RequireNotNull(name);
+            Contract.RequireNotNull(eventArgsType);
+            Contract.RequireNotNull(ownerType);
             Contract.Requires<InvalidCastException>(typeof(RoutedEventArgs).GetTypeInfo().IsAssignableFrom(eventArgsType.GetTypeInfo()));
 
             EventArgsType = eventArgsType;
@@ -53,7 +53,7 @@ namespace Avalonia.Interactivity
             RoutingStrategies routingStrategy)
                 where TEventArgs : RoutedEventArgs
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(name);
 
             var routedEvent = new RoutedEvent<TEventArgs>(name, routingStrategy, typeof(TOwner));
             RoutedEventRegistry.Instance.Register(typeof(TOwner), routedEvent);
@@ -66,7 +66,7 @@ namespace Avalonia.Interactivity
             Type ownerType)
                 where TEventArgs : RoutedEventArgs
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(name);
 
             var routedEvent = new RoutedEvent<TEventArgs>(name, routingStrategy, ownerType);
             RoutedEventRegistry.Instance.Register(ownerType, routedEvent);
@@ -109,8 +109,8 @@ namespace Avalonia.Interactivity
         public RoutedEvent(string name, RoutingStrategies routingStrategies, Type ownerType)
             : base(name, routingStrategies, typeof(TEventArgs), ownerType)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
+            Contract.RequireNotNull(name);
+            Contract.RequireNotNull(ownerType);
         }
 
         public IDisposable AddClassHandler<TTarget>(

@@ -23,7 +23,7 @@ namespace Avalonia.Reactive
 
         public IDisposable Subscribe(IObserver<T> observer)
         {
-            Contract.Requires<ArgumentNullException>(observer != null);
+            Contract.RequireNotNull(observer);
             Dispatcher.UIThread.VerifyAccess();
 
             var first = false;

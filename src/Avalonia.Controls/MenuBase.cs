@@ -54,7 +54,7 @@ namespace Avalonia.Controls
         /// <param name="interactionHandler">The menu interaction handler.</param>
         public MenuBase(IMenuInteractionHandler interactionHandler)
         {
-            Contract.Requires<ArgumentNullException>(interactionHandler != null);
+            Contract.RequireNotNull(interactionHandler);
 
             InteractionHandler = interactionHandler;
         }

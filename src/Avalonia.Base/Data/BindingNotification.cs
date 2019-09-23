@@ -209,7 +209,7 @@ namespace Avalonia.Data
         /// <param name="type">The error type.</param>
         public void AddError(Exception e, BindingErrorType type)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            Contract.RequireNotNull(e);
             Contract.Requires<ArgumentException>(type != BindingErrorType.None);
 
             Error = Error != null ? new AggregateException(Error, e) : e;

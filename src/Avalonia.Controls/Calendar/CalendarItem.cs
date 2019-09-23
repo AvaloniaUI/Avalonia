@@ -528,7 +528,7 @@ namespace Avalonia.Controls.Primitives
             for (int childIndex = Calendar.ColumnsPerMonth; childIndex < count; childIndex++)
             {
                 CalendarDayButton childButton = MonthView.Children[childIndex] as CalendarDayButton;
-                Contract.Requires<ArgumentNullException>(childButton != null);
+                Contract.RequireNotNull(childButton);
 
                 childButton.Index = childIndex;
                 SetButtonState(childButton, dateToAdd);
@@ -565,7 +565,7 @@ namespace Avalonia.Controls.Primitives
                     for (int i = childIndex; i < count; i++)
                     {
                         childButton = MonthView.Children[i] as CalendarDayButton;
-                        Contract.Requires<ArgumentNullException>(childButton != null);
+                        Contract.RequireNotNull(childButton);
                         // button needs a content to occupy the necessary space
                         // for the content presenter
                         childButton.Content = i.ToString(DateTimeHelper.GetCurrentDateFormat());
@@ -661,7 +661,7 @@ namespace Avalonia.Controls.Primitives
             foreach (object child in YearView.Children)
             {
                 CalendarButton childButton = child as CalendarButton;
-                Contract.Requires<ArgumentNullException>(childButton != null);
+                Contract.RequireNotNull(childButton);
                 // There should be no time component. Time is 12:00 AM
                 DateTime day = new DateTime(_currentMonth.Year, count + 1, 1);
                 childButton.DataContext = day;
@@ -757,7 +757,7 @@ namespace Avalonia.Controls.Primitives
             foreach (object child in YearView.Children)
             {
                 CalendarButton childButton = child as CalendarButton;
-                Contract.Requires<ArgumentNullException>(childButton != null);
+                Contract.RequireNotNull(childButton);
                 year = decade + count;
 
                 if (year <= DateTime.MaxValue.Year && year >= DateTime.MinValue.Year)
@@ -967,7 +967,7 @@ namespace Avalonia.Controls.Primitives
                     if (b.IsEnabled && !b.IsBlackout)
                     {
                         DateTime selectedDate = (DateTime)b.DataContext;
-                        Contract.Requires<ArgumentNullException>(selectedDate != null);
+                        Contract.RequireNotNull(selectedDate);
                         _isMouseLeftButtonDown = true;
                         // null check is added for unit tests
                         if (e != null)
@@ -1143,7 +1143,7 @@ namespace Avalonia.Controls.Primitives
                 if (_isControlPressed && Owner.SelectionMode == CalendarSelectionMode.MultipleRange)
                 {
                     CalendarDayButton b = sender as CalendarDayButton;
-                    Contract.Requires<ArgumentNullException>(b != null);
+                    Contract.RequireNotNull(b);
 
                     if (b.IsSelected)
                     {
@@ -1163,7 +1163,7 @@ namespace Avalonia.Controls.Primitives
         private void Month_CalendarButtonMouseDown(object sender, PointerPressedEventArgs e)
         {
             CalendarButton b = sender as CalendarButton;
-            Contract.Requires<ArgumentNullException>(b != null);
+            Contract.RequireNotNull(b);
 
             _isMouseLeftButtonDownYearView = true;
 
@@ -1202,7 +1202,7 @@ namespace Avalonia.Controls.Primitives
             if (_isMouseLeftButtonDownYearView)
             {
                 CalendarButton b = sender as CalendarButton;
-                Contract.Requires<ArgumentNullException>(b != null);
+                Contract.RequireNotNull(b);
                 UpdateYearViewSelection(b);
             }
         }

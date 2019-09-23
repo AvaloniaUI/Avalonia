@@ -10,7 +10,7 @@ namespace Avalonia.Diagnostics.Models
     {
         public EventChainLink(object handler, bool handled, RoutingStrategies route)
         {
-            Contract.Requires<ArgumentNullException>(handler != null);
+            Contract.RequireNotNull(handler);
 
             Handler = handler;
             Handled = handled;

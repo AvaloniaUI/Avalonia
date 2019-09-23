@@ -60,7 +60,7 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public void Add(IRenderLoopTask i)
         {
-            Contract.Requires<ArgumentNullException>(i != null);
+            Contract.RequireNotNull(i);
             Dispatcher.UIThread.VerifyAccess();
 
             _items.Add(i);
@@ -74,7 +74,7 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public void Remove(IRenderLoopTask i)
         {
-            Contract.Requires<ArgumentNullException>(i != null);
+            Contract.RequireNotNull(i);
             Dispatcher.UIThread.VerifyAccess();
 
             _items.Remove(i);

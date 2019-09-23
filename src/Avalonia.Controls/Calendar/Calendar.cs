@@ -768,7 +768,7 @@ namespace Avalonia.Controls
         }
         private static void UpdateDisplayDate(Calendar c, DateTime addedDate, DateTime removedDate)
         {
-            Contract.Requires<ArgumentNullException>(c != null);
+            Contract.RequireNotNull(c);
 
             // If DisplayDate < DisplayDateStart, DisplayDate = DisplayDateStart
             if (DateTime.Compare(addedDate, c.DisplayDateRangeStart) < 0)

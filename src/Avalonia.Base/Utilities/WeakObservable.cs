@@ -26,8 +26,8 @@ namespace Avalonia.Utilities
             string eventName)
             where TEventArgs : EventArgs
         {
-            Contract.Requires<ArgumentNullException>(target != null);
-            Contract.Requires<ArgumentNullException>(eventName != null);
+            Contract.RequireNotNull(target);
+            Contract.RequireNotNull(eventName);
 
             return Observable.Create<EventPattern<object, TEventArgs>>(observer =>
             {

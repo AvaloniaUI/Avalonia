@@ -1272,7 +1272,7 @@ namespace Avalonia.Controls
         /// that contains the event data.</param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            Contract.RequireNotNull(e);
 
             base.OnKeyDown(e);
 

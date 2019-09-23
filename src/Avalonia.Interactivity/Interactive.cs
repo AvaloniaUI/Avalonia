@@ -39,8 +39,8 @@ namespace Avalonia.Interactivity
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false)
         {
-            Contract.Requires<ArgumentNullException>(routedEvent != null);
-            Contract.Requires<ArgumentNullException>(handler != null);
+            Contract.RequireNotNull(routedEvent);
+            Contract.RequireNotNull(handler);
 
             var subscription = new EventSubscription
             {
@@ -67,8 +67,8 @@ namespace Avalonia.Interactivity
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false) where TEventArgs : RoutedEventArgs
         {
-            Contract.Requires<ArgumentNullException>(routedEvent != null);
-            Contract.Requires<ArgumentNullException>(handler != null);
+            Contract.RequireNotNull(routedEvent);
+            Contract.RequireNotNull(handler);
 
             // EventHandler delegate is not covariant, this forces us to create small wrapper
             // that will cast our type erased instance and invoke it.
@@ -107,8 +107,8 @@ namespace Avalonia.Interactivity
         /// <param name="handler">The handler.</param>
         public void RemoveHandler(RoutedEvent routedEvent, Delegate handler)
         {
-            Contract.Requires<ArgumentNullException>(routedEvent != null);
-            Contract.Requires<ArgumentNullException>(handler != null);
+            Contract.RequireNotNull(routedEvent);
+            Contract.RequireNotNull(handler);
 
             List<EventSubscription> subscriptions = null;
 
@@ -136,7 +136,7 @@ namespace Avalonia.Interactivity
         /// <param name="e">The event args.</param>
         public void RaiseEvent(RoutedEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            Contract.RequireNotNull(e);
 
             e.Source = e.Source ?? this;
 
@@ -166,7 +166,7 @@ namespace Avalonia.Interactivity
         /// <param name="e">The event args.</param>
         private void BubbleEvent(RoutedEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            Contract.RequireNotNull(e);
 
             e.Route = RoutingStrategies.Bubble;
 
@@ -182,7 +182,7 @@ namespace Avalonia.Interactivity
         /// <param name="e">The event args.</param>
         private void TunnelEvent(RoutedEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            Contract.RequireNotNull(e);
 
             e.Route = RoutingStrategies.Tunnel;
 
@@ -198,7 +198,7 @@ namespace Avalonia.Interactivity
         /// <param name="e">The event args.</param>
         private void RaiseEventImpl(RoutedEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            Contract.RequireNotNull(e);
 
             e.RoutedEvent.InvokeRaised(this, e);
 

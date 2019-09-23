@@ -47,7 +47,7 @@ namespace Avalonia
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
         public IEnumerable<AvaloniaProperty> GetRegistered(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            Contract.RequireNotNull(type);
 
             if (_registeredCache.TryGetValue(type, out var result))
             {
@@ -81,7 +81,7 @@ namespace Avalonia
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
         public IEnumerable<AvaloniaProperty> GetRegisteredAttached(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            Contract.RequireNotNull(type);
 
             if (_attachedCache.TryGetValue(type, out var result))
             {
@@ -112,7 +112,7 @@ namespace Avalonia
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
         public IEnumerable<AvaloniaProperty> GetRegisteredInherited(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            Contract.RequireNotNull(type);
 
             if (_inheritedCache.TryGetValue(type, out var result))
             {
@@ -152,7 +152,7 @@ namespace Avalonia
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
         public IEnumerable<AvaloniaProperty> GetRegistered(AvaloniaObject o)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
+            Contract.RequireNotNull(o);
 
             return GetRegistered(o.GetType());
         }
@@ -170,8 +170,8 @@ namespace Avalonia
         /// </exception>
         public AvaloniaProperty FindRegistered(Type type, string name)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(type);
+            Contract.RequireNotNull(name);
 
             if (name.Contains('.'))
             {
@@ -194,8 +194,8 @@ namespace Avalonia
         /// </exception>
         public AvaloniaProperty FindRegistered(AvaloniaObject o, string name)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(o);
+            Contract.RequireNotNull(name);
 
             return FindRegistered(o.GetType(), name);
         }
@@ -218,8 +218,8 @@ namespace Avalonia
         /// <returns>True if the property is registered, otherwise false.</returns>
         public bool IsRegistered(Type type, AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(type);
+            Contract.RequireNotNull(property);
 
             return Instance.GetRegistered(type).Any(x => x == property) ||
                 Instance.GetRegisteredAttached(type).Any(x => x == property);
@@ -233,8 +233,8 @@ namespace Avalonia
         /// <returns>True if the property is registered, otherwise false.</returns>
         public bool IsRegistered(object o, AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(o);
+            Contract.RequireNotNull(property);
 
             return IsRegistered(o.GetType(), property);
         }
@@ -251,8 +251,8 @@ namespace Avalonia
         /// </remarks>
         public void Register(Type type, AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(type);
+            Contract.RequireNotNull(property);
 
             if (!_registered.TryGetValue(type, out var inner))
             {
@@ -287,8 +287,8 @@ namespace Avalonia
         /// </remarks>
         public void RegisterAttached(Type type, AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(type);
+            Contract.RequireNotNull(property);
 
             if (!property.IsAttached)
             {
@@ -314,7 +314,7 @@ namespace Avalonia
 
         internal void NotifyInitialized(AvaloniaObject o)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
+            Contract.RequireNotNull(o);
 
             var type = o.GetType();
 

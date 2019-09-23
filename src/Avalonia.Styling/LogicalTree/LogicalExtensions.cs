@@ -11,7 +11,7 @@ namespace Avalonia.LogicalTree
     {
         public static IEnumerable<ILogical> GetLogicalAncestors(this ILogical logical)
         {
-            Contract.Requires<ArgumentNullException>(logical != null);
+            Contract.RequireNotNull(logical);
 
             logical = logical.LogicalParent;
 

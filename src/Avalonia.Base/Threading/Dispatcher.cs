@@ -80,36 +80,31 @@ namespace Avalonia.Threading
 
         /// <inheritdoc/>
         public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
-        {
-            Contract.Requires<ArgumentNullException>(action != null);
+        {            
             return _jobRunner.InvokeAsync(action, priority);
         }
         
         /// <inheritdoc/>
         public Task<TResult> InvokeAsync<TResult>(Func<TResult> function, DispatcherPriority priority = DispatcherPriority.Normal)
-        {
-            Contract.Requires<ArgumentNullException>(function != null);
+        {           
             return _jobRunner.InvokeAsync(function, priority);
         }
 
         /// <inheritdoc/>
         public Task InvokeAsync(Func<Task> function, DispatcherPriority priority = DispatcherPriority.Normal)
-        {
-            Contract.Requires<ArgumentNullException>(function != null);
+        {            
             return _jobRunner.InvokeAsync(function, priority).Unwrap();
         }
 
         /// <inheritdoc/>
         public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> function, DispatcherPriority priority = DispatcherPriority.Normal)
-        {
-            Contract.Requires<ArgumentNullException>(function != null);
+        {            
             return _jobRunner.InvokeAsync(function, priority).Unwrap();
         }
 
         /// <inheritdoc/>
         public void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
-        {
-            Contract.Requires<ArgumentNullException>(action != null);
+        {            
             _jobRunner.Post(action, priority);
         }
 

@@ -104,7 +104,7 @@ namespace Avalonia
             get => _resources ?? (Resources = new ResourceDictionary());
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
+                Contract.RequireNotNull(value);
 
                 var hadResources = false;
 

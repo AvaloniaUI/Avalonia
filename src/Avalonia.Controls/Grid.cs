@@ -48,7 +48,7 @@ namespace Avalonia.Controls
         /// <param name="value">Column property value.</param>
         public static void SetColumn(Control element, int value)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
             element.SetValue(ColumnProperty, value);
         }
 
@@ -59,7 +59,7 @@ namespace Avalonia.Controls
         /// <returns>Column property value.</returns>
         public static int GetColumn(Control element)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
             return element.GetValue(ColumnProperty);
         }
 
@@ -70,7 +70,7 @@ namespace Avalonia.Controls
         /// <param name="value">Row property value.</param>
         public static void SetRow(Control element, int value)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
             element.SetValue(RowProperty, value);
         }
 
@@ -81,7 +81,7 @@ namespace Avalonia.Controls
         /// <returns>Row property value.</returns>
         public static int GetRow(Control element)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
             return element.GetValue(RowProperty);
         }
 
@@ -92,7 +92,7 @@ namespace Avalonia.Controls
         /// <param name="value">ColumnSpan property value.</param>
         public static void SetColumnSpan(Control element, int value)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
             element.SetValue(ColumnSpanProperty, value);
         }
 
@@ -103,7 +103,7 @@ namespace Avalonia.Controls
         /// <returns>ColumnSpan property value.</returns>
         public static int GetColumnSpan(Control element)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
             return element.GetValue(ColumnSpanProperty);
         }
 
@@ -114,7 +114,7 @@ namespace Avalonia.Controls
         /// <param name="value">RowSpan property value.</param>
         public static void SetRowSpan(Control element, int value)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
             element.SetValue(RowSpanProperty, value);
         }
 
@@ -125,7 +125,7 @@ namespace Avalonia.Controls
         /// <returns>RowSpan property value.</returns>
         public static int GetRowSpan(Control element)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
             return element.GetValue(RowSpanProperty);
         }
 
@@ -136,7 +136,7 @@ namespace Avalonia.Controls
         /// <param name="value">IsSharedSizeScope property value.</param>
         public static void SetIsSharedSizeScope(Control element, bool value)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
             element.SetValue(IsSharedSizeScopeProperty, value);
         }
 
@@ -147,7 +147,7 @@ namespace Avalonia.Controls
         /// <returns>IsSharedSizeScope property value.</returns>
         public static bool GetIsSharedSizeScope(Control element)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
             return element.GetValue(IsSharedSizeScopeProperty);
         }
 

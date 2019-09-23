@@ -53,7 +53,7 @@ namespace Avalonia.Rendering
             IDispatcher dispatcher = null,
             IDeferredRendererLock rendererLock = null)
         {
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.RequireNotNull(root);
 
             _dispatcher = dispatcher ?? Dispatcher.UIThread;
             _root = root;
@@ -77,8 +77,8 @@ namespace Avalonia.Rendering
             IRenderTarget renderTarget,
             ISceneBuilder sceneBuilder = null)
         {
-            Contract.Requires<ArgumentNullException>(root != null);
-            Contract.Requires<ArgumentNullException>(renderTarget != null);
+            Contract.RequireNotNull(root);
+            Contract.RequireNotNull(renderTarget);
 
             _root = root;
             RenderTarget = renderTarget;

@@ -15,8 +15,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public FiredEvent(RoutedEventArgs eventArgs, EventChainLink originator)
         {
-            Contract.Requires<ArgumentNullException>(eventArgs != null);
-            Contract.Requires<ArgumentNullException>(originator != null);
+            Contract.RequireNotNull(eventArgs);
+            Contract.RequireNotNull(originator);
 
             _eventArgs = eventArgs;
             Originator = originator;

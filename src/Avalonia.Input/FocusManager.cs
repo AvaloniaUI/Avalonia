@@ -108,7 +108,7 @@ namespace Avalonia.Input
             NavigationMethod method = NavigationMethod.Unspecified,
             InputModifiers modifiers = InputModifiers.None)
         {
-            Contract.Requires<ArgumentNullException>(scope != null);
+            Contract.RequireNotNull(scope);
 
             _focusScopes[scope] = element;
 
@@ -124,7 +124,7 @@ namespace Avalonia.Input
         /// <param name="scope">The new focus scope.</param>
         public void SetFocusScope(IFocusScope scope)
         {
-            Contract.Requires<ArgumentNullException>(scope != null);
+            Contract.RequireNotNull(scope);
 
             IInputElement e;
 

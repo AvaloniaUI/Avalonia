@@ -32,8 +32,8 @@ namespace Avalonia.Interactivity
         /// </remarks>
         public void Register(Type type, RoutedEvent @event)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(@event != null);
+            Contract.RequireNotNull(type);
+            Contract.RequireNotNull(@event);
 
             if (!_registeredRoutedEvents.TryGetValue(type, out var list))
             {
@@ -66,7 +66,7 @@ namespace Avalonia.Interactivity
         /// <returns>All routed events registered with the provided type.</returns>
         public IReadOnlyList<RoutedEvent> GetRegistered(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            Contract.RequireNotNull(type);
 
             if (_registeredRoutedEvents.TryGetValue(type, out var events))
             {

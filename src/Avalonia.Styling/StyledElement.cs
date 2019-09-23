@@ -217,7 +217,7 @@ namespace Avalonia
             get { return _styles ?? (Styles = new Styles()); }
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
+                Contract.RequireNotNull(value);
 
                 if (_styles != value)
                 {
@@ -247,7 +247,7 @@ namespace Avalonia
             get => _resources ?? (Resources = new ResourceDictionary());
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
+                Contract.RequireNotNull(value);
 
                 var hadResources = false;
 
@@ -544,9 +544,9 @@ namespace Avalonia
             string className)
                 where TOwner : class, IStyledElement
         {
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
-            Contract.Requires<ArgumentNullException>(className != null);
+            Contract.RequireNotNull(property);
+            Contract.RequireNotNull(selector);
+            Contract.RequireNotNull(className);
 
             if (string.IsNullOrWhiteSpace(className))
             {

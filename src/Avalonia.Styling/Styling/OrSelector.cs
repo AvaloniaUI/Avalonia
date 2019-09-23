@@ -21,7 +21,7 @@ namespace Avalonia.Styling
         /// <param name="selectors">The selectors to OR.</param>
         public OrSelector(IReadOnlyList<Selector> selectors)
         {
-            Contract.Requires<ArgumentNullException>(selectors != null);
+            Contract.RequireNotNull(selectors);
             Contract.Requires<ArgumentException>(selectors.Count > 1);
 
             _selectors = selectors;

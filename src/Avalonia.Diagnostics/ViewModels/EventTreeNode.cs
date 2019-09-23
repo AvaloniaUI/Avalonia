@@ -19,8 +19,8 @@ namespace Avalonia.Diagnostics.ViewModels
         public EventTreeNode(EventOwnerTreeNode parent, RoutedEvent @event, EventsViewModel vm)
             : base(parent, @event.Name)
         {
-            Contract.Requires<ArgumentNullException>(@event != null);
-            Contract.Requires<ArgumentNullException>(vm != null);
+            Contract.RequireNotNull(@event);
+            Contract.RequireNotNull(vm);
 
             _event = @event;
             _parentViewModel = vm;

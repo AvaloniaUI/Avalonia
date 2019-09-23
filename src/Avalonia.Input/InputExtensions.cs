@@ -25,7 +25,7 @@ namespace Avalonia.Input
         /// </returns>
         public static IEnumerable<IInputElement> GetInputElementsAt(this IInputElement element, Point p)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            Contract.RequireNotNull(element);
 
             return element.GetVisualsAt(p, s_hitTestDelegate).Cast<IInputElement>();
         }

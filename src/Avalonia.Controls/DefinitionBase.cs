@@ -327,7 +327,7 @@ namespace Avalonia.Controls
         /// </remarks>
         private static string SharedSizeGroupPropertyValueValid(Control _, string value)
         {
-            Contract.Requires<ArgumentNullException>(value != null);
+            Contract.RequireNotNull(value);
 
             string id = (string)value;
 

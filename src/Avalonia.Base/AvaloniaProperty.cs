@@ -43,10 +43,10 @@ namespace Avalonia
             PropertyMetadata metadata,
             Action<IAvaloniaObject, bool> notifying = null)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(valueType != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
-            Contract.Requires<ArgumentNullException>(metadata != null);
+            Contract.RequireNotNull(name);
+            Contract.RequireNotNull(valueType);
+            Contract.RequireNotNull(ownerType);
+            Contract.RequireNotNull(metadata);
 
             if (name.Contains("."))
             {
@@ -78,8 +78,8 @@ namespace Avalonia
             Type ownerType,
             PropertyMetadata metadata)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
+            Contract.RequireNotNull(source);
+            Contract.RequireNotNull(ownerType);
 
             _initialized = source._initialized;
             _changed = source._changed;
@@ -266,7 +266,7 @@ namespace Avalonia
             Action<IAvaloniaObject, bool> notifying = null)
                 where TOwner : IAvaloniaObject
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(name);
 
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
@@ -303,7 +303,7 @@ namespace Avalonia
             Func<THost, TValue, TValue> validate = null)
                 where THost : IAvaloniaObject
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(name);
 
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
@@ -338,7 +338,7 @@ namespace Avalonia
             Func<THost, TValue, TValue> validate = null)
                 where THost : IAvaloniaObject
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(name);
 
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
@@ -377,7 +377,7 @@ namespace Avalonia
             bool enableDataValidation = false)
                 where TOwner : IAvaloniaObject
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.RequireNotNull(name);
 
             var metadata = new DirectPropertyMetadata<TValue>(
                 unsetValue: unsetValue,
@@ -446,7 +446,7 @@ namespace Avalonia
         ///
         public PropertyMetadata GetMetadata(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            Contract.RequireNotNull(type);
 
             PropertyMetadata result;
             Type currentType = type;
@@ -522,8 +522,8 @@ namespace Avalonia
         /// <param name="metadata">The metadata.</param>
         protected void OverrideMetadata(Type type, PropertyMetadata metadata)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(metadata != null);
+            Contract.RequireNotNull(type);
+            Contract.RequireNotNull(metadata);
 
             if (_metadata.ContainsKey(type))
             {

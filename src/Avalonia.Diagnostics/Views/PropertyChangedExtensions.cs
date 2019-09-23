@@ -12,8 +12,8 @@ namespace Avalonia.Diagnostics.Views
     {
         public static IObservable<T> GetObservable<T>(this INotifyPropertyChanged source, string propertyName)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(propertyName != null);
+            Contract.RequireNotNull(source);
+            Contract.RequireNotNull(propertyName);
 
             var property = source.GetType().GetTypeInfo().GetDeclaredProperty(propertyName);
 

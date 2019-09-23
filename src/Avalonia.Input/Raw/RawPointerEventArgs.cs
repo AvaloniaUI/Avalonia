@@ -46,8 +46,8 @@ namespace Avalonia.Input.Raw
             RawInputModifiers inputModifiers)
             : base(device, timestamp)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.RequireNotNull(device);
+            Contract.RequireNotNull(root);
 
             Root = root;
             Position = position;

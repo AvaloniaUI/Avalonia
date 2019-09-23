@@ -106,7 +106,7 @@ namespace Avalonia.Data
             object anchor = null,
             bool enableDataValidation = false)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            Contract.RequireNotNull(target);
             anchor = anchor ?? DefaultAnchor?.Target;
             
             enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
@@ -222,7 +222,7 @@ namespace Avalonia.Data
             bool targetIsDataContext,
             object anchor)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            Contract.RequireNotNull(target);
 
             if (!(target is IStyledElement))
             {
@@ -258,7 +258,7 @@ namespace Avalonia.Data
             string elementName,
             ExpressionNode node)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            Contract.RequireNotNull(target);
 
             NameScope.TryGetTarget(out var scope);
             if (scope == null)
@@ -275,7 +275,7 @@ namespace Avalonia.Data
             RelativeSource relativeSource,
             ExpressionNode node)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            Contract.RequireNotNull(target);
 
             IObservable<object> controlLocator;
 
@@ -307,7 +307,7 @@ namespace Avalonia.Data
             object source,
             ExpressionNode node)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            Contract.RequireNotNull(source);
 
             return new ExpressionObserver(source, node);
         }
@@ -316,7 +316,7 @@ namespace Avalonia.Data
             IAvaloniaObject target,
             ExpressionNode node)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            Contract.RequireNotNull(target);
             
             var result = new ExpressionObserver(
                 () => target.GetValue(StyledElement.TemplatedParentProperty),

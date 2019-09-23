@@ -166,7 +166,7 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         public void ClearValue(AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(property);
             VerifyAccess();
 
             SetValue(property, AvaloniaProperty.UnsetValue);
@@ -210,7 +210,7 @@ namespace Avalonia
         /// <returns>The value.</returns>
         public object GetValue(AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(property);
             VerifyAccess();
 
             if (property.IsDirect)
@@ -231,9 +231,9 @@ namespace Avalonia
         /// <returns>The value.</returns>
         public T GetValue<T>(AvaloniaProperty<T> property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(property);
 
-            return (T)GetValue((AvaloniaProperty)property);
+            return (T)GetValue((AvaloniaProperty)property);            
         }
 
         /// <summary>
@@ -243,7 +243,7 @@ namespace Avalonia
         /// <returns>True if the property is animating, otherwise false.</returns>
         public bool IsAnimating(AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(property);
             VerifyAccess();
 
             return _values?.IsAnimating(property) ?? false;
@@ -260,7 +260,7 @@ namespace Avalonia
         /// </remarks>
         public bool IsSet(AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(property);
             VerifyAccess();
 
             return _values?.IsSet(property) ?? false;
@@ -277,7 +277,7 @@ namespace Avalonia
             object value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(property);
             VerifyAccess();
 
             if (property.IsDirect)
@@ -302,7 +302,7 @@ namespace Avalonia
             T value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(property);
 
             SetValue((AvaloniaProperty)property, value, priority);
         }
@@ -321,8 +321,8 @@ namespace Avalonia
             IObservable<object> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(source != null);
+            Contract.RequireNotNull(property);
+            Contract.RequireNotNull(source);
 
             VerifyAccess();
 
@@ -378,7 +378,7 @@ namespace Avalonia
             IObservable<T> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(property);
 
             return Bind(property, source.Select(x => (object)x), priority);
         }
@@ -501,7 +501,7 @@ namespace Avalonia
             object newValue,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.RequireNotNull(property);
             VerifyAccess();
 
             AvaloniaPropertyChangedEventArgs e = new AvaloniaPropertyChangedEventArgs(
@@ -762,7 +762,7 @@ namespace Avalonia
         /// </remarks>
         private void ParentPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            Contract.RequireNotNull(e);
 
             if (e.Property.Inherits && !IsSet(e.Property))
             {

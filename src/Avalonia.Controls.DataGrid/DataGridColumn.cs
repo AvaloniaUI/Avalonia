@@ -588,7 +588,7 @@ namespace Avalonia.Controls
 
         public IControl GetCellContent(DataGridRow dataGridRow)
         {
-            Contract.Requires<ArgumentNullException>(dataGridRow != null);
+            Contract.RequireNotNull(dataGridRow);
             if (OwningGrid == null)
             {
                 throw DataGridError.DataGrid.NoOwningGrid(GetType());
@@ -606,7 +606,7 @@ namespace Avalonia.Controls
 
         public IControl GetCellContent(object dataItem)
         {
-            Contract.Requires<ArgumentNullException>(dataItem != null);
+            Contract.RequireNotNull(dataItem);
             if (OwningGrid == null)
             {
                 throw DataGridError.DataGrid.NoOwningGrid(GetType());

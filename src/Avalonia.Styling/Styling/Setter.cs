@@ -78,7 +78,7 @@ namespace Avalonia.Styling
         /// <param name="activator">An optional activator.</param>
         public IDisposable Apply(IStyle style, IStyleable control, IObservable<bool> activator)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            Contract.RequireNotNull(control);
 
             var description = style?.ToString();
 

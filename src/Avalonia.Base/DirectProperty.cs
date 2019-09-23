@@ -33,7 +33,7 @@ namespace Avalonia
             DirectPropertyMetadata<TValue> metadata)
             : base(name, typeof(TOwner), metadata)
         {
-            Contract.Requires<ArgumentNullException>(getter != null);
+            Contract.RequireNotNull(getter);
 
             Getter = getter;
             Setter = setter;
@@ -53,7 +53,7 @@ namespace Avalonia
             DirectPropertyMetadata<TValue> metadata)
             : base(source, typeof(TOwner), metadata)
         {
-            Contract.Requires<ArgumentNullException>(getter != null);
+            Contract.RequireNotNull(getter);
 
             Getter = getter;
             Setter = setter;

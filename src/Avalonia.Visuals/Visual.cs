@@ -289,7 +289,7 @@ namespace Avalonia
         /// <param name="context">The drawing context.</param>
         public virtual void Render(DrawingContext context)
         {
-            Contract.Requires<ArgumentNullException>(context != null);
+            Contract.RequireNotNull(context);
         }
 
         /// <summary>

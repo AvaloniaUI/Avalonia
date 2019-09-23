@@ -18,7 +18,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void UpdateAll(Scene scene)
         {
-            Contract.Requires<ArgumentNullException>(scene != null);
+            Contract.RequireNotNull(scene);
             Dispatcher.UIThread.VerifyAccess();
 
             UpdateSize(scene);
@@ -34,8 +34,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public bool Update(Scene scene, IVisual visual)
         {
-            Contract.Requires<ArgumentNullException>(scene != null);
-            Contract.Requires<ArgumentNullException>(visual != null);
+            Contract.RequireNotNull(scene);
+            Contract.RequireNotNull(visual);
 
             Dispatcher.UIThread.VerifyAccess();
 

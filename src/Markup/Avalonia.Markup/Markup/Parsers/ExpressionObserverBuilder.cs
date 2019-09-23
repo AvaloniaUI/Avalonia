@@ -48,7 +48,7 @@ namespace Avalonia.Markup.Parsers
             string description = null,
             Func<string, string, Type> typeResolver = null)
         {
-            Contract.Requires<ArgumentNullException>(rootObservable != null);
+            Contract.RequireNotNull(rootObservable);
             return new ExpressionObserver(
                 rootObservable,
                 Parse(expression, enableDataValidation, typeResolver).Node,
@@ -64,7 +64,7 @@ namespace Avalonia.Markup.Parsers
             string description = null,
             Func<string, string, Type> typeResolver = null)
         {
-            Contract.Requires<ArgumentNullException>(rootGetter != null);
+            Contract.RequireNotNull(rootGetter);
 
             return new ExpressionObserver(
                 rootGetter,
