@@ -716,7 +716,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     AvnFramebuffer _swRenderedFrameBuffer;
     bool _queuedDisplayFromThread;
     NSTrackingArea* _area;
-    bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isMouseOver;
+    bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed, _isMouseOver;
     NSEvent* _lastMouseDownEvent;
     bool _lastKeyHandled;
 }
@@ -941,9 +941,23 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)otherMouseDown:(NSEvent *)event
 {
-    _isMiddlePressed = true;
     _lastMouseDownEvent = event;
-    [self mouseEvent:event withType:MiddleButtonDown];
+
+    switch(event.buttonNumber)
+    {
+        case 3:
+            _isMiddlePressed = true;
+            [self mouseEvent:event withType:MiddleButtonDown];
+            break;
+        case 4:
+            _isXButton1Pressed = true;
+            [self mouseEvent:event withType:XButton1Down];
+            break;
+        case 5:
+            _isXButton2Pressed = true;
+            [self mouseEvent:event withType:XButton2Down];
+            break;
+    }
 }
 
 - (void)rightMouseDown:(NSEvent *)event
@@ -961,8 +975,21 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)otherMouseUp:(NSEvent *)event
 {
-    _isMiddlePressed = false;
-    [self mouseEvent:event withType:MiddleButtonUp];
+    switch(event.buttonNumber)
+    {
+        case 3:
+            _isMiddlePressed = false;
+            [self mouseEvent:event withType:MiddleButtonUp];
+            break;
+        case 4:
+            _isXButton1Pressed = false;
+            [self mouseEvent:event withType:XButton1Up];
+            break;
+        case 5:
+            _isXButton2Pressed = false;
+            [self mouseEvent:event withType:XButton2Up];
+            break;
+    }
 }
 
 - (void)rightMouseUp:(NSEvent *)event
@@ -1061,6 +1088,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         rv |= MiddleMouseButton;
     if (_isRightPressed)
         rv |= RightMouseButton;
+    if (_isXButton1Pressed)
+        rv |= XButton1MouseButton;
+    if (_isXButton2Pressed)
+        rv |= XButton2MouseButton;
     
     return (AvnInputModifiers)rv;
 }
