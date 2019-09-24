@@ -11,17 +11,17 @@ namespace RenderDemo.Pages
                 o => o.CellValue,
                 (o, v) => o.CellValue = v);
 
-        private object _CellValue;
+        private object _cellValue;
 
         public object CellValue
         {
             get
             {
-                return _CellValue;
+                return _cellValue;
             }
             set
             {
-                SetAndRaise(CellValueProperty, ref _CellValue, value);
+                SetAndRaise(CellValueProperty, ref _cellValue, value);
             }
         }
     }
