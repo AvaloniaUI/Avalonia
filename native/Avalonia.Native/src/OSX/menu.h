@@ -15,7 +15,7 @@ class AvnAppMenuItem;
 class AvnAppMenu;
 
 @interface AvnMenu : NSMenu // for some reason it doesnt detect nsmenu here but compiler doesnt complain
-
+- (void)setMenu:(NSMenu*) menu;
 @end
 
 @interface AvnMenuItem : NSMenuItem

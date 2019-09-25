@@ -5,6 +5,7 @@
 #include "window.h"
 #include "KeyTransform.h"
 #include "cursor.h"
+#include "menu.h"
 #include <OpenGL/gl.h>
 
 class SoftwareDrawingOperation
@@ -215,12 +216,16 @@ public:
     {
         _mainMenu = menu;
         
+        auto nativeMenu = dynamic_cast<AvnAppMenu*>(menu);
         
+        auto nsmenu = nativeMenu->GetNative();
+        
+        [Window applyMenu:nsmenu];
         
         return S_OK;
     }
     
-    virtual HRESULT GetMainMenu(IAvnAppMenu** ret) override
+    virtual HRESULT ObtainMainMenu(IAvnAppMenu** ret) override
     {
         if(ret == nullptr)
         {
@@ -1089,7 +1094,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
 }
 
--(void) setMenu:(NSMenu *)menu
+-(void) applyMenu:(NSMenu *)menu
 {
     _menu = menu;
     [NSApp setMenu:menu];
