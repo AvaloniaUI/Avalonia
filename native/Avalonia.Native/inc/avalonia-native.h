@@ -22,6 +22,8 @@ struct IAvnGlContext;
 struct IAvnGlDisplay;
 struct IAvnGlSurfaceRenderTarget;
 struct IAvnGlSurfaceRenderingSession;
+struct IAvnAppMenu;
+struct IAvnAppMenuItem;
 
 struct AvnSize
 {
@@ -173,6 +175,9 @@ public:
     virtual HRESULT CreateClipboard(IAvnClipboard** ppv) = 0;
     virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) = 0;
     virtual HRESULT ObtainGlFeature(IAvnGlFeature** ppv) = 0;
+    virtual HRESULT ObtainAppMenu (IAvnAppMenu** ppv) = 0;
+    virtual HRESULT CreateMenu (IAvnAppMenu** ppv) = 0;
+    virtual HRESULT CreateMenuItem (IAvnAppMenuItem** ppv) = 0;
 };
 
 AVNCOM(IAvnString, 17) : IUnknown
@@ -258,6 +263,7 @@ AVNCOM(IAvnWindowEvents, 06) : IAvnWindowBaseEvents
 AVNCOM(IAvnMacOptions, 07) : IUnknown
 {
     virtual HRESULT SetShowInDock(int show) = 0;
+    virtual HRESULT SetApplicationTitle (void* utf8string) = 0;
 };
 
 AVNCOM(IAvnActionCallback, 08) : IUnknown
@@ -365,6 +371,27 @@ AVNCOM(IAvnGlSurfaceRenderingSession, 16) : IUnknown
 {
     virtual HRESULT GetPixelSize(AvnPixelSize* ret) = 0;
     virtual HRESULT GetScaling(double* ret) = 0;
+};
+
+AVNCOM(IAvnAppMenu, 17) : IUnknown
+{
+    virtual HRESULT AddItem (IAvnAppMenuItem* item) = 0;
+    virtual HRESULT RemoveItem (IAvnAppMenuItem* item) = 0;
+    virtual HRESULT SetTitle (void* utf8String) = 0;
+    virtual HRESULT Clear () = 0;
+};
+
+AVNCOM(IAvnPredicateCallback, 18) : IUnknown
+{
+    virtual bool Evaluate() = 0;
+};
+
+AVNCOM(IAvnAppMenuItem, 19) : IUnknown
+{
+    virtual HRESULT SetSubMenu (IAvnAppMenu* menu) = 0;
+    virtual HRESULT SetTitle (void* utf8String) = 0;
+    virtual HRESULT SetGesture (void* utf8String, AvnInputModifiers modifiers) = 0;
+    virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) = 0;
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();
