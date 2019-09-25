@@ -141,6 +141,11 @@ namespace Avalonia.Input
                 return KeyModifiers.Control;
             }
 
+            if (modifier.Equals("cmd".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                return KeyModifiers.Meta;
+            }
+
             return (KeyModifiers)Enum.Parse(typeof(KeyModifiers), modifier.ToString(), true);
         }
 
