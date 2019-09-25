@@ -40,7 +40,7 @@ namespace Avalonia.Controls
             if (rv == null)
             {
                 target.SetValue(s_nativeMenuInfoProperty, rv = new NativeMenuInfo(target));
-                SetIsNativeMenuExported(target, rv.Exporter.IsNativeMenuExported);
+                SetIsNativeMenuExported(target, rv.Exporter?.IsNativeMenuExported ?? false);
             }
 
             return rv;
