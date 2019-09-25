@@ -1096,6 +1096,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(void) applyMenu:(NSMenu *)menu
 {
+    if(menu == nullptr)
+    {
+        menu = [NSMenu new];
+    }
+    
     _menu = menu;
     [NSApp setMenu:menu];
 }
@@ -1194,12 +1199,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         if(_menu == nullptr)
         {
-            [NSApp setMenu: [NSMenu new]];
+            _menu = [NSMenu new];
         }
-        else
-        {
-            [NSApp setMenu:_menu];
-        }
+        
+        [NSApp setMenu:_menu];
         
         _parent->BaseEvents->Activated();
         [super becomeKeyWindow];

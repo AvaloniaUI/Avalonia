@@ -170,31 +170,6 @@ HRESULT AvnAppMenu::Clear()
     return S_OK;
 }
 
-//static IAvnAppMenu* s_AppMenu = nullptr;
-
-/*extern IAvnAppMenu* GetAppMenu()
-{
-    @autoreleasepool
-    {
-        //todo get rid of this method.
-        if(s_AppMenu == nullptr)
-        {
-            id menubar = [NSMenu new];
-            [menubar setTitle:@"Test"];
-            [NSApp setMainMenu:menubar];
-            
-            id appMenuItem = [AvnMenuItem new];
-            [menubar addItem:appMenuItem];
-            
-            [appMenuItem setSubmenu:[AvnMenu new]];
-            
-            s_AppMenu = new AvnAppMenu([[NSApplication sharedApplication] mainMenu]);
-        }
-        
-        return s_AppMenu;
-    }
-}*/
-
 extern IAvnAppMenu* CreateAppMenu()
 {
     @autoreleasepool
