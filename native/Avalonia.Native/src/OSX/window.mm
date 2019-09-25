@@ -96,6 +96,7 @@ public:
             UpdateStyle();
             
             [Window makeKeyAndOrderFront:Window];
+            [NSApp activateIgnoringOtherApps:YES];
             
             [Window setTitle:_lastTitle];
             [Window setTitleVisibility:NSWindowTitleVisible];
@@ -125,6 +126,7 @@ public:
             if(Window != nullptr)
             {
                 [Window makeKeyWindow];
+                [NSApp activateIgnoringOtherApps:YES];
             }
         }
         
