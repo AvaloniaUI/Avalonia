@@ -48,7 +48,6 @@ namespace Avalonia.Controls
             set => SetAndRaise(ParentProperty, ref _parent, value);
         }
 
-        
         public void Add(NativeMenuItem item) => _items.Add(item);
         
         public IEnumerator<NativeMenuItem> GetEnumerator() => _items.GetEnumerator();

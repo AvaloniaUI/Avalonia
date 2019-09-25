@@ -48,13 +48,14 @@ namespace Avalonia.Native
         private Dictionary<int, NativeMenuItem> _idsToItems = new Dictionary<int, NativeMenuItem>();
         private Dictionary<NativeMenuItem, int> _itemsToIds = new Dictionary<NativeMenuItem, int>();
         private uint _revision = 1;
+        private bool _exported = false;
 
         public AvaloniaNativeMenuExporter(IAvaloniaNativeFactory factory)
         {
             _factory = factory;
         }
 
-        public bool IsNativeMenuExported => throw new NotImplementedException();
+        public bool IsNativeMenuExported => _exported;
 
         public event EventHandler OnIsNativeMenuExportedChanged;
 
@@ -113,6 +114,8 @@ namespace Avalonia.Native
             LayoutUpdated?.Invoke((_revision, 0));
 
             SetMenu(_menu.Items);
+
+            _exported = true;
         }
 
         private void QueueReset()
@@ -153,9 +156,9 @@ namespace Avalonia.Native
 
                 menuItem.SetAction(new PredicateCallback(() =>
                 {
-                    if (item.Command != null)
+                    if (item.Command != null || item.HasClickHandlers)
                     {
-                        return item.Command.CanExecute(null);
+                        return item.Enabled;
                     }
 
                     return false;
@@ -186,9 +189,9 @@ namespace Avalonia.Native
 
                 menuItem.SetAction(new PredicateCallback(() =>
                 {
-                    if (item.Command != null)
+                    if (item.Command != null || item.HasClickHandlers)
                     {
-                        return item.Command.CanExecute(null);
+                        return item.Enabled;
                     }
 
                     return false;

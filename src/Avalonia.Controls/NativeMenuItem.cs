@@ -110,6 +110,8 @@ namespace Avalonia.Controls
             Enabled = _command?.CanExecute(null) ?? true;
         }
 
+        public bool HasClickHandlers => Clicked != null;
+
         public ICommand Command
         {
             get => GetValue(CommandProperty);
