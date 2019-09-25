@@ -34,7 +34,6 @@
 		37DDA9B121933371002E132B /* AvnString.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AvnString.h; sourceTree = "<group>"; };
 		37E2330E21583241000CB7E2 /* KeyTransform.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = KeyTransform.mm; sourceTree = "<group>"; };
 		520624B222973F4100C4DCEF /* menu.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = menu.mm; sourceTree = "<group>"; };
-		5296D43022F30EBC005B125D /* menu.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = menu.h; path = ../../../../../../../../System/Volumes/Data/Users/danwalmsley/repos/Avalonia/native/Avalonia.Native/src/OSX/menu.h; sourceTree = "<group>"; };
 		5B21A981216530F500CEE36E /* cursor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = cursor.mm; sourceTree = "<group>"; };
 		5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = clipboard.mm; sourceTree = "<group>"; };
 		5BF943652167AD1D009CAE35 /* cursor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cursor.h; sourceTree = "<group>"; };
@@ -89,7 +88,6 @@
 				37C09D8A21581EF2006A6758 /* window.h */,
 				AB00E4F62147CA920032A60A /* main.mm */,
 				520624B222973F4100C4DCEF /* menu.mm */,
-				5296D43022F30EBC005B125D /* menu.h */,
 				37A517B22159597E00FBA241 /* Screens.mm */,
 				37C09D8721580FE4006A6758 /* SystemDialogs.mm */,
 				AB7A61F02147C815003C5833 /* Products */,

@@ -170,12 +170,13 @@ HRESULT AvnAppMenu::Clear()
     return S_OK;
 }
 
-static IAvnAppMenu* s_AppMenu = nullptr;
+//static IAvnAppMenu* s_AppMenu = nullptr;
 
-extern IAvnAppMenu* GetAppMenu()
+/*extern IAvnAppMenu* GetAppMenu()
 {
     @autoreleasepool
     {
+        //todo get rid of this method.
         if(s_AppMenu == nullptr)
         {
             id menubar = [NSMenu new];
@@ -183,7 +184,7 @@ extern IAvnAppMenu* GetAppMenu()
             [NSApp setMainMenu:menubar];
             
             id appMenuItem = [AvnMenuItem new];
-            [[NSApp mainMenu] addItem:appMenuItem];
+            [menubar addItem:appMenuItem];
             
             [appMenuItem setSubmenu:[AvnMenu new]];
             
@@ -192,13 +193,14 @@ extern IAvnAppMenu* GetAppMenu()
         
         return s_AppMenu;
     }
-}
+}*/
 
 extern IAvnAppMenu* CreateAppMenu()
 {
     @autoreleasepool
     {
-        return new AvnAppMenu();
+        id menuBar = [NSMenu new];
+        return new AvnAppMenu(menuBar);
     }
 }
 

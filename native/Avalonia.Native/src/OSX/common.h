@@ -19,7 +19,6 @@ extern IAvnClipboard* CreateClipboard();
 extern IAvnCursorFactory* CreateCursorFactory();
 extern IAvnGlFeature* GetGlFeature();
 extern IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(NSWindow* window, NSView* view);
-extern IAvnAppMenu* GetAppMenu();
 extern IAvnAppMenu* CreateAppMenu();
 extern IAvnAppMenuItem* CreateAppMenuItem();
 

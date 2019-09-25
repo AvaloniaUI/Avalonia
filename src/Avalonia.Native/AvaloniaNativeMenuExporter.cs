@@ -114,7 +114,8 @@ namespace Avalonia.Native
             LayoutUpdated?.Invoke((_revision, 0));
 
             SetMenu(_menu.Items);
-
+            
+            
             _exported = true;
         }
 
@@ -228,8 +229,9 @@ namespace Avalonia.Native
             }
         }
 
-        private void SetMenu(ICollection<NativeMenuItem> menuItems)
+        private void SetMenu(IAvnWindow avnWindow, ICollection<NativeMenuItem> menuItems)
         {
+            
             var appMenu = _factory.ObtainAppMenu();
 
             appMenu.Clear();

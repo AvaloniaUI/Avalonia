@@ -63,9 +63,11 @@ public:
     SoftwareDrawingOperation CurrentSwDrawingOperation;
     AvnPoint lastPositionSet;
     NSString* _lastTitle;
+    IAvnAppMenu* _mainMenu;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events)
     {
+        _mainMenu = nullptr;
         BaseEvents = events;
         View = [[AvnView alloc] initWithParent:this];
 
@@ -207,6 +209,27 @@ public:
             
             return S_OK;
         }
+    }
+    
+    virtual HRESULT SetMainMenu(IAvnAppMenu* menu) override
+    {
+        _mainMenu = menu;
+        
+        
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT GetMainMenu(IAvnAppMenu** ret) override
+    {
+        if(ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret = _mainMenu;
+        
+        return S_OK;
     }
     
     virtual bool TryLock() override
@@ -1042,6 +1065,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     ComPtr<WindowBaseImpl> _parent;
     bool _canBecomeKeyAndMain;
     bool _closed;
+    NSMenu* _menu;
 }
 
 - (void)dealloc
@@ -1063,6 +1087,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         [self orderOut:self];
         [NSApp endModalSession:session];
     }
+}
+
+-(void) setMenu:(NSMenu *)menu
+{
+    _menu = menu;
+    [NSApp setMenu:menu];
 }
 
 -(void) setCanBecomeKeyAndMain
