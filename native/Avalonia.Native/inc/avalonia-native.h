@@ -208,7 +208,7 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT CreateGlRenderTarget(IAvnGlSurfaceRenderTarget** ret) = 0;
     virtual HRESULT GetSoftwareFramebuffer(AvnFramebuffer*ret) = 0;
     virtual HRESULT SetMainMenu(IAvnAppMenu* menu) = 0;
-    virtual HRESULT GetMainMenu(IAvnAppMenu** ret) = 0;
+    virtual HRESULT ObtainMainMenu(IAvnAppMenu** retOut) = 0;
     virtual bool TryLock() = 0;
     virtual void Unlock() = 0;
 };

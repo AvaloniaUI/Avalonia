@@ -24,7 +24,7 @@ namespace Avalonia.Native
                 Init(_native = factory.CreateWindow(e), factory.CreateScreens());
             }
 
-            NativeMenuExporter = new AvaloniaNativeMenuExporter(factory);
+            NativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents

@@ -49,10 +49,12 @@ namespace Avalonia.Native
         private Dictionary<NativeMenuItem, int> _itemsToIds = new Dictionary<NativeMenuItem, int>();
         private uint _revision = 1;
         private bool _exported = false;
+        private IAvnWindow _nativeWindow;
 
-        public AvaloniaNativeMenuExporter(IAvaloniaNativeFactory factory)
+        public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
         {
             _factory = factory;
+            _nativeWindow = nativeWindow;
         }
 
         public bool IsNativeMenuExported => _exported;
@@ -113,8 +115,7 @@ namespace Avalonia.Native
 
             LayoutUpdated?.Invoke((_revision, 0));
 
-            SetMenu(_menu.Items);
-            
+            SetMenu(_nativeWindow, _menu.Items);
             
             _exported = true;
         }
@@ -231,8 +232,14 @@ namespace Avalonia.Native
 
         private void SetMenu(IAvnWindow avnWindow, ICollection<NativeMenuItem> menuItems)
         {
-            
-            var appMenu = _factory.ObtainAppMenu();
+            var appMenu = avnWindow.ObtainMainMenu();
+
+            if(appMenu is null)
+            {
+                appMenu = _factory.CreateMenu();
+
+                avnWindow.SetMainMenu(appMenu);
+            }
 
             appMenu.Clear();
 
