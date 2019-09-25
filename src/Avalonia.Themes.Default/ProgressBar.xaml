@@ -7,9 +7,7 @@
         <Border Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
-          <Border Name="PART_Indicator"
-                  BorderThickness="1"
-                  Background="{TemplateBinding Foreground}"/>
+          <Border Name="PART_Indicator" Background="{TemplateBinding Foreground}"/>
         </Border>
       </ControlTemplate>
     </Setter>
