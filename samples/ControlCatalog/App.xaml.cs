@@ -9,6 +9,8 @@ namespace ControlCatalog
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
+
+            Name = "Avalonia";
         }
 
         public override void OnFrameworkInitializationCompleted()

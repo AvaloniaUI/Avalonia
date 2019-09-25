@@ -13,9 +13,17 @@ namespace Avalonia
             where T : AppBuilderBase<T>, new()
         {
             builder.UseWindowingSubsystem(() =>
-                AvaloniaNativePlatform.Initialize(
+            {
+                var platform = AvaloniaNativePlatform.Initialize(
                     AvaloniaLocator.Current.GetService<AvaloniaNativePlatformOptions>() ??
-                    new AvaloniaNativePlatformOptions()));
+                    new AvaloniaNativePlatformOptions());
+
+                    builder.AfterSetup (x=>
+                    {
+                        platform.SetupApplicationName();
+                    });
+            });
+
             return builder;
         }
     }
