@@ -44,8 +44,7 @@ namespace Avalonia.Native
     {
         private IAvaloniaNativeFactory _factory;
         private NativeMenu _menu;
-        private bool _resetQueued;        
-        private uint _revision = 1;
+        private bool _resetQueued;                
         private bool _exported = false;
         private IAvnWindow _nativeWindow;
         private List<NativeMenuItem> _menuItems = new List<NativeMenuItem>(); 
@@ -59,8 +58,6 @@ namespace Avalonia.Native
         public bool IsNativeMenuExported => _exported;
 
         public event EventHandler OnIsNativeMenuExportedChanged;
-
-        private event Action<(uint revision, int parent)> LayoutUpdated;
 
         public void SetNativeMenu(NativeMenu menu)
         {
@@ -107,11 +104,7 @@ namespace Avalonia.Native
                     ((INotifyCollectionChanged)i.Menu.Items).CollectionChanged -= OnMenuItemsChanged;
             }
 
-            _menuItems.Clear();
-
-            _revision++;
-
-            LayoutUpdated?.Invoke((_revision, 0));           
+            _menuItems.Clear();      
 
             SetMenu(_nativeWindow, _menu.Items);
             
