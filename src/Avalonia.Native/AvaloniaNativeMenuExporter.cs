@@ -44,12 +44,11 @@ namespace Avalonia.Native
     {
         private IAvaloniaNativeFactory _factory;
         private NativeMenu _menu;
-        private bool _resetQueued;
-        private Dictionary<int, NativeMenuItem> _idsToItems = new Dictionary<int, NativeMenuItem>();
-        private Dictionary<NativeMenuItem, int> _itemsToIds = new Dictionary<NativeMenuItem, int>();
+        private bool _resetQueued;        
         private uint _revision = 1;
         private bool _exported = false;
         private IAvnWindow _nativeWindow;
+        private List<NativeMenuItem> _menuItems = new List<NativeMenuItem>(); 
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
         {
@@ -101,19 +100,18 @@ namespace Avalonia.Native
         void DoLayoutReset()
         {
             _resetQueued = false;
-            foreach (var i in _idsToItems.Values)
+            foreach (var i in _menuItems)
             {
                 i.PropertyChanged -= OnItemPropertyChanged;
                 if (i.Menu != null)
                     ((INotifyCollectionChanged)i.Menu.Items).CollectionChanged -= OnMenuItemsChanged;
             }
 
-            _idsToItems.Clear();
-            _itemsToIds.Clear();
+            _menuItems.Clear();
 
             _revision++;
 
-            LayoutUpdated?.Invoke((_revision, 0));
+            LayoutUpdated?.Invoke((_revision, 0));           
 
             SetMenu(_nativeWindow, _menu.Items);
             
@@ -137,10 +135,20 @@ namespace Avalonia.Native
             return menu;
         }
 
+        private void AddMenuItem(NativeMenuItem item)
+        {
+            if(item.Menu?.Items != null)
+            {
+                ((INotifyCollectionChanged)item.Menu.Items).CollectionChanged += OnMenuItemsChanged;
+            }
+        }
+
         private void SetChildren(IAvnAppMenu menu, ICollection<NativeMenuItem> children)
         {
             foreach (var item in children)
             {
+                AddMenuItem(item);
+
                 var menuItem = _factory.CreateMenuItem();
 
                 using (var buffer = new Utf8Buffer(item.Header))
@@ -188,6 +196,8 @@ namespace Avalonia.Native
             foreach (var item in items)
             {
                 var menuItem = _factory.CreateMenuItem();
+
+                AddMenuItem(item);
 
                 menuItem.SetAction(new PredicateCallback(() =>
                 {
