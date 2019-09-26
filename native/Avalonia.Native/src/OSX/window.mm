@@ -1250,6 +1250,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     if(_parent)
         _parent->BaseEvents->Deactivated();
+    
+    [NSApp setMenu:nullptr];
     [super resignKeyWindow];
 }
 
