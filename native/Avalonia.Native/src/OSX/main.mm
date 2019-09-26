@@ -236,6 +236,24 @@ public:
         *ppv = ::CreateAppMenuItem();
         return S_OK;
     }
+    
+    virtual HRESULT SetAppMenu (IAvnAppMenu* appMenu) override
+    {
+        ::SetAppMenu(appMenu);
+        return S_OK;
+    }
+    
+    virtual HRESULT ObtainAppMenu(IAvnAppMenu** retOut) override
+    {
+        if(retOut == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *retOut = ::GetAppMenu();
+        
+        return S_OK;
+    }
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()

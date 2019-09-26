@@ -58,6 +58,14 @@ namespace Avalonia.Native
             DoLayoutReset();
         }
 
+        public AvaloniaNativeMenuExporter(IAvaloniaNativeFactory factory)
+        {
+            _factory = factory;
+
+            _menu = NativeMenu.GetMenu(Application.Current);
+            DoLayoutReset();
+        }
+
         public bool IsNativeMenuExported => _exported;
 
         public event EventHandler OnIsNativeMenuExportedChanged;
@@ -109,7 +117,14 @@ namespace Avalonia.Native
 
             _menuItems.Clear();
 
-            SetMenu(_nativeWindow, _menu?.Items);
+            if(_nativeWindow is null)
+            {
+                SetMenu(_menu?.Items);
+            }
+            else
+            {
+                SetMenu(_nativeWindow, _menu?.Items);
+            }
 
             _exported = true;
         }
@@ -236,7 +251,7 @@ namespace Avalonia.Native
             }
         }
 
-        private void SetMenu(IAvnWindow avnWindow, ICollection<NativeMenuItem> menuItems)
+        private void SetMenu(ICollection<NativeMenuItem> menuItems)
         {
             if (menuItems is null)
             {
@@ -247,11 +262,24 @@ namespace Avalonia.Native
 
             if (menu != null)
             {
-                var items = menuItems.ToList();
+                var appMenu = _factory.ObtainAppMenu ();
 
-                items.InsertRange(0, menu.Items);
+                if (appMenu is null)
+                {
+                    appMenu = _factory.CreateMenu();
+                }
 
-                menuItems = items;
+                AddItemsToMenu(appMenu, menuItems);
+
+                _factory.SetAppMenu(appMenu);
+            }
+        }
+
+        private void SetMenu(IAvnWindow avnWindow, ICollection<NativeMenuItem> menuItems)
+        {
+            if (menuItems is null)
+            {
+                menuItems = new List<NativeMenuItem>();
             }
 
             var appMenu = avnWindow.ObtainMainMenu();
@@ -259,13 +287,11 @@ namespace Avalonia.Native
             if (appMenu is null)
             {
                 appMenu = _factory.CreateMenu();
-
-                avnWindow.SetMainMenu(appMenu);
             }
 
-            appMenu.Clear();
-
             AddItemsToMenu(appMenu, menuItems);
+
+            avnWindow.SetMainMenu(appMenu);
         }
     }
 }

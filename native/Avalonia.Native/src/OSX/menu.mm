@@ -189,3 +189,34 @@ extern IAvnAppMenuItem* CreateAppMenuItem()
         return new AvnAppMenuItem();
     }
 }
+
+static IAvnAppMenu* s_appMenu = nullptr;
+static NSMenuItem* s_appMenuItem = nullptr;
+
+extern void SetAppMenu (IAvnAppMenu* appMenu)
+{
+    s_appMenu = appMenu;
+    
+    if(s_appMenu != nullptr)
+    {
+        auto nativeMenu = dynamic_cast<AvnAppMenu*>(s_appMenu);
+        
+        s_appMenuItem = [nativeMenu->GetNative() itemAtIndex:0];
+    }
+    else
+    {
+        s_appMenuItem = nullptr;
+    }
+}
+
+extern IAvnAppMenu* GetAppMenu ()
+{
+    return s_appMenu;
+}
+
+extern NSMenuItem* GetAppMenuItem ()
+{
+    return s_appMenuItem;
+}
+
+

@@ -175,6 +175,8 @@ public:
     virtual HRESULT CreateClipboard(IAvnClipboard** ppv) = 0;
     virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) = 0;
     virtual HRESULT ObtainGlFeature(IAvnGlFeature** ppv) = 0;
+    virtual HRESULT ObtainAppMenu(IAvnAppMenu** retOut) = 0;
+    virtual HRESULT SetAppMenu(IAvnAppMenu* menu) = 0;
     virtual HRESULT CreateMenu (IAvnAppMenu** ppv) = 0;
     virtual HRESULT CreateMenuItem (IAvnAppMenuItem** ppv) = 0;
 };

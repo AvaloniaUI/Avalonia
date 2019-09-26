@@ -1073,6 +1073,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _canBecomeKeyAndMain;
     bool _closed;
     NSMenu* _menu;
+    bool _isAppMenuApplied;
 }
 
 - (void)dealloc
@@ -1104,7 +1105,22 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
     
     _menu = menu;
-    [NSApp setMenu:menu];
+    
+    if ([self isKeyWindow])
+    {
+        auto appMenu = ::GetAppMenuItem();
+        
+        if(appMenu != nullptr)
+        {
+            [[appMenu menu] removeItem:appMenu];
+            
+            [_menu insertItem:appMenu atIndex:0];
+            
+            _isAppMenuApplied = true;
+        }
+        
+        [NSApp setMenu:menu];
+    }
 }
 
 -(void) setCanBecomeKeyAndMain
@@ -1204,6 +1220,17 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
             _menu = [NSMenu new];
         }
         
+        auto appMenu = ::GetAppMenuItem();
+        
+        if(appMenu != nullptr)
+        {
+            [[appMenu menu] removeItem:appMenu];
+            
+            [_menu insertItem:appMenu atIndex:0];
+            
+            _isAppMenuApplied = true;
+        }
+        
         [NSApp setMenu:_menu];
         
         _parent->BaseEvents->Activated();
@@ -1251,7 +1278,27 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     if(_parent)
         _parent->BaseEvents->Deactivated();
     
-    [NSApp setMenu:nullptr];
+    auto appMenuItem = ::GetAppMenuItem();
+    
+    if(appMenuItem != nullptr)
+    {
+        auto appMenu = ::GetAppMenu();
+        
+        auto nativeAppMenu = dynamic_cast<AvnAppMenu*>(appMenu);
+        
+        [[appMenuItem menu] removeItem:appMenuItem];
+        
+        [nativeAppMenu->GetNative() addItem:appMenuItem];
+        
+        [NSApp setMenu:nativeAppMenu->GetNative()];
+    }
+    else
+    {
+        [NSApp setMenu:nullptr];
+    }
+    
+    // remove window menu items from appmenu?
+    
     [super resignKeyWindow];
 }
 
