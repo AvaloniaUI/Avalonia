@@ -14,7 +14,7 @@ namespace Avalonia.Input
     {
         private static readonly Dictionary<string, Key> s_keySynonyms = new Dictionary<string, Key>
         {
-            { "+", Key.OemPlus }, { "-", Key.OemMinus }, { ".", Key.OemPeriod }
+            { "+", Key.OemPlus }, { "-", Key.OemMinus }, { ".", Key.OemPeriod }, { ",", Key.OemComma }
         };
 
         [Obsolete("Use constructor taking KeyModifiers")]
