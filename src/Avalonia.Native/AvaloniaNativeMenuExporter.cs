@@ -54,6 +54,8 @@ namespace Avalonia.Native
         {
             _factory = factory;
             _nativeWindow = nativeWindow;
+
+            DoLayoutReset();
         }
 
         public bool IsNativeMenuExported => _exported;
@@ -107,7 +109,7 @@ namespace Avalonia.Native
 
             _menuItems.Clear();
 
-            SetMenu(_nativeWindow, _menu.Items);
+            SetMenu(_nativeWindow, _menu?.Items);
 
             _exported = true;
         }
@@ -236,6 +238,11 @@ namespace Avalonia.Native
 
         private void SetMenu(IAvnWindow avnWindow, ICollection<NativeMenuItem> menuItems)
         {
+            if (menuItems is null)
+            {
+                menuItems = new List<NativeMenuItem>();
+            }
+
             var menu = NativeMenu.GetMenu(Application.Current);
 
             if (menu != null)

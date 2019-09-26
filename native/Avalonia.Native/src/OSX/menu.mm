@@ -159,7 +159,10 @@ HRESULT AvnAppMenu::RemoveItem (IAvnAppMenuItem* item)
 
 HRESULT AvnAppMenu::SetTitle (void* utf8String)
 {
-    [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+    if (utf8String != nullptr)
+    {
+        [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+    }
     
     return S_OK;
 }
