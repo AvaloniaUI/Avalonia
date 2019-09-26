@@ -45,11 +45,10 @@ namespace Avalonia.Native
     {
         private IAvaloniaNativeFactory _factory;
         private NativeMenu _menu;
-        private bool _resetQueued;                
+        private bool _resetQueued;
         private bool _exported = false;
         private IAvnWindow _nativeWindow;
-        private bool _prependAppMenu;
-        private List<NativeMenuItem> _menuItems = new List<NativeMenuItem>(); 
+        private List<NativeMenuItem> _menuItems = new List<NativeMenuItem>();
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
         {
@@ -76,7 +75,7 @@ namespace Avalonia.Native
 
         public void SetPrependApplicationMenu(bool prepend)
         {
-            _prependAppMenu = prepend;
+            // OSX always exports the app menu.
         }
 
         private void OnItemPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
@@ -106,10 +105,10 @@ namespace Avalonia.Native
                     ((INotifyCollectionChanged)i.Menu.Items).CollectionChanged -= OnMenuItemsChanged;
             }
 
-            _menuItems.Clear();      
+            _menuItems.Clear();
 
             SetMenu(_nativeWindow, _menu.Items);
-            
+
             _exported = true;
         }
 
@@ -132,7 +131,7 @@ namespace Avalonia.Native
 
         private void AddMenuItem(NativeMenuItem item)
         {
-            if(item.Menu?.Items != null)
+            if (item.Menu?.Items != null)
             {
                 ((INotifyCollectionChanged)item.Menu.Items).CollectionChanged += OnMenuItemsChanged;
             }
@@ -237,10 +236,10 @@ namespace Avalonia.Native
 
         private void SetMenu(IAvnWindow avnWindow, ICollection<NativeMenuItem> menuItems)
         {
-            if (_prependAppMenu)
-            {
-                var menu = NativeMenu.GetMenu(Application.Current);
+            var menu = NativeMenu.GetMenu(Application.Current);
 
+            if (menu != null)
+            {
                 var items = menuItems.ToList();
 
                 items.InsertRange(0, menu.Items);
@@ -250,7 +249,7 @@ namespace Avalonia.Native
 
             var appMenu = avnWindow.ObtainMainMenu();
 
-            if(appMenu is null)
+            if (appMenu is null)
             {
                 appMenu = _factory.CreateMenu();
 
