@@ -1,6 +1,5 @@
 
 #include "common.h"
-#include "IGetNative.h"
 #include "menu.h"
 
 @implementation AvnMenu
