@@ -99,7 +99,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             var node = new VisualNode(Mock.Of<IVisual>(), null);
             var scene = new Scene(Mock.Of<IVisual>());
 
-            node.UpdateChildren(scene);
+            node.SortChildren(scene);
         }
     }
 }
