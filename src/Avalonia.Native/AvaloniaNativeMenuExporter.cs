@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -47,6 +48,7 @@ namespace Avalonia.Native
         private bool _resetQueued;                
         private bool _exported = false;
         private IAvnWindow _nativeWindow;
+        private bool _prependAppMenu;
         private List<NativeMenuItem> _menuItems = new List<NativeMenuItem>(); 
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
@@ -74,7 +76,7 @@ namespace Avalonia.Native
 
         public void SetPrependApplicationMenu(bool prepend)
         {
-            throw new NotImplementedException();
+            _prependAppMenu = prepend;
         }
 
         private void OnItemPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
@@ -235,6 +237,17 @@ namespace Avalonia.Native
 
         private void SetMenu(IAvnWindow avnWindow, ICollection<NativeMenuItem> menuItems)
         {
+            if (_prependAppMenu)
+            {
+                var menu = NativeMenu.GetMenu(Application.Current);
+
+                var items = menuItems.ToList();
+
+                items.InsertRange(0, menu.Items);
+
+                menuItems = items;
+            }
+
             var appMenu = avnWindow.ObtainMainMenu();
 
             if(appMenu is null)
