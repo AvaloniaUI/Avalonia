@@ -16,7 +16,7 @@ namespace ControlCatalog
 
             Name = "Avalonia";
 
-            _recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[1] as NativeMenuItem).Menu;
+            _recentMenu = (NativeMenu.GetMenu(this).Items[1] as NativeMenuItem).Menu;
         }
 
         public void OnOpenClicked(object sender, EventArgs args)

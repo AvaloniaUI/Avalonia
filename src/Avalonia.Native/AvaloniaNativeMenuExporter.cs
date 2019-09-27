@@ -276,8 +276,17 @@ namespace Avalonia.Native
                     appMenu = _factory.CreateMenu();
                 }
 
+                var menuItem = new NativeMenuItem();
+
+                menuItem.Menu = new NativeMenu();
+
+                foreach(var item in menuItems)
+                {
+                    menuItem.Menu.Add(item);
+                }
+
                 appMenu.Clear();
-                AddItemsToMenu(appMenu, menuItems);
+                AddItemsToMenu(appMenu, new List<NativeMenuItemBase> { menuItem });
 
                 _factory.SetAppMenu(appMenu);
             }
