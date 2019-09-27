@@ -20,13 +20,24 @@
 
   <NativeMenu.Menu>
     <NativeMenu>
-      <NativeMenuItem>
+      <NativeMenuItem Header="File">
         <NativeMenuItem.Menu>
           <NativeMenu>
-            <NativeMenuItem Header="About Avalonia" />
-            <NativeMenuItemSeperator />
-            <NativeMenuItem Header="Preferences" Gesture="CMD + ," />
-            <NativeMenuItemSeperator />
+            <NativeMenuItem Header="Open" Clicked="OnOpenClicked"/>
+            <NativeMenuItem Header="Recent">
+              <NativeMenuItem.Menu>
+                <NativeMenu/>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Quit Avalonia" Clicked="OnCloseClicked" Gesture="CMD+Q"/>
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Edit">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Copy"/>
+            <NativeMenuItem Header="Paste"/>
           </NativeMenu>
         </NativeMenuItem.Menu>
       </NativeMenuItem>
