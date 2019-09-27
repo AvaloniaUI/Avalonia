@@ -20,8 +20,8 @@ namespace Avalonia
 
                     builder.AfterSetup (x=>
                     {
-                        platform.SetupApplicationMenuExporter();
                         platform.SetupApplicationName();
+                        platform.SetupApplicationMenuExporter();
                     });
             });
 
