@@ -32,10 +32,10 @@ namespace Avalonia.Controls
         private void ItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if(e.OldItems!=null)
-                foreach (NativeMenuItem i in e.OldItems)
+                foreach (NativeMenuItemBase i in e.OldItems)
                     i.Parent = null;
             if(e.NewItems!=null)
-                foreach (NativeMenuItem i in e.NewItems)
+                foreach (NativeMenuItemBase i in e.NewItems)
                     i.Parent = this;
         }
 
