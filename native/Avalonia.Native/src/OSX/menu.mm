@@ -219,9 +219,17 @@ extern void SetAppMenu (NSString* appName, IAvnAppMenu* menu)
         
         auto currentMenu = [s_appMenuItem menu];
         
-        [currentMenu removeItem:s_appMenuItem];
+        if (currentMenu != nullptr)
+        {
+            [currentMenu removeItem:s_appMenuItem];
+        }
         
         s_appMenuItem = [nativeMenu->GetNative() itemAtIndex:0];
+        
+        if (currentMenu == nullptr)
+        {
+            currentMenu = [s_appMenuItem menu];
+        }
         
         [[s_appMenuItem menu] removeItem:s_appMenuItem];
         
