@@ -11,6 +11,20 @@ namespace Avalonia.Controls
         private KeyGesture _gesture;
         private bool _enabled = true;
 
+        private NativeMenu _menu;
+
+        static NativeMenuItem()
+        {
+            MenuProperty.Changed.Subscribe(args =>
+            {
+                var item = (NativeMenuItem)args.Sender;
+                var value = (NativeMenu)args.NewValue;
+                if (value.Parent != null && value.Parent != item)
+                    throw new InvalidOperationException("NativeMenu already has a parent");
+                value.Parent = item;
+            });
+        }
+
 
         class CanExecuteChangedSubscriber : IWeakSubscriber<EventArgs>
         {
@@ -38,6 +52,26 @@ namespace Avalonia.Controls
         public NativeMenuItem(string header) : this()
         {
             Header = header;
+        }
+
+        public static readonly DirectProperty<NativeMenuItem, NativeMenu> MenuProperty =
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, NativeMenu>(nameof(Menu), o => o._menu,
+                (o, v) =>
+                {
+                    if (v.Parent != null && v.Parent != o)
+                        throw new InvalidOperationException("NativeMenu already has a parent");
+                    o._menu = v;
+                });
+
+        public NativeMenu Menu
+        {
+            get => _menu;
+            set
+            {
+                if (value.Parent != null && value.Parent != this)
+                    throw new InvalidOperationException("NativeMenu already has a parent");
+                SetAndRaise(MenuProperty, ref _menu, value);
+            }
         }
 
         public static readonly DirectProperty<NativeMenuItem, string> HeaderProperty =
