@@ -20,13 +20,19 @@
 
   <NativeMenu.Menu>
     <NativeMenu>
-      <NativeMenuItem Header="Open" Clicked="OnOpenClicked"/>
-      <NativeMenuItem Header="Recent">
+      <NativeMenuItem>
         <NativeMenuItem.Menu>
-          <NativeMenu/>
+          <NativeMenu>
+            <NativeMenuItem Header="Open" Clicked="OnOpenClicked"/>
+            <NativeMenuItem Header="Recent">
+              <NativeMenuItem.Menu>
+                <NativeMenu/>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Quit Avalonia" Gesture="CMD+Q"/>
+          </NativeMenu>
         </NativeMenuItem.Menu>
       </NativeMenuItem>
-      <NativeMenuItem Header="Quit Avalonia" Gesture="CMD+Q"/>
     </NativeMenu>
   </NativeMenu.Menu>
 </Application>

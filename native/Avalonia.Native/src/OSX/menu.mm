@@ -217,7 +217,17 @@ extern void SetAppMenu (NSString* appName, IAvnAppMenu* menu)
     {
         auto nativeMenu = dynamic_cast<AvnAppMenu*>(s_appMenu);
         
+        auto currentMenu = [s_appMenuItem menu];
+        
+        [currentMenu removeItem:s_appMenuItem];
+        
         s_appMenuItem = [nativeMenu->GetNative() itemAtIndex:0];
+        
+        [[s_appMenuItem menu] removeItem:s_appMenuItem];
+        
+        [currentMenu insertItem:s_appMenuItem atIndex:0];
+        
+        //[NSApp setMenu:nativeMenu->GetNative()];
         
         auto appMenu  = [s_appMenuItem submenu];
         [appMenu addItem:[NSMenuItem separatorItem]];
