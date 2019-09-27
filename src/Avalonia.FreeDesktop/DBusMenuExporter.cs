@@ -107,8 +107,8 @@ namespace Avalonia.FreeDesktop
                 foreach (var i in _idsToItems.Values)
                 {
                     i.PropertyChanged -= OnItemPropertyChanged;
-                    if (i.Menu != null)
-                        ((INotifyCollectionChanged)i.Menu.Items).CollectionChanged -= OnMenuItemsChanged;
+                    if (i is NativeMenuItem nmi)
+                        ((INotifyCollectionChanged)nmi.Menu.Items).CollectionChanged -= OnMenuItemsChanged;
                 }
                 _idsToItems.Clear();
                 _itemsToIds.Clear();
@@ -129,7 +129,7 @@ namespace Avalonia.FreeDesktop
                 if (id == 0)
                     return (null, _menu);
                 _idsToItems.TryGetValue(id, out var item);
-                return (item, item?.Menu);
+                return (item, (item as NativeMenuItem)?.Menu);
             }
 
             private int GetId(NativeMenuItemBase item)
@@ -140,8 +140,8 @@ namespace Avalonia.FreeDesktop
                 _idsToItems[id] = item;
                 _itemsToIds[item] = id;
                 item.PropertyChanged += OnItemPropertyChanged;
-                if (item.Menu != null)
-                    ((INotifyCollectionChanged)item.Menu.Items).CollectionChanged += OnMenuItemsChanged;
+                if (item is NativeMenuItem nmi)
+                    ((INotifyCollectionChanged)nmi.Menu.Items).CollectionChanged += OnMenuItemsChanged;
                 return id;
             }
 
@@ -281,7 +281,8 @@ namespace Avalonia.FreeDesktop
                     for (var c = 0; c < children.Length; c++)
                     {
                         var ch = menu.Items[c];
-                        children[c] = GetLayout(ch, ch.Menu, depth == -1 ? -1 : depth - 1, propertyNames);
+
+                        children[c] = GetLayout(ch, (ch as NativeMenuItem)?.Menu, depth == -1 ? -1 : depth - 1, propertyNames);
                     }
 
                 return (id, props, children);

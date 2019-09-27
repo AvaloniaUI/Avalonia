@@ -30,7 +30,7 @@ namespace ControlCatalog
             };
 
             DataContext = new MainWindowViewModel(_notificationArea);
-            _recentMenu = NativeMenu.GetMenu(this).Items[0].Menu.Items[1].Menu;
+            _recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[1] as NativeMenuItem).Menu;
         }
 
         public void OnOpenClicked(object sender, EventArgs args)
