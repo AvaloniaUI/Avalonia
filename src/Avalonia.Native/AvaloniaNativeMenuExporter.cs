@@ -276,6 +276,7 @@ namespace Avalonia.Native
                     appMenu = _factory.CreateMenu();
                 }
 
+                appMenu.Clear();
                 AddItemsToMenu(appMenu, menuItems);
 
                 _factory.SetAppMenu(appMenu);
@@ -296,6 +297,7 @@ namespace Avalonia.Native
                 appMenu = _factory.CreateMenu();
             }
 
+            appMenu.Clear();
             AddItemsToMenu(appMenu, menuItems);
 
             avnWindow.SetMainMenu(appMenu);

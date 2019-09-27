@@ -29,7 +29,7 @@
                 <NativeMenu/>
               </NativeMenuItem.Menu>
             </NativeMenuItem>
-            <NativeMenuItem Header="Quit Avalonia" Clicked="OnCloseClicked" Gesture="CMD+Q"/>
+            <NativeMenuItem Header="Quit Avalonia" Gesture="CMD+Q"/>
           </NativeMenu>
         </NativeMenuItem.Menu>
       </NativeMenuItem>
