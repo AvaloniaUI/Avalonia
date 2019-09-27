@@ -31,8 +31,8 @@ namespace Avalonia.FreeDesktop
             private bool _disposed;
             private uint _revision = 1;
             private NativeMenu _menu;
-            private Dictionary<int, NativeMenuItem> _idsToItems = new Dictionary<int, NativeMenuItem>();
-            private Dictionary<NativeMenuItem, int> _itemsToIds = new Dictionary<NativeMenuItem, int>();
+            private Dictionary<int, NativeMenuItemBase> _idsToItems = new Dictionary<int, NativeMenuItemBase>();
+            private Dictionary<NativeMenuItemBase, int> _itemsToIds = new Dictionary<NativeMenuItemBase, int>();
             private bool _resetQueued;
             private int _nextId = 1;
             public DBusMenuExporterImpl(Connection dbus, IntPtr xid)
@@ -124,7 +124,7 @@ namespace Avalonia.FreeDesktop
                 Dispatcher.UIThread.Post(DoLayoutReset, DispatcherPriority.Background);
             }
 
-            private (NativeMenuItem item, NativeMenu menu) GetMenu(int id)
+            private (NativeMenuItemBase item, NativeMenu menu) GetMenu(int id)
             {
                 if (id == 0)
                     return (null, _menu);
@@ -132,7 +132,7 @@ namespace Avalonia.FreeDesktop
                 return (item, item?.Menu);
             }
 
-            private int GetId(NativeMenuItem item)
+            private int GetId(NativeMenuItemBase item)
             {
                 if (_itemsToIds.TryGetValue(item, out var id))
                     return id;
@@ -186,54 +186,59 @@ namespace Avalonia.FreeDesktop
                 "type", "label", "enabled", "visible", "shortcut", "toggle-type", "children-display"
             };
             
-            object GetProperty((NativeMenuItem item, NativeMenu menu) i, string name)
+            object GetProperty((NativeMenuItemBase item, NativeMenu menu) i, string name)
             {
-                var (item, menu) = i;
-                if (name == "type")
+                var (it, menu) = i;
+
+                if (it is NativeMenuItem item)
                 {
-                    if (item != null && item.Header == null)
-                        return "separator";
-                    return null;
-                }
-                if (name == "label")
-                    return item?.Header ?? "<null>";
-                if (name == "enabled")
-                {
-                    if (item == null)
+                    if (name == "type")
+                    {
+                        if (item != null && item.Header == null)
+                            return "separator";
                         return null;
-                    if (item.Menu != null && item.Menu.Items.Count == 0)
-                        return false;
-                    if (item.Enabled == false)
-                        return false;
-                    return null;
-                }
-                if (name == "shortcut")
-                {
-                    if (item?.Gesture == null)
+                    }
+                    if (name == "label")
+                        return item?.Header ?? "<null>";
+                    if (name == "enabled")
+                    {
+                        if (item == null)
+                            return null;
+                        if (item.Menu != null && item.Menu.Items.Count == 0)
+                            return false;
+                        if (item.Enabled == false)
+                            return false;
                         return null;
-                    if (item.Gesture.KeyModifiers == 0)
-                        return null;
-                    var lst = new List<string>();
-                    var mod = item.Gesture;
-                    if ((mod.KeyModifiers & KeyModifiers.Control) != 0)
-                        lst.Add("Control");
-                    if ((mod.KeyModifiers & KeyModifiers.Alt) != 0)
-                        lst.Add("Alt");
-                    if ((mod.KeyModifiers & KeyModifiers.Shift) != 0)
-                        lst.Add("Shift");
-                    if ((mod.KeyModifiers & KeyModifiers.Meta) != 0)
-                        lst.Add("Super");
-                    lst.Add(item.Gesture.Key.ToString());
-                    return new[] { lst.ToArray() };
+                    }
+                    if (name == "shortcut")
+                    {
+                        if (item?.Gesture == null)
+                            return null;
+                        if (item.Gesture.KeyModifiers == 0)
+                            return null;
+                        var lst = new List<string>();
+                        var mod = item.Gesture;
+                        if ((mod.KeyModifiers & KeyModifiers.Control) != 0)
+                            lst.Add("Control");
+                        if ((mod.KeyModifiers & KeyModifiers.Alt) != 0)
+                            lst.Add("Alt");
+                        if ((mod.KeyModifiers & KeyModifiers.Shift) != 0)
+                            lst.Add("Shift");
+                        if ((mod.KeyModifiers & KeyModifiers.Meta) != 0)
+                            lst.Add("Super");
+                        lst.Add(item.Gesture.Key.ToString());
+                        return new[] { lst.ToArray() };
+                    }
+
+                    if (name == "children-display")
+                        return menu != null ? "submenu" : null;
                 }
 
-                if (name == "children-display")
-                    return menu != null ? "submenu" : null;
                 return null;
             }
 
             private List<KeyValuePair<string, object>> _reusablePropertyList = new List<KeyValuePair<string, object>>();
-            KeyValuePair<string, object>[] GetProperties((NativeMenuItem item, NativeMenu menu) i, string[] names)
+            KeyValuePair<string, object>[] GetProperties((NativeMenuItemBase item, NativeMenu menu) i, string[] names)
             {
                 if (names?.Length > 0 != true)
                     names = AllProperties;
@@ -267,7 +272,7 @@ namespace Avalonia.FreeDesktop
                 return Task.FromResult(rv);
             }
 
-            (int, KeyValuePair<string, object>[], object[]) GetLayout(NativeMenuItem item, NativeMenu menu, int depth, string[] propertyNames)
+            (int, KeyValuePair<string, object>[], object[]) GetLayout(NativeMenuItemBase item, NativeMenu menu, int depth, string[] propertyNames)
             {
                 var id = item == null ? 0 : GetId(item);
                 var props = GetProperties((item, menu), propertyNames);
@@ -308,8 +313,12 @@ namespace Avalonia.FreeDesktop
                 if (eventId == "clicked")
                 {
                     var item = GetMenu(id).item;
-                    if (item?.Enabled == true)
-                        item.RaiseClick();
+
+                    if (item is NativeMenuItem menuItem)
+                    {
+                        if (menuItem?.Enabled == true)
+                            menuItem.RaiseClick();
+                    }
                 }
             }
             
