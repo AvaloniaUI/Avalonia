@@ -195,6 +195,10 @@ namespace Avalonia.Native
                         AddItemsToMenu(submenu, item.Menu?.Items);
                     }
                 }
+                else if (i is NativeMenuItemSeperator seperator)
+                {
+                    menu.AddItem(_factory.CreateMenuItemSeperator());
+                }
             }
         }
 
@@ -246,6 +250,10 @@ namespace Avalonia.Native
                     }
 
                     menu.AddItem(menuItem);
+                }
+                else if(i is NativeMenuItemSeperator seperator)
+                {
+                    menu.AddItem(_factory.CreateMenuItemSeperator());
                 }
             }
         }
