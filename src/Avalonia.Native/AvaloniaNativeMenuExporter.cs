@@ -112,6 +112,7 @@ namespace Avalonia.Native
 
             if(_nativeWindow is null)
             {
+                _menu = NativeMenu.GetMenu(Application.Current);
                 SetMenu(_menu?.Items);
             }
             else
@@ -265,31 +266,26 @@ namespace Avalonia.Native
                 menuItems = new List<NativeMenuItemBase>();
             }
 
-            var menu = NativeMenu.GetMenu(Application.Current);
+            var appMenu = _factory.ObtainAppMenu();
 
-            if (menu != null)
+            if (appMenu is null)
             {
-                var appMenu = _factory.ObtainAppMenu ();
-
-                if (appMenu is null)
-                {
-                    appMenu = _factory.CreateMenu();
-                }
-
-                var menuItem = new NativeMenuItem();
-
-                menuItem.Menu = new NativeMenu();
-
-                foreach(var item in menuItems)
-                {
-                    menuItem.Menu.Add(item);
-                }
-
-                appMenu.Clear();
-                AddItemsToMenu(appMenu, new List<NativeMenuItemBase> { menuItem });
-
-                _factory.SetAppMenu(appMenu);
+                appMenu = _factory.CreateMenu();
             }
+
+            var menuItem = new NativeMenuItem();
+
+            menuItem.Menu = new NativeMenu();
+
+            foreach (var item in menuItems)
+            {
+                menuItem.Menu.Add(item);
+            }
+
+            appMenu.Clear();
+            AddItemsToMenu(appMenu, new List<NativeMenuItemBase> { menuItem });
+
+            _factory.SetAppMenu(appMenu);
         }
 
         private void SetMenu(IAvnWindow avnWindow, ICollection<NativeMenuItemBase> menuItems)
