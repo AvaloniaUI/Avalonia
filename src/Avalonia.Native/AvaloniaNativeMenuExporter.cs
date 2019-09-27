@@ -113,7 +113,11 @@ namespace Avalonia.Native
             if(_nativeWindow is null)
             {
                 _menu = NativeMenu.GetMenu(Application.Current);
-                SetMenu(_menu?.Items);
+
+                if(_menu != null)
+                {
+                    SetMenu(_menu);
+                }
             }
             else
             {
@@ -259,13 +263,8 @@ namespace Avalonia.Native
             }
         }
 
-        private void SetMenu(ICollection<NativeMenuItemBase> menuItems)
+        private void SetMenu(NativeMenu menu)
         {
-            if (menuItems is null)
-            {
-                menuItems = new List<NativeMenuItemBase>();
-            }
-
             var appMenu = _factory.ObtainAppMenu();
 
             if (appMenu is null)
@@ -273,14 +272,14 @@ namespace Avalonia.Native
                 appMenu = _factory.CreateMenu();
             }
 
-            var menuItem = new NativeMenuItem();
+            var menuItem = menu.Parent;
 
-            menuItem.Menu = new NativeMenu();
-
-            foreach (var item in menuItems)
+            if(menu.Parent is null)
             {
-                menuItem.Menu.Add(item);
+                menuItem = new NativeMenuItem();
             }
+
+            menuItem.Menu = menu;
 
             appMenu.Clear();
             AddItemsToMenu(appMenu, new List<NativeMenuItemBase> { menuItem });
