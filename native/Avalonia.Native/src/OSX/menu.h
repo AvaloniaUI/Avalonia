@@ -26,16 +26,17 @@ class AvnAppMenu;
 class AvnAppMenuItem : public ComSingleObject<IAvnAppMenuItem, &IID_IAvnAppMenuItem>
 {
 private:
-    AvnMenuItem* _native; // here we hold a pointer to an AvnMenuItem
+    NSMenuItem* _native; // here we hold a pointer to an AvnMenuItem
     IAvnActionCallback* _callback;
     IAvnPredicateCallback* _predicate;
+    bool _isSeperator;
     
 public:
     FORWARD_IUNKNOWN()
     
-    AvnAppMenuItem();
+    AvnAppMenuItem(bool isSeperator);
     
-    AvnMenuItem* GetNative();
+    NSMenuItem* GetNative();
     
     virtual HRESULT SetSubMenu (IAvnAppMenu* menu) override;
     

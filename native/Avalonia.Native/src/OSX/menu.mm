@@ -43,13 +43,23 @@
 }
 @end
 
-AvnAppMenuItem::AvnAppMenuItem()
+AvnAppMenuItem::AvnAppMenuItem(bool isSeperator)
 {
-    _native = [[AvnMenuItem alloc] initWithAvnAppMenuItem: this];
+    _isSeperator = isSeperator;
+    
+    if(isSeperator)
+    {
+        _native = [NSMenuItem separatorItem];
+    }
+    else
+    {
+        _native = [[AvnMenuItem alloc] initWithAvnAppMenuItem: this];
+    }
+    
     _callback = nullptr;
 }
 
-AvnMenuItem* AvnAppMenuItem::GetNative()
+NSMenuItem* AvnAppMenuItem::GetNative()
 {
     return _native;
 }
@@ -137,7 +147,6 @@ HRESULT AvnAppMenu::AddItem (IAvnAppMenuItem* item)
     
     if(avnMenuItem != nullptr)
     {
-        
         [_native addItem: avnMenuItem->GetNative()];
     }
     
@@ -185,7 +194,15 @@ extern IAvnAppMenuItem* CreateAppMenuItem()
 {
     @autoreleasepool
     {
-        return new AvnAppMenuItem();
+        return new AvnAppMenuItem(false);
+    }
+}
+
+extern IAvnAppMenuItem* CreateAppMenuItemSeperator()
+{
+    @autoreleasepool
+    {
+        return new AvnAppMenuItem(true);
     }
 }
 

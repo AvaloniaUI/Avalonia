@@ -21,6 +21,7 @@ extern IAvnGlFeature* GetGlFeature();
 extern IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(NSWindow* window, NSView* view);
 extern IAvnAppMenu* CreateAppMenu();
 extern IAvnAppMenuItem* CreateAppMenuItem();
+extern IAvnAppMenuItem* CreateAppMenuItemSeperator();
 extern void SetAppMenu (IAvnAppMenu* appMenu);
 extern IAvnAppMenu* GetAppMenu ();
 extern NSMenuItem* GetAppMenuItem ();

@@ -237,6 +237,12 @@ public:
         return S_OK;
     }
     
+    virtual HRESULT CreateMenuItemSeperator (IAvnAppMenuItem** ppv) override
+    {
+        *ppv = ::CreateAppMenuItemSeperator();
+        return S_OK;
+    }
+    
     virtual HRESULT SetAppMenu (IAvnAppMenu* appMenu) override
     {
         ::SetAppMenu(appMenu);

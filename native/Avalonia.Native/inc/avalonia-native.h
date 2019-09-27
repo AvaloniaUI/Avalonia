@@ -179,6 +179,7 @@ public:
     virtual HRESULT SetAppMenu(IAvnAppMenu* menu) = 0;
     virtual HRESULT CreateMenu (IAvnAppMenu** ppv) = 0;
     virtual HRESULT CreateMenuItem (IAvnAppMenuItem** ppv) = 0;
+    virtual HRESULT CreateMenuItemSeperator (IAvnAppMenuItem** ppv) = 0;
 };
 
 AVNCOM(IAvnString, 17) : IUnknown
