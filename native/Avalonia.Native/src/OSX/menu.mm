@@ -227,8 +227,6 @@ extern void SetAppMenu (NSString* appName, IAvnAppMenu* menu)
         
         [currentMenu insertItem:s_appMenuItem atIndex:0];
         
-        //[NSApp setMenu:nativeMenu->GetNative()];
-        
         auto appMenu  = [s_appMenuItem submenu];
         [appMenu addItem:[NSMenuItem separatorItem]];
         
@@ -244,14 +242,14 @@ extern void SetAppMenu (NSString* appName, IAvnAppMenu* menu)
         
         // Hide Application
         auto hideItem = [[NSMenuItem alloc] initWithTitle:[@"Hide " stringByAppendingString:appName] action:@selector(hide:) keyEquivalent:@"h"];
-        //hideItem.target = self;
+        
         [appMenu addItem:hideItem];
         
         // Hide Others
         auto hideAllOthersItem = [[NSMenuItem alloc] initWithTitle:@"Hide Others"
                                                        action:@selector(hideOtherApplications:)
                                                 keyEquivalent:@"h"];
-        //hideAllOthersItem.target = self;
+        
         hideAllOthersItem.keyEquivalentModifierMask = NSEventModifierFlagCommand | NSEventModifierFlagOption;
         [appMenu addItem:hideAllOthersItem];
         
@@ -259,7 +257,7 @@ extern void SetAppMenu (NSString* appName, IAvnAppMenu* menu)
         auto showAllItem = [[NSMenuItem alloc] initWithTitle:@"Show All"
                                                  action:@selector(unhideAllApplications:)
                                           keyEquivalent:@""];
-        //showAllItem.target = self;
+        
         [appMenu addItem:showAllItem];
         
         [appMenu addItem:[NSMenuItem separatorItem]];
@@ -268,9 +266,6 @@ extern void SetAppMenu (NSString* appName, IAvnAppMenu* menu)
         auto quitItem = [[NSMenuItem alloc] init];
         quitItem.title = [@"Quit " stringByAppendingString:appName];
         quitItem.keyEquivalent = @"q";
-        // This will remain true until synced with a QCocoaMenuItem.
-        // This way, we will always have a functional Quit menu item
-        // even if no QAction is added.
         quitItem.action = @selector(terminate:);
         [appMenu addItem:quitItem];
     }
