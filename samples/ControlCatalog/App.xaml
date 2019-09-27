@@ -24,7 +24,9 @@
         <NativeMenuItem.Menu>
           <NativeMenu>
             <NativeMenuItem Header="About Avalonia" />
+            <NativeMenuItemSeperator />
             <NativeMenuItem Header="Preferences" Gesture="CMD + ," />
+            <NativeMenuItemSeperator />
             <NativeMenuItem Header="Services">
               <NativeMenuItem.Menu>
                 <NativeMenu>
@@ -34,9 +36,11 @@
                 </NativeMenu>
               </NativeMenuItem.Menu>
             </NativeMenuItem>
+            <NativeMenuItemSeperator />
             <NativeMenuItem Header="Hide Avalonia" Gesture="CMD + H" />
             <NativeMenuItem Header="Hide Others" Gesture="ALT + CMD + H" />
             <NativeMenuItem Header="Show All" />
+            <NativeMenuItemSeperator />
             <NativeMenuItem Header="Quit Avalonia" Gesture="CMD + Q" />
           </NativeMenu>
         </NativeMenuItem.Menu>

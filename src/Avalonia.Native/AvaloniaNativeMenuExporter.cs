@@ -98,13 +98,6 @@ namespace Avalonia.Native
             QueueReset();
         }
 
-        /*
-                 This is basic initial implementation, so we don't actually track anything and
-                 just reset the whole layout on *ANY* change
-                 
-                 This is not how it should work and will prevent us from implementing various features,
-                 but that's the fastest way to get things working, so...
-             */
         void DoLayoutReset()
         {
             _resetQueued = false;
@@ -137,7 +130,7 @@ namespace Avalonia.Native
             Dispatcher.UIThread.Post(DoLayoutReset, DispatcherPriority.Background);
         }
 
-        private IAvnAppMenu CreateSubmenu(ICollection<NativeMenuItem> children)
+        private IAvnAppMenu CreateSubmenu(ICollection<NativeMenuItemBase> children)
         {
             var menu = _factory.CreateMenu();
 
@@ -154,85 +147,16 @@ namespace Avalonia.Native
             }
         }
 
-        private void SetChildren(IAvnAppMenu menu, ICollection<NativeMenuItem> children)
+        private void SetChildren(IAvnAppMenu menu, ICollection<NativeMenuItemBase> children)
         {
-            foreach (var item in children)
+            foreach (var i in children)
             {
-                AddMenuItem(item);
-
-                var menuItem = _factory.CreateMenuItem();
-
-                using (var buffer = new Utf8Buffer(item.Header))
+                if (i is NativeMenuItem item)
                 {
-                    menuItem.Title = buffer.DangerousGetHandle();
-                }
+                    AddMenuItem(item);
 
-                if (item.Gesture != null)
-                {
-                    using (var buffer = new Utf8Buffer(item.Gesture.Key.ToString().ToLower()))
-                    {
-                        menuItem.SetGesture(buffer.DangerousGetHandle(), (AvnInputModifiers)item.Gesture.KeyModifiers);
-                    }
-                }
+                    var menuItem = _factory.CreateMenuItem();
 
-                menuItem.SetAction(new PredicateCallback(() =>
-                {
-                    if (item.Command != null || item.HasClickHandlers)
-                    {
-                        return item.Enabled;
-                    }
-
-                    return false;
-                }), new MenuActionCallback(() => { item.RaiseClick(); }));
-                menu.AddItem(menuItem);
-
-                if (item.Menu?.Items?.Count > 0)
-                {
-                    var submenu = _factory.CreateMenu();
-
-                    using (var buffer = new Utf8Buffer(item.Header))
-                    {
-                        submenu.Title = buffer.DangerousGetHandle();
-                    }
-
-                    menuItem.SetSubMenu(submenu);
-
-                    AddItemsToMenu(submenu, item.Menu?.Items);
-                }
-            }
-        }
-
-        private void AddItemsToMenu(IAvnAppMenu menu, ICollection<NativeMenuItem> items, bool isMainMenu = false)
-        {
-            foreach (var item in items)
-            {
-                var menuItem = _factory.CreateMenuItem();
-
-                AddMenuItem(item);
-
-                menuItem.SetAction(new PredicateCallback(() =>
-                {
-                    if (item.Command != null || item.HasClickHandlers)
-                    {
-                        return item.Enabled;
-                    }
-
-                    return false;
-                }), new MenuActionCallback(() => { item.RaiseClick(); }));
-
-                if (item.Menu?.Items.Count > 0 || isMainMenu)
-                {
-                    var subMenu = CreateSubmenu(item.Menu?.Items);
-
-                    menuItem.SetSubMenu(subMenu);
-
-                    using (var buffer = new Utf8Buffer(item.Header))
-                    {
-                        subMenu.Title = buffer.DangerousGetHandle();
-                    }
-                }
-                else
-                {
                     using (var buffer = new Utf8Buffer(item.Header))
                     {
                         menuItem.Title = buffer.DangerousGetHandle();
@@ -245,17 +169,92 @@ namespace Avalonia.Native
                             menuItem.SetGesture(buffer.DangerousGetHandle(), (AvnInputModifiers)item.Gesture.KeyModifiers);
                         }
                     }
-                }
 
-                menu.AddItem(menuItem);
+                    menuItem.SetAction(new PredicateCallback(() =>
+                    {
+                        if (item.Command != null || item.HasClickHandlers)
+                        {
+                            return item.Enabled;
+                        }
+
+                        return false;
+                    }), new MenuActionCallback(() => { item.RaiseClick(); }));
+                    menu.AddItem(menuItem);
+
+                    if (item.Menu?.Items?.Count > 0)
+                    {
+                        var submenu = _factory.CreateMenu();
+
+                        using (var buffer = new Utf8Buffer(item.Header))
+                        {
+                            submenu.Title = buffer.DangerousGetHandle();
+                        }
+
+                        menuItem.SetSubMenu(submenu);
+
+                        AddItemsToMenu(submenu, item.Menu?.Items);
+                    }
+                }
             }
         }
 
-        private void SetMenu(ICollection<NativeMenuItem> menuItems)
+        private void AddItemsToMenu(IAvnAppMenu menu, ICollection<NativeMenuItemBase> items, bool isMainMenu = false)
+        {
+            foreach (var i in items)
+            {
+                if (i is NativeMenuItem item)
+                {
+                    var menuItem = _factory.CreateMenuItem();
+
+                    AddMenuItem(item);
+
+                    menuItem.SetAction(new PredicateCallback(() =>
+                    {
+                        if (item.Command != null || item.HasClickHandlers)
+                        {
+                            return item.Enabled;
+                        }
+
+                        return false;
+                    }), new MenuActionCallback(() => { item.RaiseClick(); }));
+
+                    if (item.Menu?.Items.Count > 0 || isMainMenu)
+                    {
+                        var subMenu = CreateSubmenu(item.Menu?.Items);
+
+                        menuItem.SetSubMenu(subMenu);
+
+                        using (var buffer = new Utf8Buffer(item.Header))
+                        {
+                            subMenu.Title = buffer.DangerousGetHandle();
+                        }
+                    }
+                    else
+                    {
+                        using (var buffer = new Utf8Buffer(item.Header))
+                        {
+                            menuItem.Title = buffer.DangerousGetHandle();
+                        }
+
+                        if (item.Gesture != null)
+                        {
+                            using (var buffer = new Utf8Buffer(item.Gesture.Key.ToString().ToLower()))
+                            {
+                                menuItem.SetGesture(buffer.DangerousGetHandle(), (AvnInputModifiers)item.Gesture.KeyModifiers);
+                            }
+                        }
+                    }
+
+                    menu.AddItem(menuItem);
+                }
+            }
+        }
+
+        private void SetMenu(ICollection<NativeMenuItemBase> menuItems)
         {
             if (menuItems is null)
             {
-                menuItems = new List<NativeMenuItem>();
+                menuItems = new List<NativeMenuItemBase>();
             }
 
             var menu = NativeMenu.GetMenu(Application.Current);
@@ -275,11 +274,11 @@ namespace Avalonia.Native
             }
         }
 
-        private void SetMenu(IAvnWindow avnWindow, ICollection<NativeMenuItem> menuItems)
+        private void SetMenu(IAvnWindow avnWindow, ICollection<NativeMenuItemBase> menuItems)
         {
             if (menuItems is null)
             {
-                menuItems = new List<NativeMenuItem>();
+                menuItems = new List<NativeMenuItemBase>();
             }
 
             var appMenu = avnWindow.ObtainMainMenu();

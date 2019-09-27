@@ -9,13 +9,13 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
-    public partial class NativeMenu : AvaloniaObject, IEnumerable<NativeMenuItem>
+    public partial class NativeMenu : AvaloniaObject, IEnumerable<NativeMenuItemBase>
     {
-        private AvaloniaList<NativeMenuItem> _items =
-            new AvaloniaList<NativeMenuItem> { ResetBehavior = ResetBehavior.Remove };
+        private AvaloniaList<NativeMenuItemBase> _items =
+            new AvaloniaList<NativeMenuItemBase> { ResetBehavior = ResetBehavior.Remove };
         private NativeMenuItem _parent;
         [Content]
-        public IList<NativeMenuItem> Items => _items;
+        public IList<NativeMenuItemBase> Items => _items;
 
         public NativeMenu()
         {
@@ -23,7 +23,7 @@ namespace Avalonia.Controls
             _items.CollectionChanged += ItemsChanged;
         }
 
-        private void Validator(NativeMenuItem obj)
+        private void Validator(NativeMenuItemBase obj)
         {
             if (obj.Parent != null)
                 throw new InvalidOperationException("NativeMenuItem already has a parent");
@@ -48,9 +48,9 @@ namespace Avalonia.Controls
             set => SetAndRaise(ParentProperty, ref _parent, value);
         }
 
-        public void Add(NativeMenuItem item) => _items.Add(item);
+        public void Add(NativeMenuItemBase item) => _items.Add(item);
         
-        public IEnumerator<NativeMenuItem> GetEnumerator() => _items.GetEnumerator();
+        public IEnumerator<NativeMenuItemBase> GetEnumerator() => _items.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
         {

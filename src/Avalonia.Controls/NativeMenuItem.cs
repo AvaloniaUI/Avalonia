@@ -1,20 +1,16 @@
 using System;
-using System.Collections.Generic;
 using System.Windows.Input;
-using Avalonia.Collections;
 using Avalonia.Input;
-using Avalonia.Metadata;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
-    public class NativeMenuItem : AvaloniaObject
+    public class NativeMenuItem : NativeMenuItemBase
     {
         private string _header;
         private KeyGesture _gesture;
         private bool _enabled = true;
-        private NativeMenu _menu;
-        private NativeMenu _parent;
+
 
         class CanExecuteChangedSubscriber : IWeakSubscriber<EventArgs>
         {
@@ -33,18 +29,7 @@ namespace Avalonia.Controls
 
         private readonly CanExecuteChangedSubscriber _canExecuteChangedSubscriber;
 
-        static NativeMenuItem()
-        {
-            MenuProperty.Changed.Subscribe(args =>
-            {
-                var item = (NativeMenuItem)args.Sender;
-                var value = (NativeMenu)args.NewValue;
-                if (value.Parent != null && value.Parent != item)
-                    throw new InvalidOperationException("NativeMenu already has a parent");
-                value.Parent = item;
-            });
-        }
-        
+
         public NativeMenuItem()
         {
             _canExecuteChangedSubscriber = new CanExecuteChangedSubscriber(this);
@@ -54,7 +39,7 @@ namespace Avalonia.Controls
         {
             Header = header;
         }
-        
+
         public static readonly DirectProperty<NativeMenuItem, string> HeaderProperty =
             AvaloniaProperty.RegisterDirect<NativeMenuItem, string>(nameof(Header), o => o._header, (o, v) => o._header = v);
 
@@ -65,7 +50,7 @@ namespace Avalonia.Controls
         }
 
         public static readonly DirectProperty<NativeMenuItem, KeyGesture> GestureProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, KeyGesture>(nameof(Gesture), o => o._gesture, (o,v)=> o._gesture = v);
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, KeyGesture>(nameof(Gesture), o => o._gesture, (o, v) => o._gesture = v);
 
         public KeyGesture Gesture
         {
@@ -127,36 +112,6 @@ namespace Avalonia.Controls
             get { return GetValue(CommandParameterProperty); }
             set { SetValue(CommandParameterProperty, value); }
         }
-
-        public static readonly DirectProperty<NativeMenuItem, NativeMenu> MenuProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, NativeMenu>(nameof(Menu), o => o._menu,
-                (o, v) =>
-                {
-                    if (v.Parent != null && v.Parent != o)
-                        throw new InvalidOperationException("NativeMenu already has a parent");
-                    o._menu = v;
-                });
-
-        public NativeMenu Menu
-        {
-            get => _menu;
-            set
-            {
-                if (value.Parent != null && value.Parent != this)
-                    throw new InvalidOperationException("NativeMenu already has a parent");
-                SetAndRaise(MenuProperty, ref _menu, value);
-            }
-        }
-
-        public static readonly DirectProperty<NativeMenuItem, NativeMenu> ParentProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, NativeMenu>("Parent", o => o.Parent, (o, v) => o.Parent = v);
-
-        public NativeMenu Parent
-        {
-            get => _parent;
-            set => SetAndRaise(ParentProperty, ref _parent, value);
-        }
-
 
         public event EventHandler Clicked;
 
