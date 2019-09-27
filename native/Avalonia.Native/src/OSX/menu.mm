@@ -209,15 +209,60 @@ extern IAvnAppMenuItem* CreateAppMenuItemSeperator()
 static IAvnAppMenu* s_appMenu = nullptr;
 static NSMenuItem* s_appMenuItem = nullptr;
 
-extern void SetAppMenu (IAvnAppMenu* appMenu)
+extern void SetAppMenu (NSString* appName, IAvnAppMenu* menu)
 {
-    s_appMenu = appMenu;
+    s_appMenu = menu;
     
     if(s_appMenu != nullptr)
     {
         auto nativeMenu = dynamic_cast<AvnAppMenu*>(s_appMenu);
         
         s_appMenuItem = [nativeMenu->GetNative() itemAtIndex:0];
+        
+        auto appMenu  = [s_appMenuItem submenu];
+        [appMenu addItem:[NSMenuItem separatorItem]];
+        
+        // Services item and menu
+        auto servicesItem = [[NSMenuItem alloc] init];
+        servicesItem.title = @"Services";
+        NSMenu *servicesMenu = [[NSMenu alloc] initWithTitle:@"Services"];
+        servicesItem.submenu = servicesMenu;
+        [NSApplication sharedApplication].servicesMenu = servicesMenu;
+        [appMenu addItem:servicesItem];
+        
+        [appMenu addItem:[NSMenuItem separatorItem]];
+        
+        // Hide Application
+        auto hideItem = [[NSMenuItem alloc] initWithTitle:[@"Hide " stringByAppendingString:appName] action:@selector(hide:) keyEquivalent:@"h"];
+        //hideItem.target = self;
+        [appMenu addItem:hideItem];
+        
+        // Hide Others
+        auto hideAllOthersItem = [[NSMenuItem alloc] initWithTitle:@"Hide Others"
+                                                       action:@selector(hideOtherApplications:)
+                                                keyEquivalent:@"h"];
+        //hideAllOthersItem.target = self;
+        hideAllOthersItem.keyEquivalentModifierMask = NSEventModifierFlagCommand | NSEventModifierFlagOption;
+        [appMenu addItem:hideAllOthersItem];
+        
+        // Show All
+        auto showAllItem = [[NSMenuItem alloc] initWithTitle:@"Show All"
+                                                 action:@selector(unhideAllApplications:)
+                                          keyEquivalent:@""];
+        //showAllItem.target = self;
+        [appMenu addItem:showAllItem];
+        
+        [appMenu addItem:[NSMenuItem separatorItem]];
+        
+        // Quit Application
+        auto quitItem = [[NSMenuItem alloc] init];
+        quitItem.title = [@"Quit " stringByAppendingString:appName];
+        quitItem.keyEquivalent = @"q";
+        // This will remain true until synced with a QCocoaMenuItem.
+        // This way, we will always have a functional Quit menu item
+        // even if no QAction is added.
+        quitItem.action = @selector(terminate:);
+        [appMenu addItem:quitItem];
     }
     else
     {

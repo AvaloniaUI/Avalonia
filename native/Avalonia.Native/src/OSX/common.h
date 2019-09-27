@@ -22,7 +22,7 @@ extern IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(NSWindow* window, NSView*
 extern IAvnAppMenu* CreateAppMenu();
 extern IAvnAppMenuItem* CreateAppMenuItem();
 extern IAvnAppMenuItem* CreateAppMenuItemSeperator();
-extern void SetAppMenu (IAvnAppMenu* appMenu);
+extern void SetAppMenu (NSString* appName, IAvnAppMenu* appMenu);
 extern IAvnAppMenu* GetAppMenu ();
 extern NSMenuItem* GetAppMenuItem ();
 

@@ -5,10 +5,16 @@
 #define COM_GUIDS_MATERIALIZE
 #include "common.h"
 
+static NSString* s_appTitle = @"Avalonia";
+
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-void SetProcessName(CFStringRef process_name) {
+void SetProcessName(NSString* appTitle) {
+    s_appTitle = appTitle;
+    
+    CFStringRef process_name = (__bridge CFStringRef)appTitle;
+    
     if (!process_name || CFStringGetLength(process_name) == 0) {
         //NOTREACHED() << "SetProcessName given bad name.";
         return;
@@ -108,8 +114,8 @@ public:
         
         [[NSProcessInfo processInfo] setProcessName:appTitle];
         
-        CFStringRef titleRef = (__bridge CFStringRef)appTitle;
-        SetProcessName(titleRef);
+        
+        SetProcessName(appTitle);
         
         return S_OK;
     }
@@ -245,7 +251,7 @@ public:
     
     virtual HRESULT SetAppMenu (IAvnAppMenu* appMenu) override
     {
-        ::SetAppMenu(appMenu);
+        ::SetAppMenu(s_appTitle, appMenu);
         return S_OK;
     }
     
