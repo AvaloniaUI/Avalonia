@@ -20,7 +20,7 @@ namespace ControlCatalog.Android
         {
             if (Avalonia.Application.Current == null)           
             {
-                AppBuilder.Configure<App>() 
+                AppBuilder.Configure<App>()
                     .UseAndroid()
                     .SetupWithoutStarting();
                 Content = new MainView();
