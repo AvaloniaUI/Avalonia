@@ -53,7 +53,7 @@ namespace Avalonia.ReactiveUI
     /// ReactiveUI routing documentation website</see> for more info.
     /// </para>
     /// </remarks>
-    public class RoutedViewHost : TransitioningContentControl, IActivatableView, IEnableLogger
+    public class RoutedViewHost : TransitioningContentControl, IActivatable, IEnableLogger
     {
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="Router"/> property.

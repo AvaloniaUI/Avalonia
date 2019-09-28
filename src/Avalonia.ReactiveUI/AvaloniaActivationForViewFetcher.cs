@@ -27,7 +27,7 @@ namespace Avalonia.ReactiveUI
         /// <summary>
         /// Returns activation observable for activatable Avalonia view.
         /// </summary>
-        public IObservable<bool> GetActivationForView(IActivatableView view)
+        public IObservable<bool> GetActivationForView(IActivatable view)
         {
             if (!(view is IVisual visual)) return Observable.Return(false);
             if (view is WindowBase window) return GetActivationForWindowBase(window);
