@@ -18,7 +18,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         {
         }
 
-        public DynamicResourceExtension(string resourceKey)
+        public DynamicResourceExtension(object resourceKey)
         {
             ResourceKey = resourceKey;
         }
