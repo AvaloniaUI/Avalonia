@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reactive;
 using ReactiveUI;
 
 namespace RenderDemo.ViewModels
@@ -27,7 +26,7 @@ namespace RenderDemo.ViewModels
             set { this.RaiseAndSetIfChanged(ref drawFps, value); }
         }
 
-        public ReactiveCommand<Unit, bool> ToggleDrawDirtyRects { get; }
-        public ReactiveCommand<Unit, bool> ToggleDrawFps { get; }
+        public ReactiveCommand ToggleDrawDirtyRects { get; }
+        public ReactiveCommand ToggleDrawFps { get; }
     }
 }
