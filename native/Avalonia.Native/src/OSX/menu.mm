@@ -75,7 +75,10 @@ HRESULT AvnAppMenuItem::SetSubMenu (IAvnAppMenu* menu)
 
 HRESULT AvnAppMenuItem::SetTitle (void* utf8String)
 {
-    [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+    if (utf8String != nullptr)
+    {
+        [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+    }
     
     return S_OK;
 }
@@ -235,7 +238,13 @@ extern void SetAppMenu (NSString* appName, IAvnAppMenu* menu)
         
         [currentMenu insertItem:s_appMenuItem atIndex:0];
         
+        if([s_appMenuItem submenu] == nullptr)
+        {
+            [s_appMenuItem setSubmenu:[NSMenu new]];
+        }
+        
         auto appMenu  = [s_appMenuItem submenu];
+        
         [appMenu addItem:[NSMenuItem separatorItem]];
         
         // Services item and menu
