@@ -865,6 +865,10 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr SetActiveWindow(IntPtr hWnd);
 
         [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
         public static extern IntPtr SetCapture(IntPtr hWnd);
 
         [DllImport("user32.dll")]

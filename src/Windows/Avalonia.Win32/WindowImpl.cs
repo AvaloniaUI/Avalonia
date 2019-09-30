@@ -247,7 +247,27 @@ namespace Avalonia.Win32
 
         public void Activate()
         {
-            UnmanagedMethods.SetActiveWindow(_hwnd);
+            // From docs at https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setforegroundwindow
+            // 
+            // An application cannot force a window to the foreground while the user is working with another window.
+            // Instead, Windows flashes the taskbar button of the window to notify the user.
+            //
+            // The system restricts which processes can set the foreground window.
+            //
+            // This call is probably the only one needed, but it might fail in certain scenarios.
+            if (!UnmanagedMethods.SetForegroundWindow(_hwnd))
+            {
+                // From docs at https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setactivewindow
+                // 
+                // The SetActiveWindow function activates a window,
+                // but not if the application is in the background.
+                // The window will be brought into the foreground (top of Z-Order)
+                // if its application is in the foreground when the system activates the window.
+                //
+                // This is a valid call for multi-window applications, that are in the foreground,
+                // so we leave it as a fallback option.
+                UnmanagedMethods.SetActiveWindow(_hwnd);
+            }
         }
 
         public IPopupImpl CreatePopup() => Win32Platform.UseOverlayPopups ? null : new PopupImpl(this);
