@@ -100,9 +100,7 @@ namespace Avalonia.Visuals.UnitTests.Media
 
                 Assert.Equal(new Point(10, 10), lineSegment.Point);
 
-                figure = pathGeometry.Figures[1];
-
-                segment = figure.Segments[0];
+                segment = figure.Segments[1];
 
                 Assert.IsType<LineSegment>(segment);
 
