@@ -173,7 +173,7 @@ namespace Avalonia.Controls
         {
             var result = 0;
 
-            while (logical != null && logical.GetType() != typeof(T))
+            while (logical != null && !(logical is T))
             {
                 ++result;
                 logical = logical.LogicalParent;

@@ -6,7 +6,6 @@ using Avalonia.LinuxFramebuffer.Input;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Threading;
 
 namespace Avalonia.LinuxFramebuffer
 {
@@ -14,6 +13,7 @@ namespace Avalonia.LinuxFramebuffer
     {
         private readonly IOutputBackend _outputBackend;
         private readonly IInputBackend _inputBackend;
+
         private bool _renderQueued;
         public IInputRoot InputRoot { get; private set; }
 
@@ -21,6 +21,9 @@ namespace Avalonia.LinuxFramebuffer
         {
             _outputBackend = outputBackend;
             _inputBackend = inputBackend;
+
+            Surfaces = new object[] { _outputBackend };
+
             Invalidate(default(Rect));
             _inputBackend.Initialize(this, e => Input?.Invoke(e));
         }
@@ -62,7 +65,7 @@ namespace Avalonia.LinuxFramebuffer
         public IPopupImpl CreatePopup() => null;
 
         public double Scaling => _outputBackend.Scaling;
-        public IEnumerable<object> Surfaces => new object[] {_outputBackend};
+        public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
