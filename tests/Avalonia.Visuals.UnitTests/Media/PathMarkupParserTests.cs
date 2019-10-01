@@ -235,5 +235,30 @@ namespace Avalonia.Visuals.UnitTests.Media
                 Assert.Throws<InvalidDataException>(() => parser.Parse(pathData));
             }
         }
+
+        [Fact]
+        public void CloseFigure_Should_Move_CurrentPoint_To_CreateFigurePoint()
+        {
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
+            {
+                parser.Parse("M10,10L100,100Z m10,10");
+
+                Assert.Equal(2, pathGeometry.Figures.Count);
+
+                var figure = pathGeometry.Figures[0];
+
+                Assert.Equal(new Point(10, 10), figure.StartPoint);
+
+                Assert.Equal(true, figure.IsClosed);
+
+                Assert.Equal(new Point(100, 100), ((LineSegment)figure.Segments[0]).Point);
+
+                figure = pathGeometry.Figures[1];
+
+                Assert.Equal(new Point(20, 20), figure.StartPoint);
+            }
+        }
     }
 }
