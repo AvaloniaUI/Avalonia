@@ -110,20 +110,7 @@ namespace Avalonia
 
             entry.Start(binding);
 
-            return Disposable.Create(() =>
-            {
-                if (!entry.HasCompleted)
-                {
-                    Bindings.Remove(node);
-
-                    entry.Dispose();
-
-                    if (entry.Index >= ActiveBindingIndex)
-                    {
-                        ActivateFirstBinding();
-                    }
-                }
-            });
+            return new RemoveBindingDisposable(node, Bindings, this);
         }
 
         /// <summary>
@@ -190,6 +177,40 @@ namespace Avalonia
             Value = DirectValue;
             ActiveBindingIndex = -1;
             Owner.LevelValueChanged(this);
+        }
+
+        private sealed class RemoveBindingDisposable : IDisposable
+        {
+            private readonly LinkedListNode<PriorityBindingEntry> _binding;
+            private readonly LinkedList<PriorityBindingEntry> _bindings;
+            private readonly PriorityLevel _priorityLevel;
+
+            public RemoveBindingDisposable(
+                LinkedListNode<PriorityBindingEntry> binding,
+                LinkedList<PriorityBindingEntry> bindings,
+                PriorityLevel priorityLevel)
+            {
+                _binding = binding;
+                _bindings = bindings;
+                _priorityLevel = priorityLevel;
+            }
+
+            public void Dispose()
+            {
+                PriorityBindingEntry entry = _binding.Value;
+
+                if (!entry.HasCompleted)
+                {
+                    _bindings.Remove(_binding);
+
+                    entry.Dispose();
+
+                    if (entry.Index >= _priorityLevel.ActiveBindingIndex)
+                    {
+                        _priorityLevel.ActivateFirstBinding();
+                    }
+                }
+            }
         }
     }
 }

@@ -52,6 +52,7 @@ struct AvnScreen
 {
     AvnRect Bounds;
     AvnRect WorkingArea;
+    float PixelDensity;
     bool Primary;
 };
 
@@ -187,7 +188,6 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT Close() = 0;
     virtual HRESULT Activate () = 0;
     virtual HRESULT GetClientSize(AvnSize*ret) = 0;
-    virtual HRESULT GetMaxClientSize(AvnSize* ret) = 0;
     virtual HRESULT GetScaling(double*ret)=0;
     virtual HRESULT SetMinMaxSize(AvnSize minSize, AvnSize maxSize) = 0;
     virtual HRESULT Resize(double width, double height) = 0;
@@ -280,7 +280,7 @@ AVNCOM(IAvnPlatformThreadingInterface, 0b) : IUnknown
     virtual bool GetCurrentThreadIsLoopThread() = 0;
     virtual void SetSignaledCallback(IAvnSignaledCallback* cb) = 0;
     virtual IAvnLoopCancellation* CreateLoopCancellation() = 0;
-    virtual void RunLoop(IAvnLoopCancellation* cancel) = 0;
+    virtual HRESULT RunLoop(IAvnLoopCancellation* cancel) = 0;
     // Can't pass int* to sharpgentools for some reason
     virtual void Signal(int priority) = 0;
     virtual IUnknown* StartTimer(int priority, int ms, IAvnActionCallback* callback) = 0;

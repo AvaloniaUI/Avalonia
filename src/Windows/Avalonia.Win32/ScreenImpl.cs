@@ -30,6 +30,8 @@ namespace Avalonia.Win32
                             MONITORINFO monitorInfo = MONITORINFO.Create();
                             if (GetMonitorInfo(monitor,ref monitorInfo))
                             {
+                                GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var x, out _);
+
                                 RECT bounds = monitorInfo.rcMonitor;
                                 RECT workingArea = monitorInfo.rcWork;
                                 PixelRect avaloniaBounds = new PixelRect(bounds.left, bounds.top, bounds.right - bounds.left,
@@ -38,7 +40,7 @@ namespace Avalonia.Win32
                                     new PixelRect(workingArea.left, workingArea.top, workingArea.right - workingArea.left,
                                         workingArea.bottom - workingArea.top);
                                 screens[index] =
-                                    new WinScreen(avaloniaBounds, avaloniaWorkArea, monitorInfo.dwFlags == 1,
+                                    new WinScreen((double)x / 96.0d, avaloniaBounds, avaloniaWorkArea, monitorInfo.dwFlags == 1,
                                         monitor);
                                 index++;
                             }

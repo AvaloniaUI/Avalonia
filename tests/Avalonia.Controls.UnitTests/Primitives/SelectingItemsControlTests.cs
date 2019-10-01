@@ -110,6 +110,28 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Setting_SelectedIndex_During_Initialize_Should_Select_Item_When_AlwaysSelected_Is_Used()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected
+            };
+
+            listBox.BeginInit();
+
+            listBox.SelectedIndex = 1;
+            var items = new AvaloniaList<string>();
+            listBox.Items = items;
+            items.Add("A");
+            items.Add("B");
+            items.Add("C");
+
+            listBox.EndInit();
+
+            Assert.Equal("B", listBox.SelectedItem);
+        }
+
+        [Fact]
         public void Setting_SelectedIndex_Before_ApplyTemplate_Should_Set_Item_IsSelected_True()
         {
             var items = new[]
@@ -892,6 +914,53 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(1, target.SelectedIndex);
             Assert.Equal("Qux", target.SelectedItem);
+        }
+
+        [Fact]
+        public void AutoScrollToSelectedItem_Causes_Scroll_To_SelectedItem()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var raised = false;
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
+
+            target.SelectedIndex = 2;
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void Can_Set_Both_SelectedItem_And_SelectedItems_During_Initialization()
+        {
+            // Issue #2969.
+            var target = new ListBox();
+            var selectedItems = new List<object>();
+
+            target.BeginInit();
+            target.Template = Template();
+            target.Items = new[] { "Foo", "Bar", "Baz" };
+            target.SelectedItems = selectedItems;
+            target.SelectedItem = "Bar";
+            target.EndInit();
+
+            Assert.Equal("Bar", target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Same(selectedItems, target.SelectedItems);
+            Assert.Equal(new[] { "Bar" }, selectedItems);
         }
 
         private FuncControlTemplate Template()

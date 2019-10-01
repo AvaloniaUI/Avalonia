@@ -42,6 +42,7 @@ namespace Avalonia.Controls
             new FuncTemplate<IPanel>(() => new StackPanel());
 
         private TreeView _treeView;
+        private IControl _header;
         private bool _isExpanded;
         private int _level;
 
@@ -53,6 +54,7 @@ namespace Avalonia.Controls
             SelectableMixin.Attach<TreeViewItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue<TreeViewItem>(true);
             ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);
+            RequestBringIntoViewEvent.AddClassHandler<TreeViewItem>(x => x.OnRequestBringIntoView);
         }
 
         /// <summary>
@@ -120,6 +122,21 @@ namespace Avalonia.Controls
             ItemContainerGenerator.Clear();
         }
 
+        protected virtual void OnRequestBringIntoView(RequestBringIntoViewEventArgs e)
+        {
+            if (e.TargetObject == this && _header != null)
+            {
+                var m = _header.TransformToVisual(this);
+
+                if (m.HasValue)
+                {
+                    var bounds = new Rect(_header.Bounds.Size);
+                    var rect = bounds.TransformToAABB(m.Value);
+                    e.TargetRect = rect;
+                }
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -144,6 +161,12 @@ namespace Avalonia.Controls
             }
 
             // Don't call base.OnKeyDown - let events bubble up to containing TreeView.
+        }
+
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        {
+            base.OnTemplateApplied(e);
+            _header = e.NameScope.Find<IControl>("PART_Header");
         }
 
         private static int CalculateDistanceFromLogicalParent<T>(ILogical logical, int @default = -1) where T : class

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Runtime.ExceptionServices;
 using Avalonia.Data;
 using Avalonia.Threading;
 
@@ -10,9 +11,9 @@ namespace Avalonia
     /// <summary>
     /// A registered binding in a <see cref="PriorityValue"/>.
     /// </summary>
-    internal class PriorityBindingEntry : IDisposable
+    internal class PriorityBindingEntry : IDisposable, IObserver<object>
     {
-        private PriorityLevel _owner;
+        private readonly PriorityLevel _owner;
         private IDisposable _subscription;
 
         /// <summary>
@@ -85,7 +86,7 @@ namespace Avalonia
                 Description = ((IDescription)binding).Description;
             }
 
-            _subscription = binding.Subscribe(ValueChanged, Completed);
+            _subscription = binding.Subscribe(this);
         }
 
         /// <summary>
@@ -96,43 +97,48 @@ namespace Avalonia
             _subscription?.Dispose();
         }
 
-        private void ValueChanged(object value)
+        void IObserver<object>.OnNext(object value)
         {
-            void Signal()
+            void Signal(PriorityBindingEntry instance, object newValue)
             {
-                var notification = value as BindingNotification;
+                var notification = newValue as BindingNotification;
 
                 if (notification != null)
                 {
                     if (notification.HasValue || notification.ErrorType == BindingErrorType.Error)
                     {
-                        Value = notification.Value;
-                        _owner.Changed(this);
+                        instance.Value = notification.Value;
+                        instance._owner.Changed(instance);
                     }
 
                     if (notification.ErrorType != BindingErrorType.None)
                     {
-                        _owner.Error(this, notification);
+                        instance._owner.Error(instance, notification);
                     }
                 }
                 else
                 {
-                    Value = value;
-                    _owner.Changed(this);
+                    instance.Value = newValue;
+                    instance._owner.Changed(instance);
                 }
             }
 
             if (Dispatcher.UIThread.CheckAccess())
             {
-                Signal();
+                Signal(this, value);
             }
             else
             {
-                Dispatcher.UIThread.Post(Signal);
+                // To avoid allocating closure in the outer scope we need to capture variables
+                // locally. This allows us to skip most of the allocations when on UI thread.
+                var instance = this;
+                var newValue = value;
+
+                Dispatcher.UIThread.Post(() => Signal(instance, newValue));
             }
         }
 
-        private void Completed()
+        void IObserver<object>.OnCompleted()
         {
             HasCompleted = true;
 
@@ -144,6 +150,11 @@ namespace Avalonia
             {
                 Dispatcher.UIThread.Post(() => _owner.Completed(this));
             }
+        }
+
+        void IObserver<object>.OnError(Exception error)
+        {
+            ExceptionDispatchInfo.Capture(error).Throw();
         }
     }
 }

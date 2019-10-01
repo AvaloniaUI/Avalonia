@@ -54,7 +54,6 @@ public:
     FORWARD_IUNKNOWN()
     virtual ~WindowBaseImpl()
     {
-        NSDebugLog(@"~WindowBaseImpl()");
         View = NULL;
         Window = NULL;
     }
@@ -157,22 +156,6 @@ public:
             auto frame = [View frame];
             ret->Width = frame.size.width;
             ret->Height = frame.size.height;
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT GetMaxClientSize(AvnSize* ret) override
-    {
-        @autoreleasepool
-        {
-            if(ret == nullptr)
-                return E_POINTER;
-            
-            auto size = [NSScreen.screens objectAtIndex:0].frame.size;
-            
-            ret->Height = size.height;
-            ret->Width = size.width;
-            
             return S_OK;
         }
     }
@@ -369,12 +352,9 @@ public:
 
     virtual void UpdateCursor()
     {
-        [View resetCursorRects];
         if (cursor != nil)
         {
-             auto rect = [Window frame];
-             [View addCursorRect:rect cursor:cursor];
-             [cursor set];
+            [cursor set];
         }
     }
     
@@ -416,8 +396,8 @@ private:
     INHERIT_INTERFACE_MAP(WindowBaseImpl)
     INTERFACE_MAP_ENTRY(IAvnWindow, IID_IAvnWindow)
     END_INTERFACE_MAP()
-    virtual ~WindowImpl(){
-        NSDebugLog(@"~WindowImpl");
+    virtual ~WindowImpl()
+    {
     }
     
     ComPtr<IAvnWindowEvents> WindowEvents;
@@ -425,6 +405,7 @@ private:
     {
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
+        [Window disableCursorRects];
     }
     
     virtual HRESULT Show () override
@@ -664,9 +645,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)dealloc
 {
-    NSDebugLog(@"AvnView dealloc");
 }
-
 
 - (void)onClosed
 {
@@ -1067,7 +1046,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)dealloc
 {
-    NSDebugLog(@"AvnWindow dealloc");
 }
 
 - (void)pollModalSession:(nonnull NSModalSession)session

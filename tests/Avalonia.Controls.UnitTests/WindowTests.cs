@@ -271,8 +271,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen()
         {
-            var screen1 = new Mock<Screen>(new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
-            var screen2 = new Mock<Screen>(new PixelRect(new PixelSize(1366, 768)), new PixelRect(new PixelSize(1366, 728)), false);
+            var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
+            var screen2 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1366, 768)), new PixelRect(new PixelSize(1366, 728)), false);
 
             var screens = new Mock<IScreenImpl>();
             screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object, screen2.Object });

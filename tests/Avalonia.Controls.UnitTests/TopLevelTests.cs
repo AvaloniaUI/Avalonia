@@ -202,8 +202,9 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Template = CreateTemplate();
                 target.Content = child;
+                target.ApplyTemplate();
 
-                Assert.Throws<InvalidOperationException>(() => target.ApplyTemplate());
+                Assert.Throws<InvalidOperationException>(() => target.Presenter.ApplyTemplate());
             }
         }
 
@@ -221,6 +222,24 @@ namespace Avalonia.Controls.UnitTests
                 Application.Current.Resources.Add("foo", "bar");
 
                 Assert.True(raised);
+            }
+        }
+
+        [Fact]
+        public void Close_Should_Notify_MouseDevice()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                var mouseDevice = new Mock<IMouseDevice>();
+                impl.SetupAllProperties();
+                impl.Setup(x => x.MouseDevice).Returns(mouseDevice.Object);
+
+                var target = new TestTopLevel(impl.Object);
+
+                impl.Object.Closed();
+
+                mouseDevice.Verify(x => x.TopLevelClosed(target));
             }
         }
 

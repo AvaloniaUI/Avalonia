@@ -10,8 +10,7 @@ namespace Avalonia.Win32
 {
     internal class WindowsMountedVolumeInfoListener : IDisposable
     {
-        private readonly CompositeDisposable _disposables;
-        private readonly ObservableCollection<MountedVolumeInfo> _targetObs = new ObservableCollection<MountedVolumeInfo>();
+        private readonly CompositeDisposable _disposables;        
         private bool _beenDisposed = false;
         private ObservableCollection<MountedVolumeInfo> mountedDrives;
 
@@ -33,22 +32,24 @@ namespace Avalonia.Win32
             var allDrives = DriveInfo.GetDrives();
 
             var mountVolInfos = allDrives
+                                .Where(p => p.IsReady)
                                 .Select(p => new MountedVolumeInfo()
                                 {
-                                    VolumeLabel = p.VolumeLabel,
+                                    VolumeLabel = string.IsNullOrEmpty(p.VolumeLabel.Trim()) ? p.RootDirectory.FullName 
+                                                                                             : $"{p.VolumeLabel} ({p.Name})",
                                     VolumePath = p.RootDirectory.FullName,
                                     VolumeSizeBytes = (ulong)p.TotalSize
                                 })
                                 .ToArray();
 
-            if (_targetObs.SequenceEqual(mountVolInfos))
+            if (mountedDrives.SequenceEqual(mountVolInfos))
                 return;
             else
             {
-                _targetObs.Clear();
+                mountedDrives.Clear();
 
                 foreach (var i in mountVolInfos)
-                    _targetObs.Add(i);
+                    mountedDrives.Add(i);
             }
         }
 

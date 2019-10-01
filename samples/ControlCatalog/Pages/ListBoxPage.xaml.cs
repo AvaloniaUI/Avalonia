@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -27,7 +28,7 @@ namespace ControlCatalog.Pages
 
             public PageViewModel()
             {
-                Items = new ObservableCollection<string>(Enumerable.Range(1, 10).Select(i => GenerateItem()));
+                Items = new ObservableCollection<string>(Enumerable.Range(1, 10000).Select(i => GenerateItem()));
                 SelectedItems = new ObservableCollection<string>();
 
                 AddItemCommand = ReactiveCommand.Create(() => Items.Add(GenerateItem()));
@@ -39,15 +40,33 @@ namespace ControlCatalog.Pages
                         Items.Remove(SelectedItems[0]);
                     }
                 });
+
+                SelectRandomItemCommand = ReactiveCommand.Create(() =>
+                {
+                    var random = new Random();
+
+                    SelectedItem = Items[random.Next(Items.Count - 1)];
+                });
             }
 
             public ObservableCollection<string> Items { get; }
+
+            private string _selectedItem;
+
+            public string SelectedItem
+            {
+                get { return _selectedItem; }
+                set { this.RaiseAndSetIfChanged(ref _selectedItem, value); }
+            }
+
 
             public ObservableCollection<string> SelectedItems { get; }
 
             public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
 
             public ReactiveCommand<Unit, Unit> RemoveItemCommand { get; }
+
+            public ReactiveCommand<Unit, Unit> SelectRandomItemCommand { get; }
 
             public SelectionMode SelectionMode
             {

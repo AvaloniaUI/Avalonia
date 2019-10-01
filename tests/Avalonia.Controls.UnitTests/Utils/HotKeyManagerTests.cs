@@ -24,8 +24,8 @@ namespace Avalonia.Controls.UnitTests.Utils
                     .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
                     .Bind<IStyler>().ToConstant(styler.Object);
 
-                var gesture1 = new KeyGesture {Key = Key.A, Modifiers = InputModifiers.Control};
-                var gesture2 = new KeyGesture {Key = Key.B, Modifiers = InputModifiers.Control};
+                var gesture1 = new KeyGesture(Key.A, InputModifiers.Control);
+                var gesture2 = new KeyGesture(Key.B, InputModifiers.Control);
 
                 var tl = new Window();
                 var button = new Button();
