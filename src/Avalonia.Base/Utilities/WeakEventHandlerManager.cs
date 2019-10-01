@@ -142,10 +142,12 @@ namespace Avalonia.Utilities
                     _data = ndata;
                 }
 
+                MethodInfo method = s.Method;
+
                 var subscriber = (TSubscriber)s.Target;
-                if (!s_Callers.TryGetValue(s.Method, out var caller))
-                    s_Callers[s.Method] = caller =
-                        (CallerDelegate)Delegate.CreateDelegate(typeof(CallerDelegate), null, s.Method);
+                if (!s_Callers.TryGetValue(method, out var caller))
+                    s_Callers[method] = caller =
+                        (CallerDelegate)Delegate.CreateDelegate(typeof(CallerDelegate), null, method);
                 _data[_count] = new Descriptor
                 {
                     Caller = caller,
