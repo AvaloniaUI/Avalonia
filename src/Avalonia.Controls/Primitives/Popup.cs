@@ -450,7 +450,14 @@ namespace Avalonia.Controls.Primitives
 
         private bool IsChildOrThis(IVisual child)
         {
-            return _popupHost != null && ((IVisual)_popupHost).FindCommonVisualAncestor(child) == _popupHost;
+            IVisual root = child.GetVisualRoot();
+            while (root is IHostedVisualTreeRoot hostedRoot )
+            {
+                if (root == this._popupHost)
+                    return true;
+                root = hostedRoot.Host?.GetVisualRoot();
+            }
+            return false;
         }
         
         public bool IsInsidePopup(IVisual visual)

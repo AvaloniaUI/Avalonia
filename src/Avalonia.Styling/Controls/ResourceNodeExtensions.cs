@@ -3,7 +3,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
-    public static class ResourceProviderExtensions
+    public static class ResourceNodeExtensions
     {
         /// <summary>
         /// Finds the specified resource by searching up the logical tree and then global styles.

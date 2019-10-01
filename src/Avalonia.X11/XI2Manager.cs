@@ -1,18 +1,32 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using static Avalonia.X11.XLib;
+
 namespace Avalonia.X11
 {
     unsafe class XI2Manager
     {
+        private static readonly XiEventType[] DefaultEventTypes = new XiEventType[]
+        {
+            XiEventType.XI_Motion,
+            XiEventType.XI_ButtonPress,
+            XiEventType.XI_ButtonRelease
+        };
+
+        private static readonly XiEventType[] MultiTouchEventTypes = new XiEventType[]
+        {
+            XiEventType.XI_TouchBegin,
+            XiEventType.XI_TouchUpdate,
+            XiEventType.XI_TouchEnd
+        };
+
         private X11Info _x11;
         private bool _multitouch;
         private Dictionary<IntPtr, IXI2Client> _clients = new Dictionary<IntPtr, IXI2Client>();
+
         class DeviceInfo
         {
             public int Id { get; }
@@ -125,20 +139,18 @@ namespace Avalonia.X11
         public XEventMask AddWindow(IntPtr xid, IXI2Client window)
         {
             _clients[xid] = window;
-            var events = new List<XiEventType>
-            {
-                XiEventType.XI_Motion,
-                XiEventType.XI_ButtonPress,
-                XiEventType.XI_ButtonRelease
-            };
+
+            var eventsLength = DefaultEventTypes.Length;
 
             if (_multitouch)
-                events.AddRange(new[]
-                {
-                    XiEventType.XI_TouchBegin,
-                    XiEventType.XI_TouchUpdate,
-                    XiEventType.XI_TouchEnd
-                });
+                eventsLength += MultiTouchEventTypes.Length;
+
+            var events = new List<XiEventType>(eventsLength);
+
+            events.AddRange(DefaultEventTypes);
+
+            if (_multitouch)
+                events.AddRange(MultiTouchEventTypes);
 
             XiSelectEvents(_x11.Display, xid,
                 new Dictionary<int, List<XiEventType>> {[_pointerDevice.Id] = events});
