@@ -242,12 +242,6 @@ namespace Avalonia.Media
             {
                 span = ReadSeparator(span);
                 AddLine(ref span, relative);
-
-                if (!relative)
-                {
-                    _currentPoint = currentPoint;
-                    CreateFigure();
-                }
             }
         }
 
