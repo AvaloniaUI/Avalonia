@@ -8,7 +8,8 @@
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml/PortableXaml/**/*.*proj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml/XamlIl/**/*.*proj" />
   </ItemGroup>
-  <ItemGroup Condition="!Exists('$(MSBuildExtensionsPath)\Xamarin\Android')">
+  <!--<ItemGroup Condition="!Exists('$(MSBuildExtensionsPath)\Xamarin\Android')">-->
+  <ItemGroup>
     <ProjectReference Remove="src/Android/**/*.*proj" />
     <ProjectReference Remove="samples/ControlCatalog.Android/ControlCatalog.Android.csproj" />
   </ItemGroup>

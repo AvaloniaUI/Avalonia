@@ -28,12 +28,11 @@ namespace VirtualizationDemo.ViewModels
         public MainWindowViewModel()
         {
             this.WhenAnyValue(x => x.ItemCount).Subscribe(ResizeItems);
+            RecreateCommand = ReactiveCommand.Create(() => Recreate());
 
-            RecreateCommand = ReactiveCommand.Create(Recreate);
+            AddItemCommand = ReactiveCommand.Create(() => AddItem());
 
-            AddItemCommand = ReactiveCommand.Create(AddItem);
-
-            RemoveItemCommand = ReactiveCommand.Create(Remove);
+            RemoveItemCommand = ReactiveCommand.Create(() => Remove());
 
             SelectFirstCommand = ReactiveCommand.Create(() => SelectItem(0));
 
