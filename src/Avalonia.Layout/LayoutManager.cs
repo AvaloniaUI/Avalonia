@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Threading;
 
@@ -69,15 +70,22 @@ namespace Avalonia.Layout
             {
                 _running = true;
 
-                Logger.Information(
-                    LogArea.Layout,
-                    this,
-                    "Started layout pass. To measure: {Measure} To arrange: {Arrange}",
-                    _toMeasure.Count,
-                    _toArrange.Count);
+                Stopwatch stopwatch = null;
 
-                var stopwatch = new System.Diagnostics.Stopwatch();
-                stopwatch.Start();
+                bool captureTiming = Logger.IsEnabled(LogEventLevel.Information);
+
+                if (captureTiming)
+                {
+                    Logger.Log(LogEventLevel.Information,
+                        LogArea.Layout,
+                        this,
+                        "Started layout pass. To measure: {Measure} To arrange: {Arrange}",
+                        _toMeasure.Count,
+                        _toArrange.Count);
+
+                    stopwatch = new Stopwatch();
+                    stopwatch.Start();
+                }
 
                 _toMeasure.BeginLoop(MaxPasses);
                 _toArrange.BeginLoop(MaxPasses);
@@ -103,8 +111,12 @@ namespace Avalonia.Layout
                 _toMeasure.EndLoop();
                 _toArrange.EndLoop();
 
-                stopwatch.Stop();
-                Logger.Information(LogArea.Layout, this, "Layout pass finished in {Time}", stopwatch.Elapsed);
+                if (captureTiming)
+                {
+                    stopwatch.Stop();
+
+                    Logger.Information(LogArea.Layout, this, "Layout pass finished in {Time}", stopwatch.Elapsed);
+                }
             }
 
             _queued = false;

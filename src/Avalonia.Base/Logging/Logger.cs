@@ -16,6 +16,96 @@ namespace Avalonia.Logging
         public static ILogSink Sink { get; set; }
 
         /// <summary>
+        /// Checks if given log level is enabled.
+        /// </summary>
+        /// <param name="level">The log event level.</param>
+        /// <returns><see langword="true"/> if given log level is enabled.</returns>
+        public static bool IsEnabled(LogEventLevel level)
+        {
+            return Sink?.IsEnabled(level) == true;
+        }
+
+        /// <summary>
+        /// Logs an event.
+        /// </summary>
+        /// <param name="level">The log event level.</param>
+        /// <param name="area">The area that the event originates.</param>
+        /// <param name="source">The object from which the event originates.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Log(
+            LogEventLevel level,
+            string area,
+            object source,
+            string messageTemplate)
+        {
+            Sink?.Log(level, area, source, messageTemplate);
+        }
+
+        /// <summary>
+        /// Logs an event.
+        /// </summary>
+        /// <param name="level">The log event level.</param>
+        /// <param name="area">The area that the event originates.</param>
+        /// <param name="source">The object from which the event originates.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValue0">Message property value.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Log<T0>(
+            LogEventLevel level,
+            string area,
+            object source,
+            string messageTemplate,
+            T0 propertyValue0)
+        {
+            Sink?.Log(level, area, source, messageTemplate, propertyValue0);
+        }
+
+        /// <summary>
+        /// Logs an event.
+        /// </summary>
+        /// <param name="level">The log event level.</param>
+        /// <param name="area">The area that the event originates.</param>
+        /// <param name="source">The object from which the event originates.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValue0">Message property value.</param>
+        /// <param name="propertyValue1">Message property value.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Log<T0, T1>(
+            LogEventLevel level,
+            string area,
+            object source,
+            string messageTemplate,
+            T0 propertyValue0,
+            T1 propertyValue1)
+        {
+            Sink?.Log(level, area, source, messageTemplate, propertyValue0, propertyValue1);
+        }
+
+        /// <summary>
+        /// Logs an event.
+        /// </summary>
+        /// <param name="level">The log event level.</param>
+        /// <param name="area">The area that the event originates.</param>
+        /// <param name="source">The object from which the event originates.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValue0">Message property value.</param>
+        /// <param name="propertyValue1">Message property value.</param>
+        /// <param name="propertyValue2">Message property value.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Log<T0, T1, T2>(
+            LogEventLevel level,
+            string area,
+            object source,
+            string messageTemplate,
+            T0 propertyValue0,
+            T1 propertyValue1,
+            T2 propertyValue2)
+        {
+            Sink?.Log(level, area, source, messageTemplate, propertyValue0, propertyValue1, propertyValue2);
+        }
+
+        /// <summary>
         /// Logs an event.
         /// </summary>
         /// <param name="level">The log event level.</param>

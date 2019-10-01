@@ -329,7 +329,7 @@ namespace Avalonia.Layout
                 DesiredSize = desiredSize;
                 _previousMeasure = availableSize;
 
-                Logger.Verbose(LogArea.Layout, this, "Measure requested {DesiredSize}", DesiredSize);
+                Logger.Log(LogEventLevel.Verbose, LogArea.Layout, this, "Measure requested {DesiredSize}", DesiredSize);
 
                 if (DesiredSize != previousDesiredSize)
                 {
@@ -356,7 +356,7 @@ namespace Avalonia.Layout
 
             if (!IsArrangeValid || _previousArrange != rect)
             {
-                Logger.Verbose(LogArea.Layout, this, "Arrange to {Rect} ", rect);
+                Logger.Log(LogEventLevel.Verbose, LogArea.Layout, this, "Arrange to {Rect} ", rect);
 
                 IsArrangeValid = true;
                 ArrangeCore(rect);
@@ -381,7 +381,7 @@ namespace Avalonia.Layout
         {
             if (IsMeasureValid)
             {
-                Logger.Verbose(LogArea.Layout, this, "Invalidated measure");
+                Logger.Log(LogEventLevel.Verbose, LogArea.Layout, this, "Invalidated measure");
 
                 IsMeasureValid = false;
                 IsArrangeValid = false;
@@ -402,7 +402,7 @@ namespace Avalonia.Layout
         {
             if (IsArrangeValid)
             {
-                Logger.Verbose(LogArea.Layout, this, "Invalidated arrange");
+                Logger.Log(LogEventLevel.Verbose, LogArea.Layout, this, "Invalidated arrange");
 
                 IsArrangeValid = false;
                 (VisualRoot as ILayoutRoot)?.LayoutManager?.InvalidateArrange(this);
