@@ -20,9 +20,9 @@ namespace Avalonia.ReactiveUI.UnitTests
 {
     public class AvaloniaActivationForViewFetcherTest
     {
-        public class TestUserControl : UserControl, IActivatable { }
+        public class TestUserControl : UserControl, IActivatableView { }
 
-        public class TestUserControlWithWhenActivated : UserControl, IActivatable
+        public class TestUserControlWithWhenActivated : UserControl, IActivatableView
         {
             public bool Active { get; private set; }
 
@@ -38,7 +38,7 @@ namespace Avalonia.ReactiveUI.UnitTests
             }
         }
 
-        public class TestWindowWithWhenActivated : Window, IActivatable
+        public class TestWindowWithWhenActivated : Window, IActivatableView
         {
             public bool Active { get; private set; }
 
@@ -54,7 +54,7 @@ namespace Avalonia.ReactiveUI.UnitTests
             }
         }
 
-        public class ActivatableViewModel : ISupportsActivation
+        public class ActivatableViewModel : IActivatableViewModel
         {
             public ViewModelActivator Activator { get; }
 
