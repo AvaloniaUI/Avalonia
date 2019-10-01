@@ -1,12 +1,5 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Avalonia.Controls.Platform;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Text.RegularExpressions;
+using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -21,11 +14,27 @@ namespace Avalonia.FreeDesktop
 
         public static string ReadLink(string path)
         {
-            var symlink = Encoding.UTF8.GetBytes(path);
-            var result = new byte[4095];
-            readlink(symlink, result, result.Length);
-            var rawstr = Encoding.UTF8.GetString(result);
-            return rawstr.Substring(0, rawstr.IndexOf('\0'));
+            var symlinkMaxSize = Encoding.ASCII.GetMaxByteCount(path.Length);
+            var bufferSize = 4097; // PATH_MAX is (usually?) 4096, but we need to know if the result was truncated
+
+            var symlink = ArrayPool<byte>.Shared.Rent(symlinkMaxSize + 1);
+            var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+
+            try
+            {
+                var symlinkSize = Encoding.UTF8.GetBytes(path, 0, path.Length, symlink, 0);
+                symlink[symlinkSize] = 0;
+
+                var size = readlink(symlink, buffer, bufferSize);
+                Debug.Assert(size < bufferSize); // if this fails, we need to increase the buffer size (dynamically?)
+
+                return Encoding.UTF8.GetString(buffer, 0, (int)size);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(symlink);
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
     }
 }
