@@ -18,26 +18,40 @@ namespace RenderDemo.Pages
         {
             InitializeComponent();
             this.DataContext = new AnimationsPageViewModel();
+            this._testControl = this.FindControl<Border>("TestControl");
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
         }
+        bool x;
+        private Border _testControl;
 
         private void ToggleClock(object sender, RoutedEventArgs args)
         {
             var button = sender as Button;
             var clock = button.Clock;
 
-            if (clock.PlayState == PlayState.Run)
+            if (x)
             {
-                clock.PlayState = PlayState.Pause;
+                _testControl.Classes.Add("Rect3");
             }
-            else if (clock.PlayState == PlayState.Pause)
+            else
             {
-                clock.PlayState = PlayState.Run;
+                _testControl.Classes.Remove("Rect3");
             }
+
+            x = !x;
+
+            // if (clock.PlayState == PlayState.Run)
+            // {
+            //     clock.PlayState = PlayState.Pause;
+            // }
+            // else if (clock.PlayState == PlayState.Pause)
+            // {
+            //     clock.PlayState = PlayState.Run;
+            // }
         }
     }
 }
