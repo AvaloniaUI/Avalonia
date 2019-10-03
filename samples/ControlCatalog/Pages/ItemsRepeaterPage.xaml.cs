@@ -74,7 +74,7 @@ namespace ControlCatalog.Pages
 
         private void RepeaterClick(object sender, PointerPressedEventArgs e)
         {
-            var item = (e.Source as TextBlock)?.DataContext as string;
+            var item = (e.Source as TextBlock)?.DataContext as ItemsRepeaterPageViewModel.Item;
             ((ItemsRepeaterPageViewModel)DataContext).SelectedItem = item;
         }
     }
