@@ -26,6 +26,36 @@ namespace Avalonia.Logging
         }
 
         /// <summary>
+        /// Returns parametrized logging sink if given log level is enabled.
+        /// </summary>
+        /// <param name="level">The log event level.</param>
+        /// <returns>Log sink or <see langword="null"/> if log level is not enabled.</returns>
+        public static ParametrizedLogger? TryGetLogger(LogEventLevel level)
+        {
+            if (!IsEnabled(level))
+            {
+                return null;
+            }
+
+            return new ParametrizedLogger(Sink, level);
+        }
+
+        /// <summary>
+        /// Returns parametrized logging sink if given log level is enabled.
+        /// </summary>
+        /// <param name="level">The log event level.</param>
+        /// <param name="outLogger">Log sink that is valid only if method returns <see langword="true"/>.</param>
+        /// <returns><see langword="true"/> if logger was obtained successfully.</returns>
+        public static bool TryGetLogger(LogEventLevel level, out ParametrizedLogger outLogger)
+        {
+            ParametrizedLogger? logger = TryGetLogger(level);
+
+            outLogger = logger.GetValueOrDefault();
+
+            return logger.HasValue;
+        }
+
+        /// <summary>
         /// Logs an event.
         /// </summary>
         /// <param name="level">The log event level.</param>

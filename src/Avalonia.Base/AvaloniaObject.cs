@@ -333,12 +333,11 @@ namespace Avalonia
                     throw new ArgumentException($"The property {property.Name} is readonly.");
                 }
 
-                if (Logger.IsEnabled(LogEventLevel.Verbose))
+                if (Logger.TryGetLogger(LogEventLevel.Verbose, out var logger))
                 {
                     var description = GetDescription(source);
 
-                    Logger.Log(
-                        LogEventLevel.Verbose,
+                    logger.Log(
                         LogArea.Property,
                         this,
                         "Bound {Property} to {Binding} with priority LocalValue",
@@ -355,12 +354,11 @@ namespace Avalonia
             }
             else
             {
-                if (Logger.IsEnabled(LogEventLevel.Verbose))
+                if (Logger.TryGetLogger(LogEventLevel.Verbose, out var logger))
                 {
                     var description = GetDescription(source);
 
-                    Logger.Log(
-                        LogEventLevel.Verbose,
+                    logger.Log(
                         LogArea.Property,
                         this,
                         "Bound {Property} to {Binding} with priority {Priority}",
@@ -416,18 +414,14 @@ namespace Avalonia
             {
                 RaisePropertyChanged(property, oldValue, newValue, (BindingPriority)priority);
 
-                if (Logger.IsEnabled(LogEventLevel.Verbose))
-                {
-                    Logger.Log(
-                        LogEventLevel.Verbose,
-                        LogArea.Property,
-                        this,
-                        "{Property} changed from {$Old} to {$Value} with priority {Priority}",
-                        property,
-                        oldValue,
-                        newValue,
-                        (BindingPriority)priority);
-                }
+                Logger.TryGetLogger(LogEventLevel.Verbose)?.Log(
+                    LogArea.Property,
+                    this,
+                    "{Property} changed from {$Old} to {$Value} with priority {Priority}",
+                    property,
+                    oldValue,
+                    newValue,
+                    (BindingPriority)priority);
             }
         }
         
@@ -826,19 +820,16 @@ namespace Avalonia
         /// <param name="priority">The priority.</param>
         private void LogPropertySet(AvaloniaProperty property, object value, BindingPriority priority)
         {
-            if (!Logger.IsEnabled(LogEventLevel.Verbose))
+            if (Logger.TryGetLogger(LogEventLevel.Verbose, out var logger))
             {
-                return;
+                logger.Log(
+                    LogArea.Property,
+                    this,
+                    "Set {Property} to {$Value} with priority {Priority}",
+                    property,
+                    value,
+                    priority);
             }
-
-            Logger.Log(
-                LogEventLevel.Verbose,
-                LogArea.Property,
-                this,
-                "Set {Property} to {$Value} with priority {Priority}",
-                property,
-                value,
-                priority);
         }
 
         private class DirectBindingSubscription : IObserver<object>, IDisposable
