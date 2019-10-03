@@ -646,9 +646,9 @@ namespace Avalonia.Win32
                         {
                             Input?.Invoke(new RawTouchEventArgs(_touchDevice, touchInput.Time,
                                 _owner,
-                                touchInput.Flags.HasFlag(TouchInputFlags.TOUCHEVENTF_UP) ?
+                                touchInput.Flags.HasFlagCustom(TouchInputFlags.TOUCHEVENTF_UP) ?
                                     RawPointerEventType.TouchEnd :
-                                    touchInput.Flags.HasFlag(TouchInputFlags.TOUCHEVENTF_DOWN) ?
+                                    touchInput.Flags.HasFlagCustom(TouchInputFlags.TOUCHEVENTF_DOWN) ?
                                         RawPointerEventType.TouchBegin :
                                         RawPointerEventType.TouchUpdate,
                                 PointToClient(new PixelPoint(touchInput.X / 100, touchInput.Y / 100)),
@@ -768,11 +768,11 @@ namespace Avalonia.Win32
         {
             var keys = (UnmanagedMethods.ModifierKeys)ToInt32(wParam);
             var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
-            if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_LBUTTON))
+            if (keys.HasFlagCustom(UnmanagedMethods.ModifierKeys.MK_LBUTTON))
                 modifiers |= RawInputModifiers.LeftMouseButton;
-            if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_RBUTTON))
+            if (keys.HasFlagCustom(UnmanagedMethods.ModifierKeys.MK_RBUTTON))
                 modifiers |= RawInputModifiers.RightMouseButton;
-            if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_MBUTTON))
+            if (keys.HasFlagCustom(UnmanagedMethods.ModifierKeys.MK_MBUTTON))
                 modifiers |= RawInputModifiers.MiddleMouseButton;
             return modifiers;
         }
@@ -782,7 +782,7 @@ namespace Avalonia.Win32
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.
             _wndProcDelegate = new UnmanagedMethods.WndProc(WndProc);
 
-            _className = "Avalonia-" + Guid.NewGuid();
+            _className = $"Avalonia-{Guid.NewGuid().ToString()}";
 
             UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
