@@ -19,7 +19,8 @@
                                Maximum="{TemplateBinding Maximum}"
                                Value="{TemplateBinding Value, Mode=TwoWay}"
                                ViewportSize="{TemplateBinding ViewportSize}"
-                               Orientation="{TemplateBinding Orientation}">
+                               Orientation="{TemplateBinding Orientation}"
+                               IsDirectionReversed="True">
                             <Track.DecreaseButton>
                                 <RepeatButton Name="PART_PageUpButton"
                                               Classes="repeattrack"
