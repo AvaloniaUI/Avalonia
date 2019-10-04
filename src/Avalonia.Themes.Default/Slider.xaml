@@ -46,7 +46,7 @@
             <ColumnDefinition Width="Auto"/>
           </Grid.ColumnDefinitions>
           <Border Name="TrackBackground" Grid.Column="1" Width="4" Margin="0,6" HorizontalAlignment="Center"/>
-          <Track Name="PART_Track" Grid.Column="1" Orientation="Vertical">
+          <Track Name="PART_Track" Grid.Column="1" Orientation="Vertical" IsDirectionReversed="True">
             <Track.DecreaseButton>
                <RepeatButton Name="PART_DecreaseButton"
                              Classes="repeattrack" />
