@@ -60,7 +60,7 @@ namespace Avalonia.Layout
 
         public void EndLoop()
         {
-            var notfinalized = _loopQueueInfo.Where(v => v.Value.Count == _maxEnqueueCountPerLoop).ToArray();
+            var notfinalized = _loopQueueInfo.Where(v => v.Value.Count >= _maxEnqueueCountPerLoop).ToArray();
 
             _loopQueueInfo.Clear();
 
