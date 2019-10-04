@@ -342,7 +342,7 @@ namespace Avalonia.Controls.Primitives
             // hide the track and don't arrange the pieces
             if (notEnoughContentToScroll || thumbLongerThanTrack)
             {
-                IsVisible = false;
+                ShowChildren(false);
                 ThumbCenterOffset = Double.NaN;
                 Density = Double.NaN;
                 decreaseButtonLength = 0.0;
@@ -351,7 +351,7 @@ namespace Avalonia.Controls.Primitives
             }
             else
             {
-                IsVisible = true;
+                ShowChildren(true);
             }
 
             // Compute lengths of increase and decrease button
@@ -412,6 +412,26 @@ namespace Avalonia.Controls.Primitives
                 Value + ValueFromDistance(e.Vector.X, e.Vector.Y),
                 Minimum,
                 Maximum);
+        }
+
+        private void ShowChildren(bool visible)
+        {
+            // WPF sets Visible = Hidden here but we don't have that, and setting IsVisible = false
+            // will cause us to stop being laid out. Instead show/hide the child controls.
+            if (Thumb != null)
+            {
+                Thumb.IsVisible = visible;
+            }
+
+            if (IncreaseButton != null)
+            {
+                IncreaseButton.IsVisible = visible;
+            }
+
+            if (DecreaseButton != null)
+            {
+                DecreaseButton.IsVisible = visible;
+            }
         }
     }
 }
