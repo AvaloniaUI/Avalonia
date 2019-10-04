@@ -3,10 +3,11 @@
 
 using System.Collections;
 using System.Collections.Specialized;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Presenters
 {
-    public interface IItemsPresenter : IPresenter
+    public interface IItemsPresenter : IPresenter, ILogical
     {
         IEnumerable Items { get; set; }
 

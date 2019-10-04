@@ -10,8 +10,23 @@
               HorizontalAlignment="Center"
               Spacing="16">
       <StackPanel Orientation="Vertical" Spacing="8">
-        <ListBox Items="{Binding Items}" SelectedItem="{Binding SelectedItem}" AutoScrollToSelectedItem="True"  SelectedItems="{Binding SelectedItems}" SelectionMode="{Binding SelectionMode}" Width="250" Height="350"></ListBox>
+        <ListBox Items="{Binding Items}"
+                 Layout="{Binding Layout}"
+                 SelectedItem="{Binding SelectedItem}"
+                 AutoScrollToSelectedItem="True"
+                 SelectedItems="{Binding SelectedItems}"
+                 SelectionMode="{Binding SelectionMode}"
+                 ScrollViewer.VerticalScrollBarVisibility="{Binding VerticalScroll}"
+                 ScrollViewer.HorizontalScrollBarVisibility="{Binding HorizontalScroll}"
+                 Width="250" Height="350"/>
 
+        <ComboBox SelectedIndex="{Binding LayoutType}">
+          <ComboBoxItem>Stack - Vertical</ComboBoxItem>
+          <ComboBoxItem>Stack - Horizontal</ComboBoxItem>
+          <ComboBoxItem>UniformGrid - Vertical</ComboBoxItem>
+          <ComboBoxItem>UniformGrid - Horizontal</ComboBoxItem>
+        </ComboBox>
+        
         <Button Command="{Binding AddItemCommand}">Add</Button>
 
         <Button Command="{Binding RemoveItemCommand}">Remove</Button>

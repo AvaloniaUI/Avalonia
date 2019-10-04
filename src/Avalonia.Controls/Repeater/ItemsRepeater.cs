@@ -21,7 +21,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="HorizontalCacheLength"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<double> HorizontalCacheLengthProperty =
+        public static readonly StyledProperty<double> HorizontalCacheLengthProperty =
             AvaloniaProperty.Register<ItemsRepeater, double>(nameof(HorizontalCacheLength), 2.0);
 
         /// <summary>
@@ -39,16 +39,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Layout"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<AttachedLayout> LayoutProperty =
+        public static readonly StyledProperty<AttachedLayout> LayoutProperty =
             AvaloniaProperty.Register<ItemsRepeater, AttachedLayout>(nameof(Layout), new StackLayout());
 
         /// <summary>
         /// Defines the <see cref="VerticalCacheLength"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<double> VerticalCacheLengthProperty =
+        public static readonly StyledProperty<double> VerticalCacheLengthProperty =
             AvaloniaProperty.Register<ItemsRepeater, double>(nameof(VerticalCacheLength), 2.0);
 
-        private static readonly AttachedProperty<VirtualizationInfo> VirtualizationInfoProperty =
+        private static readonly StyledProperty<VirtualizationInfo> VirtualizationInfoProperty =
             AvaloniaProperty.RegisterAttached<ItemsRepeater, IControl, VirtualizationInfo>("VirtualizationInfo");
 
         internal static readonly Rect InvalidRect = new Rect(-1, -1, -1, -1);
@@ -60,9 +60,9 @@ namespace Avalonia.Controls
         private VirtualizingLayoutContext _layoutContext;
         private NotifyCollectionChangedEventArgs _processingItemsSourceChange;
         private bool _isLayoutInProgress;
-        private ItemsRepeaterElementPreparedEventArgs _elementPreparedArgs;
-        private ItemsRepeaterElementClearingEventArgs _elementClearingArgs;
-        private ItemsRepeaterElementIndexChangedEventArgs _elementIndexChangedArgs;
+        private ElementPreparedEventArgs _elementPreparedArgs;
+        private ElementClearingEventArgs _elementClearingArgs;
+        private ElementIndexChangedEventArgs _elementIndexChangedArgs;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsRepeater"/> class.
@@ -167,7 +167,7 @@ namespace Avalonia.Controls
         /// outside the range of realized items. Elements are cleared when they become available
         /// for re-use.
         /// </remarks>
-        public event EventHandler<ItemsRepeaterElementClearingEventArgs> ElementClearing;
+        public event EventHandler<ElementClearingEventArgs> ElementClearing;
 
         /// <summary>
         /// Occurs for each realized <see cref="IControl"/> when the index for the item it
@@ -182,7 +182,7 @@ namespace Avalonia.Controls
         /// represents has changed. For example, when another item is added or removed in the data
         /// source, the index for items that come after in the ordering will be impacted.
         /// </remarks>
-        public event EventHandler<ItemsRepeaterElementIndexChangedEventArgs> ElementIndexChanged;
+        public event EventHandler<ElementIndexChangedEventArgs> ElementIndexChanged;
 
         /// <summary>
         /// Occurs each time an element is prepared for use.
@@ -191,7 +191,7 @@ namespace Avalonia.Controls
         /// The prepared element might be newly created or an existing element that is being re-
         /// used.
         /// </remarks>
-        public event EventHandler<ItemsRepeaterElementPreparedEventArgs> ElementPrepared;
+        public event EventHandler<ElementPreparedEventArgs> ElementPrepared;
 
         /// <summary>
         /// Retrieves the index of the item from the data source that corresponds to the specified
@@ -207,8 +207,8 @@ namespace Avalonia.Controls
         public int GetElementIndex(IControl element) => GetElementIndexImpl(element);
 
         /// <summary>
-        /// Retrieves the realized UIElement that corresponds to the item at the specified index in
-        /// the data source.
+        /// Retrieves the realized <see cref="IControl"/> that corresponds to the item at the
+        /// specified index in the data source.
         /// </summary>
         /// <param name="index">The index of the item.</param>
         /// <returns>
@@ -435,7 +435,7 @@ namespace Avalonia.Controls
         private int GetElementIndexImpl(IControl element)
         {
             var virtInfo = TryGetVirtualizationInfo(element);
-            return _viewManager.GetElementIndex(virtInfo);
+            return virtInfo != null ? _viewManager.GetElementIndex(virtInfo) : -1;
         }
 
         private IControl GetElementFromIndexImpl(int index)
@@ -495,7 +495,7 @@ namespace Avalonia.Controls
             {
                 if (_elementPreparedArgs == null)
                 {
-                    _elementPreparedArgs = new ItemsRepeaterElementPreparedEventArgs(element, index);
+                    _elementPreparedArgs = new ElementPreparedEventArgs(element, index);
                 }
                 else
                 {
@@ -512,7 +512,7 @@ namespace Avalonia.Controls
             {
                 if (_elementClearingArgs == null)
                 {
-                    _elementClearingArgs = new ItemsRepeaterElementClearingEventArgs(element);
+                    _elementClearingArgs = new ElementClearingEventArgs(element);
                 }
                 else
                 {
@@ -529,7 +529,7 @@ namespace Avalonia.Controls
             {
                 if (_elementIndexChangedArgs == null)
                 {
-                    _elementIndexChangedArgs = new ItemsRepeaterElementIndexChangedEventArgs(element, oldIndex, newIndex);
+                    _elementIndexChangedArgs = new ElementIndexChangedEventArgs(element, oldIndex, newIndex);
                 }
                 else
                 {

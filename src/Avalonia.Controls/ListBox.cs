@@ -105,6 +105,11 @@ namespace Avalonia.Controls
         /// </summary>
         public new void UnselectAll() => base.UnselectAll();
 
+        protected override IControl CreateContainer(object data)
+        {
+            return DefaultCreateContainer<ListBoxItem>(data);
+        }
+
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {

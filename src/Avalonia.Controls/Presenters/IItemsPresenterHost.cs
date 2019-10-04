@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.LogicalTree;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.Presenters
@@ -16,8 +17,15 @@ namespace Avalonia.Controls.Presenters
     /// parent control's template is instantiated so they register themselves using this 
     /// interface.
     /// </remarks>
-    public interface IItemsPresenterHost : ITemplatedControl
+    public interface IItemsPresenterHost : ITemplatedControl, ILogical
     {
+        /// <summary>
+        /// Creates the container which will display an item in the presenter.
+        /// </summary>
+        /// <param name="data">The item.</param>
+        /// <returns>The container control.</returns>
+        IControl CreateContainer(object data);
+
         /// <summary>
         /// Registers an <see cref="IItemsPresenter"/> with a host control.
         /// </summary>

@@ -6,11 +6,12 @@
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Provides data for the <see cref="ItemsRepeater.ElementPrepared"/> event.
+    /// Provides data for the <see cref="ItemsControl.ContainerPrepared"/> and 
+    /// <see cref="ItemsRepeater.ElementPrepared"/> events.
     /// </summary>
-    public class ItemsRepeaterElementPreparedEventArgs
+    public class ElementPreparedEventArgs
     {
-        internal ItemsRepeaterElementPreparedEventArgs(IControl element, int index)
+        public ElementPreparedEventArgs(IControl element, int index)
         {
             Element = element;
             Index = index;

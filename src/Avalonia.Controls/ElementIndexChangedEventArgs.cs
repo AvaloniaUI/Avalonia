@@ -10,9 +10,9 @@ namespace Avalonia.Controls
     /// <summary>
     /// Provides data for the <see cref="ItemsRepeater.ElementIndexChanged"/> event.
     /// </summary>
-    public class ItemsRepeaterElementIndexChangedEventArgs : EventArgs
+    public class ElementIndexChangedEventArgs : EventArgs
     {
-        internal ItemsRepeaterElementIndexChangedEventArgs(IControl element, int newIndex, int oldIndex)
+        public ElementIndexChangedEventArgs(IControl element, int newIndex, int oldIndex)
         {
             Element = element;
             NewIndex = newIndex;

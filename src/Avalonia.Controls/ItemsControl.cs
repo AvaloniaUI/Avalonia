@@ -11,7 +11,9 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
@@ -52,6 +54,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
             AvaloniaProperty.Register<ItemsControl, IDataTemplate>(nameof(ItemTemplate));
+
+        /// <summary>
+        /// Defines the <see cref="Layout"/> property.
+        /// </summary>
+        public static readonly AvaloniaProperty<AttachedLayout> LayoutProperty =
+            ItemsRepeater.LayoutProperty.AddOwner<ItemsControl>();
 
         private IEnumerable _items = new AvaloniaList<object>();
         private int _itemCount;
@@ -138,6 +146,19 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the layout used to size and position elements in the <see cref="ItemsControl"/>.
+        /// </summary>
+        /// <value>
+        /// The layout used to size and position elements. The default is a <see cref="StackLayout"/> with
+        /// vertical orientation.
+        /// </value>
+        public AttachedLayout Layout
+        {
+            get => GetValue(LayoutProperty);
+            set => SetValue(LayoutProperty, value);
+        }
+
+        /// <summary>
         /// Gets the items presenter control.
         /// </summary>
         public IItemsPresenter Presenter
@@ -146,11 +167,34 @@ namespace Avalonia.Controls
             protected set;
         }
 
+        /// <summary>
+        /// Occurs each time a container is cleared and made available to be re-used.
+        /// </summary>
+        /// <remarks>
+        /// This event is raised immediately each time a a container is cleared, such as when it
+        /// falls outside the range of realized items. Elements are cleared when they become
+        /// available for re-use.
+        /// </remarks>
+        public event EventHandler<ElementClearingEventArgs> ContainerClearing;
+
+        /// <summary>
+        /// Occurs each time a container is prepared for use.
+        /// </summary>
+        /// <remarks>
+        /// The prepared container might be newly created or an existing element that is being re-
+        /// used.
+        /// </remarks>
+        public event EventHandler<ElementPreparedEventArgs> ContainerPrepared;
+
+        /// <inheritdoc/>
+        IControl IItemsPresenterHost.CreateContainer(object data) => CreateContainer(data);
+
         /// <inheritdoc/>
         void IItemsPresenterHost.RegisterItemsPresenter(IItemsPresenter presenter)
         {
+            var oldValue = Presenter;
             Presenter = presenter;
-            ItemContainerGenerator.Clear();
+            ItemsPresenterChanged(oldValue as IItemsRepeaterPresenter, presenter as IItemsRepeaterPresenter);
         }
 
         /// <summary>
@@ -207,6 +251,63 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Creates the container which will display an item in the control.
+        /// </summary>
+        /// <param name="data">The item.</param>
+        /// <returns>The container control.</returns>
+        /// <remarks>
+        /// By default this method creates a <see cref="ContentPresenter"/> for non-control items
+        /// and returns the control itself for control items.
+        /// 
+        /// This method can be overridden to create a specific container type for items. The easiest
+        /// way to do that is to call <see cref="DefaultCreateContainer{T}(object)"/> with
+        /// the desired container type.
+        /// </remarks>
+        protected virtual IControl CreateContainer(object data)
+        {
+            if (data is IControl control)
+            {
+                return control;
+            }
+            else
+            {
+                var result = new ContentPresenter();
+                result.Bind(
+                    ContentPresenter.ContentProperty,
+                    result.GetObservable(DataContextProperty));
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ContentControl"/>-derived container for an item.
+        /// </summary>
+        /// <typeparam name="T">The type of the container control to create.</typeparam>
+        /// <param name="data">The item.</param>
+        /// <returns>The created container control.</returns>
+        protected T DefaultCreateContainer<T>(object data)
+            where T : ContentControl, new()
+        {
+            if (data is T t)
+            {
+                return t;
+            }
+            else
+            {
+                var result = new T();
+                result.Bind(
+                    ContentPresenter.ContentProperty,
+                    result.GetObservable(ContentPresenter.DataContextProperty),
+                    BindingPriority.TemplatedParent);
+                result.SetValue(
+                    ContentPresenter.ContentTemplateProperty,
+                    ItemTemplate,
+                    BindingPriority.TemplatedParent);
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Creates the <see cref="ItemContainerGenerator"/> for the control.
         /// </summary>
         /// <returns>
@@ -221,6 +322,30 @@ namespace Avalonia.Controls
         protected virtual IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator(this);
+        }
+
+        /// <summary>
+        /// Raises the <see cref="ContainerPrepared"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// If you override this method, be sure to call the base method implementation.
+        /// </remarks>
+        protected virtual void OnContainerPrepared(ElementPreparedEventArgs e)
+        {
+            ContainerPrepared?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// Raises the <see cref="ContainerClearing"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// If you override this method, be sure to call the base method implementation.
+        /// </remarks>
+        protected virtual void OnContainerClearing(ElementClearingEventArgs e)
+        {
+            ContainerClearing?.Invoke(this, e);
         }
 
         /// <summary>
@@ -399,6 +524,27 @@ namespace Avalonia.Controls
             PseudoClasses.Set(":singleitem", collection != null && collection.Count == 1);
         }
 
+        protected virtual void ItemsPresenterChanged(IItemsRepeaterPresenter oldValue, IItemsRepeaterPresenter newValue)
+        {
+            if (oldValue != null)
+            {
+                oldValue.LogicalChildren.CollectionChanged -= PresenterLogicalChildrenChanged;
+                oldValue.ElementPrepared -= PresenterElementPrepared;
+                oldValue.ElementClearing -= PresenterElementClearing;
+                LogicalChildren.Clear();
+            }
+
+            if (newValue != null)
+            {
+                newValue.LogicalChildren.CollectionChanged += PresenterLogicalChildrenChanged;
+                newValue.ElementPrepared += PresenterElementPrepared;
+                newValue.ElementClearing += PresenterElementClearing;
+                LogicalChildren.AddRange(newValue.LogicalChildren);
+            }
+
+            ItemContainerGenerator.Clear();
+        }
+
         /// <summary>
         /// Given a collection of items, adds those that are controls to the logical children.
         /// </summary>
@@ -475,6 +621,53 @@ namespace Avalonia.Controls
                 _itemContainerGenerator.ItemTemplate = (IDataTemplate)e.NewValue;
                 // TODO: Rebuild the item containers.
             }
+        }
+
+        private void PresenterLogicalChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            void Add(IList items)
+            {
+                foreach (ILogical l in items)
+                {
+                    LogicalChildren.Add(l);
+                }
+            }
+
+            void Remove(IList items)
+            {
+                foreach (ILogical l in items)
+                {
+                    LogicalChildren.Remove(l);
+                }
+            }
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    Add(e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    Remove(e.OldItems);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    Remove(e.OldItems);
+                    Add(e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    LogicalChildren.Clear();
+                    LogicalChildren.AddRange(Presenter.LogicalChildren);
+                    break;
+            }
+        }
+
+        private void PresenterElementPrepared(object sender, ElementPreparedEventArgs e)
+        {
+            OnContainerPrepared(e);
+        }
+
+        private void PresenterElementClearing(object sender, ElementClearingEventArgs e)
+        {
+            OnContainerClearing(e);
         }
 
         private void UpdateItemCount()

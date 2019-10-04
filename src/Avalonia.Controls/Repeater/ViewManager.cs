@@ -537,8 +537,12 @@ namespace Avalonia.Controls
                 virtInfo = ItemsRepeater.CreateAndInitializeVirtualizationInfo(element);
             }
 
-            // Prepare the element
-            element.DataContext = data;
+            // Prepare the element. Here our logic deviates a little from WinUI: if the data is
+            // a control then it should inherit the DataContext from the containing control.
+            if (!(data is IControl))
+            {
+                element.DataContext = data;
+            }
 
             virtInfo.MoveOwnershipToLayoutFromElementFactory(
                 index,

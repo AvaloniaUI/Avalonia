@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Presenters;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -272,8 +273,9 @@ namespace Avalonia.Controls.Primitives
 
             while (parent != null)
             {
-                if (parent is IControl control && control.LogicalParent == this
-                                               && ItemContainerGenerator?.IndexFromContainer(control) != -1)
+                if (parent is IControl control &&
+                    control.LogicalParent == this &&
+                    IndexFromContainer(control) != -1)
                 {
                     return control;
                 }
@@ -362,6 +364,13 @@ namespace Avalonia.Controls.Primitives
                     }
                     break;
             }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnContainerPrepared(ElementPreparedEventArgs e)
+        {
+            base.OnContainerPrepared(e);
+            MarkContainerSelected(e.Element, _selection.Contains(e.Index));
         }
 
         /// <inheritdoc/>
@@ -479,7 +488,7 @@ namespace Avalonia.Controls.Primitives
         /// <returns>True if the selection was moved; otherwise false.</returns>
         protected bool MoveSelection(NavigationDirection direction, bool wrap)
         {
-            var from = SelectedIndex != -1 ? ItemContainerGenerator.ContainerFromIndex(SelectedIndex) : null;
+            var from = SelectedIndex != -1 ? ContainerFromIndex(SelectedIndex) : null;
             return MoveSelection(from, direction, wrap);
         }
 
@@ -495,7 +504,7 @@ namespace Avalonia.Controls.Primitives
             if (Presenter?.Panel is INavigableContainer container &&
                 GetNextControl(container, direction, from, wrap) is IControl next)
             {
-                var index = ItemContainerGenerator.IndexFromContainer(next);
+                var index = IndexFromContainer(next);
 
                 if (index != -1)
                 {
@@ -632,7 +641,7 @@ namespace Avalonia.Controls.Primitives
 
                     if (Presenter?.Panel != null)
                     {
-                        var container = ItemContainerGenerator.ContainerFromIndex(index);
+                        var container = ContainerFromIndex(index);
                         KeyboardNavigation.SetTabOnceActiveElement(
                             (InputElement)Presenter.Panel,
                             container);
@@ -660,7 +669,7 @@ namespace Avalonia.Controls.Primitives
             bool toggleModifier = false,
             bool rightButton = false)
         {
-            var index = ItemContainerGenerator?.IndexFromContainer(container) ?? -1;
+            var index = IndexFromContainer(container);
 
             if (index != -1)
             {
@@ -700,28 +709,6 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets a range of items from an IEnumerable.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <param name="first">The index of the first item.</param>
-        /// <param name="last">The index of the last item.</param>
-        /// <returns>The items.</returns>
-        private static List<object> GetRange(IEnumerable items, int first, int last)
-        {
-            var list = (items as IList) ?? items.Cast<object>().ToList();
-            var step = first > last ? -1 : 1;
-            var result = new List<object>();
-
-            for (int i = first; i != last; i += step)
-            {
-                result.Add(list[i]);
-            }
-
-            result.Add(list[last]);
-            return result;
-        }
-
-        /// <summary>
         /// Called when a container raises the <see cref="IsSelectedChangedEvent"/>.
         /// </summary>
         /// <param name="e">The event.</param>
@@ -735,7 +722,7 @@ namespace Avalonia.Controls.Primitives
                 if (control != null &&
                     selectable != null &&
                     control.LogicalParent == this &&
-                    ItemContainerGenerator?.IndexFromContainer(control) != -1)
+                    IndexFromContainer(control) != -1)
                 {
                     UpdateSelection(control, selectable.IsSelected);
                 }
@@ -745,6 +732,26 @@ namespace Avalonia.Controls.Primitives
             {
                 e.Handled = true;
             }
+        }
+
+        private IControl ContainerFromIndex(int index)
+        {
+            if (Presenter is IItemsRepeaterPresenter presenter)
+            {
+                return presenter.TryGetElement(index);
+            }
+
+            return ItemContainerGenerator?.ContainerFromIndex(index);
+        }
+
+        private int IndexFromContainer(IControl container)
+        {
+            if (Presenter is IItemsRepeaterPresenter presenter)
+            {
+                return presenter.GetElementIndex(container);
+            }
+
+            return ItemContainerGenerator?.IndexFromContainer(container) ?? -1;
         }
 
         /// <summary>
@@ -805,7 +812,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="selected">Whether the item should be selected or deselected.</param>
         private void MarkItemSelected(int index, bool selected)
         {
-            var container = ItemContainerGenerator?.ContainerFromIndex(index);
+            var container = ContainerFromIndex(index);
 
             if (container != null)
             {

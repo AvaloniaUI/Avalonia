@@ -8,11 +8,12 @@ using System;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Provides data for the <see cref="ItemsRepeater.ElementClearing"/> event.
+    /// Provides data for the <see cref="ItemsControl.ContainerClearing"/> and 
+    /// <see cref="ItemsRepeater.ElementClearing"/> events.
     /// </summary>
-    public class ItemsRepeaterElementClearingEventArgs : EventArgs
+    public class ElementClearingEventArgs : EventArgs
     {
-        internal ItemsRepeaterElementClearingEventArgs(IControl element) => Element = element;
+        public ElementClearingEventArgs(IControl element) => Element = element;
 
         /// <summary>
         /// Gets the element that is being cleared for re-use.

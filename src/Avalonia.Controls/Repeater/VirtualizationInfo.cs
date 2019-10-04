@@ -113,6 +113,20 @@ namespace Avalonia.Controls
             return --_pinCounter;
         }
 
+        /// <summary>
+        /// Prevent recycling on an element.
+        /// </summary>
+        /// <remarks>
+        /// This functionality is not present in WinUI: it's needed when using ItemsRepeater as an
+        /// ItemsPresenter.
+        /// 
+        /// Take the case of a ListBoxItem appearing in a ListBox.Items collection: in this case,
+        /// the ListBox simply uses the item as the container. However, because the state on this
+        /// ListBoxItem is set manually there's no easy way to know what that state is, and
+        /// therefore the item can't take part in virtualization.
+        /// </remarks>
+        public void PreventRecycle() => ++_pinCounter;
+
         public void UpdateIndex(int newIndex) => Index = newIndex;
     }
 }
