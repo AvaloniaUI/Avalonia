@@ -15,7 +15,7 @@ namespace RenderDemo.Pages
 
         public XDataGridHeaderCell()
         {
-            this.TemplateApplied += TemplateAppliedCore;
+            TemplateApplied += TemplateAppliedCore;
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -35,28 +35,27 @@ namespace RenderDemo.Pages
         private void TemplateAppliedCore(object sender, TemplateAppliedEventArgs e)
         {
 
-            this._contentControl = e.NameScope.Find<ContentControl>("PART_ContentControl");
+            _contentControl = e.NameScope.Find<ContentControl>("PART_ContentControl");
 
-            this._rightThumbResizer = e.NameScope.Find<Thumb>("PART_RightThumbResizer");
+            _rightThumbResizer = e.NameScope.Find<Thumb>("PART_RightThumbResizer");
 
             var content = (Content as XDataGridHeaderDescriptor);
             content.HeaderWidth = _contentControl.Bounds.Width;
 
 
             if (_rightThumbResizer == null) return;
-            this._rightThumbResizer.DragDelta += ResizerDragDelta;
-            this._rightThumbResizer.DragStarted += ResizerDragStarted;
-            this._rightThumbResizer.Cursor = new Cursor(StandardCursorType.SizeWestEast);
+            _rightThumbResizer.DragDelta += ResizerDragDelta;
+            _rightThumbResizer.DragStarted += ResizerDragStarted;
+            _rightThumbResizer.Cursor = new Cursor(StandardCursorType.SizeWestEast);
 
 
         }
 
         private void ResizerDragStarted(object sender, VectorEventArgs e)
         {
-            if (Double.IsNaN(_contentControl.Width))
-            {
-                _contentControl.Width = _contentControl.Bounds.Width;
-            }
+            if (!Double.IsNaN(_contentControl.Width)) return;
+
+            _contentControl.Width = _contentControl.Bounds.Width;
         }
 
         private void ResizerDragDelta(object sender, VectorEventArgs e)

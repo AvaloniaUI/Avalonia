@@ -89,7 +89,7 @@ namespace RenderDemo.Pages
             _disposables?.Dispose();
             _disposables = new CompositeDisposable();
 
-            this.Children.Clear();
+            Children.Clear();
 
 
             for (int i = 0; i < obj.Count; i++)
@@ -98,17 +98,11 @@ namespace RenderDemo.Pages
 
                 headerDesc.PropertyChanged += HeaderDescriptorsChanged;
 
-                var cell = new XDataGridCell();
+                var cell = new XDataGridCell
+                {
+                    TargetProperty = headerDesc.PropertyName
+                };
 
-                // var newBind = new Binding(headerDesc.PropertyName);
-
-                // cell.RowData = this.DataContext;
-
-                // cell.Bind(XDataGridCell.CellValueProperty, newBind);
-
-                // cell.ColumnTarget = (headerDesc.PropertyName);
-
-                cell.TargetProperty = headerDesc.PropertyName;
                 cell.Classes.Add(headerDesc.PropertyName);
 
                 if (i + 1 == obj.Count)
@@ -117,7 +111,7 @@ namespace RenderDemo.Pages
                 }
 
                 _curCells.Add(cell);
-                this.Children.Add(cell);
+                Children.Add(cell);
             }
         }
     }

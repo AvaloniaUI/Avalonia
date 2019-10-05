@@ -46,25 +46,23 @@ namespace RenderDemo.Pages
             _disposables?.Dispose();
             _disposables = new CompositeDisposable();
 
-            this.Children.Clear();
-
-            // var actualColIndex = 0;
+            Children.Clear();
 
             for (int i = 0; i < obj.Count; i++)
             {
                 var headerDesc = obj[i];
 
-                var boundCellContent = new XDataGridHeaderCell();
-
-                boundCellContent.Content = headerDesc;
-
+                var boundCellContent = new XDataGridHeaderCell
+                {
+                    Content = headerDesc
+                };
 
                 if (i + 1 == obj.Count)
                 {
                     boundCellContent.Classes.Add("LastColumn");
                 }
 
-                this.Children.Add(boundCellContent);
+                Children.Add(boundCellContent);
             }
         }
     }
