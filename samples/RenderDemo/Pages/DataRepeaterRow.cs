@@ -11,17 +11,17 @@ using System.Reactive.Linq;
 
 namespace RenderDemo.Pages
 {
-    public class XDataGridRow : XDataGridDockPanel
+    public class DataRepeaterRow : DataRepeaterDockPanel
     {
-        internal static readonly DirectProperty<XDataGridRow, XDataGridHeaderDescriptors> HeaderDescriptorsProperty =
-            AvaloniaProperty.RegisterDirect<XDataGridRow, XDataGridHeaderDescriptors>(
+        internal static readonly DirectProperty<DataRepeaterRow, DataRepeaterHeaderDescriptors> HeaderDescriptorsProperty =
+            AvaloniaProperty.RegisterDirect<DataRepeaterRow, DataRepeaterHeaderDescriptors>(
                 nameof(HeaderDescriptors),
                 o => o.HeaderDescriptors,
                 (o, v) => o.HeaderDescriptors = v);
 
-        private XDataGridHeaderDescriptors _headerDescriptors;
+        private DataRepeaterHeaderDescriptors _headerDescriptors;
 
-        internal XDataGridHeaderDescriptors HeaderDescriptors
+        internal DataRepeaterHeaderDescriptors HeaderDescriptors
         {
             get => _headerDescriptors;
             set
@@ -30,7 +30,7 @@ namespace RenderDemo.Pages
             }
         }
 
-        public XDataGridRow()
+        public DataRepeaterRow()
         {
             this.WhenAnyValue(x => x.HeaderDescriptors)
                 .DistinctUntilChanged()
@@ -52,7 +52,7 @@ namespace RenderDemo.Pages
 
         private void HeaderDescriptorsChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(XDataGridHeaderDescriptor.HeaderWidth))
+            if (e.PropertyName == nameof(DataRepeaterHeaderDescriptor.HeaderWidth))
             {
                 RefreshRowWidths();
             }
@@ -70,7 +70,7 @@ namespace RenderDemo.Pages
                 if (target.Classes.Contains("LastColumn"))
                     continue;
 
-                if (target._cellContent is XDataGridCellContent cell)
+                if (target._cellContent is DataRepeaterCellContent cell)
                 {
                     if (cell.Width != desc.HeaderWidth)
                         cell.Width = desc.HeaderWidth;
@@ -80,9 +80,9 @@ namespace RenderDemo.Pages
 
         CompositeDisposable _disposables;
 
-        List<XDataGridCell> _curCells = new List<XDataGridCell>();
+        List<DataRepeaterCell> _curCells = new List<DataRepeaterCell>();
 
-        private void DescriptorsChanged(XDataGridHeaderDescriptors obj)
+        private void DescriptorsChanged(DataRepeaterHeaderDescriptors obj)
         {
             if (obj == null) return;
 
@@ -98,7 +98,7 @@ namespace RenderDemo.Pages
 
                 headerDesc.PropertyChanged += HeaderDescriptorsChanged;
 
-                var cell = new XDataGridCell
+                var cell = new DataRepeaterCell
                 {
                     TargetProperty = headerDesc.PropertyName
                 };

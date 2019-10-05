@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace RenderDemo.Pages
 {
-    public class XDataGridHeaderDescriptor : ReactiveObject
+    public class DataRepeaterHeaderDescriptor : ReactiveObject
     {
         string headerText;
         public string HeaderText

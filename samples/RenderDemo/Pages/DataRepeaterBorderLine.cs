@@ -5,10 +5,10 @@ using Avalonia.Media;
 
 namespace RenderDemo.Pages
 {
-    public class XDataGridBorderLine : Shape
+    public class DataRepeaterBorderLine : Shape
     {
-        public static readonly DirectProperty<XDataGridBorderLine, Orientation> OrientationProperty =
-            AvaloniaProperty.RegisterDirect<XDataGridBorderLine, Orientation>(
+        public static readonly DirectProperty<DataRepeaterBorderLine, Orientation> OrientationProperty =
+            AvaloniaProperty.RegisterDirect<DataRepeaterBorderLine, Orientation>(
                 nameof(Orientation),
                 o => o.Orientation,
                 (o, v) => o.Orientation = v);
@@ -21,8 +21,8 @@ namespace RenderDemo.Pages
             set => SetAndRaise(OrientationProperty, ref _orientation, value);
         }
 
-        public static readonly DirectProperty<XDataGridBorderLine, double> LengthProperty =
-            AvaloniaProperty.RegisterDirect<XDataGridBorderLine, double>(
+        public static readonly DirectProperty<DataRepeaterBorderLine, double> LengthProperty =
+            AvaloniaProperty.RegisterDirect<DataRepeaterBorderLine, double>(
                 nameof(Length),
                 o => o.Length,
                 (o, v) => o.Length = v);
@@ -35,9 +35,9 @@ namespace RenderDemo.Pages
             set => SetAndRaise(LengthProperty, ref _length, value);
         }
 
-        static XDataGridBorderLine()
+        static DataRepeaterBorderLine()
         {
-            AffectsGeometry<XDataGridBorderLine>(LengthProperty, OrientationProperty);
+            AffectsGeometry<DataRepeaterBorderLine>(LengthProperty, OrientationProperty);
         }
 
         protected override Size MeasureOverride(Size availableSize)

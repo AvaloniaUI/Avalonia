@@ -11,17 +11,17 @@ using System.Reactive.Linq;
 
 namespace RenderDemo.Pages
 {
-    public class XDataGridHeader : XDataGridDockPanel
+    public class DataRepeaterHeader : DataRepeaterDockPanel
     {
-        internal static readonly DirectProperty<XDataGridHeader, XDataGridHeaderDescriptors> HeaderDescriptorsProperty =
-            AvaloniaProperty.RegisterDirect<XDataGridHeader, XDataGridHeaderDescriptors>(
+        internal static readonly DirectProperty<DataRepeaterHeader, DataRepeaterHeaderDescriptors> HeaderDescriptorsProperty =
+            AvaloniaProperty.RegisterDirect<DataRepeaterHeader, DataRepeaterHeaderDescriptors>(
                 nameof(HeaderDescriptors),
                 o => o.HeaderDescriptors,
                 (o, v) => o.HeaderDescriptors = v);
 
-        private XDataGridHeaderDescriptors _headerDescriptors;
+        private DataRepeaterHeaderDescriptors _headerDescriptors;
 
-        internal XDataGridHeaderDescriptors HeaderDescriptors
+        internal DataRepeaterHeaderDescriptors HeaderDescriptors
         {
             get => _headerDescriptors;
             set
@@ -32,14 +32,14 @@ namespace RenderDemo.Pages
 
         CompositeDisposable _disposables;
 
-        public XDataGridHeader()
+        public DataRepeaterHeader()
         {
             this.WhenAnyValue(x => x.HeaderDescriptors)
                 .DistinctUntilChanged()
                 .Subscribe(DescriptorsChanged);
         }
 
-        private void DescriptorsChanged(XDataGridHeaderDescriptors obj)
+        private void DescriptorsChanged(DataRepeaterHeaderDescriptors obj)
         {
             if (obj == null) return;
 
@@ -52,7 +52,7 @@ namespace RenderDemo.Pages
             {
                 var headerDesc = obj[i];
 
-                var boundCellContent = new XDataGridHeaderCell
+                var boundCellContent = new DataRepeaterHeaderCell
                 {
                     Content = headerDesc
                 };

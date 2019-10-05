@@ -4,7 +4,7 @@
                       x:Class="RenderDemo.Pages.AnimationsPage">
   <Grid>
     <Grid.Styles>
-      <Style Selector="local|XDataGridCellContent.Allow">
+      <Style Selector="local|DataRepeaterCellContent.Allow">
         <Setter Property="Template">
           <ControlTemplate>
             <CheckBox Height="40" IsChecked="{TemplateBinding CellValue, Mode=TwoWay}" />
@@ -12,6 +12,6 @@
         </Setter>
       </Style>
     </Grid.Styles>
-    <local:XDataGrid Items="{Binding DataRows}" />
+    <local:DataRepeater Items="{Binding DataRows}" />
   </Grid>
 </local:AnimationsPage>

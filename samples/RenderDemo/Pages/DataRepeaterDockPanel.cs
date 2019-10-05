@@ -4,7 +4,7 @@ using Avalonia.Controls;
 
 namespace RenderDemo.Pages
 {
-    public class XDataGridDockPanel : Panel
+    public class DataRepeaterDockPanel : Panel
     {
         /// <summary>
         /// Updates DesiredSize of the DockPanel.  Called by parent Control.  This is the first pass of layout.

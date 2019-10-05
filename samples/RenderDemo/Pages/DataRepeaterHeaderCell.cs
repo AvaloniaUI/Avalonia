@@ -8,23 +8,23 @@ using ReactiveUI;
 
 namespace RenderDemo.Pages
 {
-    public class XDataGridHeaderCell : ContentControl
+    public class DataRepeaterHeaderCell : ContentControl
     {
         private Thumb _rightThumbResizer;
         internal ContentControl _contentControl;
 
-        public XDataGridHeaderCell()
+        public DataRepeaterHeaderCell()
         {
             TemplateApplied += TemplateAppliedCore;
         }
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var desc = (Content as XDataGridHeaderDescriptor);
+            var desc = (Content as DataRepeaterHeaderDescriptor);
 
             if (_contentControl != null || desc != null)
             {
-                var content = (Content as XDataGridHeaderDescriptor);
+                var content = (Content as DataRepeaterHeaderDescriptor);
                 content.HeaderWidth = _contentControl.Bounds.Width;
             }
 
@@ -39,7 +39,7 @@ namespace RenderDemo.Pages
 
             _rightThumbResizer = e.NameScope.Find<Thumb>("PART_RightThumbResizer");
 
-            var content = (Content as XDataGridHeaderDescriptor);
+            var content = (Content as DataRepeaterHeaderDescriptor);
             content.HeaderWidth = _contentControl.Bounds.Width;
 
 

@@ -1,14 +1,14 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:RenderDemo.Pages;assembly=RenderDemo">
-  <Style Selector="local|XDataGridHeaderCell">
+  <Style Selector="local|DataRepeaterHeaderCell">
     <Setter Property="Template">
       <ControlTemplate>
         <TextBlock Text="{Binding HeaderText}" />
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="local|XDataGridHeaderCell">
+  <Style Selector="local|DataRepeaterHeaderCell">
     <Setter Property="Template">
       <ControlTemplate>
         <Grid ColumnDefinitions="Auto,11">
@@ -23,7 +23,7 @@
               <ControlTemplate>
                 <Grid MinWidth="5"
                       Background="Transparent">
-                  <local:XDataGridBorderLine Grid.Column="1"
+                  <local:DataRepeaterBorderLine Grid.Column="1"
                                              Orientation="Vertical"
                                              Fill="Black"
                                              Length="{Binding #PART_RightThumbResizer.Bounds.Height}" />
@@ -35,7 +35,7 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="local|XDataGridHeaderCell.LastColumn">
+  <Style Selector="local|DataRepeaterHeaderCell.LastColumn">
     <Setter Property="Template">
       <ControlTemplate>
         <ContentControl Name="PART_ContentControl"
@@ -43,14 +43,14 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="local|XDataGridCell">
+  <Style Selector="local|DataRepeaterCell">
     <Setter Property="Template">
       <ControlTemplate>
         <Grid ColumnDefinitions="Auto,11">
-          <local:XDataGridCellContent Name="PART_CellContent"
+          <local:DataRepeaterCellContent Name="PART_CellContent"
                                       Grid.Column="0"
                                       Grid.ColumnSpan="1" />
-          <local:XDataGridBorderLine Grid.Column="1"
+          <local:DataRepeaterBorderLine Grid.Column="1"
                                      Orientation="Vertical"
                                      Fill="Black"
                                      Length="{Binding #PART_CellContent.Bounds.Height}" />
@@ -58,21 +58,21 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="local|XDataGridCell.LastColumn">
+  <Style Selector="local|DataRepeaterCell.LastColumn">
     <Setter Property="Template">
       <ControlTemplate>
-        <local:XDataGridCellContent Name="PART_CellContent" />
+        <local:DataRepeaterCellContent Name="PART_CellContent" />
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="local|XDataGridCellContent">
+  <Style Selector="local|DataRepeaterCellContent">
     <Setter Property="Template">
       <ControlTemplate>
         <ContentControl Content="{TemplateBinding CellValue}" />
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="local|XDataGrid">
+  <Style Selector="local|DataRepeater">
     <Setter Property="Background"
             Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="BorderThickness"
@@ -81,7 +81,7 @@
       <ControlTemplate>
         <Grid Name="PART_RootGrid">
           <Grid.DataTemplates>
-            <DataTemplate DataType="local:XDataGridHeaderDescriptor">
+            <DataTemplate DataType="local:DataRepeaterHeaderDescriptor">
               <TextBlock Text="{Binding HeaderText}" />
             </DataTemplate>
           </Grid.DataTemplates>
@@ -91,9 +91,9 @@
             <DockPanel x:Name="PART_Dock"
                        LastChildFill="True">
               <Grid DockPanel.Dock="Top">
-                <local:XDataGridHeader Name="PART_Header"
+                <local:DataRepeaterHeader Name="PART_Header"
                                        HeaderDescriptors="{TemplateBinding HeaderDescriptors}" />
-                <local:XDataGridBorderLine Grid.Row="1"
+                <local:DataRepeaterBorderLine Grid.Row="1"
                                            Fill="Black"
                                            VerticalAlignment="Bottom"
                                            Length="{Binding #PART_VertScroller.Viewport.Width}" />
@@ -108,11 +108,11 @@
                       <Grid RowDefinitions="Auto,1"
                             HorizontalAlignment="Stretch"
                             ColumnDefinitions="*">
-                        <local:XDataGridRow Grid.Row="0"
+                        <local:DataRepeaterRow Grid.Row="0"
                                             Grid.RowSpan="1"
                                             HeaderDescriptors="{Binding #PART_Header.HeaderDescriptors}"
                                             HorizontalAlignment="Left" />
-                        <local:XDataGridBorderLine Grid.Row="1"
+                        <local:DataRepeaterBorderLine Grid.Row="1"
                                                    Fill="Black"
                                                    Length="{Binding #PART_VertScroller.Viewport.Width}" />
                       </Grid>

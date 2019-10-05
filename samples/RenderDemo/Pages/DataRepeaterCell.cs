@@ -9,25 +9,25 @@ using ReactiveUI;
 
 namespace RenderDemo.Pages
 {
-    public class XDataGridCell : ContentControl
+    public class DataRepeaterCell : ContentControl
     {
         internal string TargetProperty;
-        internal XDataGridCellContent _cellContent;
+        internal DataRepeaterCellContent _cellContent;
 
-        public XDataGridCell()
+        public DataRepeaterCell()
         {
             this.TemplateApplied += TemplateAppliedCore;
         }
 
         private void TemplateAppliedCore(object sender, TemplateAppliedEventArgs e)
         {
-            this._cellContent = e.NameScope.Find<XDataGridCellContent>("PART_CellContent");
+            this._cellContent = e.NameScope.Find<DataRepeaterCellContent>("PART_CellContent");
 
             _cellContent.Classes.Add(TargetProperty);
 
             var newBind = new Binding(TargetProperty, BindingMode.TwoWay);
 
-            _cellContent.Bind(XDataGridCellContent.CellValueProperty, newBind);
+            _cellContent.Bind(DataRepeaterCellContent.CellValueProperty, newBind);
             _cellContent.Classes.Add(TargetProperty);
         }
     }

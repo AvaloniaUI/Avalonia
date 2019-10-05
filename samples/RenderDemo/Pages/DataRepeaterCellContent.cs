@@ -3,10 +3,10 @@ using Avalonia.Controls;
 
 namespace RenderDemo.Pages
 {
-    public class XDataGridCellContent : ContentControl
+    public class DataRepeaterCellContent : ContentControl
     {
-        public static readonly DirectProperty<XDataGridCellContent, object> CellValueProperty =
-            AvaloniaProperty.RegisterDirect<XDataGridCellContent, object>(
+        public static readonly DirectProperty<DataRepeaterCellContent, object> CellValueProperty =
+            AvaloniaProperty.RegisterDirect<DataRepeaterCellContent, object>(
                 nameof(CellValue),
                 o => o.CellValue,
                 (o, v) => o.CellValue = v);
