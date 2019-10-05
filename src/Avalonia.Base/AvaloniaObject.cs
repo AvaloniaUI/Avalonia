@@ -820,16 +820,13 @@ namespace Avalonia
         /// <param name="priority">The priority.</param>
         private void LogPropertySet(AvaloniaProperty property, object value, BindingPriority priority)
         {
-            if (Logger.TryGetLogger(LogEventLevel.Verbose, out var logger))
-            {
-                logger.Log(
-                    LogArea.Property,
-                    this,
-                    "Set {Property} to {$Value} with priority {Priority}",
-                    property,
-                    value,
-                    priority);
-            }
+            Logger.TryGetLogger(LogEventLevel.Verbose)?.Log(
+                LogArea.Property,
+                this,
+                "Set {Property} to {$Value} with priority {Priority}",
+                property,
+                value,
+                priority);
         }
 
         private class DirectBindingSubscription : IObserver<object>, IDisposable
