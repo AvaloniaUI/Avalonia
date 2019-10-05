@@ -2,7 +2,7 @@
   <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
   <Setter Property="Template">
     <ControlTemplate>
-      <VisualLayerManager IsPopup="True" Margin="-1 -1 0 0">
+      <VisualLayerManager IsPopup="True">
         <ContentPresenter Name="PART_ContentPresenter"
                           Background="{TemplateBinding Background}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"

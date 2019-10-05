@@ -3,7 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
+using System.Diagnostics;
+using System.Threading;
 using Avalonia.Data;
 
 namespace Avalonia
@@ -181,9 +182,9 @@ namespace Avalonia
 
         private sealed class RemoveBindingDisposable : IDisposable
         {
-            private readonly LinkedListNode<PriorityBindingEntry> _binding;
             private readonly LinkedList<PriorityBindingEntry> _bindings;
             private readonly PriorityLevel _priorityLevel;
+            private LinkedListNode<PriorityBindingEntry> _binding;
 
             public RemoveBindingDisposable(
                 LinkedListNode<PriorityBindingEntry> binding,
@@ -197,11 +198,21 @@ namespace Avalonia
 
             public void Dispose()
             {
-                PriorityBindingEntry entry = _binding.Value;
+                LinkedListNode<PriorityBindingEntry> binding = Interlocked.Exchange(ref _binding, null);
+
+                if (binding == null)
+                {
+                    // Some system is trying to remove binding twice.
+                    Debug.Assert(false);
+
+                    return;
+                }
+
+                PriorityBindingEntry entry = binding.Value;
 
                 if (!entry.HasCompleted)
                 {
-                    _bindings.Remove(_binding);
+                    _bindings.Remove(binding);
 
                     entry.Dispose();
 

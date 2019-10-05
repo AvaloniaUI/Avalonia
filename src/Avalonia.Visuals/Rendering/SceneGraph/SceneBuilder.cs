@@ -53,6 +53,16 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (visual.VisualRoot != null)
             {
+                if (node?.Parent != null &&
+                    visual.VisualParent != null &&
+                    node.Parent.Visual != visual.VisualParent)
+                {
+                    // The control has changed parents. Remove the node and recurse into the new parent node.
+                    ((VisualNode)node.Parent).RemoveChild(node);
+                    Deindex(scene, node);
+                    node = (VisualNode)scene.FindNode(visual.VisualParent);
+                }
+
                 if (visual.IsVisible)
                 {
                     // If the node isn't yet part of the scene, find the nearest ancestor that is.

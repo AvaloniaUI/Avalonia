@@ -121,6 +121,8 @@ namespace Avalonia.Markup.UnitTests.Parsers
             result.Item1.Subscribe(x => { });
 
             GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
 
             Assert.Null(result.Item2.Target);
         }
