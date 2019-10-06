@@ -3,6 +3,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Avalonia</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Collections.Pooled" Version="1.0.82" />
+  </ItemGroup>
   <ItemGroup> 
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />

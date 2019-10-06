@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.VisualTree;
+using Collections.Pooled;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -158,37 +159,63 @@ namespace Avalonia.Rendering.SceneGraph
             return result;
         }
 
-        private IEnumerable<IVisual> HitTest(IVisualNode node, Point p, Rect? clip, Func<IVisual, bool> filter)
+        private IEnumerable<IVisual> HitTest(IVisualNode root, Point p, Rect? rootClip, Func<IVisual, bool> filter)
         {
-            if (filter?.Invoke(node.Visual) != false && node.Visual.IsAttachedToVisualTree)
+            bool FilterAndClip(IVisualNode node, ref Rect? clip)
             {
-                var clipped = false;
-
-                if (node.ClipToBounds)
+                if (filter?.Invoke(node.Visual) != false && node.Visual.IsAttachedToVisualTree)
                 {
-                    clip = clip == null ? node.ClipBounds : clip.Value.Intersect(node.ClipBounds);
-                    clipped = !clip.Value.Contains(p);
-                }
+                    var clipped = false;
 
-                if (node.GeometryClip != null)
-                {
-                    var controlPoint = Root.Visual.TranslatePoint(p, node.Visual);
-                    clipped = !node.GeometryClip.FillContains(controlPoint.Value);
-                }
-
-                if (!clipped)
-                {
-                    for (var i = node.Children.Count - 1; i >= 0; --i)
+                    if (node.ClipToBounds)
                     {
-                        foreach (var h in HitTest(node.Children[i], p, clip, filter))
-                        {
-                            yield return h;
-                        }
+                        clip = clip == null ? node.ClipBounds : clip.Value.Intersect(node.ClipBounds);
+                        clipped = !clip.Value.Contains(p);
                     }
 
-                    if (node.HitTest(p))
+                    if (node.GeometryClip != null)
                     {
-                        yield return node.Visual;
+                        var controlPoint = Root.Visual.TranslatePoint(p, node.Visual);
+                        clipped = !node.GeometryClip.FillContains(controlPoint.Value);
+                    }
+
+                    return !clipped;
+                }
+
+                return false;
+            }
+
+            using (var nodeStack = new PooledStack<(IVisualNode, bool, Rect?)>())
+            {
+                nodeStack.Push((root, false, rootClip));
+
+                while (nodeStack.Count > 0)
+                {
+                    (IVisualNode current, var wasVisited, Rect? currentClip) = nodeStack.Pop();
+
+                    if (wasVisited && current == root)
+                    {
+                        break;
+                    }
+
+                    var children = current.Children;
+                    int childCount = children.Count;
+
+                    if (childCount == 0 || wasVisited)
+                    {
+                        if ((wasVisited || FilterAndClip(current, ref currentClip)) && current.HitTest(p))
+                        {
+                            yield return current.Visual;
+                        }
+                    }
+                    else if (FilterAndClip(current, ref currentClip))
+                    {
+                        nodeStack.Push((current, true, default));
+
+                        for (var i = 0; i < childCount; i++)
+                        {
+                            nodeStack.Push((current.Children[i], false, currentClip));
+                        }
                     }
                 }
             }
