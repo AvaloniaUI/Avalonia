@@ -6,10 +6,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
-  </ItemGroup>
+  </ItemGroup> 
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\Serilog.props" />

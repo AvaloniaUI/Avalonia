@@ -9,26 +9,34 @@ namespace RenderDemo.Pages
 {
     public class DataRepeaterHeaderDescriptor : ReactiveObject
     {
-        string headerText;
+        private string _headerText;
         public string HeaderText
         {
-            get => headerText;
-            set => this.RaiseAndSetIfChanged(ref headerText, value);
+            get => _headerText;
+            set => this.RaiseAndSetIfChanged(ref _headerText, value);
         }
 
-        string propName;
+        private string _propName;
         public string PropertyName
         {
-            get => propName;
-            set => this.RaiseAndSetIfChanged(ref propName, value);
+            get => _propName;
+            set => this.RaiseAndSetIfChanged(ref _propName, value);
         }
- 
-        double headerWidth;
+
+        private double _headerWidth;
         public double HeaderWidth
         {
-            get => headerWidth;
+            get => _headerWidth;
             set =>
-             this.RaiseAndSetIfChanged(ref headerWidth, value);
+             this.RaiseAndSetIfChanged(ref _headerWidth, value);
         }
+
+        public bool IsSortable
+        {
+            get;
+            internal set;
+        }
+
+        internal Func<object, object> GetterDelegate { get; set; }
     }
 }
