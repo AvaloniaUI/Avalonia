@@ -139,10 +139,7 @@ namespace Avalonia
         {
             unchecked
             {
-                int hash = 17;
-                hash = (hash * 23) + Unit.GetHashCode();
-                hash = (hash * 23) + Rect.GetHashCode();
-                return hash;
+                return ((int)Unit * 397) ^ Rect.GetHashCode();
             }
         }
 
@@ -161,7 +158,7 @@ namespace Avalonia
                     Rect.Width * size.Width,
                     Rect.Height * size.Height);
         }
-        
+
         /// <summary>
         /// Parses a <see cref="RelativeRect"/> string.
         /// </summary>
@@ -169,7 +166,7 @@ namespace Avalonia
         /// <returns>The parsed <see cref="RelativeRect"/>.</returns>
         public static RelativeRect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, exceptionMessage: "Invalid RelativeRect"))
+            using (var tokenizer = new StringTokenizer(s, exceptionMessage: "Invalid RelativeRect."))
             {
                 var x = tokenizer.ReadString();
                 var y = tokenizer.ReadString();

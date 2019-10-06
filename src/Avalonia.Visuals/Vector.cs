@@ -11,7 +11,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a vector.
     /// </summary>
-    public readonly struct Vector
+    public readonly struct Vector : IEquatable<Vector>
     {
         static Vector()
         {
