@@ -72,11 +72,12 @@ namespace Avalonia.Layout
 
                 Stopwatch stopwatch = null;
 
-                bool captureTiming = Logger.IsEnabled(LogEventLevel.Information);
+                const LogEventLevel timingLogLevel = LogEventLevel.Information;
+                bool captureTiming = Logger.IsEnabled(timingLogLevel);
 
                 if (captureTiming)
                 {
-                    Logger.Log(LogEventLevel.Information,
+                    Logger.TryGet(timingLogLevel)?.Log(
                         LogArea.Layout,
                         this,
                         "Started layout pass. To measure: {Measure} To arrange: {Arrange}",
@@ -115,7 +116,7 @@ namespace Avalonia.Layout
                 {
                     stopwatch.Stop();
 
-                    Logger.Information(LogArea.Layout, this, "Layout pass finished in {Time}", stopwatch.Elapsed);
+                    Logger.TryGet(timingLogLevel)?.Log(LogArea.Layout, this, "Layout pass finished in {Time}", stopwatch.Elapsed);
                 }
             }
 

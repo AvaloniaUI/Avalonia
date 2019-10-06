@@ -359,7 +359,7 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            Logger.Log(LogEventLevel.Verbose, LogArea.Visual, this, "Attached to visual tree");
+            Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Visual, this, "Attached to visual tree");
 
             _visualRoot = e.Root;
 
@@ -388,7 +388,7 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            Logger.Log(LogEventLevel.Verbose, LogArea.Visual, this, "Detached from visual tree");
+            Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Visual, this, "Detached from visual tree");
 
             _visualRoot = null;
 
@@ -453,8 +453,7 @@ namespace Avalonia
                     return;
                 }
 
-                Logger.Log(
-                    LogEventLevel.Warning,
+                Logger.TryGet(LogEventLevel.Warning)?.Log(
                     LogArea.Binding,
                     this,
                     "Error in binding to {Target}.{Property}: {Message}",

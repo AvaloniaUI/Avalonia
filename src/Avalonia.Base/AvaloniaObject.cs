@@ -333,7 +333,7 @@ namespace Avalonia
                     throw new ArgumentException($"The property {property.Name} is readonly.");
                 }
 
-                if (Logger.TryGetLogger(LogEventLevel.Verbose, out var logger))
+                if (Logger.TryGet(LogEventLevel.Verbose, out var logger))
                 {
                     var description = GetDescription(source);
 
@@ -354,7 +354,7 @@ namespace Avalonia
             }
             else
             {
-                if (Logger.TryGetLogger(LogEventLevel.Verbose, out var logger))
+                if (Logger.TryGet(LogEventLevel.Verbose, out var logger))
                 {
                     var description = GetDescription(source);
 
@@ -414,7 +414,7 @@ namespace Avalonia
             {
                 RaisePropertyChanged(property, oldValue, newValue, (BindingPriority)priority);
 
-                Logger.TryGetLogger(LogEventLevel.Verbose)?.Log(
+                Logger.TryGet(LogEventLevel.Verbose)?.Log(
                     LogArea.Property,
                     this,
                     "{Property} changed from {$Old} to {$Value} with priority {Priority}",
@@ -466,8 +466,7 @@ namespace Avalonia
         /// <param name="e">The binding error.</param>
         protected internal virtual void LogBindingError(AvaloniaProperty property, Exception e)
         {
-            Logger.Log(
-                LogEventLevel.Warning,
+            Logger.TryGet(LogEventLevel.Warning)?.Log(
                 LogArea.Binding,
                 this,
                 "Error in binding to {Target}.{Property}: {Message}",
@@ -820,7 +819,7 @@ namespace Avalonia
         /// <param name="priority">The priority.</param>
         private void LogPropertySet(AvaloniaProperty property, object value, BindingPriority priority)
         {
-            Logger.TryGetLogger(LogEventLevel.Verbose)?.Log(
+            Logger.TryGet(LogEventLevel.Verbose)?.Log(
                 LogArea.Property,
                 this,
                 "Set {Property} to {$Value} with priority {Priority}",

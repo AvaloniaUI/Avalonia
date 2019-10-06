@@ -255,7 +255,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (template != null)
                 {
-                    Logger.Log(LogEventLevel.Verbose, LogArea.Control, this, "Creating control template");
+                    Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Control, this, "Creating control template");
 
                     var (child, nameScope) = template.Build(this);
                     ApplyTemplatedParent(child);
