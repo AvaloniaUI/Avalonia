@@ -333,17 +333,12 @@ namespace Avalonia
                     throw new ArgumentException($"The property {property.Name} is readonly.");
                 }
 
-                if (Logger.TryGet(LogEventLevel.Verbose, out var logger))
-                {
-                    var description = GetDescription(source);
-
-                    logger.Log(
-                        LogArea.Property,
-                        this,
-                        "Bound {Property} to {Binding} with priority LocalValue",
-                        property,
-                        description);
-                }
+                Logger.TryGet(LogEventLevel.Verbose)?.Log(
+                    LogArea.Property,
+                    this,
+                    "Bound {Property} to {Binding} with priority LocalValue",
+                    property,
+                    GetDescription(source));
 
                 if (_directBindings == null)
                 {
@@ -354,18 +349,13 @@ namespace Avalonia
             }
             else
             {
-                if (Logger.TryGet(LogEventLevel.Verbose, out var logger))
-                {
-                    var description = GetDescription(source);
-
-                    logger.Log(
-                        LogArea.Property,
-                        this,
-                        "Bound {Property} to {Binding} with priority {Priority}",
-                        property,
-                        description,
-                        priority);
-                }
+                Logger.TryGet(LogEventLevel.Verbose)?.Log(
+                    LogArea.Property,
+                    this,
+                    "Bound {Property} to {Binding} with priority {Priority}",
+                    property,
+                    GetDescription(source),
+                    priority);
 
                 return Values.AddBinding(property, source, priority);
             }
