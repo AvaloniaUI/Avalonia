@@ -581,13 +581,16 @@ namespace Avalonia.Controls
 
         private bool ClearElementToPinnedPool(IControl element, VirtualizationInfo virtInfo, bool isClearedDueToCollectionChange)
         {
-            if (_isDataSourceStableResetPending)
+            bool moveToPinnedPool =
+                !isClearedDueToCollectionChange && virtInfo.IsPinned;
+
+            if (moveToPinnedPool)
             {
-                _resetPool.Add(element);
-                virtInfo.MoveOwnershipToUniqueIdResetPoolFromLayout();
+                _pinnedPool.Add(new PinnedElementInfo(element));
+                virtInfo.MoveOwnershipToPinnedPool();
             }
 
-            return _isDataSourceStableResetPending;
+            return moveToPinnedPool;
         }
 
         private void UpdateFocusedElement()

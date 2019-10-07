@@ -1042,7 +1042,8 @@ namespace Avalonia.Controls
                         }
                     }
                     DateTime? d = SetTextBoxValue(s);
-                    if (!SelectedDate.Equals(d))
+                    
+                    if (SelectedDate != d)
                     {
                         SelectedDate = d;
                     }
@@ -1058,7 +1059,8 @@ namespace Avalonia.Controls
             else
             {
                 DateTime? d = SetTextBoxValue(_defaultText);
-                if (!SelectedDate.Equals(d))
+
+                if (SelectedDate != d)
                 {
                     SelectedDate = d;
                 }

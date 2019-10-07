@@ -34,7 +34,8 @@
       <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
       <TabItem Header="Image"><pages:ImagePage/></TabItem>
       <TabItem Header="ItemsRepeater"
-               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+               ScrollViewer.VerticalScrollBarVisibility="Disabled"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
         <pages:ItemsRepeaterPage/>
       </TabItem>
       <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
