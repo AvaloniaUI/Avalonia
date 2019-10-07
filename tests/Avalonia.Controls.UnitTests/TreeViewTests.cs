@@ -14,6 +14,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -890,6 +891,46 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, GetItem(target, 0, 1).Level);
             Assert.Equal(1, GetItem(target, 0, 2).Level);
             Assert.Equal(2, GetItem(target, 0, 1, 0).Level);
+        }
+
+        [Fact]
+        public void Auto_Expanding_In_Style_Should_Not_Break_Range_Selection()
+        {
+            /// Issue #2980.
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                var target = new DerivedTreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    SelectionMode = SelectionMode.Multiple,
+                    Items = new List<Node>
+                {
+                    new Node { Value = "Root1", },
+                    new Node { Value = "Root2", },
+                },
+                };
+
+                var visualRoot = new TestRoot
+                {
+                    Styles =
+                    {
+                        new Style(x => x.OfType<TreeViewItem>())
+                        {
+                            Setters =
+                            {
+                                new Setter(TreeViewItem.IsExpandedProperty, true),
+                            },
+                        },
+                    },
+                    Child = target,
+                };
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+
+                _mouse.Click(GetItem(target, 0));
+                _mouse.Click(GetItem(target, 1), modifiers: InputModifiers.Shift);
+            }
         }
 
         private void ApplyTemplates(TreeView tree)
