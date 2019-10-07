@@ -138,7 +138,6 @@ namespace Avalonia
         /// </summary>
         /// <param name="other">The other vector.</param>
         /// <returns>True if vectors are nearly equal.</returns>
-        [Pure]
         public bool NearlyEquals(Vector other)
         {
             const float tolerance = float.Epsilon;
@@ -146,13 +145,7 @@ namespace Avalonia
             return Math.Abs(_x - other._x) < tolerance && Math.Abs(_y - other._y) < tolerance;
         }
 
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-                return false;
-
-            return obj is Vector vector && Equals(vector);
-        }
+        public override bool Equals(object obj) => obj is Vector other && Equals(other);
 
         public override int GetHashCode()
         {

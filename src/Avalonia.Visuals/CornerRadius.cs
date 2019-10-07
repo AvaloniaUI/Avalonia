@@ -82,15 +82,12 @@ namespace Avalonia
             // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
-        public override bool Equals(object obj)
-        {
-            if (!(obj is CornerRadius))
-            {
-                return false;
-            }
-
-            return Equals((CornerRadius)obj);
-        }
+        /// <summary>
+        /// Returns a boolean indicating whether the given Object is equal to this corner radius instance.
+        /// </summary>
+        /// <param name="obj">The Object to compare against.</param>
+        /// <returns>True if the Object is equal to this corner radius; False otherwise.</returns>
+        public override bool Equals(object obj) => obj is CornerRadius other && Equals(other);
 
         public override int GetHashCode()
         {

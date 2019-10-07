@@ -116,10 +116,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="obj">The other object.</param>
         /// <returns>True if the objects are equal, otherwise false.</returns>
-        public override bool Equals(object obj)
-        {
-            return (obj is RelativeRect) && Equals((RelativeRect)obj);
-        }
+        public override bool Equals(object obj) => obj is RelativeRect other && Equals(other);
 
         /// <summary>
         /// Checks if the <see cref="RelativeRect"/> equals another rectangle.

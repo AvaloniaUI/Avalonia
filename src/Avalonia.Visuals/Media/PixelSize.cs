@@ -97,15 +97,7 @@ namespace Avalonia
         /// <returns>
         /// True if <paramref name="obj"/> is a size that equals the current size.
         /// </returns>
-        public override bool Equals(object obj)
-        {
-            if (obj is PixelSize other)
-            {
-                return Equals(other);
-            }
-
-            return false;
-        }
+        public override bool Equals(object obj) => obj is PixelSize other && Equals(other);
 
         /// <summary>
         /// Returns a hash code for a <see cref="PixelSize"/>.

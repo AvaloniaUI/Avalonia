@@ -250,15 +250,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="obj">The Object to compare against.</param>
         /// <returns>True if the Object is equal to this matrix; False otherwise.</returns>
-        public override bool Equals(object obj)
-        {
-            if (!(obj is Matrix))
-            {
-                return false;
-            }
-
-            return Equals((Matrix)obj);
-        }
+        public override bool Equals(object obj) => obj is Matrix other && Equals(other);
 
         /// <summary>
         /// Returns the hash code for this instance.

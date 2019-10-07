@@ -319,15 +319,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="obj">The object to compare against.</param>
         /// <returns>True if the object is equal to this rectangle; false otherwise.</returns>
-        public override bool Equals(object obj)
-        {
-            if (!(obj is Rect))
-            {
-                return false;
-            }
-
-            return Equals((Rect)obj);
-        }
+        public override bool Equals(object obj) => obj is Rect other && Equals(other);
 
         /// <summary>
         /// Returns the hash code for this instance.
