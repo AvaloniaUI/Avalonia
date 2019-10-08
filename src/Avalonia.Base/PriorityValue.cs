@@ -301,7 +301,7 @@ namespace Avalonia
             }
             else
             {
-                Logger.Error(
+                Logger.TryGet(LogEventLevel.Error)?.Log(
                     LogArea.Binding,
                     Owner,
                     "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
