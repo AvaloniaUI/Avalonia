@@ -37,7 +37,7 @@ namespace Avalonia.Controls
 
             PseudoClass<Expander>(IsExpandedProperty, ":expanded");
 
-            IsExpandedProperty.Changed.AddClassHandler<Expander>(x => x.OnIsExpandedChanged);
+            IsExpandedProperty.Changed.AddClassHandler<Expander>((x, e) => x.OnIsExpandedChanged(e));
         }
 
         public IPageTransition ContentTransition

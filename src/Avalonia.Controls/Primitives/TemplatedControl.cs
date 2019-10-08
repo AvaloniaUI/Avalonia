@@ -99,7 +99,7 @@ namespace Avalonia.Controls.Primitives
         static TemplatedControl()
         {
             ClipToBoundsProperty.OverrideDefaultValue<TemplatedControl>(true);
-            TemplateProperty.Changed.AddClassHandler<TemplatedControl>(x => x.OnTemplateChanged);
+            TemplateProperty.Changed.AddClassHandler<TemplatedControl>((x, e) => x.OnTemplateChanged(e));
         }
 
         /// <summary>

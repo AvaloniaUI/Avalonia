@@ -28,11 +28,13 @@ namespace Avalonia.Controls
             ClipToBoundsProperty.OverrideDefaultValue<LayoutTransformControl>(true);
 
             LayoutTransformProperty.Changed
-                .AddClassHandler<LayoutTransformControl>(x => x.OnLayoutTransformChanged);
+                .AddClassHandler<LayoutTransformControl>((x, e) => x.OnLayoutTransformChanged(e));
 
             ChildProperty.Changed
-                .AddClassHandler<LayoutTransformControl>(x => x.OnChildChanged);
-            UseRenderTransformProperty.Changed.AddClassHandler<LayoutTransformControl>(x => x.OnUseRenderTransformPropertyChanged);
+                .AddClassHandler<LayoutTransformControl>((x, e) => x.OnChildChanged(e));
+
+            UseRenderTransformProperty.Changed
+                .AddClassHandler<LayoutTransformControl>((x, e) => x.OnUseRenderTransformPropertyChanged(e));
         }
 
         /// <summary>

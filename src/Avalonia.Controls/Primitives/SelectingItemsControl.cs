@@ -119,7 +119,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static SelectingItemsControl()
         {
-            IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>(x => x.ContainerSelectionChanged);
+            IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>((x,e) => x.ContainerSelectionChanged(e));
         }
 
         /// <summary>
