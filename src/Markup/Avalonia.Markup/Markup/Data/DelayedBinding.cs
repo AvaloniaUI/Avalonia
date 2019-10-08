@@ -150,7 +150,7 @@ namespace Avalonia.Markup.Data
                 }
                 catch (Exception e)
                 {
-                    Logger.Error(
+                    Logger.TryGet(LogEventLevel.Error)?.Log(
                         LogArea.Property,
                         control,
                         "Error setting {Property} on {Target}: {Exception}",
