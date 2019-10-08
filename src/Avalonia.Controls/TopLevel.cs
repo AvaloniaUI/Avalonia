@@ -330,7 +330,7 @@ namespace Avalonia.Controls
 
             if (result == null)
             {
-                Logger.Warning(
+                Logger.TryGet(LogEventLevel.Warning)?.Log(
                     LogArea.Control,
                     this,
                     "Could not create {Service} : maybe Application.RegisterServices() wasn't called?",

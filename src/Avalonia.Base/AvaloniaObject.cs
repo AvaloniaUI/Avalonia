@@ -326,8 +326,6 @@ namespace Avalonia
 
             VerifyAccess();
 
-            var description = GetDescription(source);
-
             if (property.IsDirect)
             {
                 if (property.IsReadOnly)
@@ -335,12 +333,12 @@ namespace Avalonia
                     throw new ArgumentException($"The property {property.Name} is readonly.");
                 }
 
-                Logger.Verbose(
-                    LogArea.Property, 
+                Logger.TryGet(LogEventLevel.Verbose)?.Log(
+                    LogArea.Property,
                     this,
-                    "Bound {Property} to {Binding} with priority LocalValue", 
-                    property, 
-                    description);
+                    "Bound {Property} to {Binding} with priority LocalValue",
+                    property,
+                    GetDescription(source));
 
                 if (_directBindings == null)
                 {
@@ -351,12 +349,12 @@ namespace Avalonia
             }
             else
             {
-                Logger.Verbose(
+                Logger.TryGet(LogEventLevel.Verbose)?.Log(
                     LogArea.Property,
                     this,
                     "Bound {Property} to {Binding} with priority {Priority}",
                     property,
-                    description,
+                    GetDescription(source),
                     priority);
 
                 return Values.AddBinding(property, source, priority);
@@ -406,7 +404,7 @@ namespace Avalonia
             {
                 RaisePropertyChanged(property, oldValue, newValue, (BindingPriority)priority);
 
-                Logger.Verbose(
+                Logger.TryGet(LogEventLevel.Verbose)?.Log(
                     LogArea.Property,
                     this,
                     "{Property} changed from {$Old} to {$Value} with priority {Priority}",
@@ -458,8 +456,7 @@ namespace Avalonia
         /// <param name="e">The binding error.</param>
         protected internal virtual void LogBindingError(AvaloniaProperty property, Exception e)
         {
-            Logger.Log(
-                LogEventLevel.Warning,
+            Logger.TryGet(LogEventLevel.Warning)?.Log(
                 LogArea.Binding,
                 this,
                 "Error in binding to {Target}.{Property}: {Message}",
@@ -812,7 +809,7 @@ namespace Avalonia
         /// <param name="priority">The priority.</param>
         private void LogPropertySet(AvaloniaProperty property, object value, BindingPriority priority)
         {
-            Logger.Verbose(
+            Logger.TryGet(LogEventLevel.Verbose)?.Log(
                 LogArea.Property,
                 this,
                 "Set {Property} to {$Value} with priority {Priority}",
