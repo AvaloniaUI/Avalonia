@@ -1062,7 +1062,7 @@ namespace Avalonia.Controls.Primitives
             }
             catch (Exception ex)
             {
-                Logger.Error(
+                Logger.TryGet(LogEventLevel.Error)?.Log(
                     LogArea.Property,
                     this,
                     "Error thrown updating SelectedItems: {Error}",

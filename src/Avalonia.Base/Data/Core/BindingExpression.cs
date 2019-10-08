@@ -165,7 +165,7 @@ namespace Avalonia.Data.Core
                             }
                             else
                             {
-                                Logger.Error(
+                                Logger.TryGet(LogEventLevel.Error)?.Log(
                                     LogArea.Binding,
                                     this,
                                     "Could not convert FallbackValue {FallbackValue} to {Type}",
