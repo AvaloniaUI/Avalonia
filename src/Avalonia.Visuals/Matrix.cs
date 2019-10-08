@@ -10,7 +10,7 @@ namespace Avalonia
     /// <summary>
     /// A 2x3 matrix.
     /// </summary>
-    public readonly struct Matrix
+    public readonly struct Matrix : IEquatable<Matrix>
     {
         private readonly double _m11;
         private readonly double _m12;
@@ -235,12 +235,14 @@ namespace Avalonia
         /// <returns>True if this matrix is equal to other; False otherwise.</returns>
         public bool Equals(Matrix other)
         {
+            // ReSharper disable CompareOfFloatsByEqualityOperator
             return _m11 == other.M11 &&
                    _m12 == other.M12 &&
                    _m21 == other.M21 &&
                    _m22 == other.M22 &&
                    _m31 == other.M31 &&
                    _m32 == other.M32;
+            // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
         /// <summary>
@@ -248,15 +250,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="obj">The Object to compare against.</param>
         /// <returns>True if the Object is equal to this matrix; False otherwise.</returns>
-        public override bool Equals(object obj)
-        {
-            if (!(obj is Matrix))
-            {
-                return false;
-            }
-
-            return Equals((Matrix)obj);
-        }
+        public override bool Equals(object obj) => obj is Matrix other && Equals(other);
 
         /// <summary>
         /// Returns the hash code for this instance.
@@ -316,7 +310,7 @@ namespace Avalonia
         /// <returns>The <see cref="Matrix"/>.</returns>
         public static Matrix Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix."))
             {
                 return new Matrix(
                     tokenizer.ReadDouble(),
