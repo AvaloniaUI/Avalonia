@@ -557,7 +557,7 @@ namespace Avalonia.Controls
             return result;
         }
 
-        protected override void HandleClosed()
+        protected sealed override void HandleClosed()
         {
             RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
 
@@ -565,7 +565,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void HandleResized(Size clientSize)
+        protected sealed override void HandleResized(Size clientSize)
         {
             if (!AutoSizing)
             {
