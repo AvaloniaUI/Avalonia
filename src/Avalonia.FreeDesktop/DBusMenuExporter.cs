@@ -33,6 +33,7 @@ namespace Avalonia.FreeDesktop
             private NativeMenu _menu;
             private Dictionary<int, NativeMenuItemBase> _idsToItems = new Dictionary<int, NativeMenuItemBase>();
             private Dictionary<NativeMenuItemBase, int> _itemsToIds = new Dictionary<NativeMenuItemBase, int>();
+            private readonly HashSet<NativeMenu> _menus = new HashSet<NativeMenu>();
             private bool _resetQueued;
             private int _nextId = 1;
             public DBusMenuExporterImpl(Connection dbus, IntPtr xid)
@@ -104,12 +105,11 @@ namespace Avalonia.FreeDesktop
             void DoLayoutReset()
             {
                 _resetQueued = false;
-                foreach (var i in _idsToItems.Values)
-                {
+                foreach (var i in _idsToItems.Values) 
                     i.PropertyChanged -= OnItemPropertyChanged;
-                    if (i is NativeMenuItem nmi)
-                        ((INotifyCollectionChanged)nmi.Menu.Items).CollectionChanged -= OnMenuItemsChanged;
-                }
+                foreach(var menu in _menus)
+                    ((INotifyCollectionChanged)menu.Items).CollectionChanged -= OnMenuItemsChanged;
+                _menus.Clear();
                 _idsToItems.Clear();
                 _itemsToIds.Clear();
                 _revision++;
@@ -132,6 +132,12 @@ namespace Avalonia.FreeDesktop
                 return (item, (item as NativeMenuItem)?.Menu);
             }
 
+            private void EnsureSubscribed(NativeMenu menu)
+            {
+                if(menu!=null && _menus.Add(menu))
+                    ((INotifyCollectionChanged)menu.Items).CollectionChanged += OnMenuItemsChanged;
+            }
+            
             private int GetId(NativeMenuItemBase item)
             {
                 if (_itemsToIds.TryGetValue(item, out var id))
@@ -141,7 +147,7 @@ namespace Avalonia.FreeDesktop
                 _itemsToIds[item] = id;
                 item.PropertyChanged += OnItemPropertyChanged;
                 if (item is NativeMenuItem nmi)
-                    ((INotifyCollectionChanged)nmi.Menu.Items).CollectionChanged += OnMenuItemsChanged;
+                    EnsureSubscribed(nmi.Menu);
                 return id;
             }
 
@@ -190,12 +196,15 @@ namespace Avalonia.FreeDesktop
             {
                 var (it, menu) = i;
 
-                if (it is NativeMenuItem item)
+                if (it is NativeMenuItemSeperator)
+                {
+                    if (name == "type")
+                        return "separator";
+                }
+                else if (it is NativeMenuItem item)
                 {
                     if (name == "type")
                     {
-                        if (item != null && item.Header == null)
-                            return "separator";
                         return null;
                     }
                     if (name == "label")
