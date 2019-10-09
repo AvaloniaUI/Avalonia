@@ -19,6 +19,13 @@ extern IAvnClipboard* CreateClipboard();
 extern IAvnCursorFactory* CreateCursorFactory();
 extern IAvnGlFeature* GetGlFeature();
 extern IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(NSWindow* window, NSView* view);
+extern IAvnAppMenu* CreateAppMenu();
+extern IAvnAppMenuItem* CreateAppMenuItem();
+extern IAvnAppMenuItem* CreateAppMenuItemSeperator();
+extern void SetAppMenu (NSString* appName, IAvnAppMenu* appMenu);
+extern IAvnAppMenu* GetAppMenu ();
+extern NSMenuItem* GetAppMenuItem ();
+
 extern void InitializeAvnApp();
 extern NSApplicationActivationPolicy AvnDesiredActivationPolicy;
 extern NSPoint ToNSPoint (AvnPoint p);
@@ -39,5 +46,10 @@ template<typename T> inline T* objc_cast(id from) {
     }
     return nil;
 }
+
+@interface ActionCallback : NSObject
+- (ActionCallback*) initWithCallback: (IAvnActionCallback*) callback;
+- (void) action;
+@end
 
 #endif
