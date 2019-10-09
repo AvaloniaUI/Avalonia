@@ -9,7 +9,6 @@ namespace Avalonia.Controls.Platform
         bool IsNativeMenuExported { get; }
         event EventHandler OnIsNativeMenuExportedChanged;
         void SetNativeMenu(NativeMenu menu);
-        void SetPrependApplicationMenu(bool prepend);
     }
     
     public interface ITopLevelImplWithNativeMenuExporter : ITopLevelImpl

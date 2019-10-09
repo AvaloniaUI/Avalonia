@@ -62,15 +62,6 @@ namespace Avalonia.Controls
 
         public static void SetMenu(AvaloniaObject o, NativeMenu menu) => o.SetValue(MenuProperty, menu);
         public static NativeMenu GetMenu(AvaloniaObject o) => o.GetValue(MenuProperty);
-
-
-        public static readonly AttachedProperty<bool> PrependApplicationMenuProperty
-            = AvaloniaProperty.RegisterAttached<NativeMenu, TopLevel, Boolean>("PrependApplicationMenu");
-
-        public static void SetPrependApplicationMenu(TopLevel tl, bool value) =>
-            tl.SetValue(PrependApplicationMenuProperty, value);
-
-        public static bool GetPrependApplicationMenu(TopLevel tl) => tl.GetValue(PrependApplicationMenuProperty);
         
         static NativeMenu()
         {
@@ -88,11 +79,6 @@ namespace Avalonia.Controls
                 {
                     GetInfo(tl).Exporter?.SetNativeMenu((NativeMenu)args.NewValue);
                 }
-            });
-
-            PrependApplicationMenuProperty.Changed.Subscribe(args =>
-            {
-                GetInfo((TopLevel)args.Sender).Exporter?.SetPrependApplicationMenu((bool)args.NewValue);
             });
         }
     }

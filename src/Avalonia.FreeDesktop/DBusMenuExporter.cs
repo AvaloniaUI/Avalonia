@@ -161,11 +161,6 @@ namespace Avalonia.FreeDesktop
                 QueueReset();
             }
 
-            public void SetPrependApplicationMenu(bool prepend)
-            {
-                // Not implemented yet :(
-            }
-
             public ObjectPath ObjectPath { get; }
 
 

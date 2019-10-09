@@ -83,11 +83,6 @@ namespace Avalonia.Native
             DoLayoutReset();
         }
 
-        public void SetPrependApplicationMenu(bool prepend)
-        {
-            // OSX always exports the app menu.
-        }
-
         private void OnItemPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
         {
             QueueReset();
