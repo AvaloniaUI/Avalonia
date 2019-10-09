@@ -36,6 +36,8 @@ namespace Avalonia.Animation
 
         private Transitions _transitions;
 
+        private int _disableCount;
+
         private Dictionary<AvaloniaProperty, IDisposable> _previousTransitions;
 
         /// <summary>
@@ -65,6 +67,9 @@ namespace Avalonia.Animation
             }
         }
 
+        internal protected void EnableTransitions() => _disableCount--;
+        internal protected void DisableTransitions() => _disableCount++;
+
         /// <summary>
         /// Reacts to a change in a <see cref="AvaloniaProperty"/> value in 
         /// order to animate the change if a <see cref="ITransition"/> is set for the property.
@@ -72,7 +77,11 @@ namespace Avalonia.Animation
         /// <param name="e">The event args.</param>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (_transitions is null || _previousTransitions is null || e.Priority == BindingPriority.Animation) return;
+            if (_transitions is null || 
+                _previousTransitions is null || 
+                e.Priority == BindingPriority.Animation || 
+                _disableCount > 0)
+                return;
 
             // PERF-SENSITIVE: Called on every property change. Don't use LINQ here (too many allocations).
             foreach (var transition in _transitions)

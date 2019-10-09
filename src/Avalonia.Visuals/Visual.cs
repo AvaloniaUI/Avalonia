@@ -124,6 +124,7 @@ namespace Avalonia
             visualChildren.Validate = ValidateVisualChild;
             visualChildren.CollectionChanged += VisualChildrenChanged;
             VisualChildren = visualChildren;
+            DisableTransitions();
         }
 
         /// <summary>
@@ -268,7 +269,7 @@ namespace Avalonia
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
         IRenderRoot IVisual.VisualRoot => VisualRoot;
-        
+
         TransformedBounds? IVisual.TransformedBounds
         {
             get { return _transformedBounds; }
@@ -333,7 +334,7 @@ namespace Avalonia
 
                     if (e.NewValue is IAffectsRender newValue)
                     {
-                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);                        
+                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);
                     }
 
                     sender.InvalidateVisual();
@@ -548,6 +549,7 @@ namespace Avalonia
             {
                 var e = new VisualTreeAttachmentEventArgs(old, VisualRoot);
                 OnDetachedFromVisualTreeCore(e);
+                DisableTransitions();
             }
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
@@ -555,6 +557,7 @@ namespace Avalonia
                 var root = this.GetVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
                 var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
                 OnAttachedToVisualTreeCore(e);
+                EnableTransitions();
             }
 
             OnVisualParentChanged(old, value);
