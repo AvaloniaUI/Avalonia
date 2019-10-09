@@ -10,12 +10,6 @@ class PlatformThreadingInterface;
 -(Signaler*) init;
 @end
 
-
-@interface ActionCallback : NSObject
-- (ActionCallback*) initWithCallback: (IAvnActionCallback*) callback;
-- (void) action;
-@end
-
 @implementation ActionCallback
 {
     ComPtr<IAvnActionCallback> _callback;

@@ -32,7 +32,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
+    public class Application : AvaloniaObject, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
     {
         /// <summary>
         /// The application-global data templates.
@@ -210,5 +210,22 @@ namespace Avalonia
         {
             ResourcesChanged?.Invoke(this, e);
         }
+
+        private string _name;
+        /// <summary>
+        /// Defines Name property
+        /// </summary>
+        public static readonly DirectProperty<Application, string> NameProperty =
+            AvaloniaProperty.RegisterDirect<Application, string>("Name", o => o.Name, (o, v) => o.Name = v);
+
+        /// <summary>
+        /// Application name to be used for various platform-specific purposes
+        /// </summary>
+        public string Name
+        {
+            get => _name;
+            set => SetAndRaise(NameProperty, ref _name, value);
+        }
+
     }
 }
