@@ -11,7 +11,7 @@ namespace Avalonia.Controls
 {
     public partial class NativeMenu : AvaloniaObject, IEnumerable<NativeMenuItemBase>
     {
-        private AvaloniaList<NativeMenuItemBase> _items =
+        private readonly AvaloniaList<NativeMenuItemBase> _items =
             new AvaloniaList<NativeMenuItemBase> { ResetBehavior = ResetBehavior.Remove };
         private NativeMenuItem _parent;
         [Content]

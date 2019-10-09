@@ -8,8 +8,7 @@ namespace Avalonia.Controls
     public partial class NativeMenu
     {
         public static readonly AttachedProperty<bool> IsNativeMenuExportedProperty =
-            AvaloniaProperty.RegisterAttached<NativeMenu, TopLevel, bool>("IsNativeMenuExported",
-                defaultBindingMode: BindingMode.OneWayToSource);
+            AvaloniaProperty.RegisterAttached<NativeMenu, TopLevel, bool>("IsNativeMenuExported");
 
         public static bool GetIsNativeMenuExported(TopLevel tl) => tl.GetValue(IsNativeMenuExportedProperty);
         
@@ -53,7 +52,7 @@ namespace Avalonia.Controls
         }
 
         public static readonly AttachedProperty<NativeMenu> MenuProperty
-            = AvaloniaProperty.RegisterAttached<NativeMenu, AvaloniaObject, NativeMenu>("NativeMenuItems", validate:
+            = AvaloniaProperty.RegisterAttached<NativeMenu, AvaloniaObject, NativeMenu>("Menu", validate:
                 (o, v) =>
                 {
                     if(!(o is Application || o is TopLevel))
