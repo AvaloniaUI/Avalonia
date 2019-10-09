@@ -8,6 +8,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Input;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.Presenters
@@ -154,6 +155,8 @@ namespace Avalonia.Controls.Presenters
                 ItemsChanged(e);
             }
         }
+
+        public virtual bool TryMoveFocus(NavigationDirection direction) => false;
 
         /// <summary>
         /// Creates the <see cref="ItemContainerGenerator"/> for the control.

@@ -29,6 +29,15 @@ namespace Avalonia.Controls.Presenters
         IControl TryGetElement(int index);
 
         /// <summary>
+        /// Scrolls the specified item into view.
+        /// </summary>
+        /// <param name="index">The index of the item.</param>
+        /// <returns>
+        /// True if the control was scrolled into view; otherwise false.
+        /// </returns>
+        bool ScrollIntoView(int index);
+
+        /// <summary>
         /// Occurs each time an element is prepared for use.
         /// </summary>
         /// <remarks>

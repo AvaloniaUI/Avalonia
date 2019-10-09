@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.Specialized;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Presenters
@@ -16,5 +17,7 @@ namespace Avalonia.Controls.Presenters
         void ItemsChanged(NotifyCollectionChangedEventArgs e);
 
         void ScrollIntoView(object item);
+
+        bool TryMoveFocus(NavigationDirection direction);
     }
 }

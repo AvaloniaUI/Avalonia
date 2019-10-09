@@ -71,8 +71,12 @@ namespace Avalonia.Input
         /// </returns>
         public static bool IsTab(this NavigationDirection direction)
         {
-            return direction == NavigationDirection.Next ||
-                direction == NavigationDirection.Previous;
+            return direction switch
+            {
+                NavigationDirection.Next => true,
+                NavigationDirection.Previous => true,
+                _ => false,
+            };
         }
 
         /// <summary>
@@ -80,14 +84,35 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="direction">The direction.</param>
         /// <returns>
-        /// True if the direction represents a directional movement (any value except 
-        /// <see cref="NavigationDirection.Next"/> and <see cref="NavigationDirection.Previous"/>);
-        /// otherwise false.
+        /// True if the direction represents a directional movement (Up, Down, Left, Right).
         /// </returns>
         public static bool IsDirectional(this NavigationDirection direction)
         {
-            return direction > NavigationDirection.Previous ||
-                direction <= NavigationDirection.PageDown;
+            return direction switch
+            {
+                NavigationDirection.Up => true,
+                NavigationDirection.Down => true,
+                NavigationDirection.Left => true,
+                NavigationDirection.Right => true,
+                _ => false,
+            };
+        }
+
+        /// <summary>
+        /// Checks whether a <see cref="NavigationDirection"/> represents a paging movement.
+        /// </summary>
+        /// <param name="direction">The direction.</param>
+        /// <returns>
+        /// True if the direction represents a paging movement (Page Up, Page Down).
+        /// </returns>
+        public static bool IsPaging(this NavigationDirection direction)
+        {
+            return direction switch
+            {
+                NavigationDirection.PageUp => true,
+                NavigationDirection.PageDown => true,
+                _ => false,
+            };
         }
 
         /// <summary>

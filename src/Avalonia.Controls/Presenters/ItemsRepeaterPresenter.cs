@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
+using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -26,6 +31,56 @@ namespace Avalonia.Controls.Presenters
 
         public void ScrollIntoView(object item)
         {
+            ScrollIntoView(Items.IndexOf(item));
+        }
+
+        public bool ScrollIntoView(int index)
+        {
+            var layoutManager = (VisualRoot as ILayoutRoot)?.LayoutManager;
+
+            if (index >= 0 && index < ItemsSourceView.Count && layoutManager != null)
+            {
+                var element = GetOrCreateElement(index);
+
+                if (element != null)
+                {
+                    layoutManager.ExecuteLayoutPass();
+                    element.BringIntoView();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool TryMoveFocus(NavigationDirection direction)
+        {
+            var focused = KeyboardNavigation.GetTabOnceActiveElement(this);
+            var index = -1;
+
+            if (focused is IControl focusedControl)
+            {
+                index = GetElementIndex(focusedControl);
+            }
+
+            if (index != -1)
+            { 
+                return direction switch
+                {
+                    NavigationDirection.Next => MoveFocusTo(index + 1),
+                    NavigationDirection.Previous => MoveFocusTo(index - 1),
+                    NavigationDirection.First => MoveFocusTo(0),
+                    NavigationDirection.Last => MoveFocusTo(ItemsSourceView?.Count - 1 ?? 0),
+                    NavigationDirection.Up => TryMoveFocusDirection(index, direction),
+                    NavigationDirection.Down => TryMoveFocusDirection(index, direction),
+                    NavigationDirection.Left => TryMoveFocusDirection(index, direction),
+                    NavigationDirection.Right => TryMoveFocusDirection(index, direction),
+                };
+            }
+            else
+            {
+                return ScrollIntoView(0);
+            }
         }
 
         bool IDataTemplate.Match(object data) => true;
@@ -58,6 +113,72 @@ namespace Avalonia.Controls.Presenters
                     result.GetObservable(DataContextProperty));
                 return result;
             }
+        }
+
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            var child = ((IVisual)e.Source).GetSelfAndVisualAncestors()
+                .FirstOrDefault(x => x.VisualParent == this);
+
+            if (child != null)
+            {
+                KeyboardNavigation.SetTabOnceActiveElement(this, (IInputElement)child);
+            }
+        }
+
+        private bool MoveFocusTo(int index)
+        {
+            var container = GetOrCreateElement(index);
+            FocusManager.Instance?.Focus(container, NavigationMethod.Directional);
+            return container != null;
+        }
+
+        private bool TryMoveFocusDirection(int index, NavigationDirection direction)
+        {
+            static double Distance(NavigationDirection direction, IInputElement from, IControl to)
+            {
+                return direction switch
+                {
+                    NavigationDirection.Left => from.Bounds.Right - to.Bounds.Right,
+                    NavigationDirection.Right => to.Bounds.X - from.Bounds.X,
+                    NavigationDirection.Up => from.Bounds.Bottom - to.Bounds.Bottom,
+                    NavigationDirection.Down => to.Bounds.Y - from.Bounds.Y,
+                    _ => double.MaxValue
+                };
+            }
+
+            var from = TryGetElement(index);
+
+            if (from == null)
+            {
+                return false;
+            }
+
+            IControl result = null;
+            var resultDistance = double.MaxValue;
+
+            foreach (var child in Children)
+            {
+                if (child != from)
+                {
+                    var distance = Distance(direction, from, child);
+
+                    if (distance > 0 && distance < resultDistance)
+                    {
+                        result = child;
+                        resultDistance = distance;
+                    }
+                }
+            }
+
+            if (result != null)
+            {
+                MoveFocusTo(GetElementIndex(result));
+            }
+
+            return result != null;
         }
 
         private void TemplatedParentChanged(AvaloniaPropertyChangedEventArgs e)

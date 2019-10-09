@@ -434,38 +434,13 @@ namespace Avalonia.Controls
         /// <param name="e">The key events.</param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (!e.Handled)
+            if (!e.Handled && Presenter != null)
             {
-                var focus = FocusManager.Instance;
                 var direction = e.Key.ToNavigationDirection();
-                var container = Presenter?.Panel as INavigableContainer;
 
-                if (container == null ||
-                    focus.Current == null ||
-                    direction == null ||
-                    direction.Value.IsTab())
+                if (direction.HasValue && Presenter.TryMoveFocus(direction.Value))
                 {
-                    return;
-                }
-
-                IVisual current = focus.Current;
-
-                while (current != null)
-                {
-                    if (current.VisualParent == container && current is IInputElement inputElement)
-                    {
-                        IInputElement next = GetNextControl(container, direction.Value, inputElement, false);
-
-                        if (next != null)
-                        {
-                            focus.Focus(next, NavigationMethod.Directional);
-                            e.Handled = true;
-                        }
-
-                        break;
-                    }
-
-                    current = current.VisualParent;
+                    e.Handled = true;
                 }
             }
 

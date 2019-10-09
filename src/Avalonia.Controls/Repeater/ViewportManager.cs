@@ -35,8 +35,8 @@ namespace Avalonia.Controls
         // actually happened. This can happen in cases where no scrollviewer
         // in the parent chain can scroll in the shift direction.
         private Point _unshiftableShift;
-        private double _maximumHorizontalCacheLength = 0.0;
-        private double _maximumVerticalCacheLength = 0.0;
+        private double _maximumHorizontalCacheLength = 2.0;
+        private double _maximumVerticalCacheLength = 2.0;
         private double _horizontalCacheBufferPerSide;
         private double _verticalCacheBufferPerSide;
         private bool _isBringIntoViewInProgress;
@@ -325,29 +325,28 @@ namespace Avalonia.Controls
                 // Note that the element being brought into view could be a descendant.
                 var targetChild = GetImmediateChildOfRepeater((IControl)args.TargetObject);
 
-                // Make sure that only the target child can be the anchor during the bring into view operation.
-                foreach (var child in _owner.Children)
-                {
-                    ////if (child.CanBeScrollAnchor && child != targetChild)
-                    ////{
-                    ////    child.CanBeScrollAnchor = false;
-                    ////}
-                }
-
-                // Register to rendering event to go back to how things were before where any child can be the anchor.
-                _isBringIntoViewInProgress = true;
-                ////if (!m_renderingToken)
+                ////// Make sure that only the target child can be the anchor during the bring into view operation.
+                ////foreach (var child in _owner.Children)
                 ////{
-                ////    winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{ nullptr };
-                ////    m_renderingToken = compositionTarget.Rendering(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnCompositionTargetRendering });
+                ////    if (child.CanBeScrollAnchor && child != targetChild)
+                ////    {
+                ////        child.CanBeScrollAnchor = false;
+                ////    }
                 ////}
+
+                // Register action to go back to how things were before where any child can be the anchor.
+                if (!_isBringIntoViewInProgress)
+                {
+                    _isBringIntoViewInProgress = true;
+                    Dispatcher.UIThread.Post(OnCompositionTargetRendering, DispatcherPriority.Render);
+                }
             }
         }
 
         private IControl GetImmediateChildOfRepeater(IControl descendant)
         {
-            var targetChild = descendant;
-            var parent = descendant.Parent;
+            var targetChild = (IVisual)descendant;
+            var parent = descendant.VisualParent;
             while (parent != null && parent != _owner)
             {
                 targetChild = parent;
@@ -359,7 +358,27 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("OnBringIntoViewRequested called with args.target element not under the ItemsRepeater that recieved the call");
             }
 
-            return targetChild;
+            return (IControl)targetChild;
+        }
+
+        private void OnCompositionTargetRendering()
+        {
+            _isBringIntoViewInProgress = false;
+            _makeAnchorElement = null;
+
+            // Now that the item has been brought into view, we can let the anchor provider pick a new anchor.
+            ////foreach (var child in _owner.Children)
+            ////{
+            ////    if (!child.CanBeScrollAnchor)
+            ////    {
+            ////        var info = ItemsRepeater.GetVirtualizationInfo(child);
+
+            ////        if (info.IsRealized && info.IsHeldByLayout)
+            ////        {
+            ////            child.CanBeScrollAnchor = true;
+            ////        }
+            ////    }
+            ////}
         }
 
         public void ResetScrollers()
