@@ -88,8 +88,9 @@ namespace Avalonia.Animation
         /// <param name="e">The event args.</param>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if ((_transitions?.Count ?? 0) == 0 ||
-                e.Priority == BindingPriority.Animation)
+            if (_disableCount > 0 ||
+                e.Priority == BindingPriority.Animation ||
+                (_transitions?.Count ?? 0) == 0)
                 return;
 
             if (_activeIterations is null)
@@ -100,11 +101,15 @@ namespace Avalonia.Animation
             {
                 if (transition.Property == e.Property)
                 {
+
+                    var oldValue = e.OldValue;
+                    
                     if (_activeIterations.TryGetValue(e.Property, out var oldIteration))
                         oldIteration.Dispose();
 
                     var clk = Clock ?? Avalonia.Animation.Clock.GlobalClock;
-                    var instance = transition.Apply(this, clk, e.OldValue, e.NewValue);
+
+                    var instance = transition.Apply(this, clk, oldValue, e.NewValue);
 
                     _activeIterations[e.Property] = instance;
 
