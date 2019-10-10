@@ -50,18 +50,12 @@ namespace Avalonia.Animation
                 if (_transitions is null)
                     _transitions = new Transitions();
 
-                if (_activeIterations is null)
-                    _activeIterations = new Dictionary<AvaloniaProperty, IDisposable>();
-
                 return _transitions;
             }
             set
             {
                 if (value is null)
                     return;
-
-                if (_activeIterations is null)
-                    _activeIterations = new Dictionary<AvaloniaProperty, IDisposable>();
 
                 SetAndRaise(TransitionsProperty, ref _transitions, value);
             }
@@ -74,12 +68,16 @@ namespace Avalonia.Animation
 
             if (_disableCount > 0 && (_activeIterations?.Count ?? 0) > 0)
             {
-                foreach (var iterationKP in _activeIterations.ToList())
+                var iterations = _activeIterations;
+
+                _activeIterations = null;
+
+                foreach (var iteration in iterations)
                 {
-                    iterationKP.Value?.Dispose();
+                    iteration.Value?.Dispose();
                 }
 
-                _activeIterations.Clear();
+                iterations.Clear();
             }
         }
 
@@ -90,19 +88,20 @@ namespace Avalonia.Animation
         /// <param name="e">The event args.</param>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (_transitions is null ||
-                _activeIterations is null ||
+            if ((_transitions?.Count ?? 0) == 0 ||
                 e.Priority == BindingPriority.Animation)
                 return;
+
+            if (_activeIterations is null)
+                _activeIterations = new Dictionary<AvaloniaProperty, IDisposable>();
 
             // PERF-SENSITIVE: Called on every property change. Don't use LINQ here (too many allocations).
             foreach (var transition in _transitions)
             {
                 if (transition.Property == e.Property)
                 {
-
-                    if (_activeIterations.TryGetValue(e.Property, out var dispose))
-                        dispose?.Dispose();
+                    if (_activeIterations.TryGetValue(e.Property, out var oldIteration))
+                        oldIteration.Dispose();
 
                     var clk = Clock ?? Avalonia.Animation.Clock.GlobalClock;
                     var instance = transition.Apply(this, clk, e.OldValue, e.NewValue);
