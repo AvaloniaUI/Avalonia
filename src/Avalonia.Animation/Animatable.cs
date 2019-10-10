@@ -38,7 +38,7 @@ namespace Avalonia.Animation
 
         private int _disableCount;
 
-        private Dictionary<AvaloniaProperty, IDisposable> _previousTransitions;
+        private Dictionary<AvaloniaProperty, IDisposable> _activeIterations;
 
         /// <summary>
         /// Gets or sets the property transitions for the control.
@@ -50,8 +50,8 @@ namespace Avalonia.Animation
                 if (_transitions is null)
                     _transitions = new Transitions();
 
-                if (_previousTransitions is null)
-                    _previousTransitions = new Dictionary<AvaloniaProperty, IDisposable>();
+                if (_activeIterations is null)
+                    _activeIterations = new Dictionary<AvaloniaProperty, IDisposable>();
 
                 return _transitions;
             }
@@ -60,15 +60,28 @@ namespace Avalonia.Animation
                 if (value is null)
                     return;
 
-                if (_previousTransitions is null)
-                    _previousTransitions = new Dictionary<AvaloniaProperty, IDisposable>();
+                if (_activeIterations is null)
+                    _activeIterations = new Dictionary<AvaloniaProperty, IDisposable>();
 
                 SetAndRaise(TransitionsProperty, ref _transitions, value);
             }
         }
 
         internal protected void EnableTransitions() => _disableCount--;
-        internal protected void DisableTransitions() => _disableCount++;
+        internal protected void DisableTransitions()
+        {
+            _disableCount++;
+
+            if (_disableCount > 0 && (_activeIterations?.Count ?? 0) > 0)
+            {
+                foreach (var iterationKP in _activeIterations.ToList())
+                {
+                    iterationKP.Value?.Dispose();
+                }
+
+                _activeIterations.Clear();
+            }
+        }
 
         /// <summary>
         /// Reacts to a change in a <see cref="AvaloniaProperty"/> value in 
@@ -77,10 +90,9 @@ namespace Avalonia.Animation
         /// <param name="e">The event args.</param>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (_transitions is null || 
-                _previousTransitions is null || 
-                e.Priority == BindingPriority.Animation || 
-                _disableCount > 0)
+            if (_transitions is null ||
+                _activeIterations is null ||
+                e.Priority == BindingPriority.Animation)
                 return;
 
             // PERF-SENSITIVE: Called on every property change. Don't use LINQ here (too many allocations).
@@ -88,12 +100,15 @@ namespace Avalonia.Animation
             {
                 if (transition.Property == e.Property)
                 {
-                    if (_previousTransitions.TryGetValue(e.Property, out var dispose))
-                        dispose.Dispose();
 
-                    var instance = transition.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
+                    if (_activeIterations.TryGetValue(e.Property, out var dispose))
+                        dispose?.Dispose();
 
-                    _previousTransitions[e.Property] = instance;
+                    var clk = Clock ?? Avalonia.Animation.Clock.GlobalClock;
+                    var instance = transition.Apply(this, clk, e.OldValue, e.NewValue);
+
+                    _activeIterations[e.Property] = instance;
+
                     return;
                 }
             }
