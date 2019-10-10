@@ -489,18 +489,20 @@ namespace Avalonia.Controls
             bool wrap)
         {
             IInputElement result;
+            var c = from;
 
             do
             {
-                result = container.GetControl(direction, from, wrap);
+                result = container.GetControl(direction, c, wrap);
+                from ??= result;
 
                 if (result?.Focusable == true)
                 {
                     return result;
                 }
 
-                from = result;
-            } while (from != null);
+                c = result;
+            } while (c != null && c != from);
 
             return null;
         }
