@@ -125,8 +125,7 @@ namespace Avalonia
             where T : AppBuilderBase<T>, new()
         {
             var lifetime = new ClassicDesktopStyleApplicationLifetime(builder.Instance) {ShutdownMode = shutdownMode};
-            builder.Instance.ApplicationLifetime = lifetime;
-            builder.SetupWithoutStarting();
+            builder.SetupWithLifetime(lifetime);
             return lifetime.Start(args);
         }
     }

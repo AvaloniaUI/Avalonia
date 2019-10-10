@@ -20,6 +20,7 @@ class WindowBaseImpl;
 -(void) pollModalSession: (NSModalSession _Nonnull) session;
 -(void) restoreParentWindow;
 -(bool) shouldTryToHandleEvents;
+-(void) applyMenu:(NSMenu *)menu;
 @end
 
 struct INSWindowHolder
