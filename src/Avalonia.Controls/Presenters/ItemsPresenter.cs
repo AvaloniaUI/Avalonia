@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Presenters
                 KeyboardNavigationMode.Once);
 
             VirtualizationModeProperty.Changed
-                .AddClassHandler<ItemsPresenter>((x,e) => x.VirtualizationModeChanged(e));
+                .AddClassHandler<ItemsPresenter>((x, e) => x.VirtualizationModeChanged(e));
         }
 
         /// <summary>

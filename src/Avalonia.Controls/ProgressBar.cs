@@ -39,8 +39,8 @@ namespace Avalonia.Controls
             PseudoClass<ProgressBar, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
             PseudoClass<ProgressBar>(IsIndeterminateProperty, ":indeterminate");
 
-            ValueProperty.Changed.AddClassHandler<ProgressBar>((x,e) => x.UpdateIndicatorWhenPropChanged(e));
-            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>((x,e) => x.UpdateIndicatorWhenPropChanged(e));
+            ValueProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
+            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
         }
 
         public bool IsIndeterminate

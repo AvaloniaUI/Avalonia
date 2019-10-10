@@ -723,29 +723,29 @@ namespace Avalonia.Controls
 
             PseudoClass<DataGrid, bool>(IsValidProperty, x => !x, ":invalid");
 
-            ItemsProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnItemsPropertyChanged(e));
-            CanUserResizeColumnsProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnCanUserResizeColumnsChanged(e));
-            ColumnWidthProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnColumnWidthChanged(e));
-            RowBackgroundProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnRowBackgroundChanged(e));
-            AlternatingRowBackgroundProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnRowBackgroundChanged(e));
-            FrozenColumnCountProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnFrozenColumnCountChanged(e));
-            GridLinesVisibilityProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnGridLinesVisibilityChanged(e));
-            HeadersVisibilityProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnHeadersVisibilityChanged(e));
-            HorizontalGridLinesBrushProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnHorizontalGridLinesBrushChanged(e));
-            IsReadOnlyProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnIsReadOnlyChanged(e));
-            MaxColumnWidthProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnMaxColumnWidthChanged(e));
-            MinColumnWidthProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnMinColumnWidthChanged(e));
-            RowHeightProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnRowHeightChanged(e));
-            RowHeaderWidthProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnRowHeaderWidthChanged(e));
-            SelectionModeProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnSelectionModeChanged(e));
-            VerticalGridLinesBrushProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnVerticalGridLinesBrushChanged(e));
-            SelectedIndexProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnSelectedIndexChanged(e));
-            SelectedItemProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnSelectedItemChanged(e));
-            IsEnabledProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.DataGrid_IsEnabledChanged(e));
-            AreRowGroupHeadersFrozenProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnAreRowGroupHeadersFrozenChanged(e));
-            RowDetailsTemplateProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnRowDetailsTemplateChanged(e));
-            RowDetailsVisibilityModeProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnRowDetailsVisibilityModeChanged(e));
-            AutoGenerateColumnsProperty.Changed.AddClassHandler<DataGrid>((x,e) => x.OnAutoGenerateColumnsChanged(e));
+            ItemsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnItemsPropertyChanged(e));
+            CanUserResizeColumnsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnCanUserResizeColumnsChanged(e));
+            ColumnWidthProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnColumnWidthChanged(e));
+            RowBackgroundProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnRowBackgroundChanged(e));
+            AlternatingRowBackgroundProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnRowBackgroundChanged(e));
+            FrozenColumnCountProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnFrozenColumnCountChanged(e));
+            GridLinesVisibilityProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnGridLinesVisibilityChanged(e));
+            HeadersVisibilityProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnHeadersVisibilityChanged(e));
+            HorizontalGridLinesBrushProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnHorizontalGridLinesBrushChanged(e));
+            IsReadOnlyProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnIsReadOnlyChanged(e));
+            MaxColumnWidthProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnMaxColumnWidthChanged(e));
+            MinColumnWidthProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnMinColumnWidthChanged(e));
+            RowHeightProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnRowHeightChanged(e));
+            RowHeaderWidthProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnRowHeaderWidthChanged(e));
+            SelectionModeProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnSelectionModeChanged(e));
+            VerticalGridLinesBrushProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnVerticalGridLinesBrushChanged(e));
+            SelectedIndexProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnSelectedIndexChanged(e));
+            SelectedItemProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnSelectedItemChanged(e));
+            IsEnabledProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.DataGrid_IsEnabledChanged(e));
+            AreRowGroupHeadersFrozenProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnAreRowGroupHeadersFrozenChanged(e));
+            RowDetailsTemplateProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnRowDetailsTemplateChanged(e));
+            RowDetailsVisibilityModeProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnRowDetailsVisibilityModeChanged(e));
+            AutoGenerateColumnsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnAutoGenerateColumnsChanged(e));
         }
 
         /// <summary>
@@ -3533,7 +3533,7 @@ namespace Avalonia.Controls
                 if (AreColumnHeadersVisible &&
                     _vScrollBar != null && _vScrollBar.IsVisible)
                 {
-                    _topRightCornerHeader.IsVisible = true; ;
+                    _topRightCornerHeader.IsVisible = true;
                 }
                 else
                 {
@@ -5594,7 +5594,7 @@ namespace Avalonia.Controls
                     {
                         // This will trigger a call to this method via Cells_SizeChanged for 
                         // which no processing is needed.
-                        _vScrollBar.IsVisible = true; ;
+                        _vScrollBar.IsVisible = true;
                         if (_vScrollBar.DesiredSize.Width == 0)
                         {
                             // We need to know the width for the rest of layout to work correctly so measure it now
