@@ -67,7 +67,7 @@ namespace Avalonia.Controls
 
         static DataGridColumnHeader()
         {
-            AreSeparatorsVisibleProperty.Changed.AddClassHandler<DataGridColumnHeader>(x => x.OnAreSeparatorsVisibleChanged);
+            AreSeparatorsVisibleProperty.Changed.AddClassHandler<DataGridColumnHeader>((x,e) => x.OnAreSeparatorsVisibleChanged(e));
         }
 
         /// <summary>
