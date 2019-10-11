@@ -130,6 +130,7 @@ namespace Avalonia.Native
         private static Dictionary<Key, OsxUnicodeSpecialKey> osxKeys = new Dictionary<Key, OsxUnicodeSpecialKey>
         {
             { Key.F1, OsxUnicodeSpecialKey.NSF1FunctionKey },
+            { Key.F4, OsxUnicodeSpecialKey.NSF4FunctionKey },
         };
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
@@ -233,7 +234,7 @@ namespace Avalonia.Native
         {
             if (osxKeys.ContainsKey(key))
             {
-                return Encoding.UTF8.GetString(BitConverter.GetBytes((ushort)osxKeys[key]));
+                return ((char)osxKeys[key]).ToString();
             }
             else
             {
