@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -13,7 +12,6 @@ using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Threading;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -430,7 +428,7 @@ namespace Avalonia.Win32
         }
         
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
-        protected virtual IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+        protected virtual unsafe IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             bool unicode = UnmanagedMethods.IsWindowUnicode(hWnd);
 
@@ -637,8 +635,12 @@ namespace Avalonia.Win32
                         PointToClient(PointFromLParam(lParam)), GetMouseModifiers(wParam));
                     break;
                 case WindowsMessage.WM_TOUCH:
-                    var touchInputs = new TOUCHINPUT[wParam.ToInt32()];
-                    if (GetTouchInputInfo(lParam, (uint)wParam.ToInt32(), touchInputs, Marshal.SizeOf<TOUCHINPUT>()))
+                    var touchInputCount = wParam.ToInt32();
+
+                    var pTouchInputs = stackalloc TOUCHINPUT[touchInputCount];
+                    var touchInputs = new Span<TOUCHINPUT>(pTouchInputs, touchInputCount);
+
+                    if (GetTouchInputInfo(lParam, (uint)touchInputCount, pTouchInputs, Marshal.SizeOf<TOUCHINPUT>()))
                     {
                         foreach (var touchInput in touchInputs)
                         {

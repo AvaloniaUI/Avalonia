@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -254,9 +256,18 @@ namespace Avalonia.Win32
                 return WriteFileListToHGlobal(ref hGlobal, files);
             if (data is Stream stream)
             {
-                byte[] buffer = new byte[stream.Length - stream.Position];
-                stream.Read(buffer, 0, buffer.Length);
-                return WriteBytesToHGlobal(ref hGlobal, buffer);
+                var length = (int)(stream.Length - stream.Position);
+                var buffer = ArrayPool<byte>.Shared.Rent(length);
+
+                try
+                {
+                    stream.Read(buffer, 0, length);
+                    return WriteBytesToHGlobal(ref hGlobal, buffer.AsSpan(0, length));
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
             }
             if (data is IEnumerable<byte> bytes)
             {
@@ -277,7 +288,7 @@ namespace Avalonia.Win32
             }
         }
 
-        private int WriteBytesToHGlobal(ref IntPtr hGlobal, byte[] data)
+        private unsafe int WriteBytesToHGlobal(ref IntPtr hGlobal, ReadOnlySpan<byte> data)
         {
             int required = data.Length;
             if (hGlobal == IntPtr.Zero)
@@ -287,10 +298,12 @@ namespace Avalonia.Win32
             if (required > available)
                 return STG_E_MEDIUMFULL;
 
-            IntPtr ptr = UnmanagedMethods.GlobalLock(hGlobal);
+            var ptr = UnmanagedMethods.GlobalLock(hGlobal);
+            Debug.Assert(ptr == hGlobal);
+
             try
             {
-                Marshal.Copy(data, 0, ptr, data.Length);
+                data.CopyTo(new Span<byte>((void*)ptr, data.Length));
                 return unchecked((int)UnmanagedMethods.HRESULT.S_OK);
             }
             finally

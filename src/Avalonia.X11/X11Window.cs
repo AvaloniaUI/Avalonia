@@ -6,7 +6,9 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Text;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.FreeDesktop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
@@ -19,7 +21,7 @@ using static Avalonia.X11.XLib;
 // ReSharper disable StringLiteralTypo
 namespace Avalonia.X11
 {
-    unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client
+    unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client, ITopLevelImplWithNativeMenuExporter
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IWindowImpl _popupParent;
@@ -98,14 +100,29 @@ namespace Avalonia.X11
                 valueMask |= SetWindowValuemask.ColorMap;   
             }
 
-            _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, 300, 200, 0,
+            int defaultWidth = 300, defaultHeight = 200;
+
+            if (!_popup && Screen != null)
+            {
+                var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
+                   .FirstOrDefault(m => m.Bounds.Contains(Position));
+
+                if (monitor != null)
+                {
+                    // Emulate Window 7+'s default window size behavior.
+                    defaultWidth = (int)(monitor.WorkingArea.Width * 0.75d);
+                    defaultHeight = (int)(monitor.WorkingArea.Height * 0.7d);
+                }
+            }
+
+            _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, defaultWidth, defaultHeight, 0,
                 depth,
                 (int)CreateWindowArgs.InputOutput, 
                 visual,
                 new UIntPtr((uint)valueMask), ref attr);
 
             if (_useRenderWindow)
-                _renderHandle = XCreateWindow(_x11.Display, _handle, 0, 0, 300, 200, 0, depth,
+                _renderHandle = XCreateWindow(_x11.Display, _handle, 0, 0, defaultWidth, defaultHeight, 0, depth,
                     (int)CreateWindowArgs.InputOutput,
                     visual,
                     new UIntPtr((uint)(SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
@@ -155,6 +172,8 @@ namespace Avalonia.X11
             XFlush(_x11.Display);
             if(_popup)
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
+            if (platform.Options.UseDBusMenu)
+                NativeMenuExporter = DBusMenuExporter.TryCreate(_handle);
         }
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -960,5 +979,6 @@ namespace Avalonia.X11
         }
 
         public IPopupPositioner PopupPositioner { get; }
+        public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
     }
 }

@@ -1,13 +1,14 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 
 namespace Avalonia.VisualTree
 {
     /// <summary>
     /// Holds information about the bounds of a control, together with a transform and a clip.
     /// </summary>
-    public readonly struct TransformedBounds
+    public readonly struct TransformedBounds : IEquatable<TransformedBounds>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TransformedBounds"/> struct.
@@ -56,15 +57,7 @@ namespace Avalonia.VisualTree
             return Bounds == other.Bounds && Clip == other.Clip && Transform == other.Transform;
         }
 
-        public override bool Equals(object obj)
-        {
-            if (obj is null)
-            {
-                return false;
-            }
-
-            return obj is TransformedBounds other && Equals(other);
-        }
+        public override bool Equals(object obj) => obj is TransformedBounds other && Equals(other);
 
         public override int GetHashCode()
         {

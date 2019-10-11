@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -86,15 +88,8 @@ namespace Avalonia.Win32
             return null;
         }
 
-        private bool IsSerializedObject(byte[] data)
-        {
-            if (data.Length < DataObject.SerializedObjectGUID.Length)
-                return false;
-            for (int i = 0; i < DataObject.SerializedObjectGUID.Length; i++)
-                if (data[i] != DataObject.SerializedObjectGUID[i])
-                    return false;
-            return true;
-        }
+        private static bool IsSerializedObject(ReadOnlySpan<byte> data) =>
+            data.StartsWith(DataObject.SerializedObjectGUID);
 
         private static IEnumerable<string> ReadFileNamesFromHGlobal(IntPtr hGlobal)
         {
@@ -148,21 +143,33 @@ namespace Avalonia.Win32
         private IEnumerable<string> GetDataFormatsCore()
         {
             var enumFormat = _wrapped.EnumFormatEtc(DATADIR.DATADIR_GET);
+
             if (enumFormat != null)
             {
                 enumFormat.Reset();
-                FORMATETC[] formats = new FORMATETC[1];
-                int[] fetched = { 1 };
-                while (fetched[0] > 0)
+                
+                var formats = ArrayPool<FORMATETC>.Shared.Rent(1);
+                var fetched = ArrayPool<int>.Shared.Rent(1);
+
+                try
                 {
-                    fetched[0] = 0;
-                    if (enumFormat.Next(1, formats, fetched) == 0 && fetched[0] > 0)
+                    do
                     {
-                        if (formats[0].ptd != IntPtr.Zero)
-                            Marshal.FreeCoTaskMem(formats[0].ptd);
-                        
-                        yield return ClipboardFormats.GetFormat(formats[0].cfFormat);
+                        fetched[0] = 0;
+                        if (enumFormat.Next(1, formats, fetched) == 0 && fetched[0] > 0)
+                        {
+                            if (formats[0].ptd != IntPtr.Zero)
+                                Marshal.FreeCoTaskMem(formats[0].ptd);
+
+                            yield return ClipboardFormats.GetFormat(formats[0].cfFormat);
+                        }
                     }
+                    while (fetched[0] > 0);
+                }
+                finally
+                {
+                    ArrayPool<FORMATETC>.Shared.Return(formats);
+                    ArrayPool<int>.Shared.Return(fetched);
                 }
             }
         }

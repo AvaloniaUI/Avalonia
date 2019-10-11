@@ -73,7 +73,7 @@ namespace Avalonia
         /// </summary>
         static StyledElement()
         {
-            DataContextProperty.Changed.AddClassHandler<StyledElement>(x => x.OnDataContextChangedCore);
+            DataContextProperty.Changed.AddClassHandler<StyledElement>((x,e) => x.OnDataContextChangedCore(e));
         }
 
         /// <summary>
@@ -743,11 +743,11 @@ namespace Avalonia
 #if DEBUG
                 if (((INotifyCollectionChangedDebug)_classes).GetCollectionChangedSubscribers()?.Length > 0)
                 {
-                    Logger.Warning(
+                    Logger.TryGet(LogEventLevel.Warning)?.Log(
                         LogArea.Control,
                         this,
                         "{Type} detached from logical tree but still has class listeners",
-                        this.GetType());
+                        GetType());
                 }
 #endif
             }

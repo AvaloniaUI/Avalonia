@@ -18,8 +18,9 @@ namespace Avalonia.Styling
     internal class TypeNameAndClassSelector : Selector
     {
         private readonly Selector _previous;
+        private readonly Lazy<List<string>> _classes = new Lazy<List<string>>(() => new List<string>());
         private Type _targetType;
-        private Lazy<List<string>> _classes = new Lazy<List<string>>(() => new List<string>());
+        
         private string _selectorString;
 
         public static TypeNameAndClassSelector OfType(Selector previous, Type targetType)
@@ -27,6 +28,7 @@ namespace Avalonia.Styling
             var result = new TypeNameAndClassSelector(previous);
             result._targetType = targetType;
             result.IsConcreteType = true;
+
             return result;
         }
 
@@ -35,6 +37,7 @@ namespace Avalonia.Styling
             var result = new TypeNameAndClassSelector(previous);
             result._targetType = targetType;
             result.IsConcreteType = false;
+
             return result;
         }
 
@@ -42,6 +45,7 @@ namespace Avalonia.Styling
         {
             var result = new TypeNameAndClassSelector(previous);
             result.Name = name;
+
             return result;
         }
 
@@ -49,6 +53,7 @@ namespace Avalonia.Styling
         {
             var result = new TypeNameAndClassSelector(previous);
             result.Classes.Add(className);
+
             return result;
         }
 
@@ -126,9 +131,11 @@ namespace Avalonia.Styling
                 if (subscribe)
                 {
                     var observable = new ClassObserver(control.Classes, _classes.Value);
+
                     return new SelectorMatch(observable);
                 }
-                else if (!Matches(control.Classes))
+
+                if (!AreClassesMatching(control.Classes, Classes))
                 {
                     return SelectorMatch.NeverThisInstance;
                 }
@@ -138,21 +145,6 @@ namespace Avalonia.Styling
         }
 
         protected override Selector MovePrevious() => _previous;
-
-        private bool Matches(IEnumerable<string> classes)
-        {
-            int remaining = Classes.Count;
-
-            foreach (var c in classes)
-            {
-                if (Classes.Contains(c))
-                {
-                    --remaining;
-                }
-            }
-
-            return remaining == 0;
-        }
 
         private string BuildSelectorString()
         {
@@ -199,11 +191,41 @@ namespace Avalonia.Styling
             return builder.ToString();
         }
 
-        private class ClassObserver : LightweightObservableBase<bool>
+        private static bool AreClassesMatching(IReadOnlyList<string> classes, IList<string> toMatch)
         {
-            readonly IList<string> _match;
-            IAvaloniaReadOnlyList<string> _classes;
-            bool _value;
+            int remainingMatches = toMatch.Count;
+            int classesCount = classes.Count;
+
+            // Early bail out - we can't match if control does not have enough classes.
+            if (classesCount < remainingMatches)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < classesCount; i++)
+            {
+                var c = classes[i];
+
+                if (toMatch.Contains(c))
+                {
+                    --remainingMatches;
+
+                    // Already matched so we can skip checking other classes.
+                    if (remainingMatches == 0)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return remainingMatches == 0;
+        }
+
+        private sealed class ClassObserver : LightweightObservableBase<bool>
+        {
+            private readonly IList<string> _match;
+            private readonly IAvaloniaReadOnlyList<string> _classes;
+            private bool _hasMatch;
 
             public ClassObserver(IAvaloniaReadOnlyList<string> classes, IList<string> match)
             {
@@ -215,42 +237,32 @@ namespace Avalonia.Styling
 
             protected override void Initialize()
             {
-                _value = GetResult();
+                _hasMatch = IsMatching();
                 _classes.CollectionChanged += ClassesChanged;
             }
 
             protected override void Subscribed(IObserver<bool> observer, bool first)
             {
-                observer.OnNext(_value);
+                observer.OnNext(_hasMatch);
             }
 
             private void ClassesChanged(object sender, NotifyCollectionChangedEventArgs e)
             {
                 if (e.Action != NotifyCollectionChangedAction.Move)
                 {
-                    var value = GetResult();
+                    var hasMatch = IsMatching();
 
-                    if (value != _value)
+                    if (hasMatch != _hasMatch)
                     {
-                        PublishNext(GetResult());
-                        _value = value;
+                        PublishNext(hasMatch);
+                        _hasMatch = hasMatch;
                     }
                 }
             }
 
-            private bool GetResult()
+            private bool IsMatching()
             {
-                int remaining = _match.Count;
-
-                foreach (var c in _classes)
-                {
-                    if (_match.Contains(c))
-                    {
-                        --remaining;
-                    }
-                }
-
-                return remaining == 0;
+                return AreClassesMatching(_classes, _match);
             }
         }
     }

@@ -1,8 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Avalonia.Input.UnitTests
@@ -11,13 +7,11 @@ namespace Avalonia.Input.UnitTests
     {
         public static readonly IEnumerable<object[]> SampleData = new object[][]
         {
-            new object[]{"Ctrl+A", new KeyGesture {Key = Key.A, Modifiers = InputModifiers.Control}},
-            new object[]{"  \tShift\t+Alt +B", new KeyGesture {Key = Key.B, Modifiers = InputModifiers.Shift|InputModifiers.Alt} },
-            new object[]{"Control++", new KeyGesture {Key = Key.OemPlus, Modifiers = InputModifiers.Control} }
+            new object[]{"Ctrl+A", new KeyGesture(Key.A, InputModifiers.Control)},
+            new object[]{"  \tShift\t+Alt +B", new KeyGesture(Key.B, InputModifiers.Shift | InputModifiers.Alt) },
+            new object[]{"Control++", new KeyGesture(Key.OemPlus, InputModifiers.Control) }
         };
-            
-            
-            
+
         [Theory]
         [MemberData(nameof(SampleData))]
         public void Key_Gesture_Is_Able_To_Parse_Sample_Data(string text, KeyGesture gesture)
@@ -31,10 +25,8 @@ namespace Avalonia.Input.UnitTests
         [InlineData(Key.OemPeriod, Key.Decimal)]
         public void Key_Gesture_Matches_NumPad_To_Regular_Digit(Key gestureKey, Key pressedKey)
         {
-            var keyGesture = new KeyGesture
-            {
-                Key = gestureKey
-            };
+            var keyGesture = new KeyGesture(gestureKey);
+
             Assert.True(keyGesture.Matches(new KeyEventArgs
             {
                 Key = pressedKey

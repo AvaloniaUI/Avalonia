@@ -51,4 +51,5 @@
   <StyleInclude Source="resm:Avalonia.Themes.Default.AutoCompleteBox.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.WindowNotificationManager.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.NotificationCard.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.NativeMenuBar.xaml?assembly=Avalonia.Themes.Default"/>
 </Styles>

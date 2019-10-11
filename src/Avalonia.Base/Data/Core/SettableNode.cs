@@ -29,6 +29,11 @@ namespace Avalonia.Data.Core
 
             if (!isLastValueAlive)
             {
+                if (value == null && LastValue == NullReference)
+                {
+                    return true;
+                }
+
                 return false;
             }
 

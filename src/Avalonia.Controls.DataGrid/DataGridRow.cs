@@ -116,10 +116,10 @@ namespace Avalonia.Controls
 
         static DataGridRow()
         {
-            HeaderProperty.Changed.AddClassHandler<DataGridRow>(x => x.OnHeaderChanged);
-            DetailsTemplateProperty.Changed.AddClassHandler<DataGridRow>(x => x.OnDetailsTemplateChanged);
-            AreDetailsVisibleProperty.Changed.AddClassHandler<DataGridRow>(x => x.OnAreDetailsVisibleChanged);
-            PointerPressedEvent.AddClassHandler<DataGridRow>(x => x.DataGridRow_PointerPressed, handledEventsToo: true);
+            HeaderProperty.Changed.AddClassHandler<DataGridRow>((x, e) => x.OnHeaderChanged(e));
+            DetailsTemplateProperty.Changed.AddClassHandler<DataGridRow>((x, e) => x.OnDetailsTemplateChanged(e));
+            AreDetailsVisibleProperty.Changed.AddClassHandler<DataGridRow>((x, e) => x.OnAreDetailsVisibleChanged(e));
+            PointerPressedEvent.AddClassHandler<DataGridRow>((x, e) => x.DataGridRow_PointerPressed(e), handledEventsToo: true);
         }
 
         /// <summary>

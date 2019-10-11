@@ -54,7 +54,7 @@ namespace Avalonia.Controls
             SelectableMixin.Attach<TreeViewItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue<TreeViewItem>(true);
             ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);
-            RequestBringIntoViewEvent.AddClassHandler<TreeViewItem>(x => x.OnRequestBringIntoView);
+            RequestBringIntoViewEvent.AddClassHandler<TreeViewItem>((x, e) => x.OnRequestBringIntoView(e));
         }
 
         /// <summary>
@@ -173,7 +173,7 @@ namespace Avalonia.Controls
         {
             var result = 0;
 
-            while (logical != null && logical.GetType() != typeof(T))
+            while (logical != null && !(logical is T))
             {
                 ++result;
                 logical = logical.LogicalParent;

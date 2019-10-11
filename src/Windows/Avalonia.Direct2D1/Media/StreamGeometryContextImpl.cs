@@ -85,7 +85,7 @@ namespace Avalonia.Direct2D1.Media
             }
             catch (Exception ex)
             {
-                Logger.Error(
+                Logger.TryGet(LogEventLevel.Error)?.Log(
                     LogArea.Visual,
                     this,
                     "GeometrySink.Close exception: {Exception}",

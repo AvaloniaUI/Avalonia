@@ -91,7 +91,19 @@ namespace Avalonia.Rendering
             {
                 try
                 {
-                    if (_items.Any(item => item.NeedsUpdate) &&
+                    bool needsUpdate = false;
+
+                    foreach (IRenderLoopTask item in _items)
+                    {
+                        if (item.NeedsUpdate)
+                        {
+                            needsUpdate = true;
+
+                            break;
+                        }
+                    }
+
+                    if (needsUpdate &&
                         Interlocked.CompareExchange(ref _inUpdate, 1, 0) == 0)
                     {
                         _dispatcher.Post(() =>
@@ -108,7 +120,7 @@ namespace Avalonia.Rendering
                                     }
                                     catch (Exception ex)
                                     {
-                                        Logger.Error(LogArea.Visual, this, "Exception in render update: {Error}", ex);
+                                        Logger.TryGet(LogEventLevel.Error)?.Log(LogArea.Visual, this, "Exception in render update: {Error}", ex);
                                     }
                                 }
                             }
@@ -124,7 +136,7 @@ namespace Avalonia.Rendering
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(LogArea.Visual, this, "Exception in render loop: {Error}", ex);
+                    Logger.TryGet(LogEventLevel.Error)?.Log(LogArea.Visual, this, "Exception in render loop: {Error}", ex);
                 }
                 finally
                 {
