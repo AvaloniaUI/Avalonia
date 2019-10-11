@@ -73,7 +73,7 @@ namespace Avalonia
         /// </summary>
         static StyledElement()
         {
-            DataContextProperty.Changed.AddClassHandler<StyledElement>(x => x.OnDataContextChangedCore);
+            DataContextProperty.Changed.AddClassHandler<StyledElement>((x,e) => x.OnDataContextChangedCore(e));
         }
 
         /// <summary>

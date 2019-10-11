@@ -9,6 +9,7 @@ using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
@@ -27,15 +28,17 @@ namespace Avalonia.Native
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(500); //TODO
 
-        public static void Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
+        public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
-            new AvaloniaNativePlatform(new IAvaloniaNativeFactory(factory))
-                .DoInitialize(options);
+            var result =  new AvaloniaNativePlatform(new IAvaloniaNativeFactory(factory));
+            result.DoInitialize(options);
+
+            return result;
         }
 
         delegate IntPtr CreateAvaloniaNativeDelegate();
 
-        public static void Initialize(AvaloniaNativePlatformOptions options)
+        public static AvaloniaNativePlatform Initialize(AvaloniaNativePlatformOptions options)
         {
             if (options.AvaloniaNativeLibraryPath != null)
             {
@@ -48,10 +51,26 @@ namespace Avalonia.Native
                 var d = Marshal.GetDelegateForFunctionPointer<CreateAvaloniaNativeDelegate>(proc);
 
 
-                Initialize(d(), options);
+                return Initialize(d(), options);
             }
             else
-                Initialize(CreateAvaloniaNative(), options);
+                return Initialize(CreateAvaloniaNative(), options);
+        }
+
+        public void SetupApplicationMenuExporter ()
+        {
+            var exporter = new AvaloniaNativeMenuExporter(_factory);
+        }
+
+        public void SetupApplicationName ()
+        {
+            if(!string.IsNullOrWhiteSpace(Application.Current.Name))
+            {
+                using (var buffer = new Utf8Buffer(Application.Current.Name))
+                {
+                    _factory.MacOptions.SetApplicationTitle(buffer.DangerousGetHandle());
+                }
+            }
         }
 
         private AvaloniaNativePlatform(IAvaloniaNativeFactory factory)
@@ -66,6 +85,7 @@ namespace Avalonia.Native
             if (_factory.MacOptions != null)
             {
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
+
                 _factory.MacOptions.ShowInDock = macOpts?.ShowInDock != false ? 1 : 0;
             }
 

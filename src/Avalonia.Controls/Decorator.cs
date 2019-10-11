@@ -29,7 +29,7 @@ namespace Avalonia.Controls
         static Decorator()
         {
             AffectsMeasure<Decorator>(ChildProperty, PaddingProperty);
-            ChildProperty.Changed.AddClassHandler<Decorator>(x => x.ChildChanged);
+            ChildProperty.Changed.AddClassHandler<Decorator>((x, e) => x.ChildChanged(e));
         }
 
         /// <summary>

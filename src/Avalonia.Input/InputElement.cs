@@ -169,18 +169,18 @@ namespace Avalonia.Input
         {
             IsEnabledProperty.Changed.Subscribe(IsEnabledChanged);
 
-            GotFocusEvent.AddClassHandler<InputElement>(x => x.OnGotFocus);
-            LostFocusEvent.AddClassHandler<InputElement>(x => x.OnLostFocus);
-            KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown);
-            KeyUpEvent.AddClassHandler<InputElement>(x => x.OnKeyUp);
-            TextInputEvent.AddClassHandler<InputElement>(x => x.OnTextInput);
-            PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnterCore);
-            PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeaveCore);
-            PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved);
-            PointerPressedEvent.AddClassHandler<InputElement>(x => x.OnPointerPressed);
-            PointerReleasedEvent.AddClassHandler<InputElement>(x => x.OnPointerReleased);
-            PointerCaptureLostEvent.AddClassHandler<InputElement>(x => x.OnPointerCaptureLost);
-            PointerWheelChangedEvent.AddClassHandler<InputElement>(x => x.OnPointerWheelChanged);
+            GotFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGotFocus(e));
+            LostFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLostFocus(e));
+            KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyDown(e));
+            KeyUpEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyUp(e));
+            TextInputEvent.AddClassHandler<InputElement>((x, e) => x.OnTextInput(e));
+            PointerEnterEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerEnterCore(e));
+            PointerLeaveEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerLeaveCore(e));
+            PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerMoved(e));
+            PointerPressedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerPressed(e));
+            PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
+            PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
+            PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
 
             PseudoClass<InputElement, bool>(IsEffectivelyEnabledProperty, x => !x, ":disabled");
             PseudoClass<InputElement>(IsFocusedProperty, ":focus");

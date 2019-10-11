@@ -5,6 +5,7 @@
 #include "window.h"
 #include "KeyTransform.h"
 #include "cursor.h"
+#include "menu.h"
 #include <OpenGL/gl.h>
 
 class SoftwareDrawingOperation
@@ -63,9 +64,11 @@ public:
     SoftwareDrawingOperation CurrentSwDrawingOperation;
     AvnPoint lastPositionSet;
     NSString* _lastTitle;
+    IAvnAppMenu* _mainMenu;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events)
     {
+        _mainMenu = nullptr;
         BaseEvents = events;
         View = [[AvnView alloc] initWithParent:this];
 
@@ -93,6 +96,7 @@ public:
             UpdateStyle();
             
             [Window makeKeyAndOrderFront:Window];
+            [NSApp activateIgnoringOtherApps:YES];
             
             [Window setTitle:_lastTitle];
             [Window setTitleVisibility:NSWindowTitleVisible];
@@ -122,6 +126,7 @@ public:
             if(Window != nullptr)
             {
                 [Window makeKeyWindow];
+                [NSApp activateIgnoringOtherApps:YES];
             }
         }
         
@@ -207,6 +212,31 @@ public:
             
             return S_OK;
         }
+    }
+    
+    virtual HRESULT SetMainMenu(IAvnAppMenu* menu) override
+    {
+        _mainMenu = menu;
+        
+        auto nativeMenu = dynamic_cast<AvnAppMenu*>(menu);
+        
+        auto nsmenu = nativeMenu->GetNative();
+        
+        [Window applyMenu:nsmenu];
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT ObtainMainMenu(IAvnAppMenu** ret) override
+    {
+        if(ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret = _mainMenu;
+        
+        return S_OK;
     }
     
     virtual bool TryLock() override
@@ -1042,6 +1072,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     ComPtr<WindowBaseImpl> _parent;
     bool _canBecomeKeyAndMain;
     bool _closed;
+    NSMenu* _menu;
+    bool _isAppMenuApplied;
 }
 
 - (void)dealloc
@@ -1062,6 +1094,32 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         [self orderOut:self];
         [NSApp endModalSession:session];
+    }
+}
+
+-(void) applyMenu:(NSMenu *)menu
+{
+    if(menu == nullptr)
+    {
+        menu = [NSMenu new];
+    }
+    
+    _menu = menu;
+    
+    if ([self isKeyWindow])
+    {
+        auto appMenu = ::GetAppMenuItem();
+        
+        if(appMenu != nullptr)
+        {
+            [[appMenu menu] removeItem:appMenu];
+            
+            [_menu insertItem:appMenu atIndex:0];
+            
+            _isAppMenuApplied = true;
+        }
+        
+        [NSApp setMenu:menu];
     }
 }
 
@@ -1157,6 +1215,24 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     if([self activateAppropriateChild: true])
     {
+        if(_menu == nullptr)
+        {
+            _menu = [NSMenu new];
+        }
+        
+        auto appMenu = ::GetAppMenuItem();
+        
+        if(appMenu != nullptr)
+        {
+            [[appMenu menu] removeItem:appMenu];
+            
+            [_menu insertItem:appMenu atIndex:0];
+            
+            _isAppMenuApplied = true;
+        }
+        
+        [NSApp setMenu:_menu];
+        
         _parent->BaseEvents->Activated();
         [super becomeKeyWindow];
     }
@@ -1201,6 +1277,28 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     if(_parent)
         _parent->BaseEvents->Deactivated();
+    
+    auto appMenuItem = ::GetAppMenuItem();
+    
+    if(appMenuItem != nullptr)
+    {
+        auto appMenu = ::GetAppMenu();
+        
+        auto nativeAppMenu = dynamic_cast<AvnAppMenu*>(appMenu);
+        
+        [[appMenuItem menu] removeItem:appMenuItem];
+        
+        [nativeAppMenu->GetNative() addItem:appMenuItem];
+        
+        [NSApp setMenu:nativeAppMenu->GetNative()];
+    }
+    else
+    {
+        [NSApp setMenu:nullptr];
+    }
+    
+    // remove window menu items from appmenu?
+    
     [super resignKeyWindow];
 }
 
