@@ -271,7 +271,7 @@ namespace Avalonia.Controls
         {
             (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
             PlatformImpl = null;
-            Closed?.Invoke(this, EventArgs.Empty);
+            OnClosed(EventArgs.Empty);
             Renderer?.Dispose();
             Renderer = null;
         }
@@ -316,6 +316,12 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnOpened(EventArgs e) => Opened?.Invoke(this, e);
+
+        /// <summary>
+        /// Raises the <see cref="Closed"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnClosed(EventArgs e) => Closed?.Invoke(this, e);
 
         /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a
