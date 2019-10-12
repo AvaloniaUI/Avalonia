@@ -43,7 +43,7 @@ namespace Avalonia.Controls
 
         static ContentControl()
         {
-            ContentProperty.Changed.AddClassHandler<ContentControl>(x => x.ContentChanged);
+            ContentProperty.Changed.AddClassHandler<ContentControl>((x, e) => x.ContentChanged(e));
         }
 
         /// <summary>

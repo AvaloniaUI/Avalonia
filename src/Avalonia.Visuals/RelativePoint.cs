@@ -107,10 +107,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="obj">The other object.</param>
         /// <returns>True if the objects are equal, otherwise false.</returns>
-        public override bool Equals(object obj)
-        {
-            return (obj is RelativePoint) && Equals((RelativePoint)obj);
-        }
+        public override bool Equals(object obj) => obj is RelativePoint other && Equals(other);
 
         /// <summary>
         /// Checks if the <see cref="RelativePoint"/> equals another point.
@@ -130,10 +127,7 @@ namespace Avalonia
         {
             unchecked
             {
-                int hash = 17;
-                hash = (hash * 23) + Unit.GetHashCode();
-                hash = (hash * 23) + Point.GetHashCode();
-                return hash;
+                return (_point.GetHashCode() * 397) ^ (int)_unit;
             }
         }
 
@@ -156,7 +150,7 @@ namespace Avalonia
         /// <returns>The parsed <see cref="RelativePoint"/>.</returns>
         public static RelativePoint Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid RelativePoint"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid RelativePoint."))
             {
                 var x = tokenizer.ReadString();
                 var y = tokenizer.ReadString();

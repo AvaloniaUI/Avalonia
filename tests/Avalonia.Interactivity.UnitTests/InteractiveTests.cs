@@ -331,7 +331,7 @@ namespace Avalonia.Interactivity.UnitTests
 
             var target = CreateTree(ev, null, 0);
 
-            ev.AddClassHandler<TestInteractive>(x => x.ClassHandler, RoutingStrategies.Bubble);
+            ev.AddClassHandler<TestInteractive>((x, e) => x.ClassHandler(e), RoutingStrategies.Bubble);
 
             var args = new RoutedEventArgs(ev, target);
             target.RaiseEvent(args);
