@@ -156,7 +156,7 @@ namespace Avalonia.Input
         /// </summary>
         public MouseButton InitialPressMouseButton { get; }
 
-        [Obsolete("Either use GetCurrentPoint(this).Properties.PointerUpdateKind or InitialPressMouseButton, see ", true)]
+        [Obsolete("Either use GetCurrentPoint(this).Properties.PointerUpdateKind or InitialPressMouseButton, see https://github.com/AvaloniaUI/Avalonia/wiki/Pointer-events-in-0.9 for more details", true)]
         public MouseButton MouseButton => InitialPressMouseButton;
     }
 
