@@ -178,7 +178,7 @@ namespace Avalonia.Controls.Utils
         /// <param name="e">The event data.</param>
         private void OnSelectorPointerReleased(object sender, PointerReleasedEventArgs e)
         {
-            if (e.MouseButton == MouseButton.Left)
+            if (e.InitialPressMouseButton == MouseButton.Left)
             {
                 OnCommit();
             }

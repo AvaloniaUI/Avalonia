@@ -49,17 +49,6 @@ namespace Avalonia.Input
         }
 
         public static PointerPointProperties None { get; } = new PointerPointProperties();
-        
-        public MouseButton GetObsoleteMouseButton()
-        {
-            if (PointerUpdateKind == PointerUpdateKind.LeftButtonPressed || PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
-                return MouseButton.Left;
-            if (PointerUpdateKind == PointerUpdateKind.MiddleButtonPressed || PointerUpdateKind == PointerUpdateKind.MiddleButtonReleased)
-                return MouseButton.Middle;
-            if (PointerUpdateKind == PointerUpdateKind.RightButtonPressed || PointerUpdateKind == PointerUpdateKind.RightButtonReleased)
-                return MouseButton.Right;
-            return MouseButton.None;
-        }
     }
 
     public enum PointerUpdateKind
@@ -71,5 +60,19 @@ namespace Avalonia.Input
         MiddleButtonReleased,
         RightButtonReleased,
         Other
+    }
+
+    public static class PointerUpdateKindExtensions
+    {
+        public static MouseButton GetMouseButton(this PointerUpdateKind kind)
+        {
+            if (kind == PointerUpdateKind.LeftButtonPressed || kind == PointerUpdateKind.LeftButtonReleased)
+                return MouseButton.Left;
+            if (kind == PointerUpdateKind.MiddleButtonPressed || kind == PointerUpdateKind.MiddleButtonReleased)
+                return MouseButton.Middle;
+            if (kind == PointerUpdateKind.RightButtonPressed || kind == PointerUpdateKind.RightButtonReleased)
+                return MouseButton.Right;
+            return MouseButton.None;
+        }
     }
 }

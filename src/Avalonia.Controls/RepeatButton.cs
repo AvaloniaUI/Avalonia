@@ -98,7 +98,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerReleased(e);
 
-            if (e.MouseButton == MouseButton.Left)
+            if (e.InitialPressMouseButton == MouseButton.Left)
             {
                 StopTimer();
             }
