@@ -60,7 +60,7 @@ namespace Avalonia.Input
                         args.Root, args.Position, ev.Timestamp,
                         new PointerPointProperties(GetModifiers(args.InputModifiers, false),
                             PointerUpdateKind.LeftButtonReleased),
-                        GetKeyModifiers(args.InputModifiers)));
+                        GetKeyModifiers(args.InputModifiers), MouseButton.Left));
                 }
             }
 
