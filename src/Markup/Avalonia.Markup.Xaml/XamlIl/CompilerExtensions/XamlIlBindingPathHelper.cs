@@ -235,6 +235,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         }
                         nodes.Add(new ElementNamePathElementNode(elementName.Name, elementType));
                         break;
+                    case RawSourceBindingExpressionNode rawSource:
+                        nodes.Add(new RawSourcePathElementNode(rawSource.RawSource));
+                        break;
                 }
             }
 
@@ -563,6 +566,28 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             public IXamlIlType Type => _arrayType.ArrayElementType;
         }
 
+        class RawSourcePathElementNode : XamlIlAstNode, IXamlIlBindingPathElementNode
+        {
+            private readonly IXamlIlAstValueNode _rawSource;
+
+            public RawSourcePathElementNode(IXamlIlAstValueNode rawSource)
+                :base(rawSource)
+            {
+                _rawSource = rawSource;
+                
+            }
+
+            public IXamlIlType Type => _rawSource.Type.GetClrType();
+
+            public void Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+            {
+                context.Emit(_rawSource, codeGen, Type);
+                codeGen
+                    .EmitCall(context.GetAvaloniaTypes()
+                    .CompiledBindingPathBuilder.FindMethod(m => m.Name == "SetRawSource"));
+            }
+        }
+
         class XamlIlBindingPathNode : XamlIlAstNode, IXamlIlBindingPathNode, IXamlIlAstEmitableNode
         {
             private readonly List<IXamlIlBindingPathElementNode> _transformElements;
@@ -602,6 +627,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                 codeGen.EmitCall(types.CompiledBindingPathBuilder.FindMethod(m => m.Name == "Build"));
                 return XamlIlNodeEmitResult.Type(0, types.CompiledBindingPath);
+            }
+
+            public override void VisitChildren(IXamlIlAstVisitor visitor)
+            {
+                for (int i = 0; i < _transformElements.Count; i++)
+                {
+                    if (_transformElements[i] is IXamlIlAstNode ast)
+                    {
+                        _transformElements[i] = (IXamlIlBindingPathElementNode)ast.Visit(visitor);
+                    }
+                }
+                for (int i = 0; i < _elements.Count; i++)
+                {
+                    if (_elements[i] is IXamlIlAstNode ast)
+                    {
+                        _elements[i] = (IXamlIlBindingPathElementNode)ast.Visit(visitor);
+                    }
+                }
             }
         }
     }

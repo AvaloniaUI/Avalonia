@@ -70,6 +70,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     v.Property is AvaloniaSyntheticCompiledBindingProperty prop
                     && prop.Name == SyntheticCompiledBindingPropertyName.ElementName);
 
+            var sourceProperty = syntheticCompiledBindingProperties
+                .FirstOrDefault(v =>
+                    v.Property is AvaloniaSyntheticCompiledBindingProperty prop
+                    && prop.Name == SyntheticCompiledBindingPropertyName.Source);
+
             var relativeSourceProperty = syntheticCompiledBindingProperties
                 .FirstOrDefault(v =>
                     v.Property is AvaloniaSyntheticCompiledBindingProperty prop
@@ -84,6 +89,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 throw new XamlIlParseException($"Invalid ElementName '{elementNameProperty.Values[0]}'.", elementNameProperty.Values[0]);
             }
 
+            if (sourceProperty?.Values[0] != null)
+            {
+                if (convertedNode != null)
+                {
+                    throw new XamlIlParseException("Only one of ElementName, Source, or RelativeSource specified as a binding source. Only one property is allowed.", binding);
+                }
+
+                convertedNode = new RawSourceBindingExpressionNode(sourceProperty?.Values[0]);
+            }
+
             if (GetRelativeSourceObjectFromAssignment(
                 context,
                 relativeSourceProperty,
@@ -91,7 +106,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 if (convertedNode != null)
                 {
-                    throw new XamlIlParseException("Both ElementName and RelativeSource specified as a binding source. Only one property is allowed.", binding);
+                    throw new XamlIlParseException("Only one of ElementName, Source, or RelativeSource specified as a binding source. Only one property is allowed.", binding);
                 }
 
                 var mode = relativeSourceObject.Children
@@ -206,6 +221,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 binding.Children.Remove(elementNameProperty);
             }
+            if (sourceProperty != null)
+            {
+                binding.Children.Remove(sourceProperty);
+            }
             if (relativeSourceProperty != null)
             {
                 binding.Children.Remove(relativeSourceProperty);
@@ -263,6 +282,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlIlAstTypeReference Type { get; }
 
         public IList<BindingExpressionGrammar.INode> Path { get; }
+
+        public override void VisitChildren(IXamlIlAstVisitor visitor)
+        {
+            for (int i = 0; i < Path.Count; i++)
+            {
+                if (Path[i] is IXamlIlAstNode ast)
+                {
+                    Path[i] = (BindingExpressionGrammar.INode)ast.Visit(visitor);
+                }
+            }
+        }
     }
 
     class VisualAncestorBindingExpressionNode : BindingExpressionGrammar.INode
@@ -280,5 +310,21 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     class TemplatedParentBindingExpressionNode : BindingExpressionGrammar.INode
     {
         public IXamlIlType Type { get; set; }
+    }
+
+    class RawSourceBindingExpressionNode : XamlIlAstNode, BindingExpressionGrammar.INode
+    {
+        public RawSourceBindingExpressionNode(IXamlIlAstValueNode rawSource)
+            : base(rawSource)
+        {
+            RawSource = rawSource;
+        }
+
+        public IXamlIlAstValueNode RawSource { get; private set; }
+
+        public override void VisitChildren(IXamlIlAstVisitor visitor)
+        {
+            RawSource = (IXamlIlAstValueNode)RawSource.Visit(visitor);
+        }
     }
 }

@@ -14,9 +14,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public CompiledBindingPath() { }
 
-        internal CompiledBindingPath(IEnumerable<ICompiledBindingPathElement> bindingPath)
+        internal CompiledBindingPath(IEnumerable<ICompiledBindingPathElement> bindingPath, object rawSource)
         {
             _elements = new List<ICompiledBindingPathElement>(bindingPath);
+            RawSource = rawSource;
         }
 
         public ExpressionNode BuildExpression(bool enableValidation)
@@ -63,10 +64,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         }
 
         internal SourceMode SourceMode => _elements.Count > 0 && _elements[0] is IControlSourceBindingPathElement ? SourceMode.Control : SourceMode.Data;
+
+        internal object RawSource { get; }
     }
 
     public class CompiledBindingPathBuilder
     {
+        private object _rawSource;
         private List<ICompiledBindingPathElement> _elements = new List<ICompiledBindingPathElement>();
 
         public CompiledBindingPathBuilder Not()
@@ -122,7 +126,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
-        public CompiledBindingPath Build() => new CompiledBindingPath(_elements);
+        public CompiledBindingPathBuilder SetRawSource(object rawSource)
+        {
+            _rawSource = rawSource;
+            return this;
+        }
+
+        public CompiledBindingPath Build() => new CompiledBindingPath(_elements, _rawSource);
     }
 
     public interface ICompiledBindingPathElement

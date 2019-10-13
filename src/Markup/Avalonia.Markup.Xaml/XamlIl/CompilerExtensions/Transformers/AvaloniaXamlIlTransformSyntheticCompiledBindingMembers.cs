@@ -25,6 +25,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     return new AvaloniaSyntheticCompiledBindingProperty(node,
                         SyntheticCompiledBindingPropertyName.RelativeSource);
                 }
+                else if (prop.Name == "Source")
+                {
+                    return new AvaloniaSyntheticCompiledBindingProperty(node,
+                        SyntheticCompiledBindingPropertyName.Source);
+                }
             }
 
             return node;
@@ -34,7 +39,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     enum SyntheticCompiledBindingPropertyName
     {
         ElementName,
-        RelativeSource
+        RelativeSource,
+        Source
     }
 
     class AvaloniaSyntheticCompiledBindingProperty : XamlIlAstNode, IXamlIlAstPropertyReference

@@ -50,6 +50,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         protected override ExpressionObserver CreateExpressionObserver(IAvaloniaObject target, AvaloniaProperty targetProperty, object anchor, bool enableDataValidation)
         {
+            if (Path.RawSource != null)
+            {
+                return CreateSourceObserver(
+                    Path.RawSource,
+                    Path.BuildExpression(enableDataValidation));
+            }
+
             if (Path.SourceMode == SourceMode.Data)
             {
                 return CreateDataContextObserver(

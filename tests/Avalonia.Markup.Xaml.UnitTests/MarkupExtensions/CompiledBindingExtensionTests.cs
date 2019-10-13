@@ -494,6 +494,31 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Equal("test", target.Text);
             }
         }
+
+        [Fact]
+        public void ResolvesSourceBindingLongForm()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        Title='test'>
+    <TextBlock Text='{CompiledBinding Length, Source=Test}' x:Name='text'/>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var target = window.FindControl<TextBlock>("text");
+
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+                target.ApplyTemplate();
+
+                Assert.Equal("Test".Length.ToString(), target.Text);
+            }
+        }
     }
 
     public class TestDataContext
