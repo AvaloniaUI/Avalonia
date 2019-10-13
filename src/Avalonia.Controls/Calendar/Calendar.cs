@@ -1565,7 +1565,7 @@ namespace Avalonia.Controls
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
-            if (!HasFocusInternal && e.MouseButton == MouseButton.Left)
+            if (!HasFocusInternal && e.InitialPressMouseButton == MouseButton.Left)
             {
                 FocusManager.Instance.Focus(this);
             }
