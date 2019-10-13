@@ -191,7 +191,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         }
                         if (elementType is null)
                         {
-                            elementType = ScopeRegistrationFinder.GetTargetType(context.RootObject, elementName.Name);
+                            elementType = ScopeRegistrationFinder.GetTargetType(context.ParentNodes().Last(), elementName.Name);
                         }
 
                         if (elementType is null)

@@ -409,6 +409,36 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Throws<XamlIlTransformException>(() => loader.Load(xaml));
             }
         }
+
+        [Fact]
+        public void ResolvesElementNameBinding()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <StackPanel>
+        <TextBlock Text='{CompiledBinding StringProperty}' x:Name='text' />
+        <TextBlock Text='{CompiledBinding #text.Text}' x:Name='text2' />
+    </StackPanel>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("text2");
+
+                var dataContext = new TestDataContext
+                {
+                    StringProperty = "foobar"
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.StringProperty, textBlock.Text);
+            }
+        }
     }
 
     public class TestDataContext
