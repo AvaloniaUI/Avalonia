@@ -345,6 +345,8 @@ namespace Avalonia.Markup.Parsers
 
         public interface INode {}
 
+        public interface ITransformNode {}
+
         public class EmptyExpressionNode : INode { }
 
         public class PropertyNameNode : INode
@@ -364,7 +366,7 @@ namespace Avalonia.Markup.Parsers
             public IList<string> Arguments { get; set; }
         }
 
-        public class NotNode : INode {}
+        public class NotNode : INode, ITransformNode {}
 
         public class StreamNode : INode {}
 

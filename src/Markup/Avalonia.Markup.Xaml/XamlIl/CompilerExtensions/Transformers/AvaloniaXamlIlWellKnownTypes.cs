@@ -39,6 +39,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlIlType IItemsPresenterHost { get; }
         public IXamlIlType BindingExtension { get; }
 
+        public IXamlIlType RelativeSource { get; }
+
         public AvaloniaXamlIlWellKnownTypes(XamlIlTransformerConfiguration cfg)
         {
             XamlIlTypes = cfg.WellKnownTypes;
@@ -91,6 +93,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             DataTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.DataTemplate");
             IItemsPresenterHost = cfg.TypeSystem.GetType("Avalonia.Controls.Presenters.IItemsPresenterHost");
             BindingExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.BindingExtension");
+            RelativeSource = cfg.TypeSystem.GetType("Avalonia.Data.RelativeSource");
         }
     }
 

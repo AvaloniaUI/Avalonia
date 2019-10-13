@@ -118,6 +118,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         else
                         {
                             var clrProperty = targetType.GetAllProperties().FirstOrDefault(p => p.Name == propName.PropertyName);
+
+                            if (clrProperty is null)
+                            {
+                                throw new XamlIlParseException($"Unable to resolve property of name '{propName.PropertyName}' on type '{targetType}'.", lineInfo);
+                            }
                             nodes.Add(new XamlIlClrPropertyPathElementNode(clrProperty));
                         }
                         break;
@@ -176,8 +181,38 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     case BindingExpressionGrammar.SelfNode _:
                         nodes.Add(new SelfPathElementNode(targetType));
                         break;
+                    case VisualAncestorBindingExpressionNode visualAncestor:
+                        nodes.Add(new FindVisualAncestorPathElementNode(visualAncestor.Type, visualAncestor.Level));
+                        break;
+                    case TemplatedParentBindingExpressionNode templatedParent:
+                        var templatedParentField = context.GetAvaloniaTypes().StyledElement.GetAllFields()
+                            .FirstOrDefault(f => f.IsStatic && f.IsPublic && f.Name == "TemplatedParentProperty");
+                        nodes.Add(new XamlIlAvaloniaPropertyPropertyPathElementNode(
+                            templatedParentField,
+                            templatedParent.Type));
+                        break;
                     case BindingExpressionGrammar.AncestorNode ancestor:
-                        nodes.Add(new FindAncestorPathElementNode(GetType(ancestor.Namespace, ancestor.TypeName), ancestor.Level));
+                        if (ancestor.Namespace is null && ancestor.TypeName is null)
+                        {
+                            var styledElementType = context.GetAvaloniaTypes().StyledElement;
+                            var ancestorType = context
+                                .ParentNodes()
+                                .OfType<XamlIlAstObjectNode>()
+                                .Where(x => styledElementType.IsAssignableFrom(x.Type.GetClrType()))
+                                .ElementAtOrDefault(ancestor.Level)
+                                ?.Type.GetClrType();
+
+                            if (ancestorType is null)
+                            {
+                                throw new XamlIlParseException("Unable to resolve implicit ancestor type based on XAML tree.", lineInfo);
+                            }
+
+                            nodes.Add(new FindAncestorPathElementNode(ancestorType, ancestor.Level));
+                        }
+                        else
+                        {
+                            nodes.Add(new FindAncestorPathElementNode(GetType(ancestor.Namespace, ancestor.TypeName), ancestor.Level));
+                        }
                         break;
                     case BindingExpressionGrammar.NameNode elementName:
                         IXamlIlType elementType = null;
@@ -351,6 +386,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
+        class FindVisualAncestorPathElementNode : IXamlIlBindingPathElementNode
+        {
+            private readonly int _level;
+
+            public FindVisualAncestorPathElementNode(IXamlIlType ancestorType, int level)
+            {
+                Type = ancestorType;
+                _level = level;
+            }
+
+            public IXamlIlType Type { get; }
+
+            public void Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+            {
+                codeGen.Ldtype(Type)
+                    .Ldc_I4(_level)
+                    .EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.FindMethod(m => m.Name == "VisualAncestor"));
+            }
+        }
+
         class ElementNamePathElementNode : IXamlIlBindingPathElementNode
         {
             private readonly string _name;
@@ -390,7 +445,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 codeGen.Ldsfld(_field);
                 context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
-                    .EmitLoadInpcPropertyAccessorFactory(context, codeGen);
+                    .EmitLoadAvaloniaPropertyAccessorFactory(context, codeGen);
                 codeGen.EmitCall(context.GetAvaloniaTypes()
                     .CompiledBindingPathBuilder.FindMethod(m => m.Name == "Property"));
             }

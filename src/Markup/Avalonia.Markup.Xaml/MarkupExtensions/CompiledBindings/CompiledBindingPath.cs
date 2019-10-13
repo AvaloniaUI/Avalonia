@@ -37,6 +37,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                     case ArrayElementPathElement arr:
                         node = new PropertyAccessorNode(CommonPropertyNames.IndexerName, enableValidation, new ArrayElementPlugin(arr.Indices, arr.ElementType));
                         break;
+                    case VisualAncestorPathElement visualAncestor:
+                        node = new FindVisualAncestorNode(visualAncestor.AncestorType, visualAncestor.Level);
+                        break;
                     case AncestorPathElement ancestor:
                         node = new FindAncestorNode(ancestor.AncestorType, ancestor.Level);
                         break;
@@ -99,6 +102,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public CompiledBindingPathBuilder Ancestor(Type ancestorType, int level)
         {
             _elements.Add(new AncestorPathElement(ancestorType, level));
+            return this;
+        }
+        public CompiledBindingPathBuilder VisualAncestor(Type ancestorType, int level)
+        {
+            _elements.Add(new VisualAncestorPathElement(ancestorType, level));
             return this;
         }
 
@@ -168,6 +176,18 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
     internal class AncestorPathElement : ICompiledBindingPathElement, IControlSourceBindingPathElement
     {
         public AncestorPathElement(Type ancestorType, int level)
+        {
+            AncestorType = ancestorType;
+            Level = level;
+        }
+
+        public Type AncestorType { get; }
+        public int Level { get; }
+    }
+
+    internal class VisualAncestorPathElement : ICompiledBindingPathElement, IControlSourceBindingPathElement
+    {
+        public VisualAncestorPathElement(Type ancestorType, int level)
         {
             AncestorType = ancestorType;
             Level = level;
