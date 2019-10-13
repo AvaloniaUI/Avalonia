@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 
+using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 
@@ -38,8 +39,8 @@ namespace Avalonia.Controls
             PseudoClass<ProgressBar, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
             PseudoClass<ProgressBar>(IsIndeterminateProperty, ":indeterminate");
 
-            ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.UpdateIndicatorWhenPropChanged);
-            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>(x => x.UpdateIndicatorWhenPropChanged);
+            ValueProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
+            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
         }
 
         public bool IsIndeterminate

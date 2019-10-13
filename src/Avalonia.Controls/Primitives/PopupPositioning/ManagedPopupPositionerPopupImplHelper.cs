@@ -32,7 +32,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             {
                 // Popup positioner operates with abstract coordinates, but in our case they are pixel ones
                 var point = _parent.PointToScreen(default);
-                var size = PixelSize.FromSize(_parent.ClientSize, _parent.Scaling);
+                var size = TranslateSize(_parent.ClientSize);
                 return new Rect(point.X, point.Y, size.Width, size.Height);
 
             }
@@ -43,8 +43,8 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             _moveResize(new PixelPoint((int)devicePoint.X, (int)devicePoint.Y), virtualSize, _parent.Scaling);
         }
 
-        public Point TranslatePoint(Point pt) => pt * _parent.Scaling;
+        public virtual Point TranslatePoint(Point pt) => pt * _parent.Scaling;
 
-        public Size TranslateSize(Size size) => size * _parent.Scaling;
+        public virtual Size TranslateSize(Size size) => size * _parent.Scaling;
     }
 }

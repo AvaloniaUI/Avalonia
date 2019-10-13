@@ -22,7 +22,7 @@ namespace Avalonia.Native
             {
                 Init(factory.CreatePopup(e), factory.CreateScreens());
             }
-            PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
+            PopupPositioner = new ManagedPopupPositioner(new OsxManagedPopupPositionerPopupImplHelper(parent, MoveResize));
         }
 
         private void MoveResize(PixelPoint position, Size size, double scaling)

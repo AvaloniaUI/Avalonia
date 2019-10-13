@@ -45,7 +45,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         static ItemsPresenterBase()
         {
-            TemplatedParentProperty.Changed.AddClassHandler<ItemsPresenterBase>(x => x.TemplatedParentChanged);
+            TemplatedParentProperty.Changed.AddClassHandler<ItemsPresenterBase>((x,e) => x.TemplatedParentChanged(e));
         }
 
         /// <summary>

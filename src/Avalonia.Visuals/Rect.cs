@@ -11,7 +11,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a rectangle.
     /// </summary>
-    public readonly struct Rect
+    public readonly struct Rect : IEquatable<Rect>
     {
         static Rect()
         {
@@ -164,7 +164,9 @@ namespace Avalonia
         /// <summary>
         /// Gets a value that indicates whether the rectangle is empty.
         /// </summary>
+        // ReSharper disable CompareOfFloatsByEqualityOperator
         public bool IsEmpty => _width == 0 && _height == 0;
+        // ReSharper restore CompareOfFloatsByEqualityOperator
 
         /// <summary>
         /// Checks for equality between two <see cref="Rect"/>s.
@@ -174,7 +176,7 @@ namespace Avalonia
         /// <returns>True if the rects are equal; otherwise false.</returns>
         public static bool operator ==(Rect left, Rect right)
         {
-            return left.Position == right.Position && left.Size == right.Size;
+            return left.Equals(right);
         }
 
         /// <summary>
@@ -298,20 +300,26 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Returns a boolean indicating whether the rect is equal to the other given rect.
+        /// </summary>
+        /// <param name="other">The other rect to test equality against.</param>
+        /// <returns>True if this rect is equal to other; False otherwise.</returns>
+        public bool Equals(Rect other)
+        {
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            return _x == other._x &&
+                   _y == other._y &&
+                   _width == other._width &&
+                   _height == other._height;
+            // ReSharper enable CompareOfFloatsByEqualityOperator
+        }
+
+        /// <summary>
         /// Returns a boolean indicating whether the given object is equal to this rectangle.
         /// </summary>
         /// <param name="obj">The object to compare against.</param>
         /// <returns>True if the object is equal to this rectangle; false otherwise.</returns>
-        public override bool Equals(object obj)
-        {
-            if (obj is Rect)
-            {
-                var other = (Rect)obj;
-                return Position == other.Position && Size == other.Size;
-            }
-
-            return false;
-        }
+        public override bool Equals(object obj) => obj is Rect other && Equals(other);
 
         /// <summary>
         /// Returns the hash code for this instance.
@@ -422,10 +430,10 @@ namespace Avalonia
             }
             else
             {
-                var x1 = Math.Min(this.X, rect.X);
-                var x2 = Math.Max(this.Right, rect.Right);
-                var y1 = Math.Min(this.Y, rect.Y);
-                var y2 = Math.Max(this.Bottom, rect.Bottom);
+                var x1 = Math.Min(X, rect.X);
+                var x2 = Math.Max(Right, rect.Right);
+                var y1 = Math.Min(Y, rect.Y);
+                var y2 = Math.Max(Bottom, rect.Bottom);
 
                 return new Rect(new Point(x1, y1), new Point(x2, y2));
             }
@@ -493,7 +501,7 @@ namespace Avalonia
         /// <returns>The parsed <see cref="Rect"/>.</returns>
         public static Rect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Rect"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Rect."))
             {
                 return new Rect(
                     tokenizer.ReadDouble(),

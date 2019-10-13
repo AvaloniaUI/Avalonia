@@ -110,6 +110,65 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void SelectedIndex_Should_Be_Minus_1_After_Initialize()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new ListBox();
+            target.BeginInit();
+            target.Items = items;
+            target.Template = Template();
+            target.EndInit();
+
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void SelectedIndex_Should_Be_0_After_Initialize_With_AlwaysSelected()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new ListBox();
+            target.BeginInit();
+            target.SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected;
+            target.Items = items;
+            target.Template = Template();
+            target.EndInit();
+
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_During_Initialize_Should_Select_Item_When_AlwaysSelected_Is_Used()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected
+            };
+
+            listBox.BeginInit();
+
+            listBox.SelectedIndex = 1;
+            var items = new AvaloniaList<string>();
+            listBox.Items = items;
+            items.Add("A");
+            items.Add("B");
+            items.Add("C");
+
+            listBox.EndInit();
+
+            Assert.Equal("B", listBox.SelectedItem);
+        }
+
+        [Fact]
         public void Setting_SelectedIndex_Before_ApplyTemplate_Should_Set_Item_IsSelected_True()
         {
             var items = new[]

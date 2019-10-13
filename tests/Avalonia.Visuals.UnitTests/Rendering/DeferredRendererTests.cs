@@ -97,6 +97,55 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         }
 
         [Fact]
+        public void Should_Add_Dirty_Rect_On_Child_Remove()
+        {
+            var dispatcher = new ImmediateDispatcher();
+            var loop = new Mock<IRenderLoop>();
+
+            Decorator decorator;
+            Border border;
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height= 100,
+                Child = decorator = new Decorator
+                {
+                    Child = border = new Border
+                    {
+                        Width = 50,
+                        Height = 50,
+                        Background = Brushes.Red,
+                    },
+                }
+            };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var sceneBuilder = new SceneBuilder();
+            var target = new DeferredRenderer(
+                root,
+                loop.Object,
+                sceneBuilder: sceneBuilder,
+                dispatcher: dispatcher);
+
+            root.Renderer = target;
+            target.Start();
+            RunFrame(target);
+
+            decorator.Child = null;
+
+            RunFrame(target);
+
+            var scene = target.UnitTestScene();
+            var stackNode = scene.FindNode(decorator);
+            var dirty = scene.Layers[0].Dirty.ToList();
+
+            Assert.Equal(1, dirty.Count);
+            Assert.Equal(new Rect(25, 25, 50, 50), dirty[0]);
+        }
+
+        [Fact]
         public void Should_Update_VisualNode_Order_On_Child_Remove_Insert()
         {
             var dispatcher = new ImmediateDispatcher();
@@ -268,6 +317,56 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
             Assert.Same(stackNode.Children[0].Visual, canvas2);
             Assert.Same(stackNode.Children[1].Visual, canvas1);
+        }
+
+        [Fact]
+        public void Should_Update_VisualNodes_When_Child_Moved_To_New_Parent()
+        {
+            var dispatcher = new ImmediateDispatcher();
+            var loop = new Mock<IRenderLoop>();
+
+            Decorator moveFrom;
+            Decorator moveTo;
+            Canvas moveMe;
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (moveFrom = new Decorator
+                        {
+                            Child = moveMe = new Canvas(),
+                        }),
+                        (moveTo = new Decorator()),
+                    }
+                }
+            };
+
+            var sceneBuilder = new SceneBuilder();
+            var target = new DeferredRenderer(
+                root,
+                loop.Object,
+                sceneBuilder: sceneBuilder,
+                dispatcher: dispatcher);
+
+            root.Renderer = target;
+            target.Start();
+            RunFrame(target);
+
+            moveFrom.Child = null;
+            moveTo.Child = moveMe;
+
+            RunFrame(target);
+
+            var scene = target.UnitTestScene();
+            var moveFromNode = (VisualNode)scene.FindNode(moveFrom);
+            var moveToNode = (VisualNode)scene.FindNode(moveTo);
+
+            Assert.Empty(moveFromNode.Children);
+            Assert.Equal(1, moveToNode.Children.Count);
+            Assert.Same(moveMe, moveToNode.Children[0].Visual);
+
         }
 
         [Fact]

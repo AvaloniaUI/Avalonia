@@ -32,6 +32,7 @@ namespace Avalonia.Media
 
         private IGeometryContext _geometryContext;
         private Point _currentPoint;
+        private Point? _beginFigurePoint;
         private Point? _previousControlPoint;
         private bool _isOpen;
         private bool _isDisposed;
@@ -180,6 +181,8 @@ namespace Avalonia.Media
 
             _geometryContext.BeginFigure(_currentPoint);
 
+            _beginFigurePoint = _currentPoint;
+
             _isOpen = true;
         }
 
@@ -212,6 +215,12 @@ namespace Avalonia.Media
             if (_isOpen)
             {
                 _geometryContext.EndFigure(true);
+
+                if (_beginFigurePoint != null)
+                {
+                    _currentPoint = _beginFigurePoint.Value;
+                    _beginFigurePoint = null;
+                }
             }
 
             _previousControlPoint = null;
@@ -233,12 +242,6 @@ namespace Avalonia.Media
             {
                 span = ReadSeparator(span);
                 AddLine(ref span, relative);
-
-                if (!relative)
-                {
-                    _currentPoint = currentPoint;
-                    CreateFigure();
-                }
             }
         }
 

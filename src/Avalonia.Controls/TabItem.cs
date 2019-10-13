@@ -30,8 +30,8 @@ namespace Avalonia.Controls
         {
             SelectableMixin.Attach<TabItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
-            IsSelectedProperty.Changed.AddClassHandler<TabItem>(x => x.UpdateSelectedContent);
-            DataContextProperty.Changed.AddClassHandler<TabItem>(x => x.UpdateHeader);
+            IsSelectedProperty.Changed.AddClassHandler<TabItem>((x, e) => x.UpdateSelectedContent(e));
+            DataContextProperty.Changed.AddClassHandler<TabItem>((x, e) => x.UpdateHeader(e));
         }
 
         /// <summary>

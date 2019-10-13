@@ -805,15 +805,15 @@ namespace Avalonia.Controls
         {
             FocusableProperty.OverrideDefaultValue<AutoCompleteBox>(true);
 
-            MinimumPopulateDelayProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnMinimumPopulateDelayChanged);
-            IsDropDownOpenProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnIsDropDownOpenChanged);
-            SelectedItemProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnSelectedItemPropertyChanged);
-            TextProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnTextPropertyChanged);
-            SearchTextProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnSearchTextPropertyChanged);
-            FilterModeProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnFilterModePropertyChanged);
-            ItemFilterProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnItemFilterPropertyChanged);
-            ItemsProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnItemsPropertyChanged);
-            IsEnabledProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnControlIsEnabledChanged);
+            MinimumPopulateDelayProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnMinimumPopulateDelayChanged(e));
+            IsDropDownOpenProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnIsDropDownOpenChanged(e));
+            SelectedItemProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnSelectedItemPropertyChanged(e));
+            TextProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnTextPropertyChanged(e));
+            SearchTextProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnSearchTextPropertyChanged(e));
+            FilterModeProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnFilterModePropertyChanged(e));
+            ItemFilterProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemFilterPropertyChanged(e));
+            ItemsProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemsPropertyChanged(e));
+            IsEnabledProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnControlIsEnabledChanged(e));
         }
 
         /// <summary>

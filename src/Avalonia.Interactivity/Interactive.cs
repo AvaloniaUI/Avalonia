@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
@@ -170,10 +171,9 @@ namespace Avalonia.Interactivity
 
             e.Route = RoutingStrategies.Bubble;
 
-            foreach (var target in this.GetBubbleEventRoute())
-            {
-                ((Interactive)target).RaiseEventImpl(e);
-            }
+            var traverser = HierarchyTraverser<RaiseEventTraverse, NopTraverse>.Create(e);
+
+            traverser.Traverse(this);
         }
 
         /// <summary>
@@ -186,10 +186,9 @@ namespace Avalonia.Interactivity
 
             e.Route = RoutingStrategies.Tunnel;
 
-            foreach (var target in this.GetTunnelEventRoute())
-            {
-                ((Interactive)target).RaiseEventImpl(e);
-            }
+            var traverser = HierarchyTraverser<NopTraverse, RaiseEventTraverse>.Create(e);
+
+            traverser.Traverse(this);
         }
 
         /// <summary>
@@ -260,6 +259,68 @@ namespace Avalonia.Interactivity
             public void Dispose()
             {
                 _subscriptions.Remove(_subscription);
+            }
+        }
+
+        private interface ITraverse
+        {
+            void Execute(IInteractive target, RoutedEventArgs e);
+        }
+
+        private struct NopTraverse : ITraverse
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Execute(IInteractive target, RoutedEventArgs e)
+            {
+            }
+        }
+
+        private struct RaiseEventTraverse : ITraverse
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Execute(IInteractive target, RoutedEventArgs e)
+            {
+                ((Interactive)target).RaiseEventImpl(e);
+            }
+        }
+
+        /// <summary>
+        /// Traverses interactive hierarchy allowing for raising events.
+        /// </summary>
+        /// <typeparam name="TPreTraverse">Called before parent is traversed.</typeparam>
+        /// <typeparam name="TPostTraverse">Called after parent has been traversed.</typeparam>
+        private struct HierarchyTraverser<TPreTraverse, TPostTraverse>
+            where TPreTraverse : struct, ITraverse
+            where TPostTraverse : struct, ITraverse
+        {
+            private TPreTraverse _preTraverse;
+            private TPostTraverse _postTraverse;
+            private readonly RoutedEventArgs _args;
+
+            private HierarchyTraverser(TPreTraverse preTraverse, TPostTraverse postTraverse, RoutedEventArgs args)
+            {
+                _preTraverse = preTraverse;
+                _postTraverse = postTraverse;
+                _args = args;
+            }
+
+            public static HierarchyTraverser<TPreTraverse, TPostTraverse> Create(RoutedEventArgs args)
+            {
+                return new HierarchyTraverser<TPreTraverse, TPostTraverse>(new TPreTraverse(), new TPostTraverse(), args);
+            }
+
+            public void Traverse(IInteractive target)
+            {
+                _preTraverse.Execute(target, _args);
+
+                IInteractive parent = target.InteractiveParent;
+
+                if (parent != null)
+                {
+                    Traverse(parent);
+                }
+
+                _postTraverse.Execute(target, _args);
             }
         }
     }
