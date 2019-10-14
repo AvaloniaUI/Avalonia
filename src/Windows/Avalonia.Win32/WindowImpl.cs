@@ -331,7 +331,7 @@ namespace Avalonia.Win32
             ShowWindow(_showWindowState);
         }
 
-        public void BeginMoveDrag()
+        public void BeginMoveDrag(PointerPressedEventArgs e)
         {
             WindowsMouseDevice.Instance.Capture(null);
             UnmanagedMethods.DefWindowProc(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
@@ -350,7 +350,7 @@ namespace Avalonia.Win32
             {WindowEdge.West, UnmanagedMethods.HitTestValues.HTLEFT}
         };
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
 #if USE_MANAGED_DRAG
             _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position));
