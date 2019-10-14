@@ -39,8 +39,7 @@ namespace ControlCatalog
             SetupSide("TopRight", StandardCursorType.TopRightCorner, WindowEdge.NorthEast);
             SetupSide("BottomLeft", StandardCursorType.BottomLeftCorner, WindowEdge.SouthWest);
             SetupSide("BottomRight", StandardCursorType.BottomRightCorner, WindowEdge.SouthEast);
-            this.FindControl<Button>("MinimizeButton").Click += delegate
-            { this.WindowState = WindowState.Minimized; };
+            this.FindControl<Button>("MinimizeButton").Click += delegate { this.WindowState = WindowState.Minimized; };
             this.FindControl<Button>("MaximizeButton").Click += delegate
             {
                 WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
