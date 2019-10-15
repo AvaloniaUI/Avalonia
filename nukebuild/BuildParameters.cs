@@ -122,7 +122,7 @@ public partial class Build
             ZipRoot = ArtifactsDir / "zip";
             BinRoot = ArtifactsDir / "bin";
             TestResultsRoot = ArtifactsDir / "test-results";
-            BuildDirs = GlobDirectories(RootDirectory, "**bin").Concat(GlobDirectories(RootDirectory, "**obj")).ToList();
+            BuildDirs = GlobDirectories(RootDirectory, "**/bin").Concat(GlobDirectories(RootDirectory, "**/obj")).ToList();
             DirSuffix = Configuration;
             FileZipSuffix = Version + ".zip";
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);

@@ -9,8 +9,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Release' AND '$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
+  <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
     <Content Include="../../Build/Products/Release/libAvalonia.Native.OSX.dylib">
+      <Link>libAvaloniaNative.dylib</Link>
       <PackagePath>runtimes/osx/native/libAvaloniaNative.dylib</PackagePath>
       <Pack>true</Pack>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
