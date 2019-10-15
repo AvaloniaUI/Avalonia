@@ -46,7 +46,7 @@ namespace Avalonia.DesignerSupport.Remote
                         Resize(size);
                     }));
         }
-        
+
         public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
         public void Dispose()
         {
@@ -75,11 +75,11 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void BeginMoveDrag()
+        public void BeginMoveDrag(PointerPressedEventArgs e)
         {
         }
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
         }
 
@@ -93,7 +93,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public void Move(PixelPoint point)
         {
-            
+
         }
 
         public IScreenImpl Screen { get; } = new ScreenStub();
@@ -153,7 +153,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
             public void Save(Stream outputStream)
             {
-                
+
             }
         }
 
@@ -167,10 +167,10 @@ namespace Avalonia.DesignerSupport.Remote
     class SystemDialogsStub : ISystemDialogImpl
     {
         public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent) =>
-            Task.FromResult((string[]) null);
+            Task.FromResult((string[])null);
 
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent) =>
-            Task.FromResult((string) null);
+            Task.FromResult((string)null);
     }
 
     class ScreenStub : IScreenImpl
