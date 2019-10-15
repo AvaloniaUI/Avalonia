@@ -1076,6 +1076,16 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _isAppMenuApplied;
 }
 
++(void)closeAll
+{
+    auto numWindows = [[NSApp windows] count];
+    
+    for(int i = 0; i < numWindows; i++)
+    {
+        [[[NSApp windows] objectAtIndex:i] performClose:nil];
+    }
+}
+
 - (void)dealloc
 {
 }
