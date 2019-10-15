@@ -348,7 +348,10 @@ namespace Avalonia.Rendering
 
                     foreach (var child in node.Children)
                     {
-                        Render(context, (VisualNode)child, layer, clipBounds);
+                        if (!(child as VisualNode).Disposed)
+                        {
+                            Render(context, (VisualNode)child, layer, clipBounds);
+                        }
                     }
 
                     node.EndRender(context, isLayerRoot);

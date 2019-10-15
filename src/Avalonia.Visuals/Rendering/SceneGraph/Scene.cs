@@ -152,7 +152,10 @@ namespace Avalonia.Rendering.SceneGraph
 
             foreach (var child in source.Children)
             {
-                result.AddChild(Clone((VisualNode)child, result, index));
+                if (!child.Disposed)
+                {
+                    result.AddChild(Clone((VisualNode)child, result, index));
+                }
             }
 
             return result;
