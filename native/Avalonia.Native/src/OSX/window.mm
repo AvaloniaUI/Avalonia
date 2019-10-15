@@ -1078,11 +1078,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 +(void)closeAll
 {
-    auto numWindows = [[NSApp windows] count];
+    NSArray<NSWindow*>* windows = [NSArray arrayWithArray:[NSApp windows]];
+    auto numWindows = [windows count];
     
     for(int i = 0; i < numWindows; i++)
     {
-        [[[NSApp windows] objectAtIndex:i] performClose:nil];
+        [[windows objectAtIndex:i] performClose:nil];
     }
 }
 
