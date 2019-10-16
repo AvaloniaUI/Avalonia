@@ -16,12 +16,12 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         {
         }
 
-        public StaticResourceExtension(string resourceKey)
+        public StaticResourceExtension(object resourceKey)
         {
             ResourceKey = resourceKey;
         }
 
-        public string ResourceKey { get; set; }
+        public object ResourceKey { get; set; }
 
         public object ProvideValue(IServiceProvider serviceProvider)
         {

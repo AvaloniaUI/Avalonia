@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Globalization;
 using Avalonia.Animation.Animators;
 using Avalonia.Utilities;
@@ -10,7 +11,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a point.
     /// </summary>
-    public readonly struct Point
+    public readonly struct Point : IEquatable<Point>
     {
         static Point()
         {
@@ -75,7 +76,7 @@ namespace Avalonia
         /// <returns>True if the points are equal; otherwise false.</returns>
         public static bool operator ==(Point left, Point right)
         {
-            return left.X == right.X && left.Y == right.Y;
+            return left.Equals(right);
         }
 
         /// <summary>
@@ -177,7 +178,7 @@ namespace Avalonia
         /// <returns>The <see cref="Thickness"/>.</returns>
         public static Point Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Point"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Point."))
             {
                 return new Point(
                     tokenizer.ReadDouble(),
@@ -187,22 +188,26 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Returns a boolean indicating whether the point is equal to the other given point.
+        /// </summary>
+        /// <param name="other">The other point to test equality against.</param>
+        /// <returns>True if this point is equal to other; False otherwise.</returns>
+        public bool Equals(Point other)
+        {
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            return _x == other._x &&
+                   _y == other._y;
+            // ReSharper enable CompareOfFloatsByEqualityOperator
+        }
+
+        /// <summary>
         /// Checks for equality between a point and an object.
         /// </summary>
         /// <param name="obj">The object.</param>
         /// <returns>
         /// True if <paramref name="obj"/> is a point that equals the current point.
         /// </returns>
-        public override bool Equals(object obj)
-        {
-            if (obj is Point)
-            {
-                var other = (Point)obj;
-                return X == other.X && Y == other.Y;
-            }
-
-            return false;
-        }
+        public override bool Equals(object obj) => obj is Point other && Equals(other);
 
         /// <summary>
         /// Returns a hash code for a <see cref="Point"/>.

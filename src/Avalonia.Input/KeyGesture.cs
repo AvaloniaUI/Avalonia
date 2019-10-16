@@ -14,7 +14,7 @@ namespace Avalonia.Input
     {
         private static readonly Dictionary<string, Key> s_keySynonyms = new Dictionary<string, Key>
         {
-            { "+", Key.OemPlus }, { "-", Key.OemMinus }, { ".", Key.OemPeriod }
+            { "+", Key.OemPlus }, { "-", Key.OemMinus }, { ".", Key.OemPeriod }, { ",", Key.OemComma }
         };
 
         [Obsolete("Use constructor taking KeyModifiers")]
@@ -139,6 +139,11 @@ namespace Avalonia.Input
             if (modifier.Equals("ctrl".AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
                 return KeyModifiers.Control;
+            }
+
+            if (modifier.Equals("cmd".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                return KeyModifiers.Meta;
             }
 
             return (KeyModifiers)Enum.Parse(typeof(KeyModifiers), modifier.ToString(), true);

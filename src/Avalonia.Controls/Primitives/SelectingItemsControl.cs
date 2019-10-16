@@ -119,7 +119,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static SelectingItemsControl()
         {
-            IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>(x => x.ContainerSelectionChanged);
+            IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>((x, e) => x.ContainerSelectionChanged(e));
         }
 
         /// <summary>
@@ -303,6 +303,11 @@ namespace Avalonia.Controls.Primitives
         protected override void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             base.ItemsCollectionChanged(sender, e);
+
+            if (_updateCount > 0)
+            {
+                return;
+            }
 
             switch (e.Action)
             {
@@ -1057,7 +1062,7 @@ namespace Avalonia.Controls.Primitives
             }
             catch (Exception ex)
             {
-                Logger.Error(
+                Logger.TryGet(LogEventLevel.Error)?.Log(
                     LogArea.Property,
                     this,
                     "Error thrown updating SelectedItems: {Error}",
@@ -1071,13 +1076,22 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateFinished()
         {
-            if (_updateSelectedIndex != int.MinValue)
-            {
-                SelectedIndex = _updateSelectedIndex;
-            }
-            else if (_updateSelectedItem != null)
+            if (_updateSelectedItem != null)
             {
                 SelectedItem = _updateSelectedItem;
+            }
+            else
+            {
+                if (ItemCount == 0 && SelectedIndex != -1)
+                {
+                    SelectedIndex = -1;
+                }
+                else
+                {
+                    SelectedIndex = _updateSelectedIndex != int.MinValue ?
+                        _updateSelectedIndex :
+                        AlwaysSelected ? 0 : -1;
+                }
             }
         }
 

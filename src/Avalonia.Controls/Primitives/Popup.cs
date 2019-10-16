@@ -93,8 +93,8 @@ namespace Avalonia.Controls.Primitives
         static Popup()
         {
             IsHitTestVisibleProperty.OverrideDefaultValue<Popup>(false);
-            ChildProperty.Changed.AddClassHandler<Popup>(x => x.ChildChanged);
-            IsOpenProperty.Changed.AddClassHandler<Popup>(x => x.IsOpenChanged);
+            ChildProperty.Changed.AddClassHandler<Popup>((x, e) => x.ChildChanged(e));
+            IsOpenProperty.Changed.AddClassHandler<Popup>((x, e) => x.IsOpenChanged(e));
         }
 
         public Popup()
@@ -450,7 +450,14 @@ namespace Avalonia.Controls.Primitives
 
         private bool IsChildOrThis(IVisual child)
         {
-            return _popupHost != null && ((IVisual)_popupHost).FindCommonVisualAncestor(child) == _popupHost;
+            IVisual root = child.GetVisualRoot();
+            while (root is IHostedVisualTreeRoot hostedRoot )
+            {
+                if (root == this._popupHost)
+                    return true;
+                root = hostedRoot.Host?.GetVisualRoot();
+            }
+            return false;
         }
         
         public bool IsInsidePopup(IVisual visual)

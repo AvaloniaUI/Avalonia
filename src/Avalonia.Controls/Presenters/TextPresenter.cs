@@ -244,7 +244,7 @@ namespace Avalonia.Controls.Presenters
                             var rect = FormattedText.HitTestTextPosition(caretIndex);
                             this.BringIntoView(rect);
                         },
-                        DispatcherPriority.Normal);
+                        DispatcherPriority.Render);
                 }
             }
         }

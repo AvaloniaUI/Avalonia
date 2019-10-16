@@ -231,7 +231,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPointerReleased(e);
 
-            if (e.MouseButton == MouseButton.Left)
+            if (e.InitialPressMouseButton == MouseButton.Left)
                 CalendarDayButtonMouseUp?.Invoke(this, e);
         }
     }

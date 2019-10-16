@@ -1,3 +1,4 @@
+
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
@@ -50,7 +51,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<SelectionMode> SelectionModeProperty =
             ListBox.SelectionModeProperty.AddOwner<TreeView>();
 
-        private static readonly IList Empty = new object[0];
+        private static readonly IList Empty = Array.Empty<object>();
         private object _selectedItem;
         private IList _selectedItems;
 
@@ -470,7 +471,7 @@ namespace Avalonia.Controls
                     if (index > 0)
                     {
                         var previous = (TreeViewItem)parentGenerator.ContainerFromIndex(index - 1);
-                        result = previous.IsExpanded ?
+                        result = previous.IsExpanded && previous.ItemCount > 0 ?
                             (TreeViewItem)previous.ItemContainerGenerator.ContainerFromIndex(previous.ItemCount - 1) :
                             previous;
                     }
@@ -482,7 +483,7 @@ namespace Avalonia.Controls
                     break;
 
                 case NavigationDirection.Down:
-                    if (from.IsExpanded && intoChildren)
+                    if (from.IsExpanded && intoChildren && from.ItemCount > 0)
                     {
                         result = (TreeViewItem)from.ItemContainerGenerator.ContainerFromIndex(0);
                     }

@@ -78,7 +78,7 @@ namespace ControlCatalog.Pages
                 }
             }
 
-            private string GenerateItem() => $"Item {_counter++}";
+            private string GenerateItem() => $"Item {_counter++.ToString()}";
         }
     }
 }

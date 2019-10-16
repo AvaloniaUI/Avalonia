@@ -1051,10 +1051,10 @@ namespace Avalonia.Win32.Interop
         public static extern bool GetMonitorInfo([In] IntPtr hMonitor, ref MONITORINFO lpmi);
 
         [DllImport("user32")]
-        public static extern bool GetTouchInputInfo(
+        public static extern unsafe bool GetTouchInputInfo(
             IntPtr hTouchInput,
             uint        cInputs,
-            [Out]TOUCHINPUT[] pInputs,
+            TOUCHINPUT* pInputs,
             int         cbSize
         );
         
@@ -1115,7 +1115,7 @@ namespace Avalonia.Win32.Interop
         public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
-        internal static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, int[] finalEffect);
+        internal static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, out int finalEffect);
 
 
 
