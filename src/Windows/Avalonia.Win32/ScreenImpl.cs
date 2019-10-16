@@ -32,8 +32,10 @@ namespace Avalonia.Win32
                             if (GetMonitorInfo(monitor, ref monitorInfo))
                             {
                                 var dpi = 1.0;
-                                
-                                if (UnmanagedMethods.ShCoreAvailable)
+
+                                var shcore = LoadLibrary("shcore.dll");
+                                var method = GetProcAddress(shcore, nameof(GetDpiForMonitor));
+                                if (method != IntPtr.Zero)
                                 { 
                                     GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var x, out _);
                                     dpi = (double)x;
