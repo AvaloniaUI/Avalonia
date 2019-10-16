@@ -878,21 +878,23 @@ namespace Avalonia.X11
 
         }
 
-        void BeginMoveResize(NetWmMoveResize side)
+        void BeginMoveResize(NetWmMoveResize side, PointerPressedEventArgs e)
         {
             var pos = GetCursorPos(_x11);
             XUngrabPointer(_x11.Display, new IntPtr(0));
             SendNetWMMessage (_x11.Atoms._NET_WM_MOVERESIZE, (IntPtr) pos.x, (IntPtr) pos.y,
                 (IntPtr) side,
                 (IntPtr) 1, (IntPtr)1); // left button
+                
+            e.Pointer.Capture(null);
         }
 
-        public void BeginMoveDrag()
+        public void BeginMoveDrag(PointerPressedEventArgs e)
         {
-            BeginMoveResize(NetWmMoveResize._NET_WM_MOVERESIZE_MOVE);
+            BeginMoveResize(NetWmMoveResize._NET_WM_MOVERESIZE_MOVE, e);
         }
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
             var side = NetWmMoveResize._NET_WM_MOVERESIZE_CANCEL;
             if (edge == WindowEdge.East)
@@ -911,7 +913,7 @@ namespace Avalonia.X11
                 side = NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT;
             if (edge == WindowEdge.SouthWest)
                 side = NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT;
-            BeginMoveResize(side);
+            BeginMoveResize(side, e);
         }
         
         public void SetTitle(string title)

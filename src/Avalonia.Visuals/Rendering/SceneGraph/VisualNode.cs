@@ -218,7 +218,7 @@ namespace Avalonia.Rendering.SceneGraph
             if (first < _children?.Count)
             {
                 EnsureChildrenCreated();
-                for (int i = first; i < _children.Count - first; i++)
+                for (int i = first; i < _children.Count; i++)
                 {
                     _children[i].Dispose();
                 }

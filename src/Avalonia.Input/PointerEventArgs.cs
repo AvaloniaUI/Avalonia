@@ -88,9 +88,20 @@ namespace Avalonia.Input
             return _rootVisualPosition * _rootVisual.TransformToVisual(relativeTo) ?? default;
         }
 
-        public PointerPoint GetPointerPoint(IVisual relativeTo)
+        [Obsolete("Use GetCurrentPoint")]
+        public PointerPoint GetPointerPoint(IVisual relativeTo) => GetCurrentPoint(relativeTo);
+        
+        /// <summary>
+        /// Returns the PointerPoint associated with the current event
+        /// </summary>
+        /// <param name="relativeTo">The visual which coordinate system to use. Pass null for toplevel coordinate system</param>
+        /// <returns></returns>
+        public PointerPoint GetCurrentPoint(IVisual relativeTo)
             => new PointerPoint(Pointer, GetPosition(relativeTo), _properties);
 
+        /// <summary>
+        /// Returns the current pointer point properties
+        /// </summary>
         protected PointerPointProperties Properties => _properties;
     }
     
@@ -124,7 +135,7 @@ namespace Avalonia.Input
         public int ClickCount => _obsoleteClickCount;
 
         [Obsolete("Use PointerUpdateKind")]
-        public MouseButton MouseButton => Properties.GetObsoleteMouseButton();
+        public MouseButton MouseButton => Properties.PointerUpdateKind.GetMouseButton();
     }
 
     public class PointerReleasedEventArgs : PointerEventArgs
@@ -132,15 +143,21 @@ namespace Avalonia.Input
         public PointerReleasedEventArgs(
             IInteractive source, IPointer pointer,
             IVisual rootVisual, Point rootVisualPosition, ulong timestamp,
-            PointerPointProperties properties, KeyModifiers modifiers)
+            PointerPointProperties properties, KeyModifiers modifiers,
+            MouseButton initialPressMouseButton)
             : base(InputElement.PointerReleasedEvent, source, pointer, rootVisual, rootVisualPosition,
                 timestamp, properties, modifiers)
         {
-            
+            InitialPressMouseButton = initialPressMouseButton;
         }
 
-        [Obsolete("Use PointerUpdateKind")] 
-        public MouseButton MouseButton => Properties.GetObsoleteMouseButton();
+        /// <summary>
+        /// Gets the mouse button that triggered the corresponding PointerPressed event
+        /// </summary>
+        public MouseButton InitialPressMouseButton { get; }
+
+        [Obsolete("Either use GetCurrentPoint(this).Properties.PointerUpdateKind or InitialPressMouseButton, see https://github.com/AvaloniaUI/Avalonia/wiki/Pointer-events-in-0.9 for more details", true)]
+        public MouseButton MouseButton => InitialPressMouseButton;
     }
 
     public class PointerCaptureLostEventArgs : RoutedEventArgs

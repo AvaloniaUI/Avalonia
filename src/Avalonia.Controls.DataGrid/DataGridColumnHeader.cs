@@ -67,7 +67,7 @@ namespace Avalonia.Controls
 
         static DataGridColumnHeader()
         {
-            AreSeparatorsVisibleProperty.Changed.AddClassHandler<DataGridColumnHeader>(x => x.OnAreSeparatorsVisibleChanged);
+            AreSeparatorsVisibleProperty.Changed.AddClassHandler<DataGridColumnHeader>((x,e) => x.OnAreSeparatorsVisibleChanged(e));
         }
 
         /// <summary>
@@ -468,7 +468,7 @@ namespace Avalonia.Controls
 
         private void DataGridColumnHeader_PointerReleased(object sender, PointerReleasedEventArgs e)
         {
-            if (OwningColumn == null || e.Handled || !IsEnabled || e.MouseButton != MouseButton.Left)
+            if (OwningColumn == null || e.Handled || !IsEnabled || e.InitialPressMouseButton != MouseButton.Left)
             {
                 return;
             }

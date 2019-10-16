@@ -356,7 +356,7 @@ namespace Avalonia.Controls.Platform
         {
             var item = GetMenuItem(e.Source as IControl);
 
-            if (e.MouseButton == MouseButton.Left && item?.HasSubMenu == false)
+            if (e.InitialPressMouseButton == MouseButton.Left && item?.HasSubMenu == false)
             {
                 Click(item);
                 e.Handled = true;

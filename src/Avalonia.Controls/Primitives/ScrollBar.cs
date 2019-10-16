@@ -58,8 +58,8 @@ namespace Avalonia.Controls.Primitives
             PseudoClass<ScrollBar, Orientation>(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
             PseudoClass<ScrollBar, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
 
-            Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>(o => o.OnThumbDragDelta, RoutingStrategies.Bubble);
-            Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>(o => o.OnThumbDragComplete, RoutingStrategies.Bubble);
+            Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
+            Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragComplete(e), RoutingStrategies.Bubble);
         }
 
         /// <summary>

@@ -240,6 +240,10 @@ namespace Avalonia.Rendering.SceneGraph
                     }
                 }
             }
+            else
+            {
+                contextImpl.BeginUpdate(node).Dispose();
+            }
         }
 
         private void UpdateSize(Scene scene)
