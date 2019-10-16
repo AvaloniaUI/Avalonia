@@ -1000,6 +1000,26 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { "Bar" }, selectedItems);
         }
 
+        [Fact]
+        public void MoveSelection_Wrap_Does_Not_Hang_With_No_Focusable_Controls()
+        {
+            // Issue #3094.
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem { Focusable = false },
+                    new ListBoxItem { Focusable = false },
+                },
+                SelectedIndex = 0,
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.MoveSelection(NavigationDirection.Next, true);
+        }
+
         private FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
@@ -1043,6 +1063,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             public List<string> Items { get; set; } = new List<string>() { "a", "b", "c", "d", "e" };
             public string Selected { get; set; } = "b";
+        }
+
+        private class TestSelector : SelectingItemsControl
+        {
+            public new bool MoveSelection(NavigationDirection direction, bool wrap)
+            {
+                return base.MoveSelection(direction, wrap);
+            }
         }
     }
 }
