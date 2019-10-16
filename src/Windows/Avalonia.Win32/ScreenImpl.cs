@@ -28,9 +28,25 @@ namespace Avalonia.Win32
                         (IntPtr monitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr data) =>
                         {
                             MONITORINFO monitorInfo = MONITORINFO.Create();
-                            if (GetMonitorInfo(monitor,ref monitorInfo))
+                            if (GetMonitorInfo(monitor, ref monitorInfo))
                             {
-                                GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var x, out _);
+                                var dpi = 1.0;
+                                try
+                                {
+                                    GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var x, out _);
+                                    dpi = (double)x;
+                                }
+                                catch (DllNotFoundException)
+                                {
+                                    var hdc = GetDC(IntPtr.Zero);
+
+                                    double virtW = GetDeviceCaps(hdc, DEVICECAP.HORZRES);
+                                    double physW = GetDeviceCaps(hdc, DEVICECAP.DESKTOPHORZRES);
+
+                                    dpi = (96d * physW / virtW);
+
+                                    ReleaseDC(IntPtr.Zero, hdc);
+                                }
 
                                 RECT bounds = monitorInfo.rcMonitor;
                                 RECT workingArea = monitorInfo.rcWork;
@@ -40,7 +56,7 @@ namespace Avalonia.Win32
                                     new PixelRect(workingArea.left, workingArea.top, workingArea.right - workingArea.left,
                                         workingArea.bottom - workingArea.top);
                                 screens[index] =
-                                    new WinScreen((double)x / 96.0d, avaloniaBounds, avaloniaWorkArea, monitorInfo.dwFlags == 1,
+                                    new WinScreen(dpi / 96.0d, avaloniaBounds, avaloniaWorkArea, monitorInfo.dwFlags == 1,
                                         monitor);
                                 index++;
                             }
