@@ -17,7 +17,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Add_VisualNode()
         {
             var parent = new VisualNode(new TestRoot(), null);
-            var child = new VisualNode(Mock.Of<IVisual>(), null);
+            var child = new VisualNode(Mock.Of<IVisual>(), parent);
             var layers = new SceneLayers(parent.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -32,7 +32,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Not_Replace_Identical_VisualNode()
         {
             var parent = new VisualNode(new TestRoot(), null);
-            var child = new VisualNode(Mock.Of<IVisual>(), null);
+            var child = new VisualNode(Mock.Of<IVisual>(), parent);
             var layers = new SceneLayers(parent.Visual);
 
             parent.AddChild(child);
@@ -50,8 +50,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Replace_Different_VisualNode()
         {
             var parent = new VisualNode(new TestRoot(), null);
-            var child1 = new VisualNode(Mock.Of<IVisual>(), null);
-            var child2 = new VisualNode(Mock.Of<IVisual>(), null);
+            var child1 = new VisualNode(Mock.Of<IVisual>(), parent);
+            var child2 = new VisualNode(Mock.Of<IVisual>(), parent);
             var layers = new SceneLayers(parent.Visual);
 
             parent.AddChild(child1);
@@ -78,8 +78,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             var layers = new SceneLayers(root);
             var target = new DeferredDrawingContextImpl(null, layers);
-            var child1 = new VisualNode(Mock.Of<IVisual>(), null) { LayerRoot = root };
-            var child2 = new VisualNode(Mock.Of<IVisual>(), null) { LayerRoot = root };
+            var child1 = new VisualNode(Mock.Of<IVisual>(), node) { LayerRoot = root };
+            var child2 = new VisualNode(Mock.Of<IVisual>(), node) { LayerRoot = root };
 
             target.BeginUpdate(node);
             using (target.BeginUpdate(child1)) { }

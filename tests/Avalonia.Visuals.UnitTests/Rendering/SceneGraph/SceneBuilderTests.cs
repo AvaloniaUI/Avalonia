@@ -620,10 +620,9 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 border1.IsVisible = false;
 
                 scene = scene.CloneScene();
-
-                var panelNode = (VisualNode)scene.FindNode(panel);
                 sceneBuilder.Update(scene, decorator);
 
+                var panelNode = (VisualNode)scene.FindNode(panel);
                 Assert.Equal(2, panelNode.Children.Count);
                 Assert.False(panelNode.Children[0].Disposed);
                 Assert.False(panelNode.Children[1].Disposed);
