@@ -519,6 +519,69 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Equal("Test".Length.ToString(), target.Text);
             }
         }
+
+        [Fact]
+        public void CompilesBindingWhenRequested()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:CompileBindings='true'>
+    <TextBlock Text='{Binding StringProperty}' Name='textBlock' />
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext
+                {
+                    StringProperty = "foobar"
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.StringProperty, textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void ThrowsOnInvalidBindingPathOnCompiledBindingEnabledViaDirective()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:CompileBindings='true'>
+    <TextBlock Text='{Binding InvalidPath}' Name='textBlock' />
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                Assert.Throws<XamlIlParseException>(() => loader.Load(xaml));
+            }
+        }
+
+        [Fact]
+        public void ThrowsOnInvalidCompileBindingsDirective()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:CompileBindings='notabool'>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                Assert.Throws<XamlIlParseException>(() => loader.Load(xaml));
+            }
+        }
     }
 
     public class TestDataContext

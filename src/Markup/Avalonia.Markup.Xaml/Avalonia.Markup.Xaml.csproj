@@ -32,7 +32,7 @@
         <Compile Include="Converters\IconTypeConverter.cs" />
         <Compile Include="Converters\AvaloniaPropertyTypeConverter.cs" />
         <Compile Include="Converters\PointsListTypeConverter.cs" />
-        <Compile Include="MarkupExtensions\BindingExtension.cs" />
+        <Compile Include="MarkupExtensions\ReflectionBindingExtension.cs" />
         <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="Styling\StyleInclude.cs" />
@@ -45,7 +45,7 @@
         <Compile Include="Templates\TreeDataTemplate.cs" />
         <Compile Include="XamlIl\AvaloniaXamlIlRuntimeCompiler.cs" />
         <Compile Include="XamlIl\CompilerExtensions\AvaloniaXamlIlCompilerConfiguration.cs" />
-        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaBindingExtensionHackTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaBindingExtensionTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlAvaloniaPropertyResolver.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlBindingPathParser.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlBindingPathTransformer.cs" />

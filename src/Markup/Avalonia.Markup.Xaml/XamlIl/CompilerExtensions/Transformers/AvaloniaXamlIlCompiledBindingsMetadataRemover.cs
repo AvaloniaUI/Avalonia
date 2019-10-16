@@ -8,13 +8,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     {
         public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
         {
-            if (node is NestedScopeMetadataNode nestedScope)
-                node = nestedScope.Value;
-
-            if (node is AvaloniaXamlIlDataContextTypeMetadataNode dataContextType)
-                node = dataContextType.Value;
-
-            return node;
+            while (true)
+            {
+                if (node is NestedScopeMetadataNode nestedScope)
+                    node = nestedScope.Value;
+                else if (node is AvaloniaXamlIlDataContextTypeMetadataNode dataContextType)
+                    node = dataContextType.Value;
+                else if (node is AvaloniaXamlIlCompileBindingsNode compileBindings)
+                    node = compileBindings.Value;
+                else
+                    return node;
+            }
         }
     }
 }

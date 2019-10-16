@@ -144,7 +144,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         private static AvaloniaXamlIlDataContextTypeMetadataNode ParseDataContext(XamlIlAstTransformationContext context, XamlIlAstObjectNode on, XamlIlAstObjectNode obj)
         {
             var bindingType = context.GetAvaloniaTypes().IBinding;
-            if (!bindingType.IsAssignableFrom(obj.Type.GetClrType()) && !obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().BindingExtension))
+            if (!bindingType.IsAssignableFrom(obj.Type.GetClrType()) && !obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().ReflectionBindingExtension))
             {
                 return new AvaloniaXamlIlDataContextTypeMetadataNode(on, obj.Type.GetClrType());
             }

@@ -12,13 +12,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
     using Avalonia.Styling;
     using System.ComponentModel;
 
-    public class BindingExtension
+    public class ReflectionBindingExtension
     {
-        public BindingExtension()
+        public ReflectionBindingExtension()
         {
         }
 
-        public BindingExtension(string path)
+        public ReflectionBindingExtension(string path)
         {
             Path = path;
         }
