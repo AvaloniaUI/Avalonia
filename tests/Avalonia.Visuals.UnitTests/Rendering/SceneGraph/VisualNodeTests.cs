@@ -101,5 +101,24 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             node.SortChildren(scene);
         }
+
+        [Fact]
+        public void TrimChildren_Should_Work_Correctly()
+        {
+            var parent = new VisualNode(Mock.Of<IVisual>(), null);
+            var child1 = new VisualNode(Mock.Of<IVisual>(), null);
+            var child2 = new VisualNode(Mock.Of<IVisual>(), null);
+            var child3 = new VisualNode(Mock.Of<IVisual>(), null);
+
+            parent.AddChild(child1);
+            parent.AddChild(child2);
+            parent.AddChild(child3);
+            parent.TrimChildren(2);
+
+            Assert.Equal(2, parent.Children.Count);
+            Assert.False(child1.Disposed);
+            Assert.False(child2.Disposed);
+            Assert.True(child3.Disposed);
+        }
     }
 }
