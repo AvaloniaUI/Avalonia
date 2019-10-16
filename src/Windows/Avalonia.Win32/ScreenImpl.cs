@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
+using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -31,12 +32,13 @@ namespace Avalonia.Win32
                             if (GetMonitorInfo(monitor, ref monitorInfo))
                             {
                                 var dpi = 1.0;
-                                try
-                                {
+                                
+                                if (UnmanagedMethods.ShCoreAvailable)
+                                { 
                                     GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var x, out _);
                                     dpi = (double)x;
                                 }
-                                catch (DllNotFoundException)
+                                else
                                 {
                                     var hdc = GetDC(IntPtr.Zero);
 
