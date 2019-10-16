@@ -24,7 +24,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             var node = new VisualNode(Mock.Of<IVisual>(), null);
             var collection = node.Children;
 
-            node.AddChild(Mock.Of<IVisualNode>());
+            node.AddChild(Mock.Of<IVisualNode>(x => x.Parent == node));
 
             Assert.NotSame(collection, node.Children);
         }
@@ -106,9 +106,9 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void TrimChildren_Should_Work_Correctly()
         {
             var parent = new VisualNode(Mock.Of<IVisual>(), null);
-            var child1 = new VisualNode(Mock.Of<IVisual>(), null);
-            var child2 = new VisualNode(Mock.Of<IVisual>(), null);
-            var child3 = new VisualNode(Mock.Of<IVisual>(), null);
+            var child1 = new VisualNode(Mock.Of<IVisual>(), parent);
+            var child2 = new VisualNode(Mock.Of<IVisual>(), parent);
+            var child3 = new VisualNode(Mock.Of<IVisual>(), parent);
 
             parent.AddChild(child1);
             parent.AddChild(child2);

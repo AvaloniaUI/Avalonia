@@ -119,6 +119,11 @@ namespace Avalonia.Rendering.SceneGraph
                 throw new ObjectDisposedException("Visual node for {node.Visual}");
             }
 
+            if (child.Parent != this)
+            {
+                throw new AvaloniaInternalException("VisualNode added to wrong parent.");
+            }
+
             EnsureChildrenCreated();
             _children.Add(child);
         }
@@ -153,6 +158,11 @@ namespace Avalonia.Rendering.SceneGraph
             if (node.Disposed)
             {
                 throw new ObjectDisposedException("Visual node for {node.Visual}");
+            }
+
+            if (node.Parent != this)
+            {
+                throw new AvaloniaInternalException("VisualNode added to wrong parent.");
             }
 
             EnsureChildrenCreated();
