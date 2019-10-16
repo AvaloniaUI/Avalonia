@@ -624,8 +624,9 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 var panelNode = (VisualNode)scene.FindNode(panel);
                 sceneBuilder.Update(scene, decorator);
 
-                Assert.Equal(1, panelNode.Children.Count);
+                Assert.Equal(2, panelNode.Children.Count);
                 Assert.False(panelNode.Children[0].Disposed);
+                Assert.False(panelNode.Children[1].Disposed);
             }
         }
 
