@@ -578,6 +578,58 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void Should_Not_Dispose_Active_VisualNode_When_Control_Reparented_And_Child_Made_Invisible()
+        {
+            // Issue #3115
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                StackPanel panel;
+                Border border1;
+                Border border2;
+                var tree = new TestRoot
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = panel = new StackPanel
+                    {
+                        Children =
+                        {
+                            (border1 = new Border
+                            {
+                                Background = Brushes.Red,
+                            }),
+                            (border2 = new Border
+                            {
+                                Background = Brushes.Green,
+                            }),
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var decorator = new Decorator();
+                tree.Child = null;
+                decorator.Child = panel;
+                tree.Child = decorator;
+                border1.IsVisible = false;
+
+                scene = scene.CloneScene();
+
+                var panelNode = (VisualNode)scene.FindNode(panel);
+                sceneBuilder.Update(scene, decorator);
+
+                Assert.Equal(1, panelNode.Children.Count);
+                Assert.False(panelNode.Children[0].Disposed);
+            }
+        }
+
+        [Fact]
         public void Should_Update_ClipBounds_For_Negative_Margin()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
