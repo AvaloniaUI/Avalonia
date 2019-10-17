@@ -508,6 +508,7 @@ namespace Avalonia.Win32
                     e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
                             timestamp,
+                            _owner,
                             RawKeyEventType.KeyDown,
                             KeyInterop.KeyFromVirtualKey(ToInt32(wParam)), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
@@ -521,6 +522,7 @@ namespace Avalonia.Win32
                     e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
                             timestamp,
+                            _owner,
                             RawKeyEventType.KeyUp,
                             KeyInterop.KeyFromVirtualKey(ToInt32(wParam)), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
@@ -528,7 +530,7 @@ namespace Avalonia.Win32
                     // Ignore control chars
                     if (ToInt32(wParam) >= 32)
                     {
-                        e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp,
+                        e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _owner,
                             new string((char)ToInt32(wParam), 1));
                     }
 
