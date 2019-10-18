@@ -204,7 +204,7 @@ namespace Avalonia.Native
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawTextInputEventArgs(_keyboard, timeStamp, text);
+            var args = new RawTextInputEventArgs(_keyboard, timeStamp, _inputRoot, text);
 
             Input?.Invoke(args);
 
@@ -215,7 +215,7 @@ namespace Avalonia.Native
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawKeyEventArgs(_keyboard, timeStamp, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
+            var args = new RawKeyEventArgs(_keyboard, timeStamp, _inputRoot, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
 
             Input?.Invoke(args);
 
