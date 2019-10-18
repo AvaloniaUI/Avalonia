@@ -21,7 +21,7 @@ namespace Avalonia.Platform
 
         private DragDropEffects _allowedEffects;
         private IDataObject _draggedData;
-        private IInputElement _lastRoot;
+        private IInputRoot _lastRoot;
         private Point _lastPosition;
         private StandardCursorType _lastCursorType;
         private object _originalCursor;
@@ -56,7 +56,7 @@ namespace Avalonia.Platform
             return DragDropEffects.None;
         }
 
-        private DragDropEffects RaiseEventAndUpdateCursor(RawDragEventType type, IInputElement root, Point pt, RawInputModifiers modifiers)
+        private DragDropEffects RaiseEventAndUpdateCursor(RawDragEventType type, IInputRoot root, Point pt, RawInputModifiers modifiers)
         {
             _lastPosition = pt;
 
@@ -91,7 +91,7 @@ namespace Avalonia.Platform
             return StandardCursorType.No;
         }
         
-        private void UpdateCursor(IInputElement root, DragDropEffects effect)
+        private void UpdateCursor(IInputRoot root, DragDropEffects effect)
         {
             if (_lastRoot != root)
             {

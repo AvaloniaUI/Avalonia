@@ -21,18 +21,25 @@ namespace Avalonia.Input.Raw
         /// </summary>
         /// <param name="device">The associated device.</param>
         /// <param name="timestamp">The event timestamp.</param>
-        public RawInputEventArgs(IInputDevice device, ulong timestamp)
+        /// <param name="root">The root from which the event originates.</param>
+        public RawInputEventArgs(IInputDevice device, ulong timestamp, IInputRoot root)
         {
             Contract.Requires<ArgumentNullException>(device != null);
 
             Device = device;
             Timestamp = timestamp;
+            Root = root;
         }
 
         /// <summary>
         /// Gets the associated device.
         /// </summary>
         public IInputDevice Device { get; }
+
+        /// <summary>
+        /// Gets the root from which the event originates.
+        /// </summary>
+        public IInputRoot Root { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the event was handled.
