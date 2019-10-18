@@ -10,7 +10,7 @@
                           Grid.Row="0"
                           Focusable="False"
                           MinHeight="{DynamicResource ScrollBarThickness}">
-              <Path Data="M 0 5 L 10 5 L 5 0 Z" />
+              <Path Data="M 0 4 L 8 4 L 4 0 Z" />
             </RepeatButton>
             <Track Grid.Row="1"
                    Grid.Column="1"
@@ -38,7 +38,7 @@
                           Grid.Column="2"
                           Focusable="False"
                           MinHeight="{DynamicResource ScrollBarThickness}">
-              <Path Data="M 0 0 L 5 5 L 10 0 Z" />
+              <Path Data="M 0 0 L 4 4 L 8 0 Z" />
             </RepeatButton>
           </Grid>
         </Border>
@@ -57,7 +57,7 @@
                           Grid.Column="0"
                           Focusable="False"
                           MinWidth="{DynamicResource ScrollBarThickness}">
-              <Path Data="M 5 0 L 5 10 L 0 5 Z" />
+              <Path Data="M 4 0 L 4 8 L 0 4 Z" />
             </RepeatButton>
             <Track Grid.Row="1"
                    Grid.Column="1"
@@ -84,7 +84,7 @@
                           Grid.Column="2"
                           Focusable="False"
                           MinWidth="{DynamicResource ScrollBarThickness}">
-              <Path Data="M 0 0 L 5 5 L 0 10 Z"  />
+              <Path Data="M 0 0 L 4 4 L 0 8 Z"  />
             </RepeatButton>
           </Grid>
         </Border>
