@@ -83,6 +83,8 @@ namespace Avalonia.Controls.Primitives
                 Vector = (Vector)_lastPoint,
             };
 
+            PseudoClasses.Add(":pressed");
+
             RaiseEvent(ev);
         }
 
@@ -102,6 +104,8 @@ namespace Avalonia.Controls.Primitives
 
                 RaiseEvent(ev);
             }
+
+            PseudoClasses.Remove(":pressed");
         }
     }
 }
