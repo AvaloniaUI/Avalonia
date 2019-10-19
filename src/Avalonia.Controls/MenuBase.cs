@@ -64,7 +64,7 @@ namespace Avalonia.Controls
         /// </summary>
         static MenuBase()
         {
-            MenuItem.SubmenuOpenedEvent.AddClassHandler<MenuBase>(x => x.OnSubmenuOpened);
+            MenuItem.SubmenuOpenedEvent.AddClassHandler<MenuBase>((x, e) => x.OnSubmenuOpened(e));
         }
 
         /// <summary>

@@ -331,11 +331,12 @@ namespace Avalonia.Win32
             ShowWindow(_showWindowState);
         }
 
-        public void BeginMoveDrag()
+        public void BeginMoveDrag(PointerPressedEventArgs e)
         {
             WindowsMouseDevice.Instance.Capture(null);
             UnmanagedMethods.DefWindowProc(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
                 new IntPtr((int)UnmanagedMethods.HitTestValues.HTCAPTION), IntPtr.Zero);
+            e.Pointer.Capture(null);
         }
 
         static readonly Dictionary<WindowEdge, UnmanagedMethods.HitTestValues> EdgeDic = new Dictionary<WindowEdge, UnmanagedMethods.HitTestValues>
@@ -350,7 +351,7 @@ namespace Avalonia.Win32
             {WindowEdge.West, UnmanagedMethods.HitTestValues.HTLEFT}
         };
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
 #if USE_MANAGED_DRAG
             _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position));
@@ -507,6 +508,7 @@ namespace Avalonia.Win32
                     e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
                             timestamp,
+                            _owner,
                             RawKeyEventType.KeyDown,
                             KeyInterop.KeyFromVirtualKey(ToInt32(wParam)), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
@@ -520,6 +522,7 @@ namespace Avalonia.Win32
                     e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
                             timestamp,
+                            _owner,
                             RawKeyEventType.KeyUp,
                             KeyInterop.KeyFromVirtualKey(ToInt32(wParam)), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
@@ -527,7 +530,7 @@ namespace Avalonia.Win32
                     // Ignore control chars
                     if (ToInt32(wParam) >= 32)
                     {
-                        e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp,
+                        e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _owner,
                             new string((char)ToInt32(wParam), 1));
                     }
 

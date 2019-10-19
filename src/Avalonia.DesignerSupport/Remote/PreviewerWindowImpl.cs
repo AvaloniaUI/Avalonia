@@ -2,6 +2,7 @@
 using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Controls.Remote.Server;
+using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Viewport;
@@ -27,11 +28,11 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void BeginMoveDrag()
+        public void BeginMoveDrag(PointerPressedEventArgs e)
         {
         }
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
         }
 

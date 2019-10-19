@@ -22,9 +22,9 @@ namespace Avalonia.Controls.Primitives
 
         static Thumb()
         {
-            DragStartedEvent.AddClassHandler<Thumb>(x => x.OnDragStarted, RoutingStrategies.Bubble);
-            DragDeltaEvent.AddClassHandler<Thumb>(x => x.OnDragDelta, RoutingStrategies.Bubble);
-            DragCompletedEvent.AddClassHandler<Thumb>(x => x.OnDragCompleted, RoutingStrategies.Bubble);
+            DragStartedEvent.AddClassHandler<Thumb>((x,e) => x.OnDragStarted(e), RoutingStrategies.Bubble);
+            DragDeltaEvent.AddClassHandler<Thumb>((x, e) => x.OnDragDelta(e), RoutingStrategies.Bubble);
+            DragCompletedEvent.AddClassHandler<Thumb>((x, e) => x.OnDragCompleted(e), RoutingStrategies.Bubble);
         }
 
         public event EventHandler<VectorEventArgs> DragStarted
@@ -83,6 +83,8 @@ namespace Avalonia.Controls.Primitives
                 Vector = (Vector)_lastPoint,
             };
 
+            PseudoClasses.Add(":pressed");
+
             RaiseEvent(ev);
         }
 
@@ -102,6 +104,8 @@ namespace Avalonia.Controls.Primitives
 
                 RaiseEvent(ev);
             }
+
+            PseudoClasses.Remove(":pressed");
         }
     }
 }

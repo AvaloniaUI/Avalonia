@@ -15,11 +15,13 @@ class WindowBaseImpl;
 @end
 
 @interface AvnWindow : NSWindow <NSWindowDelegate>
++(void) closeAll;
 -(AvnWindow* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
 -(void) setCanBecomeKeyAndMain;
 -(void) pollModalSession: (NSModalSession _Nonnull) session;
 -(void) restoreParentWindow;
 -(bool) shouldTryToHandleEvents;
+-(void) applyMenu:(NSMenu *)menu;
 @end
 
 struct INSWindowHolder

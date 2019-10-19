@@ -119,7 +119,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static SelectingItemsControl()
         {
-            IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>(x => x.ContainerSelectionChanged);
+            IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>((x, e) => x.ContainerSelectionChanged(e));
         }
 
         /// <summary>
@@ -1062,7 +1062,7 @@ namespace Avalonia.Controls.Primitives
             }
             catch (Exception ex)
             {
-                Logger.Error(
+                Logger.TryGet(LogEventLevel.Error)?.Log(
                     LogArea.Property,
                     this,
                     "Error thrown updating SelectedItems: {Error}",
@@ -1088,8 +1088,8 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    SelectedIndex = _updateSelectedIndex != int.MinValue ? 
-                        _updateSelectedIndex : 
+                    SelectedIndex = _updateSelectedIndex != int.MinValue ?
+                        _updateSelectedIndex :
                         AlwaysSelected ? 0 : -1;
                 }
             }

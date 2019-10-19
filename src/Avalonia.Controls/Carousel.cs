@@ -84,17 +84,5 @@ namespace Avalonia.Controls
                 --SelectedIndex;
             }
         }
-
-        /// <inheritdoc/>
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            // Ignore key presses.
-        }
-
-        /// <inheritdoc/>
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
-        {
-            // Ignore pointer presses.
-        }
     }
 }

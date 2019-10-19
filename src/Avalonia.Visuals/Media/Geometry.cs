@@ -22,7 +22,7 @@ namespace Avalonia.Media
 
         static Geometry()
         {
-            TransformProperty.Changed.AddClassHandler<Geometry>(x => x.TransformChanged);
+            TransformProperty.Changed.AddClassHandler<Geometry>((x,e) => x.TransformChanged(e));
         }
 
         /// <summary>

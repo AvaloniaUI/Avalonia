@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using Avalonia.Animation;
 using Avalonia.Animation.Animators;
 using Avalonia.Utilities;
 
@@ -12,7 +11,7 @@ namespace Avalonia
     /// <summary>
     /// Describes the thickness of a frame around a rectangle.
     /// </summary>
-    public readonly struct Thickness
+    public readonly struct Thickness : IEquatable<Thickness>
     {
         static Thickness()
         {
@@ -204,7 +203,9 @@ namespace Avalonia
         /// <returns>The <see cref="Thickness"/>.</returns>
         public static Thickness Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Thickness"))
+            const string exceptionMessage = "Invalid Thickness.";
+
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage))
             {
                 if (tokenizer.TryReadDouble(out var a))
                 {
@@ -221,8 +222,23 @@ namespace Avalonia
                     return new Thickness(a);
                 }
 
-                throw new FormatException("Invalid Thickness.");
+                throw new FormatException(exceptionMessage);
             }
+        }
+
+        /// <summary>
+        /// Returns a boolean indicating whether the thickness is equal to the other given point.
+        /// </summary>
+        /// <param name="other">The other thickness to test equality against.</param>
+        /// <returns>True if this thickness is equal to other; False otherwise.</returns>
+        public bool Equals(Thickness other)
+        {
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            return _left == other._left &&
+                   _top == other._top &&
+                   _right == other._right &&
+                   _bottom == other._bottom;
+            // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
         /// <summary>
@@ -232,19 +248,7 @@ namespace Avalonia
         /// <returns>
         /// True if <paramref name="obj"/> is a size that equals the current size.
         /// </returns>
-        public override bool Equals(object obj)
-        {
-            if (obj is Thickness)
-            {
-                Thickness other = (Thickness)obj;
-                return Left == other.Left &&
-                       Top == other.Top &&
-                       Right == other.Right &&
-                       Bottom == other.Bottom;
-            }
-
-            return false;
-        }
+        public override bool Equals(object obj) => obj is Thickness other && Equals(other);
 
         /// <summary>
         /// Returns a hash code for a <see cref="Thickness"/>.

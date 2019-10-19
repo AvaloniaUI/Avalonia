@@ -148,6 +148,19 @@ namespace Avalonia.Rendering.SceneGraph
             return (VisualNode)node;
         }
 
+        private static object GetOrCreateChildNode(Scene scene, IVisual child, VisualNode parent)
+        {
+            var result = (VisualNode)scene.FindNode(child);
+
+            if (result != null && result.Parent != parent)
+            {
+                Deindex(scene, result);
+                result = null;
+            }
+
+            return result ?? CreateNode(scene, child, parent);
+        }
+
         private static void Update(DrawingContext context, Scene scene, VisualNode node, Rect clip, bool forceRecurse)
         {
             var visual = node.Visual;
@@ -231,7 +244,7 @@ namespace Avalonia.Rendering.SceneGraph
                     {
                         foreach (var child in visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance))
                         {
-                            var childNode = scene.FindNode(child) ?? CreateNode(scene, child, node);
+                            var childNode = GetOrCreateChildNode(scene, child, node);
                             Update(context, scene, (VisualNode)childNode, clip, forceRecurse);
                         }
 
@@ -239,6 +252,10 @@ namespace Avalonia.Rendering.SceneGraph
                         contextImpl.TrimChildren();
                     }
                 }
+            }
+            else
+            {
+                contextImpl.BeginUpdate(node).Dispose();
             }
         }
 

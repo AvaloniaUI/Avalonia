@@ -8,13 +8,13 @@ namespace Avalonia.Win32
 {
     class OleDropTarget : IDropTarget
     {
-        private readonly IInputElement _target;
+        private readonly IInputRoot _target;
         private readonly ITopLevelImpl _tl;
         private readonly IDragDropDevice _dragDevice;
         
         private IDataObject _currentDrag = null;
 
-        public OleDropTarget(ITopLevelImpl tl, IInputElement target)
+        public OleDropTarget(ITopLevelImpl tl, IInputRoot target)
         {
             _dragDevice = AvaloniaLocator.Current.GetService<IDragDropDevice>();
             _tl = tl;

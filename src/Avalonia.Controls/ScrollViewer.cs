@@ -163,8 +163,8 @@ namespace Avalonia.Controls
         {
             AffectsValidation(ExtentProperty, OffsetProperty);
             AffectsValidation(ViewportProperty, OffsetProperty);
-            HorizontalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer>(x => x.ScrollBarVisibilityChanged);
-            VerticalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer>(x => x.ScrollBarVisibilityChanged);
+            HorizontalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer>((x, e) => x.ScrollBarVisibilityChanged(e));
+            VerticalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer>((x, e) => x.ScrollBarVisibilityChanged(e));
         }
 
         /// <summary>

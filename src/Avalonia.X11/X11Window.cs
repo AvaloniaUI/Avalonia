@@ -6,7 +6,9 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Text;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.FreeDesktop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
@@ -19,7 +21,7 @@ using static Avalonia.X11.XLib;
 // ReSharper disable StringLiteralTypo
 namespace Avalonia.X11
 {
-    unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client
+    unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client, ITopLevelImplWithNativeMenuExporter
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IWindowImpl _popupParent;
@@ -170,6 +172,8 @@ namespace Avalonia.X11
             XFlush(_x11.Display);
             if(_popup)
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
+            if (platform.Options.UseDBusMenu)
+                NativeMenuExporter = DBusMenuExporter.TryCreate(_handle);
         }
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -451,7 +455,7 @@ namespace Avalonia.X11
                     key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 0 : 1).ToInt32();
                 
                 
-                ScheduleInput(new RawKeyEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(),
+                ScheduleInput(new RawKeyEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), _inputRoot,
                     ev.type == XEventName.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                     X11KeyTransform.ConvertKey(key), TranslateModifiers(ev.KeyEvent.state)), ref ev);
 
@@ -466,7 +470,7 @@ namespace Avalonia.X11
                             if (text[0] < ' ' || text[0] == 0x7f) //Control codes or DEL
                                 return;
                         }
-                        ScheduleInput(new RawTextInputEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), text),
+                        ScheduleInput(new RawTextInputEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), _inputRoot, text),
                             ref ev);
                     }
                 }
@@ -874,21 +878,23 @@ namespace Avalonia.X11
 
         }
 
-        void BeginMoveResize(NetWmMoveResize side)
+        void BeginMoveResize(NetWmMoveResize side, PointerPressedEventArgs e)
         {
             var pos = GetCursorPos(_x11);
             XUngrabPointer(_x11.Display, new IntPtr(0));
             SendNetWMMessage (_x11.Atoms._NET_WM_MOVERESIZE, (IntPtr) pos.x, (IntPtr) pos.y,
                 (IntPtr) side,
                 (IntPtr) 1, (IntPtr)1); // left button
+                
+            e.Pointer.Capture(null);
         }
 
-        public void BeginMoveDrag()
+        public void BeginMoveDrag(PointerPressedEventArgs e)
         {
-            BeginMoveResize(NetWmMoveResize._NET_WM_MOVERESIZE_MOVE);
+            BeginMoveResize(NetWmMoveResize._NET_WM_MOVERESIZE_MOVE, e);
         }
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
             var side = NetWmMoveResize._NET_WM_MOVERESIZE_CANCEL;
             if (edge == WindowEdge.East)
@@ -907,7 +913,7 @@ namespace Avalonia.X11
                 side = NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT;
             if (edge == WindowEdge.SouthWest)
                 side = NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT;
-            BeginMoveResize(side);
+            BeginMoveResize(side, e);
         }
         
         public void SetTitle(string title)
@@ -975,5 +981,6 @@ namespace Avalonia.X11
         }
 
         public IPopupPositioner PopupPositioner { get; }
+        public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
     }
 }
