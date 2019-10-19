@@ -53,6 +53,7 @@
     <PropertyGroup>
       <AvaloniaXamlReferencesTemporaryFilePath Condition="'$(AvaloniaXamlReferencesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/references</AvaloniaXamlReferencesTemporaryFilePath>
       <AvaloniaXamlOriginalCopyFilePath Condition="'$(AvaloniaXamlOriginalCopyFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/original.dll</AvaloniaXamlOriginalCopyFilePath>
+      <AvaloniaXamlIlVerifyIl Condition="'$(AvaloniaXamlIlVerifyIl)' == ''">false</AvaloniaXamlIlVerifyIl>
     </PropertyGroup>
     <WriteLinesToFile
       Condition="'$(_AvaloniaForceInternalMSBuild)' != 'true'"
@@ -65,6 +66,7 @@
       ReferencesFilePath="$(AvaloniaXamlReferencesTemporaryFilePath)"
       OriginalCopyPath="$(AvaloniaXamlOriginalCopyFilePath)"
       ProjectDirectory="$(MSBuildProjectDirectory)"
+      VerifyIl="$(AvaloniaXamlIlVerifyIl)"
     />
     <Exec
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
