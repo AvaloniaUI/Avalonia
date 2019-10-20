@@ -140,7 +140,7 @@ namespace Avalonia.Controls.Primitives
 
         public bool HitTest(Point point)
         {
-            return Children.Any(ctrl => ctrl.TransformedBounds?.Contains(point) == true);
+            return Children.Any(ctrl => (ctrl as ICustomSimpleHitTest)?.HitTest(point) ?? ctrl.TransformedBounds?.Contains(point) == true);
         }
 
         private class AdornedElementInfo
