@@ -28,7 +28,8 @@ namespace Avalonia.Build.Tasks
                 ReferencesFilePath = args[1],
                 OutputPath = args[2],
                 BuildEngine = new ConsoleBuildEngine(),
-                ProjectDirectory = Directory.GetCurrentDirectory()
+                ProjectDirectory = Directory.GetCurrentDirectory(),
+                VerifyIl = true
             }.Execute() ?
                 0 :
                 2;

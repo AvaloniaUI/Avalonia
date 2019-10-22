@@ -204,7 +204,7 @@ namespace Avalonia.Native
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawTextInputEventArgs(_keyboard, timeStamp, text);
+            var args = new RawTextInputEventArgs(_keyboard, timeStamp, _inputRoot, text);
 
             Input?.Invoke(args);
 
@@ -215,7 +215,7 @@ namespace Avalonia.Native
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawKeyEventArgs(_keyboard, timeStamp, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
+            var args = new RawKeyEventArgs(_keyboard, timeStamp, _inputRoot, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
 
             Input?.Invoke(args);
 
@@ -301,7 +301,7 @@ namespace Avalonia.Native
             _native.Hide();
         }
 
-        public void BeginMoveDrag()
+        public void BeginMoveDrag(PointerPressedEventArgs e)
         {
             _native.BeginMoveDrag();
         }
@@ -343,7 +343,7 @@ namespace Avalonia.Native
             _native.SetMinMaxSize(minSize.ToAvnSize(), maxSize.ToAvnSize());
         }
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
 
         }

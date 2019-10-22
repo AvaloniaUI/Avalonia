@@ -273,7 +273,8 @@ namespace Avalonia.Controls.Platform
 
             if (item.IsTopLevel)
             {
-                if (item.Parent.SelectedItem?.IsSubMenuOpen == true)
+                if (item != item.Parent.SelectedItem &&
+                    item.Parent.SelectedItem?.IsSubMenuOpen == true)
                 {
                     item.Parent.SelectedItem.Close();
                     SelectItemAndAncestors(item);
@@ -356,7 +357,7 @@ namespace Avalonia.Controls.Platform
         {
             var item = GetMenuItem(e.Source as IControl);
 
-            if (e.MouseButton == MouseButton.Left && item?.HasSubMenu == false)
+            if (e.InitialPressMouseButton == MouseButton.Left && item?.HasSubMenu == false)
             {
                 Click(item);
                 e.Handled = true;
