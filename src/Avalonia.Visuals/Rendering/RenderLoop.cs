@@ -120,7 +120,7 @@ namespace Avalonia.Rendering
                                     }
                                     catch (Exception ex)
                                     {
-                                        Logger.Error(LogArea.Visual, this, "Exception in render update: {Error}", ex);
+                                        Logger.TryGet(LogEventLevel.Error)?.Log(LogArea.Visual, this, "Exception in render update: {Error}", ex);
                                     }
                                 }
                             }
@@ -136,7 +136,7 @@ namespace Avalonia.Rendering
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(LogArea.Visual, this, "Exception in render loop: {Error}", ex);
+                    Logger.TryGet(LogEventLevel.Error)?.Log(LogArea.Visual, this, "Exception in render loop: {Error}", ex);
                 }
                 finally
                 {

@@ -1031,6 +1031,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("shcore.dll")]
         public static extern long GetDpiForMonitor(IntPtr hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
 
+        [DllImport("gdi32.dll")]
+        public static extern int GetDeviceCaps(IntPtr hdc, DEVICECAP nIndex);
+
         [DllImport("shcore.dll")]
         public static extern void GetScaleFactorForMonitor(IntPtr hMon, out uint pScale);
 
@@ -1145,6 +1148,12 @@ namespace Avalonia.Win32.Interop
                 MONITOR_DEFAULTTOPRIMARY = 0x00000001,
                 MONITOR_DEFAULTTONEAREST = 0x00000002
             }
+        }
+
+        public enum DEVICECAP
+        {
+            HORZRES = 8,
+            DESKTOPHORZRES = 118
         }
 
         public enum PROCESS_DPI_AWARENESS

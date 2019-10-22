@@ -29,7 +29,7 @@ namespace Avalonia.Controls
         static DataGridCell()
         {
             PointerPressedEvent.AddClassHandler<DataGridCell>(
-                x => x.DataGridCell_PointerPressed, handledEventsToo: true);
+                (x,e) => x.DataGridCell_PointerPressed(e), handledEventsToo: true);
         }
         public DataGridCell()
         { }

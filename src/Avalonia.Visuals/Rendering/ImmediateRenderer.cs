@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
@@ -80,7 +81,7 @@ namespace Avalonia.Rendering
             }
             catch (RenderTargetCorruptedException ex)
             {
-                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                Logger.TryGet(LogEventLevel.Information)?.Log("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
                 _renderTarget.Dispose();
                 _renderTarget = null;
             }

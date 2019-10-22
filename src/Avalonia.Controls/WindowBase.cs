@@ -47,7 +47,7 @@ namespace Avalonia.Controls
         static WindowBase()
         {
             IsVisibleProperty.OverrideDefaultValue<WindowBase>(false);
-            IsVisibleProperty.Changed.AddClassHandler<WindowBase>(x => x.IsVisibleChanged);
+            IsVisibleProperty.Changed.AddClassHandler<WindowBase>((x,e) => x.IsVisibleChanged(e));
 
             
             TopmostProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetTopmost((bool)e.NewValue));

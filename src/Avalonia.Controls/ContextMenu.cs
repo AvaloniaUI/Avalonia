@@ -192,7 +192,7 @@ namespace Avalonia.Controls
                 e.Handled = true;
             }
 
-            if (e.MouseButton == MouseButton.Right)
+            if (e.InitialPressMouseButton == MouseButton.Right)
             {
                 if (contextMenu.CancelOpening())
                     return;

@@ -8,7 +8,36 @@
         xmlns:vm="clr-namespace:ControlCatalog.ViewModels"
         xmlns:v="clr-namespace:ControlCatalog.Views"
         x:Class="ControlCatalog.MainWindow">
-    <Window.DataTemplates>
+
+  <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="File">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Open" Clicked="OnOpenClicked"/>
+            <NativeMenuItemSeperator/>
+            <NativeMenuItem Header="Recent">
+              <NativeMenuItem.Menu>
+                <NativeMenu/>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItemSeperator/>
+            <NativeMenuItem Header="Quit Avalonia" Clicked="OnCloseClicked" Gesture="CMD+Q"/>
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Edit">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Copy"/>
+            <NativeMenuItem Header="Paste"/>
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+    </NativeMenu>
+  </NativeMenu.Menu>
+
+  <Window.DataTemplates>
         <DataTemplate DataType="vm:NotificationViewModel">
             <v:CustomNotificationView />
         </DataTemplate>

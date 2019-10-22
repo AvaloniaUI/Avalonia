@@ -3,8 +3,11 @@
              x:Class="ControlCatalog.Pages.MenuPage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">Menu</TextBlock>
+    <TextBlock Classes="h2">Exported menu fallback</TextBlock>
+    <TextBlock>(Should be only visible on platforms without desktop-global menu bar)</TextBlock>
+    <NativeMenuBar/>
     <TextBlock Classes="h2">A window menu</TextBlock>
-
+            
         <StackPanel Orientation="Horizontal"
               Margin="0,16,0,0"
               HorizontalAlignment="Center"

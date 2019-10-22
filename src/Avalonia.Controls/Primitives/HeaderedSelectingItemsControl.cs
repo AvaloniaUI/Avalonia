@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static HeaderedSelectingItemsControl()
         {
-            HeaderProperty.Changed.AddClassHandler<HeaderedSelectingItemsControl>(x => x.HeaderChanged);
+            HeaderProperty.Changed.AddClassHandler<HeaderedSelectingItemsControl>((x, e) => x.HeaderChanged(e));
         }
 
         /// <summary>

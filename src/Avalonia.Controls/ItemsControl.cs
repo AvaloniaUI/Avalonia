@@ -64,8 +64,8 @@ namespace Avalonia.Controls
         /// </summary>
         static ItemsControl()
         {
-            ItemsProperty.Changed.AddClassHandler<ItemsControl>(x => x.ItemsChanged);
-            ItemTemplateProperty.Changed.AddClassHandler<ItemsControl>(x => x.ItemTemplateChanged);
+            ItemsProperty.Changed.AddClassHandler<ItemsControl>((x, e) => x.ItemsChanged(e));
+            ItemTemplateProperty.Changed.AddClassHandler<ItemsControl>((x, e) => x.ItemTemplateChanged(e));
         }
 
         /// <summary>
@@ -489,18 +489,20 @@ namespace Avalonia.Controls
             bool wrap)
         {
             IInputElement result;
+            var c = from;
 
             do
             {
-                result = container.GetControl(direction, from, wrap);
+                result = container.GetControl(direction, c, wrap);
+                from = from ?? result;
 
                 if (result?.Focusable == true)
                 {
                     return result;
                 }
 
-                from = result;
-            } while (from != null);
+                c = result;
+            } while (c != null && c != from);
 
             return null;
         }
