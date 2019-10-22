@@ -22,6 +22,10 @@ namespace Avalonia.Build.Tasks
         [Required]
         public ITaskItem[] EmbeddedResources { get; set; }
 
+        public string ReportImportance { get; set; }
+
+        private MessageImportance _reportImportance;
+
         class Source
         {
             public string Path { get; set; }
@@ -65,7 +69,14 @@ namespace Avalonia.Build.Tasks
             }
         }
 
-        List<Source> BuildResourceSources() => Resources.Select(r => new Source(r.ItemSpec, Root)).ToList();
+        List<Source> BuildResourceSources()
+           => Resources.Select(r =>
+           {
+              
+               var src = new Source(r.ItemSpec, Root);
+               BuildEngine.LogMessage($"avares -> name:{src.Path}, path: {src.SystemPath}, size:{src.Size}, ItemSpec:{r.ItemSpec}", _reportImportance);
+               return src;
+           }).ToList();
 
         private void Pack(Stream output, List<Source> sources)
         {
@@ -136,10 +147,14 @@ namespace Avalonia.Build.Tasks
             sources.Add(new Source("/!AvaloniaResourceXamlInfo", ms.ToArray()));
             return true;
         }
-        
+
         public bool Execute()
         {
-            foreach(var r in EmbeddedResources.Where(r=>r.ItemSpec.EndsWith(".xaml")||r.ItemSpec.EndsWith(".paml")))
+            Enum.TryParse<MessageImportance>(ReportImportance, out _reportImportance);
+
+            BuildEngine.LogMessage($"GenerateAvaloniaResourcesTask -> Root: {Root}, {Resources?.Count()} resources, Output:{Output}", _reportImportance < MessageImportance.Low ? MessageImportance.High : _reportImportance);
+
+            foreach (var r in EmbeddedResources.Where(r => r.ItemSpec.EndsWith(".xaml") || r.ItemSpec.EndsWith(".paml")))
                 BuildEngine.LogWarning(BuildEngineErrorCode.LegacyResmScheme, r.ItemSpec,
                     "XAML file is packed using legacy EmbeddedResource/resm scheme, relative URIs won't work");
             var resources = BuildResourceSources();
