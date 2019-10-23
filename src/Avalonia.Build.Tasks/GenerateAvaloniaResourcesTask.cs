@@ -33,15 +33,11 @@ namespace Avalonia.Build.Tasks
             private byte[] _data;
             private string _sourcePath;
 
-            public Source(string file, string root)
+            public Source(string relativePath, string root)
             {
-                file = SPath.GetFullPath(file);
                 root = SPath.GetFullPath(root);
-                var fileUri = new Uri(file, UriKind.Absolute);
-                var rootUri = new Uri(root, UriKind.Absolute);
-                rootUri = new Uri(rootUri.ToString().TrimEnd('/') + '/');
-                Path = '/' + rootUri.MakeRelativeUri(fileUri).ToString().TrimStart('/');
-                _sourcePath = file;
+                Path = "/" + relativePath.Replace('\\', '/');
+                _sourcePath = SPath.Combine(root, relativePath);
                 Size = (int)new FileInfo(_sourcePath).Length;
             }
 
