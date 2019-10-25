@@ -19,7 +19,7 @@
     </Style>
   </UserControl.Styles>
   <Grid RowDefinitions="Auto,*">
-    <Grid x:Name="headerGrid" ColumnDefinitions="200,4,1*,4,100,20" Grid.Row="0" Background="{DynamicResource ThemeBorderMidBrush}">
+    <Grid x:Name="headerGrid" ColumnDefinitions="200,auto,1*,auto,100,20" Grid.Row="0" Background="{DynamicResource ThemeBorderMidBrush}">
       <Grid.Styles>
         <Style Selector="TextBlock.header">
           <Setter Property="Foreground" Value="{DynamicResource ThemeControlMidBrush}" />
@@ -34,17 +34,19 @@
       <GridSplitter Grid.Column="1"/>
       <GridSplitter Grid.Column="3"/>
     </Grid>
-    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
-      <ItemsRepeater Items="{Binding Properties}" Tag="{Binding #headerGrid.ColumnDefinitions}">
-        <ItemsRepeater.ItemTemplate>
+    <!--<ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+      <ItemsRepeater Name="itemsParent" Items="{Binding Properties}">
+        <ItemsRepeater.ItemTemplate>-->
+    <ListBox Grid.Row="1" Name="itemsParent"  ScrollViewer.HorizontalScrollBarVisibility="Disabled" Items="{Binding Properties}">
+      <ListBox.ItemTemplate>
           <DataTemplate>
             <Grid HorizontalAlignment="Stretch">
               <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="{Binding $parent[ItemsRepeater].Tag[0].Width}" />
+                <ColumnDefinition Width="{Binding #headerGrid.ColumnDefinitions[0].Width}" />
                 <ColumnDefinition Width="4" />
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="4" />
-                <ColumnDefinition Width="{Binding $parent[ItemsRepeater].Tag[4].Width}" />
+                <ColumnDefinition Width="{Binding #headerGrid.ColumnDefinitions[4].Width}" />
               </Grid.ColumnDefinitions>
               <Panel Background="Transparent" Grid.Column="0"  ToolTip.Tip="{Binding Diagnostic}" >
                 <TextBlock Text="{Binding Name}"  Margin="5 0 0 0" VerticalAlignment="Center" />
@@ -55,10 +57,10 @@
                 <AutoCompleteBox IsEnabled="{Binding !IsReadOnly}" Classes="editor" Margin="1"
                                     DataValidationErrors.Errors="{Binding ValueErrors}"
                                     IsTextCompletionEnabled="{Binding !IsReadOnly}"
-                                    AsyncPopulator="{Binding PossibleValuesPopulator}"
+                                    AsyncPopulator="{Binding HintValuesPopulator}"
                                   >
                   <v:BindingHelper.BindBackOnEvent>
-                    <v:BindingHelper Binding="{Binding Value, Mode=TwoWay}"  EventNames="LostFocus,DropDownClosed" PropertyName="Text" />
+                    <v:BindingHelper Binding="{Binding Value, Mode=TwoWay}"  EventNames="LostFocus,DropDownClosed,SelectionChanged,EnterKeyUp" PropertyName="Text" />
                   </v:BindingHelper.BindBackOnEvent>
                 </AutoCompleteBox>
               </Panel>
@@ -70,8 +72,10 @@
               <TextBlock Text="{Binding Priority}" Margin="5 0 0 0" Grid.Column="4" VerticalAlignment="Center" />
             </Grid>
           </DataTemplate>
-        </ItemsRepeater.ItemTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+        <!--</ItemsRepeater.ItemTemplate>
       </ItemsRepeater>
-    </ScrollViewer>
+    </ScrollViewer>-->
   </Grid>
 </UserControl>

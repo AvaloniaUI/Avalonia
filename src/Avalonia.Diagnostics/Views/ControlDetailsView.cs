@@ -8,6 +8,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Diagnostics.ViewModels;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 
 namespace Avalonia.Diagnostics.Views
@@ -57,7 +58,14 @@ namespace Avalonia.Diagnostics.Views
 
             if (value != null)
             {
-                var evt = Observable.Merge(value.EventNames.Select(v => Observable.FromEventPattern(c, v)));
+                var evt = Observable.Merge(value.EventNames.Select(eventName =>
+                {
+                    if (eventName == "EnterKeyUp")
+                    {
+                        return Observable.FromEventPattern<KeyEventArgs>(c, "KeyUp").Where(v => v.EventArgs.Key == Key.Enter).OfType<object>();
+                    }
+                    return Observable.FromEventPattern(c, eventName);
+                }));
                 var avp = AvaloniaPropertyRegistry.Instance.FindRegistered(c, value.PropertyName);
                 c.Bind(Control.TagProperty, value.Binding);
                 c.GetObservable(Control.TagProperty).Subscribe(v => c.SetValue(avp, v));

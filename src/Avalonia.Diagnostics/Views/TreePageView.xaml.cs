@@ -9,6 +9,7 @@ using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.Views
 {
@@ -26,7 +27,12 @@ namespace Avalonia.Diagnostics.Views
         protected void AddAdorner(object sender, PointerEventArgs e)
         {
             var node = (TreeNode)((Control)sender).DataContext;
-            var layer = AdornerLayer.GetAdornerLayer(node.Visual);
+            var visual = node.Visual as IVisual;
+            if(visual == null)
+            {
+                return;
+            }
+            var layer = AdornerLayer.GetAdornerLayer(visual);
 
             if (layer != null)
             {

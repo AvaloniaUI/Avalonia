@@ -16,7 +16,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private string _classes;
         private bool _isExpanded;
 
-        public TreeNode(IVisual visual, TreeNode parent)
+        public TreeNode(object visual, TreeNode parent)
         {
             Parent = parent;
             Type = visual.GetType().Name;
@@ -45,6 +45,10 @@ namespace Avalonia.Diagnostics.ViewModels
                         }
                     });
             }
+            else if (visual is Style s)
+            {
+                Classes = $"({s.Selector?.ToString()})";
+            }
         }
 
         public IAvaloniaReadOnlyList<TreeNode> Children
@@ -59,7 +63,7 @@ namespace Avalonia.Diagnostics.ViewModels
             private set => RaiseAndSetIfChanged(ref _classes, value);
         }
 
-        public IVisual Visual
+        public object Visual
         {
             get;
         }

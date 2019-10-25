@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:v="clr-namespace:Avalonia.Diagnostics.Views;assembly=Avalonia.Diagnostics"
              x:Class="Avalonia.Diagnostics.Views.TreePageView">
-    <Grid ColumnDefinitions="*,4,3*">
+    <Grid ColumnDefinitions="*,auto,3*">
         <TreeView Name="tree" Items="{Binding Nodes}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
             <TreeView.DataTemplates>
                 <TreeDataTemplate DataType="vm:TreeNode"
@@ -21,7 +21,7 @@
             </TreeView.Styles>
         </TreeView>
 
-        <GridSplitter Width="4" Grid.Column="1"/>
+        <GridSplitter Grid.Column="1"/>
 
         <v:ControlDetailsView Grid.Column="2" DataContext="{Binding Details}" />
         <!--<ContentControl Content="{Binding Details}" Grid.Column="2"/>-->

@@ -11,7 +11,10 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Data;
+using Avalonia.Diagnostics.Views;
+using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Platform;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -19,7 +22,45 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         public class ParseTypeConverter : TypeConverter
         {
+            private static Dictionary<IPlatformHandle, string> _standardCursors;
+
+            private static string TryGetCursorName(Cursor cursor)
+            {
+                if (cursor?.PlatformCursor == null)
+                    return "";
+
+                if (_standardCursors == null)
+                {
+                    _standardCursors = new Dictionary<IPlatformHandle, string>();
+                    try
+                    {
+                        var platform = AvaloniaLocator.Current.GetService<IStandardCursorFactory>();
+
+                        foreach (StandardCursorType c in Enum.GetValues(typeof(StandardCursorType)))
+                        {
+                            _standardCursors[platform.GetCursor(c)] = c.ToString();
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                return cursor?.PlatformCursor != null && _standardCursors.TryGetValue(cursor.PlatformCursor, out string r) ? r : cursor?.PlatformCursor?.ToString();
+            }
+
             private readonly Func<string, CultureInfo, object> _parse;
+
+            private static Dictionary<Type, Func<object, string>> _customToString = new Dictionary<Type, Func<object, string>>()
+            {
+                //TODO: may be override ToString and remove this hardcoded functionality
+                { typeof(RelativePoint), o =>
+                                {
+                                    var rp = (RelativePoint)o;
+                                    return rp.Unit== RelativeUnit.Absolute?rp.Point.ToString():$"{rp.Point.X*100}%,{rp.Point.Y*100}%";
+                                } },
+                { typeof(Cursor), o => TryGetCursorName(o as Cursor) },
+            };
 
             public static Func<string, CultureInfo, object> TryGetParse(Type type)
             {
@@ -39,6 +80,17 @@ namespace Avalonia.Diagnostics.ViewModels
                     return (s, c) => parse.Invoke(null, new object[] { s });
                 }
 
+                parse = type.GetMethod("Parse", bf);
+                if (parse?.ReturnParameter?.ParameterType == type)
+                {
+                    var pars = parse.GetParameters();
+                    //parse with string parameter and default second argument
+                    if (pars.Length == 2 && pars[0].ParameterType == typeof(string) && pars[1].IsOptional)
+                    {
+                        return (s, c) => parse.Invoke(null, new object[] { s, Type.Missing });
+                    }
+                }
+
                 return null;
             }
 
@@ -48,23 +100,21 @@ namespace Avalonia.Diagnostics.ViewModels
             }
 
             public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-            {
-                return sourceType == typeof(string);
-            }
+                => sourceType == typeof(string);
 
             public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-            {
-                return _parse((string)value, culture);
-            }
+                => _parse((string)value, culture);
+
+            public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+                => _customToString.TryGetValue(value?.GetType() ?? typeof(object), out var ts) ? ts(value) : value?.ToString();
+
+            public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+                => destinationType == typeof(string);
         }
 
         private static Dictionary<Type, TypeConverter> _converters = new Dictionary<Type, TypeConverter>()
         {
-            {typeof(TimeSpan), new Markup.Xaml.Converters.TimeSpanTypeConverter() },
-            {typeof(FontFamily), new Markup.Xaml.Converters.FontFamilyTypeConverter() },
-            {typeof(int), null},
-            {typeof(double), null},
-            {typeof(string), null}
+            //here hard coded type converters if needed
         };
 
         static public TypeConverter TryGetTypeConverter(Type type)
@@ -97,33 +147,36 @@ namespace Avalonia.Diagnostics.ViewModels
         private object _originalValue;
         private object _value;
         private bool _isChanged = false;
-        private string _priority;
+        private string _priority = "";
         private string _diagnostic;
-
         private AvaloniaObject _object;
         private AvaloniaProperty _property;
+        private WellKnownProperty _wellKnownProperty;
         private TypeConverter _typeConverter;
-        private IEnumerable<string> _possibleValues;
-        private Func<object> _getter;
-        private Action<object> _setter;
+        private IEnumerable<string> _hintValues;
         private bool _setActive = false;
 
-        private static TypeConverter TryGetTypeConverter(AvaloniaProperty property)
+        private static TypeConverter TryGetTypeConverter(Type propertyType)
         {
+            if (propertyType == null)
+            {
+                return null;
+            }
+
             TypeConverter result;
 
-            if (_typeConverters.TryGetValue(property.PropertyType, out result))
+            if (_typeConverters.TryGetValue(propertyType, out result))
                 return result;
 
-            result = AvaloniaTypeConverters.TryGetTypeConverter(property.PropertyType) ??
-                        TypeDescriptor.GetConverter(property.PropertyType);
+            result = AvaloniaTypeConverters.TryGetTypeConverter(propertyType) ??
+                        TypeDescriptor.GetConverter(propertyType);
 
             if (result?.CanConvertFrom(typeof(string)) == false)
             {
                 result = null;
             }
 
-            return _typeConverters[property.PropertyType] = result;
+            return _typeConverters[propertyType] = result;
         }
 
         public PropertyDetails(AvaloniaObject o, AvaloniaProperty property)
@@ -132,11 +185,10 @@ namespace Avalonia.Diagnostics.ViewModels
                 $"[{property.OwnerType.Name}.{property.Name}]" :
                 property.Name;
 
-            _typeConverter = property.IsReadOnly ? null : TryGetTypeConverter(property);
+            _typeConverter = TryGetTypeConverter(property.PropertyType);
             IsAttached = property.IsAttached;
-            IsReadOnly = property.IsReadOnly || _typeConverter == null;
+            IsReadOnly = property.IsReadOnly || !(_typeConverter?.CanConvertFrom(typeof(string)) ?? false);
             bool first = true;
-            // TODO: Unsubscribe when view model is deactivated.
             _disposable = o.GetObservable(property).Where(_ => !_setActive).Subscribe(x =>
             {
                 var diagnostic = o.GetDiagnostic(property);
@@ -160,20 +212,26 @@ namespace Avalonia.Diagnostics.ViewModels
             _property = property;
         }
 
-        public PropertyDetails(AvaloniaObject o, string propertyName, Func<object> getter, Action<object> setter, IObservable<object> changed)
+        public PropertyDetails(AvaloniaObject o, WellKnownProperty property)
         {
+            _wellKnownProperty = property;
             _object = o;
-            Name = propertyName;
-            _getter = getter;
-            _setter = setter;
-            IsReadOnly = setter == null;
-            _originalValue = _getter();
-            SetValue(_getter(), false);
+            Name = _wellKnownProperty.Name;
+            _typeConverter = TryGetTypeConverter(_wellKnownProperty.Type);
+            IsReadOnly = !(_wellKnownProperty.Setter != null && (_typeConverter?.CanConvertFrom(typeof(string)) ?? true));
+
+            var getter = _wellKnownProperty.Getter;
+
+            if (_typeConverter != null)
+            {
+                getter = x => _typeConverter.ConvertTo(_wellKnownProperty.Getter(x), typeof(string)) ?? "(null)";
+            }
+
+            _originalValue = getter(o);
+            SetValue(_originalValue, false);
             var inpc = o as INotifyPropertyChanged;
-            changed = changed ?? Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>
-                                (v => inpc.PropertyChanged += v, v => inpc.PropertyChanged -= v)
-                                .Where(v => v.EventArgs.PropertyName == propertyName);
-            _disposable = changed.Where(_ => !_setActive).Subscribe(_ => SetValue(_getter() ?? "(null)", false));
+            var changed = _wellKnownProperty.Changed(_object) ?? inpc.GetObservable<object>(Name);
+            _disposable = changed.Where(_ => !_setActive).Subscribe(_ => SetValue(getter(o) ?? "(null)", false));
         }
 
         private static Dictionary<Type, string[]> _typespossibleValues = new Dictionary<Type, string[]>();
@@ -182,26 +240,32 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             string[] result;
 
-            if (_typespossibleValues.TryGetValue(_property.PropertyType, out result))
+            var propertyType = _property?.PropertyType ?? _wellKnownProperty?.Type ?? typeof(object);
+
+            if (_typespossibleValues.TryGetValue(propertyType, out result))
                 return result;
 
             if (_property != null)
             {
-                if (_property.PropertyType.IsEnum)
+                if (propertyType.IsEnum)
                 {
-                    result = Enum.GetNames(_property.PropertyType);
+                    result = Enum.GetNames(propertyType);
                 }
-                else if (_property.PropertyType == typeof(IBrush))
+                else if (propertyType == typeof(IBrush))
                 {
                     result = typeof(Brushes).GetProperties().Select(p => p.Name).ToArray();
                 }
-                else if (_property.PropertyType == typeof(bool))
+                else if (propertyType == typeof(bool) || propertyType == typeof(bool?))
                 {
                     result = new[] { "True", "False" };
                 }
+                else if (propertyType == typeof(Cursor))
+                {
+                    result = Enum.GetNames(typeof(StandardCursorType));
+                }
             }
 
-            return _typespossibleValues[_property.PropertyType] = result;
+            return _typespossibleValues[propertyType] = result ?? Array.Empty<string>();
         }
 
         public string Name { get; }
@@ -236,7 +300,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 string stringValue = (value as string)?.TrimStart(' ');
 
-                if (setback && !IsReadOnly)
+                if (setback && !IsReadOnly && _disposable != null)
                 {
                     try
                     {
@@ -244,9 +308,9 @@ namespace Avalonia.Diagnostics.ViewModels
                                             null : (_typeConverter?.ConvertFrom(stringValue) ?? stringValue);
 
                         _setActive = true;
-                        if (_setter != null)
+                        if (_wellKnownProperty != null)
                         {
-                            _setter(propValue);
+                            _wellKnownProperty?.Setter?.Invoke(_object, propValue);
                         }
                         else
                         {
@@ -304,24 +368,30 @@ namespace Avalonia.Diagnostics.ViewModels
             set { this.RaiseAndSetIfChanged(ref _hasValueError, value); }
         }
 
-        public async Task<IEnumerable<object>> PossibleValuesPopulator(string text, CancellationToken token)
+        public async Task<IEnumerable<object>> HintValuesPopulator(string text, CancellationToken token)
         {
             if (text.Equals(Value))
-                return Enumerable.Empty<string>();
+                return Array.Empty<string>();
 
             await Task.Delay(100, token);
 
-            return PossibleValues;
+            if (token.IsCancellationRequested)
+            {
+                return Array.Empty<string>();
+            }
+
+            return HintValues;
         }
 
         public void Dispose()
         {
             _disposable?.Dispose();
+            _disposable = null;
         }
 
-        public IEnumerable<string> PossibleValues
+        public IEnumerable<string> HintValues
         {
-            get => _possibleValues ?? (_possibleValues = GetPossibleValues());
+            get => _hintValues ?? (_hintValues = GetPossibleValues());
         }
     }
 }

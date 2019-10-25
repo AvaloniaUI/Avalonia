@@ -12,7 +12,8 @@ namespace Avalonia.Diagnostics.ViewModels
         public LogicalTreeNode(ILogical logical, TreeNode parent)
             : base((Control)logical, parent)
         {
-            Children = logical.LogicalChildren.CreateDerivedList(x => new LogicalTreeNode(x, this));
+            var children = logical.LogicalChildren.CreateDerivedList(x => new LogicalTreeNode(x, this));
+            Children = StyleTreeNode.WithStyles(this, children);
         }
 
         public static LogicalTreeNode[] Create(object control)

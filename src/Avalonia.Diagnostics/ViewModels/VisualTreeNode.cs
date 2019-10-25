@@ -10,7 +10,7 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class VisualTreeNode : TreeNode
     {
         public VisualTreeNode(IVisual visual, TreeNode parent)
-            : base(visual, parent)
+            : base((IAvaloniaObject)visual, parent)
         {
             var host = visual as IVisualTreeHost;
 
