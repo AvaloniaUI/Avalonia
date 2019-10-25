@@ -178,6 +178,7 @@ namespace Avalonia.Controls
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.ColumnDefinitions = value;
                 _data.ColumnDefinitions.Parent = this;
+                InvalidateMeasure();
             }
         }
 
@@ -198,6 +199,7 @@ namespace Avalonia.Controls
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.RowDefinitions = value;
                 _data.RowDefinitions.Parent = this;
+                InvalidateMeasure();
             }
         }
 
