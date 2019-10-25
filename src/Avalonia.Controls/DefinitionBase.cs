@@ -50,6 +50,8 @@ namespace Avalonia.Controls
                     }
                 }
             }
+
+            Parent?.InvalidateMeasure();
         }
 
         /// <summary>
