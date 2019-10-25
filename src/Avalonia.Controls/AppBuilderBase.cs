@@ -126,8 +126,7 @@ namespace Avalonia.Controls
             
             // Copy-pasted because we can't call extension methods due to generic constraints
             var lifetime = new ClassicDesktopStyleApplicationLifetime(Instance) {ShutdownMode = ShutdownMode.OnMainWindowClose};
-            Instance.ApplicationLifetime = lifetime;
-            SetupWithoutStarting();
+            SetupWithLifetime(lifetime);
             lifetime.Start(Array.Empty<string>());
         }
 
