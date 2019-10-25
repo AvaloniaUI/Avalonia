@@ -1379,7 +1379,7 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Change_Column_Width_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
+        public void Changing_Column_Width_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
 
@@ -1395,7 +1395,7 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Change_Column_MinWidth_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
+        public void Changing_Column_MinWidth_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
 
@@ -1411,7 +1411,7 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Change_Column_MaxWidth_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
+        public void Changing_Column_MaxWidth_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
 
@@ -1427,7 +1427,7 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Change_Row_Height_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
+        public void Changing_Row_Height_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
         {
             var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
 
@@ -1443,7 +1443,7 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Change_Row_MinHeight_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
+        public void Changing_Row_MinHeight_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
         {
             var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
 
@@ -1459,7 +1459,7 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Change_Row_MaxHeight_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
+        public void Changing_Row_MaxHeight_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
         {
             var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
 
@@ -1473,7 +1473,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Add_Column_Should_Invalidate_Grid()
+        public void Adding_Column_Should_Invalidate_Grid()
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
 
@@ -1484,7 +1484,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Add_Row_Should_Invalidate_Grid()
+        public void Adding_Row_Should_Invalidate_Grid()
         {
             var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
 
@@ -1495,7 +1495,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Replace_Columns_Should_Invalidate_Grid()
+        public void Replacing_Columns_Should_Invalidate_Grid()
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
 
@@ -1506,7 +1506,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Replace_Rows_Should_Invalidate_Grid()
+        public void Replacing_Rows_Should_Invalidate_Grid()
         {
             var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
 
@@ -1517,7 +1517,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Remove_Column_Should_Invalidate_Grid()
+        public void Removing_Column_Should_Invalidate_Grid()
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
 
@@ -1528,7 +1528,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Remove_Row_Should_Invalidate_Grid()
+        public void Removing_Row_Should_Invalidate_Grid()
         {
             var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
 
@@ -1539,7 +1539,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Remove_Child_Should_Invalidate_Grid_And_Be_Operational()
+        public void Removing_Child_Should_Invalidate_Grid_And_Be_Operational()
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("*,Auto") };
 
@@ -1571,7 +1571,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Add_Child_Should_Invalidate_Grid_And_Be_Operational()
+        public void Adding_Child_Should_Invalidate_Grid_And_Be_Operational()
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("*,Auto") };
 
