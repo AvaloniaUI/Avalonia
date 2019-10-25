@@ -730,5 +730,22 @@ namespace Avalonia.Controls
             SharedSizeGroupProperty.Changed.AddClassHandler<DefinitionBase>(OnSharedSizeGroupPropertyChanged);
             PrivateSharedSizeScopeProperty.Changed.AddClassHandler<DefinitionBase>(OnPrivateSharedSizeScopePropertyChanged);
         }
+
+        /// <summary>
+        /// Marks a property on a definition as affecting the parent grid's measurement.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        protected static void AffectsParentMeasure(params AvaloniaProperty[] properties)
+        {
+            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                (e.Sender as DefinitionBase)?.Parent?.InvalidateMeasure();
+            }
+
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(Invalidate);
+            }
+        }
     }
 }
