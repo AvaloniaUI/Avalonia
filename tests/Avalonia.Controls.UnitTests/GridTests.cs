@@ -1493,6 +1493,28 @@ namespace Avalonia.Controls.UnitTests
                 grid.RowDefinitions.Add(new RowDefinition(new GridLength(5)));
             });
         }
+
+        [Fact]
+        public void Remove_Column_Should_Invalidate_Grid()
+        {
+            var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
+
+            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            {
+                grid.ColumnDefinitions.RemoveAt(0);
+            });
+        }
+
+        [Fact]
+        public void Remove_Row_Should_Invalidate_Grid()
+        {
+            var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
+
+            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            {
+                grid.RowDefinitions.RemoveAt(0);
+            });
+        }
         private static void Change_Propery_And_Verify_Measure_Requested(Grid grid, Action change)
         {
             grid.Measure(new Size(100, 100));
