@@ -65,6 +65,8 @@ namespace Avalonia.Controls
                 _sharedState.RemoveMember(this);
                 _sharedState = null;
             }
+
+            Parent?.InvalidateMeasure();
         }
 
         /// <summary>
