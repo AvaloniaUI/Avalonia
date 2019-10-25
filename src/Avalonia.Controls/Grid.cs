@@ -6,6 +6,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -569,6 +570,15 @@ namespace Avalonia.Controls
                 ArrangeOverrideInProgress = false;
             }
             return (arrangeSize);
+        }
+
+        /// <summary>
+        /// <see cref="Panel.ChildrenChanged"/>
+        /// </summary>
+        protected override void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            CellsStructureDirty = true;
+            base.ChildrenChanged(sender, e);
         }
 
         /// <summary>
