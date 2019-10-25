@@ -1,6 +1,7 @@
 
 #include "common.h"
 #include "menu.h"
+#include "window.h"
 
 @implementation AvnMenu
 @end
@@ -283,7 +284,8 @@ extern void SetAppMenu (NSString* appName, IAvnAppMenu* menu)
         auto quitItem = [[NSMenuItem alloc] init];
         quitItem.title = [@"Quit " stringByAppendingString:appName];
         quitItem.keyEquivalent = @"q";
-        quitItem.action = @selector(terminate:);
+        quitItem.target = [AvnWindow class];
+        quitItem.action = @selector(closeAll);
         [appMenu addItem:quitItem];
     }
     else
