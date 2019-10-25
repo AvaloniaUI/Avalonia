@@ -1495,6 +1495,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Replace_Columns_Should_Invalidate_Grid()
+        {
+            var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
+
+            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            {
+                grid.ColumnDefinitions = ColumnDefinitions.Parse("2*,1*");
+            });
+        }
+
+        [Fact]
+        public void Replace_Rows_Should_Invalidate_Grid()
+        {
+            var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
+
+            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            {
+                grid.RowDefinitions = RowDefinitions.Parse("2*,1*");
+            });
+        }
+
+        [Fact]
         public void Remove_Column_Should_Invalidate_Grid()
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
@@ -1515,6 +1537,7 @@ namespace Avalonia.Controls.UnitTests
                 grid.RowDefinitions.RemoveAt(0);
             });
         }
+
         private static void Change_Propery_And_Verify_Measure_Requested(Grid grid, Action change)
         {
             grid.Measure(new Size(100, 100));
