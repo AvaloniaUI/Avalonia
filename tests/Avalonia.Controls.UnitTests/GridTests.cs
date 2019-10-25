@@ -1,11 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Controls.Primitives;
-using Avalonia.Input;
-using Avalonia.Platform;
-using Avalonia.UnitTests;
-
-using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -34,7 +29,6 @@ namespace Avalonia.Controls.UnitTests
 
         private Grid CreateGrid(params (string name, GridLength width, double minWidth, double maxWidth)[] columns)
         {
-
             var grid = new Grid();
             foreach (var k in columns.Select(c => new ColumnDefinition
             {
@@ -1270,11 +1264,11 @@ namespace Avalonia.Controls.UnitTests
             // grid.Measure(new Size(100, 100));
             // grid.Arrange(new Rect(new Point(), new Point(100, 100)));
             // PrintColumnDefinitions(grid);
-            
+
             // NOTE: THIS IS BROKEN IN WPF
             // all in group are equal to width (MinWidth) of the sizer in the second column
             // Assert.All(grid.ColumnDefinitions.Where(cd => cd.SharedSizeGroup == "A"), cd => Assert.Equal(6 + 1 * 6, cd.ActualWidth));
-            
+
             // NOTE: THIS IS BROKEN IN WPF
             // grid.ColumnDefinitions[2].SharedSizeGroup = null;
 
@@ -1380,6 +1374,116 @@ namespace Avalonia.Controls.UnitTests
             parent.Arrange(new Rect(grid.DesiredSize));
 
             Assert.Equal(new Size(100, 100), grid.Bounds.Size);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Change_Column_Width_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
+        {
+            var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
+
+            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            {
+                if (setUsingAvaloniaProperty)
+                    grid.ColumnDefinitions[0][ColumnDefinition.WidthProperty] = new GridLength(5);
+                else
+                    grid.ColumnDefinitions[0].Width = new GridLength(5);
+            });
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Change_Column_MinWidth_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
+        {
+            var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
+
+            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            {
+                if (setUsingAvaloniaProperty)
+                    grid.ColumnDefinitions[0][ColumnDefinition.MinWidthProperty] = 5;
+                else
+                    grid.ColumnDefinitions[0].MinWidth = 5;
+            });
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Change_Column_MaxWidth_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
+        {
+            var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
+
+            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            {
+                if (setUsingAvaloniaProperty)
+                    grid.ColumnDefinitions[0][ColumnDefinition.MaxWidthProperty] = 5;
+                else
+                    grid.ColumnDefinitions[0].MaxWidth = 5;
+            });
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Change_Row_Height_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
+        {
+            var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
+
+            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            {
+                if (setUsingAvaloniaProperty)
+                    grid.RowDefinitions[0][RowDefinition.HeightProperty] = new GridLength(5);
+                else
+                    grid.RowDefinitions[0].Height = new GridLength(5);
+            });
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Change_Row_MinHeight_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
+        {
+            var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
+
+            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            {
+                if (setUsingAvaloniaProperty)
+                    grid.RowDefinitions[0][RowDefinition.MinHeightProperty] = 5;
+                else
+                    grid.RowDefinitions[0].MinHeight = 5;
+            });
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Change_Row_MaxHeight_Should_Invalidate_Grid(bool setUsingAvaloniaProperty)
+        {
+            var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
+
+            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            {
+                if (setUsingAvaloniaProperty)
+                    grid.RowDefinitions[0][RowDefinition.MaxHeightProperty] = 5;
+                else
+                    grid.RowDefinitions[0].MaxHeight = 5;
+            });
+        }
+
+        private static void Change_Propery_And_Verify_Measure_Requested(Grid grid, Action change)
+        {
+            grid.Measure(new Size(100, 100));
+            grid.Arrange(new Rect(grid.DesiredSize));
+
+            Assert.True(grid.IsMeasureValid);
+            Assert.True(grid.IsArrangeValid);
+
+            change();
+
+            Assert.False(grid.IsMeasureValid);
+            Assert.False(grid.IsArrangeValid);
         }
 
         private class TestControl : Control
