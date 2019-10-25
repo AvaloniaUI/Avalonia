@@ -1538,6 +1538,69 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
+        [Fact]
+        public void Remove_Child_Should_Invalidate_Grid_And_Be_Operational()
+        {
+            var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("*,Auto") };
+
+            grid.Children.Add(new Decorator() { [Grid.ColumnProperty] = 0 });
+            grid.Children.Add(new Decorator() { Width = 10, Height = 10, [Grid.ColumnProperty] = 1 });
+
+            var size = new Size(100, 100);
+            grid.Measure(size);
+            grid.Arrange(new Rect(size));
+
+            Assert.True(grid.IsMeasureValid);
+            Assert.True(grid.IsArrangeValid);
+
+            Assert.Equal(90, grid.Children[0].Bounds.Width);
+            Assert.Equal(10, grid.Children[1].Bounds.Width);
+
+            grid.Children.RemoveAt(1);
+
+            Assert.False(grid.IsMeasureValid);
+            Assert.False(grid.IsArrangeValid);
+
+            grid.Measure(size);
+            grid.Arrange(new Rect(size));
+
+            Assert.True(grid.IsMeasureValid);
+            Assert.True(grid.IsArrangeValid);
+
+            Assert.Equal(100, grid.Children[0].Bounds.Width);
+        }
+
+        [Fact]
+        public void Add_Child_Should_Invalidate_Grid_And_Be_Operational()
+        {
+            var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("*,Auto") };
+
+            grid.Children.Add(new Decorator() { [Grid.ColumnProperty] = 0 });
+
+            var size = new Size(100, 100);
+            grid.Measure(size);
+            grid.Arrange(new Rect(size));
+
+            Assert.True(grid.IsMeasureValid);
+            Assert.True(grid.IsArrangeValid);
+
+            Assert.Equal(100, grid.Children[0].Bounds.Width);
+
+            grid.Children.Add(new Decorator() { Width = 10, Height = 10, [Grid.ColumnProperty] = 1 });
+
+            Assert.False(grid.IsMeasureValid);
+            Assert.False(grid.IsArrangeValid);
+
+            grid.Measure(size);
+            grid.Arrange(new Rect(size));
+
+            Assert.True(grid.IsMeasureValid);
+            Assert.True(grid.IsArrangeValid);
+
+            Assert.Equal(90, grid.Children[0].Bounds.Width);
+            Assert.Equal(10, grid.Children[1].Bounds.Width);
+        }
+
         private static void Change_Propery_And_Verify_Measure_Requested(Grid grid, Action change)
         {
             grid.Measure(new Size(100, 100));
