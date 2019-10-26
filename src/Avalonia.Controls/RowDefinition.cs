@@ -27,6 +27,14 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<RowDefinition, GridLength>(nameof(Height), new GridLength(1, GridUnitType.Star));
 
         /// <summary>
+        /// Initializes static members of the <see cref="RowDefinition"/> class.
+        /// </summary>
+        static RowDefinition()
+        {
+            AffectsParentMeasure(HeightProperty, MaxHeightProperty, MinHeightProperty);
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RowDefinition"/> class.
         /// </summary>
         public RowDefinition()
@@ -68,7 +76,6 @@ namespace Avalonia.Controls
             }
             set
             {
-                Parent?.InvalidateMeasure();
                 SetValue(MaxHeightProperty, value);
             }
         }
@@ -84,7 +91,6 @@ namespace Avalonia.Controls
             }
             set
             {
-                Parent?.InvalidateMeasure();
                 SetValue(MinHeightProperty, value);
             }
         }
@@ -100,7 +106,6 @@ namespace Avalonia.Controls
             }
             set
             {
-                Parent?.InvalidateMeasure();
                 SetValue(HeightProperty, value);
             }
         }

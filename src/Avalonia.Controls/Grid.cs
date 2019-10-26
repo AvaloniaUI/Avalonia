@@ -6,6 +6,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -178,6 +179,7 @@ namespace Avalonia.Controls
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.ColumnDefinitions = value;
                 _data.ColumnDefinitions.Parent = this;
+                InvalidateMeasure();
             }
         }
 
@@ -198,6 +200,7 @@ namespace Avalonia.Controls
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.RowDefinitions = value;
                 _data.RowDefinitions.Parent = this;
+                InvalidateMeasure();
             }
         }
 
@@ -567,6 +570,15 @@ namespace Avalonia.Controls
                 ArrangeOverrideInProgress = false;
             }
             return (arrangeSize);
+        }
+
+        /// <summary>
+        /// <see cref="Panel.ChildrenChanged"/>
+        /// </summary>
+        protected override void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            CellsStructureDirty = true;
+            base.ChildrenChanged(sender, e);
         }
 
         /// <summary>
