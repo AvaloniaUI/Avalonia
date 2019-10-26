@@ -1383,7 +1383,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
 
-            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            Change_Property_And_Verify_Measure_Requested(grid, () =>
             {
                 if (setUsingAvaloniaProperty)
                     grid.ColumnDefinitions[0][ColumnDefinition.WidthProperty] = new GridLength(5);
@@ -1399,7 +1399,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
 
-            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            Change_Property_And_Verify_Measure_Requested(grid, () =>
             {
                 if (setUsingAvaloniaProperty)
                     grid.ColumnDefinitions[0][ColumnDefinition.MinWidthProperty] = 5;
@@ -1415,7 +1415,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
 
-            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            Change_Property_And_Verify_Measure_Requested(grid, () =>
             {
                 if (setUsingAvaloniaProperty)
                     grid.ColumnDefinitions[0][ColumnDefinition.MaxWidthProperty] = 5;
@@ -1431,7 +1431,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
 
-            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            Change_Property_And_Verify_Measure_Requested(grid, () =>
             {
                 if (setUsingAvaloniaProperty)
                     grid.RowDefinitions[0][RowDefinition.HeightProperty] = new GridLength(5);
@@ -1447,7 +1447,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
 
-            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            Change_Property_And_Verify_Measure_Requested(grid, () =>
             {
                 if (setUsingAvaloniaProperty)
                     grid.RowDefinitions[0][RowDefinition.MinHeightProperty] = 5;
@@ -1463,7 +1463,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
 
-            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            Change_Property_And_Verify_Measure_Requested(grid, () =>
             {
                 if (setUsingAvaloniaProperty)
                     grid.RowDefinitions[0][RowDefinition.MaxHeightProperty] = 5;
@@ -1477,7 +1477,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
 
-            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            Change_Property_And_Verify_Measure_Requested(grid, () =>
             {
                 grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(5)));
             });
@@ -1488,7 +1488,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
 
-            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            Change_Property_And_Verify_Measure_Requested(grid, () =>
             {
                 grid.RowDefinitions.Add(new RowDefinition(new GridLength(5)));
             });
@@ -1499,7 +1499,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
 
-            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            Change_Property_And_Verify_Measure_Requested(grid, () =>
             {
                 grid.ColumnDefinitions = ColumnDefinitions.Parse("2*,1*");
             });
@@ -1510,7 +1510,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
 
-            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            Change_Property_And_Verify_Measure_Requested(grid, () =>
             {
                 grid.RowDefinitions = RowDefinitions.Parse("2*,1*");
             });
@@ -1521,7 +1521,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid { ColumnDefinitions = ColumnDefinitions.Parse("1*,1*") };
 
-            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            Change_Property_And_Verify_Measure_Requested(grid, () =>
             {
                 grid.ColumnDefinitions.RemoveAt(0);
             });
@@ -1532,7 +1532,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid { RowDefinitions = RowDefinitions.Parse("1*,1*") };
 
-            Change_Propery_And_Verify_Measure_Requested(grid, () =>
+            Change_Property_And_Verify_Measure_Requested(grid, () =>
             {
                 grid.RowDefinitions.RemoveAt(0);
             });
@@ -1601,7 +1601,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(10, grid.Children[1].Bounds.Width);
         }
 
-        private static void Change_Propery_And_Verify_Measure_Requested(Grid grid, Action change)
+        private static void Change_Property_And_Verify_Measure_Requested(Grid grid, Action change)
         {
             grid.Measure(new Size(100, 100));
             grid.Arrange(new Rect(grid.DesiredSize));
