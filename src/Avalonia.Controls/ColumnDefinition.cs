@@ -31,7 +31,9 @@ namespace Avalonia.Controls
         /// </summary>
         static ColumnDefinition()
         {
-            AffectsParentMeasure(WidthProperty, MinWidthProperty, MaxWidthProperty);
+            AffectsParentMeasure(MinWidthProperty, MaxWidthProperty);
+
+            WidthProperty.Changed.AddClassHandler<DefinitionBase>(OnUserSizePropertyChanged);
         }
 
         /// <summary>

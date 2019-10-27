@@ -7,9 +7,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-
-using Avalonia;
-using Avalonia.Collections;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -115,6 +112,36 @@ namespace Avalonia.Controls
             else
             {
                 d.ClearValue(PrivateSharedSizeScopeProperty);
+            }
+        }
+
+        /// <remarks>
+        /// This method needs to be internal to be accessable from derived classes.
+        /// </remarks>
+        internal static void OnUserSizePropertyChanged(DefinitionBase definition, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (definition.Parent == null)
+            {
+                return;
+            }
+
+            if (definition._sharedState != null)
+            {
+                definition._sharedState.Invalidate();
+            }
+            else
+            {
+                GridUnitType oldUnitType = ((GridLength)e.OldValue).GridUnitType;
+                GridUnitType newUnitType = ((GridLength)e.NewValue).GridUnitType;
+
+                if (oldUnitType != newUnitType)
+                {
+                    definition.Parent.Invalidate();
+                }
+                else
+                {
+                    definition.Parent.InvalidateMeasure();
+                }
             }
         }
 
