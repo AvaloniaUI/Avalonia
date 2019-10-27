@@ -16,7 +16,7 @@ using Avalonia.Utilities;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Enum to indicate whether GridSplitter resizes Columns or Rows.
+    /// Enum to indicate whether <see cref="GridSplitter"/> resizes Columns or Rows.
     /// </summary>
     public enum GridResizeDirection
     {
@@ -38,7 +38,7 @@ namespace Avalonia.Controls
     }
 
     /// <summary>
-    /// Enum to indicate what Columns or Rows the GridSplitter resizes.
+    /// Enum to indicate what Columns or Rows the <see cref="GridSplitter"/> resizes.
     /// </summary>
     public enum GridResizeBehavior
     {
