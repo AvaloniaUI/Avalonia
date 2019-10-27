@@ -262,5 +262,123 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(columnDefinitions[0].Width, new GridLength(120, GridUnitType.Star));
             Assert.Equal(columnDefinitions[2].Width, new GridLength(80, GridUnitType.Star));
         }
+
+        [Theory]
+        [InlineData(Key.Up, 90, 110)]
+        [InlineData(Key.Down, 110, 90)]
+        public void Vertical_Keyboard_Input_Can_Move_Splitter(Key key, double expectedHeightFirst, double expectedHeightSecond)
+        {
+            var control1 = new Border { [Grid.RowProperty] = 0 };
+            var splitter = new GridSplitter { [Grid.RowProperty] = 1, KeyboardIncrement = 10d };
+            var control2 = new Border { [Grid.RowProperty] = 2 };
+
+            var rowDefinitions = new RowDefinitions
+            {
+                new RowDefinition(1, GridUnitType.Star),
+                new RowDefinition(GridLength.Auto),
+                new RowDefinition(1, GridUnitType.Star)
+            };
+
+            var grid = new Grid { RowDefinitions = rowDefinitions, Children = { control1, splitter, control2 } };
+
+            var root = new TestRoot
+            {
+                Child = grid
+            };
+
+            root.Measure(new Size(200, 200));
+            root.Arrange(new Rect(0, 0, 200, 200));
+
+            splitter.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = key
+            });
+
+            Assert.Equal(rowDefinitions[0].Height, new GridLength(expectedHeightFirst, GridUnitType.Star));
+            Assert.Equal(rowDefinitions[2].Height, new GridLength(expectedHeightSecond, GridUnitType.Star));
+        }
+
+        [Theory]
+        [InlineData(Key.Left, 90, 110)]
+        [InlineData(Key.Right, 110, 90)]
+        public void Horizontal_Keyboard_Input_Can_Move_Splitter(Key key, double expectedWidthFirst, double expectedWidthSecond)
+        {
+            var control1 = new Border { [Grid.ColumnProperty] = 0 };
+            var splitter = new GridSplitter { [Grid.ColumnProperty] = 1, KeyboardIncrement = 10d };
+            var control2 = new Border { [Grid.ColumnProperty] = 2 };
+
+            var columnDefinitions = new ColumnDefinitions
+            {
+                new ColumnDefinition(1, GridUnitType.Star),
+                new ColumnDefinition(GridLength.Auto),
+                new ColumnDefinition(1, GridUnitType.Star)
+            };
+
+            var grid = new Grid { ColumnDefinitions = columnDefinitions, Children = { control1, splitter, control2 } };
+
+            var root = new TestRoot
+            {
+                Child = grid
+            };
+
+            root.Measure(new Size(200, 200));
+            root.Arrange(new Rect(0, 0, 200, 200));
+
+            splitter.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = key
+            });
+
+            Assert.Equal(columnDefinitions[0].Width, new GridLength(expectedWidthFirst, GridUnitType.Star));
+            Assert.Equal(columnDefinitions[2].Width, new GridLength(expectedWidthSecond, GridUnitType.Star));
+        }
+
+        [Fact]
+        public void Pressing_Escape_Key_Cancels_Resizing()
+        {
+            var control1 = new Border { [Grid.ColumnProperty] = 0 };
+            var splitter = new GridSplitter { [Grid.ColumnProperty] = 1, KeyboardIncrement = 10d };
+            var control2 = new Border { [Grid.ColumnProperty] = 2 };
+
+            var columnDefinitions = new ColumnDefinitions
+            {
+                new ColumnDefinition(1, GridUnitType.Star),
+                new ColumnDefinition(GridLength.Auto),
+                new ColumnDefinition(1, GridUnitType.Star)
+            };
+
+            var grid = new Grid { ColumnDefinitions = columnDefinitions, Children = { control1, splitter, control2 } };
+
+            var root = new TestRoot
+            {
+                Child = grid
+            };
+
+            root.Measure(new Size(200, 200));
+            root.Arrange(new Rect(0, 0, 200, 200));
+
+            splitter.RaiseEvent(
+                new VectorEventArgs { RoutedEvent = Thumb.DragStartedEvent });
+
+            splitter.RaiseEvent(new VectorEventArgs
+            {
+                RoutedEvent = Thumb.DragDeltaEvent,
+                Vector = new Vector(-100, 0)
+            });
+
+            Assert.Equal(columnDefinitions[0].Width, new GridLength(0, GridUnitType.Star));
+            Assert.Equal(columnDefinitions[2].Width, new GridLength(200, GridUnitType.Star));
+
+            splitter.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = Key.Escape
+            });
+
+            Assert.Equal(columnDefinitions[0].Width, new GridLength(1, GridUnitType.Star));
+            Assert.Equal(columnDefinitions[2].Width, new GridLength(1, GridUnitType.Star));
+        }
     }
 }
