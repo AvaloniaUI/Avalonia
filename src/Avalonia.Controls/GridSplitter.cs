@@ -16,55 +16,7 @@ using Avalonia.Utilities;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Enum to indicate whether <see cref="GridSplitter"/> resizes Columns or Rows.
-    /// </summary>
-    public enum GridResizeDirection
-    {
-        /// <summary>
-        /// Determines whether to resize rows or columns based on its Alignment and 
-        /// width compared to height.
-        /// </summary>
-        Auto,
-
-        /// <summary>
-        /// Resize columns when dragging Splitter.
-        /// </summary>
-        Columns,
-
-        /// <summary>
-        /// Resize rows when dragging Splitter.
-        /// </summary>
-        Rows
-    }
-
-    /// <summary>
-    /// Enum to indicate what Columns or Rows the <see cref="GridSplitter"/> resizes.
-    /// </summary>
-    public enum GridResizeBehavior
-    {
-        /// <summary>
-        /// Determine which columns or rows to resize based on its Alignment.
-        /// </summary>
-        BasedOnAlignment,
-
-        /// <summary>
-        /// Resize the current and next Columns or Rows.
-        /// </summary>
-        CurrentAndNext,
-
-        /// <summary>
-        /// Resize the previous and current Columns or Rows.
-        /// </summary>
-        PreviousAndCurrent,
-
-        /// <summary>
-        /// Resize the previous and next Columns or Rows.
-        /// </summary>
-        PreviousAndNext
-    }
-
-    /// <summary>
-    /// Represents the control that redistributes space between columns or rows of a Grid control.
+    /// Represents the control that redistributes space between columns or rows of a <see cref="Grid"/> control.
     /// </summary>
     public class GridSplitter : Thumb
     {
@@ -427,7 +379,13 @@ namespace Avalonia.Controls
         {
             base.OnDragStarted(e);
 
-            Debug.Assert(_resizeData == null, "_resizeData is not null, DragCompleted was not called");
+            // TODO: Looks like that sometimes thumb will raise multiple drag started events.
+            // Debug.Assert(_resizeData == null, "_resizeData is not null, DragCompleted was not called");
+
+            if (_resizeData != null)
+            {
+                return;
+            }
 
             InitializeData(ShowsPreview);
         }
@@ -844,5 +802,53 @@ namespace Avalonia.Controls
             // isn't hidden by resizing a row/column smaller than the splitter.
             public double SplitterLength;
         }
+    }
+
+    /// <summary>
+    /// Enum to indicate whether <see cref="GridSplitter"/> resizes Columns or Rows.
+    /// </summary>
+    public enum GridResizeDirection
+    {
+        /// <summary>
+        /// Determines whether to resize rows or columns based on its Alignment and 
+        /// width compared to height.
+        /// </summary>
+        Auto,
+
+        /// <summary>
+        /// Resize columns when dragging Splitter.
+        /// </summary>
+        Columns,
+
+        /// <summary>
+        /// Resize rows when dragging Splitter.
+        /// </summary>
+        Rows
+    }
+
+    /// <summary>
+    /// Enum to indicate what Columns or Rows the <see cref="GridSplitter"/> resizes.
+    /// </summary>
+    public enum GridResizeBehavior
+    {
+        /// <summary>
+        /// Determine which columns or rows to resize based on its Alignment.
+        /// </summary>
+        BasedOnAlignment,
+
+        /// <summary>
+        /// Resize the current and next Columns or Rows.
+        /// </summary>
+        CurrentAndNext,
+
+        /// <summary>
+        /// Resize the previous and current Columns or Rows.
+        /// </summary>
+        PreviousAndCurrent,
+
+        /// <summary>
+        /// Resize the previous and next Columns or Rows.
+        /// </summary>
+        PreviousAndNext
     }
 }
