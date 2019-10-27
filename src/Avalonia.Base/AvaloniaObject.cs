@@ -759,8 +759,6 @@ namespace Avalonia
         /// </remarks>
         private void ParentPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
-
             if (e.Property.Inherits && !IsSet(e.Property))
             {
                 RaisePropertyChanged(e.Property, e.OldValue, e.NewValue, BindingPriority.LocalValue);

@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using Avalonia.Data;
 
 namespace Avalonia
@@ -9,7 +8,7 @@ namespace Avalonia
     /// <summary>
     /// Provides information for a avalonia property change.
     /// </summary>
-    public class AvaloniaPropertyChangedEventArgs : EventArgs
+    public readonly struct AvaloniaPropertyChangedEventArgs
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaPropertyChangedEventArgs"/> class.
@@ -37,7 +36,7 @@ namespace Avalonia
         /// Gets the <see cref="AvaloniaObject"/> that the property changed on.
         /// </summary>
         /// <value>The sender object.</value>
-        public AvaloniaObject Sender { get; private set; }
+        public AvaloniaObject Sender { get; }
 
         /// <summary>
         /// Gets the property that changed.
@@ -45,7 +44,7 @@ namespace Avalonia
         /// <value>
         /// The property that changed.
         /// </value>
-        public AvaloniaProperty Property { get; private set; }
+        public AvaloniaProperty Property { get; }
 
         /// <summary>
         /// Gets the old value of the property.
@@ -53,7 +52,7 @@ namespace Avalonia
         /// <value>
         /// The old value of the property.
         /// </value>
-        public object OldValue { get; private set; }
+        public object OldValue { get; }
 
         /// <summary>
         /// Gets the new value of the property.
@@ -61,7 +60,7 @@ namespace Avalonia
         /// <value>
         /// The new value of the property.
         /// </value>
-        public object NewValue { get; private set; }
+        public object NewValue { get; }
 
         /// <summary>
         /// Gets the priority of the binding that produced the value.
@@ -69,6 +68,6 @@ namespace Avalonia
         /// <value>
         /// The priority of the binding that produced the value.
         /// </value>
-        public BindingPriority Priority { get; private set; }
+        public BindingPriority Priority { get; }
     }
 }
