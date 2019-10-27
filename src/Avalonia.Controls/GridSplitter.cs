@@ -554,22 +554,9 @@ namespace Avalonia.Controls
                 definition2Min = Math.Max(definition2Min, _resizeData.SplitterLength);
             }
 
-            if (_resizeData.SplitBehavior == SplitBehavior.Split)
-            {
-                // Determine the minimum and maximum the columns can be resized.
-                minDelta = -Math.Min(definition1Len - definition1Min, definition2Max - definition2Len);
-                maxDelta = Math.Min(definition1Max - definition1Len, definition2Len - definition2Min);
-            }
-            else if (_resizeData.SplitBehavior == SplitBehavior.Resize1)
-            {
-                minDelta = definition1Min - definition1Len;
-                maxDelta = definition1Max - definition1Len;
-            }
-            else
-            {
-                minDelta = definition2Len - definition2Max;
-                maxDelta = definition2Len - definition2Min;
-            }
+            // Determine the minimum and maximum the columns can be resized.
+            minDelta = -Math.Min(definition1Len - definition1Min, definition2Max - definition2Len);
+            maxDelta = Math.Min(definition1Max - definition1Len, definition2Len - definition2Min);
         }
 
         /// <summary>
