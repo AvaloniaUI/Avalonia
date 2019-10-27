@@ -116,7 +116,7 @@ namespace Avalonia.Controls
         }
 
         /// <remarks>
-        /// This method needs to be internal to be accessable from derived classes.
+        /// Notifies parent <see cref="Grid"/> or size scope that definition size has been changed.
         /// </remarks>
         internal static void OnUserSizePropertyChanged(DefinitionBase definition, AvaloniaPropertyChangedEventArgs e)
         {
