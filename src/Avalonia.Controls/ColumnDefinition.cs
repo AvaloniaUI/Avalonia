@@ -27,6 +27,14 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ColumnDefinition, GridLength>(nameof(Width), new GridLength(1, GridUnitType.Star));
 
         /// <summary>
+        /// Initializes static members of the <see cref="ColumnDefinition"/> class.
+        /// </summary>
+        static ColumnDefinition()
+        {
+            AffectsParentMeasure(WidthProperty, MinWidthProperty, MaxWidthProperty);
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ColumnDefinition"/> class.
         /// </summary>
         public ColumnDefinition()
@@ -68,7 +76,6 @@ namespace Avalonia.Controls
             }
             set
             {
-                Parent?.InvalidateMeasure();
                 SetValue(MaxWidthProperty, value);
             }
         }
@@ -84,7 +91,6 @@ namespace Avalonia.Controls
             }
             set
             {
-                Parent?.InvalidateMeasure();
                 SetValue(MinWidthProperty, value);
             }
         }
@@ -100,7 +106,6 @@ namespace Avalonia.Controls
             }
             set
             {
-                Parent?.InvalidateMeasure();
                 SetValue(WidthProperty, value);
             }
         }
