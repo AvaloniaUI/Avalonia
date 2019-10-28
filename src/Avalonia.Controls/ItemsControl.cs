@@ -356,6 +356,7 @@ namespace Avalonia.Controls
             var oldValue = e.OldValue as IEnumerable;
             var newValue = e.NewValue as IEnumerable;
 
+            Presenter?.ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             UpdateItemCount();
             RemoveControlItemsFromLogicalChildren(oldValue);
             AddControlItemsToLogicalChildren(newValue);
@@ -370,6 +371,9 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            UpdateItemCount();
+            Presenter?.ItemsChanged(e);
+
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -380,8 +384,6 @@ namespace Avalonia.Controls
                     RemoveControlItemsFromLogicalChildren(e.OldItems);
                     break;
             }
-
-            UpdateItemCount();
 
             var collection = sender as ICollection;
             PseudoClasses.Set(":empty", collection == null || collection.Count == 0);
