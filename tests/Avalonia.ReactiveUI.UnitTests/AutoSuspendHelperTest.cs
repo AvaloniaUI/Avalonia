@@ -45,7 +45,7 @@ namespace Avalonia.ReactiveUI.UnitTests
         public void AutoSuspendHelper_Should_Immediately_Fire_IsLaunchingNew() 
         {
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime(Application.Current))
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 var isLaunchingReceived = false;
                 var application = AvaloniaLocator.Current.GetService<Application>();
@@ -86,7 +86,7 @@ namespace Avalonia.ReactiveUI.UnitTests
         public void ShouldPersistState_Should_Fire_On_App_Exit_When_SuspensionDriver_Is_Initialized() 
         {
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime(Application.Current)) 
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime()) 
             {
                 var shouldPersistReceived = false;
                 var application = AvaloniaLocator.Current.GetService<Application>();
