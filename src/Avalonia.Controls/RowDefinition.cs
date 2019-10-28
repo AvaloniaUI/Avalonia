@@ -31,7 +31,9 @@ namespace Avalonia.Controls
         /// </summary>
         static RowDefinition()
         {
-            AffectsParentMeasure(HeightProperty, MaxHeightProperty, MinHeightProperty);
+            AffectsParentMeasure(MaxHeightProperty, MinHeightProperty);
+
+            HeightProperty.Changed.AddClassHandler<DefinitionBase>(OnUserSizePropertyChanged);
         }
 
         /// <summary>
