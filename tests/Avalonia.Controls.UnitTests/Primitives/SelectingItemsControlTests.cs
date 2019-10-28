@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -14,6 +15,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Data;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -981,6 +983,45 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void AutoScrollToSelectedItem_On_Reset_Works()
+        {
+            // Issue #3148
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var items = new ResettingCollection(100);
+
+                var target = new ListBox
+                {
+                    Items = items,
+                    ItemTemplate = new FuncDataTemplate<string>((x, _) =>
+                        new TextBlock
+                        {
+                            Text = x,
+                            Width = 100,
+                            Height = 10
+                        }),
+                    AutoScrollToSelectedItem = true,
+                    VirtualizationMode = ItemVirtualizationMode.Simple,
+                };
+
+                var root = new TestRoot(true, target);
+                root.Measure(new Size(100, 100));
+                root.Arrange(new Rect(0, 0, 100, 100));
+
+                Assert.True(target.Presenter.Panel.Children.Count > 0);
+                Assert.True(target.Presenter.Panel.Children.Count < 100);
+
+                target.SelectedItem = "Item99";
+
+                // #3148 triggered here.
+                items.Reset(new[] { "Item99" });
+
+                Assert.Equal(0, target.SelectedIndex);
+                Assert.Equal(1, target.Presenter.Panel.Children.Count);
+            }
+        }
+
+        [Fact]
         public void Can_Set_Both_SelectedItem_And_SelectedItems_During_Initialization()
         {
             // Issue #2969.
@@ -1028,6 +1069,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Name = "itemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
+                    [~ItemsPresenter.VirtualizationModeProperty] = control[~ListBox.VirtualizationModeProperty],
                 }.RegisterInNameScope(scope));
         }
 
@@ -1071,6 +1113,25 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 return base.MoveSelection(direction, wrap);
             }
+        }
+
+        private class ResettingCollection : List<string>, INotifyCollectionChanged
+        {
+            public ResettingCollection(int itemCount)
+            {
+                AddRange(Enumerable.Range(0, itemCount).Select(x => $"Item{x}"));
+            }
+
+            public void Reset(IEnumerable<string> items)
+            {
+                Clear();
+                AddRange(items);
+                CollectionChanged?.Invoke(
+                    this,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+
+            public event NotifyCollectionChangedEventHandler CollectionChanged;
         }
     }
 }
