@@ -88,6 +88,11 @@ namespace Avalonia.Input
 
         public void TopLevelClosed(IInputRoot root)
         {
+            if (_pointer.Captured?.VisualRoot == root)
+            {
+                _pointer.Capture(null);
+            }
+
             ClearPointerOver(this, 0, root, PointerPointProperties.None, KeyModifiers.None);
         }
 
