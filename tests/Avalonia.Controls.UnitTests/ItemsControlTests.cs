@@ -522,6 +522,36 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Presenter_Items_Should_Be_In_Sync()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = new object[]
+                {
+                    new Button(),
+                    new Button(),
+                },
+            };
+
+            var root = new TestRoot { Child = target };
+            var otherPanel = new StackPanel();
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            
+            target.ItemContainerGenerator.Materialized += (s, e) =>
+            {
+                Assert.IsType<Canvas>(e.Containers[0].Item);
+            };
+
+            target.Items = new[]
+            {
+                new Canvas()
+            };
+        }
+
         private class Item
         {
             public Item(string value)
