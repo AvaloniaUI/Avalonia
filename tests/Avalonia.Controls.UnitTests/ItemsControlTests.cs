@@ -12,6 +12,7 @@ using Xunit;
 using System.Collections.ObjectModel;
 using Avalonia.UnitTests;
 using Avalonia.Input;
+using System.Collections.Generic;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -102,6 +103,28 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(child.Parent, target);
             Assert.Equal(child.GetLogicalParent(), target);
             Assert.Equal(new[] { child }, target.GetLogicalChildren());
+        }
+
+        [Fact]
+        public void Added_Container_Should_Have_LogicalParent_Set_To_ItemsControl()
+        {
+            var item = new Border();
+            var items = new ObservableCollection<Border>();
+
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = items,
+            };
+
+            var root = new TestRoot(true, target);
+
+            root.Measure(new Size(100, 100));
+            root.Arrange(new Rect(0, 0, 100, 100));
+
+            items.Add(item);
+
+            Assert.Equal(target, item.Parent);
         }
 
         [Fact]
