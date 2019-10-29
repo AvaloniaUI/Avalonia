@@ -356,10 +356,15 @@ namespace Avalonia.Controls
             var oldValue = e.OldValue as IEnumerable;
             var newValue = e.NewValue as IEnumerable;
 
-            Presenter?.ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             UpdateItemCount();
             RemoveControlItemsFromLogicalChildren(oldValue);
             AddControlItemsToLogicalChildren(newValue);
+
+            if (Presenter != null)
+            {
+                Presenter.Items = newValue;
+            }
+
             SubscribeToItems(newValue);
         }
 
