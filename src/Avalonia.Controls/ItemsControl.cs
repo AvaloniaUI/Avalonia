@@ -377,7 +377,6 @@ namespace Avalonia.Controls
         protected virtual void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             UpdateItemCount();
-            Presenter?.ItemsChanged(e);
 
             switch (e.Action)
             {
@@ -389,6 +388,8 @@ namespace Avalonia.Controls
                     RemoveControlItemsFromLogicalChildren(e.OldItems);
                     break;
             }
+
+            Presenter?.ItemsChanged(e);
 
             var collection = sender as ICollection;
             PseudoClasses.Set(":empty", collection == null || collection.Count == 0);
