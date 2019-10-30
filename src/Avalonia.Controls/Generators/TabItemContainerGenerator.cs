@@ -19,8 +19,6 @@ namespace Avalonia.Controls.Generators
         {
             var tabItem = (TabItem)base.CreateContainer(item);
 
-            tabItem.ParentTabControl = Owner;
-
             tabItem[~TabControl.TabStripPlacementProperty] = Owner[~TabControl.TabStripPlacementProperty];
 
             if (tabItem.HeaderTemplate == null)

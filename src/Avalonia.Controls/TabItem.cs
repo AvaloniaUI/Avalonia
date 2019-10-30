@@ -53,8 +53,6 @@ namespace Avalonia.Controls
             set { SetValue(IsSelectedProperty, value); }
         }
 
-        internal TabControl ParentTabControl { get; set; }
-
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
         {
             if (Header == null)
