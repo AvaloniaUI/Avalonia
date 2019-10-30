@@ -70,6 +70,7 @@ namespace Avalonia.Controls
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
+            SelectedIndexProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent(e));
         }
 
         /// <summary>
@@ -143,6 +144,64 @@ namespace Avalonia.Controls
         bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
         {
             return RegisterContentPresenter(presenter);
+        }
+
+        private void UpdateSelectedContent(AvaloniaPropertyChangedEventArgs e)
+        {
+            var index = (int)e.NewValue;
+
+            if (index == -1)
+            {
+                SelectedContentTemplate = null;
+
+                SelectedContent = null;
+
+                return;
+            }
+
+            var container = (TabItem)ItemContainerGenerator.ContainerFromIndex(index);
+
+            if (container == null)
+            {
+                if (Items is AvaloniaList<object> items)
+                {
+                    container = items[index] as TabItem;
+                }
+            }
+
+            if (container == null)
+            {
+                return;
+            }
+
+            UpdateSelectedContent(container);
+        }
+
+        private void UpdateSelectedContent(TabItem item)
+        {
+            if (SelectedContentTemplate != item.ContentTemplate)
+            {
+                SelectedContentTemplate = item.ContentTemplate;
+            }
+
+            if (SelectedContent != item.Content)
+            {
+                SelectedContent = item.Content;
+            }
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var size = base.MeasureOverride(availableSize);
+
+            if (SelectedIndex != -1 && SelectedContent == null)
+            {
+                var container = (TabItem)ItemContainerGenerator.ContainerFromIndex(SelectedIndex);
+
+                UpdateSelectedContent(container);
+            }
+
+            return size;
         }
 
         /// <summary>

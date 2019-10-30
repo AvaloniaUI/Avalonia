@@ -358,7 +358,7 @@ namespace Avalonia.Controls.Primitives
             {
                 if ((container.ContainerControl as ISelectable)?.IsSelected == true)
                 {
-                    if (SelectedIndex == -1)
+                    if (SelectionMode.HasFlag(SelectionMode.Single))
                     {
                         SelectedIndex = container.Index;
                     }
