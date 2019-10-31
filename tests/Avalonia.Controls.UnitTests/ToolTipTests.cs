@@ -41,5 +41,51 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(ToolTip.GetIsOpen(target));
             }
         }
+
+        [Fact]
+        public void Should_Open_On_Pointer_Enter_With_Delay()
+        {
+            Action timercallback = null;
+            var delay = TimeSpan.Zero;
+
+            var pti = Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true);
+
+            Mock.Get(pti)
+                .Setup(v => v.StartTimer(It.IsAny<DispatcherPriority>(), It.IsAny<TimeSpan>(), It.IsAny<Action>()))
+                .Callback<DispatcherPriority, TimeSpan, Action>((priority, interval, tick) =>
+                {
+                    delay = interval;
+                    timercallback = tick;
+                })
+                .Returns(Disposable.Empty);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With(threadingInterface: pti)))
+            {
+                var window = new Window();
+
+                var target = new Decorator()
+                {
+                    [ToolTip.TipProperty] = "Tip",
+                    [ToolTip.ShowDelayProperty] = 1
+                };
+
+                window.Content = target;
+
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                Assert.True((target as IVisual).IsAttachedToVisualTree);
+
+                _mouseHelper.Enter(target);
+
+                Assert.Equal(TimeSpan.FromMilliseconds(1), delay);
+                Assert.NotNull(timercallback);
+                Assert.False(ToolTip.GetIsOpen(target));
+
+                timercallback();
+
+                Assert.True(ToolTip.GetIsOpen(target));
+            }
+        }
     }
 }
