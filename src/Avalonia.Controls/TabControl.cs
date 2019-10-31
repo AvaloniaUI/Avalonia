@@ -146,6 +146,25 @@ namespace Avalonia.Controls
             return RegisterContentPresenter(presenter);
         }
 
+        protected override void OnContainersMaterialized(ItemContainerEventArgs e)
+        {
+            base.OnContainersMaterialized(e);
+
+            if (SelectedContent != null || SelectedIndex == -1)
+            {
+                return;
+            }
+
+            var container = (TabItem)ItemContainerGenerator.ContainerFromIndex(SelectedIndex);
+
+            if (container == null)
+            {
+                return;
+            }
+
+            UpdateSelectedContent(container);
+        }
+
         private void UpdateSelectedContent(AvaloniaPropertyChangedEventArgs e)
         {
             var index = (int)e.NewValue;
@@ -188,20 +207,6 @@ namespace Avalonia.Controls
             {
                 SelectedContent = item.Content;
             }
-        }
-
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            var size = base.MeasureOverride(availableSize);
-
-            if (SelectedIndex != -1 && SelectedContent == null)
-            {
-                var container = (TabItem)ItemContainerGenerator.ContainerFromIndex(SelectedIndex);
-
-                UpdateSelectedContent(container);
-            }
-
-            return size;
         }
 
         /// <summary>

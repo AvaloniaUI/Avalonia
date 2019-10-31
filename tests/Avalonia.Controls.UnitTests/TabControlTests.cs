@@ -63,9 +63,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Items = items;
 
-            target.ApplyTemplate();
-
-            target.Measure(Size.Infinity);
+            ApplyTemplate(target);
 
             Assert.Equal(secondContent, target.SelectedContent);
         }
