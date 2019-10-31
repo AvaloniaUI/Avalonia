@@ -57,7 +57,8 @@ namespace Avalonia
                 {
                     if (priority == (int)BindingPriority.LocalValue)
                     {
-                        _propertyValues.SetValue(property, Validate(property, value));
+                        Validate(property, ref value);
+                        _propertyValues.SetValue(property, value);
                         Changed(property, priority, v, value);
                         return;
                     }
@@ -78,7 +79,8 @@ namespace Avalonia
 
                 if (priority == (int)BindingPriority.LocalValue)
                 {
-                    _propertyValues.AddValue(property, Validate(property, value));
+                    Validate(property, ref value);
+                    _propertyValues.AddValue(property, value);
                     Changed(property, priority, AvaloniaProperty.UnsetValue, value);
                     return;
                 }
@@ -166,16 +168,14 @@ namespace Avalonia
                 validate2);
         }
 
-        private object Validate(AvaloniaProperty property, object value)
+        private void Validate(AvaloniaProperty property, ref object value)
         {
             var validate = ((IStyledPropertyAccessor)property).GetValidationFunc(_owner.GetType());
 
             if (validate != null && value != AvaloniaProperty.UnsetValue)
             {
-                return validate(_owner, value);
+                value = validate(_owner, value);
             }
-
-            return value;
         }
 
         private DeferredSetter<T> GetDeferredSetter<T>(AvaloniaProperty property)

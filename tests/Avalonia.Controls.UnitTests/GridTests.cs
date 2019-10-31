@@ -1173,6 +1173,41 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Size_Group_Definition_Resizes_Are_Tracked()
+        {
+            var grids = new[] {
+                CreateGrid(("A", new GridLength(5, GridUnitType.Pixel)), (null, new GridLength())),
+                CreateGrid(("A", new GridLength(5, GridUnitType.Pixel)), (null, new GridLength())) };
+            var scope = new Grid();
+            foreach (var xgrids in grids)
+                scope.Children.Add(xgrids);
+
+            var root = new Grid();
+            root.UseLayoutRounding = false;
+            root.SetValue(Grid.IsSharedSizeScopeProperty, true);
+            root.Children.Add(scope);
+
+            root.Measure(new Size(50, 50));
+            root.Arrange(new Rect(new Point(), new Point(50, 50)));
+
+            PrintColumnDefinitions(grids[0]);
+            Assert.Equal(5, grids[0].ColumnDefinitions[0].ActualWidth);
+            Assert.Equal(5, grids[1].ColumnDefinitions[0].ActualWidth);
+
+            grids[0].ColumnDefinitions[0].Width = new GridLength(10, GridUnitType.Pixel);
+
+            foreach (Grid grid in grids)
+            {
+                grid.Measure(new Size(50, 50));
+                grid.Arrange(new Rect(new Point(), new Point(50, 50)));
+            }
+
+            PrintColumnDefinitions(grids[0]);
+            Assert.Equal(10, grids[0].ColumnDefinitions[0].ActualWidth);
+            Assert.Equal(10, grids[1].ColumnDefinitions[0].ActualWidth);
+        }
+
+        [Fact]
         public void Collection_Changes_Are_Tracked()
         {
             var grid = CreateGrid(
