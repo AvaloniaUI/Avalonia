@@ -17,6 +17,24 @@ namespace Avalonia.Controls.UnitTests
         private MouseTestHelper _mouseHelper = new MouseTestHelper();
 
         [Fact]
+        public void Should_Not_Open_On_Detached_Control()
+        {
+            //issue #3188
+            var control = new Decorator()
+            {
+                [ToolTip.TipProperty] = "Tip",
+                [ToolTip.ShowDelayProperty] = 0
+            };
+
+            Assert.False((control as IVisual).IsAttachedToVisualTree);
+
+            //here in issue #3188 exception is raised
+            _mouseHelper.Enter(control);
+
+            Assert.False(ToolTip.GetIsOpen(control));
+        }
+
+        [Fact]
         public void Should_Open_On_Pointer_Enter()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
