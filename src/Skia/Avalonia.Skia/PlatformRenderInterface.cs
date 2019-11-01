@@ -21,8 +21,6 @@ namespace Avalonia.Skia
 
         private GRContext GrContext { get; }
 
-        public IEnumerable<string> InstalledFontNames => SKFontManager.Default.FontFamilies;
-
         public PlatformRenderInterface(ICustomSkiaGpu customSkiaGpu)
         {
             if (customSkiaGpu != null)
@@ -52,12 +50,13 @@ namespace Avalonia.Skia
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            return new FormattedTextImpl(text, typeface, textAlignment, wrapping, constraint, spans);
+            return new FormattedTextImpl(text, typeface,fontSize, textAlignment, wrapping, constraint, spans);
         }
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);

@@ -9,11 +9,10 @@ namespace Avalonia.UnitTests
 {
     public class MockPlatformRenderInterface : IPlatformRenderInterface
     {
-        public IEnumerable<string> InstalledFontNames => new string[0];
-
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,

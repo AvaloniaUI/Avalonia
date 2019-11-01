@@ -41,20 +41,6 @@ namespace Avalonia.Direct2D1
 
         public static SharpDX.DXGI.Device1 DxgiDevice { get; private set; }
 
-        public IEnumerable<string> InstalledFontNames
-        {
-            get
-            {
-                var cache = Direct2D1FontCollectionCache.s_installedFontCollection;
-                var length = cache.FontFamilyCount;
-                for (int i = 0; i < length; i++)
-                {
-                    var names = cache.GetFontFamily(i).FamilyNames;
-                    yield return names.GetString(0);
-                }
-            }
-        }
-
         private static readonly object s_initLock = new object();
         private static bool s_initialized = false;
 
@@ -120,6 +106,7 @@ namespace Avalonia.Direct2D1
         {
             InitializeDirect2D();
             AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(s_instance);
+            AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl());
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
         }
 
@@ -131,6 +118,7 @@ namespace Avalonia.Direct2D1
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -139,6 +127,7 @@ namespace Avalonia.Direct2D1
             return new FormattedTextImpl(
                 text,
                 typeface,
+                fontSize,
                 textAlignment,
                 wrapping,
                 constraint,
