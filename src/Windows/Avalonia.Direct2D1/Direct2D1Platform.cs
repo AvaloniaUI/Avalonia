@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Controls;
@@ -27,6 +28,8 @@ namespace Avalonia.Direct2D1
 {
     public class Direct2D1Platform : IPlatformRenderInterface
     {
+        private readonly ConcurrentDictionary<Typeface, GlyphTypefaceImpl> _glyphTypefaceCache =
+            new ConcurrentDictionary<Typeface, GlyphTypefaceImpl>();
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
         public static SharpDX.Direct3D11.Device Direct3D11Device { get; private set; }
@@ -189,6 +192,11 @@ namespace Avalonia.Direct2D1
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new WicBitmapImpl(format, data, size, dpi, stride);
+        }
+
+        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        {
+            return _glyphTypefaceCache.GetOrAdd(typeface, new GlyphTypefaceImpl(typeface));
         }
     }
 }

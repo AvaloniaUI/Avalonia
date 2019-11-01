@@ -9,7 +9,10 @@ namespace Avalonia.Media
 {
     public class GlyphTypeface : IDisposable
     {
-        public GlyphTypeface(Typeface typeface) : this(FontManager.Default.CreateGlyphTypeface(typeface))
+        private static readonly IPlatformRenderInterface s_platformRenderInterface =
+            AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+
+        public GlyphTypeface(Typeface typeface) : this(s_platformRenderInterface.CreateGlyphTypeface(typeface))
         {
         }
 

@@ -1,99 +1,55 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
-    public abstract class FontManager : IFontManagerImpl
+    public static class FontManager
     {
-        public static readonly FontManager Default = CreateDefaultFontManger();
+        private static readonly IFontManagerImpl s_platformImpl = GetPlatformImpl();
 
-        /// <inheritdoc cref="IFontManagerImpl"/>
-        public string DefaultFontFamilyName { get; protected set; }
+        /// <inheritdoc cref="IFontManagerImpl.DefaultFontFamilyName"/>
+        public static string DefaultFontFamilyName => s_platformImpl.DefaultFontFamilyName;
 
-        private static FontManager CreateDefaultFontManger()
+        /// <inheritdoc cref="IFontManagerImpl.GetInstalledFontFamilyNames"/>
+        public static IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) =>
+            s_platformImpl.GetInstalledFontFamilyNames(checkForUpdates);
+
+        /// <inheritdoc cref="IFontManagerImpl.GetTypeface"/>
+        public static Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle) =>
+            s_platformImpl.GetTypeface(fontFamily, fontWeight, fontStyle);
+
+        /// <inheritdoc cref="IFontManagerImpl.MatchCharacter"/>
+        public static Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default,
+            FontStyle fontStyle = default,
+            FontFamily fontFamily = null, CultureInfo culture = null) =>
+            s_platformImpl.MatchCharacter(codepoint, fontWeight, fontStyle, fontFamily, culture);
+
+        private static IFontManagerImpl GetPlatformImpl()
         {
             var platformImpl = AvaloniaLocator.Current.GetService<IFontManagerImpl>();
 
-            if(platformImpl == null)
-            {
-                return new EmptyFontManager();
-            }
-
-            return new PlatformFontManger(platformImpl);
+            return platformImpl ?? new EmptyFontManagerImpl();
         }
 
-        /// <inheritdoc cref="IFontManagerImpl"/>
-        public abstract IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false);
-
-        /// <inheritdoc cref="IFontManagerImpl"/>
-        public abstract IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface);
-
-        /// <inheritdoc cref="IFontManagerImpl"/>
-        public abstract Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle);
-
-        /// <inheritdoc cref="IFontManagerImpl"/>
-        public abstract Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default,
-            FontStyle fontStyle = default,
-            FontFamily fontFamily = null, CultureInfo culture = null);
-
-        private class PlatformFontManger : FontManager
+        private class EmptyFontManagerImpl : IFontManagerImpl
         {
-            private readonly IFontManagerImpl _platformImpl;
+            public string DefaultFontFamilyName => "Arial";
 
-            public PlatformFontManger(IFontManagerImpl platformImpl)
+            public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) => new[] { "Arial" };
+
+            public Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle)
             {
-                _platformImpl = platformImpl;
-
-                DefaultFontFamilyName = _platformImpl.DefaultFontFamilyName;
+                return new Typeface(fontFamily, fontWeight, fontStyle);
             }
 
-            public override IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) =>
-                _platformImpl.GetInstalledFontFamilyNames(checkForUpdates);
-
-            public override IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface) => _platformImpl.CreateGlyphTypeface(typeface);
-
-            public override Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle) =>
-                _platformImpl.GetTypeface(fontFamily, fontWeight, fontStyle);
-
-            public override Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default,
-                FontStyle fontStyle = default,
-                FontFamily fontFamily = null, CultureInfo culture = null) =>
-                _platformImpl.MatchCharacter(codepoint, fontWeight, fontStyle, fontFamily, culture);
-        }
-
-        private class EmptyFontManager : FontManager
-        {
-            private readonly string[] _defaultFontFamilies = { "Arial" };
-
-            public EmptyFontManager()
-            {
-                DefaultFontFamilyName = "Arial";
-            }
-
-            public override IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
-            {
-                return _defaultFontFamilies;
-            }
-
-            public override IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
-            {
-                throw new NotSupportedException();
-            }
-
-            public override Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle)
-            {
-                throw new NotSupportedException();
-            }
-
-            public override Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default, FontStyle fontStyle = default,
+            public Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default, FontStyle fontStyle = default,
                 FontFamily fontFamily = null, CultureInfo culture = null)
             {
-                throw new NotSupportedException();
+                return null;
             }
         }
     }

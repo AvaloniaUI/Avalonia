@@ -1,7 +1,6 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
@@ -15,9 +14,6 @@ namespace Avalonia.Direct2D1.Media
 {
     internal class FontManagerImpl : IFontManagerImpl
     {
-        private readonly ConcurrentDictionary<Typeface, GlyphTypefaceImpl> _glyphTypefaceCache =
-            new ConcurrentDictionary<Typeface, GlyphTypefaceImpl>();
-
         public FontManagerImpl()
         {
             //ToDo: Implement a real lookup of the system's default font.
@@ -38,11 +34,6 @@ namespace Avalonia.Direct2D1.Media
             }
 
             return fontFamilies;
-        }
-
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
-        {
-            return _glyphTypefaceCache.GetOrAdd(typeface, new GlyphTypefaceImpl(typeface));
         }
 
         public Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle)

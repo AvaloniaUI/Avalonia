@@ -21,15 +21,6 @@ namespace Avalonia.Platform
         IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false);
 
         /// <summary>
-        ///     Creates a glyph typeface for specified typeface.
-        /// </summary>
-        /// <param name="typeface">The typeface.</param>
-        /// <returns>
-        ///     The glyph typeface implementation.
-        /// </returns>
-        IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface);
-
-        /// <summary>
         ///     Get a typeface from specified parameters.
         /// </summary>
         /// <param name="fontFamily">The font family.</param>

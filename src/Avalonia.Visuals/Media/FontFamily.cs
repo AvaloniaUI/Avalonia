@@ -12,7 +12,7 @@ namespace Avalonia.Media
     {
         static FontFamily()
         {
-            Default = new FontFamily(FontManager.Default.DefaultFontFamilyName);
+            Default = new FontFamily(FontManager.DefaultFontFamilyName);
         }
 
         /// <inheritdoc />
@@ -60,8 +60,11 @@ namespace Avalonia.Media
         /// <summary>
         /// Represents all font families in the system. This can be an expensive call depending on platform implementation.
         /// </summary>
+        /// <remarks>
+        /// Consider using the new <see cref="FontManager"/> instead.
+        /// </remarks>
         public static IEnumerable<FontFamily> SystemFontFamilies =>
-            FontManager.Default.GetInstalledFontFamilyNames().Select(name => new FontFamily(name));
+            FontManager.GetInstalledFontFamilyNames().Select(name => new FontFamily(name));
 
         /// <summary>
         /// Gets the primary family name of the font family.
