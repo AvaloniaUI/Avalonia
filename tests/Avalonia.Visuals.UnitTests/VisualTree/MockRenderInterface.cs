@@ -52,6 +52,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
+        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        {
+            throw new NotImplementedException();
+        }
+
         public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? fmt)
         {
             throw new NotImplementedException();

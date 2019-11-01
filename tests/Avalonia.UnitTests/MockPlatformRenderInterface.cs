@@ -78,5 +78,10 @@ namespace Avalonia.UnitTests
         {
             throw new NotImplementedException();
         }
+
+        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        {
+            return Mock.Of<IGlyphTypefaceImpl>();
+        }
     }
 }
