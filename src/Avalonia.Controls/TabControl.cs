@@ -4,7 +4,6 @@
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
-using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -182,21 +181,13 @@ namespace Avalonia.Controls
 
             if (container == null)
             {
-                if (Items is AvaloniaList<object> items)
-                {
-                    container = items[index] as TabItem;
-                }
-            }
-
-            if (container == null)
-            {
                 return;
             }
 
             UpdateSelectedContent(container);
         }
 
-        private void UpdateSelectedContent(TabItem item)
+        private void UpdateSelectedContent(IContentControl item)
         {
             if (SelectedContentTemplate != item.ContentTemplate)
             {
