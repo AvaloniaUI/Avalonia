@@ -185,7 +185,6 @@ namespace Avalonia.Input.UnitTests
             }
         }
 
-
         [Fact]
         public void GetPosition_Should_Respect_Control_RenderTransform()
         {
@@ -210,6 +209,28 @@ namespace Avalonia.Input.UnitTests
                 var result = root.MouseDevice.GetPosition(root.Child);
                 Assert.Equal(new Point(1, 11), result);
             }
+        }
+
+        [Fact]
+        public void Capture_Should_Be_Released_On_TopLevel_Closed()
+        {
+            var target = new Decorator();
+            var root = new TestRoot(target);
+
+            int poinerCaptureLost = 0;
+            target.PointerCaptureLost += (s, e) => poinerCaptureLost++;
+
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            var device = new MouseDevice(pointer);
+
+            pointer.Capture(target);
+
+            Assert.Equal(target, pointer.Captured);
+
+            device.TopLevelClosed(root);
+
+            Assert.Null(pointer.Captured);
+            Assert.Equal(1, poinerCaptureLost);
         }
 
         private void AddEnterLeaveHandlers(
