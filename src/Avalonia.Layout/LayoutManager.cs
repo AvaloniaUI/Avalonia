@@ -21,7 +21,7 @@ namespace Avalonia.Layout
 
         public LayoutManager()
         {
-            _executeLayoutPass = QueueLayoutPass;
+            _executeLayoutPass = ExecuteLayoutPass;
         }
 
         /// <inheritdoc/>
