@@ -15,8 +15,14 @@ namespace Avalonia.Layout
     {
         private readonly LayoutQueue<ILayoutable> _toMeasure = new LayoutQueue<ILayoutable>(v => !v.IsMeasureValid);
         private readonly LayoutQueue<ILayoutable> _toArrange = new LayoutQueue<ILayoutable>(v => !v.IsArrangeValid);
+        private readonly Action _executeLayoutPass;
         private bool _queued;
         private bool _running;
+
+        public LayoutManager()
+        {
+            _executeLayoutPass = QueueLayoutPass;
+        }
 
         /// <inheritdoc/>
         public void InvalidateMeasure(ILayoutable control)
@@ -215,7 +221,7 @@ namespace Avalonia.Layout
         {
             if (!_queued && !_running)
             {
-                Dispatcher.UIThread.Post(ExecuteLayoutPass, DispatcherPriority.Layout);
+                Dispatcher.UIThread.Post(_executeLayoutPass, DispatcherPriority.Layout);
                 _queued = true;
             }
         }

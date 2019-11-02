@@ -562,11 +562,18 @@ namespace Avalonia.Layout
             double width = 0;
             double height = 0;
 
-            foreach (ILayoutable child in this.GetVisualChildren())
+            var visualCount = VisualChildren.Count;
+
+            for (var i = 0; i < visualCount; i++)
             {
-                child.Measure(availableSize);
-                width = Math.Max(width, child.DesiredSize.Width);
-                height = Math.Max(height, child.DesiredSize.Height);
+                IVisual visual = VisualChildren[i];
+
+                if (visual is ILayoutable layoutable)
+                {
+                    layoutable.Measure(availableSize);
+                    width = Math.Max(width, layoutable.DesiredSize.Width);
+                    height = Math.Max(height, layoutable.DesiredSize.Height);
+                }
             }
 
             return new Size(width, height);
@@ -658,9 +665,18 @@ namespace Avalonia.Layout
         /// <returns>The actual size used.</returns>
         protected virtual Size ArrangeOverride(Size finalSize)
         {
-            foreach (ILayoutable child in this.GetVisualChildren().OfType<ILayoutable>())
+            var arrangeRect = new Rect(finalSize);
+
+            var visualCount = VisualChildren.Count;
+
+            for (var i = 0; i < visualCount; i++)
             {
-                child.Arrange(new Rect(finalSize));
+                IVisual visual = VisualChildren[i];
+
+                if (visual is ILayoutable layoutable)
+                {
+                    layoutable.Arrange(arrangeRect);
+                }
             }
 
             return finalSize;
