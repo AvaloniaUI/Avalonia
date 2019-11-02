@@ -10,3 +10,4 @@ using System.Runtime.CompilerServices;
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Animation.Animators")]
 
 [assembly: InternalsVisibleTo("Avalonia.LeakTests")]
+[assembly: InternalsVisibleTo("Avalonia.Animation.UnitTests")]
