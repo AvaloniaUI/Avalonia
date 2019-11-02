@@ -44,21 +44,15 @@ namespace Avalonia.Input.Raw
             RawPointerEventType type,
             Point position, 
             RawInputModifiers inputModifiers)
-            : base(device, timestamp)
+            : base(device, timestamp, root)
         {
             Contract.Requires<ArgumentNullException>(device != null);
             Contract.Requires<ArgumentNullException>(root != null);
 
-            Root = root;
             Position = position;
             Type = type;
             InputModifiers = inputModifiers;
         }
-
-        /// <summary>
-        /// Gets the root from which the event originates.
-        /// </summary>
-        public IInputRoot Root { get; }
 
         /// <summary>
         /// Gets the mouse position, in client DIPs.
