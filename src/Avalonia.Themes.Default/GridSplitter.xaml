@@ -2,7 +2,9 @@
 
   <Style Selector="GridSplitter">
     <Setter Property="Focusable" Value="True" />
-    <Setter Property="Background" Value="{DynamicResource ThemeBorderLowBrush}" />
+    <Setter Property="MinWidth" Value="6" />
+    <Setter Property="MinHeight" Value="6" />
+    <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
     <Setter Property="PreviewContent">
       <Template>
         <Rectangle Fill="{DynamicResource HighlightBrush}" />
