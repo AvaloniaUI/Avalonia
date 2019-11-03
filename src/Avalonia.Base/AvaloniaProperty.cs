@@ -459,37 +459,6 @@ namespace Avalonia
             return GetMetadataWithOverrides(type);
         }
 
-        private PropertyMetadata GetMetadataWithOverrides(Type type)
-        {
-            if (type is null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            if (_metadataCache.TryGetValue(type, out PropertyMetadata result))
-            {
-                return result;
-            }
-
-            Type currentType = type;
-
-            while (currentType != null)
-            {
-                if (_metadata.TryGetValue(currentType, out result))
-                {
-                    _metadataCache[type] = result;
-
-                    return result;
-                }
-
-                currentType = currentType.GetTypeInfo().BaseType;
-            }
-
-            _metadataCache[type] = _defaultMetadata;
-
-            return _defaultMetadata;
-        }
-
         /// <summary>
         /// Checks whether the <paramref name="value"/> is valid for the property.
         /// </summary>
@@ -554,6 +523,37 @@ namespace Avalonia
             _metadataCache.Clear();
 
             _hasMetadataOverrides = true;
+        }
+
+        private PropertyMetadata GetMetadataWithOverrides(Type type)
+        {
+            if (type is null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (_metadataCache.TryGetValue(type, out PropertyMetadata result))
+            {
+                return result;
+            }
+
+            Type currentType = type;
+
+            while (currentType != null)
+            {
+                if (_metadata.TryGetValue(currentType, out result))
+                {
+                    _metadataCache[type] = result;
+
+                    return result;
+                }
+
+                currentType = currentType.GetTypeInfo().BaseType;
+            }
+
+            _metadataCache[type] = _defaultMetadata;
+
+            return _defaultMetadata;
         }
 
         [DebuggerHidden]
