@@ -570,11 +570,12 @@ namespace Avalonia.Layout
             double width = 0;
             double height = 0;
 
-            var visualCount = VisualChildren.Count;
+            var visualChildren = VisualChildren;
+            var visualCount = visualChildren.Count;
 
             for (var i = 0; i < visualCount; i++)
             {
-                IVisual visual = VisualChildren[i];
+                IVisual visual = visualChildren[i];
 
                 if (visual is ILayoutable layoutable)
                 {
@@ -676,11 +677,12 @@ namespace Avalonia.Layout
         {
             var arrangeRect = new Rect(finalSize);
 
-            var visualCount = VisualChildren.Count;
+            var visualChildren = VisualChildren;
+            var visualCount = visualChildren.Count;
 
             for (var i = 0; i < visualCount; i++)
             {
-                IVisual visual = VisualChildren[i];
+                IVisual visual = visualChildren[i];
 
                 if (visual is ILayoutable layoutable)
                 {
