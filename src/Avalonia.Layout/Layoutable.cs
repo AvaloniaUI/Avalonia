@@ -518,17 +518,25 @@ namespace Avalonia.Layout
                 var width = measured.Width;
                 var height = measured.Height;
 
-                if (!double.IsNaN(Width))
                 {
-                    width = Width;
+                    double widthCache = Width;
+
+                    if (!double.IsNaN(widthCache))
+                    {
+                        width = widthCache;
+                    }
                 }
 
                 width = Math.Min(width, MaxWidth);
                 width = Math.Max(width, MinWidth);
 
-                if (!double.IsNaN(Height))
                 {
-                    height = Height;
+                    double heightCache = Height;
+
+                    if (!double.IsNaN(heightCache))
+                    {
+                        height = Height;
+                    }
                 }
 
                 height = Math.Min(height, MaxHeight);
@@ -601,6 +609,7 @@ namespace Avalonia.Layout
                 var verticalAlignment = VerticalAlignment;
                 var size = availableSizeMinusMargins;
                 var scale = GetLayoutScale();
+                var useLayoutRounding = UseLayoutRounding;
 
                 if (horizontalAlignment != HorizontalAlignment.Stretch)
                 {
@@ -614,7 +623,7 @@ namespace Avalonia.Layout
 
                 size = LayoutHelper.ApplyLayoutConstraints(this, size);
 
-                if (UseLayoutRounding)
+                if (useLayoutRounding)
                 {
                     size = new Size(
                         Math.Ceiling(size.Width * scale) / scale, 
@@ -648,7 +657,7 @@ namespace Avalonia.Layout
                         break;
                 }
 
-                if (UseLayoutRounding)
+                if (useLayoutRounding)
                 {
                     originX = Math.Floor(originX * scale) / scale;
                     originY = Math.Floor(originY * scale) / scale;
