@@ -210,7 +210,11 @@ namespace Avalonia
         /// <returns>The value.</returns>
         public object GetValue(AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            if (property is null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
+
             VerifyAccess();
 
             if (property.IsDirect)
@@ -231,7 +235,10 @@ namespace Avalonia
         /// <returns>The value.</returns>
         public T GetValue<T>(AvaloniaProperty<T> property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            if (property is null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
 
             return (T)GetValue((AvaloniaProperty)property);
         }
