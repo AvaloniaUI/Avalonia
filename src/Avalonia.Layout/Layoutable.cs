@@ -535,7 +535,7 @@ namespace Avalonia.Layout
 
                     if (!double.IsNaN(heightCache))
                     {
-                        height = Height;
+                        height = heightCache;
                     }
                 }
 
