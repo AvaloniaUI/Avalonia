@@ -94,6 +94,9 @@ namespace Avalonia
             Id = source.Id;
             _defaultMetadata = source._defaultMetadata;
 
+            // Properties that have different owner can't use fast path for metadata.
+            _hasMetadataOverrides = true;
+
             if (metadata != null)
             {
                 _metadata.Add(ownerType, metadata);
