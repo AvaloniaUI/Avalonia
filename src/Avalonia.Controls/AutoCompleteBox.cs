@@ -704,7 +704,7 @@ namespace Avalonia.Controls
                 added.Add(e.NewValue);
             }
 
-            OnSelectionChanged(new SelectionChangedEventArgs(SelectionChangedEvent, removed, added));
+            OnSelectionChanged(new SelectionChangedEventArgs(SelectionChangedEvent, added, removed));
         }
 
         /// <summary>

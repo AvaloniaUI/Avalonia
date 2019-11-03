@@ -1,14 +1,7 @@
 using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Animation;
 using Avalonia.Controls;
-using Avalonia.Styling;
 using Avalonia.UnitTests;
-using Avalonia.Data;
 using Xunit;
-using Avalonia.Animation.Easings;
 
 namespace Avalonia.Animation.UnitTests
 {
@@ -67,6 +60,27 @@ namespace Avalonia.Animation.UnitTests
                 clock.Pulse(TimeSpan.FromMilliseconds(1001));
 
                 Assert.Equal(0, border.Opacity);
+            }
+        }
+
+        [Fact]
+        public void TransitionInstance_With_Zero_Duration_Is_Completed_On_First_Tick()
+        {
+            var clock = new MockGlobalClock();
+
+            using (UnitTestApplication.Start(new TestServices(globalClock: clock)))
+            {
+                int i = 0;
+                var inst = new TransitionInstance(clock, TimeSpan.Zero).Subscribe(nextValue =>
+                {
+                    switch (i++)
+                    {
+                        case 0: Assert.Equal(0, nextValue); break;
+                        case 1: Assert.Equal(1d, nextValue); break;
+                    }
+                });
+
+                clock.Pulse(TimeSpan.FromMilliseconds(10));
             }
         }
     }
