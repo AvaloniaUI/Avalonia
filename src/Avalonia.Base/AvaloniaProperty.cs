@@ -28,6 +28,8 @@ namespace Avalonia
         private readonly Dictionary<Type, PropertyMetadata> _metadata;
         private readonly Dictionary<Type, PropertyMetadata> _metadataCache = new Dictionary<Type, PropertyMetadata>();
 
+        private bool _hasMetadataOverrides;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaProperty"/> class.
         /// </summary>
@@ -446,15 +448,27 @@ namespace Avalonia
         ///
         public PropertyMetadata GetMetadata(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            if (!_hasMetadataOverrides)
+            {
+                return _defaultMetadata;
+            }
 
-            PropertyMetadata result;
-            Type currentType = type;
+            return GetMetadataWithOverrides(type);
+        }
 
-            if (_metadataCache.TryGetValue(type, out result))
+        private PropertyMetadata GetMetadataWithOverrides(Type type)
+        {
+            if (type is null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (_metadataCache.TryGetValue(type, out PropertyMetadata result))
             {
                 return result;
             }
+
+            Type currentType = type;
 
             while (currentType != null)
             {
@@ -535,6 +549,8 @@ namespace Avalonia
             metadata.Merge(baseMetadata, this);
             _metadata.Add(type, metadata);
             _metadataCache.Clear();
+
+            _hasMetadataOverrides = true;
         }
 
         [DebuggerHidden]
