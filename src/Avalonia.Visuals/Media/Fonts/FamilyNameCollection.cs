@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Avalonia.Media.Fonts
 {
-    public class FamilyNameCollection : IReadOnlyList<string>
+    public sealed class FamilyNameCollection : IReadOnlyList<string>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FamilyNameCollection"/> class.

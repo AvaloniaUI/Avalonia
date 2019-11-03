@@ -7,7 +7,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
-    public class GlyphTypeface : IDisposable
+    public sealed class GlyphTypeface : IDisposable
     {
         private static readonly IPlatformRenderInterface s_platformRenderInterface =
             AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();

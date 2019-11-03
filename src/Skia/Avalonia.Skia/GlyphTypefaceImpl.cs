@@ -10,7 +10,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    internal class GlyphTypefaceImpl : IGlyphTypefaceImpl
+    public class GlyphTypefaceImpl : IGlyphTypefaceImpl
     {
         private bool _isDisposed;
 

@@ -10,7 +10,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Represents a typeface.
     /// </summary>
-    [DebuggerDisplay("Name = {FontFamily.Name}, Style = {Style}, Weight = {Weight}")]
+    [DebuggerDisplay("Name = {FontFamily.Name}, Weight = {Weight}, Style = {Style}")]
     public class Typeface : IEquatable<Typeface>
     {
         public static readonly Typeface Default = new Typeface(FontFamily.Default);

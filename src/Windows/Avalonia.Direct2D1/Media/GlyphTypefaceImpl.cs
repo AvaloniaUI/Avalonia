@@ -9,7 +9,7 @@ using SharpDX.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
-    internal class GlyphTypefaceImpl : IGlyphTypefaceImpl
+    public class GlyphTypefaceImpl : IGlyphTypefaceImpl
     {
         private bool _isDisposed;
 

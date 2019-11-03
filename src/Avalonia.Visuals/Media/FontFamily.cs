@@ -8,11 +8,11 @@ using Avalonia.Media.Fonts;
 
 namespace Avalonia.Media
 {
-    public class FontFamily
+    public sealed class FontFamily
     {
         static FontFamily()
         {
-            Default = new FontFamily(FontManager.DefaultFontFamilyName);
+            Default = new FontFamily(FontManager.Default.DefaultFontFamilyName);
         }
 
         /// <inheritdoc />
@@ -64,7 +64,7 @@ namespace Avalonia.Media
         /// Consider using the new <see cref="FontManager"/> instead.
         /// </remarks>
         public static IEnumerable<FontFamily> SystemFontFamilies =>
-            FontManager.GetInstalledFontFamilyNames().Select(name => new FontFamily(name));
+            FontManager.Default.GetInstalledFontFamilyNames().Select(name => new FontFamily(name));
 
         /// <summary>
         /// Gets the primary family name of the font family.

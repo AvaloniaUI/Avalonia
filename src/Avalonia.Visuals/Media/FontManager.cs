@@ -7,50 +7,106 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
-    public static class FontManager
+    /// <summary>
+    ///     The font manager is used to query the system's installed fonts and is responsible for caching loaded fonts.
+    ///     It is also responsible for the font fallback.
+    /// </summary>
+    public abstract class FontManager
     {
-        private static readonly IFontManagerImpl s_platformImpl = GetPlatformImpl();
+        public static readonly FontManager Default = CreateDefault();
 
-        /// <inheritdoc cref="IFontManagerImpl.DefaultFontFamilyName"/>
-        public static string DefaultFontFamilyName => s_platformImpl.DefaultFontFamilyName;
+        /// <summary>
+        ///     Gets the system's default font family's name.
+        /// </summary>
+        public string DefaultFontFamilyName
+        {
+            get;
+            protected set;
+        }
 
-        /// <inheritdoc cref="IFontManagerImpl.GetInstalledFontFamilyNames"/>
-        public static IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) =>
-            s_platformImpl.GetInstalledFontFamilyNames(checkForUpdates);
+        /// <summary>
+        ///     Get all installed fonts in the system.
+        /// <param name="checkForUpdates">If <c>true</c> the font collection is updated.</param>
+        /// </summary>
+        public abstract IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false);
 
-        /// <inheritdoc cref="IFontManagerImpl.GetTypeface"/>
-        public static Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle) =>
-            s_platformImpl.GetTypeface(fontFamily, fontWeight, fontStyle);
+        /// <summary>
+        ///     Get a cached typeface from specified parameters.
+        /// </summary>
+        /// <param name="fontFamily">The font family.</param>
+        /// <param name="fontWeight">The font weight.</param>
+        /// <param name="fontStyle">The font style.</param>
+        /// <returns>
+        ///     The cached typeface.
+        /// </returns>
+        public abstract Typeface GetCachedTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle);
 
-        /// <inheritdoc cref="IFontManagerImpl.MatchCharacter"/>
-        public static Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default,
+        /// <summary>
+        ///     Tries to match a specified character to a typeface that supports specified font properties.
+        ///     Returns <c>null</c> if no fallback was found.
+        /// </summary>
+        /// <param name="codepoint">The codepoint to match against.</param>
+        /// <param name="fontWeight">The font weight.</param>
+        /// <param name="fontStyle">The font style.</param>
+        /// <param name="fontFamily">The font family. This is optional and used for fallback lookup.</param>
+        /// <param name="culture">The culture.</param>
+        /// <returns>
+        ///     The matched typeface.
+        /// </returns>
+        public abstract Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default,
             FontStyle fontStyle = default,
-            FontFamily fontFamily = null, CultureInfo culture = null) =>
-            s_platformImpl.MatchCharacter(codepoint, fontWeight, fontStyle, fontFamily, culture);
+            FontFamily fontFamily = null, CultureInfo culture = null);
 
-        private static IFontManagerImpl GetPlatformImpl()
+        public static FontManager CreateDefault()
         {
             var platformImpl = AvaloniaLocator.Current.GetService<IFontManagerImpl>();
 
-            return platformImpl ?? new EmptyFontManagerImpl();
+            if (platformImpl != null)
+            {
+                return new PlatformFontManager(platformImpl);
+            }
+
+            return new EmptyFontManager();
         }
 
-        private class EmptyFontManagerImpl : IFontManagerImpl
+        private class PlatformFontManager : FontManager
         {
-            public string DefaultFontFamilyName => "Arial";
+            private readonly IFontManagerImpl _platformImpl;
 
-            public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) => new[] { "Arial" };
-
-            public Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle)
+            public PlatformFontManager(IFontManagerImpl platformImpl)
             {
-                return new Typeface(fontFamily, fontWeight, fontStyle);
+                _platformImpl = platformImpl;
+
+                DefaultFontFamilyName = _platformImpl.DefaultFontFamilyName;
             }
 
-            public Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default, FontStyle fontStyle = default,
-                FontFamily fontFamily = null, CultureInfo culture = null)
+            public override IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) =>
+                _platformImpl.GetInstalledFontFamilyNames(checkForUpdates);
+
+            public override Typeface GetCachedTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle) =>
+                _platformImpl.GetTypeface(fontFamily, fontWeight, fontStyle);
+
+            public override Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default,
+                FontStyle fontStyle = default,
+                FontFamily fontFamily = null, CultureInfo culture = null) =>
+                _platformImpl.MatchCharacter(codepoint, fontWeight, fontStyle, fontFamily, culture);
+        }
+
+        private class EmptyFontManager : FontManager
+        {
+            public EmptyFontManager()
             {
-                return null;
+                DefaultFontFamilyName = "Empty";
             }
+
+            public override IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) =>
+                new[] { DefaultFontFamilyName };
+
+            public override Typeface GetCachedTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle) => new Typeface(fontFamily, fontWeight, fontStyle);
+
+            public override Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default,
+                FontStyle fontStyle = default,
+                FontFamily fontFamily = null, CultureInfo culture = null) => null;
         }
     }
 }
