@@ -102,14 +102,18 @@ namespace Avalonia.Skia
 
             AvaloniaFormattedTextLine line = default;
 
+            float nextTop = 0;
+
             foreach(var currentLine in _skiaLines)
             {
                 if(currentLine.Top <= y)
                 {
                     line = currentLine;
+                    nextTop = currentLine.Top + currentLine.Height;
                 }
                 else
                 {
+                    nextTop = currentLine.Top;
                     break;
                 }
             }
@@ -140,7 +144,7 @@ namespace Avalonia.Skia
                                     line.Length : (line.Length - 1);
                 }
 
-                if (y < line.Top + line.Height)
+                if (y < nextTop)
                 {
                     return new TextHitTestResult
                     {
