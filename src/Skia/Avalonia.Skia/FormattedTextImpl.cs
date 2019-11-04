@@ -99,9 +99,17 @@ namespace Avalonia.Skia
         public TextHitTestResult HitTestPoint(Point point)
         {
             float y = (float)point.Y;
-            var line = _skiaLines.Find(l => l.Top <= y && (l.Top + l.Height) > y);
 
-            if (!line.Equals(default(AvaloniaFormattedTextLine)))
+            AvaloniaFormattedTextLine line = default;
+
+            int i = 0;
+
+            while(_skiaLines[i].Top < y && i < _skiaLines.Count)
+            {
+                line = _skiaLines[i++];
+            }            
+
+            if (!line.Equals(default))
             {
                 var rects = GetRects();
 
