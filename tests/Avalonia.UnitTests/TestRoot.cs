@@ -24,8 +24,19 @@ namespace Avalonia.UnitTests
         }
 
         public TestRoot(IControl child)
+            : this(false, child)
+        {
+            Child = child;
+        }
+
+        public TestRoot(bool useGlobalStyles, IControl child)
             : this()
         {
+            if (useGlobalStyles)
+            {
+                StylingParent = UnitTestApplication.Current;
+            }
+
             Child = child;
         }
 
