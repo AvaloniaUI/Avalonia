@@ -10,6 +10,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
@@ -32,6 +33,8 @@ namespace Avalonia.Controls.UnitTests
                 Template = CreateTreeViewTemplate(),
                 Items = CreateTestTreeData(),
             };
+
+            var root = new TestRoot(target);
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
@@ -76,6 +79,8 @@ namespace Avalonia.Controls.UnitTests
                 Template = CreateTreeViewTemplate(),
                 Items = CreateTestTreeData(),
             };
+
+            var root = new TestRoot(target);
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
@@ -526,6 +531,8 @@ namespace Avalonia.Controls.UnitTests
                 Template = CreateTreeViewTemplate(),
                 Items = data,
             };
+
+            var root = new TestRoot(target);
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
