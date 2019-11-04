@@ -19,9 +19,7 @@ namespace Avalonia.X11
     class AvaloniaX11Platform : IWindowingPlatform
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
-        private Lazy<MouseDevice> _mouseDevice = new Lazy<MouseDevice>(() => new MouseDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
-        public MouseDevice MouseDevice => _mouseDevice.Value;
         public Dictionary<IntPtr, Action<XEvent>> Windows = new Dictionary<IntPtr, Action<XEvent>>();
         public XI2Manager XI2;
         public X11Info Info { get; private set; }

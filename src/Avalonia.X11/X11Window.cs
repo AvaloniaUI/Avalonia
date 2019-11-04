@@ -32,7 +32,8 @@ namespace Avalonia.X11
         private PixelPoint? _configurePoint;
         private bool _triggeredExpose;
         private IInputRoot _inputRoot;
-        private readonly IMouseDevice _mouse;
+        private readonly MouseDevice _mouse;
+        private readonly TouchDevice _touch;
         private readonly IKeyboardDevice _keyboard;
         private PixelPoint? _position;
         private PixelSize _realSize;
@@ -57,7 +58,8 @@ namespace Avalonia.X11
             _platform = platform;
             _popup = popupParent != null;
             _x11 = platform.Info;
-            _mouse = platform.MouseDevice;
+            _mouse = new MouseDevice();
+            _touch = new TouchDevice();
             _keyboard = platform.KeyboardDevice;
 
             var glfeature = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
@@ -702,6 +704,8 @@ namespace Avalonia.X11
                 _platform.XI2?.OnWindowDestroyed(_handle);
                 _handle = IntPtr.Zero;
                 Closed?.Invoke();
+                _mouse.Dispose();
+                _touch.Dispose();
             }
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
@@ -830,6 +834,8 @@ namespace Avalonia.X11
         }
 
         public IMouseDevice MouseDevice => _mouse;
+        public TouchDevice TouchDevice => _touch;
+
         public IPopupImpl CreatePopup() 
             => _platform.Options.OverlayPopups ? null : new X11Window(_platform, this);
 

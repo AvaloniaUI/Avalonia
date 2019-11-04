@@ -24,7 +24,7 @@ namespace Avalonia.Native
         private object _syncRoot = new object();
         private bool _deferredRendering = false;
         private bool _gpu = false;
-        private readonly IMouseDevice _mouse;
+        private readonly MouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
         private readonly IStandardCursorFactory _cursorFactory;
         private Size _savedLogicalSize;
@@ -38,7 +38,7 @@ namespace Avalonia.Native
             _deferredRendering = opts.UseDeferredRendering;
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
-            _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
+            _mouse = new MouseDevice();
             _cursorFactory = AvaloniaLocator.Current.GetService<IStandardCursorFactory>();
         }
 
@@ -142,6 +142,7 @@ namespace Avalonia.Native
                 {
                     n?.Dispose();
                 }
+                _parent._mouse.Dispose();
             }
 
             void IAvnWindowBaseEvents.Activated() => _parent.Activated?.Invoke();
