@@ -23,7 +23,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
     public class SelectingItemsControlTests
     {
         private MouseTestHelper _helper = new MouseTestHelper();
-        
+
         [Fact]
         public void SelectedIndex_Should_Initially_Be_Minus_1()
         {
@@ -166,6 +166,130 @@ namespace Avalonia.Controls.UnitTests.Primitives
             listBox.EndInit();
 
             Assert.Equal("B", listBox.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_Before_Initialize_Should_Retain()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Single,
+                Items = new[] { "foo", "bar", "baz" },
+                SelectedIndex = 1
+            };
+
+            listBox.BeginInit();
+
+            listBox.EndInit();
+
+            Assert.Equal(1, listBox.SelectedIndex);
+            Assert.Equal("bar", listBox.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_During_Initialize_Should_Take_Priority_Over_Previous_Value()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Single,
+                Items = new[] { "foo", "bar", "baz" },
+                SelectedIndex = 2
+            };
+
+            listBox.BeginInit();
+
+            listBox.SelectedIndex = 1;
+
+            listBox.EndInit();
+
+            Assert.Equal(1, listBox.SelectedIndex);
+            Assert.Equal("bar", listBox.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_SelectedItem_Before_Initialize_Should_Retain()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Single,
+                Items = new[] { "foo", "bar", "baz" },
+                SelectedItem = "bar"
+            };
+
+            listBox.BeginInit();
+
+            listBox.EndInit();
+
+            Assert.Equal(1, listBox.SelectedIndex);
+            Assert.Equal("bar", listBox.SelectedItem);
+        }
+
+
+        [Fact]
+        public void Setting_SelectedItems_Before_Initialize_Should_Retain()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Multiple,
+                Items = new[] { "foo", "bar", "baz" },
+            };
+
+            var selected = new[] { "foo", "bar" };
+
+            foreach (var v in selected)
+            {
+                listBox.SelectedItems.Add(v);
+            }
+
+            listBox.BeginInit();
+
+            listBox.EndInit();
+
+            Assert.Equal(selected, listBox.SelectedItems);
+        }
+
+        [Fact]
+        public void Setting_SelectedItems_During_Initialize_Should_Take_Priority_Over_Previous_Value()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Multiple,
+                Items = new[] { "foo", "bar", "baz" },
+            };
+
+            var selected = new[] { "foo", "bar" };
+
+            foreach (var v in new[] { "bar", "baz" })
+            {
+                listBox.SelectedItems.Add(v);
+            }
+
+            listBox.BeginInit();
+
+            listBox.SelectedItems = new AvaloniaList<object>(selected);
+
+            listBox.EndInit();
+
+            Assert.Equal(selected, listBox.SelectedItems);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_Before_Initialize_With_AlwaysSelected_Should_Retain()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected,
+
+                Items = new[] { "foo", "bar", "baz" },
+                SelectedIndex = 1
+            };
+
+            listBox.BeginInit();
+
+            listBox.EndInit();
+
+            Assert.Equal(1, listBox.SelectedIndex);
+            Assert.Equal("bar", listBox.SelectedItem);
         }
 
         [Fact]
@@ -849,7 +973,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new ListBox
             {
                 Template = Template(),
-                Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz"},
+                Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
             };
 
             target.ApplyTemplate();

@@ -1088,9 +1088,15 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    SelectedIndex = _updateSelectedIndex != int.MinValue ?
-                        _updateSelectedIndex :
-                        AlwaysSelected ? 0 : -1;
+                    if (_updateSelectedIndex != int.MinValue)
+                    {
+                        SelectedIndex = _updateSelectedIndex;
+                    }
+
+                    if (AlwaysSelected && SelectedIndex == -1)
+                    {
+                        SelectedIndex = 0;
+                    }
                 }
             }
         }
