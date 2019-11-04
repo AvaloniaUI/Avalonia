@@ -49,10 +49,10 @@ jobs:
     inputs:
       actions: 'build'
       scheme: ''
-      sdk: 'macosx10.15'
+      sdk: 'macosx10.14'
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
-      xcodeVersion: 'default' # Options: 8, 9, default, specifyPath
+      xcodeVersion: '10.3' # Options: 8, 9, default, specifyPath
       args: '-derivedDataPath ./'
 
   - task: CmdLine@2
