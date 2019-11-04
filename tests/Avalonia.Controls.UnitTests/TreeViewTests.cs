@@ -894,6 +894,37 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Adding_Node_To_Removed_And_ReAdded_Parent_Should_Not_Crash()
+        {
+            // Issue #2985
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+            };
+
+            var visualRoot = new TestRoot();
+            visualRoot.Child = target;
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+            ExpandAll(target);
+
+            var parent = tree[0];
+            var node = parent.Children[1];
+
+            parent.Children.Remove(node);
+            parent.Children.Add(node);
+
+            var item = target.ItemContainerGenerator.Index.ContainerFromItem(node);
+            ApplyTemplates(new[] { item });
+
+            // #2985 causes ArgumentException here.
+            node.Children.Add(new Node());
+        }
+
+        [Fact]
         public void Auto_Expanding_In_Style_Should_Not_Break_Range_Selection()
         {
             /// Issue #2980.
