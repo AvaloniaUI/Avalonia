@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -14,6 +15,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Data;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -23,7 +25,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
     public class SelectingItemsControlTests
     {
         private MouseTestHelper _helper = new MouseTestHelper();
-        
+
         [Fact]
         public void SelectedIndex_Should_Initially_Be_Minus_1()
         {
@@ -166,6 +168,130 @@ namespace Avalonia.Controls.UnitTests.Primitives
             listBox.EndInit();
 
             Assert.Equal("B", listBox.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_Before_Initialize_Should_Retain()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Single,
+                Items = new[] { "foo", "bar", "baz" },
+                SelectedIndex = 1
+            };
+
+            listBox.BeginInit();
+
+            listBox.EndInit();
+
+            Assert.Equal(1, listBox.SelectedIndex);
+            Assert.Equal("bar", listBox.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_During_Initialize_Should_Take_Priority_Over_Previous_Value()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Single,
+                Items = new[] { "foo", "bar", "baz" },
+                SelectedIndex = 2
+            };
+
+            listBox.BeginInit();
+
+            listBox.SelectedIndex = 1;
+
+            listBox.EndInit();
+
+            Assert.Equal(1, listBox.SelectedIndex);
+            Assert.Equal("bar", listBox.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_SelectedItem_Before_Initialize_Should_Retain()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Single,
+                Items = new[] { "foo", "bar", "baz" },
+                SelectedItem = "bar"
+            };
+
+            listBox.BeginInit();
+
+            listBox.EndInit();
+
+            Assert.Equal(1, listBox.SelectedIndex);
+            Assert.Equal("bar", listBox.SelectedItem);
+        }
+
+
+        [Fact]
+        public void Setting_SelectedItems_Before_Initialize_Should_Retain()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Multiple,
+                Items = new[] { "foo", "bar", "baz" },
+            };
+
+            var selected = new[] { "foo", "bar" };
+
+            foreach (var v in selected)
+            {
+                listBox.SelectedItems.Add(v);
+            }
+
+            listBox.BeginInit();
+
+            listBox.EndInit();
+
+            Assert.Equal(selected, listBox.SelectedItems);
+        }
+
+        [Fact]
+        public void Setting_SelectedItems_During_Initialize_Should_Take_Priority_Over_Previous_Value()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Multiple,
+                Items = new[] { "foo", "bar", "baz" },
+            };
+
+            var selected = new[] { "foo", "bar" };
+
+            foreach (var v in new[] { "bar", "baz" })
+            {
+                listBox.SelectedItems.Add(v);
+            }
+
+            listBox.BeginInit();
+
+            listBox.SelectedItems = new AvaloniaList<object>(selected);
+
+            listBox.EndInit();
+
+            Assert.Equal(selected, listBox.SelectedItems);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_Before_Initialize_With_AlwaysSelected_Should_Retain()
+        {
+            var listBox = new ListBox
+            {
+                SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected,
+
+                Items = new[] { "foo", "bar", "baz" },
+                SelectedIndex = 1
+            };
+
+            listBox.BeginInit();
+
+            listBox.EndInit();
+
+            Assert.Equal(1, listBox.SelectedIndex);
+            Assert.Equal("bar", listBox.SelectedItem);
         }
 
         [Fact]
@@ -849,7 +975,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new ListBox
             {
                 Template = Template(),
-                Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz"},
+                Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
             };
 
             target.ApplyTemplate();
@@ -981,6 +1107,45 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void AutoScrollToSelectedItem_On_Reset_Works()
+        {
+            // Issue #3148
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var items = new ResettingCollection(100);
+
+                var target = new ListBox
+                {
+                    Items = items,
+                    ItemTemplate = new FuncDataTemplate<string>((x, _) =>
+                        new TextBlock
+                        {
+                            Text = x,
+                            Width = 100,
+                            Height = 10
+                        }),
+                    AutoScrollToSelectedItem = true,
+                    VirtualizationMode = ItemVirtualizationMode.Simple,
+                };
+
+                var root = new TestRoot(true, target);
+                root.Measure(new Size(100, 100));
+                root.Arrange(new Rect(0, 0, 100, 100));
+
+                Assert.True(target.Presenter.Panel.Children.Count > 0);
+                Assert.True(target.Presenter.Panel.Children.Count < 100);
+
+                target.SelectedItem = "Item99";
+
+                // #3148 triggered here.
+                items.Reset(new[] { "Item99" });
+
+                Assert.Equal(0, target.SelectedIndex);
+                Assert.Equal(1, target.Presenter.Panel.Children.Count);
+            }
+        }
+
+        [Fact]
         public void Can_Set_Both_SelectedItem_And_SelectedItems_During_Initialization()
         {
             // Issue #2969.
@@ -1028,6 +1193,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Name = "itemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
+                    [~ItemsPresenter.VirtualizationModeProperty] = control[~ListBox.VirtualizationModeProperty],
                 }.RegisterInNameScope(scope));
         }
 
@@ -1071,6 +1237,25 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 return base.MoveSelection(direction, wrap);
             }
+        }
+
+        private class ResettingCollection : List<string>, INotifyCollectionChanged
+        {
+            public ResettingCollection(int itemCount)
+            {
+                AddRange(Enumerable.Range(0, itemCount).Select(x => $"Item{x}"));
+            }
+
+            public void Reset(IEnumerable<string> items)
+            {
+                Clear();
+                AddRange(items);
+                CollectionChanged?.Invoke(
+                    this,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+
+            public event NotifyCollectionChangedEventHandler CollectionChanged;
         }
     }
 }

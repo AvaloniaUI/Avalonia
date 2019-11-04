@@ -41,6 +41,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Initializes a new instance of the <see cref="PopupRoot"/> class.
         /// </summary>
+        /// <param name="parent">The popup parent.</param>
+        /// <param name="impl">The popup implementation.</param>
         /// <param name="dependencyResolver">
         /// The dependency resolver to use. If null the default dependency resolver will be used.
         /// </param>
