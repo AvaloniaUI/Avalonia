@@ -302,12 +302,23 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         protected override void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            base.ItemsCollectionChanged(sender, e);
-
             if (_updateCount > 0)
             {
+                base.ItemsCollectionChanged(sender, e);
                 return;
             }
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    _selection.ItemsInserted(e.NewStartingIndex, e.NewItems.Count);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    _selection.ItemsRemoved(e.OldStartingIndex, e.OldItems.Count);
+                    break;
+            }
+
+            base.ItemsCollectionChanged(sender, e);
 
             switch (e.Action)
             {
@@ -318,14 +329,12 @@ namespace Avalonia.Controls.Primitives
                     }
                     else
                     {
-                        _selection.ItemsInserted(e.NewStartingIndex, e.NewItems.Count);
                         UpdateSelectedItem(_selection.First(), false);
                     }
 
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    _selection.ItemsRemoved(e.OldStartingIndex, e.OldItems.Count);
                     UpdateSelectedItem(_selection.First(), false);
                     ResetSelectedItems();
                     break;
@@ -1088,9 +1097,15 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    SelectedIndex = _updateSelectedIndex != int.MinValue ?
-                        _updateSelectedIndex :
-                        AlwaysSelected ? 0 : -1;
+                    if (_updateSelectedIndex != int.MinValue)
+                    {
+                        SelectedIndex = _updateSelectedIndex;
+                    }
+
+                    if (AlwaysSelected && SelectedIndex == -1)
+                    {
+                        SelectedIndex = 0;
+                    }
                 }
             }
         }

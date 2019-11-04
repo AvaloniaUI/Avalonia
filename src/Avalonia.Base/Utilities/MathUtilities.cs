@@ -159,6 +159,11 @@ namespace Avalonia.Utilities
         /// <returns>The clamped value.</returns>
         public static int Clamp(int val, int min, int max)
         {
+            if (min > max)
+            {
+                throw new ArgumentException($"{min} cannot be greater than {max}.");
+            }
+
             if (val < min)
             {
                 return min;

@@ -311,6 +311,25 @@ namespace Avalonia.Controls.UnitTests
             Assert.Single(target.GetLogicalChildren(), content);
         }
 
+        [Fact]
+        public void Should_Not_Propagate_DataContext_To_TabItem_Content()
+        {
+            var dataContext = "DataContext";
+
+            var tabItem = new TabItem();
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = dataContext,
+                Items = new AvaloniaList<object> { tabItem }
+            };
+
+            ApplyTemplate(target);
+
+            Assert.NotEqual(dataContext, tabItem.Content);
+        }
+
         private IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>((parent, scope) =>
