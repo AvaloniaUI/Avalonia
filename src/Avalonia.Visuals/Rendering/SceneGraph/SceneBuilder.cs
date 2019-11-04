@@ -51,7 +51,7 @@ namespace Avalonia.Rendering.SceneGraph
                 UpdateSize(scene);
             }
 
-            if (visual.VisualRoot != null)
+            if (visual.VisualRoot == scene.Root.Visual)
             {
                 if (node?.Parent != null &&
                     visual.VisualParent != null &&
