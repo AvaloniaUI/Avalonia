@@ -102,12 +102,17 @@ namespace Avalonia.Skia
 
             AvaloniaFormattedTextLine line = default;
 
-            int i = 0;
-
-            while(_skiaLines[i].Top < y && i < _skiaLines.Count)
+            foreach(var currentLine in _skiaLines)
             {
-                line = _skiaLines[i++];
-            }            
+                if(currentLine.Top <= y)
+                {
+                    line = currentLine;
+                }
+                else
+                {
+                    break;
+                }
+            }
 
             if (!line.Equals(default))
             {
@@ -135,12 +140,15 @@ namespace Avalonia.Skia
                                     line.Length : (line.Length - 1);
                 }
 
-                return new TextHitTestResult
+                if (y < line.Top + line.Height)
                 {
-                    IsInside = false,
-                    TextPosition = line.Start + offset,
-                    IsTrailing = Text.Length == (line.Start + offset + 1)
-                };
+                    return new TextHitTestResult
+                    {
+                        IsInside = false,
+                        TextPosition = line.Start + offset,
+                        IsTrailing = Text.Length == (line.Start + offset + 1)
+                    };
+                }
             }
 
             bool end = point.X > _bounds.Width || point.Y > _lines.Sum(l => l.Height);
