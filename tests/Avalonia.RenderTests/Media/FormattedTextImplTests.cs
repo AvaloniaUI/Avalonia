@@ -157,6 +157,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData(stringmiddle3lines, 500, 13, false, false, 8)]
         [InlineData(stringmiddle3lines, 30, 25, false, false, 9)]
         [InlineData(stringmiddle3lines, -1, 30, false, false, 10)]
+        [InlineData("", 0, 0, false, false, 0)]
         public void Should_HitTestPoint_Correctly(string input,
                                     double x, double y,
                                     bool isInside, bool isTrailing, int pos)
