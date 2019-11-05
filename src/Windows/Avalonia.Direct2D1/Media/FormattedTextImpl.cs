@@ -72,7 +72,7 @@ namespace Avalonia.Direct2D1.Media
 
             return new TextHitTestResult
             {
-                IsInside = result.Width == 0 ? false : (bool)isInside,
+                IsInside = isInside,
                 TextPosition = result.TextPosition,
                 IsTrailing = isTrailingHit,
             };
