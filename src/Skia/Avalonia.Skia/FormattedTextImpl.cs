@@ -118,7 +118,7 @@ namespace Avalonia.Skia
                 }
             }
 
-            if (!line.Equals(default))
+            if (!line.Equals(default(AvaloniaFormattedTextLine)))
             {
                 var rects = GetRects();
 
