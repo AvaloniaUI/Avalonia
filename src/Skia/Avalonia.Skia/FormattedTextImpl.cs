@@ -75,7 +75,24 @@ namespace Avalonia.Skia
         public TextHitTestResult HitTestPoint(Point point)
         {
             float y = (float)point.Y;
-            var line = _skiaLines.Find(l => l.Top <= y && (l.Top + l.Height) > y);
+
+            AvaloniaFormattedTextLine line = default;
+
+            float nextTop = 0;
+
+            foreach(var currentLine in _skiaLines)
+            {
+                if(currentLine.Top <= y)
+                {
+                    line = currentLine;
+                    nextTop = currentLine.Top + currentLine.Height;
+                }
+                else
+                {
+                    nextTop = currentLine.Top;
+                    break;
+                }
+            }
 
             if (!line.Equals(default(AvaloniaFormattedTextLine)))
             {
@@ -103,12 +120,15 @@ namespace Avalonia.Skia
                                     line.Length : (line.Length - 1);
                 }
 
-                return new TextHitTestResult
+                if (y < nextTop)
                 {
-                    IsInside = false,
-                    TextPosition = line.Start + offset,
-                    IsTrailing = Text.Length == (line.Start + offset + 1)
-                };
+                    return new TextHitTestResult
+                    {
+                        IsInside = false,
+                        TextPosition = line.Start + offset,
+                        IsTrailing = Text.Length == (line.Start + offset + 1)
+                    };
+                }
             }
 
             bool end = point.X > _bounds.Width || point.Y > _lines.Sum(l => l.Height);
