@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -211,6 +212,25 @@ namespace Avalonia.Native
             DoLayoutReset();
         }
 
+        private static NativeMenu CreateDefaultAppMenu()
+        {
+            var result = new NativeMenu();
+
+            var aboutItem = new NativeMenuItem
+            {
+                Header = "About Avalonia",
+            };
+
+            aboutItem.Clicked += (sender, e) =>
+            {
+                // Open about dialog.
+            };
+
+            result.Add(aboutItem);
+
+            return result;
+        }
+
         private void OnItemPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
         {
             QueueReset();
@@ -240,6 +260,10 @@ namespace Avalonia.Native
                 if(_menu != null)
                 {
                     SetMenu(_menu);
+                }
+                else
+                {
+                    SetMenu(CreateDefaultAppMenu());
                 }
             }
             else
