@@ -48,11 +48,6 @@ namespace Avalonia.Controls.Generators
                 tabItem[~ContentControl.ContentTemplateProperty] = Owner[~TabControl.ContentTemplateProperty];
             }
 
-            if (tabItem.Content == null)
-            {
-                tabItem[~ContentControl.ContentProperty] = tabItem[~StyledElement.DataContextProperty];
-            }
-
             return tabItem;
         }
     }
