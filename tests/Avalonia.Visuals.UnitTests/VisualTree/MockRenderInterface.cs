@@ -13,6 +13,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -47,6 +48,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         }
 
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
         {
             throw new NotImplementedException();
         }
