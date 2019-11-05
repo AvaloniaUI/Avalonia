@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Controls.Platform.Surfaces;
@@ -17,11 +18,12 @@ namespace Avalonia.Skia
     /// </summary>
     internal class PlatformRenderInterface : IPlatformRenderInterface
     {
+        private readonly ConcurrentDictionary<Typeface, GlyphTypefaceImpl> _glyphTypefaceCache =
+            new ConcurrentDictionary<Typeface, GlyphTypefaceImpl>();
+
         private readonly ICustomSkiaGpu _customSkiaGpu;
 
         private GRContext GrContext { get; }
-
-        public IEnumerable<string> InstalledFontNames => SKFontManager.Default.FontFamilies;
 
         public PlatformRenderInterface(ICustomSkiaGpu customSkiaGpu)
         {
@@ -52,12 +54,13 @@ namespace Avalonia.Skia
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            return new FormattedTextImpl(text, typeface, textAlignment, wrapping, constraint, spans);
+            return new FormattedTextImpl(text, typeface,fontSize, textAlignment, wrapping, constraint, spans);
         }
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
@@ -150,6 +153,11 @@ namespace Avalonia.Skia
         public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
         {
             return new WriteableBitmapImpl(size, dpi, format);
+        }
+
+        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        {
+            return _glyphTypefaceCache.GetOrAdd(typeface, new GlyphTypefaceImpl(typeface));
         }
     }
 }

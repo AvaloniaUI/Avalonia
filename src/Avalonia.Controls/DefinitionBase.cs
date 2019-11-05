@@ -7,9 +7,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-
-using Avalonia;
-using Avalonia.Collections;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -50,6 +47,8 @@ namespace Avalonia.Controls
                     }
                 }
             }
+
+            Parent?.InvalidateMeasure();
         }
 
         /// <summary>
@@ -63,6 +62,8 @@ namespace Avalonia.Controls
                 _sharedState.RemoveMember(this);
                 _sharedState = null;
             }
+
+            Parent?.InvalidateMeasure();
         }
 
         /// <summary>
@@ -111,6 +112,36 @@ namespace Avalonia.Controls
             else
             {
                 d.ClearValue(PrivateSharedSizeScopeProperty);
+            }
+        }
+
+        /// <remarks>
+        /// Notifies parent <see cref="Grid"/> or size scope that definition size has been changed.
+        /// </remarks>
+        internal static void OnUserSizePropertyChanged(DefinitionBase definition, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (definition.Parent == null)
+            {
+                return;
+            }
+
+            if (definition._sharedState != null)
+            {
+                definition._sharedState.Invalidate();
+            }
+            else
+            {
+                GridUnitType oldUnitType = ((GridLength)e.OldValue).GridUnitType;
+                GridUnitType newUnitType = ((GridLength)e.NewValue).GridUnitType;
+
+                if (oldUnitType != newUnitType)
+                {
+                    definition.Parent.Invalidate();
+                }
+                else
+                {
+                    definition.Parent.InvalidateMeasure();
+                }
             }
         }
 
@@ -729,6 +760,23 @@ namespace Avalonia.Controls
         {
             SharedSizeGroupProperty.Changed.AddClassHandler<DefinitionBase>(OnSharedSizeGroupPropertyChanged);
             PrivateSharedSizeScopeProperty.Changed.AddClassHandler<DefinitionBase>(OnPrivateSharedSizeScopePropertyChanged);
+        }
+
+        /// <summary>
+        /// Marks a property on a definition as affecting the parent grid's measurement.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        protected static void AffectsParentMeasure(params AvaloniaProperty[] properties)
+        {
+            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                (e.Sender as DefinitionBase)?.Parent?.InvalidateMeasure();
+            }
+
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(Invalidate);
+            }
         }
     }
 }
