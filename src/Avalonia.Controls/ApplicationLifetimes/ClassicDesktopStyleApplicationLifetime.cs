@@ -15,24 +15,10 @@ namespace Avalonia.Controls.ApplicationLifetimes
         private CancellationTokenSource _cts;
         private bool _isShuttingDown;
         private HashSet<Window> _windows = new HashSet<Window>();
+        private IDisposable _windowOpenedDisposable;
+        private IDisposable _windowClosedDisposable;
 
         private static ClassicDesktopStyleApplicationLifetime _activeLifetime;
-        static ClassicDesktopStyleApplicationLifetime()
-        {
-            Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened);
-            Window.WindowClosedEvent.AddClassHandler(typeof(Window), WindowClosedEvent);
-        }
-
-        private static void WindowClosedEvent(object sender, RoutedEventArgs e)
-        {
-            _activeLifetime?._windows.Remove((Window)sender);
-            _activeLifetime?.HandleWindowClosed((Window)sender);
-        }
-
-        private static void OnWindowOpened(object sender, RoutedEventArgs e)
-        {
-            _activeLifetime?._windows.Add((Window)sender);
-        }
 
         public ClassicDesktopStyleApplicationLifetime()
         {
@@ -69,9 +55,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 Shutdown();
         }
         
-        
-
-
         public void Shutdown(int exitCode = 0)
         {
             if (_isShuttingDown)
@@ -96,21 +79,45 @@ namespace Avalonia.Controls.ApplicationLifetimes
             }
         }
         
-        
         public int Start(string[] args)
         {
+            _windowOpenedDisposable = Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened);
+
+            _windowClosedDisposable = Window.WindowClosedEvent.AddClassHandler(typeof(Window), WindowClosedEvent);
+
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
+
             _cts = new CancellationTokenSource();
+
             MainWindow?.Show();
+
             Dispatcher.UIThread.MainLoop(_cts.Token);
+
             Environment.ExitCode = _exitCode;
+
             return _exitCode;
+        }
+
+        private void WindowClosedEvent(object sender, RoutedEventArgs e)
+        {
+            _windows.Remove((Window)sender);
+
+            HandleWindowClosed((Window)sender);
+        }
+
+        private void OnWindowOpened(object sender, RoutedEventArgs e)
+        {
+            _windows.Add((Window)sender);
         }
 
         public void Dispose()
         {
             if (_activeLifetime == this)
                 _activeLifetime = null;
+
+            _windowOpenedDisposable?.Dispose();
+
+            _windowClosedDisposable?.Dispose();
         }
     }
 }
