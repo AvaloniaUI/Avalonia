@@ -78,6 +78,18 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal(10, target.GetValue(Class1.AttachedProperty));
         }
 
+        [Fact]
+        public void PropertyChanged_Event_Uses_Coerced_Value()
+        {
+            var inst = new Class1();
+            inst.PropertyChanged += (sender, e) =>
+            {
+                Assert.Equal(10, e.NewValue);
+            };
+
+            inst.SetValue(Class1.QuxProperty, 15);
+        }
+
         private class Class1 : AvaloniaObject
         {
             public static readonly StyledProperty<int> QuxProperty =

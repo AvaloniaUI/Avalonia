@@ -84,10 +84,9 @@ namespace Avalonia.UnitTests
             );
             if (ButtonCount(props) == 0)
             {
-                _pointer.Capture(null);
                 target.RaiseEvent(new PointerReleasedEventArgs(source, _pointer, (IVisual)target, position,
-                    Timestamp(), props,
-                    GetModifiers(modifiers)));
+                    Timestamp(), props, GetModifiers(modifiers), _pressedButton));
+                _pointer.Capture(null);
             }
             else
                 Move(target, source, position);

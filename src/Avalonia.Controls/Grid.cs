@@ -6,6 +6,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -24,13 +25,14 @@ namespace Avalonia.Controls
     {
         static Grid()
         {
-            IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(DefinitionBase.OnIsSharedSizeScopePropertyChanged);
             ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
 
-            ColumnProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
-            ColumnSpanProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
-            RowProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
-            RowSpanProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
+            IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(DefinitionBase.OnIsSharedSizeScopePropertyChanged);
+            ColumnProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+            ColumnSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+            RowProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+            RowSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+
             AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
         }
 
@@ -177,6 +179,7 @@ namespace Avalonia.Controls
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.ColumnDefinitions = value;
                 _data.ColumnDefinitions.Parent = this;
+                InvalidateMeasure();
             }
         }
 
@@ -197,6 +200,7 @@ namespace Avalonia.Controls
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.RowDefinitions = value;
                 _data.RowDefinitions.Parent = this;
+                InvalidateMeasure();
             }
         }
 
@@ -566,6 +570,15 @@ namespace Avalonia.Controls
                 ArrangeOverrideInProgress = false;
             }
             return (arrangeSize);
+        }
+
+        /// <summary>
+        /// <see cref="Panel.ChildrenChanged"/>
+        /// </summary>
+        protected override void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            CellsStructureDirty = true;
+            base.ChildrenChanged(sender, e);
         }
 
         /// <summary>
