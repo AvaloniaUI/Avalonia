@@ -8,8 +8,6 @@ namespace ControlCatalog
 {
     public class App : Application
     {
-        private NativeMenu _recentMenu;
-
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
