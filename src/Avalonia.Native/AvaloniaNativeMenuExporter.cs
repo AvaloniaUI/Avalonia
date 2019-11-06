@@ -11,6 +11,7 @@ using Avalonia.Native.Interop;
 using Avalonia.Platform.Interop;
 using Avalonia.Threading;
 using Avalonia.Dialogs;
+using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Native
 {
@@ -224,9 +225,11 @@ namespace Avalonia.Native
 
             aboutItem.Clicked += async (sender, e) =>
             {
-                var dialog = new DefaultAboutWindow();
+                var dialog = new AboutAvaloniaDialog();
 
-                await dialog.ShowDialog((Window)result.VisualRoot);
+                var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+
+                await dialog.ShowDialog(mainWindow);
             };
 
             result.Add(aboutItem);
