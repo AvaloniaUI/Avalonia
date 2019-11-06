@@ -46,6 +46,29 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Pre_Selecting_TabItem_Should_Set_SelectedContent_After_It_Was_Added()
+        {
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+            };
+
+            const string secondContent = "Second";
+
+            var items = new AvaloniaList<object>
+            {
+                new TabItem { Header = "First"},
+                new TabItem { Header = "Second", Content = secondContent, IsSelected = true }
+            };
+
+            target.Items = items;
+
+            ApplyTemplate(target);
+
+            Assert.Equal(secondContent, target.SelectedContent);
+        }
+
+        [Fact]
         public void Logical_Children_Should_Be_TabItems()
         {
             var items = new[]
