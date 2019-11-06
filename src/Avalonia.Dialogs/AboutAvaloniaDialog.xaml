@@ -6,7 +6,7 @@
         MinHeight="220"
         Title="About Avalonia"
         Background="Purple"
-        x:Class="Avalonia.Dialogs.DefaultAboutWindow">
+        x:Class="Avalonia.Dialogs.AboutAvaloniaDialog">
   <Grid>
     <Grid.Styles>
       <Style Selector="Rectangle.Abstract">
