@@ -6,9 +6,9 @@ using Avalonia.Markup.Xaml;
 
 namespace Avalonia.Dialogs
 {
-    public class DefaultAboutWindow : Window
+    public class AboutAvaloniaDialog : Window
     {
-        public DefaultAboutWindow()
+        public AboutAvaloniaDialog()
         {
             AvaloniaXamlLoader.Load(this);
         }
