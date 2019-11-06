@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -14,9 +15,8 @@ namespace Avalonia.Controls.ApplicationLifetimes
         private int _exitCode;
         private CancellationTokenSource _cts;
         private bool _isShuttingDown;
-        private HashSet<Window> _windows = new HashSet<Window>();
-        private IDisposable _windowOpenedDisposable;
-        private IDisposable _windowClosedDisposable;
+        private readonly HashSet<Window> _windows = new HashSet<Window>();
+        private IDisposable _windowLifetimeDisposable;
 
         private static ClassicDesktopStyleApplicationLifetime _activeLifetime;
 
@@ -81,9 +81,11 @@ namespace Avalonia.Controls.ApplicationLifetimes
         
         public int Start(string[] args)
         {
-            _windowOpenedDisposable = Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened);
-
-            _windowClosedDisposable = Window.WindowClosedEvent.AddClassHandler(typeof(Window), WindowClosedEvent);
+            _windowLifetimeDisposable = new CompositeDisposable
+            {
+                Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened),
+                Window.WindowClosedEvent.AddClassHandler(typeof(Window), WindowClosedEvent)
+            };
 
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
 
@@ -115,9 +117,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
             if (_activeLifetime == this)
                 _activeLifetime = null;
 
-            _windowOpenedDisposable?.Dispose();
-
-            _windowClosedDisposable?.Dispose();
+            _windowLifetimeDisposable?.Dispose();
         }
     }
 }
