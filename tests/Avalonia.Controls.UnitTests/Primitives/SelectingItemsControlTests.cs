@@ -1185,6 +1185,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.MoveSelection(NavigationDirection.Next, true);
         }
 
+        [Fact]
+        public void Pre_Selecting_Item_Should_Set_Selection_After_It_Was_Added_When_AlwaysSelected()
+        {
+            var target = new TestSelector(SelectionMode.AlwaysSelected)
+            {
+                Template = Template()
+            };
+
+            var second = new Item { IsSelected = true };
+
+            var items = new AvaloniaList<object>
+            {
+                new Item(),
+                second
+            };
+
+            target.Items = items;
+
+            target.ApplyTemplate();
+
+            target.Presenter.ApplyTemplate();
+
+            Assert.Equal(second, target.SelectedItem);
+
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
         private FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
@@ -1233,6 +1260,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class TestSelector : SelectingItemsControl
         {
+            public TestSelector()
+            {
+                
+            }
+
+            public TestSelector(SelectionMode selectionMode)
+            {
+                SelectionMode = selectionMode;
+            }
+
             public new bool MoveSelection(NavigationDirection direction, bool wrap)
             {
                 return base.MoveSelection(direction, wrap);
