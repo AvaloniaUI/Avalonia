@@ -804,9 +804,9 @@ namespace Avalonia.Controls
 
         private void TextBoxOnPointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (e.Device.Captured != Spinner)
+            if (e.Pointer.Captured != Spinner)
             {
-                Dispatcher.UIThread.InvokeAsync(() => { e.Device.Capture(Spinner); }, DispatcherPriority.Input);
+                Dispatcher.UIThread.InvokeAsync(() => { e.Pointer.Capture(Spinner); }, DispatcherPriority.Input);
             }
         }
 
