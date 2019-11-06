@@ -367,16 +367,16 @@ namespace Avalonia.Controls.Primitives
             {
                 if ((container.ContainerControl as ISelectable)?.IsSelected == true)
                 {
-                    if (SelectedIndex == -1)
-                    {
-                        SelectedIndex = container.Index;
-                    }
-                    else
+                    if (SelectionMode.HasFlag(SelectionMode.Multiple))
                     {
                         if (_selection.Add(container.Index))
                         {
                             resetSelectedItems = true;
                         }
+                    }
+                    else
+                    {
+                        SelectedIndex = container.Index;
                     }
 
                     MarkContainerSelected(container.ContainerControl, true);
