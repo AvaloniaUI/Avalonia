@@ -855,8 +855,15 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     if(type == Wheel)
     {
-        delta.X = [event scrollingDeltaX] / 50;
-        delta.Y = [event scrollingDeltaY] / 50;
+        auto speed = 5;
+        
+        if([event hasPreciseScrollingDeltas])
+        {
+            speed = 50;
+        }
+        
+        delta.X = [event scrollingDeltaX] / speed;
+        delta.Y = [event scrollingDeltaY] / speed;
         
         if(delta.X == 0 && delta.Y == 0)
         {
