@@ -10,6 +10,7 @@ using Avalonia.Input;
 using Avalonia.Native.Interop;
 using Avalonia.Platform.Interop;
 using Avalonia.Threading;
+using Avalonia.Dialogs;
 
 namespace Avalonia.Native
 {
@@ -221,9 +222,11 @@ namespace Avalonia.Native
                 Header = "About Avalonia",
             };
 
-            aboutItem.Clicked += (sender, e) =>
+            aboutItem.Clicked += async (sender, e) =>
             {
-                // Open about dialog.
+                var dialog = new DefaultAboutWindow();
+
+                await dialog.ShowDialog((Window)result.VisualRoot);
             };
 
             result.Add(aboutItem);
