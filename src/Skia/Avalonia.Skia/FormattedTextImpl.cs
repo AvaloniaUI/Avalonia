@@ -18,6 +18,7 @@ namespace Avalonia.Skia
         public FormattedTextImpl(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -28,47 +29,22 @@ namespace Avalonia.Skia
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
 
-            SKTypeface skiaTypeface = null;
+            var entry = TypefaceCache.Get(typeface.FontFamily, typeface.Weight, typeface.Style);
 
-            if (typeface.FontFamily.Key != null)
+            _paint = new SKPaint
             {
-                var typefaces = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
-                skiaTypeface = typefaces.GetTypeFace(typeface);
-            }
-            else
-            {
-                if (typeface.FontFamily.FamilyNames.HasFallbacks)
-                {
-                    foreach (var familyName in typeface.FontFamily.FamilyNames)
-                    {
-                        skiaTypeface = TypefaceCache.GetTypeface(
-                            familyName,
-                            typeface.Style,
-                            typeface.Weight);
-                        if (skiaTypeface.FamilyName != TypefaceCache.DefaultFamilyName) break;
-                    }
-                }
-                else
-                {
-                    skiaTypeface = TypefaceCache.GetTypeface(
-                        typeface.FontFamily.Name,
-                        typeface.Style,
-                        typeface.Weight);
-                }
-            }
-
-            _paint = new SKPaint();
+                TextEncoding = SKTextEncoding.Utf16,
+                IsStroke = false,
+                IsAntialias = true,
+                LcdRenderText = true,
+                SubpixelText = true,
+                Typeface = entry.SKTypeface,
+                TextSize = (float)fontSize,
+                TextAlign = textAlignment.ToSKTextAlign()
+            };
 
             //currently Skia does not measure properly with Utf8 !!!
             //Paint.TextEncoding = SKTextEncoding.Utf8;
-            _paint.TextEncoding = SKTextEncoding.Utf16;
-            _paint.IsStroke = false;
-            _paint.IsAntialias = true;
-            _paint.LcdRenderText = true;
-            _paint.SubpixelText = true;
-            _paint.Typeface = skiaTypeface;
-            _paint.TextSize = (float)typeface.FontSize;
-            _paint.TextAlign = textAlignment.ToSKTextAlign();
 
             _wrapping = wrapping;
             _constraint = constraint;
@@ -118,7 +94,7 @@ namespace Avalonia.Skia
                 }
             }
 
-            if (!line.Equals(default))
+            if (!line.Equals(default(AvaloniaFormattedTextLine)))
             {
                 var rects = GetRects();
 
