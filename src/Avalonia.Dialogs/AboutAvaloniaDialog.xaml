@@ -1,12 +1,13 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        MaxWidth="640"
-        MaxHeight="220"
-        MinWidth="640"
-        MinHeight="220"
+        MaxWidth="400"
+        MaxHeight="475"
+        MinWidth="400"
+        MinHeight="475"
         Title="About Avalonia"
         Background="Purple"
-        x:Class="Avalonia.Dialogs.AboutAvaloniaDialog">
+        x:Class="Avalonia.Dialogs.AboutAvaloniaDialog"
+        FontFamily="Roboto Light">
   <Grid>
     <Grid.Styles>
       <Style Selector="Rectangle.Abstract">
@@ -50,8 +51,8 @@
           VerticalAlignment="Top">
       <Grid.RenderTransform>
         <TransformGroup>
-          <ScaleTransform ScaleX="0.35"
-                          ScaleY="0.35" />
+          <ScaleTransform ScaleX="0.20"
+                          ScaleY="0.20" />
           <TranslateTransform X="-80"
                               Y="-65" />
         </TransformGroup>
@@ -91,7 +92,7 @@
     </Grid>
     <StackPanel HorizontalAlignment="Left"
                 VerticalAlignment="Top"
-                Margin="113,15,0,0">
+                Margin="100,20,0,0">
       <TextBlock Text="Avalonia 0.9"
                  FontSize="40"
                  Foreground="White" />
@@ -100,6 +101,7 @@
                  FontSize="15"
                  Foreground="White" />
     </StackPanel>
+    <TextBlock Text="This application is built with Avalonia." VerticalAlignment="Center" HorizontalAlignment="Center" />
     <TextBlock Text="Version String"
                HorizontalAlignment="Right"
                VerticalAlignment="Bottom"
