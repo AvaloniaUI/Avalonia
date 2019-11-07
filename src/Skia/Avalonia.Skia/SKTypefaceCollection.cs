@@ -31,7 +31,7 @@ namespace Avalonia.Skia
 
             return _fontFamilies.TryGetValue(familyName, out var fontFamily) ?
                 fontFamily.GetOrAdd(key, GetFallback(fontFamily, key)) :
-                null;
+                new TypefaceCollectionEntry(Typeface.Default, SkiaSharp.SKTypeface.Default);
         }
 
         private static TypefaceCollectionEntry GetFallback(IDictionary<FontKey, TypefaceCollectionEntry> fontFamily, FontKey key)
