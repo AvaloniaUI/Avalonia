@@ -37,9 +37,6 @@ jobs:
   - task: DotNetCoreInstaller@0
     inputs:
       version: '2.1.403'
-  - task: DotNetCoreInstaller@0
-    inputs:
-      version: '3.0.100'
 
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
