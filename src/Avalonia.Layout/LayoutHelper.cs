@@ -21,8 +21,11 @@ namespace Avalonia.Layout
         /// <returns>The control's size.</returns>
         public static Size ApplyLayoutConstraints(ILayoutable control, Size constraints)
         {
-            double width = (control.Width > 0) ? control.Width : constraints.Width;
-            double height = (control.Height > 0) ? control.Height : constraints.Height;
+            var controlWidth = control.Width;
+            var controlHeight = control.Height;
+
+            double width = (controlWidth > 0) ? controlWidth : constraints.Width;
+            double height = (controlHeight > 0) ? controlHeight : constraints.Height;
             width = Math.Min(width, control.MaxWidth);
             width = Math.Max(width, control.MinWidth);
             height = Math.Min(height, control.MaxHeight);
