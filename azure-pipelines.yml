@@ -34,9 +34,6 @@ jobs:
   pool:
     vmImage: 'macOS-10.14'
   steps:
-  - task: DotNetCoreInstaller@0
-    inputs:
-      version: '2.1.403'
 
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
