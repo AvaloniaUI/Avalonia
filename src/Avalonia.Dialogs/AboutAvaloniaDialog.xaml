@@ -73,6 +73,14 @@
         <TextBlock Text="Development Build" Margin="0,-10,0,0" FontSize="15" Foreground="White" />
       </StackPanel>
     </StackPanel>
-    <TextBlock Text="" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="5" FontSize="15" />
+    <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="20" Margin="0 60 0 0">
+      <TextBlock Text="This product is built with the Avalonia cross platform UI Framework." TextWrapping="Wrap" HorizontalAlignment="Center" />
+      <Button Cursor="Hand" Background="Transparent" BorderThickness="0" Foreground="#419df2" Command="{Binding OpenGithub}" Content="https://github.com/AvaloniaUI/Avalonia" HorizontalAlignment="Center" />
+      <Button Cursor="Hand" Background="Transparent" BorderThickness="0" Foreground="#419df2" Command="{Binding OpenWebsite}" Content="https://www.avaloniaui.net/" HorizontalAlignment="Center" />
+    </StackPanel>
+    <StackPanel VerticalAlignment="Bottom">
+      <TextBlock Text="© 2019 AvaloniaUI OÜ (14839404)" TextWrapping="Wrap" HorizontalAlignment="Center" />
+      <TextBlock Text="" HorizontalAlignment="Right" Margin="5" FontSize="15" />
+    </StackPanel>
   </Grid>
 </Window>
