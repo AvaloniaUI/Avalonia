@@ -102,6 +102,11 @@ namespace Avalonia.LinuxFramebuffer
             ExitCode = e.ApplicationExitCode;
             _cts.Cancel();
         }
+
+        public void OnSetupCompleted()
+        {
+            
+        }
     }
 }
 

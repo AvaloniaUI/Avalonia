@@ -39,6 +39,7 @@ namespace Avalonia.ReactiveUI.UnitTests
         public class ExoticApplicationLifetimeWithoutLifecycleEvents : IDisposable, IApplicationLifetime
         {
             public void Dispose() { }
+            public void OnSetupCompleted() { }
         }
 
         [Fact]

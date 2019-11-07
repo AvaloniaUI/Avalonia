@@ -81,12 +81,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
         
         public int Start(string[] args)
         {
-            _windowLifetimeDisposable = new CompositeDisposable
-            {
-                Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened),
-                Window.WindowClosedEvent.AddClassHandler(typeof(Window), WindowClosedEvent)
-            };
-
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
 
             _cts = new CancellationTokenSource();
@@ -118,6 +112,15 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 _activeLifetime = null;
 
             _windowLifetimeDisposable?.Dispose();
+        }
+
+        public void OnSetupCompleted()
+        {
+            _windowLifetimeDisposable = new CompositeDisposable
+            {
+                Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened),
+                Window.WindowClosedEvent.AddClassHandler(typeof(Window), WindowClosedEvent)
+            };
         }
     }
 }
