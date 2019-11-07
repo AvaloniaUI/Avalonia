@@ -37,13 +37,13 @@ namespace Avalonia.Dialogs
             }
             else
             {
-                using Process process = Process.Start(new ProcessStartInfo
+                using (Process process = Process.Start(new ProcessStartInfo
                 {
                     FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : "open",
                     Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"-e {url}" : "",
                     CreateNoWindow = true,
                     UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                });
+                }));
             }
         }
 
