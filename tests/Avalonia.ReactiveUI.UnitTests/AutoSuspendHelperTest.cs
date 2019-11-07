@@ -36,18 +36,14 @@ namespace Avalonia.ReactiveUI.UnitTests
             public string Example { get; set; }
         }
 
-        public class ExoticApplicationLifetimeWithoutLifecycleEvents : IDisposable, IApplicationLifetime
-        {
-            public void Dispose() { }
-            public void OnSetupCompleted() { }
-        }
+        public class ExoticApplicationLifetimeWithoutLifecycleEvents : ApplicationLifetime { }
 
         [Fact]
-        public void AutoSuspendHelper_Should_Immediately_Fire_IsLaunchingNew() 
+        public void AutoSuspendHelper_Should_Immediately_Fire_IsLaunchingNew()
         {
-            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
             {
+                var lifetime = new ClassicDesktopStyleApplicationLifetime();
                 var isLaunchingReceived = false;
                 var application = AvaloniaLocator.Current.GetService<Application>();
                 application.ApplicationLifetime = lifetime;
@@ -65,8 +61,8 @@ namespace Avalonia.ReactiveUI.UnitTests
         public void AutoSuspendHelper_Should_Throw_When_Not_Supported_Lifetime_Is_Used()
         {
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
-            using (var lifetime = new ExoticApplicationLifetimeWithoutLifecycleEvents()) 
             {
+                var lifetime = new ExoticApplicationLifetimeWithoutLifecycleEvents();
                 var application = AvaloniaLocator.Current.GetService<Application>();
                 application.ApplicationLifetime = lifetime;
                 Assert.Throws<NotSupportedException>(() => new AutoSuspendHelper(application.ApplicationLifetime));
@@ -84,11 +80,11 @@ namespace Avalonia.ReactiveUI.UnitTests
         }
 
         [Fact]
-        public void ShouldPersistState_Should_Fire_On_App_Exit_When_SuspensionDriver_Is_Initialized() 
+        public void ShouldPersistState_Should_Fire_On_App_Exit_When_SuspensionDriver_Is_Initialized()
         {
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime()) 
             {
+                var lifetime = new ClassicDesktopStyleApplicationLifetime();
                 var shouldPersistReceived = false;
                 var application = AvaloniaLocator.Current.GetService<Application>();
                 application.ApplicationLifetime = lifetime;

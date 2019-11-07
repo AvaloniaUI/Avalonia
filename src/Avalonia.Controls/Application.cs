@@ -151,7 +151,7 @@ namespace Avalonia
 
         /// <inheritdoc/>
         IResourceNode IResourceNode.ResourceParent => null;
-        
+
         /// <summary>
         /// Application lifetime, use it for things like setting the main window and exiting the app from code
         /// Currently supported lifetimes are:
@@ -203,7 +203,7 @@ namespace Avalonia
 
         public virtual void OnFrameworkInitializationCompleted()
         {
-            
+            ApplicationLifetime?.OnFrameworkInitializationCompleted();
         }
 
         private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -10,24 +9,13 @@ using Avalonia.Threading;
 
 namespace Avalonia.Controls.ApplicationLifetimes
 {
-    public class ClassicDesktopStyleApplicationLifetime : IClassicDesktopStyleApplicationLifetime, IDisposable
+    public class ClassicDesktopStyleApplicationLifetime : IClassicDesktopStyleApplicationLifetime
     {
         private int _exitCode;
         private CancellationTokenSource _cts;
         private bool _isShuttingDown;
         private readonly HashSet<Window> _windows = new HashSet<Window>();
-        private IDisposable _windowLifetimeDisposable;
 
-        private static ClassicDesktopStyleApplicationLifetime _activeLifetime;
-
-        public ClassicDesktopStyleApplicationLifetime()
-        {
-            if (_activeLifetime != null)
-                throw new InvalidOperationException(
-                    "Can not have multiple active ClassicDesktopStyleApplicationLifetime instances and the previously created one was not disposed");
-            _activeLifetime = this;
-        }
-        
         /// <inheritdoc/>
         public event EventHandler<ControlledApplicationLifetimeStartupEventArgs> Startup;
         /// <inheritdoc/>
@@ -35,7 +23,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
         /// <inheritdoc/>
         public ShutdownMode ShutdownMode { get; set; }
-        
+
         /// <inheritdoc/>
         public Window MainWindow { get; set; }
 
@@ -45,7 +33,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         {
             if (window == null)
                 return;
-            
+
             if (_isShuttingDown)
                 return;
 
@@ -54,12 +42,12 @@ namespace Avalonia.Controls.ApplicationLifetimes
             else if (ShutdownMode == ShutdownMode.OnMainWindowClose && window == MainWindow)
                 Shutdown();
         }
-        
+
         public void Shutdown(int exitCode = 0)
         {
             if (_isShuttingDown)
                 throw new InvalidOperationException("Application is already shutting down.");
-            
+
             _exitCode = exitCode;
             _isShuttingDown = true;
 
@@ -69,7 +57,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                     w.Close();
                 var e = new ControlledApplicationLifetimeExitEventArgs(exitCode);
                 Exit?.Invoke(this, e);
-                _exitCode = e.ApplicationExitCode;                
+                _exitCode = e.ApplicationExitCode;
             }
             finally
             {
@@ -78,7 +66,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 _isShuttingDown = false;
             }
         }
-        
+
         public int Start(string[] args)
         {
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
@@ -106,21 +94,11 @@ namespace Avalonia.Controls.ApplicationLifetimes
             _windows.Add((Window)sender);
         }
 
-        public void Dispose()
+        public void OnFrameworkInitializationCompleted()
         {
-            if (_activeLifetime == this)
-                _activeLifetime = null;
+            Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened);
 
-            _windowLifetimeDisposable?.Dispose();
-        }
-
-        public void OnSetupCompleted()
-        {
-            _windowLifetimeDisposable = new CompositeDisposable
-            {
-                Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened),
-                Window.WindowClosedEvent.AddClassHandler(typeof(Window), WindowClosedEvent)
-            };
+            Window.WindowClosedEvent.AddClassHandler(typeof(Window), WindowClosedEvent);
         }
     }
 }
@@ -133,7 +111,7 @@ namespace Avalonia
             this T builder, string[] args, ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)
             where T : AppBuilderBase<T>, new()
         {
-            var lifetime = new ClassicDesktopStyleApplicationLifetime() {ShutdownMode = shutdownMode};
+            var lifetime = new ClassicDesktopStyleApplicationLifetime() { ShutdownMode = shutdownMode };
             builder.SetupWithLifetime(lifetime);
             return lifetime.Start(args);
         }

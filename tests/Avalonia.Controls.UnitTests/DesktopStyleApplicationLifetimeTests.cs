@@ -8,15 +8,15 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-
     public class DesktopStyleApplicationLifetimeTests
     {
         [Fact]
         public void Should_Set_ExitCode_After_Shutdown()
         {
             using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
+                var lifetime = new ClassicDesktopStyleApplicationLifetime();
+
                 lifetime.Shutdown(1337);
 
                 var exitCode = lifetime.Start(Array.Empty<string>());
@@ -30,9 +30,10 @@ namespace Avalonia.Controls.UnitTests
         public void Should_Close_All_Remaining_Open_Windows_After_Explicit_Exit_Call()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.OnSetupCompleted();
+                var lifetime = new ClassicDesktopStyleApplicationLifetime();
+
+                lifetime.OnFrameworkInitializationCompleted();
 
                 var windows = new List<Window> { new Window(), new Window(), new Window(), new Window() };
 
@@ -40,7 +41,9 @@ namespace Avalonia.Controls.UnitTests
                 {
                     window.Show();
                 }
+
                 Assert.Equal(4, lifetime.Windows.Count);
+
                 lifetime.Shutdown();
 
                 Assert.Empty(lifetime.Windows);
@@ -51,8 +54,9 @@ namespace Avalonia.Controls.UnitTests
         public void Should_Only_Exit_On_Explicit_Exit()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
+                var lifetime = new ClassicDesktopStyleApplicationLifetime();
+
                 lifetime.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
                 var hasExit = false;
@@ -85,9 +89,10 @@ namespace Avalonia.Controls.UnitTests
         public void Should_Exit_After_MainWindow_Closed()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.OnSetupCompleted();
+                var lifetime = new ClassicDesktopStyleApplicationLifetime();
+
+                lifetime.OnFrameworkInitializationCompleted();
 
                 lifetime.ShutdownMode = ShutdownMode.OnMainWindowClose;
 
@@ -115,9 +120,10 @@ namespace Avalonia.Controls.UnitTests
         public void Should_Exit_After_Last_Window_Closed()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.OnSetupCompleted();
+                var lifetime = new ClassicDesktopStyleApplicationLifetime();
+
+                lifetime.OnFrameworkInitializationCompleted();
 
                 lifetime.ShutdownMode = ShutdownMode.OnLastWindowClose;
 
@@ -147,9 +153,10 @@ namespace Avalonia.Controls.UnitTests
         public void Show_Should_Add_Window_To_OpenWindows()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.OnSetupCompleted();
+                var lifetime = new ClassicDesktopStyleApplicationLifetime();
+
+                lifetime.OnFrameworkInitializationCompleted();
 
                 var window = new Window();
 
@@ -163,9 +170,10 @@ namespace Avalonia.Controls.UnitTests
         public void Window_Should_Be_Added_To_OpenWindows_Only_Once()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.OnSetupCompleted();
+                var lifetime = new ClassicDesktopStyleApplicationLifetime();
+
+                lifetime.OnFrameworkInitializationCompleted();
 
                 var window = new Window();
 
@@ -183,9 +191,10 @@ namespace Avalonia.Controls.UnitTests
         public void Close_Should_Remove_Window_From_OpenWindows()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.OnSetupCompleted();
+                var lifetime = new ClassicDesktopStyleApplicationLifetime();
+
+                lifetime.OnFrameworkInitializationCompleted();
 
                 var window = new Window();
 
@@ -201,16 +210,17 @@ namespace Avalonia.Controls.UnitTests
         public void Impl_Closing_Should_Remove_Window_From_OpenWindows()
         {
             var windowImpl = new Mock<IWindowImpl>();
-            windowImpl.SetupProperty(x => x.Closed);
+            windowImpl.SetupProperty(x => x.Closed, ()=> { });
             windowImpl.Setup(x => x.Scaling).Returns(1);
 
             var services = TestServices.StyledWindow.With(
                 windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
 
             using (UnitTestApplication.Start(services))
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
-                lifetime.OnSetupCompleted();
+                var lifetime = new ClassicDesktopStyleApplicationLifetime();
+
+                lifetime.OnFrameworkInitializationCompleted();
 
                 var window = new Window();
 
@@ -222,5 +232,4 @@ namespace Avalonia.Controls.UnitTests
             }
         }
     }
-
 }

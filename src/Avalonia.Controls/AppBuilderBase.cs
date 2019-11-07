@@ -163,7 +163,6 @@ namespace Avalonia.Controls
         {
             _lifetime = lifetime;
             Setup();
-            lifetime.OnSetupCompleted();
             return Self;
         }
 
