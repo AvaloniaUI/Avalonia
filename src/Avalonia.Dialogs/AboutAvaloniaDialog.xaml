@@ -6,8 +6,8 @@
         MinHeight="475"
         Title="About Avalonia"
         Background="Purple"
-        x:Class="Avalonia.Dialogs.AboutAvaloniaDialog"
-        FontFamily="Roboto Light">
+        FontFamily="/Assets/Roboto-Light.ttf"
+        x:Class="Avalonia.Dialogs.AboutAvaloniaDialog">
   <Window.Styles>
     <Style>
       <Style.Resources>

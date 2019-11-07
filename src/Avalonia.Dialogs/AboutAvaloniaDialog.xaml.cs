@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Avalonia.Controls; 
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Avalonia.Dialogs
@@ -17,12 +17,12 @@ namespace Avalonia.Dialogs
             DataContext = this;
         }
 
-        public void OpenGithub ()
+        public void OpenGithub()
         {
             OpenBrowser("https://github.com/AvaloniaUI/Avalonia/");
         }
 
-        public void OpenWebsite ()
+        public void OpenWebsite()
         {
             OpenBrowser("https://avaloniaui.net/");
         }
