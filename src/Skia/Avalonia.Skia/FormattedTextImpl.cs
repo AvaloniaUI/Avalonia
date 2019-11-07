@@ -38,7 +38,7 @@ namespace Avalonia.Skia
                 IsAntialias = true,
                 LcdRenderText = true,
                 SubpixelText = true,
-                Typeface = entry.SKTypeface,
+                Typeface = entry?.SKTypeface,
                 TextSize = (float)fontSize,
                 TextAlign = textAlignment.ToSKTextAlign()
             };
