@@ -13,7 +13,27 @@ namespace Avalonia.Media
     /// </summary>
     public abstract class FontManager
     {
-        public static readonly FontManager Default = CreateDefault();
+        private static IFontManagerImpl s_platformImpl;
+        private static FontManager s_currentFontManager;
+
+        public static FontManager Current
+        {
+            get
+            {
+                var platformImpl = AvaloniaLocator.Current.GetService<IFontManagerImpl>();
+
+                if (platformImpl == s_platformImpl)
+                {
+                    return s_currentFontManager;
+                }
+
+                s_platformImpl = platformImpl;
+
+                s_currentFontManager = new PlatformFontManager(platformImpl);
+
+                return s_currentFontManager;
+            }
+        }
 
         /// <summary>
         ///     Gets the system's default font family's name.
@@ -57,18 +77,6 @@ namespace Avalonia.Media
             FontStyle fontStyle = default,
             FontFamily fontFamily = null, CultureInfo culture = null);
 
-        public static FontManager CreateDefault()
-        {
-            var platformImpl = AvaloniaLocator.Current.GetService<IFontManagerImpl>();
-
-            if (platformImpl != null)
-            {
-                return new PlatformFontManager(platformImpl);
-            }
-
-            return new EmptyFontManager();
-        }
-
         private class PlatformFontManager : FontManager
         {
             private readonly IFontManagerImpl _platformImpl;
@@ -90,23 +98,6 @@ namespace Avalonia.Media
                 FontStyle fontStyle = default,
                 FontFamily fontFamily = null, CultureInfo culture = null) =>
                 _platformImpl.MatchCharacter(codepoint, fontWeight, fontStyle, fontFamily, culture);
-        }
-
-        private class EmptyFontManager : FontManager
-        {
-            public EmptyFontManager()
-            {
-                DefaultFontFamilyName = "Empty";
-            }
-
-            public override IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) =>
-                new[] { DefaultFontFamilyName };
-
-            public override Typeface GetCachedTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle) => new Typeface(fontFamily, fontWeight, fontStyle);
-
-            public override Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default,
-                FontStyle fontStyle = default,
-                FontFamily fontFamily = null, CultureInfo culture = null) => null;
         }
     }
 }

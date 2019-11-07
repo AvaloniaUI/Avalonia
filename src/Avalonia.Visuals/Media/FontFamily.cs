@@ -2,17 +2,17 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Media.Fonts;
 
 namespace Avalonia.Media
 {
     public sealed class FontFamily
     {
+        private const string SystemDefaultName = "SystemDefault";
+
         static FontFamily()
         {
-            Default = new FontFamily(FontManager.Default.DefaultFontFamilyName);
+            Default = new FontFamily(SystemDefaultName);
         }
 
         /// <inheritdoc />
@@ -58,13 +58,9 @@ namespace Avalonia.Media
         public static FontFamily Default { get; }
 
         /// <summary>
-        /// Represents all font families in the system. This can be an expensive call depending on platform implementation.
+        /// Returns <c>True</c> if this instance is the system's default.
         /// </summary>
-        /// <remarks>
-        /// Consider using the new <see cref="FontManager"/> instead.
-        /// </remarks>
-        public static IEnumerable<FontFamily> SystemFontFamilies =>
-            FontManager.Default.GetInstalledFontFamilyNames().Select(name => new FontFamily(name));
+        public bool IsSystemDefault => Name == SystemDefaultName;
 
         /// <summary>
         /// Gets the primary family name of the font family.

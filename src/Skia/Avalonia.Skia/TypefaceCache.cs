@@ -17,13 +17,15 @@ namespace Avalonia.Skia
 
         public static TypefaceCollectionEntry Get(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle)
         {
+            var familyName = fontFamily.Name;
+
             if (fontFamily.Key != null)
             {
                 return SKTypefaceCollectionCache.GetOrAddTypefaceCollection(fontFamily)
-                    .Get(fontFamily.Name, fontWeight, fontStyle);
+                    .Get(familyName, fontWeight, fontStyle);
             }
 
-            var typefaceCollection = s_cache.GetOrAdd(fontFamily.Name, new ConcurrentDictionary<FontKey, TypefaceCollectionEntry>());
+            var typefaceCollection = s_cache.GetOrAdd(familyName, new ConcurrentDictionary<FontKey, TypefaceCollectionEntry>());
 
             var key = new FontKey(fontWeight, fontStyle);
 
@@ -32,10 +34,15 @@ namespace Avalonia.Skia
                 return entry;
             }
 
-            var skTypeface = SKTypeface.FromFamilyName(fontFamily.Name, (SKFontStyleWeight)fontWeight,
+            if (fontFamily.IsSystemDefault)
+            {
+                familyName = FontManager.Current.DefaultFontFamilyName;
+            }
+
+            var skTypeface = SKTypeface.FromFamilyName(familyName, (SKFontStyleWeight)fontWeight,
                                  SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle) ?? SKTypeface.Default;
 
-            var typeface = new Typeface(fontFamily.Name, fontWeight, fontStyle);
+            var typeface = new Typeface(fontFamily, fontWeight, fontStyle);
 
             entry = new TypefaceCollectionEntry(typeface, skTypeface);
 

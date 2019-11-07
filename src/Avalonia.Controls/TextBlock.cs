@@ -28,7 +28,7 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
             AvaloniaProperty.RegisterAttached<TextBlock, Control, FontFamily>(
                 nameof(FontFamily),
-                defaultValue:  FontFamily.Default,
+                defaultValue: FontFamily.Default,
                 inherits: true);
 
         /// <summary>

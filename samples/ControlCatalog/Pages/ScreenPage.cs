@@ -24,7 +24,7 @@ namespace ControlCatalog.Pages
             base.Render(context);
             if (!(VisualRoot is Window w))
             {
-                return;                
+                return;
             }
             var screens = w.Screens.All;
             var scaling = ((IRenderRoot)w).RenderScaling;
@@ -46,24 +46,24 @@ namespace ControlCatalog.Pages
                                        screen.WorkingArea.Height / 10f);
                     context.DrawRectangle(p, boundsRect);
                     context.DrawRectangle(p, workingAreaRect);
-                    
+
                     FormattedText text = new FormattedText()
                     {
-                        Typeface = Typeface.Default
+                        Typeface = new Typeface(FontFamily.Default)
                     };
 
                     text.Text = $"Bounds: {screen.Bounds.Width}:{screen.Bounds.Height}";
                     context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height), text);
-                    
+
                     text.Text = $"WorkArea: {screen.WorkingArea.Width}:{screen.WorkingArea.Height}";
                     context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height + 20), text);
 
                     text.Text = $"Scaling: {screen.PixelDensity * 100}%";
                     context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height + 40), text);
-                    
+
                     text.Text = $"Primary: {screen.Primary}";
                     context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height + 60), text);
-                    
+
                     text.Text = $"Current: {screen.Equals(w.Screens.ScreenFromBounds(new PixelRect(w.Position, PixelSize.FromSize(w.Bounds.Size, scaling))))}";
                     context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height + 80), text);
                 }
