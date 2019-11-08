@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         MaxWidth="400"
         MaxHeight="475"
-        MinWidth="400"
+        MinWidth="430"
         MinHeight="475"
         Title="About Avalonia"
         Background="Purple"
@@ -43,6 +43,7 @@
     <Style Selector="Button.Hyperlink">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Margin" Value="-5"/>
       <Setter Property="Foreground" Value="#419df2" />
       <Setter Property="Command" Value="{Binding OpenBrowser}" />
       <Setter Property="Content" Value="{Binding $self.CommandParameter}" />
@@ -84,11 +85,21 @@
     </StackPanel>
     <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="20" Margin="10 60 10 0">
       <TextBlock Text="This product is built with the Avalonia cross-platform UI Framework. &#x0A;&#x0A;Avalonia is made possible by the generous support of it's contributors and community." TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
-      <Button Classes="Hyperlink" CommandParameter="https://github.com/AvaloniaUI/Avalonia/"  />
-      <Button Classes="Hyperlink" CommandParameter="https://avaloniaui.net/"  />
-    </StackPanel> 
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+        <TextBlock Text="Main source repository | " />
+        <Button Classes="Hyperlink" CommandParameter="https://github.com/AvaloniaUI/Avalonia/"  />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+        <TextBlock Text="Documentation and Information | " />
+        <Button Classes="Hyperlink" CommandParameter="https://avaloniaui.net/"  />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+        <TextBlock Text="Chat Room | " />
+        <Button Classes="Hyperlink" CommandParameter="https://gitter.im/AvaloniaUI/Avalonia/"  />
+      </StackPanel>
+     </StackPanel> 
     <StackPanel VerticalAlignment="Bottom" Margin="10">
-      <TextBlock Text="© 2019 AvaloniaUI OÜ (14839404)" TextWrapping="Wrap" HorizontalAlignment="Center" />
+      <TextBlock Text="© 2019 The Avalonia Project" TextWrapping="Wrap" HorizontalAlignment="Center" />
     </StackPanel>
   </Grid>
 </Window>
