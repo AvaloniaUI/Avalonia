@@ -351,7 +351,7 @@ namespace Avalonia.Native
                     }), new MenuActionCallback(() => { item.RaiseClick(); }));
                     menu.AddItem(menuItem);
 
-                    if (item.Menu?.Items?.Count > 0)
+                    if (item.Menu?.Items?.Count >= 0)
                     {
                         var submenu = _factory.CreateMenu();
 
@@ -392,7 +392,7 @@ namespace Avalonia.Native
                         return false;
                     }), new MenuActionCallback(() => { item.RaiseClick(); }));
 
-                    if (item.Menu?.Items.Count > 0 || isMainMenu)
+                    if (item.Menu?.Items.Count >= 0 || isMainMenu)
                     {
                         var subMenu = CreateSubmenu(item.Menu?.Items);
 
