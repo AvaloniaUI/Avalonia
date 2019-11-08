@@ -31,19 +31,27 @@ namespace ControlCatalog
 
             DataContext = new MainWindowViewModel(_notificationArea);
             _recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[2] as NativeMenuItem).Menu;
+            var mainMenu = this.FindControl<Menu>("MainMenu");
+            mainMenu.AttachedToVisualTree += MenuAttached;
+        }
+
+        public void MenuAttached(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            if (NativeMenu.GetIsNativeMenuExported(this) && sender is Menu mainMenu)
+            {
+                mainMenu.IsVisible = false;
+            }
         }
 
         public void OnOpenClicked(object sender, EventArgs args)
         {
             _recentMenu.Items.Insert(0, new NativeMenuItem("Item " + (_recentMenu.Items.Count + 1)));
         }
-        
+
         public void OnCloseClicked(object sender, EventArgs args)
         {
             Close();
         }
-
-
 
         private void InitializeComponent()
         {
