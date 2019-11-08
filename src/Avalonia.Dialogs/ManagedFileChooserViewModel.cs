@@ -212,10 +212,10 @@ namespace Avalonia.Dialogs
                         {
                             var selectedItem = SelectedItems.FirstOrDefault();
                             
-							if (selectedItem != null)
-							{
-								FileName = selectedItem.DisplayName;
-							}
+						    if (selectedItem != null)
+						    {
+						        FileName = selectedItem.DisplayName;
+						    }
                         }
                     }
                 }
