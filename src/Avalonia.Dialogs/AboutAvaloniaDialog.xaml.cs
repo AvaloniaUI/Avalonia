@@ -13,21 +13,10 @@ namespace Avalonia.Dialogs
         public AboutAvaloniaDialog()
         {
             AvaloniaXamlLoader.Load(this);
-
             DataContext = this;
         }
-
-        public void OpenGithub()
-        {
-            OpenBrowser("https://github.com/AvaloniaUI/Avalonia/");
-        }
-
-        public void OpenWebsite()
-        {
-            OpenBrowser("https://avaloniaui.net/");
-        }
-
-        private static void OpenBrowser(string url)
+ 
+        public static void OpenBrowser(string url)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
