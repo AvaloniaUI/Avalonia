@@ -83,14 +83,12 @@
       </StackPanel>
     </StackPanel>
     <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="20" Margin="10 60 10 0">
-      <TextBlock Text="This product is built with the Avalonia cross platform UI Framework." TextWrapping="Wrap" HorizontalAlignment="Center" />
-      <TextBlock Text="Avalonia is made possible by the generous support of it's contributors and community." TextWrapping="Wrap" HorizontalAlignment="Center" />
+      <TextBlock Text="This product is built with the Avalonia cross-platform UI Framework. &#x0A;&#x0A;Avalonia is made possible by the generous support of it's contributors and community." TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
       <Button Classes="Hyperlink" CommandParameter="https://github.com/AvaloniaUI/Avalonia/"  />
       <Button Classes="Hyperlink" CommandParameter="https://avaloniaui.net/"  />
     </StackPanel> 
-    <StackPanel VerticalAlignment="Bottom">
+    <StackPanel VerticalAlignment="Bottom" Margin="10">
       <TextBlock Text="© 2019 AvaloniaUI OÜ (14839404)" TextWrapping="Wrap" HorizontalAlignment="Center" />
-      <TextBlock Text="" HorizontalAlignment="Right" Margin="5" FontSize="15" />
     </StackPanel>
   </Grid>
 </Window>
