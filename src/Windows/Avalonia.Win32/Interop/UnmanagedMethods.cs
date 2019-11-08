@@ -921,6 +921,9 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "SetWindowTextW")]
         public static extern bool SetWindowText(IntPtr hwnd, string lpString);
+        
+        [DllImport("uxtheme.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern HRESULT SetWindowTheme(IntPtr hwnd, string subAppName, string subIdList);
 
         public enum ClassLongIndex : int
         {
