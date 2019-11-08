@@ -49,6 +49,14 @@ namespace Avalonia
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
         /// <summary>
+        /// Creates an instance of the <see cref="Application"/> class.
+        /// </summary>
+        public Application()
+        {
+            Name = "Avalonia Application";
+        }
+
+        /// <summary>
         /// Gets the current instance of the <see cref="Application"/> class.
         /// </summary>
         /// <value>

@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Native.Interop;
 using Avalonia.Platform.Interop;
 using Avalonia.Threading;
+using Avalonia.Dialogs;
+using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Native
 {
@@ -211,6 +214,29 @@ namespace Avalonia.Native
             DoLayoutReset();
         }
 
+        private static NativeMenu CreateDefaultAppMenu()
+        {
+            var result = new NativeMenu();
+
+            var aboutItem = new NativeMenuItem
+            {
+                Header = "About Avalonia",
+            };
+
+            aboutItem.Clicked += async (sender, e) =>
+            {
+                var dialog = new AboutAvaloniaDialog();
+
+                var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+
+                await dialog.ShowDialog(mainWindow);
+            };
+
+            result.Add(aboutItem);
+
+            return result;
+        }
+
         private void OnItemPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
         {
             QueueReset();
@@ -240,6 +266,10 @@ namespace Avalonia.Native
                 if(_menu != null)
                 {
                     SetMenu(_menu);
+                }
+                else
+                {
+                    SetMenu(CreateDefaultAppMenu());
                 }
             }
             else
