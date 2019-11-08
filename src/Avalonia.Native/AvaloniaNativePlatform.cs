@@ -21,7 +21,6 @@ namespace Avalonia.Native
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
 
-        internal static readonly MouseDevice MouseDevice = new MouseDevice();
         internal static readonly KeyboardDevice KeyboardDevice = new KeyboardDevice();
 
         public Size DoubleClickSize => new Size(4, 4);

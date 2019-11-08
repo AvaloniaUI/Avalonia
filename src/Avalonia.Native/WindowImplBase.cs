@@ -96,7 +96,7 @@ namespace Avalonia.Native
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action Closed { get; set; }
-        public IMouseDevice MouseDevice => AvaloniaNativePlatform.MouseDevice;
+        public IMouseDevice MouseDevice => _mouse;
         public abstract IPopupImpl CreatePopup();
 
 
