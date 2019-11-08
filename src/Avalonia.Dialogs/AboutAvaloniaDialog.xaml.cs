@@ -40,7 +40,7 @@ namespace Avalonia.Dialogs
         {
             var escapedArgs = cmd.Replace("\"", "\\\"");
 
-            using var process = Process.Start(
+            using (var process = Process.Start(
                 new ProcessStartInfo
                 {
                     FileName = "/bin/sh",
@@ -50,10 +50,12 @@ namespace Avalonia.Dialogs
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden
                 }
-            );
-            if (waitForExit)
+            ))
             {
-                process.WaitForExit();
+                if (waitForExit)
+                {
+                    process.WaitForExit();
+                }
             }
         }
     }
