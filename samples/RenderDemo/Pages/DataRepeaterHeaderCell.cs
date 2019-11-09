@@ -35,7 +35,6 @@ namespace RenderDemo.Pages
 
         private void TemplateAppliedCore(object sender, TemplateAppliedEventArgs e)
         {
-
             _contentControl = e.NameScope.Find<ContentControl>("PART_ContentControl");
 
             _rightThumbResizer = e.NameScope.Find<Thumb>("PART_RightThumbResizer");
@@ -43,14 +42,16 @@ namespace RenderDemo.Pages
             var content = (Content as DataRepeaterHeaderDescriptor);
             content.HeaderWidth = _contentControl.Bounds.Width;
 
-
             if (_rightThumbResizer == null)
                 return;
+
             _rightThumbResizer.DragDelta += ResizerDragDelta;
             _rightThumbResizer.DragStarted += ResizerDragStarted;
+            _rightThumbResizer.DragCompleted += delegate { InvalidateMeasure(); };
+
             _rightThumbResizer.Cursor = new Cursor(StandardCursorType.SizeWestEast);
 
-            this.PointerPressed += HeaderCell_PointerPressed;
+            PointerPressed += HeaderCell_PointerPressed;
         }
 
         private void HeaderCell_PointerPressed(object sender, PointerPressedEventArgs e)
