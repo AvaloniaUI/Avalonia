@@ -25,11 +25,11 @@ namespace Avalonia.Skia
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             Text = text ?? string.Empty;
-            
+
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
 
-            var entry = TypefaceCache.Get(typeface.FontFamily, typeface.Weight, typeface.Style);
+            var glyphTypeface = (GlyphTypefaceImpl)typeface.GlyphTypeface.PlatformImpl;
 
             _paint = new SKPaint
             {
@@ -38,7 +38,7 @@ namespace Avalonia.Skia
                 IsAntialias = true,
                 LcdRenderText = true,
                 SubpixelText = true,
-                Typeface = entry.SKTypeface,
+                Typeface = glyphTypeface.Typeface,
                 TextSize = (float)fontSize,
                 TextAlign = textAlignment.ToSKTextAlign()
             };
@@ -80,9 +80,9 @@ namespace Avalonia.Skia
 
             float nextTop = 0;
 
-            foreach(var currentLine in _skiaLines)
+            foreach (var currentLine in _skiaLines)
             {
-                if(currentLine.Top <= y)
+                if (currentLine.Top <= y)
                 {
                     line = currentLine;
                     nextTop = currentLine.Top + currentLine.Height;
@@ -281,7 +281,8 @@ namespace Avalonia.Skia
                                 }
                                 else
                                 {
-                                    if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
+                                    if (!currentWrapper.Equals(foreground))
+                                        currentWrapper.Dispose();
                                     currentWrapper = foreground;
                                 }
 
@@ -301,7 +302,8 @@ namespace Avalonia.Skia
                 }
                 finally
                 {
-                    if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
+                    if (!currentWrapper.Equals(foreground))
+                        currentWrapper.Dispose();
                     currd?.Dispose();
                 }
             }
@@ -560,13 +562,13 @@ namespace Avalonia.Skia
             float widthConstraint = double.IsPositiveInfinity(_constraint.Width)
                                         ? -1
                                         : (float)_constraint.Width;
-            
-            while(curOff < length)
+
+            while (curOff < length)
             {
                 float lineWidth = -1;
                 int measured;
                 int trailingnumber = 0;
-                
+
                 float constraint = -1;
 
                 if (_wrapping == TextWrapping.Wrap)
@@ -674,8 +676,12 @@ namespace Avalonia.Skia
 
                 switch (align)
                 {
-                    case SKTextAlign.Center: x = originX + (float)(width - lineWidth) / 2; break;
-                    case SKTextAlign.Right: x = originX + (float)(width - lineWidth); break;
+                    case SKTextAlign.Center:
+                        x = originX + (float)(width - lineWidth) / 2;
+                        break;
+                    case SKTextAlign.Right:
+                        x = originX + (float)(width - lineWidth);
+                        break;
                 }
             }
 

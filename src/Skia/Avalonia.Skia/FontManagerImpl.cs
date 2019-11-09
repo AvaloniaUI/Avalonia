@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using SkiaSharp;
 
@@ -13,12 +14,10 @@ namespace Avalonia.Skia
     {
         private SKFontManager _skFontManager = SKFontManager.Default;
 
-        public FontManagerImpl()
+        public string GetDefaultFontFamilyName()
         {
-            DefaultFontFamilyName = SKTypeface.Default.FamilyName;
+            return SKTypeface.Default.FamilyName;
         }
-
-        public string DefaultFontFamilyName { get; }
 
         public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
         {
@@ -30,16 +29,9 @@ namespace Avalonia.Skia
             return _skFontManager.FontFamilies;
         }
 
-        public Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle)
-        {
-            return TypefaceCache.Get(fontFamily.Name, fontWeight, fontStyle).Typeface;
-        }
-
-        public Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default, FontStyle fontStyle = default,
+        public FontKey MatchCharacter(int codepoint, FontWeight fontWeight = default, FontStyle fontStyle = default,
             FontFamily fontFamily = null, CultureInfo culture = null)
         {
-            var fontFamilyName = FontFamily.Default.Name;
-
             if (culture == null)
             {
                 culture = CultureInfo.CurrentUICulture;
@@ -59,9 +51,7 @@ namespace Avalonia.Skia
                         continue;
                     }
 
-                    fontFamilyName = familyName;
-
-                    break;
+                    return new FontKey(new FontFamily(familyName), fontWeight, fontStyle);
                 }
             }
             else
@@ -72,11 +62,11 @@ namespace Avalonia.Skia
 
                 if (skTypeface != null)
                 {
-                    fontFamilyName = skTypeface.FamilyName;
+                    return new FontKey(new FontFamily(skTypeface.FamilyName), fontWeight, fontStyle);
                 }
             }
 
-            return GetTypeface(fontFamilyName, fontWeight, fontStyle);
+            return new FontKey(FontFamily.Default, fontWeight, fontStyle);
         }
     }
 }

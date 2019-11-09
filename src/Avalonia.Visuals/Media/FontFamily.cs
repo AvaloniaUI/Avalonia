@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Media.Fonts;
 
 namespace Avalonia.Media
@@ -12,7 +10,7 @@ namespace Avalonia.Media
     {
         static FontFamily()
         {
-            Default = new FontFamily(FontManager.Default.DefaultFontFamilyName);
+            Default = new FontFamily("Default") { IsDefault = true };
         }
 
         /// <inheritdoc />
@@ -58,15 +56,6 @@ namespace Avalonia.Media
         public static FontFamily Default { get; }
 
         /// <summary>
-        /// Represents all font families in the system. This can be an expensive call depending on platform implementation.
-        /// </summary>
-        /// <remarks>
-        /// Consider using the new <see cref="FontManager"/> instead.
-        /// </remarks>
-        public static IEnumerable<FontFamily> SystemFontFamilies =>
-            FontManager.Default.GetInstalledFontFamilyNames().Select(name => new FontFamily(name));
-
-        /// <summary>
         /// Gets the primary family name of the font family.
         /// </summary>
         /// <value>
@@ -89,6 +78,11 @@ namespace Avalonia.Media
         /// The family familyNames.
         /// </value>
         public FontFamilyKey Key { get; }
+
+        /// <summary>
+        /// Returns <c>True</c> if this instance is the system's default.
+        /// </summary>
+        internal bool IsDefault { get; private set; }
 
         /// <summary>
         /// Implicit conversion of string to FontFamily
@@ -202,6 +196,21 @@ namespace Avalonia.Media
 
                 return hash;
             }
+        }
+
+        public static bool operator !=(FontFamily a, FontFamily b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator ==(FontFamily a, FontFamily b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+
+            return !(a is null) && a.Equals(b);
         }
 
         public override bool Equals(object obj)

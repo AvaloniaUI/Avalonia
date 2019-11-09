@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Controls.Platform.Surfaces;
@@ -18,9 +17,6 @@ namespace Avalonia.Skia
     /// </summary>
     internal class PlatformRenderInterface : IPlatformRenderInterface
     {
-        private readonly ConcurrentDictionary<Typeface, GlyphTypefaceImpl> _glyphTypefaceCache =
-            new ConcurrentDictionary<Typeface, GlyphTypefaceImpl>();
-
         private readonly ICustomSkiaGpu _customSkiaGpu;
 
         private GRContext GrContext { get; }
@@ -157,7 +153,7 @@ namespace Avalonia.Skia
 
         public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
         {
-            return _glyphTypefaceCache.GetOrAdd(typeface, new GlyphTypefaceImpl(typeface));
+            return new GlyphTypefaceImpl(typeface);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Avalonia.Skia
 
         public GlyphTypefaceImpl(Typeface typeface)
         {
-            Typeface = TypefaceCache.Get(typeface.FontFamily, typeface.Weight, typeface.Style).SKTypeface;
+            Typeface = CreateTypeface(typeface);
 
             Face = new Face(GetTable)
             {
@@ -93,6 +93,31 @@ namespace Avalonia.Skia
 
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public int StrikethroughThickness { get; }
+
+        private static SKTypeface CreateTypeface(Typeface typeface)
+        {
+            if (typeface.FontFamily.Key == null)
+            {
+                foreach (var fontFamilyFamilyName in typeface.FontFamily.FamilyNames)
+                {
+                    var skTypeface = SKTypeface.FromFamilyName(fontFamilyFamilyName, (SKFontStyleWeight)typeface.Weight,
+                        SKFontStyleWidth.Normal, (SKFontStyleSlant)typeface.Style);
+
+                    if (skTypeface != SKTypeface.Default)
+                    {
+                        return skTypeface;
+                    }
+                }
+
+                return SKTypeface.FromFamilyName(FontManager.Current.DefaultFontFamilyName,
+                    (SKFontStyleWeight)typeface.Weight,
+                    SKFontStyleWidth.Normal, (SKFontStyleSlant)typeface.Style);
+            }
+
+            var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
+
+            return fontCollection.Get(typeface.FontFamily, typeface.Weight, typeface.Style);
+        }
 
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public ushort GetGlyph(uint codepoint)

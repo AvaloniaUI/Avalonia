@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 
 namespace Avalonia.Platform
 {
@@ -12,24 +13,13 @@ namespace Avalonia.Platform
         /// <summary>
         ///     Gets the system's default font family's name.
         /// </summary>
-        string DefaultFontFamilyName { get; }
+        string GetDefaultFontFamilyName();
 
         /// <summary>
         ///     Get all installed fonts in the system.
         /// <param name="checkForUpdates">If <c>true</c> the font collection is updated.</param>
         /// </summary>
         IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false);
-
-        /// <summary>
-        ///     Get a typeface from specified parameters.
-        /// </summary>
-        /// <param name="fontFamily">The font family.</param>
-        /// <param name="fontWeight">The font weight.</param>
-        /// <param name="fontStyle">The font style.</param>
-        /// <returns>
-        ///     The typeface.
-        /// </returns>
-        Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle);
 
         /// <summary>
         ///     Tries to match a specified character to a typeface that supports specified font properties.
@@ -42,7 +32,7 @@ namespace Avalonia.Platform
         /// <returns>
         ///     The typeface.
         /// </returns>
-        Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default, FontStyle fontStyle = default,
+        FontKey MatchCharacter(int codepoint, FontWeight fontWeight = default, FontStyle fontStyle = default,
             FontFamily fontFamily = null, CultureInfo culture = null);
     }
 }

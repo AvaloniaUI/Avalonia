@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using SharpDX.DirectWrite;
 using FontFamily = Avalonia.Media.FontFamily;
@@ -14,13 +15,11 @@ namespace Avalonia.Direct2D1.Media
 {
     internal class FontManagerImpl : IFontManagerImpl
     {
-        public FontManagerImpl()
+        public string GetDefaultFontFamilyName()
         {
             //ToDo: Implement a real lookup of the system's default font.
-            DefaultFontFamilyName = "segoe ui";
+            return "segoe ui";
         }
-
-        public string DefaultFontFamilyName { get; }
 
         public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
         {
@@ -36,13 +35,7 @@ namespace Avalonia.Direct2D1.Media
             return fontFamilies;
         }
 
-        public Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle)
-        {
-            //ToDo: Implement caching.
-            return new Typeface(fontFamily, fontWeight, fontStyle);
-        }
-
-        public Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default, FontStyle fontStyle = default,
+        public FontKey MatchCharacter(int codepoint, FontWeight fontWeight = default, FontStyle fontStyle = default,
             FontFamily fontFamily = null, CultureInfo culture = null)
         {
             var fontFamilyName = FontFamily.Default.Name;
@@ -65,7 +58,7 @@ namespace Avalonia.Direct2D1.Media
                 break;
             }
 
-            return GetTypeface(new FontFamily(fontFamilyName), fontWeight, fontStyle);
+            return new FontKey(new FontFamily(fontFamilyName), fontWeight, fontStyle);
         }
     }
 }
