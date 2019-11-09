@@ -12,6 +12,7 @@ using Xunit;
 using System.Collections.ObjectModel;
 using Avalonia.UnitTests;
 using Avalonia.Input;
+using System.Collections.Generic;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -102,6 +103,28 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(child.Parent, target);
             Assert.Equal(child.GetLogicalParent(), target);
             Assert.Equal(new[] { child }, target.GetLogicalChildren());
+        }
+
+        [Fact]
+        public void Added_Container_Should_Have_LogicalParent_Set_To_ItemsControl()
+        {
+            var item = new Border();
+            var items = new ObservableCollection<Border>();
+
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = items,
+            };
+
+            var root = new TestRoot(true, target);
+
+            root.Measure(new Size(100, 100));
+            root.Arrange(new Rect(0, 0, 100, 100));
+
+            items.Add(item);
+
+            Assert.Equal(target, item.Parent);
         }
 
         [Fact]
@@ -520,6 +543,36 @@ namespace Avalonia.Controls.UnitTests
                     target.Presenter.Panel.Children[2],
                     FocusManager.Instance.Current);
             }
+        }
+
+        [Fact]
+        public void Presenter_Items_Should_Be_In_Sync()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = new object[]
+                {
+                    new Button(),
+                    new Button(),
+                },
+            };
+
+            var root = new TestRoot { Child = target };
+            var otherPanel = new StackPanel();
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            
+            target.ItemContainerGenerator.Materialized += (s, e) =>
+            {
+                Assert.IsType<Canvas>(e.Containers[0].Item);
+            };
+
+            target.Items = new[]
+            {
+                new Canvas()
+            };
         }
 
         private class Item

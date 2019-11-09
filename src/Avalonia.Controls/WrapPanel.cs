@@ -42,7 +42,7 @@ namespace Avalonia.Controls
         /// </summary>
         static WrapPanel()
         {
-            AffectsMeasure<WrapPanel>(OrientationProperty);
+            AffectsMeasure<WrapPanel>(OrientationProperty, ItemWidthProperty, ItemHeightProperty);
         }
 
         /// <summary>

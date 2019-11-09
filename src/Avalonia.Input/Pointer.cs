@@ -37,7 +37,7 @@ namespace Avalonia.Input
         {
             if (Captured != null)
                 Captured.DetachedFromVisualTree -= OnCaptureDetached;
-            var oldCapture = control;
+            var oldCapture = Captured;
             Captured = control;
             PlatformCapture(control);
             if (oldCapture != null)
