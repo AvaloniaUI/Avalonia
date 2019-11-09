@@ -968,26 +968,33 @@ namespace Avalonia.Win32
         {
             var oldDecorated = _decorated;
 
+            var oldThickness = BorderThickness;
+
             change();
 
             var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
+
+            const WindowStyles controlledFlags = WindowStyles.WS_OVERLAPPEDWINDOW;
+
+            style = style | controlledFlags ^ controlledFlags;
 
             style |= WindowStyles.WS_OVERLAPPEDWINDOW;
 
             if (!_decorated)
             {
-                style &= ~WindowStyles.WS_SYSMENU;
+                style ^= (WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU);
             }
 
             if (!_resizable)
             {
-                style &= ~WindowStyles.WS_SIZEFRAME;
+                style ^= (WindowStyles.WS_SIZEFRAME);
             }
 
             GetClientRect(_hwnd, out var oldClientRect);
             var oldClientRectOrigin = new UnmanagedMethods.POINT();
             ClientToScreen(_hwnd, ref oldClientRectOrigin);
             oldClientRect.Offset(oldClientRectOrigin);
+            
             
             SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
 
@@ -997,16 +1004,8 @@ namespace Avalonia.Win32
             {
                 var newRect = oldClientRect;
                 if (_decorated)
-                {
-                    SetWindowTheme(_hwnd, null, null);
-                    AdjustWindowRectEx(
-                        ref newRect, (uint)style, false, GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE));
-                }
-                else
-                {
-                    SetWindowTheme(_hwnd, "", "");
-                }
-                    
+                    AdjustWindowRectEx(ref newRect, (uint)style, false,
+                        GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE));
                 SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
                     SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
                 frameUpdated = true;
