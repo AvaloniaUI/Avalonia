@@ -677,13 +677,13 @@ namespace Avalonia.Controls
                 }
             }
 
-            e.Device.Capture(_presenter);
+            e.Pointer.Capture(_presenter);
             e.Handled = true;
         }
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (_presenter != null && e.Device.Captured == _presenter)
+            if (_presenter != null && e.Pointer.Captured == _presenter)
             {
                 var point = e.GetPosition(_presenter);
 
@@ -694,9 +694,9 @@ namespace Avalonia.Controls
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
-            if (_presenter != null && e.Device.Captured == _presenter)
+            if (_presenter != null && e.Pointer.Captured == _presenter)
             {
-                e.Device.Capture(null);
+                e.Pointer.Capture(null);
             }
         }
 

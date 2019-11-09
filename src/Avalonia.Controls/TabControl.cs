@@ -4,7 +4,6 @@
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
-using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -70,6 +69,7 @@ namespace Avalonia.Controls
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
+            SelectedIndexProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent(e));
         }
 
         /// <summary>
@@ -143,6 +143,61 @@ namespace Avalonia.Controls
         bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
         {
             return RegisterContentPresenter(presenter);
+        }
+
+        protected override void OnContainersMaterialized(ItemContainerEventArgs e)
+        {
+            base.OnContainersMaterialized(e);
+
+            if (SelectedContent != null || SelectedIndex == -1)
+            {
+                return;
+            }
+
+            var container = (TabItem)ItemContainerGenerator.ContainerFromIndex(SelectedIndex);
+
+            if (container == null)
+            {
+                return;
+            }
+
+            UpdateSelectedContent(container);
+        }
+
+        private void UpdateSelectedContent(AvaloniaPropertyChangedEventArgs e)
+        {
+            var index = (int)e.NewValue;
+
+            if (index == -1)
+            {
+                SelectedContentTemplate = null;
+
+                SelectedContent = null;
+
+                return;
+            }
+
+            var container = (TabItem)ItemContainerGenerator.ContainerFromIndex(index);
+
+            if (container == null)
+            {
+                return;
+            }
+
+            UpdateSelectedContent(container);
+        }
+
+        private void UpdateSelectedContent(IContentControl item)
+        {
+            if (SelectedContentTemplate != item.ContentTemplate)
+            {
+                SelectedContentTemplate = item.ContentTemplate;
+            }
+
+            if (SelectedContent != item.Content)
+            {
+                SelectedContent = item.Content;
+            }
         }
 
         /// <summary>
