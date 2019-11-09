@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -29,7 +31,6 @@ namespace RenderDemo.Pages
             }
 
             return base.MeasureOverride(availableSize);
-
         }
 
         private void TemplateAppliedCore(object sender, TemplateAppliedEventArgs e)
@@ -43,17 +44,43 @@ namespace RenderDemo.Pages
             content.HeaderWidth = _contentControl.Bounds.Width;
 
 
-            if (_rightThumbResizer == null) return;
+            if (_rightThumbResizer == null)
+                return;
             _rightThumbResizer.DragDelta += ResizerDragDelta;
             _rightThumbResizer.DragStarted += ResizerDragStarted;
             _rightThumbResizer.Cursor = new Cursor(StandardCursorType.SizeWestEast);
 
+            this.PointerPressed += HeaderCell_PointerPressed;
+        }
 
+        private void HeaderCell_PointerPressed(object sender, PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+
+            if (e.MouseButton == MouseButton.Left)
+            {
+                e.Handled = true;
+
+                HeaderSort();
+            }
+        }
+
+        private void HeaderSort()
+        {
+            var desc = (Content as DataRepeaterHeaderDescriptor);
+            var parent = (Parent as DataRepeaterHeader);
+
+            if (_contentControl != null || desc != null || parent != null)
+            { 
+                var dx = parent.HeaderDescriptors;
+                dx.SortDescriptor(desc);
+            }
         }
 
         private void ResizerDragStarted(object sender, VectorEventArgs e)
         {
-            if (!Double.IsNaN(_contentControl.Width)) return;
+            if (!double.IsNaN(_contentControl.Width))
+                return;
 
             _contentControl.Width = _contentControl.Bounds.Width;
         }
@@ -62,7 +89,8 @@ namespace RenderDemo.Pages
         {
             var newW = _contentControl.Width + e.Vector.X;
 
-            if (newW <= 0) return;
+            if (newW <= 0)
+                return;
 
             _contentControl.Width = newW;
         }

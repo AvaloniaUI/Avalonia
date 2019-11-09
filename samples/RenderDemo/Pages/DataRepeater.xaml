@@ -9,6 +9,7 @@
     </Setter>
   </Style>
   <Style Selector="local|DataRepeaterHeaderCell">
+    <Setter Property="Background" Value="Transparent" />
     <Setter Property="Template">
       <ControlTemplate>
         <Grid ColumnDefinitions="Auto,11">
@@ -36,10 +37,19 @@
     </Setter>
   </Style>
   <Style Selector="local|DataRepeaterHeaderCell.LastColumn">
+    <Setter Property="Background" Value="Transparent" />
     <Setter Property="Template">
       <ControlTemplate>
-        <ContentControl Name="PART_ContentControl"
-                        Content="{TemplateBinding Content}" />
+        <Grid ColumnDefinitions="*,11">
+          <ContentControl Name="PART_ContentControl"
+                          Grid.Column="0"
+                          Grid.ColumnSpan="1"
+                          Content="{TemplateBinding Content}" />
+          <Thumb Grid.Column="1"
+                 Name="PART_RightThumbResizer"
+                 HorizontalAlignment="Stretch">
+          </Thumb>
+        </Grid>
       </ControlTemplate>
     </Setter>
   </Style>

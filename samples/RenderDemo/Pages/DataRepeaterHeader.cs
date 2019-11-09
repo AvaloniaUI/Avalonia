@@ -11,6 +11,9 @@ using System.Reactive.Linq;
 
 namespace RenderDemo.Pages
 {
+
+
+
     public class DataRepeaterHeader : DataRepeaterDockPanel
     {
         internal static readonly DirectProperty<DataRepeaterHeader, DataRepeaterHeaderDescriptors> HeaderDescriptorsProperty =
@@ -30,7 +33,7 @@ namespace RenderDemo.Pages
             }
         }
 
-        CompositeDisposable _disposables;
+        private CompositeDisposable _disposables;
 
         public DataRepeaterHeader()
         {
@@ -53,7 +56,7 @@ namespace RenderDemo.Pages
                 var headerDesc = obj[i];
 
                 var boundCellContent = new DataRepeaterHeaderCell
-                {
+                { 
                     Content = headerDesc
                 };
 

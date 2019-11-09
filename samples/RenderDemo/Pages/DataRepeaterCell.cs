@@ -11,24 +11,24 @@ namespace RenderDemo.Pages
 {
     public class DataRepeaterCell : ContentControl
     {
-        internal string TargetProperty;
+        internal string _targetProperty;
         internal DataRepeaterCellContent _cellContent;
 
         public DataRepeaterCell()
         {
-            this.TemplateApplied += TemplateAppliedCore;
+            TemplateApplied += TemplateAppliedCore;
         }
 
         private void TemplateAppliedCore(object sender, TemplateAppliedEventArgs e)
         {
-            this._cellContent = e.NameScope.Find<DataRepeaterCellContent>("PART_CellContent");
+            _cellContent = e.NameScope.Find<DataRepeaterCellContent>("PART_CellContent");
 
-            _cellContent.Classes.Add(TargetProperty);
+            _cellContent.Classes.Add(_targetProperty);
 
-            var newBind = new Binding(TargetProperty, BindingMode.TwoWay);
+            var newBind = new Binding(_targetProperty, BindingMode.TwoWay);
 
             _cellContent.Bind(DataRepeaterCellContent.CellValueProperty, newBind);
-            _cellContent.Classes.Add(TargetProperty);
+            _cellContent.Classes.Add(_targetProperty);
         }
     }
 }

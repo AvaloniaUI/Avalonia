@@ -100,7 +100,7 @@ namespace RenderDemo.Pages
 
                 var cell = new DataRepeaterCell
                 {
-                    TargetProperty = headerDesc.PropertyName
+                    _targetProperty = headerDesc.PropertyName
                 };
 
                 cell.Classes.Add(headerDesc.PropertyName);

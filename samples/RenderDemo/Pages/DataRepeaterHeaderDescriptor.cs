@@ -9,6 +9,13 @@ namespace RenderDemo.Pages
 {
     public class DataRepeaterHeaderDescriptor : ReactiveObject
     {
+        internal enum SortState
+        {
+            None,
+            Ascending,
+            Descending
+        }
+
         private string _headerText;
         public string HeaderText
         {
@@ -36,6 +43,8 @@ namespace RenderDemo.Pages
             get;
             internal set;
         }
+
+        internal SortState InternalSortState { get; set; }
 
         internal Func<object, object> GetterDelegate { get; set; }
     }
