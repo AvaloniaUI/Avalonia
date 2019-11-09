@@ -165,9 +165,9 @@ namespace Avalonia.Controls.Shapes
             {
                 property.Changed.Subscribe(e =>
                 {
-                    if (e.Sender is TShape)
+                    if (e.Sender is TShape shape)
                     {
-                        AffectsGeometryInvalidate(e);
+                        AffectsGeometryInvalidate(shape, e);
                     }
                 });
             }
@@ -318,13 +318,8 @@ namespace Avalonia.Controls.Shapes
             return (size, transform);
         }
 
-        private static void AffectsGeometryInvalidate(AvaloniaPropertyChangedEventArgs e)
+        private static void AffectsGeometryInvalidate(Shape control, AvaloniaPropertyChangedEventArgs e)
         {
-            if (!(e.Sender is Shape control))
-            {
-                return;
-            }
-
             // If the geometry is invalidated when Bounds changes, only invalidate when the Size
             // portion changes.
             if (e.Property == BoundsProperty)
