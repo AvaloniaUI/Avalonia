@@ -126,6 +126,24 @@ namespace Avalonia.Win32
             {
                 UnmanagedMethods.RECT rect;
                 UnmanagedMethods.GetClientRect(_hwnd, out rect);
+
+                if (!_decorated)
+                {
+                    WINDOWPLACEMENT placement = default;
+                    GetWindowPlacement(_hwnd, ref placement);
+
+                    // For historical reasons, Windows will position a maximized decorated window slightly beyond
+                    // the edges of the screen. We adjust the client size by this amount to prevent cutting off
+                    // window content.
+                    if (placement.ShowCmd == ShowWindowCommand.ShowMaximized)
+                    {
+                        POINT point = default;
+                        point.X = point.Y = 0;
+                        ClientToScreen(_hwnd, ref point);
+                        return new Size(rect.right + point.X * 2, rect.bottom + point.Y * 2) / Scaling;
+                    }
+                }
+
                 return new Size(rect.right, rect.bottom) / Scaling;
             }
         }
@@ -699,6 +717,7 @@ namespace Avalonia.Win32
                     {
                         // Do nothing here, just block until the pending frame render is completed on the render thread
                     }
+
                     var size = (UnmanagedMethods.SizeCommand)wParam;
 
                     if (Resized != null &&
@@ -725,7 +744,6 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_GETMINMAXINFO:
-
                     MINMAXINFO mmi = Marshal.PtrToStructure<UnmanagedMethods.MINMAXINFO>(lParam);
 
                     if (_minSize.Width > 0)
@@ -906,8 +924,6 @@ namespace Avalonia.Win32
 
                 if (GetMonitorInfo(monitor, ref monitorInfo))
                 {
-                    RECT rcMonitorArea = monitorInfo.rcMonitor;
-
                     var x = monitorInfo.rcWork.left;
                     var y = monitorInfo.rcWork.top;
                     var cx = Math.Abs(monitorInfo.rcWork.right - x);
@@ -968,33 +984,26 @@ namespace Avalonia.Win32
         {
             var oldDecorated = _decorated;
 
-            var oldThickness = BorderThickness;
-
             change();
 
             var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
-
-            const WindowStyles controlledFlags = WindowStyles.WS_OVERLAPPEDWINDOW;
-
-            style = style | controlledFlags ^ controlledFlags;
 
             style |= WindowStyles.WS_OVERLAPPEDWINDOW;
 
             if (!_decorated)
             {
-                style ^= (WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU);
+                style &= ~WindowStyles.WS_SYSMENU;
             }
 
             if (!_resizable)
             {
-                style ^= (WindowStyles.WS_SIZEFRAME);
+                style &= ~WindowStyles.WS_SIZEFRAME;
             }
 
             GetClientRect(_hwnd, out var oldClientRect);
             var oldClientRectOrigin = new UnmanagedMethods.POINT();
             ClientToScreen(_hwnd, ref oldClientRectOrigin);
             oldClientRect.Offset(oldClientRectOrigin);
-            
             
             SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
 
@@ -1004,8 +1013,16 @@ namespace Avalonia.Win32
             {
                 var newRect = oldClientRect;
                 if (_decorated)
-                    AdjustWindowRectEx(ref newRect, (uint)style, false,
-                        GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE));
+                {
+                    SetWindowTheme(_hwnd, null, null);
+                    AdjustWindowRectEx(
+                        ref newRect, (uint)style, false, GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE));
+                }
+                else
+                {
+                    SetWindowTheme(_hwnd, "", "");
+                }
+
                 SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
                     SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
                 frameUpdated = true;
