@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Avalonia.Media.Fonts
 {
-    public class FamilyNameCollection : IEnumerable<string>
+    public sealed class FamilyNameCollection : IReadOnlyList<string>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FamilyNameCollection"/> class.
@@ -130,5 +130,9 @@ namespace Avalonia.Media.Fonts
 
             return other.ToString().Equals(ToString());
         }
+
+        public int Count => Names.Count;
+
+        public string this[int index] => Names[index];
     }
 }
