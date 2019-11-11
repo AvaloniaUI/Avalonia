@@ -2,8 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Logging;
+using Avalonia.Traversal;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Layout
@@ -694,12 +697,9 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc/>
-        protected override sealed void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
+        protected sealed override void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            foreach (ILayoutable i in this.GetSelfAndVisualDescendants())
-            {
-                i.InvalidateMeasure();
-            }
+            VisualTreeOperations.VisitDescendants<InvalidateMeasureVisitor>(this, TreeVisitMode.IncludeSelf);
 
             base.OnVisualParentChanged(oldParent, newParent);
         }
@@ -752,6 +752,19 @@ namespace Avalonia.Layout
             }
 
             return result;
+        }
+
+        public struct InvalidateMeasureVisitor : ITreeVisitor<IVisual>
+        {
+            public TreeVisit Visit(IVisual target)
+            {
+                if (target is ILayoutable layoutable)
+                {
+                    layoutable.InvalidateMeasure();
+                }
+
+                return TreeVisit.Continue;
+            }
         }
     }
 }

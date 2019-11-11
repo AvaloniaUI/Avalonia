@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Interactivity;
+using Avalonia.Traversal;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -184,9 +185,15 @@ namespace Avalonia.Input
 
                 if (element == null || !CanFocus(element))
                 {
-                    element = element.GetSelfAndVisualAncestors()
-                        .OfType<IInputElement>()
-                        .FirstOrDefault(CanFocus);
+                    element = (IInputElement)VisualTreeOperations.FindAncestor(element, visual =>
+                    {
+                        if (visual is IInputElement inputElement && CanFocus(inputElement))
+                        {
+                            return TreeVisit.Stop;
+                        }
+
+                        return TreeVisit.Continue;
+                    }, TreeVisitMode.IncludeSelf);
                 }
 
                 if (element != null)

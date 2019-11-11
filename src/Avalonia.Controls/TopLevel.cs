@@ -14,6 +14,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
+using Avalonia.Traversal;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using JetBrains.Annotations;
@@ -296,10 +297,7 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         protected virtual void HandleScalingChanged(double scaling)
         {
-            foreach (ILayoutable control in this.GetSelfAndVisualDescendants())
-            {
-                control.InvalidateMeasure();
-            }
+            VisualTreeOperations.VisitDescendants<InvalidateMeasureVisitor>(this, TreeVisitMode.IncludeSelf);
         }
 
         /// <inheritdoc/>

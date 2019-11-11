@@ -15,6 +15,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.Traversal;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -324,10 +325,15 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                var current = focus.Current
-                    .GetSelfAndVisualAncestors()
-                    .OfType<IInputElement>()
-                    .FirstOrDefault(x => x.VisualParent == container);
+                var current = (IInputElement)VisualTreeOperations.FindAncestor(focus.Current, (target, parent) =>
+                {
+                    if (target is IInputElement inputElement && inputElement.VisualParent == parent)
+                    {
+                        return TreeVisit.Stop;
+                    }
+
+                    return TreeVisit.Continue;
+                }, container, TreeVisitMode.IncludeSelf);
 
                 if (current != null)
                 {

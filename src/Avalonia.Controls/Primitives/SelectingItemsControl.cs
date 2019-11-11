@@ -14,6 +14,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.Styling;
+using Avalonia.Traversal;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -269,11 +270,17 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The container or null if the event did not originate in a container.</returns>
         protected IControl GetContainerFromEventSource(IInteractive eventSource)
         {
-            var item = ((IVisual)eventSource).GetSelfAndVisualAncestors()
-                .OfType<IControl>()
-                .FirstOrDefault(x => x.LogicalParent == this && ItemContainerGenerator?.IndexFromContainer(x) != -1);
+            return (IControl)VisualTreeOperations.FindAncestor<(IVisual parent, IItemContainerGenerator containerGenerator)>((IVisual)eventSource,
+                (target, state) =>
+                {
+                    if (target is IControl control && control.LogicalParent == state.parent
+                                                   && state.containerGenerator?.IndexFromContainer(control) != -1)
+                    {
+                        return TreeVisit.Stop;
+                    }
 
-            return item;
+                    return TreeVisit.Continue;
+                }, (this, ItemContainerGenerator), TreeVisitMode.IncludeSelf);
         }
 
         /// <inheritdoc/>

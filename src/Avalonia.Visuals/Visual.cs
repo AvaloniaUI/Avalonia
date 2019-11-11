@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Logging;
@@ -12,6 +11,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Rendering;
+using Avalonia.Traversal;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -171,10 +171,7 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether this control and all its parents are visible.
         /// </summary>
-        public bool IsEffectivelyVisible
-        {
-            get { return this.GetSelfAndVisualAncestors().All(x => x.IsVisible); }
-        }
+        public bool IsEffectivelyVisible => VisualTreeOperations.VisitDescendants<CheckVisibilityVisitor, bool>(this, new CheckVisibilityVisitor(true));
 
         /// <summary>
         /// Gets a value indicating whether this control is visible.
@@ -552,7 +549,7 @@ namespace Avalonia
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
             {
-                var root = this.GetVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
+                var root = VisualTreeOperations.FindAncestorOfType<IRenderRoot>(this);
                 var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
                 OnAttachedToVisualTreeCore(e);
             }
@@ -600,6 +597,25 @@ namespace Avalonia
 
                     break;
             }
+        }
+
+        private struct CheckVisibilityVisitor : ITreeVisitorWithResult<IVisual, bool>
+        {
+            public CheckVisibilityVisitor(bool result) => Result = result;
+
+            public TreeVisit Visit(IVisual target)
+            {
+                if (!target.IsVisible)
+                {
+                    Result = false;
+
+                    return TreeVisit.Stop;
+                }
+
+                return TreeVisit.Continue;
+            }
+
+            public bool Result { get; private set; }
         }
     }
 }
