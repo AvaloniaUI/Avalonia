@@ -706,6 +706,18 @@ namespace Avalonia.Win32
 
                     var size = (UnmanagedMethods.SizeCommand)wParam;
 
+                    var windowState = size == SizeCommand.Maximized ? WindowState.Maximized
+                        : (size == SizeCommand.Minimized ? WindowState.Minimized : WindowState.Normal);
+
+                    // If a custom ClassifyWindowRegion method is provided, the window can potentially be resized while it
+                    // is still maximized. In this case, the window doesn't immediately lose its maximized state. When this
+                    // happens, let's just restore the window from the maximized state.
+                    if (windowState == WindowState.Maximized && _lastWindowState == WindowState.Maximized)
+                    {
+                        UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Restore);
+                        break;
+                    }
+
                     if (Resized != null &&
                         (size == UnmanagedMethods.SizeCommand.Restored ||
                          size == UnmanagedMethods.SizeCommand.Maximized))
@@ -713,9 +725,6 @@ namespace Avalonia.Win32
                         var clientSize = new Size(ToInt32(lParam) & 0xffff, ToInt32(lParam) >> 16);
                         Resized(clientSize / Scaling);
                     }
-
-                    var windowState = size == SizeCommand.Maximized ? WindowState.Maximized
-                        : (size == SizeCommand.Minimized ? WindowState.Minimized : WindowState.Normal);
 
                     if (windowState != _lastWindowState)
                     {
