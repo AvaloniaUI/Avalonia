@@ -234,6 +234,50 @@ namespace Avalonia.Native
                     break;
 
                 default:
+                    var classifyWindowRegion = ClassifyWindowRegion;
+
+                    if (type == AvnRawMouseEventType.LeftButtonDown && classifyWindowRegion != null)
+                    {
+                        switch (classifyWindowRegion(point.ToAvaloniaPoint()))
+                        {
+                            case WindowRegion.TitleBar:
+                                _native.BeginMoveDrag();
+                                return;
+
+                            case WindowRegion.TopLeftCorner:
+                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeNorthWest);
+                                return;
+
+                            case WindowRegion.TopBorder:
+                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeNorth);
+                                return;
+
+                            case WindowRegion.TopRightCorner:
+                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeNorthEast);
+                                return;
+
+                            case WindowRegion.LeftBorder:
+                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeWest);
+                                return;
+
+                            case WindowRegion.RightBorder:
+                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeEast);
+                                return;
+
+                            case WindowRegion.BottomLeftCorner:
+                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeSouthWest);
+                                return;
+
+                            case WindowRegion.BottomBorder:
+                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeSouth);
+                                return;
+
+                            case WindowRegion.BottomRightCorner:
+                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeSouthEast);
+                                return;
+                        }
+                    }
+
                     Input?.Invoke(new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers));
                     break;
             }
@@ -302,11 +346,6 @@ namespace Avalonia.Native
             _native.Hide();
         }
 
-        public void BeginMoveDrag(PointerPressedEventArgs e)
-        {
-            _native.BeginMoveDrag();
-        }
-
         public Size MaxClientSize => Screen.AllScreens.Select(s => s.Bounds.Size.ToSize(s.PixelDensity))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
@@ -327,6 +366,8 @@ namespace Avalonia.Native
             _native.Cursor = newCursor.Cursor;
         }
 
+        public Func<Point, WindowRegion> ClassifyWindowRegion { get; set; }
+
         public Action<PixelPoint> PositionChanged { get; set; }
 
         public Action<RawInputEventArgs> Input { get; set; }
@@ -342,11 +383,6 @@ namespace Avalonia.Native
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
             _native.SetMinMaxSize(minSize.ToAvnSize(), maxSize.ToAvnSize());
-        }
-
-        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
-        {
-
         }
 
         public IPlatformHandle Handle => new PlatformHandle(IntPtr.Zero, "NOT SUPPORTED");
