@@ -7,25 +7,27 @@ namespace ControlCatalog.ViewModels
 {
     public class ItemsRepeaterPageViewModel : ReactiveObject
     {
-        private int newItemIndex = 1;
+        private int _newItemIndex = 1;
+        private int _newGenerationIndex = 0;
+        private ObservableCollection<Item> _items;
 
         public ItemsRepeaterPageViewModel()
         {
-            Items = new ObservableCollection<Item>(
-                Enumerable.Range(1, 100000).Select(i => new Item
-                {
-                    Text = $"Item {i.ToString()}",
-                }));
+            Items = CreateItems();
         }
 
-        public ObservableCollection<Item> Items { get; }
+        public ObservableCollection<Item> Items
+        {
+            get => _items;
+            set => this.RaiseAndSetIfChanged(ref _items, value);
+        }
 
         public Item SelectedItem { get; set; }
 
         public void AddItem()
         {
             var index = SelectedItem != null ? Items.IndexOf(SelectedItem) : -1;
-            Items.Insert(index + 1, new Item { Text = $"New Item {newItemIndex++}" });
+            Items.Insert(index + 1, new Item { Text = $"New Item {_newItemIndex++}" });
         }
 
         public void RandomizeHeights()
@@ -36,6 +38,24 @@ namespace ControlCatalog.ViewModels
             {
                 i.Height = random.Next(240) + 10;
             }
+        }
+
+        public void ResetItems()
+        {
+            Items = CreateItems();
+        }
+
+        private ObservableCollection<Item> CreateItems()
+        {
+            var suffix = _newGenerationIndex == 0 ? string.Empty : $"[{_newGenerationIndex.ToString()}]";
+
+            _newGenerationIndex++;
+
+            return new ObservableCollection<Item>(
+                Enumerable.Range(1, 100000).Select(i => new Item
+                {
+                    Text = $"Item {i.ToString()} {suffix}"
+                }));
         }
 
         public class Item : ReactiveObject

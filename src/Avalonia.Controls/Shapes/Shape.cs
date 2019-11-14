@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reflection;
 using Avalonia.Collections;
 using Avalonia.Media;
 
@@ -166,12 +165,9 @@ namespace Avalonia.Controls.Shapes
             {
                 property.Changed.Subscribe(e =>
                 {
-                    var senderType = e.Sender.GetType().GetTypeInfo();
-                    var affectedType = typeof(TShape).GetTypeInfo();
-
-                    if (affectedType.IsAssignableFrom(senderType))
+                    if (e.Sender is TShape shape)
                     {
-                        AffectsGeometryInvalidate(e);
+                        AffectsGeometryInvalidate(shape, e);
                     }
                 });
             }
@@ -322,13 +318,8 @@ namespace Avalonia.Controls.Shapes
             return (size, transform);
         }
 
-        private static void AffectsGeometryInvalidate(AvaloniaPropertyChangedEventArgs e)
+        private static void AffectsGeometryInvalidate(Shape control, AvaloniaPropertyChangedEventArgs e)
         {
-            if (!(e.Sender is Shape control))
-            {
-                return;
-            }
-
             // If the geometry is invalidated when Bounds changes, only invalidate when the Size
             // portion changes.
             if (e.Property == BoundsProperty)

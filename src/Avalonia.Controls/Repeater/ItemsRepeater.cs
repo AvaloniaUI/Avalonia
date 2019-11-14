@@ -565,7 +565,17 @@ namespace Avalonia.Controls
                 if (Layout is VirtualizingLayout virtualLayout)
                 {
                     var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
-                    virtualLayout.OnItemsChanged(GetLayoutContext(), newValue, args);
+
+                    _processingItemsSourceChange = args;
+
+                    try
+                    {
+                        virtualLayout.OnItemsChanged(GetLayoutContext(), newValue, args);
+                    }
+                    finally
+                    {
+                        _processingItemsSourceChange = null;
+                    }
                 }
                 else if (Layout is NonVirtualizingLayout nonVirtualLayout)
                 {
