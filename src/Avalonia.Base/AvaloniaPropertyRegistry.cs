@@ -448,11 +448,6 @@ namespace Avalonia
 
             foreach (PropertyInitializationData data in initializationData)
             {
-                if (!data.Property.HasNotifyInitializedObservers)
-                {
-                    continue;
-                }
-
                 data.Property.NotifyInitialized(o);
             }
         }

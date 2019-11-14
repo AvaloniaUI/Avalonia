@@ -141,13 +141,16 @@ namespace Avalonia
         /// <inheritdoc/>
         internal override void NotifyInitialized(IAvaloniaObject o)
         {
-            var e = new AvaloniaPropertyChangedEventArgs<TValue>(
-                o,
-                this,
-                default,
-                o.GetValue(this),
-                BindingPriority.Unset);
-            NotifyInitialized(e);
+            if (HasNotifyInitializedObservers)
+            {
+                var e = new AvaloniaPropertyChangedEventArgs<TValue>(
+                    o,
+                    this,
+                    default,
+                    o.GetValue(this),
+                    BindingPriority.Unset);
+                NotifyInitialized(e);
+            }
         }
 
         /// <inheritdoc/>
