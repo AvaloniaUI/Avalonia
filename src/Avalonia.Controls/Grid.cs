@@ -2740,12 +2740,12 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<int> ColumnProperty =
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "Column",
-                defaultValue: 0,
+                defaultValue: 0/*,
                 validate: (_, v) =>
                 {
                     if (v >= 0) return v;
                     else throw new ArgumentException("Invalid Grid.Column value.");
-                });
+                }*/);
 
         /// <summary>
         /// Row property. This is an attached property.
@@ -2761,12 +2761,12 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<int> RowProperty =
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "Row",
-                defaultValue: 0,
+                defaultValue: 0/*,
                 validate: (_, v) =>
                 {
                     if (v >= 0) return v;
                     else throw new ArgumentException("Invalid Grid.Row value.");
-                });
+                }*/);
 
         /// <summary>
         /// ColumnSpan property. This is an attached property.
@@ -2781,12 +2781,12 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<int> ColumnSpanProperty =
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "ColumnSpan",
-                defaultValue: 1,
+                defaultValue: 1/*,
                 validate: (_, v) =>
                 {
                     if (v >= 1) return v;
                     else throw new ArgumentException("Invalid Grid.ColumnSpan value.");
-                });
+                }*/);
 
         /// <summary>
         /// RowSpan property. This is an attached property.
@@ -2801,12 +2801,12 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<int> RowSpanProperty =
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "RowSpan",
-                defaultValue: 1,
+                defaultValue: 1/*,
                 validate: (_, v) =>
                 {
                     if (v >= 1) return v;
                     else throw new ArgumentException("Invalid Grid.RowSpan value.");
-                });
+                }*/);
 
         /// <summary>
         /// IsSharedSizeScope property marks scoping element for shared size.

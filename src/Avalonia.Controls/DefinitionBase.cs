@@ -750,8 +750,8 @@ namespace Avalonia.Controls
         /// </remarks> 
         public static readonly AttachedProperty<string> SharedSizeGroupProperty =
             AvaloniaProperty.RegisterAttached<DefinitionBase, Control, string>(
-                "SharedSizeGroup",
-                validate: SharedSizeGroupPropertyValueValid);
+                "SharedSizeGroup"/*,
+                validate: SharedSizeGroupPropertyValueValid*/);
 
         /// <summary>
         /// Static ctor. Used for static registration of properties.

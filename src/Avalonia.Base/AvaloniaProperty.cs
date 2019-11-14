@@ -302,8 +302,7 @@ namespace Avalonia
             string name,
             TValue defaultValue = default(TValue),
             bool inherits = false,
-            BindingMode defaultBindingMode = BindingMode.OneWay,
-            Func<THost, TValue, TValue> validate = null)
+            BindingMode defaultBindingMode = BindingMode.OneWay)
                 where THost : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
@@ -335,8 +334,7 @@ namespace Avalonia
             Type ownerType,
             TValue defaultValue = default(TValue),
             bool inherits = false,
-            BindingMode defaultBindingMode = BindingMode.OneWay,
-            Func<THost, TValue, TValue> validate = null)
+            BindingMode defaultBindingMode = BindingMode.OneWay)
                 where THost : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);

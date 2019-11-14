@@ -38,18 +38,7 @@ namespace Avalonia.Base.UnitTests
             public static readonly AttachedProperty<string> FooProperty =
                 AvaloniaProperty.RegisterAttached<Class1, Base, string>(
                     "Foo",
-                    "foodefault",
-                    validate: ValidateFoo);
-
-            private static string ValidateFoo(AvaloniaObject arg1, string arg2)
-            {
-                if (arg2 == "throw")
-                {
-                    throw new IndexOutOfRangeException();
-                }
-
-                return arg2;
-            }
+                    "foodefault");
         }
 
         private class Class2 : Base
