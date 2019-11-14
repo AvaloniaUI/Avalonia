@@ -168,9 +168,9 @@ namespace Avalonia.Native
                 _parent.PositionChanged?.Invoke(position.ToAvaloniaPixelPoint());
             }
 
-            void IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+            void IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta, uint clickCount)
             {
-                _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
+                _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta, clickCount);
             }
 
             bool IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
@@ -223,63 +223,45 @@ namespace Avalonia.Native
             return args.Handled;
         }
 
-        public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+        public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta, uint clickCount)
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+            bool handled = false;
 
             switch (type)
             {
                 case AvnRawMouseEventType.Wheel:
-                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    Input?.Invoke(
+                        new RawMouseWheelEventArgs(
+                            _mouse, timeStamp, _inputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    handled = true;
                     break;
 
-                default:
-                    var classifyWindowRegion = ClassifyWindowRegion;
-
-                    if (type == AvnRawMouseEventType.LeftButtonDown && classifyWindowRegion != null)
+                case AvnRawMouseEventType.LeftButtonDown:
+                    if (ClassifyWindowRegion?.Invoke(point.ToAvaloniaPoint()) == WindowRegion.TitleBar)
                     {
-                        switch (classifyWindowRegion(point.ToAvaloniaPoint()))
-                        {
-                            case WindowRegion.TitleBar:
-                                _native.BeginMoveDrag();
-                                return;
-
-                            case WindowRegion.TopLeftCorner:
-                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeNorthWest);
-                                return;
-
-                            case WindowRegion.TopBorder:
-                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeNorth);
-                                return;
-
-                            case WindowRegion.TopRightCorner:
-                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeNorthEast);
-                                return;
-
-                            case WindowRegion.LeftBorder:
-                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeWest);
-                                return;
-
-                            case WindowRegion.RightBorder:
-                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeEast);
-                                return;
-
-                            case WindowRegion.BottomLeftCorner:
-                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeSouthWest);
-                                return;
-
-                            case WindowRegion.BottomBorder:
-                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeSouth);
-                                return;
-
-                            case WindowRegion.BottomRightCorner:
-                                _native.BeginResizeDrag(AvnWindowEdge.WindowEdgeSouthEast);
-                                return;
-                        }
+                        _native.BeginMoveDrag();
+                        handled = true;
                     }
-
-                    Input?.Invoke(new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers));
                     break;
+
+                case AvnRawMouseEventType.LeftButtonUp:
+                    if (clickCount >= 2 &&
+                        ClassifyWindowRegion?.Invoke(point.ToAvaloniaPoint()) == WindowRegion.TitleBar &&
+                        _native is IAvnWindow native)
+                    {
+                        native.SetWindowState(
+                            native.GetWindowState() == AvnWindowState.Maximized ? AvnWindowState.Normal : AvnWindowState.Maximized);
+                        handled = true;
+                    }
+                    break;
+            }
+
+            if (!handled)
+            {
+                Input?.Invoke(
+                    new RawPointerEventArgs(
+                        _mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers));
             }
         }
 
