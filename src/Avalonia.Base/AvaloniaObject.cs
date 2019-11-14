@@ -9,7 +9,6 @@ using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.PropertyStore;
 using Avalonia.Threading;
-using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -136,7 +135,8 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         public void ClearValue(AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
             property.RouteClearValue(this);
         }
 
@@ -146,22 +146,45 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         public void ClearValue<T>(AvaloniaProperty<T> property)
         {
+            property = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
 
             switch (property)
             {
                 case StyledPropertyBase<T> styled:
-                    _values.ClearLocalValue(styled);
+                    ClearValue(styled);
                     break;
                 case DirectPropertyBase<T> direct:
-                    var p = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, direct);
-                    p.InvokeSetter(this, p.GetUnsetValue(GetType()));
+                    ClearValue(direct);
                     break;
-                case null:
-                    throw new ArgumentNullException(nameof(property));
                 default:
                     throw new NotSupportedException("Unsupported AvaloniaProperty type.");
             }
+        }
+
+        /// <summary>
+        /// Clears a <see cref="AvaloniaProperty"/>'s local value.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        public void ClearValue<T>(StyledPropertyBase<T> property)
+        {
+            property = property ?? throw new ArgumentNullException(nameof(property));
+            VerifyAccess();
+
+            _values?.ClearLocalValue(property);
+        }
+
+        /// <summary>
+        /// Clears a <see cref="AvaloniaProperty"/>'s local value.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        public void ClearValue<T>(DirectPropertyBase<T> property)
+        {
+            property = property ?? throw new ArgumentNullException(nameof(property));
+            VerifyAccess();
+
+            var p = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
+            p.InvokeSetter(this, p.GetUnsetValue(GetType()));
         }
 
         /// <summary>
@@ -202,6 +225,8 @@ namespace Avalonia
         /// <returns>The value.</returns>
         public object GetValue(AvaloniaProperty property)
         {
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
             return property.RouteGetValue(this);
         }
 
@@ -213,11 +238,12 @@ namespace Avalonia
         /// <returns>The value.</returns>
         public T GetValue<T>(AvaloniaProperty<T> property)
         {
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
             return property switch
             {
                 StyledPropertyBase<T> styled => GetValue(styled),
                 DirectPropertyBase<T> direct => GetValue(direct),
-                null => throw new ArgumentNullException(nameof(property)),
                 _ => throw new NotSupportedException("Unsupported AvaloniaProperty type.")
             };
         }
@@ -292,6 +318,8 @@ namespace Avalonia
             object value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
             property.RouteSetValue(this, value, priority);
         }
 
@@ -307,6 +335,8 @@ namespace Avalonia
             T value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
             switch (property)
             {
                 case StyledPropertyBase<T> styled:
@@ -315,8 +345,6 @@ namespace Avalonia
                 case DirectPropertyBase<T> direct:
                     SetValue(direct, value);
                     break;
-                case null:
-                    throw new ArgumentNullException(nameof(property));
                 default:
                     throw new NotSupportedException("Unsupported AvaloniaProperty type.");
             }
@@ -386,6 +414,9 @@ namespace Avalonia
             IObservable<BindingValue<object>> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
+            property = property ?? throw new ArgumentNullException(nameof(property));
+            source = source ?? throw new ArgumentNullException(nameof(source));
+
             return property.RouteBind(this, source, priority);
         }
 
@@ -404,11 +435,13 @@ namespace Avalonia
             IObservable<BindingValue<T>> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
+            property = property ?? throw new ArgumentNullException(nameof(property));
+            source = source ?? throw new ArgumentNullException(nameof(source));
+
             return property switch
             {
                 StyledPropertyBase<T> styled => Bind(styled, source, priority),
                 DirectPropertyBase<T> direct => Bind(direct, source),
-                null => throw new ArgumentNullException(nameof(property)),
                 _ => throw new NotSupportedException("Unsupported AvaloniaProperty type."),
             };
         }
@@ -429,6 +462,7 @@ namespace Avalonia
             BindingPriority priority = BindingPriority.LocalValue)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
+            source = source ?? throw new ArgumentNullException(nameof(source));
             VerifyAccess();
 
             return Values.AddBinding(property, source, priority);

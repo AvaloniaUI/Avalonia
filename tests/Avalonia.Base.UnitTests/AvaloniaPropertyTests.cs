@@ -154,6 +154,11 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
+            internal override void RouteClearValue(IAvaloniaObject o)
+            {
+                throw new NotImplementedException();
+            }
+
             internal override object RouteGetValue(IAvaloniaObject o)
             {
                 throw new NotImplementedException();

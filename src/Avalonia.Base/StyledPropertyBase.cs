@@ -154,6 +154,12 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
+        internal override void RouteClearValue(IAvaloniaObject o)
+        {
+            o.ClearValue<TValue>(this);
+        }
+
+        /// <inheritdoc/>
         internal override object RouteGetValue(IAvaloniaObject o)
         {
             return o.GetValue<TValue>(this);

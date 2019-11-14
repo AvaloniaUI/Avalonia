@@ -83,8 +83,7 @@ namespace Avalonia.Styling.UnitTests
 
             control.Verify(x => x.Bind(
                 TextBlock.TextProperty,
-                It.IsAny<IObservable<BindingValue<object>>>(),
-                BindingPriority.Style));
+                It.IsAny<IObservable<BindingValue<string>>>()));
         }
 
         [Fact]
@@ -99,8 +98,7 @@ namespace Avalonia.Styling.UnitTests
 
             control.Verify(x => x.Bind(
                 TextBlock.TextProperty,
-                It.IsAny<IObservable<BindingValue<object>>>(),
-                BindingPriority.StyleTrigger));
+                It.IsAny<IObservable<BindingValue<string>>>()));
         }
 
         [Fact]
@@ -114,8 +112,7 @@ namespace Avalonia.Styling.UnitTests
 
             control.Verify(x => x.Bind(
                 TextBlock.TextProperty,
-                It.IsAny<IObservable<BindingValue<object>>>(),
-                BindingPriority.Style));
+                It.IsAny<IObservable<BindingValue<string>>>()));
         }
 
         [Fact]
@@ -130,8 +127,7 @@ namespace Avalonia.Styling.UnitTests
 
             control.Verify(x => x.Bind(
                 TextBlock.TextProperty,
-                It.IsAny<IObservable<BindingValue<object>>>(),
-                BindingPriority.StyleTrigger));
+                It.IsAny<IObservable<BindingValue<string>>>()));
         }
 
         private IBinding CreateMockBinding(AvaloniaProperty property)

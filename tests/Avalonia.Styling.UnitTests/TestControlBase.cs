@@ -109,5 +109,45 @@ namespace Avalonia.Styling.UnitTests
         {
             throw new NotImplementedException();
         }
+
+        public void ClearValue<T>(StyledPropertyBase<T> property)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ClearValue<T>(DirectPropertyBase<T> property)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T GetValue<T>(StyledPropertyBase<T> property)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T GetValue<T>(DirectPropertyBase<T> property)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetValue<T>(StyledPropertyBase<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetValue<T>(DirectPropertyBase<T> property, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDisposable Bind<T>(StyledPropertyBase<T> property, IObservable<BindingValue<T>> source, BindingPriority priority = BindingPriority.LocalValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDisposable Bind<T>(DirectPropertyBase<T> property, IObservable<BindingValue<T>> source)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

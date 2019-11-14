@@ -117,6 +117,12 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
+        internal override void RouteClearValue(IAvaloniaObject o)
+        {
+            o.ClearValue<TValue>(this);
+        }
+
+        /// <inheritdoc/>
         internal override object? RouteGetValue(IAvaloniaObject o)
         {
             return o.GetValue<TValue>(this);
@@ -132,7 +138,7 @@ namespace Avalonia
 
             if (v.HasValue)
             {
-                o.SetValue<TValue>(this, (TValue)v.Value, priority);
+                o.SetValue<TValue>(this, (TValue)v.Value);
             }
             else if (v.Type == BindingValueType.UnsetValue)
             {
@@ -151,7 +157,7 @@ namespace Avalonia
             BindingPriority priority)
         {
             var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);
-            return o.Bind<TValue>(this, adapter, priority);
+            return o.Bind<TValue>(this, adapter);
         }
 
         internal override void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject oldParent)

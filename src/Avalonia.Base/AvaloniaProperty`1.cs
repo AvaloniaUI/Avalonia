@@ -43,11 +43,6 @@ namespace Avalonia
         {
         }
 
-        internal override void RouteClearValue(IAvaloniaObject o)
-        {
-            o.ClearValue<TValue>(this);
-        }
-
         protected BindingValue<object> TryConvert(object value)
         {
             if (value == UnsetValue)
