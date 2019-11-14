@@ -1,4 +1,6 @@
+using System;
 using System.Diagnostics;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
@@ -29,6 +31,8 @@ namespace RenderDemo.Pages
         readonly Stopwatch _st = Stopwatch.StartNew();
         public override void Render(DrawingContext context)
         {
+            using (_stats.Frame())
+            {
             using (var ctxi = _bitmap.CreateDrawingContext(null))
             using(var ctx = new DrawingContext(ctxi, false))
             using (ctx.PushPostTransform(Matrix.CreateTranslation(-100, -100)
@@ -42,8 +46,16 @@ namespace RenderDemo.Pages
             context.DrawImage(_bitmap,
                 new Rect(0, 0, 200, 200), 
                 new Rect(0, 0, 200, 200));
+            }
+
             Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
             base.Render(context);
+
+            _stats.Render(context, 1, 1);
+
         }
+
+
+        private RenderingStats _stats = new RenderingStats();
     }
 }

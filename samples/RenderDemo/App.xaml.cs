@@ -1,6 +1,9 @@
+using System.Reflection;
+using System.Runtime.Versioning;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using Avalonia.Rendering;
 
 namespace RenderDemo
 {
@@ -23,7 +26,27 @@ namespace RenderDemo
                    OverlayPopups = true,
                })
                 .UsePlatformDetect()
+                .Use60FpsRendererHackForDotnetFramework47plus()
                 .UseReactiveUI()
                 .LogToDebug();
+    }
+
+    public static class Ext
+    {
+        public static AppBuilder Use60FpsRendererHackForDotnetFramework47plus(this AppBuilder b)
+        {
+            var dotnetVer = Assembly.GetEntryAssembly().GetCustomAttribute<TargetFrameworkAttribute>().FrameworkName?.ToLowerInvariant() ?? "";
+
+            if (dotnetVer.StartsWith(".netframework"))
+            {
+                var intit = b.WindowingSubsystemInitializer;
+                b.UseWindowingSubsystem(() =>
+                {
+                    intit();
+                    AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(65));
+                });
+            }
+            return b;
+        }
     }
 }
