@@ -180,18 +180,18 @@ namespace Avalonia.Input
 
             if (sender == e.Source && ev.MouseButton == MouseButton.Left)
             {
-                var element = (ev.Pointer?.Captured as IInputElement) ?? (e.Source as IInputElement);
+                IVisual element = ev.Pointer?.Captured ?? e.Source as IInputElement;
 
-                if (element == null || !CanFocus(element))
+                while (element != null)
                 {
-                    element = element.GetSelfAndVisualAncestors()
-                        .OfType<IInputElement>()
-                        .FirstOrDefault(CanFocus);
-                }
+                    if (element is IInputElement inputElement && CanFocus(inputElement))
+                    {
+                        Instance?.Focus(inputElement, NavigationMethod.Pointer, ev.InputModifiers);
 
-                if (element != null)
-                {
-                    Instance?.Focus(element, NavigationMethod.Pointer, ev.InputModifiers);
+                        break;
+                    }
+                    
+                    element = element.VisualParent;
                 }
             }
         }

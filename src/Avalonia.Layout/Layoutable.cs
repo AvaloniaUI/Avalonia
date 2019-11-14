@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
 using Avalonia.Logging;
 using Avalonia.VisualTree;
 
@@ -693,13 +692,36 @@ namespace Avalonia.Layout
             return finalSize;
         }
 
-        /// <inheritdoc/>
-        protected override sealed void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
+        /// <summary>
+        /// Invalidates measure for this instance and all visual children.
+        /// </summary>
+        protected void InvalidateSelfAndDescendantsMeasure()
         {
-            foreach (ILayoutable i in this.GetSelfAndVisualDescendants())
+            void InnerInvalidateMeasure(IVisual target)
             {
-                i.InvalidateMeasure();
+                if (target is ILayoutable layoutable)
+                {
+                    layoutable.InvalidateMeasure();
+                }
+
+                var visualChildren = target.VisualChildren;
+                var visualChildrenCount = visualChildren.Count;
+
+                for (int i = 0; i < visualChildrenCount; i++)
+                {
+                    IVisual child = visualChildren[i];
+
+                    InnerInvalidateMeasure(child);
+                }
             }
+
+            InnerInvalidateMeasure(this);
+        }
+
+        /// <inheritdoc/>
+        protected sealed override void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
+        {
+            InvalidateSelfAndDescendantsMeasure();
 
             base.OnVisualParentChanged(oldParent, newParent);
         }
