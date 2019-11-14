@@ -35,7 +35,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Verify(x => x.Bind(
                 TextBox.TextProperty, 
-                It.IsAny<IObservable<object>>(), 
+                It.IsAny<IObservable<BindingValue<object>>>(), 
                 BindingPriority.TemplatedParent));
         }
 
@@ -55,7 +55,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Verify(x => x.Bind(
                 TextBox.TextProperty,
-                It.IsAny<ISubject<object>>(),
+                It.IsAny<IObservable<BindingValue<object>>>(),
                 BindingPriority.TemplatedParent));
         }
 
@@ -68,7 +68,7 @@ namespace Avalonia.Markup.UnitTests.Data
             result.Setup(x => x.GetValue(Control.TemplatedParentProperty)).Returns(templatedParent);
             result.Setup(x => x.GetValue((AvaloniaProperty)Control.TemplatedParentProperty)).Returns(templatedParent);
             result.Setup(x => x.GetValue((AvaloniaProperty)TextBox.TextProperty)).Returns(text);
-            result.Setup(x => x.Bind(It.IsAny<AvaloniaProperty>(), It.IsAny<IObservable<object>>(), It.IsAny<BindingPriority>()))
+            result.Setup(x => x.Bind(It.IsAny<AvaloniaProperty>(), It.IsAny<IObservable<BindingValue<object>>>(), It.IsAny<BindingPriority>()))
                 .Returns(Disposable.Empty);
             return result;
         }

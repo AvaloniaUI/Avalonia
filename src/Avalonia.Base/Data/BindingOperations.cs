@@ -5,12 +5,13 @@ using System;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data
 {
     public static class BindingOperations
     {
-        public static readonly object DoNothing = new object();
+        public static readonly object DoNothing = new DoNothingType();
 
         /// <summary>
         /// Applies an <see cref="InstancedBinding"/> a property on an <see cref="IAvaloniaObject"/>.
@@ -76,5 +77,16 @@ namespace Avalonia.Data
                     throw new ArgumentException("Invalid binding mode.");
             }
         }
+    }
+
+    public sealed class DoNothingType
+    {
+        internal DoNothingType() { }
+
+        /// <summary>
+        /// Returns the string representation of <see cref="BindingOperations.DoNothing"/>.
+        /// </summary>
+        /// <returns>The string "(do nothing)".</returns>
+        public override string ToString() => "(do nothing)";
     }
 }

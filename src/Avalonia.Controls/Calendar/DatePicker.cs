@@ -189,14 +189,14 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<DatePickerFormat> SelectedDateFormatProperty =
             AvaloniaProperty.Register<DatePicker, DatePickerFormat>(
                 nameof(SelectedDateFormat),
-                defaultValue: DatePickerFormat.Short,
-                validate: ValidateSelectedDateFormat);
+                defaultValue: DatePickerFormat.Short/*,
+                validate: ValidateSelectedDateFormat*/);
 
         public static readonly StyledProperty<string> CustomDateFormatStringProperty =
             AvaloniaProperty.Register<DatePicker, string>(
                 nameof(CustomDateFormatString),
-                defaultValue: "d",
-                validate: ValidateDateFormatString);
+                defaultValue: "d"/*,
+                validate: ValidateDateFormatString*/);
 
         public static readonly DirectProperty<DatePicker, string> TextProperty =
             AvaloniaProperty.RegisterDirect<DatePicker, string>(
@@ -512,11 +512,17 @@ namespace Avalonia.Controls
             base.OnTemplateApplied(e);
         }
 
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
         {
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
+
             if (property == SelectedDateProperty)
             {
-                DataValidationErrors.SetError(this, status.Error);
+                DataValidationErrors.SetError(this, newValue.Error);
             }
         }
 

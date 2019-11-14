@@ -433,7 +433,11 @@ namespace Avalonia
         /// <param name="newParent">The new visual parent.</param>
         protected virtual void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            RaisePropertyChanged(VisualParentProperty, oldParent, newParent, BindingPriority.LocalValue);
+            RaisePropertyChanged(
+                VisualParentProperty,
+                new Optional<IVisual>(oldParent),
+                new BindingValue<IVisual>(newParent),
+                BindingPriority.LocalValue);
         }
 
         protected override sealed void LogBindingError(AvaloniaProperty property, Exception e)

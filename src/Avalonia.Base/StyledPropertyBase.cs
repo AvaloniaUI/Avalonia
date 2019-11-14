@@ -2,14 +2,17 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Data;
+using Avalonia.Reactive;
 
 namespace Avalonia
 {
     /// <summary>
     /// Base class for styled properties.
     /// </summary>
-    public class StyledPropertyBase<TValue> : AvaloniaProperty<TValue>, IStyledPropertyAccessor
+    public abstract class StyledPropertyBase<TValue> : AvaloniaProperty<TValue>, IStyledPropertyAccessor
     {
         private bool _inherits;
 
@@ -124,30 +127,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Overrides the validation function for the specified type.
-        /// </summary>
-        /// <typeparam name="THost">The type.</typeparam>
-        /// <param name="validate">The validation function.</param>
-        public void OverrideValidation<THost>(Func<THost, TValue, TValue> validate)
-            where THost : IAvaloniaObject
-        {
-            Func<IAvaloniaObject, TValue, TValue> f;
-
-            if (validate != null)
-            {
-                f = Cast(validate);
-            }
-            else
-            {
-                // Passing null to the validation function means that the property metadata merge
-                // will take the base validation function, so instead use an empty validation.
-                f = (o, v) => v;
-            }
-
-            base.OverrideMetadata(typeof(THost), new StyledPropertyMetadata<TValue>(validate: f));
-        }
-
-        /// <summary>
         /// Gets the string representation of the property.
         /// </summary>
         /// <returns>The property's string representation.</returns>
@@ -157,14 +136,65 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        Func<IAvaloniaObject, object, object> IStyledPropertyAccessor.GetValidationFunc(Type type)
+        object IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
+
+        /// <inheritdoc/>
+        internal override void NotifyInitialized(IAvaloniaObject o)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-            return ((IStyledPropertyMetadata)base.GetMetadata(type)).Validate;
+            var e = new AvaloniaPropertyChangedEventArgs<TValue>(
+                o,
+                this,
+                default,
+                o.GetValue(this),
+                BindingPriority.Unset);
+            NotifyInitialized(e);
         }
 
         /// <inheritdoc/>
-        object IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
+        internal override object RouteGetValue(IAvaloniaObject o)
+        {
+            return o.GetValue<TValue>(this);
+        }
+
+        /// <inheritdoc/>
+        internal override void RouteSetValue(
+            IAvaloniaObject o,
+            object value,
+            BindingPriority priority)
+        {
+            var v = TryConvert(value);
+
+            if (v.HasValue)
+            {
+                o.SetValue<TValue>(this, (TValue)v.Value, priority);
+            }
+            else if (v.Type == BindingValueType.UnsetValue)
+            {
+                o.ClearValue(this);
+            }
+            else if (v.HasError)
+            {
+                throw v.Error;
+            }
+        }
+
+        /// <inheritdoc/>
+        internal override IDisposable RouteBind(
+            IAvaloniaObject o,
+            IObservable<BindingValue<object>> source,
+            BindingPriority priority)
+        {
+            var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);
+            return o.Bind<TValue>(this, adapter, priority);
+        }
+
+        /// <inheritdoc/>
+        internal override void RouteInheritanceParentChanged(
+            AvaloniaObject o,
+            IAvaloniaObject oldParent)
+        {
+            o.InheritanceParentChanged(this, oldParent);
+        }
 
         private object GetDefaultBoxedValue(Type type)
         {

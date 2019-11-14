@@ -161,7 +161,7 @@ namespace Avalonia.Styling.UnitTests
                 throw new NotImplementedException();
             }
 
-            public IDisposable Bind(AvaloniaProperty property, IObservable<object> source, BindingPriority priority = BindingPriority.LocalValue)
+            public IDisposable Bind(AvaloniaProperty property, IObservable<BindingValue<object>> source, BindingPriority priority = BindingPriority.LocalValue)
             {
                 throw new NotImplementedException();
             }
@@ -176,7 +176,7 @@ namespace Avalonia.Styling.UnitTests
                 throw new NotImplementedException();
             }
 
-            public IDisposable Bind<T>(AvaloniaProperty<T> property, IObservable<T> source, BindingPriority priority = BindingPriority.LocalValue)
+            public IDisposable Bind<T>(AvaloniaProperty<T> property, IObservable<BindingValue<T>> source, BindingPriority priority = BindingPriority.LocalValue)
             {
                 throw new NotImplementedException();
             }
@@ -192,6 +192,36 @@ namespace Avalonia.Styling.UnitTests
             }
 
             public void NotifyResourcesChanged(ResourcesChangedEventArgs e)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void ClearValue(AvaloniaProperty property)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void ClearValue<T>(AvaloniaProperty<T> property)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void AddInheritanceChild(IAvaloniaObject child)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void RemoveInheritanceChild(IAvaloniaObject child)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void InheritanceParentChanged<T>(StyledPropertyBase<T> property, IAvaloniaObject oldParent, IAvaloniaObject newParent)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void InheritedPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, Optional<T> newValue)
             {
                 throw new NotImplementedException();
             }

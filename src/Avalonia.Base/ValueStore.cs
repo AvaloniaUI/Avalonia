@@ -1,205 +1,231 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Data;
+using Avalonia.PropertyStore;
 using Avalonia.Utilities;
+
+#nullable enable
 
 namespace Avalonia
 {
-    internal class ValueStore : IPriorityValueOwner
+    internal class ValueStore : IValueSink
     {
-        private readonly AvaloniaPropertyValueStore<object> _propertyValues;
-        private readonly AvaloniaPropertyValueStore<object> _deferredSetters;
         private readonly AvaloniaObject _owner;
+        private readonly IValueSink _sink;
+        private readonly AvaloniaPropertyValueStore<object> _values;
 
         public ValueStore(AvaloniaObject owner)
         {
-            _owner = owner;
-            _propertyValues = new AvaloniaPropertyValueStore<object>();
-            _deferredSetters = new AvaloniaPropertyValueStore<object>();
-        }
-
-        public IDisposable AddBinding(
-            AvaloniaProperty property,
-            IObservable<object> source,
-            BindingPriority priority)
-        {
-            PriorityValue priorityValue;
-
-            if (_propertyValues.TryGetValue(property, out var v))
-            {
-                priorityValue = v as PriorityValue;
-
-                if (priorityValue == null)
-                {
-                    priorityValue = CreatePriorityValue(property);
-                    priorityValue.SetValue(v, (int)BindingPriority.LocalValue);
-                    _propertyValues.SetValue(property, priorityValue);
-                }
-            }
-            else
-            {
-                priorityValue = CreatePriorityValue(property);
-                _propertyValues.AddValue(property, priorityValue);
-            }
-
-            return priorityValue.Add(source, (int)priority);
-        }
-
-        public void AddValue(AvaloniaProperty property, object value, int priority)
-        {
-            PriorityValue priorityValue;
-
-            if (_propertyValues.TryGetValue(property, out var v))
-            {
-                priorityValue = v as PriorityValue;
-
-                if (priorityValue == null)
-                {
-                    if (priority == (int)BindingPriority.LocalValue)
-                    {
-                        Validate(property, ref value);
-                        _propertyValues.SetValue(property, value);
-                        Changed(property, priority, v, value);
-                        return;
-                    }
-                    else
-                    {
-                        priorityValue = CreatePriorityValue(property);
-                        priorityValue.SetValue(v, (int)BindingPriority.LocalValue);
-                        _propertyValues.SetValue(property, priorityValue);
-                    }
-                }
-            }
-            else
-            {
-                if (value == AvaloniaProperty.UnsetValue)
-                {
-                    return;
-                }
-
-                if (priority == (int)BindingPriority.LocalValue)
-                {
-                    Validate(property, ref value);
-                    _propertyValues.AddValue(property, value);
-                    Changed(property, priority, AvaloniaProperty.UnsetValue, value);
-                    return;
-                }
-                else
-                {
-                    priorityValue = CreatePriorityValue(property);
-                    _propertyValues.AddValue(property, priorityValue);
-                }
-            }
-
-            priorityValue.SetValue(value, priority);
-        }
-
-        public void BindingNotificationReceived(AvaloniaProperty property, BindingNotification notification)
-        {
-            _owner.BindingNotificationReceived(property, notification);
-        }
-
-        public void Changed(AvaloniaProperty property, int priority, object oldValue, object newValue)
-        {
-            _owner.PriorityValueChanged(property, priority, oldValue, newValue);
-        }
-
-        public IDictionary<AvaloniaProperty, object> GetSetValues()
-        {
-            return _propertyValues.ToDictionary();
-        }
-
-        public void LogError(AvaloniaProperty property, Exception e)
-        {
-            _owner.LogBindingError(property, e);
-        }
-
-        public object GetValue(AvaloniaProperty property)
-        {
-            var result = AvaloniaProperty.UnsetValue;
-
-            if (_propertyValues.TryGetValue(property, out var value))
-            {
-                result = (value is PriorityValue priorityValue) ? priorityValue.Value : value;
-            }
-
-            return result;
+            _sink = _owner = owner;
+            _values = new AvaloniaPropertyValueStore<object>();
         }
 
         public bool IsAnimating(AvaloniaProperty property)
         {
-            return _propertyValues.TryGetValue(property, out var value) && value is PriorityValue priority && priority.IsAnimating;
-        }
-
-        public bool IsSet(AvaloniaProperty property)
-        {
-            if (_propertyValues.TryGetValue(property, out var value))
+            if (_values.TryGetValue(property, out var slot))
             {
-                return ((value as PriorityValue)?.Value ?? value) != AvaloniaProperty.UnsetValue;
+                if (slot is IValue v)
+                {
+                    return v.ValuePriority < BindingPriority.LocalValue;
+                }
             }
 
             return false;
         }
 
-        public void Revalidate(AvaloniaProperty property)
+        public bool IsSet(AvaloniaProperty property)
         {
-            if (_propertyValues.TryGetValue(property, out var value))
+            return TryGetValueUntyped(property, out _);
+        }
+
+        public bool TryGetValue<T>(StyledPropertyBase<T> property, out T value)
+        {
+            if (_values.TryGetValue(property, out var slot))
             {
-                (value as PriorityValue)?.Revalidate();
+                if (slot is IValue<T> v)
+                {
+                    if (v.Value.HasValue)
+                    {
+                        value = v.Value.Value;
+                        return true;
+                    }
+                }
+                else
+                {
+                    value = (T)slot;
+                    return true;
+                }
+            }
+
+            value = default!;
+            return false;
+        }
+
+        public bool TryGetValueUntyped(AvaloniaProperty property, out object? value)
+        {
+            if (_values.TryGetValue(property, out var slot))
+            {
+                if (slot is IValue v)
+                {
+                    if (v.Value.HasValue)
+                    {
+                        value = v.Value.Value;
+                        return true;
+                    }
+                }
+                else
+                {
+                    value = slot;
+                    return true;
+                }
+            }
+
+            value = default;
+            return false;
+        }
+
+        public void SetValue<T>(StyledPropertyBase<T> property, T value, BindingPriority priority)
+        {
+            if (_values.TryGetValue(property, out var slot))
+            {
+                SetExisting(slot, property, value, priority);
+            }
+            else if (priority == BindingPriority.LocalValue)
+            {
+                _values.AddValue(property, (object)value!);
+                _sink.ValueChanged(property, priority, default, value);
+            }
+            else
+            {
+                var entry = new ConstantValueEntry<T>(property, value, priority);
+                _values.AddValue(property, entry);
+                _sink.ValueChanged(property, priority, default, value);
             }
         }
 
-        public void VerifyAccess() => _owner.VerifyAccess();
-
-        private PriorityValue CreatePriorityValue(AvaloniaProperty property)
+        public IDisposable AddBinding<T>(
+            StyledPropertyBase<T> property,
+            IObservable<BindingValue<T>> source,
+            BindingPriority priority)
         {
-            var validate = ((IStyledPropertyAccessor)property).GetValidationFunc(_owner.GetType());
-            Func<object, object> validate2 = null;
-
-            if (validate != null)
+            if (_values.TryGetValue(property, out var slot))
             {
-                validate2 = v => validate(_owner, v);
+                return BindExisting(slot, property, source, priority);
             }
-
-            return new PriorityValue(
-                this,
-                property,
-                property.PropertyType,
-                validate2);
-        }
-
-        private void Validate(AvaloniaProperty property, ref object value)
-        {
-            var validate = ((IStyledPropertyAccessor)property).GetValidationFunc(_owner.GetType());
-
-            if (validate != null && value != AvaloniaProperty.UnsetValue)
+            else
             {
-                value = validate(_owner, value);
+                var entry = new BindingEntry<T>(_owner, property, source, priority, this);
+                _values.AddValue(property, entry);
+                entry.Start();
+                return entry;
             }
         }
 
-        private DeferredSetter<T> GetDeferredSetter<T>(AvaloniaProperty property)
+        public void ClearLocalValue<T>(StyledPropertyBase<T> property)
         {
-            if (_deferredSetters.TryGetValue(property, out var deferredSetter))
+            if (_values.TryGetValue(property, out var slot))
             {
-                return (DeferredSetter<T>)deferredSetter;
+                if (slot is PriorityValue<T> p)
+                {
+                    p.ClearLocalValue();
+                }
+                else
+                {
+                    var remove = slot is ConstantValueEntry<T> c ?
+                        c.Priority == BindingPriority.LocalValue : 
+                        !(slot is IPriorityValueEntry<T>);
+
+                    if (remove)
+                    {
+                        var old = TryGetValue(property, out var value) ? value : default;
+                        _values.Remove(property);
+                        _sink.ValueChanged(
+                            property,
+                            BindingPriority.LocalValue,
+                            old,
+                            BindingValue<T>.Unset);
+                    }
+                }
+            }
+        }
+
+        void IValueSink.ValueChanged<T>(
+            StyledPropertyBase<T> property,
+            BindingPriority priority,
+            Optional<T> oldValue,
+            BindingValue<T> newValue)
+        {
+            _sink.ValueChanged(property, priority, oldValue, newValue);
+        }
+
+        void IValueSink.Completed(AvaloniaProperty property, IPriorityValueEntry entry)
+        {
+            if (_values.TryGetValue(property, out var slot))
+            {
+                if (slot == entry)
+                {
+                    _values.Remove(property);
+                }
+            }
+        }
+
+        private void SetExisting<T>(
+            object slot,
+            StyledPropertyBase<T> property,
+            T value,
+            BindingPriority priority)
+        {
+            if (slot is IPriorityValueEntry<T> e)
+            {
+                var priorityValue = new PriorityValue<T>(_owner, property, this, e);
+                _values.SetValue(property, priorityValue);
+                priorityValue.SetValue(value, priority);
+            }
+            else if (slot is PriorityValue<T> p)
+            {
+                p.SetValue(value, priority);
+            }
+            else if (priority == BindingPriority.LocalValue)
+            {
+                var old = (T)slot;
+                _values.SetValue(property, (object)value!);
+                _sink.ValueChanged(property, priority, old, value);
+            }
+            else
+            {
+                var existing = new ConstantValueEntry<T>(property, (T)slot, BindingPriority.LocalValue);
+                var priorityValue = new PriorityValue<T>(_owner, property, this, existing);
+                priorityValue.SetValue(value, priority);
+                _values.SetValue(property, priorityValue);
+            }
+        }
+
+        private IDisposable BindExisting<T>(
+            object slot,
+            StyledPropertyBase<T> property,
+            IObservable<BindingValue<T>> source,
+            BindingPriority priority)
+        {
+            PriorityValue<T> priorityValue;
+
+            if (slot is IPriorityValueEntry<T> e)
+            {
+                priorityValue = new PriorityValue<T>(_owner, property, this, e);
+            }
+            else if (slot is PriorityValue<T> p)
+            {
+                priorityValue = p;
+            }
+            else
+            {
+                var existing = new ConstantValueEntry<T>(property, (T)slot, BindingPriority.LocalValue);
+                priorityValue = new PriorityValue<T>(_owner, property, this, existing);
             }
 
-            var newDeferredSetter = new DeferredSetter<T>();
-
-            _deferredSetters.AddValue(property, newDeferredSetter);
-
-            return newDeferredSetter;
-        }
-
-        public DeferredSetter<object> GetNonDirectDeferredSetter(AvaloniaProperty property)
-        {
-            return GetDeferredSetter<object>(property);
-        }
-
-        public DeferredSetter<T> GetDirectDeferredSetter<T>(AvaloniaProperty<T> property)
-        {
-            return GetDeferredSetter<T>(property);
+            var binding = priorityValue.AddBinding(source, priority);
+            _values.SetValue(property, priorityValue);
+            binding.Start();
+            return binding;
         }
     }
 }

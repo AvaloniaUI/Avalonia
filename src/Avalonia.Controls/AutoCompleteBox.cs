@@ -377,8 +377,8 @@ namespace Avalonia.Controls
         /// dependency property.</value>
         public static readonly StyledProperty<int> MinimumPrefixLengthProperty =
             AvaloniaProperty.Register<AutoCompleteBox, int>(
-                nameof(MinimumPrefixLength), 1,
-                validate: ValidateMinimumPrefixLength);
+                nameof(MinimumPrefixLength), 1/*,
+                validate: ValidateMinimumPrefixLength*/);
 
         /// <summary>
         /// Identifies the
@@ -391,8 +391,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TimeSpan> MinimumPopulateDelayProperty =
             AvaloniaProperty.Register<AutoCompleteBox, TimeSpan>(
                 nameof(MinimumPopulateDelay),
-                TimeSpan.Zero,
-                validate: ValidateMinimumPopulateDelay);
+                TimeSpan.Zero/*,
+                validate: ValidateMinimumPopulateDelay*/);
 
         /// <summary>
         /// Identifies the
@@ -405,8 +405,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> MaxDropDownHeightProperty =
             AvaloniaProperty.Register<AutoCompleteBox, double>(
                 nameof(MaxDropDownHeight),
-                double.PositiveInfinity,
-                validate: ValidateMaxDropDownHeight);
+                double.PositiveInfinity/*,
+                validate: ValidateMaxDropDownHeight*/);
 
         /// <summary>
         /// Identifies the
@@ -494,8 +494,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<AutoCompleteFilterMode> FilterModeProperty =
             AvaloniaProperty.Register<AutoCompleteBox, AutoCompleteFilterMode>(
                 nameof(FilterMode),
-                defaultValue: AutoCompleteFilterMode.StartsWith,
-                validate: ValidateFilterMode);
+                defaultValue: AutoCompleteFilterMode.StartsWith/*,
+                validate: ValidateFilterMode*/);
 
         /// <summary>
         /// Identifies the

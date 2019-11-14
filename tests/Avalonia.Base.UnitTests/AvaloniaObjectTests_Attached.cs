@@ -17,14 +17,6 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void AddOwnered_Property_Retains_Validation()
-        {
-            var target = new Class2();
-
-            Assert.Throws<IndexOutOfRangeException>(() => target.SetValue(Class2.FooProperty, "throw"));
-        }
-
-        [Fact]
         public void AvaloniaProperty_Initialized_Is_Called_For_Attached_Property()
         {
             bool raised = false;

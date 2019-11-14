@@ -289,6 +289,17 @@ namespace Avalonia.Utilities
             return TryConvertImplicit(type, value, out object result) ? result : Default(type);
         }
 
+        public static T ConvertImplicit<T>(object value)
+        {
+            if (TryConvertImplicit(typeof(T), value, out var result))
+            {
+                return (T)result;
+            }
+
+            throw new InvalidCastException(
+                $"Unable to convert object '{value ?? "(null)"}' of type '{value?.GetType()}' to type '{typeof(T)}'.");
+        }
+
         /// <summary>
         /// Gets the default value for the specified type.
         /// </summary>

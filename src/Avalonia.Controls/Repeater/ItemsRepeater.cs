@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
 
@@ -374,41 +375,37 @@ namespace Avalonia.Controls
             _viewportManager.ResetScrollers();
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs args)
+        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
         {
-            var property = args.Property;
-
             if (property == ItemsProperty)
             {
-                var newValue = (IEnumerable)args.NewValue;
-                var newDataSource = newValue as ItemsSourceView;
-                if (newValue != null && newDataSource == null)
+                var newEnumerable = newValue.ValueOrDefault<IEnumerable>();
+                var newDataSource = newEnumerable as ItemsSourceView;
+                if (newEnumerable != null && newDataSource == null)
                 {
-                    newDataSource = new ItemsSourceView(newValue);
+                    newDataSource = new ItemsSourceView(newEnumerable);
                 }
 
                 OnDataSourcePropertyChanged(ItemsSourceView, newDataSource);
             }
             else if (property == ItemTemplateProperty)
             {
-                OnItemTemplateChanged((IDataTemplate)args.OldValue, (IDataTemplate)args.NewValue);
+                OnItemTemplateChanged(oldValue.ValueOrDefault<IDataTemplate>(), newValue.ValueOrDefault<IDataTemplate>());
             }
             else if (property == LayoutProperty)
             {
-                OnLayoutChanged((AttachedLayout)args.OldValue, (AttachedLayout)args.NewValue);
+                OnLayoutChanged(oldValue.ValueOrDefault<AttachedLayout>(), newValue.ValueOrDefault<AttachedLayout>());
             }
             else if (property == HorizontalCacheLengthProperty)
             {
-                _viewportManager.HorizontalCacheLength = (double)args.NewValue;
+                _viewportManager.HorizontalCacheLength = newValue.ValueOrDefault<double>();
             }
             else if (property == VerticalCacheLengthProperty)
             {
-                _viewportManager.VerticalCacheLength = (double)args.NewValue;
+                _viewportManager.VerticalCacheLength = newValue.ValueOrDefault<double>();
             }
-            else
-            {
-                base.OnPropertyChanged(args);
-            }
+
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
         }
 
         internal IControl GetElementImpl(int index, bool forceCreate, bool supressAutoRecycle)

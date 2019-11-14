@@ -201,8 +201,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> ColumnHeaderHeightProperty =
             AvaloniaProperty.Register<DataGrid, double>(
                 nameof(ColumnHeaderHeight),
-                defaultValue: double.NaN,
-                validate: ValidateColumnHeaderHeight);
+                defaultValue: double.NaN/*,
+                validate: ValidateColumnHeaderHeight*/);
 
         private static double ValidateColumnHeaderHeight(DataGrid grid, double value)
         {
@@ -261,8 +261,8 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<int> FrozenColumnCountProperty =
             AvaloniaProperty.Register<DataGrid, int>(
-                nameof(FrozenColumnCount),
-                validate: ValidateFrozenColumnCount);
+                nameof(FrozenColumnCount)/*,
+                validate: ValidateFrozenColumnCount*/);
 
         /// <summary>
         /// Gets or sets the number of columns that the user cannot scroll horizontally.
@@ -395,8 +395,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> MaxColumnWidthProperty =
             AvaloniaProperty.Register<DataGrid, double>(
                 nameof(MaxColumnWidth),
-                defaultValue: DATAGRID_defaultMaxColumnWidth,
-                validate: ValidateMaxColumnWidth);
+                defaultValue: DATAGRID_defaultMaxColumnWidth/*,
+                validate: ValidateMaxColumnWidth*/);
 
         private static double ValidateMaxColumnWidth(DataGrid grid, double value)
         {
@@ -433,8 +433,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> MinColumnWidthProperty =
             AvaloniaProperty.Register<DataGrid, double>(
                 nameof(MinColumnWidth),
-                defaultValue: DATAGRID_defaultMinColumnWidth,
-                validate: ValidateMinColumnWidth);
+                defaultValue: DATAGRID_defaultMinColumnWidth/*,
+                validate: ValidateMinColumnWidth*/);
 
         private static double ValidateMinColumnWidth(DataGrid grid, double value)
         {
@@ -482,8 +482,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> RowHeightProperty =
             AvaloniaProperty.Register<DataGrid, double>(
                 nameof(RowHeight),
-                defaultValue: double.NaN,
-                validate: ValidateRowHeight);
+                defaultValue: double.NaN/*,
+                validate: ValidateRowHeight*/);
         private static double ValidateRowHeight(DataGrid grid, double value)
         {
             if (value < DataGridRow.DATAGRIDROW_minimumHeight)
@@ -510,8 +510,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> RowHeaderWidthProperty =
             AvaloniaProperty.Register<DataGrid, double>(
                 nameof(RowHeaderWidth),
-                defaultValue: double.NaN,
-                validate: ValidateRowHeaderWidth);
+                defaultValue: double.NaN/*,
+                validate: ValidateRowHeaderWidth*/);
         private static double ValidateRowHeaderWidth(DataGrid grid, double value)
         {
             if (value < DATAGRID_minimumRowHeaderWidth)

@@ -58,7 +58,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Increment"/> property.
         /// </summary>
         public static readonly StyledProperty<double> IncrementProperty =
-            AvaloniaProperty.Register<NumericUpDown, double>(nameof(Increment), 1.0d, validate: OnCoerceIncrement);
+            AvaloniaProperty.Register<NumericUpDown, double>(nameof(Increment), 1.0d/*, validate: OnCoerceIncrement*/);
 
         /// <summary>
         /// Defines the <see cref="IsReadOnly"/> property.
@@ -70,13 +70,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Maximum"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MaximumProperty =
-            AvaloniaProperty.Register<NumericUpDown, double>(nameof(Maximum), double.MaxValue, validate: OnCoerceMaximum);
+            AvaloniaProperty.Register<NumericUpDown, double>(nameof(Maximum), double.MaxValue/*, validate: OnCoerceMaximum*/);
 
         /// <summary>
         /// Defines the <see cref="Minimum"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MinimumProperty =
-            AvaloniaProperty.Register<NumericUpDown, double>(nameof(Minimum), double.MinValue, validate: OnCoerceMinimum);
+            AvaloniaProperty.Register<NumericUpDown, double>(nameof(Minimum), double.MinValue/*, validate: OnCoerceMinimum*/);
 
         /// <summary>
         /// Defines the <see cref="ParsingNumberStyle"/> property.

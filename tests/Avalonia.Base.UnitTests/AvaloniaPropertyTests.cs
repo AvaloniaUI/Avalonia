@@ -140,6 +140,37 @@ namespace Avalonia.Base.UnitTests
             {
                 OverrideMetadata(typeof(T), metadata);
             }
+
+            internal override void NotifyInitialized(IAvaloniaObject o)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override IDisposable RouteBind(
+                IAvaloniaObject o,
+                IObservable<BindingValue<object>> source,
+                BindingPriority priority)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override object RouteGetValue(IAvaloniaObject o)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject oldParent)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override void RouteSetValue(
+                IAvaloniaObject o,
+                object value,
+                BindingPriority priority)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class Class1 : AvaloniaObject

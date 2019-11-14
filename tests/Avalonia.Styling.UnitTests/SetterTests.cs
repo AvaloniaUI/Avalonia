@@ -83,7 +83,7 @@ namespace Avalonia.Styling.UnitTests
 
             control.Verify(x => x.Bind(
                 TextBlock.TextProperty,
-                It.IsAny<IObservable<object>>(),
+                It.IsAny<IObservable<BindingValue<object>>>(),
                 BindingPriority.Style));
         }
 
@@ -99,7 +99,7 @@ namespace Avalonia.Styling.UnitTests
 
             control.Verify(x => x.Bind(
                 TextBlock.TextProperty,
-                It.IsAny<IObservable<object>>(),
+                It.IsAny<IObservable<BindingValue<object>>>(),
                 BindingPriority.StyleTrigger));
         }
 
@@ -114,7 +114,7 @@ namespace Avalonia.Styling.UnitTests
 
             control.Verify(x => x.Bind(
                 TextBlock.TextProperty,
-                It.IsAny<IObservable<object>>(),
+                It.IsAny<IObservable<BindingValue<object>>>(),
                 BindingPriority.Style));
         }
 
@@ -130,7 +130,7 @@ namespace Avalonia.Styling.UnitTests
 
             control.Verify(x => x.Bind(
                 TextBlock.TextProperty,
-                It.IsAny<IObservable<object>>(),
+                It.IsAny<IObservable<BindingValue<object>>>(),
                 BindingPriority.StyleTrigger));
         }
 

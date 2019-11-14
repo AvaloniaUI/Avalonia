@@ -780,7 +780,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public OldDataContextTest()
             {
-                Bind(BarProperty, this.GetObservable(FooProperty));
+                this.Bind(BarProperty, this.GetObservable(FooProperty));
             }
         }
 

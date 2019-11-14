@@ -20,9 +20,13 @@ namespace Avalonia
             new Dictionary<Type, Dictionary<int, AvaloniaProperty>>();
         private readonly Dictionary<Type, Dictionary<int, AvaloniaProperty>> _attached =
             new Dictionary<Type, Dictionary<int, AvaloniaProperty>>();
+        private readonly Dictionary<Type, Dictionary<int, AvaloniaProperty>> _direct =
+            new Dictionary<Type, Dictionary<int, AvaloniaProperty>>();
         private readonly Dictionary<Type, List<AvaloniaProperty>> _registeredCache =
             new Dictionary<Type, List<AvaloniaProperty>>();
         private readonly Dictionary<Type, List<AvaloniaProperty>> _attachedCache =
+            new Dictionary<Type, List<AvaloniaProperty>>();
+        private readonly Dictionary<Type, List<AvaloniaProperty>> _directCache =
             new Dictionary<Type, List<AvaloniaProperty>>();
         private readonly Dictionary<Type, List<PropertyInitializationData>> _initializedCache =
             new Dictionary<Type, List<PropertyInitializationData>>();
@@ -106,6 +110,37 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets all direct <see cref="AvaloniaProperty"/>s registered on a type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
+        public IEnumerable<AvaloniaProperty> GetRegisteredDirect(Type type)
+        {
+            Contract.Requires<ArgumentNullException>(type != null);
+
+            if (_directCache.TryGetValue(type, out var result))
+            {
+                return result;
+            }
+
+            var t = type;
+            result = new List<AvaloniaProperty>();
+
+            while (t != null)
+            {
+                if (_direct.TryGetValue(t, out var direct))
+                {
+                    result.AddRange(direct.Values);
+                }
+
+                t = t.BaseType;
+            }
+
+            _directCache.Add(type, result);
+            return result;
+        }
+
+        /// <summary>
         /// Gets all inherited <see cref="AvaloniaProperty"/>s registered on a type.
         /// </summary>
         /// <param name="type">The type.</param>
@@ -150,11 +185,27 @@ namespace Avalonia
         /// </summary>
         /// <param name="o">The object.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
-        public IEnumerable<AvaloniaProperty> GetRegistered(AvaloniaObject o)
+        public IEnumerable<AvaloniaProperty> GetRegistered(IAvaloniaObject o)
         {
             Contract.Requires<ArgumentNullException>(o != null);
 
             return GetRegistered(o.GetType());
+        }
+
+        /// <summary>
+        /// Finds a direct property as registered on an object.
+        /// </summary>
+        /// <param name="o">The object.</param>
+        /// <param name="property">The direct property.</param>
+        /// <returns>
+        /// The registered property or null if no matching property found.
+        /// </returns>
+        public DirectPropertyBase<T> GetRegisteredDirect<T>(
+            IAvaloniaObject o,
+            DirectPropertyBase<T> property)
+        {
+            return FindRegisteredDirect(o, property) ??
+                throw new ArgumentException($"Property '{property.Name} not registered on '{o.GetType()}");
         }
 
         /// <summary>
@@ -192,12 +243,40 @@ namespace Avalonia
         /// <exception cref="InvalidOperationException">
         /// The property name contains a '.'.
         /// </exception>
-        public AvaloniaProperty FindRegistered(AvaloniaObject o, string name)
+        public AvaloniaProperty FindRegistered(IAvaloniaObject o, string name)
         {
             Contract.Requires<ArgumentNullException>(o != null);
             Contract.Requires<ArgumentNullException>(name != null);
 
             return FindRegistered(o.GetType(), name);
+        }
+
+        /// <summary>
+        /// Finds a direct property as registered on an object.
+        /// </summary>
+        /// <param name="o">The object.</param>
+        /// <param name="property">The direct property.</param>
+        /// <returns>
+        /// The registered property or null if no matching property found.
+        /// </returns>
+        public DirectPropertyBase<T> FindRegisteredDirect<T>(
+            IAvaloniaObject o,
+            DirectPropertyBase<T> property)
+        {
+            if (property.Owner == o.GetType())
+            {
+                return property;
+            }
+
+            foreach (var p in GetRegisteredDirect(o.GetType()))
+            {
+                if (p == property)
+                {
+                    return (DirectPropertyBase<T>)p;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -265,6 +344,22 @@ namespace Avalonia
                 inner.Add(property.Id, property);
             }
 
+            if (property.IsDirect)
+            {
+                if (!_direct.TryGetValue(type, out inner))
+                {
+                    inner = new Dictionary<int, AvaloniaProperty>();
+                    inner.Add(property.Id, property);
+                    _direct.Add(type, inner);
+                }
+                else if (!inner.ContainsKey(property.Id))
+                {
+                    inner.Add(property.Id, property);
+                }
+
+                _directCache.Clear();
+            }
+
             if (!_properties.ContainsKey(property.Id))
             {
                 _properties.Add(property.Id, property);
@@ -318,18 +413,6 @@ namespace Avalonia
 
             var type = o.GetType();
 
-            void Notify(AvaloniaProperty property, object value)
-            {
-                var e = new AvaloniaPropertyChangedEventArgs(
-                    o,
-                    property,
-                    AvaloniaProperty.UnsetValue,
-                    value,
-                    BindingPriority.Unset);
-
-                property.NotifyInitialized(e);
-            }
-
             if (!_initializedCache.TryGetValue(type, out var initializationData))
             {
                 var visited = new HashSet<AvaloniaProperty>();
@@ -370,9 +453,7 @@ namespace Avalonia
                     continue;
                 }
 
-                object value = data.IsDirect ? data.DirectAccessor.GetValue(o) : data.Value;
-
-                Notify(data.Property, value);
+                data.Property.NotifyInitialized(o);
             }
         }
 

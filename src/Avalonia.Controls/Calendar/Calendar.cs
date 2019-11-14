@@ -351,8 +351,8 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<CalendarMode> DisplayModeProperty =
             AvaloniaProperty.Register<Calendar, CalendarMode>(
-                nameof(DisplayMode),
-                validate: ValidateDisplayMode);
+                nameof(DisplayMode)/*,
+                validate: ValidateDisplayMode*/);
         /// <summary>
         /// Gets or sets a value indicating whether the calendar is displayed in
         /// months, years, or decades.

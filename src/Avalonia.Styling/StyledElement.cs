@@ -478,7 +478,11 @@ namespace Avalonia
                     OnAttachedToLogicalTreeCore(e);
                 }
 
-                RaisePropertyChanged(ParentProperty, old, Parent, BindingPriority.LocalValue);
+                RaisePropertyChanged(
+                    ParentProperty,
+                    new Optional<IStyledElement>(old),
+                    new BindingValue<IStyledElement>(Parent),
+                    BindingPriority.LocalValue);
             }
         }
 
