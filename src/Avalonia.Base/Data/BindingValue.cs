@@ -344,6 +344,11 @@ namespace Avalonia.Data
             {
                 throw new InvalidOperationException("BindingOperations.DoNothing is not a valid value for BindingValue<>.");
             }
+
+            if (value is BindingValue<object>)
+            {
+                throw new InvalidOperationException("BindingValue<object> cannot be wrapped in a BindingValue<>.");
+            }
         }
     }
 
