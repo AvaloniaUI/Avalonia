@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Data;
 
 #nullable enable
@@ -47,8 +48,14 @@ namespace Avalonia.Reactive
         {
             if (e.Property == _property)
             {
-                _value = (T)e.NewValue;
-                PublishNext(new BindingValue<T>(_value));
+                var typedArgs = (AvaloniaPropertyChangedEventArgs<T>)e;
+                var newValue = e.Sender.GetValue(typedArgs.Property);
+
+                if (!typedArgs.OldValue.HasValue || !EqualityComparer<T>.Default.Equals(newValue, _value))
+                {
+                    _value = newValue;
+                    PublishNext(_value);
+                }
             }
         }
     }

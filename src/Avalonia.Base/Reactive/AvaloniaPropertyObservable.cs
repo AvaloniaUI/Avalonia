@@ -44,8 +44,13 @@ namespace Avalonia.Reactive
         {
             if (e.Property == _property)
             {
-                _value = (T)e.NewValue;
-                PublishNext(_value);
+                var newValue = e.Sender.GetValue(e.Property);
+
+                if (!Equals(newValue, _value))
+                {
+                    _value = (T)newValue;
+                    PublishNext(_value);
+                }
             }
         }
     }
