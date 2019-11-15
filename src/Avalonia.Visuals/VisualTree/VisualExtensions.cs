@@ -113,7 +113,7 @@ namespace Avalonia.VisualTree
                 return visual;
             }
 
-            while (true)
+            while (visual != null && target != null)
             {
                 IVisual firstParent = visual.VisualParent;
                 IVisual secondParent = target.VisualParent;
@@ -125,12 +125,9 @@ namespace Avalonia.VisualTree
 
                 visual = visual.VisualParent;
                 target = target.VisualParent;
-
-                if (visual == null || target == null)
-                {
-                    return null;
-                }
             }
+
+            return null;
         }
 
         /// <summary>
