@@ -922,9 +922,6 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "SetWindowTextW")]
         public static extern bool SetWindowText(IntPtr hwnd, string lpString);
 
-        [DllImport("uxtheme.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern HRESULT SetWindowTheme(IntPtr hwnd, string subAppName, string subIdList);
-
         public enum ClassLongIndex : int
         {
             GCLP_MENUNAME = -8,
@@ -1123,7 +1120,17 @@ namespace Avalonia.Win32.Interop
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
         internal static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, out int finalEffect);
 
+        [DllImport("dwmapi.dll", PreserveSig = true)]
+        public static extern HRESULT DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MARGINS
+        {
+            public int leftWidth;
+            public int rightWidth;
+            public int topHeight;
+            public int bottomHeight;
+        }
 
         public enum MONITOR
         {

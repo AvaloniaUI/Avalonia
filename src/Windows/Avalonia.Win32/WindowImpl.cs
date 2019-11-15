@@ -655,13 +655,6 @@ namespace Avalonia.Win32
                     }
                     break;
 
-                case WindowsMessage.WM_NCPAINT:
-                    if (!_decorated)
-                    {
-                        return IntPtr.Zero;
-                    }
-                    break;
-
                 case WindowsMessage.WM_NCACTIVATE:
                     if (!_decorated)
                     {
@@ -759,6 +752,25 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_DISPLAYCHANGE:
                     (Screen as ScreenImpl)?.InvalidateScreensCache();
                     return IntPtr.Zero;
+
+                case UnmanagedMethods.WindowsMessage.WM_DWMCOMPOSITIONCHANGED:
+                {
+                    var margins = new MARGINS();
+
+                    if (!_decorated)
+                    {
+                        margins = new MARGINS()
+                        {
+                            topHeight = 1,
+                            leftWidth = 1,
+                            rightWidth = 1,
+                            bottomHeight = 1
+                        };
+                    }
+
+                    DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+                    return IntPtr.Zero;
+                }
             }
 
             if (e != null && Input != null)
@@ -979,14 +991,9 @@ namespace Avalonia.Win32
 
             style |= WindowStyles.WS_OVERLAPPEDWINDOW;
 
-            if (!_decorated)
-            {
-                style &= ~WindowStyles.WS_SYSMENU;
-            }
-
             if (!_resizable)
             {
-                style &= ~WindowStyles.WS_SIZEFRAME;
+                style &= ~(WindowStyles.WS_SIZEFRAME | WindowStyles.WS_MAXIMIZEBOX);
             }
 
             GetClientRect(_hwnd, out var oldClientRect);
@@ -996,21 +1003,29 @@ namespace Avalonia.Win32
             
             SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
 
-            UnmanagedMethods.GetWindowRect(_hwnd, out var windowRect);
             bool frameUpdated = false;
             if (oldDecorated != _decorated)
             {
                 var newRect = oldClientRect;
+                var margins = new MARGINS();
+
                 if (_decorated)
                 {
-                    SetWindowTheme(_hwnd, null, null);
                     AdjustWindowRectEx(
                         ref newRect, (uint)style, false, GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE));
                 }
                 else
                 {
-                    SetWindowTheme(_hwnd, "", "");
+                    margins = new MARGINS()
+                    {
+                        topHeight = 1,
+                        leftWidth = 1,
+                        rightWidth = 1,
+                        bottomHeight = 1
+                    };
                 }
+
+                DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
                 SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
                     SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
