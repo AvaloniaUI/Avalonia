@@ -10,6 +10,82 @@ namespace Avalonia.Visuals.UnitTests
     public class VisualExtensionsTests
     {
         [Fact]
+        public void FindAncestorOfType_Finds_Direct_Parent()
+        {
+            StackPanel target;
+
+            var root = new TestRoot
+            {
+                Child = target = new StackPanel()
+            };
+
+            Assert.Equal(root, target.FindAncestorOfType<TestRoot>());
+        }
+
+        [Fact]
+        public void FindAncestorOfType_Finds_Ancestor_Of_Nested_Child()
+        {
+            Button target;
+
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        new StackPanel
+                        {
+                            Children =
+                            {
+                                (target = new Button())
+                            }
+                        }
+                    }
+                }
+            };
+
+            Assert.Equal(root, target.FindAncestorOfType<TestRoot>());
+        }
+
+        [Fact]
+        public void FindDescendantOfType_Finds_Direct_Child()
+        {
+            StackPanel target;
+
+            var root = new TestRoot
+            {
+                Child = target = new StackPanel()
+            };
+
+            Assert.Equal(target, root.FindDescendantOfType<StackPanel>());
+        }
+
+        [Fact]
+        public void FindDescendantOfType_Finds_Nested_Child()
+        {
+            Button target;
+
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        new StackPanel
+                        {
+                            Children =
+                            {
+                                (target = new Button())
+                            }
+                        }
+                    }
+                }
+            };
+
+            Assert.Equal(target, root.FindDescendantOfType<Button>());
+        }
+
+        [Fact]
         public void FindCommonVisualAncestor_Two_Subtrees_Uniform_Height()
         {
             Control left, right;
