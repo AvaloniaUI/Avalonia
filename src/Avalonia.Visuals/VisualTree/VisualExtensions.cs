@@ -199,9 +199,7 @@ namespace Avalonia.VisualTree
                 return result;
             }
 
-            FindDescendantOfTypeCore<T>(visual);
-
-            return null;
+            return FindDescendantOfTypeCore<T>(visual);
         }
 
         /// <summary>
