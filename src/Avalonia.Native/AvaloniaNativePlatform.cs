@@ -21,7 +21,6 @@ namespace Avalonia.Native
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
 
-        internal static readonly MouseDevice MouseDevice = new MouseDevice();
         internal static readonly KeyboardDevice KeyboardDevice = new KeyboardDevice();
 
         public Size DoubleClickSize => new Size(4, 4);
@@ -95,7 +94,6 @@ namespace Avalonia.Native
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
-                .Bind<IMouseDevice>().ToConstant(MouseDevice)
                 .Bind<IPlatformSettings>().ToConstant(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))

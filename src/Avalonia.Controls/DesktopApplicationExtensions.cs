@@ -50,6 +50,7 @@ namespace Avalonia.Controls
         /// On desktop-style platforms runs the application's main loop with custom CancellationToken
         /// without setting a lifetime.
         /// </summary>
+        /// <param name="app">The application.</param>
         /// <param name="token">The token to track.</param>
         public static void Run(this Application app, CancellationToken token)
         {
