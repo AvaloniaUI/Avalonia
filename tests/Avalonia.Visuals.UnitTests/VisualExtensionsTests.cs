@@ -86,6 +86,26 @@ namespace Avalonia.Visuals.UnitTests
         }
 
         [Fact]
+        public void FindCommonVisualAncestor_First_Is_Parent_Of_Second()
+        {
+            Control left, right;
+
+            var root = new TestRoot
+            {
+                Child = left = new Decorator
+                {
+                    Child = right = new Decorator()
+                }
+            };
+
+            var ancestor = left.FindCommonVisualAncestor(right);
+            Assert.Equal(left, ancestor);
+
+            ancestor = right.FindCommonVisualAncestor(left);
+            Assert.Equal(left, ancestor);
+        }
+
+        [Fact]
         public void FindCommonVisualAncestor_Two_Subtrees_Uniform_Height()
         {
             Control left, right;

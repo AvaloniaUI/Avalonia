@@ -78,20 +78,12 @@ namespace Avalonia.VisualTree
                 return null;
             }
 
-            IVisual GoUpwards(ref IVisual node, int count, IVisual parentCandidate)
+            void GoUpwards(ref IVisual node, int count)
             {
                 for (int i = 0; i < count; ++i)
                 {
                     node = node.VisualParent;
-
-                    // Other node can be our ancestor so we might find it early on.
-                    if (node == parentCandidate)
-                    {
-                        return node;
-                    }
                 }
-
-                return null;
             }
 
             // We want to find lowest node first, then make sure that both nodes are at the same height.
@@ -99,13 +91,13 @@ namespace Avalonia.VisualTree
             var firstHeight = CalculateDistanceFromRoot(visual);
             var secondHeight = CalculateDistanceFromRoot(target);
 
-            IVisual found = firstHeight > secondHeight ?
-                GoUpwards(ref visual, firstHeight - secondHeight, target) :
-                GoUpwards(ref target, secondHeight - firstHeight, target);
-
-            if (found != null)
+            if (firstHeight > secondHeight)
             {
-                return found;
+                GoUpwards(ref visual, firstHeight - secondHeight);
+            }
+            else
+            {
+                GoUpwards(ref target, secondHeight - firstHeight);
             }
 
             if (visual == target)
