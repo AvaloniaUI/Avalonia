@@ -1,5 +1,7 @@
 using System.Reactive;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
+using Avalonia.Dialogs;
 using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
@@ -26,6 +28,20 @@ namespace ControlCatalog.ViewModels
             {
                 NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Error", "Native Notifications are not quite ready. Coming soon.", NotificationType.Error));
             });
+
+            AboutCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var dialog = new AboutAvaloniaDialog();
+
+                var mainWindow = (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+
+                await dialog.ShowDialog(mainWindow);
+            });
+
+            ExitCommand = ReactiveCommand.Create(() =>
+            {
+                (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).Shutdown();
+            });
         }
 
         public IManagedNotificationManager NotificationManager
@@ -39,5 +55,9 @@ namespace ControlCatalog.ViewModels
         public ReactiveCommand<Unit, Unit> ShowManagedNotificationCommand { get; }
 
         public ReactiveCommand<Unit, Unit> ShowNativeNotificationCommand { get; }
+
+        public ReactiveCommand<Unit, Unit> AboutCommand { get; }
+
+        public ReactiveCommand<Unit, Unit> ExitCommand { get; }
     }
 }

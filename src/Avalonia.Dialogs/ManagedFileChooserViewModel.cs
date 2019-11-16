@@ -210,7 +210,12 @@ namespace Avalonia.Dialogs
 
                         if (!_selectingDirectory)
                         {
-                            FileName = SelectedItems.FirstOrDefault()?.DisplayName;
+                            var selectedItem = SelectedItems.FirstOrDefault();
+                            
+						    if (selectedItem != null)
+						    {
+						        FileName = selectedItem.DisplayName;
+						    }
                         }
                     }
                 }

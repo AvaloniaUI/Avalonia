@@ -48,6 +48,26 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ListBox_Should_Find_Scrollviewer_In_Template()
+        {
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+            };
+
+            ScrollViewer viewer = null;
+
+            target.TemplateApplied += (sender, e) =>
+            {
+                viewer = target.Scroll as ScrollViewer;
+            };
+
+            Prepare(target);
+
+            Assert.NotNull(viewer);
+        }
+
+        [Fact]
         public void ListBoxItem_Containers_Should_Be_Generated()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

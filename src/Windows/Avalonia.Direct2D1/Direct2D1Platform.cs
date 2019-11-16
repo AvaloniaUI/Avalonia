@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Controls;
@@ -27,6 +28,8 @@ namespace Avalonia.Direct2D1
 {
     public class Direct2D1Platform : IPlatformRenderInterface
     {
+        private readonly ConcurrentDictionary<Typeface, GlyphTypefaceImpl> _glyphTypefaceCache =
+            new ConcurrentDictionary<Typeface, GlyphTypefaceImpl>();
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
         public static SharpDX.Direct3D11.Device Direct3D11Device { get; private set; }
@@ -40,20 +43,6 @@ namespace Avalonia.Direct2D1
         public static SharpDX.WIC.ImagingFactory ImagingFactory { get; private set; }
 
         public static SharpDX.DXGI.Device1 DxgiDevice { get; private set; }
-
-        public IEnumerable<string> InstalledFontNames
-        {
-            get
-            {
-                var cache = Direct2D1FontCollectionCache.s_installedFontCollection;
-                var length = cache.FontFamilyCount;
-                for (int i = 0; i < length; i++)
-                {
-                    var names = cache.GetFontFamily(i).FamilyNames;
-                    yield return names.GetString(0);
-                }
-            }
-        }
 
         private static readonly object s_initLock = new object();
         private static bool s_initialized = false;
@@ -120,6 +109,7 @@ namespace Avalonia.Direct2D1
         {
             InitializeDirect2D();
             AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(s_instance);
+            AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl());
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
         }
 
@@ -131,6 +121,7 @@ namespace Avalonia.Direct2D1
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -139,6 +130,7 @@ namespace Avalonia.Direct2D1
             return new FormattedTextImpl(
                 text,
                 typeface,
+                fontSize,
                 textAlignment,
                 wrapping,
                 constraint,
@@ -200,6 +192,11 @@ namespace Avalonia.Direct2D1
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new WicBitmapImpl(format, data, size, dpi, stride);
+        }
+
+        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        {
+            return _glyphTypefaceCache.GetOrAdd(typeface, new GlyphTypefaceImpl(typeface));
         }
     }
 }
