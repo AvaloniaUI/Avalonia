@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Controls;
 using Xunit;
 
 namespace Avalonia.Styling.UnitTests
@@ -78,7 +79,7 @@ namespace Avalonia.Styling.UnitTests
                 default(Selector).OfType<Control1>().Class("foo"),
                 default(Selector).OfType<Control2>().Class("bar"));
 
-            Assert.Equal(typeof(TestControlBase), target.TargetType);
+            Assert.Equal(typeof(Control), target.TargetType);
         }
 
         [Fact]
@@ -91,15 +92,15 @@ namespace Avalonia.Styling.UnitTests
             Assert.Equal(null, target.TargetType);
         }
 
-        public class Control1 : TestControlBase
+        public class Control1 : Control
         {
         }
 
-        public class Control2 : TestControlBase
+        public class Control2 : Control
         {
         }
 
-        public class Control3 : TestControlBase
+        public class Control3 : Control
         {
         }
     }
