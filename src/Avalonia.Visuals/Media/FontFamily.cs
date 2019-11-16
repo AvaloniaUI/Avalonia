@@ -200,7 +200,7 @@ namespace Avalonia.Media
                 return false;
             }
 
-            if (Key != other.Key)
+            if (!Equals(Key, other.Key))
             {
                 return false;
             }
