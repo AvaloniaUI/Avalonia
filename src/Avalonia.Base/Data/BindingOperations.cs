@@ -56,22 +56,34 @@ namespace Avalonia.Data
 
                     if (source != null)
                     {
+                        // Perf: Avoid allocating closure in the outer scope.
+                        var targetCopy = target;
+                        var propertyCopy = property;
+                        var bindingCopy = binding;
+
                         return source
                             .Where(x => BindingNotification.ExtractValue(x) != AvaloniaProperty.UnsetValue)
                             .Take(1)
-                            .Subscribe(x => target.SetValue(property, x, binding.Priority));
+                            .Subscribe(x => targetCopy.SetValue(propertyCopy, x, bindingCopy.Priority));
                     }
                     else
                     {
                         target.SetValue(property, binding.Value, binding.Priority);
                         return Disposable.Empty;
                     }
+
                 case BindingMode.OneWayToSource:
+                {
+                    // Perf: Avoid allocating closure in the outer scope.
+                    var bindingCopy = binding;
+
                     return Observable.CombineLatest(
                         binding.Observable,
                         target.GetObservable(property),
                         (_, v) => v)
-                    .Subscribe(x => binding.Subject.OnNext(x));
+                    .Subscribe(x => bindingCopy.Subject.OnNext(x));
+                }
+
                 default:
                     throw new ArgumentException("Invalid binding mode.");
             }

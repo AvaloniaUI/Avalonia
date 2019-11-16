@@ -41,7 +41,17 @@ namespace Avalonia.Data.Core
         {
             reference.TryGetTarget(out object target);
 
-            var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(target, PropertyName));
+            IPropertyAccessorPlugin plugin = null;
+
+            foreach (IPropertyAccessorPlugin x in ExpressionObserver.PropertyAccessors)
+            {
+                if (x.Match(target, PropertyName))
+                {
+                    plugin = x;
+                    break;
+                }
+            }
+
             var accessor = plugin?.Start(reference, PropertyName);
 
             if (_enableValidation && Next == null)
