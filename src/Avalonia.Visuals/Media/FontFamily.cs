@@ -184,36 +184,25 @@ namespace Avalonia.Media
         {
             unchecked
             {
-                var hash = (int)2186146271;
-
-                if (Key != null)
-                {
-                    hash = (hash * 15768619) ^ Key.GetHashCode();
-                }
-                else
-                {
-                    hash = (hash * 15768619) ^ FamilyNames.GetHashCode();
-                }
-
-                if (Key != null)
-                {
-                    hash = (hash * 15768619) ^ Key.GetHashCode();
-                }
-
-                return hash;
+                return ((FamilyNames != null ? FamilyNames.GetHashCode() : 0) * 397) ^ (Key != null ? Key.GetHashCode() : 0);
             }
         }
 
         public override bool Equals(object obj)
         {
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
             if (!(obj is FontFamily other))
             {
                 return false;
             }
 
-            if (Key != null)
+            if (!Equals(Key, other.Key))
             {
-                return other.FamilyNames.Equals(FamilyNames) && other.Key.Equals(Key);
+                return false;
             }
 
             return other.FamilyNames.Equals(FamilyNames);
