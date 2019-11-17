@@ -35,7 +35,19 @@ namespace Avalonia
 
         public bool IsSet(AvaloniaProperty property)
         {
-            return TryGetValueUntyped(property, out _);
+            if (_values.TryGetValue(property, out var slot))
+            {
+                if (slot is IValue v)
+                {
+                    return v.Value.HasValue;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public bool TryGetValue<T>(StyledPropertyBase<T> property, out T value)
@@ -58,29 +70,6 @@ namespace Avalonia
             }
 
             value = default!;
-            return false;
-        }
-
-        public bool TryGetValueUntyped(AvaloniaProperty property, out object? value)
-        {
-            if (_values.TryGetValue(property, out var slot))
-            {
-                if (slot is IValue v)
-                {
-                    if (v.Value.HasValue)
-                    {
-                        value = v.Value.Value;
-                        return true;
-                    }
-                }
-                else
-                {
-                    value = slot;
-                    return true;
-                }
-            }
-
-            value = default;
             return false;
         }
 
