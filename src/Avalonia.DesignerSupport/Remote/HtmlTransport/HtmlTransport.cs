@@ -58,15 +58,13 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                     });
             
             _signalTransport = signalTransport;
-            var host = listenUri.Host.Split(':');
-            var address = IPAddress.Parse(host[0]);
-            var port = host.Length > 1 ? int.Parse(host[1]) : 5000;
-                
-            _simpleServer = new SimpleWebSocketHttpServer(address, port);
+            var address = IPAddress.Parse(listenUri.Host);
+            
+            _simpleServer = new SimpleWebSocketHttpServer(address, listenUri.Port);
             _simpleServer.Listen();
             Task.Run(AcceptWorker);
             Task.Run(SocketWorker);
-            _signalTransport.Send(new HtmlTransportStartedMessage { Uri = "http://" + address + ":" + port + "/" });
+            _signalTransport.Send(new HtmlTransportStartedMessage { Uri = "http://" + address + ":" + listenUri.Port + "/" });
         }
 
         async void AcceptWorker()
