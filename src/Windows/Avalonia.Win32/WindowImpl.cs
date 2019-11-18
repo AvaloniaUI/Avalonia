@@ -126,10 +126,15 @@ namespace Avalonia.Win32
                     // window content.
                     if (placement.ShowCmd == ShowWindowCommand.ShowMaximized)
                     {
-                        POINT point = default;
-                        point.X = point.Y = 0;
+                        MONITORINFO monitorInfo = MONITORINFO.Create();
+                        POINT point = new POINT() { X = 0, Y = 0 };
+
+                        GetMonitorInfo(MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST), ref monitorInfo);
                         ClientToScreen(_hwnd, ref point);
-                        return new Size(rect.right + point.X * 2, rect.bottom + point.Y * 2) / Scaling;
+
+                        return new Size(
+                            rect.right - (monitorInfo.rcWork.left - point.X) * 2,
+                            rect.bottom - (monitorInfo.rcWork.top - point.Y) * 2) / Scaling;
                     }
                 }
 
