@@ -35,5 +35,7 @@ namespace Avalonia.DesignerSupport.Remote
             add {}
             remove {}
         }
+
+        public void Start() => _inner?.Start();
     }
 }

@@ -12,6 +12,7 @@ using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.MSBuild;
+using Nuke.Common.Tools.Npm;
 using Nuke.Common.Utilities;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
@@ -123,8 +124,21 @@ partial class Build : NukeBuild
         EnsureCleanDirectory(Parameters.TestResultsRoot);
     });
 
+    Target CompileHtmlPreviewer => _ => _
+        .DependsOn("Clean")
+        .Executes(() =>
+        {
+            var webappDir = RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp";
+
+            NpmTasks.NpmInstall(c => c.SetWorkingDirectory(webappDir));
+            NpmTasks.NpmRun(c => c
+                .SetWorkingDirectory(webappDir)
+                .SetCommand("dist"));
+        });
+    
     Target Compile => _ => _
         .DependsOn(Clean)
+        .DependsOn(CompileHtmlPreviewer)
         .Executes(() =>
         {
             if (Parameters.IsRunningOnWindows)
