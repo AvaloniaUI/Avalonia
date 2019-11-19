@@ -94,6 +94,28 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal("fallback", target.Text);
         }
 
+        [Fact]
+        public void Should_Return_TargetNullValue_When_Value_Is_Null()
+        {
+            var target = new TextBlock();
+
+            var binding = new MultiBinding
+            {
+                Converter = new NullValueConverter(),
+                Bindings = new[]
+                {
+                    new Binding { Path = "A" },
+                    new Binding { Path = "B" },
+                    new Binding { Path = "C" },
+                },
+                TargetNullValue = "(null)",
+            };
+
+            target.Bind(TextBlock.TextProperty, binding);
+
+            Assert.Equal("(null)", target.Text);
+        }
+
         private class ConcatConverter : IMultiValueConverter
         {
             public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
@@ -107,6 +129,14 @@ namespace Avalonia.Markup.UnitTests.Data
             public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
             {
                 return AvaloniaProperty.UnsetValue;
+            }
+        }
+
+        private class NullValueConverter : IMultiValueConverter
+        {
+            public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+            {
+                return null;
             }
         }
     }
