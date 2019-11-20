@@ -111,7 +111,7 @@ namespace Avalonia.Reactive
 
         protected abstract void Initialize();
         protected abstract void Deinitialize();
-       
+
         protected void PublishNext(T value)
         {
             if (Volatile.Read(ref _observers) != null)
