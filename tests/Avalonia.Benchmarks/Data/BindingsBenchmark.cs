@@ -19,6 +19,22 @@ namespace Avalonia.Benchmarks.Data
             instance.Bind(TestClass.IntValueProperty, binding);
         }
 
+        [Benchmark]
+        public void UpdateTwoWayBinding_Via_Binding()
+        {
+            var instance = new TestClass();
+
+            var binding = new Binding(nameof(TestClass.BoundValue), BindingMode.TwoWay)
+            {
+                Source = instance
+            };
+
+            instance.Bind(TestClass.IntValueProperty, binding);
+            for (int i = 0; i < 60; i++)
+            {
+                instance.IntValue = i;
+            }
+        }
         private class TestClass : AvaloniaObject
         {
             public static readonly StyledProperty<int> IntValueProperty =
