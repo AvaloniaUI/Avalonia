@@ -307,6 +307,11 @@ namespace Avalonia.Controls
             }
         }
         
+        protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+        {
+            IsPressed = false;
+        }
+
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
             base.UpdateDataValidation(property, value);
@@ -321,11 +326,6 @@ namespace Avalonia.Controls
                     }
                 }
             }
-        }
-
-        protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
-        {
-            IsPressed = false;
         }
 
         /// <summary>
