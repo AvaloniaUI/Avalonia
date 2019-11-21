@@ -41,10 +41,6 @@ namespace Avalonia
                 {
                     return v.Value.HasValue;
                 }
-                else
-                {
-                    return true;
-                }
             }
 
             return false;
@@ -62,11 +58,6 @@ namespace Avalonia
                         return true;
                     }
                 }
-                else
-                {
-                    value = (T)slot;
-                    return true;
-                }
             }
 
             value = default!;
@@ -81,7 +72,7 @@ namespace Avalonia
             }
             else if (priority == BindingPriority.LocalValue)
             {
-                _values.AddValue(property, (object)value!);
+                _values.AddValue(property, new LocalValueEntry<T>(value));
                 _sink.ValueChanged(property, priority, default, value);
             }
             else
@@ -174,18 +165,25 @@ namespace Avalonia
             {
                 p.SetValue(value, priority);
             }
-            else if (priority == BindingPriority.LocalValue)
+            else if (slot is LocalValueEntry<T> l)
             {
-                var old = (T)slot;
-                _values.SetValue(property, (object)value!);
-                _sink.ValueChanged(property, priority, old, value);
+                if (priority == BindingPriority.LocalValue)
+                {
+                    var old = l.Value;
+                    l.Value = value;
+                    _sink.ValueChanged(property, priority, old, value);
+                }
+                else
+                {
+                    var existing = l.ToConstantValueEntry(property);
+                    var priorityValue = new PriorityValue<T>(_owner, property, this, existing);
+                    priorityValue.SetValue(value, priority);
+                    _values.SetValue(property, priorityValue);
+                }
             }
             else
             {
-                var existing = new ConstantValueEntry<T>(property, (T)slot, BindingPriority.LocalValue);
-                var priorityValue = new PriorityValue<T>(_owner, property, this, existing);
-                priorityValue.SetValue(value, priority);
-                _values.SetValue(property, priorityValue);
+                throw new NotSupportedException("Unrecognised value store slot type.");
             }
         }
 
@@ -205,10 +203,14 @@ namespace Avalonia
             {
                 priorityValue = p;
             }
+            else if (slot is LocalValueEntry<T> l)
+            {
+                var existing = l.ToConstantValueEntry(property);
+                priorityValue = new PriorityValue<T>(_owner, property, this, existing);
+            }
             else
             {
-                var existing = new ConstantValueEntry<T>(property, (T)slot, BindingPriority.LocalValue);
-                priorityValue = new PriorityValue<T>(_owner, property, this, existing);
+                throw new NotSupportedException("Unrecognised value store slot type.");
             }
 
             var binding = priorityValue.AddBinding(source, priority);
