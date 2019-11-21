@@ -201,15 +201,5 @@ namespace Avalonia
 
             Setter((TOwner)instance, (TValue)value);
         }
-
-        internal void WrapSetter(TOwner instance, BindingValue<TValue> value)
-        {
-            if (Setter == null)
-            {
-                throw new ArgumentException($"The property {Name} is readonly.");
-            }
-
-            Setter(instance, value.Value);
-        }
     }
 }
