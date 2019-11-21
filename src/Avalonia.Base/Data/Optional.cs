@@ -20,7 +20,7 @@ namespace Avalonia.Data
     ///   conversion from <typeparamref name="T"/>
     /// - For an missing value, use <see cref="Empty"/> or simply `default`
     /// </remarks>
-    public struct Optional<T>
+    public readonly struct Optional<T>
     {
         private readonly T _value;
 
