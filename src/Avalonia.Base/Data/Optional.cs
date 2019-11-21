@@ -20,7 +20,7 @@ namespace Avalonia.Data
     ///   conversion from <typeparamref name="T"/>
     /// - For an missing value, use <see cref="Empty"/> or simply `default`
     /// </remarks>
-    public readonly struct Optional<T>
+    public readonly struct Optional<T> : IEquatable<Optional<T>>
     {
         private readonly T _value;
 
@@ -49,6 +49,9 @@ namespace Avalonia.Data
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is Optional<T> o && this == o;
+
+        /// <inheritdoc/>
+        public bool Equals(Optional<T> other) => this == other;
 
         /// <inheritdoc/>
         public override int GetHashCode() => HasValue ? Value!.GetHashCode() : 0;
