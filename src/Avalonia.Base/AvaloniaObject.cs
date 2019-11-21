@@ -587,6 +587,33 @@ namespace Avalonia
             }
         }
 
+        internal AvaloniaPropertyValue GetDiagnosticInternal(AvaloniaProperty property)
+        {
+            if (property.IsDirect)
+            {
+                return new AvaloniaPropertyValue(
+                    property,
+                    GetValue(property),
+                    BindingPriority.Unset,
+                    "Local Value");
+            }
+            else if (_values != null)
+            {
+                var result = _values.GetDiagnostic(property);
+
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            return new AvaloniaPropertyValue(
+                property,
+                GetValue(property),
+                BindingPriority.Unset,
+                "Unset");
+        }
+
         /// <summary>
         /// Logs a binding error for a property.
         /// </summary>

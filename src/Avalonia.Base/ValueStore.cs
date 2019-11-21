@@ -129,6 +129,23 @@ namespace Avalonia
             }
         }
 
+        public Diagnostics.AvaloniaPropertyValue? GetDiagnostic(AvaloniaProperty property)
+        {
+            if (_values.TryGetValue(property, out var slot))
+            {
+                if (slot is IValue value)
+                {
+                    return new Diagnostics.AvaloniaPropertyValue(
+                        property,
+                        value.Value.HasValue ? (object)value.Value : AvaloniaProperty.UnsetValue,
+                        value.ValuePriority,
+                        null);
+                }
+            }
+
+            return null;
+        }
+
         void IValueSink.ValueChanged<T>(
             StyledPropertyBase<T> property,
             BindingPriority priority,
