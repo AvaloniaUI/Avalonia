@@ -40,6 +40,18 @@ namespace Avalonia.PropertyStore
             }
         }
 
+        public PriorityValue(
+            IAvaloniaObject owner,
+            StyledPropertyBase<T> property,
+            IValueSink sink,
+            LocalValueEntry<T> existing)
+            : this(owner, property, sink)
+        {
+            _localValue = existing.Value;
+            Value = _localValue;
+            ValuePriority = BindingPriority.LocalValue;
+        }
+
         public StyledPropertyBase<T> Property { get; }
         public Optional<T> Value { get; private set; }
         public BindingPriority ValuePriority { get; private set; }
@@ -77,7 +89,11 @@ namespace Avalonia.PropertyStore
             Optional<TValue> oldValue,
             BindingValue<TValue> newValue)
         {
-            _localValue = default;
+            if (priority == BindingPriority.LocalValue)
+            {
+                _localValue = default;
+            }
+
             UpdateEffectiveValue();
         }
 
@@ -108,28 +124,36 @@ namespace Avalonia.PropertyStore
             var reachedLocalValues = false;
             var value = default(Optional<T>);
 
-            for (var i = _entries.Count - 1; i >= 0; --i)
+            if (_entries.Count > 0)
             {
-                var entry = _entries[i];
-
-                if (!reachedLocalValues && entry.Priority >= BindingPriority.LocalValue)
+                for (var i = _entries.Count - 1; i >= 0; --i)
                 {
-                    reachedLocalValues = true;
+                    var entry = _entries[i];
 
-                    if (_localValue.HasValue)
+                    if (!reachedLocalValues && entry.Priority >= BindingPriority.LocalValue)
                     {
-                        value = _localValue;
-                        ValuePriority = BindingPriority.LocalValue;
+                        reachedLocalValues = true;
+
+                        if (_localValue.HasValue)
+                        {
+                            value = _localValue;
+                            ValuePriority = BindingPriority.LocalValue;
+                            break;
+                        }
+                    }
+
+                    if (entry.Value.HasValue)
+                    {
+                        value = entry.Value;
+                        ValuePriority = entry.Priority;
                         break;
                     }
                 }
-
-                if (entry.Value.HasValue)
-                {
-                    value = entry.Value;
-                    ValuePriority = entry.Priority;
-                    break;
-                }
+            }
+            else if (_localValue.HasValue)
+            {
+                value = _localValue;
+                ValuePriority = BindingPriority.LocalValue;
             }
 
             if (value != Value)

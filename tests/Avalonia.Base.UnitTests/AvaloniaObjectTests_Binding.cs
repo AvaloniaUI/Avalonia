@@ -102,6 +102,37 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Completing_LocalValue_Binding_Should_Not_Revert_To_Set_LocalValue()
+        {
+            var target = new Class1();
+            var source = new BehaviorSubject<string>("bar");
+
+            target.SetValue(Class1.FooProperty, "foo");
+            var sub = target.Bind(Class1.FooProperty, source);
+
+            Assert.Equal("bar", target.GetValue(Class1.FooProperty));
+
+            sub.Dispose();
+
+            Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Completing_Animation_Binding_Reverts_To_Set_LocalValue()
+        {
+            var target = new Class1();
+            var source = new Subject<string>();
+            var property = Class1.FooProperty;
+
+            target.SetValue(property, "foo");
+            target.Bind(property, source, BindingPriority.Animation);
+            source.OnNext("bar");
+            source.OnCompleted();
+
+            Assert.Equal("foo", target.GetValue(property));
+        }
+
+        [Fact]
         public void Setting_Style_Value_Overrides_Binding_Permanently()
         {
             var target = new Class1();

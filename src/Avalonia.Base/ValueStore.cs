@@ -170,14 +170,12 @@ namespace Avalonia
                 if (priority == BindingPriority.LocalValue)
                 {
                     var old = l.Value;
-                    l.Value = value;
+                    l.SetValue(value);
                     _sink.ValueChanged(property, priority, old, value);
                 }
                 else
                 {
-                    var existing = l.ToConstantValueEntry(property);
-                    var priorityValue = new PriorityValue<T>(_owner, property, this, existing);
-                    priorityValue.SetValue(value, priority);
+                    var priorityValue = new PriorityValue<T>(_owner, property, this, l);
                     _values.SetValue(property, priorityValue);
                 }
             }
@@ -205,8 +203,7 @@ namespace Avalonia
             }
             else if (slot is LocalValueEntry<T> l)
             {
-                var existing = l.ToConstantValueEntry(property);
-                priorityValue = new PriorityValue<T>(_owner, property, this, existing);
+                priorityValue = new PriorityValue<T>(_owner, property, this, l);
             }
             else
             {
