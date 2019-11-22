@@ -17,4 +17,9 @@
     </Style>
     <StyleInclude Source="/SideBar.xaml"/>
   </Application.Styles>
+  <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="About ControlCatalog" Command="{Binding AboutCommand}" />
+    </NativeMenu>
+  </NativeMenu.Menu>
 </Application>
