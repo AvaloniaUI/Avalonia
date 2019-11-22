@@ -12,25 +12,27 @@ namespace Avalonia
     /// </summary>
     public class StyledPropertyMetadata<TValue> : PropertyMetadata, IStyledPropertyMetadata
     {
+        private Optional<TValue> _defaultValue;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="StyledPropertyMetadata{TValue}"/> class.
         /// </summary>
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="defaultBindingMode">The default binding mode.</param>
         public StyledPropertyMetadata(
-            TValue defaultValue = default,
+            Optional<TValue> defaultValue = default,
             BindingMode defaultBindingMode = BindingMode.Default)
                 : base(defaultBindingMode)
         {
-            DefaultValue = new BoxedValue<TValue>(defaultValue);
+            _defaultValue = defaultValue;
         }
 
         /// <summary>
         /// Gets the default value for the property.
         /// </summary>
-        internal BoxedValue<TValue> DefaultValue { get; private set; }
+        internal TValue DefaultValue => _defaultValue.ValueOrDefault();
 
-        object IStyledPropertyMetadata.DefaultValue => DefaultValue.Boxed;
+        object IStyledPropertyMetadata.DefaultValue => DefaultValue;
 
         /// <inheritdoc/>
         public override void Merge(PropertyMetadata baseMetadata, AvaloniaProperty property)
@@ -39,9 +41,9 @@ namespace Avalonia
 
             if (baseMetadata is StyledPropertyMetadata<TValue> src)
             {
-                if (DefaultValue.Boxed == null)
+                if (!_defaultValue.HasValue)
                 {
-                    DefaultValue = src.DefaultValue;
+                    _defaultValue = src.DefaultValue;
                 }
             }
         }

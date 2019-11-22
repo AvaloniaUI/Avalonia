@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Data;
 using Avalonia.Reactive;
@@ -23,12 +22,14 @@ namespace Avalonia
         /// <param name="ownerType">The type of the class that registers the property.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
+        /// <param name="validate">A value validation callback.</param>
         /// <param name="notifying">A <see cref="AvaloniaProperty.Notifying"/> callback.</param>
         protected StyledPropertyBase(
             string name,
             Type ownerType,            
             StyledPropertyMetadata<TValue> metadata,
             bool inherits = false,
+            Func<TValue, bool> validate = null,
             Action<IAvaloniaObject, bool> notifying = null)
                 : base(name, ownerType, metadata, notifying)
         {
@@ -41,6 +42,13 @@ namespace Avalonia
             }
 
             _inherits = inherits;
+            ValidateValue = validate;
+
+            if (validate?.Invoke(metadata.DefaultValue) == false)
+            {
+                throw new ArgumentException(
+                    $"'{metadata.DefaultValue}' is not a valid default value for '{name}'.");
+            }
         }
 
         /// <summary>
@@ -63,6 +71,11 @@ namespace Avalonia
         public override bool Inherits => _inherits;
 
         /// <summary>
+        /// Gets the value validation callback for the property.
+        /// </summary>
+        public Func<TValue, bool> ValidateValue { get; }
+
+        /// <summary>
         /// Gets the default value for the property on the specified type.
         /// </summary>
         /// <param name="type">The type.</param>
@@ -71,7 +84,7 @@ namespace Avalonia
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
-            return GetMetadata(type).DefaultValue.Typed;
+            return GetMetadata(type).DefaultValue;
         }
 
         /// <summary>
@@ -123,6 +136,15 @@ namespace Avalonia
         /// <param name="metadata">The metadata.</param>
         public void OverrideMetadata(Type type, StyledPropertyMetadata<TValue> metadata)
         {
+            if (ValidateValue != null)
+            {
+                if (!ValidateValue(metadata.DefaultValue))
+                {
+                    throw new ArgumentException(
+                        $"'{metadata.DefaultValue}' is not a valid default value for '{Name}'.");
+                }
+            }
+
             base.OverrideMetadata(type, metadata);
         }
 
@@ -209,7 +231,7 @@ namespace Avalonia
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
-            return GetMetadata(type).DefaultValue.Boxed;
+            return GetMetadata(type).DefaultValue;
         }
 
         [DebuggerHidden]

@@ -189,14 +189,14 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<DatePickerFormat> SelectedDateFormatProperty =
             AvaloniaProperty.Register<DatePicker, DatePickerFormat>(
                 nameof(SelectedDateFormat),
-                defaultValue: DatePickerFormat.Short/*,
-                validate: ValidateSelectedDateFormat*/);
+                defaultValue: DatePickerFormat.Short,
+                validate: IsValidSelectedDateFormat);
 
         public static readonly StyledProperty<string> CustomDateFormatStringProperty =
             AvaloniaProperty.Register<DatePicker, string>(
                 nameof(CustomDateFormatString),
-                defaultValue: "d"/*,
-                validate: ValidateDateFormatString*/);
+                defaultValue: "d",
+                validate: IsValidDateFormatString);
 
         public static readonly DirectProperty<DatePicker, string> TextProperty =
             AvaloniaProperty.RegisterDirect<DatePicker, string>(
@@ -1146,27 +1146,9 @@ namespace Avalonia.Controls
                 || value == DatePickerFormat.Short
                 || value == DatePickerFormat.Custom;
         }
-        private static DatePickerFormat ValidateSelectedDateFormat(DatePicker dp, DatePickerFormat format)
+        private static bool IsValidDateFormatString(string formatString)
         {
-            if(IsValidSelectedDateFormat(format))
-            {
-                return format;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(format), "DatePickerFormat value is not valid.");
-            }
-        }
-        private static string ValidateDateFormatString(DatePicker dp, string formatString)
-        {
-            if(string.IsNullOrWhiteSpace(formatString))
-            {
-                throw new ArgumentException("DateFormatString value is not valid.", nameof(formatString));
-            }
-            else
-            {
-                return formatString;
-            }
+            return !string.IsNullOrWhiteSpace(formatString);
         }
         private static DateTime DiscardDayTime(DateTime d)
         {

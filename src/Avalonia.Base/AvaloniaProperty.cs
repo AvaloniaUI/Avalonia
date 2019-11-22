@@ -257,6 +257,7 @@ namespace Avalonia
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <param name="validate">A value validation callback.</param>
         /// <param name="notifying">
         /// A method that gets called before and after the property starts being notified on an
         /// object; the bool argument will be true before and false afterwards. This callback is
@@ -268,6 +269,7 @@ namespace Avalonia
             TValue defaultValue = default(TValue),
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
+            Func<TValue, bool> validate = null,
             Action<IAvaloniaObject, bool> notifying = null)
                 where TOwner : IAvaloniaObject
         {
@@ -282,6 +284,7 @@ namespace Avalonia
                 typeof(TOwner),
                 metadata,
                 inherits,
+                validate,
                 notifying);
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);
             return result;
@@ -297,12 +300,14 @@ namespace Avalonia
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <param name="validate">A value validation callback.</param>
         /// <returns>A <see cref="AvaloniaProperty{TValue}"/></returns>
         public static AttachedProperty<TValue> RegisterAttached<TOwner, THost, TValue>(
             string name,
             TValue defaultValue = default(TValue),
             bool inherits = false,
-            BindingMode defaultBindingMode = BindingMode.OneWay)
+            BindingMode defaultBindingMode = BindingMode.OneWay,
+            Func<TValue, bool> validate = null)
                 where THost : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);

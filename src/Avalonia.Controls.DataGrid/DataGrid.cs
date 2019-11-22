@@ -201,21 +201,13 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> ColumnHeaderHeightProperty =
             AvaloniaProperty.Register<DataGrid, double>(
                 nameof(ColumnHeaderHeight),
-                defaultValue: double.NaN/*,
-                validate: ValidateColumnHeaderHeight*/);
+                defaultValue: double.NaN,
+                validate: IsValidColumnHeaderHeight);
 
-        private static double ValidateColumnHeaderHeight(DataGrid grid, double value)
+        private static bool IsValidColumnHeaderHeight(double value)
         {
-            if (value < DATAGRID_minimumColumnHeaderHeight)
-            {
-                throw DataGridError.DataGrid.ValueMustBeGreaterThanOrEqualTo(nameof(value), nameof(ColumnHeaderHeight), DATAGRID_minimumColumnHeaderHeight);
-            }
-            if (value > DATAGRID_maxHeadersThickness)
-            {
-                throw DataGridError.DataGrid.ValueMustBeGreaterThanOrEqualTo(nameof(value), nameof(ColumnHeaderHeight), DATAGRID_maxHeadersThickness);
-            }
-
-            return value;
+            return double.IsNaN(value) ||
+                (value >= DATAGRID_minimumColumnHeaderHeight && value <= DATAGRID_maxHeadersThickness);
         }
 
         /// <summary>
@@ -261,8 +253,8 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<int> FrozenColumnCountProperty =
             AvaloniaProperty.Register<DataGrid, int>(
-                nameof(FrozenColumnCount)/*,
-                validate: ValidateFrozenColumnCount*/);
+                nameof(FrozenColumnCount),
+                validate: ValidateFrozenColumnCount);
 
         /// <summary>
         /// Gets or sets the number of columns that the user cannot scroll horizontally.
@@ -273,15 +265,7 @@ namespace Avalonia.Controls
             set { SetValue(FrozenColumnCountProperty, value); }
         }
 
-        private static int ValidateFrozenColumnCount(DataGrid grid, int value)
-        {
-            if (value < 0)
-            {
-                throw DataGridError.DataGrid.ValueMustBeGreaterThanOrEqualTo(nameof(value), nameof(FrozenColumnCount), 0);
-            }
-
-            return value;
-        }
+        private static bool ValidateFrozenColumnCount(int value) => value >= 0;
 
         public static readonly StyledProperty<DataGridGridLinesVisibility> GridLinesVisibilityProperty =
             AvaloniaProperty.Register<DataGrid, DataGridGridLinesVisibility>(nameof(GridLinesVisibility));
@@ -395,30 +379,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> MaxColumnWidthProperty =
             AvaloniaProperty.Register<DataGrid, double>(
                 nameof(MaxColumnWidth),
-                defaultValue: DATAGRID_defaultMaxColumnWidth/*,
-                validate: ValidateMaxColumnWidth*/);
+                defaultValue: DATAGRID_defaultMaxColumnWidth,
+                validate: IsValidColumnWidth);
 
-        private static double ValidateMaxColumnWidth(DataGrid grid, double value)
+        private static bool IsValidColumnWidth(double value)
         {
-            if (double.IsNaN(value))
-            {
-                throw DataGridError.DataGrid.ValueCannotBeSetToNAN(nameof(MaxColumnWidth));
-            }
-            if (value < 0)
-            {
-                throw DataGridError.DataGrid.ValueMustBeGreaterThanOrEqualTo(nameof(value), nameof(MaxColumnWidth), 0);
-            }
-            if (grid.MinColumnWidth > value)
-            {
-                throw DataGridError.DataGrid.ValueMustBeGreaterThanOrEqualTo(nameof(value), nameof(MaxColumnWidth), nameof(MinColumnWidth));
-            }
-
-            if (value < 0)
-            {
-                throw DataGridError.DataGrid.ValueMustBeGreaterThanOrEqualTo(nameof(value), nameof(FrozenColumnCount), 0);
-            }
-
-            return value;
+            return !double.IsNaN(value) && value > 0;
         }
 
         /// <summary>
@@ -433,29 +399,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> MinColumnWidthProperty =
             AvaloniaProperty.Register<DataGrid, double>(
                 nameof(MinColumnWidth),
-                defaultValue: DATAGRID_defaultMinColumnWidth/*,
-                validate: ValidateMinColumnWidth*/);
+                defaultValue: DATAGRID_defaultMinColumnWidth,
+                validate: IsValidMinColumnWidth);
 
-        private static double ValidateMinColumnWidth(DataGrid grid, double value)
+        private static bool IsValidMinColumnWidth(double value)
         {
-            if (double.IsNaN(value))
-            {
-                throw DataGridError.DataGrid.ValueCannotBeSetToNAN(nameof(MinColumnWidth));
-            }
-            if (value < 0)
-            {
-                throw DataGridError.DataGrid.ValueMustBeGreaterThanOrEqualTo(nameof(value), nameof(MinColumnWidth), 0);
-            }
-            if (double.IsPositiveInfinity(value))
-            {
-                throw DataGridError.DataGrid.ValueCannotBeSetToInfinity(nameof(MinColumnWidth));
-            }
-            if (grid.MaxColumnWidth < value)
-            {
-                throw DataGridError.DataGrid.ValueMustBeLessThanOrEqualTo(nameof(value), nameof(MinColumnWidth), nameof(MaxColumnWidth));
-            }
-
-            return value;
+            return !double.IsNaN(value) && !double.IsPositiveInfinity(value) && value >= 0;
         }
 
         /// <summary>
@@ -482,20 +431,13 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> RowHeightProperty =
             AvaloniaProperty.Register<DataGrid, double>(
                 nameof(RowHeight),
-                defaultValue: double.NaN/*,
-                validate: ValidateRowHeight*/);
-        private static double ValidateRowHeight(DataGrid grid, double value)
+                defaultValue: double.NaN,
+                validate: IsValidRowHeight);
+        private static bool IsValidRowHeight(double value)
         {
-            if (value < DataGridRow.DATAGRIDROW_minimumHeight)
-            {
-                throw DataGridError.DataGrid.ValueMustBeGreaterThanOrEqualTo(nameof(value), nameof(RowHeight), 0);
-            }
-            if (value > DataGridRow.DATAGRIDROW_maximumHeight)
-            {
-                throw DataGridError.DataGrid.ValueMustBeLessThanOrEqualTo(nameof(value), nameof(RowHeight), DataGridRow.DATAGRIDROW_maximumHeight);
-            }
-
-            return value;
+            return double.IsNaN(value) ||
+                (value >= DataGridRow.DATAGRIDROW_minimumHeight &&
+                 value <= DataGridRow.DATAGRIDROW_maximumHeight);
         }
 
         /// <summary>
@@ -510,20 +452,13 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> RowHeaderWidthProperty =
             AvaloniaProperty.Register<DataGrid, double>(
                 nameof(RowHeaderWidth),
-                defaultValue: double.NaN/*,
-                validate: ValidateRowHeaderWidth*/);
-        private static double ValidateRowHeaderWidth(DataGrid grid, double value)
+                defaultValue: double.NaN,
+                validate: IsValidRowHeaderWidth);
+        private static bool IsValidRowHeaderWidth(double value)
         {
-            if (value < DATAGRID_minimumRowHeaderWidth)
-            {
-                throw DataGridError.DataGrid.ValueMustBeGreaterThanOrEqualTo(nameof(value), nameof(RowHeaderWidth), DATAGRID_minimumRowHeaderWidth);
-            }
-            if (value > DATAGRID_maxHeadersThickness)
-            {
-                throw DataGridError.DataGrid.ValueMustBeLessThanOrEqualTo(nameof(value), nameof(RowHeaderWidth), DATAGRID_maxHeadersThickness);
-            }
-
-            return value;
+            return double.IsNaN(value) ||
+                (value >= DATAGRID_minimumRowHeaderWidth &&
+                 value <= DATAGRID_maxHeadersThickness);
         }
 
         /// <summary>

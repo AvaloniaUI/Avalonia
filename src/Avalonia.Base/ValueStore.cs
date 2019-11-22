@@ -66,6 +66,11 @@ namespace Avalonia
 
         public void SetValue<T>(StyledPropertyBase<T> property, T value, BindingPriority priority)
         {
+            if (property.ValidateValue?.Invoke(value) == false)
+            {
+                throw new ArgumentException($"{value} is not a valid value for '{property.Name}.");
+            }
+
             if (_values.TryGetValue(property, out var slot))
             {
                 SetExisting(slot, property, value, priority);
