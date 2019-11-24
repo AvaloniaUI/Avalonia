@@ -257,7 +257,8 @@ namespace Avalonia
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
-        /// <param name="validate">A value validation callback.</param>
+         /// <param name="validate">A value validation callback.</param>
+        /// <param name="coerce">A value coercion callback.</param>
         /// <param name="notifying">
         /// A method that gets called before and after the property starts being notified on an
         /// object; the bool argument will be true before and false afterwards. This callback is
@@ -270,6 +271,7 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool> validate = null,
+            Func<IAvaloniaObject, TValue, TValue> coerce = null,
             Action<IAvaloniaObject, bool> notifying = null)
                 where TOwner : IAvaloniaObject
         {
@@ -277,7 +279,8 @@ namespace Avalonia
 
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
-                defaultBindingMode: defaultBindingMode);
+                defaultBindingMode: defaultBindingMode,
+                coerce: coerce);
 
             var result = new StyledProperty<TValue>(
                 name,

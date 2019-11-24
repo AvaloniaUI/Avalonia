@@ -11,6 +11,7 @@ namespace Avalonia.PropertyStore
         private readonly IAvaloniaObject _owner;
         private readonly IValueSink _sink;
         private readonly List<IPriorityValueEntry<T>> _entries = new List<IPriorityValueEntry<T>>();
+        private readonly Func<IAvaloniaObject, T, T>? _coerceValue;
         private Optional<T> _localValue;
 
         public PriorityValue(
@@ -21,6 +22,12 @@ namespace Avalonia.PropertyStore
             _owner = owner;
             Property = property;
             _sink = sink;
+
+            if (property.HasCoercion)
+            {
+                var metadata = property.GetMetadata(owner.GetType());
+                _coerceValue = metadata.CoerceValue;
+            }
         }
 
         public PriorityValue(
@@ -82,6 +89,8 @@ namespace Avalonia.PropertyStore
             _entries.Insert(insert, binding);
             return binding;
         }
+
+        public void CoerceValue() => UpdateEffectiveValue();
 
         void IValueSink.ValueChanged<TValue>(
             StyledPropertyBase<TValue> property,
@@ -154,6 +163,11 @@ namespace Avalonia.PropertyStore
             {
                 value = _localValue;
                 ValuePriority = BindingPriority.LocalValue;
+            }
+
+            if (value.HasValue && _coerceValue != null)
+            {
+                value = _coerceValue(_owner, value.Value);
             }
 
             if (value != Value)

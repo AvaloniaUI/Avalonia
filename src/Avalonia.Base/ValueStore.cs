@@ -75,6 +75,13 @@ namespace Avalonia
             {
                 SetExisting(slot, property, value, priority);
             }
+            else if (property.HasCoercion)
+            {
+                // If the property has any coercion callbacks then always create a PriorityValue.
+                var entry = new PriorityValue<T>(_owner, property, this);
+                _values.AddValue(property, entry);
+                entry.SetValue(value, priority);
+            }
             else if (priority == BindingPriority.LocalValue)
             {
                 _values.AddValue(property, new LocalValueEntry<T>(value));
@@ -96,6 +103,15 @@ namespace Avalonia
             if (_values.TryGetValue(property, out var slot))
             {
                 return BindExisting(slot, property, source, priority);
+            }
+            else if (property.HasCoercion)
+            {
+                // If the property has any coercion callbacks then always create a PriorityValue.
+                var entry = new PriorityValue<T>(_owner, property, this);
+                var binding = entry.AddBinding(source, priority);
+                _values.AddValue(property, entry);
+                binding.Start();
+                return binding;
             }
             else
             {
@@ -130,6 +146,17 @@ namespace Avalonia
                             old,
                             BindingValue<T>.Unset);
                     }
+                }
+            }
+        }
+
+        public void CoerceValue<T>(StyledPropertyBase<T> property)
+        {
+            if (_values.TryGetValue(property, out var slot))
+            {
+                if (slot is PriorityValue<T> p)
+                {
+                    p.CoerceValue();
                 }
             }
         }
