@@ -77,9 +77,9 @@ namespace Avalonia.Controls.Primitives
             {
                 if (!ValidateDouble(value))
                 {
-                    value = _minimum;
+                    return;
                 }
-                
+
                 if (IsInitialized)
                 {
                     SetAndRaise(MinimumProperty, ref _minimum, value);
@@ -107,7 +107,7 @@ namespace Avalonia.Controls.Primitives
             {
                 if (!ValidateDouble(value))
                 {
-                    value = _maximum;
+                    return;
                 }
 
                 if (IsInitialized)
@@ -137,7 +137,7 @@ namespace Avalonia.Controls.Primitives
             {
                 if (!ValidateDouble(value))
                 {
-                    value = default;
+                    return;
                 }
 
                 if (IsInitialized)
@@ -178,7 +178,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="value">The value.</param>
         private static bool ValidateDouble(double value)
         {
-            return (!double.IsInfinity(value) || !double.IsNaN(value));
+            return !double.IsInfinity(value) || !double.IsNaN(value);
         }
 
         /// <summary>
