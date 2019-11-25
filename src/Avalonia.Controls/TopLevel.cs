@@ -269,6 +269,12 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
+            var logicalArgs = new LogicalTreeAttachmentEventArgs(this);
+            ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
+
+            var visualArgs = new VisualTreeAttachmentEventArgs(this, this);
+            OnDetachedFromVisualTreeCore(visualArgs);
+
             (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
             PlatformImpl = null;
             OnClosed(EventArgs.Empty);
