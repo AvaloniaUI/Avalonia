@@ -173,7 +173,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Throws an exception if the double value is NaN or Inf.
+        /// Checks if the double value is not inifinity nor NaN.
         /// </summary>
         /// <param name="value">The value.</param>
         private static bool ValidateDouble(double value)
