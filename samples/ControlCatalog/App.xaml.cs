@@ -12,12 +12,6 @@ namespace ControlCatalog
     {
         public App()
         {
-            DataContext = this;
-
-            AboutCommand = ReactiveCommand.Create(() =>
-            {
-
-            });
         }
 
         public override void Initialize()
