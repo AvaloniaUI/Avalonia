@@ -49,8 +49,7 @@ namespace Avalonia
         /// Defines the <see cref="DataContext"/> property.
         /// </summary>
         public static readonly StyledProperty<object> DataContextProperty =
-            AvaloniaProperty.Register<Application, object>(
-                nameof(DataContext));
+            StyledElement.DataContextProperty.AddOwner<Application>();
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
