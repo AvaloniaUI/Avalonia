@@ -407,51 +407,6 @@ namespace Avalonia
             _inheritedCache.Clear();
         }
 
-        internal void NotifyInitialized(AvaloniaObject o)
-        {
-            Contract.Requires<ArgumentNullException>(o != null);
-
-            var type = o.GetType();
-
-            if (!_initializedCache.TryGetValue(type, out var initializationData))
-            {
-                var visited = new HashSet<AvaloniaProperty>();
-
-                initializationData = new List<PropertyInitializationData>();
-
-                foreach (AvaloniaProperty property in GetRegistered(type))
-                {
-                    if (property.IsDirect)
-                    {
-                        initializationData.Add(new PropertyInitializationData(property, (IDirectPropertyAccessor)property));
-                    }
-                    else
-                    {
-                        initializationData.Add(new PropertyInitializationData(property, (IStyledPropertyAccessor)property, type));
-                    }
-
-                    visited.Add(property);
-                }
-
-                foreach (AvaloniaProperty property in GetRegisteredAttached(type))
-                {
-                    if (!visited.Contains(property))
-                    {
-                        initializationData.Add(new PropertyInitializationData(property, (IStyledPropertyAccessor)property, type));
-
-                        visited.Add(property);
-                    }
-                }
-
-                _initializedCache.Add(type, initializationData);
-            }
-
-            foreach (PropertyInitializationData data in initializationData)
-            {
-                data.Property.NotifyInitialized(o);
-            }
-        }
-
         private readonly struct PropertyInitializationData
         {
             public AvaloniaProperty Property { get; }

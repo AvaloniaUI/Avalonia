@@ -82,6 +82,7 @@ namespace Avalonia
         public StyledElement()
         {
             _isAttachedToLogicalTree = this is IStyleRoot;
+            PseudoclassEngine.Created(this);
         }
 
         /// <summary>
@@ -557,19 +558,11 @@ namespace Avalonia
                 throw new ArgumentException("Cannot supply an empty className.");
             }
 
-            property.Changed.Merge(property.Initialized)
-                .Where(e => e.Sender is TOwner)
-                .Subscribe(e =>
-                {
-                    if (selector((TProperty)e.NewValue))
-                    {
-                        ((StyledElement)e.Sender).PseudoClasses.Add(className);
-                    }
-                    else
-                    {
-                        ((StyledElement)e.Sender).PseudoClasses.Remove(className);
-                    }
-                });
+            PseudoclassEngine.Register(
+                typeof(TOwner),
+                property,
+                selector,
+                className);
         }
 
         protected virtual void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
