@@ -82,7 +82,6 @@ namespace Avalonia
         public StyledElement()
         {
             _isAttachedToLogicalTree = this is IStyleRoot;
-            PseudoclassEngine.Created(this);
         }
 
         /// <summary>
@@ -494,75 +493,6 @@ namespace Avalonia
         void ISetInheritanceParent.SetParent(IAvaloniaObject parent)
         {
             InheritanceParent = parent;
-        }
-
-        /// <summary>
-        /// Adds a pseudo-class to be set when a property is true.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="className">The pseudo-class.</param>
-        [Obsolete("Use PseudoClass<TOwner> and specify the control type.")]
-        protected static void PseudoClass(AvaloniaProperty<bool> property, string className)
-        {
-            PseudoClass<StyledElement>(property, className);
-        }
-
-        /// <summary>
-        /// Adds a pseudo-class to be set when a property is true.
-        /// </summary>
-        /// <typeparam name="TOwner">The type to apply the pseudo-class to.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="className">The pseudo-class.</param>
-        protected static void PseudoClass<TOwner>(AvaloniaProperty<bool> property, string className)
-            where TOwner : class, IStyledElement
-        {
-            PseudoClass<TOwner, bool>(property, x => x, className);
-        }
-
-        /// <summary>
-        /// Adds a pseudo-class to be set when a property equals a certain value.
-        /// </summary>
-        /// <typeparam name="TProperty">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="selector">Returns a boolean value based on the property value.</param>
-        /// <param name="className">The pseudo-class.</param>
-        [Obsolete("Use PseudoClass<TOwner, TProperty> and specify the control type.")]
-        protected static void PseudoClass<TProperty>(
-            AvaloniaProperty<TProperty> property,
-            Func<TProperty, bool> selector,
-            string className)
-        {
-            PseudoClass<StyledElement, TProperty>(property, selector, className);
-        }
-
-        /// <summary>
-        /// Adds a pseudo-class to be set when a property equals a certain value.
-        /// </summary>
-        /// <typeparam name="TProperty">The type of the property.</typeparam>
-        /// <typeparam name="TOwner">The type to apply the pseudo-class to.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="selector">Returns a boolean value based on the property value.</param>
-        /// <param name="className">The pseudo-class.</param>
-        protected static void PseudoClass<TOwner, TProperty>(
-            AvaloniaProperty<TProperty> property,
-            Func<TProperty, bool> selector,
-            string className)
-                where TOwner : class, IStyledElement
-        {
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
-            Contract.Requires<ArgumentNullException>(className != null);
-
-            if (string.IsNullOrWhiteSpace(className))
-            {
-                throw new ArgumentException("Cannot supply an empty className.");
-            }
-
-            PseudoclassEngine.Register(
-                typeof(TOwner),
-                property,
-                selector,
-                className);
         }
 
         protected virtual void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

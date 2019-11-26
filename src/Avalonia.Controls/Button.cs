@@ -91,7 +91,11 @@ namespace Avalonia.Controls
             CommandProperty.Changed.Subscribe(CommandChanged);
             IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
             IsCancelProperty.Changed.Subscribe(IsCancelChanged);
-            PseudoClass<Button>(IsPressedProperty, ":pressed");
+        }
+
+        public Button()
+        {
+            UpdatePseudoClasses(IsPressed);
         }
 
         /// <summary>
@@ -312,6 +316,20 @@ namespace Avalonia.Controls
             IsPressed = false;
         }
 
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
+        {
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
+
+            if (property == IsPressedProperty)
+            {
+                UpdatePseudoClasses(newValue.ValueOrDefault<bool>());
+            }
+        }
+
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
             base.UpdateDataValidation(property, value);
@@ -473,6 +491,11 @@ namespace Avalonia.Controls
             {
                 OnClick();
             }
+        }
+
+        private void UpdatePseudoClasses(bool isPressed)
+        {
+            PseudoClasses.Set(":pressed", isPressed);
         }
     }
 }

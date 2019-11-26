@@ -373,7 +373,11 @@ namespace Avalonia.Controls
         public bool IsValid
         {
             get { return _isValid; }
-            internal set { SetAndRaise(IsValidProperty, ref _isValid, value); }
+            internal set 
+            { 
+                SetAndRaise(IsValidProperty, ref _isValid, value);
+                PseudoClasses.Set(":invalid", !value);
+            }
         }
 
         public static readonly StyledProperty<double> MaxColumnWidthProperty =
@@ -655,8 +659,6 @@ namespace Avalonia.Controls
                 ColumnHeaderHeightProperty,
                 HorizontalScrollBarVisibilityProperty,
                 VerticalScrollBarVisibilityProperty);
-
-            PseudoClass<DataGrid, bool>(IsValidProperty, x => !x, ":invalid");
 
             ItemsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnItemsPropertyChanged(e));
             CanUserResizeColumnsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnCanUserResizeColumnsChanged(e));
