@@ -32,7 +32,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
     {
         /// <summary>
         /// The application-global data templates.
@@ -45,6 +45,12 @@ namespace Avalonia
         private Styles _styles;
         private IResourceDictionary _resources;
 
+        /// <summary>
+        /// Defines the <see cref="DataContext"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object> DataContextProperty =
+            StyledElement.DataContextProperty.AddOwner<Application>();
+
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
@@ -54,6 +60,19 @@ namespace Avalonia
         public Application()
         {
             Name = "Avalonia Application";
+        }
+
+        /// <summary>
+        /// Gets or sets the Applications's data context.
+        /// </summary>
+        /// <remarks>
+        /// The data context property specifies the default object that will
+        /// be used for data binding.
+        /// </remarks>
+        public object DataContext
+        {
+            get { return GetValue(DataContextProperty); }
+            set { SetValue(DataContextProperty, value); }
         }
 
         /// <summary>
