@@ -111,7 +111,24 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public override int GetHashCode()
         {
-            return ToString().GetHashCode();
+            if (Count == 0)
+            {
+                return 0;
+            }
+
+            unchecked
+            {
+                int hash = 17;
+
+                for (var i = 0; i < Names.Count; i++)
+                {
+                    string name = Names[i];
+
+                    hash = hash * 23 + name.GetHashCode();
+                }
+
+                return hash;
+            }
         }
 
         /// <summary>
@@ -128,7 +145,20 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
-            return other.ToString().Equals(ToString());
+            if (other.Count != Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < Count; i++)
+            {
+                if (Names[i] != other.Names[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public int Count => Names.Count;

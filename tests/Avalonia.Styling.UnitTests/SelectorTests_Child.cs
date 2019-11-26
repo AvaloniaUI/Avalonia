@@ -81,89 +81,12 @@ namespace Avalonia.Styling.UnitTests
             Assert.Equal("TestLogical1 > TestLogical3", selector.ToString());
         }
 
-        public abstract class TestLogical : ILogical, IStyleable
+        public abstract class TestLogical : Control
         {
-            public TestLogical()
+            public ILogical LogicalParent
             {
-                Classes = new Classes();
-            }
-
-            public event EventHandler<AvaloniaPropertyChangedEventArgs> PropertyChanged;
-            public event EventHandler<AvaloniaPropertyChangedEventArgs> InheritablePropertyChanged;
-            public event EventHandler<LogicalTreeAttachmentEventArgs> AttachedToLogicalTree;
-            public event EventHandler<LogicalTreeAttachmentEventArgs> DetachedFromLogicalTree;
-
-            public Classes Classes { get; }
-
-            public string Name { get; set; }
-
-            public bool IsAttachedToLogicalTree { get; }
-
-            public IAvaloniaReadOnlyList<ILogical> LogicalChildren { get; set; }
-
-            public ILogical LogicalParent { get; set; }
-
-            public Type StyleKey { get; }
-
-            public ITemplatedControl TemplatedParent { get; }
-
-            IObservable<IStyleable> IStyleable.StyleDetach { get; }
-
-            IAvaloniaReadOnlyList<string> IStyleable.Classes => Classes;
-
-            public object GetValue(AvaloniaProperty property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public T GetValue<T>(AvaloniaProperty<T> property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SetValue(AvaloniaProperty property, object value, BindingPriority priority)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SetValue<T>(AvaloniaProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IDisposable Bind(AvaloniaProperty property, IObservable<object> source, BindingPriority priority)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool IsAnimating(AvaloniaProperty property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool IsSet(AvaloniaProperty property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IDisposable Bind<T>(AvaloniaProperty<T> property, IObservable<T> source, BindingPriority priority = BindingPriority.LocalValue)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void NotifyAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void NotifyResourcesChanged(ResourcesChangedEventArgs e)
-            {
-                throw new NotImplementedException();
+                get => Parent;
+                set => ((ISetLogicalParent)this).SetParent(value);
             }
         }
 

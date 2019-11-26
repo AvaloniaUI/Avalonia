@@ -75,7 +75,10 @@ namespace Avalonia.Controls.Primitives
 
             set
             {
-                ValidateDouble(value, "Minimum");
+                if (!ValidateDouble(value))
+                {
+                    return;
+                }
 
                 if (IsInitialized)
                 {
@@ -102,7 +105,10 @@ namespace Avalonia.Controls.Primitives
 
             set
             {
-                ValidateDouble(value, "Maximum");
+                if (!ValidateDouble(value))
+                {
+                    return;
+                }
 
                 if (IsInitialized)
                 {
@@ -129,7 +135,10 @@ namespace Avalonia.Controls.Primitives
 
             set
             {
-                ValidateDouble(value, "Value");
+                if (!ValidateDouble(value))
+                {
+                    return;
+                }
 
                 if (IsInitialized)
                 {
@@ -164,16 +173,12 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Throws an exception if the double value is NaN or Inf.
+        /// Checks if the double value is not inifinity nor NaN.
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <param name="property">The name of the property being set.</param>
-        private static void ValidateDouble(double value, string property)
+        private static bool ValidateDouble(double value)
         {
-            if (double.IsInfinity(value) || double.IsNaN(value))
-            {
-                throw new ArgumentException($"{value} is not a valid value for {property}.");
-            }
+            return !double.IsInfinity(value) || !double.IsNaN(value);
         }
 
         /// <summary>
