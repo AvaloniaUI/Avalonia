@@ -10,6 +10,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
@@ -32,6 +33,8 @@ namespace Avalonia.Controls.UnitTests
                 Template = CreateTreeViewTemplate(),
                 Items = CreateTestTreeData(),
             };
+
+            var root = new TestRoot(target);
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
@@ -76,6 +79,8 @@ namespace Avalonia.Controls.UnitTests
                 Template = CreateTreeViewTemplate(),
                 Items = CreateTestTreeData(),
             };
+
+            var root = new TestRoot(target);
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
@@ -527,6 +532,8 @@ namespace Avalonia.Controls.UnitTests
                 Items = data,
             };
 
+            var root = new TestRoot(target);
+
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
@@ -891,6 +898,37 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, GetItem(target, 0, 1).Level);
             Assert.Equal(1, GetItem(target, 0, 2).Level);
             Assert.Equal(2, GetItem(target, 0, 1, 0).Level);
+        }
+
+        [Fact]
+        public void Adding_Node_To_Removed_And_ReAdded_Parent_Should_Not_Crash()
+        {
+            // Issue #2985
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+            };
+
+            var visualRoot = new TestRoot();
+            visualRoot.Child = target;
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+            ExpandAll(target);
+
+            var parent = tree[0];
+            var node = parent.Children[1];
+
+            parent.Children.Remove(node);
+            parent.Children.Add(node);
+
+            var item = target.ItemContainerGenerator.Index.ContainerFromItem(node);
+            ApplyTemplates(new[] { item });
+
+            // #2985 causes ArgumentException here.
+            node.Children.Add(new Node());
         }
 
         [Fact]

@@ -342,7 +342,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the control is focused.
+        /// Gets a value indicating whether the control is focused.
         /// </summary>
         public bool IsFocused
         {
@@ -360,7 +360,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the pointer is currently over the control.
+        /// Gets a value indicating whether the pointer is currently over the control.
         /// </summary>
         public bool IsPointerOver
         {
