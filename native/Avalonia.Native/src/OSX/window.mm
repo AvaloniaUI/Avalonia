@@ -83,7 +83,7 @@ public:
         [Window setContentView: View];
     }
     
-    virtual HRESULT GetNSWindowHandle(void** ret) override
+    virtual HRESULT ObtainNSWindowHandle(void** ret) override
     {
         if (ret == nullptr)
         {
@@ -95,7 +95,7 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT GetNSWindowHandleRetained(void** ret) override
+    virtual HRESULT ObtainNSWindowHandleRetained(void** ret) override
     {
         if (ret == nullptr)
         {
@@ -107,7 +107,7 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT GetNSViewHandle(void** ret) override
+    virtual HRESULT ObtainNSViewHandle(void** ret) override
     {
         if (ret == nullptr)
         {
@@ -119,7 +119,7 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT GetNSViewHandleRetained(void** ret) override
+    virtual HRESULT ObtainNSViewHandleRetained(void** ret) override
     {
         if (ret == nullptr)
         {
