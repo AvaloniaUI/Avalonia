@@ -16,6 +16,34 @@ using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
+    public class MacOSTopLevelWindowHandle : IPlatformHandle, IMacOSTopLevelPlatformHandle
+    {
+        IAvnWindowBase _native;
+
+        public MacOSTopLevelWindowHandle(IAvnWindowBase native)
+        {
+            _native = native;
+        }
+
+        public IntPtr Handle => IntPtr.Zero;
+
+        public string HandleDescriptor => "NOT SUPPORTED";
+
+        public IntPtr NSView => throw new NotImplementedException();
+
+        public IntPtr NSWindow => throw new NotImplementedException();
+
+        public IntPtr GetNSViewRetained()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IntPtr GetNSWindowRetained()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public abstract class WindowBaseImpl : IWindowBaseImpl,
         IFramebufferPlatformSurface
     {
@@ -45,6 +73,9 @@ namespace Avalonia.Native
         protected void Init(IAvnWindowBase window, IAvnScreens screens)
         {
             _native = window;
+
+            Handle = new MacOSTopLevelWindowHandle(window);
+            
             _glSurface = new GlPlatformSurface(window);
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
@@ -349,6 +380,6 @@ namespace Avalonia.Native
 
         }
 
-        public IPlatformHandle Handle => new PlatformHandle(IntPtr.Zero, "NOT SUPPORTED");
+        public IPlatformHandle Handle { get; private set; }
     }
 }
