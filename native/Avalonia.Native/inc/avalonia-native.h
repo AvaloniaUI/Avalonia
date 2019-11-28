@@ -213,9 +213,9 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT SetMainMenu(IAvnAppMenu* menu) = 0;
     virtual HRESULT ObtainMainMenu(IAvnAppMenu** retOut) = 0;
     virtual HRESULT GetNSWindowHandle(void** ppv) = 0;
-    virtual HRESULT GetNSWindowHandleRetained(void** ppv) = 0;
-    virtual HRESULT GetNSViewHandle(void** ppv) = 0;
-    virtual HRESULT GetNSViewHandleRetained(void** ppv) = 0;
+    virtual HRESULT GetNSWindowHandleRetained(void** retOut) = 0;
+    virtual HRESULT GetNSViewHandle(void** retOut) = 0;
+    virtual HRESULT GetNSViewHandleRetained(void** retOut) = 0;
     virtual bool TryLock() = 0;
     virtual void Unlock() = 0;
 };
