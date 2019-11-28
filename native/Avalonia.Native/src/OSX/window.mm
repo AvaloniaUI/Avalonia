@@ -83,6 +83,54 @@ public:
         [Window setContentView: View];
     }
     
+    virtual HRESULT GetNSWindowHandle(void** ret) override
+    {
+        if (ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret =  (__bridge void*)Window;
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT GetNSWindowHandleRetained(void** ret) override
+    {
+        if (ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret =  (__bridge_retained void*)Window;
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT GetNSViewHandle(void** ret) override
+    {
+        if (ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret =  (__bridge void*)View;
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT GetNSViewHandleRetained(void** ret) override
+    {
+        if (ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret =  (__bridge_retained void*)View;
+        
+        return S_OK;
+    }
+    
     virtual AvnWindow* GetNSWindow() override
     {
         return Window;
