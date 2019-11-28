@@ -25,9 +25,9 @@ namespace Avalonia.Native
             _native = native;
         }
 
-        public IntPtr Handle => IntPtr.Zero;
+        public IntPtr Handle => NSWindow;
 
-        public string HandleDescriptor => "NOT SUPPORTED";
+        public string HandleDescriptor => "NSWindow";
 
         public IntPtr NSView => _native.ObtainNSViewHandle();
 
