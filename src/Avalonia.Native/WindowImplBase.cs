@@ -29,18 +29,18 @@ namespace Avalonia.Native
 
         public string HandleDescriptor => "NOT SUPPORTED";
 
-        public IntPtr NSView => throw new NotImplementedException();
+        public IntPtr NSView => _native.ObtainNSViewHandle();
 
-        public IntPtr NSWindow => throw new NotImplementedException();
+        public IntPtr NSWindow => _native.ObtainNSWindowHandle();
 
         public IntPtr GetNSViewRetained()
         {
-            throw new NotImplementedException();
+            return _native.ObtainNSViewHandleRetained();
         }
 
         public IntPtr GetNSWindowRetained()
         {
-            throw new NotImplementedException();
+            return _native.ObtainNSWindowHandleRetained();
         }
     }
 
