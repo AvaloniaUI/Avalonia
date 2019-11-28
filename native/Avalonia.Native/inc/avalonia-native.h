@@ -212,10 +212,10 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT GetSoftwareFramebuffer(AvnFramebuffer*ret) = 0;
     virtual HRESULT SetMainMenu(IAvnAppMenu* menu) = 0;
     virtual HRESULT ObtainMainMenu(IAvnAppMenu** retOut) = 0;
-    virtual HRESULT GetNSWindowHandle(void** ppv) = 0;
-    virtual HRESULT GetNSWindowHandleRetained(void** retOut) = 0;
-    virtual HRESULT GetNSViewHandle(void** retOut) = 0;
-    virtual HRESULT GetNSViewHandleRetained(void** retOut) = 0;
+    virtual HRESULT ObtainNSWindowHandle(void** retOut) = 0;
+    virtual HRESULT ObtainNSWindowHandleRetained(void** retOut) = 0;
+    virtual HRESULT ObtainNSViewHandle(void** retOut) = 0;
+    virtual HRESULT ObtainNSViewHandleRetained(void** retOut) = 0;
     virtual bool TryLock() = 0;
     virtual void Unlock() = 0;
 };
