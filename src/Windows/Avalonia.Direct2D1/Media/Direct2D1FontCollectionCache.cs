@@ -22,6 +22,11 @@ namespace Avalonia.Direct2D1.Media
 
         public static Font GetFont(Typeface typeface)
         {
+            return GetFont(typeface, out string _);
+        }
+
+        public static Font GetFont(Typeface typeface, out string fontFamilyName)
+        {
             var fontFamily = typeface.FontFamily;
             var fontCollection = GetOrAddFontCollection(fontFamily);
 
@@ -29,6 +34,7 @@ namespace Avalonia.Direct2D1.Media
             {
                 if (fontCollection.FindFamilyName(familyName, out var index))
                 {
+                    fontFamilyName = familyName;
                     return fontCollection.GetFontFamily(index).GetFirstMatchingFont(
                         (FontWeight)typeface.Weight,
                         FontStretch.Normal,
@@ -37,6 +43,8 @@ namespace Avalonia.Direct2D1.Media
             }
 
             InstalledFontCollection.FindFamilyName(FontFamily.Default.Name, out var i);
+
+            fontFamilyName = FontFamily.Default.Name;
 
             return InstalledFontCollection.GetFontFamily(i).GetFirstMatchingFont(
                 (FontWeight)typeface.Weight,
