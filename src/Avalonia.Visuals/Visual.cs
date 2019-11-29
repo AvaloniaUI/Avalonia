@@ -121,7 +121,7 @@ namespace Avalonia
         {
             var visualChildren = new AvaloniaList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
-            visualChildren.Validate = ValidateVisualChild;
+            visualChildren.Validate = visual => ValidateVisualChild(visual);
             visualChildren.CollectionChanged += VisualChildrenChanged;
             VisualChildren = visualChildren;
         }
