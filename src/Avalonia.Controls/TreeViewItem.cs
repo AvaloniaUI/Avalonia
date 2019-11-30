@@ -98,17 +98,18 @@ namespace Avalonia.Controls
                 TreeViewItem.HeaderProperty,
                 TreeViewItem.ItemTemplateProperty,
                 TreeViewItem.ItemsProperty,
-                TreeViewItem.IsExpandedProperty,
-                _treeView?.ItemContainerGenerator.Index ?? new TreeContainerIndex());
+                TreeViewItem.IsExpandedProperty);
         }
 
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
+            
             _treeView = this.GetLogicalAncestors().OfType<TreeView>().FirstOrDefault();
-
+            
             Level = CalculateDistanceFromLogicalParent<TreeView>(this) - 1;
+            ItemContainerGenerator.UpdateIndex();
 
             if (ItemTemplate == null && _treeView?.ItemTemplate != null)
             {
@@ -119,7 +120,7 @@ namespace Avalonia.Controls
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromLogicalTree(e);
-            ItemContainerGenerator.Clear();
+            ItemContainerGenerator.UpdateIndex();
         }
 
         protected virtual void OnRequestBringIntoView(RequestBringIntoViewEventArgs e)

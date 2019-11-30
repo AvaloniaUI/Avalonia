@@ -12,5 +12,10 @@ namespace Avalonia.Controls.Generators
         /// Gets the container index for the tree.
         /// </summary>
         TreeContainerIndex Index { get; }
+
+        /// <summary>
+        /// Updates the index based on the parent <see cref="TreeView"/>.
+        /// </summary>
+        void UpdateIndex();
     }
 }
