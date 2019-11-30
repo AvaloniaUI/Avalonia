@@ -64,7 +64,7 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
-        /// Invalidates measure for this instance and all visual children recursively.
+        /// Invalidates measure for given control and all visual children recursively.
         /// </summary>
         public static void InvalidateSelfAndChildrenMeasure(ILayoutable control)
         {
