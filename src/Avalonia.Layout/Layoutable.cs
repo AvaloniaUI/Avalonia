@@ -692,36 +692,10 @@ namespace Avalonia.Layout
             return finalSize;
         }
 
-        /// <summary>
-        /// Invalidates measure for this instance and all visual children.
-        /// </summary>
-        protected void InvalidateSelfAndDescendantsMeasure()
-        {
-            void InnerInvalidateMeasure(IVisual target)
-            {
-                if (target is ILayoutable layoutable)
-                {
-                    layoutable.InvalidateMeasure();
-                }
-
-                var visualChildren = target.VisualChildren;
-                var visualChildrenCount = visualChildren.Count;
-
-                for (int i = 0; i < visualChildrenCount; i++)
-                {
-                    IVisual child = visualChildren[i];
-
-                    InnerInvalidateMeasure(child);
-                }
-            }
-
-            InnerInvalidateMeasure(this);
-        }
-
         /// <inheritdoc/>
         protected sealed override void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            InvalidateSelfAndDescendantsMeasure();
+            LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
 
             base.OnVisualParentChanged(oldParent, newParent);
         }

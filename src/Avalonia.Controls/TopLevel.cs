@@ -299,7 +299,7 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         protected virtual void HandleScalingChanged(double scaling)
         {
-            InvalidateSelfAndDescendantsMeasure();
+            LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
         }
 
         /// <inheritdoc/>
