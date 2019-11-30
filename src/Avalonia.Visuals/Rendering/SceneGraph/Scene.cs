@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Collections.Pooled;
 using Avalonia.VisualTree;
-using Collections.Pooled;
 
 namespace Avalonia.Rendering.SceneGraph
 {
