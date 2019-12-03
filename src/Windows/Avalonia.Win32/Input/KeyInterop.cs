@@ -364,10 +364,25 @@ namespace Avalonia.Win32.Input
             { 254, Key.OemClear },
         };
 
-        public static Key KeyFromVirtualKey(int virtualKey)
+        public static Key KeyFromVirtualKey(int virtualKey, int flags)
         {
-            Key result;
-            s_keyFromVirtualKey.TryGetValue(virtualKey, out result);
+            s_keyFromVirtualKey.TryGetValue(virtualKey, out var result);
+
+            // Indicates whether the key is an extended key, such as the right-hand ALT and CTRL keys.
+            // According to https://docs.microsoft.com/en-us/windows/win32/inputdev/wm-keydown.
+            const int extendedMask = 1 << 24;
+            bool isExtended = (flags & extendedMask) != 0;
+
+            if (isExtended)
+            {
+                return result switch
+                {
+                    Key.LeftAlt => Key.RightAlt,
+                    Key.LeftCtrl => Key.RightCtrl,
+                    _ => result
+                };
+            }
+
             return result;
         }
 
