@@ -379,6 +379,7 @@ namespace Avalonia.Win32.Input
                 {
                     Key.LeftAlt => Key.RightAlt,
                     Key.LeftCtrl => Key.RightCtrl,
+                    Key.LeftShift => Key.RightShift,
                     _ => result
                 };
             }
