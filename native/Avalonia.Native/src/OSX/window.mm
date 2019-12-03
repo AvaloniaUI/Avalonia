@@ -739,6 +739,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     self = [super init];
     [self setWantsBestResolutionOpenGLSurface:true];
+    [self setWantsLayer:YES];
     _parent = parent;
     _area = nullptr;
     return self;
