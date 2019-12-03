@@ -211,7 +211,7 @@ namespace Avalonia.Win32.Input
             { 31, Key.ImeModeChange },
             { 32, Key.Space },
             { 33, Key.PageUp },
-            { 34, Key.Next },
+            { 34, Key.PageDown },
             { 35, Key.End },
             { 36, Key.Home },
             { 37, Key.Left },
