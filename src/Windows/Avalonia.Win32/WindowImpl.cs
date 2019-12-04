@@ -253,6 +253,11 @@ namespace Avalonia.Win32
 
         public void Dispose()
         {
+            if (_dropTarget != null)
+            {
+                OleContext.Current?.UnregisterDragDrop(Handle);
+                _dropTarget = null;
+            }
             if (_hwnd != IntPtr.Zero)
             {
                 UnmanagedMethods.DestroyWindow(_hwnd);
