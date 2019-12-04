@@ -190,7 +190,7 @@ namespace Avalonia.Data
         /// </summary>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>The value.</returns>
-        public T ValueOrDefault(T defaultValue = default) => HasValue ? _value : defaultValue;
+        public T GetValueOrDefault(T defaultValue = default) => HasValue ? _value : defaultValue;
 
         /// <summary>
         /// Gets the value of the binding value if present, otherwise a default value.
@@ -201,7 +201,7 @@ namespace Avalonia.Data
         /// present but not of the correct type or null, or <paramref name="defaultValue"/> if the
         /// value is not present.
         /// </returns>
-        public TResult ValueOrDefault<TResult>(TResult defaultValue = default)
+        public TResult GetValueOrDefault<TResult>(TResult defaultValue = default)
         {
             return HasValue ?
                 _value is TResult result ? result : default

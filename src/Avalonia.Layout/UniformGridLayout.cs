@@ -441,7 +441,7 @@ namespace Avalonia.Layout
         {
             if (property == OrientationProperty)
             {
-                var orientation = newValue.ValueOrDefault<Orientation>();
+                var orientation = newValue.GetValueOrDefault<Orientation>();
 
                 //Note: For UniformGridLayout Vertical Orientation means we have a Horizontal ScrollOrientation. Horizontal Orientation means we have a Vertical ScrollOrientation.
                 //i.e. the properties are the inverse of each other.
@@ -450,29 +450,29 @@ namespace Avalonia.Layout
             }
             else if (property == MinColumnSpacingProperty)
             {
-                _minColumnSpacing = newValue.ValueOrDefault<double>();
+                _minColumnSpacing = newValue.GetValueOrDefault<double>();
             }
             else if (property == MinRowSpacingProperty)
             {
-                _minRowSpacing = newValue.ValueOrDefault<double>();
+                _minRowSpacing = newValue.GetValueOrDefault<double>();
             }
             else if (property == ItemsJustificationProperty)
             {
-                _itemsJustification = newValue.ValueOrDefault<UniformGridLayoutItemsJustification>();
+                _itemsJustification = newValue.GetValueOrDefault<UniformGridLayoutItemsJustification>();
                 ;
             }
             else if (property == ItemsStretchProperty)
             {
-                _itemsStretch = newValue.ValueOrDefault<UniformGridLayoutItemsStretch>();
+                _itemsStretch = newValue.GetValueOrDefault<UniformGridLayoutItemsStretch>();
                 ;
             }
             else if (property == MinItemWidthProperty)
             {
-                _minItemWidth = newValue.ValueOrDefault<double>();
+                _minItemWidth = newValue.GetValueOrDefault<double>();
             }
             else if (property == MinItemHeightProperty)
             {
-                _minItemHeight = newValue.ValueOrDefault<double>();
+                _minItemHeight = newValue.GetValueOrDefault<double>();
             }
 
             InvalidateLayout();

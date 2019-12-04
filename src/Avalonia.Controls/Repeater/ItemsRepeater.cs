@@ -379,7 +379,7 @@ namespace Avalonia.Controls
         {
             if (property == ItemsProperty)
             {
-                var newEnumerable = newValue.ValueOrDefault<IEnumerable>();
+                var newEnumerable = newValue.GetValueOrDefault<IEnumerable>();
                 var newDataSource = newEnumerable as ItemsSourceView;
                 if (newEnumerable != null && newDataSource == null)
                 {
@@ -390,19 +390,19 @@ namespace Avalonia.Controls
             }
             else if (property == ItemTemplateProperty)
             {
-                OnItemTemplateChanged(oldValue.ValueOrDefault<IDataTemplate>(), newValue.ValueOrDefault<IDataTemplate>());
+                OnItemTemplateChanged(oldValue.GetValueOrDefault<IDataTemplate>(), newValue.GetValueOrDefault<IDataTemplate>());
             }
             else if (property == LayoutProperty)
             {
-                OnLayoutChanged(oldValue.ValueOrDefault<AttachedLayout>(), newValue.ValueOrDefault<AttachedLayout>());
+                OnLayoutChanged(oldValue.GetValueOrDefault<AttachedLayout>(), newValue.GetValueOrDefault<AttachedLayout>());
             }
             else if (property == HorizontalCacheLengthProperty)
             {
-                _viewportManager.HorizontalCacheLength = newValue.ValueOrDefault<double>();
+                _viewportManager.HorizontalCacheLength = newValue.GetValueOrDefault<double>();
             }
             else if (property == VerticalCacheLengthProperty)
             {
-                _viewportManager.VerticalCacheLength = newValue.ValueOrDefault<double>();
+                _viewportManager.VerticalCacheLength = newValue.GetValueOrDefault<double>();
             }
 
             base.OnPropertyChanged(property, oldValue, newValue, priority);
