@@ -4,6 +4,7 @@
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -29,10 +30,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static HeaderedContentControl()
         {
-            ContentControlMixin.Attach<HeaderedContentControl>(
-                HeaderProperty,
-                x => x.LogicalChildren,
-                "PART_HeaderPresenter");
+            ContentProperty.Changed.AddClassHandler<HeaderedContentControl>((x, e) => x.HeaderChanged(e));
         }
 
         /// <summary>
@@ -63,13 +61,29 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void RegisterContentPresenter(IContentPresenter presenter)
+        protected override bool RegisterContentPresenter(IContentPresenter presenter)
         {
-            base.RegisterContentPresenter(presenter);
+            var result = base.RegisterContentPresenter(presenter);
 
             if (presenter.Name == "PART_HeaderPresenter")
             {
                 HeaderPresenter = presenter;
+                result = true;
+            }
+
+            return result;
+        }
+
+        private void HeaderChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is ILogical oldChild)
+            {
+                LogicalChildren.Remove(oldChild);
+            }
+
+            if (e.NewValue is ILogical newChild)
+            {
+                LogicalChildren.Add(newChild);
             }
         }
     }

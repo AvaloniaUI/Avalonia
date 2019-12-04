@@ -21,6 +21,7 @@ namespace Avalonia.Data.Core
         private readonly ExpressionObserver _inner;
         private readonly Type _targetType;
         private readonly object _fallbackValue;
+        private readonly object _targetNullValue;
         private readonly BindingPriority _priority;
         InnerListener _innerListener;
         WeakReference<object> _value;
@@ -51,7 +52,7 @@ namespace Avalonia.Data.Core
             IValueConverter converter,
             object converterParameter = null,
             BindingPriority priority = BindingPriority.LocalValue)
-            : this(inner, targetType, AvaloniaProperty.UnsetValue, converter, converterParameter, priority)
+            : this(inner, targetType, AvaloniaProperty.UnsetValue, AvaloniaProperty.UnsetValue, converter, converterParameter, priority)
         {
         }
 
@@ -63,6 +64,9 @@ namespace Avalonia.Data.Core
         /// <param name="fallbackValue">
         /// The value to use when the binding is unable to produce a value.
         /// </param>
+        /// <param name="targetNullValue">
+        /// The value to use when the binding result is null.
+        /// </param>
         /// <param name="converter">The value converter to use.</param>
         /// <param name="converterParameter">
         /// A parameter to pass to <paramref name="converter"/>.
@@ -72,6 +76,7 @@ namespace Avalonia.Data.Core
             ExpressionObserver inner, 
             Type targetType,
             object fallbackValue,
+            object targetNullValue,
             IValueConverter converter,
             object converterParameter = null,
             BindingPriority priority = BindingPriority.LocalValue)
@@ -85,6 +90,7 @@ namespace Avalonia.Data.Core
             Converter = converter;
             ConverterParameter = converterParameter;
             _fallbackValue = fallbackValue;
+            _targetNullValue = targetNullValue;
             _priority = priority;
         }
 
@@ -165,7 +171,7 @@ namespace Avalonia.Data.Core
                             }
                             else
                             {
-                                Logger.Error(
+                                Logger.TryGet(LogEventLevel.Error)?.Log(
                                     LogArea.Binding,
                                     this,
                                     "Could not convert FallbackValue {FallbackValue} to {Type}",
@@ -196,6 +202,11 @@ namespace Avalonia.Data.Core
         /// <inheritdoc/>
         private object ConvertValue(object value)
         {
+            if (value == null && _targetNullValue != AvaloniaProperty.UnsetValue)
+            {
+                return _targetNullValue;
+            }
+
             if (value == BindingOperations.DoNothing)
             {
                 return value;

@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageId>Avalonia.Direct2D1</PackageId>
   </PropertyGroup>
   <ItemGroup>
@@ -13,6 +14,7 @@
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\SharpDX.props" />
+  <Import Project="..\..\..\build\HarfBuzzSharp.props" />
   <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
   <Import Project="..\..\..\build\JetBrains.Annotations.props" />
 </Project>

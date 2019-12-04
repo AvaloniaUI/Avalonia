@@ -169,18 +169,18 @@ namespace Avalonia.Input
         {
             IsEnabledProperty.Changed.Subscribe(IsEnabledChanged);
 
-            GotFocusEvent.AddClassHandler<InputElement>(x => x.OnGotFocus);
-            LostFocusEvent.AddClassHandler<InputElement>(x => x.OnLostFocus);
-            KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown);
-            KeyUpEvent.AddClassHandler<InputElement>(x => x.OnKeyUp);
-            TextInputEvent.AddClassHandler<InputElement>(x => x.OnTextInput);
-            PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnterCore);
-            PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeaveCore);
-            PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved);
-            PointerPressedEvent.AddClassHandler<InputElement>(x => x.OnPointerPressed);
-            PointerReleasedEvent.AddClassHandler<InputElement>(x => x.OnPointerReleased);
-            PointerCaptureLostEvent.AddClassHandler<InputElement>(x => x.OnPointerCaptureLost);
-            PointerWheelChangedEvent.AddClassHandler<InputElement>(x => x.OnPointerWheelChanged);
+            GotFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGotFocus(e));
+            LostFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLostFocus(e));
+            KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyDown(e));
+            KeyUpEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyUp(e));
+            TextInputEvent.AddClassHandler<InputElement>((x, e) => x.OnTextInput(e));
+            PointerEnterEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerEnterCore(e));
+            PointerLeaveEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerLeaveCore(e));
+            PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerMoved(e));
+            PointerPressedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerPressed(e));
+            PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
+            PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
+            PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
 
             PseudoClass<InputElement, bool>(IsEffectivelyEnabledProperty, x => !x, ":disabled");
             PseudoClass<InputElement>(IsFocusedProperty, ":focus");
@@ -342,7 +342,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the control is focused.
+        /// Gets a value indicating whether the control is focused.
         /// </summary>
         public bool IsFocused
         {
@@ -360,7 +360,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the pointer is currently over the control.
+        /// Gets a value indicating whether the pointer is currently over the control.
         /// </summary>
         public bool IsPointerOver
         {
@@ -565,9 +565,17 @@ namespace Avalonia.Input
         {
             IsEffectivelyEnabled = IsEnabledCore && (parent?.IsEffectivelyEnabled ?? true);
 
-            foreach (var child in this.GetVisualChildren().OfType<InputElement>())
+            // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
+            // will cause extra allocations and overhead.
+            
+            var children = VisualChildren;
+
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (int i = 0; i < children.Count; ++i)
             {
-                child.UpdateIsEffectivelyEnabled(this);
+                var child = children[i] as InputElement;
+
+                child?.UpdateIsEffectivelyEnabled(this);
             }
         }
     }

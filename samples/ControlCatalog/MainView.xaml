@@ -24,7 +24,6 @@
       <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
       <TabItem Header="ComboBox"><pages:ComboBoxPage/></TabItem>
       <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
-      <!-- DataGrid is our special snowflake -->  
       <TabItem Header="DataGrid" 
                ScrollViewer.VerticalScrollBarVisibility="Disabled"
                ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -34,12 +33,16 @@
       <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
       <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
       <TabItem Header="Image"><pages:ImagePage/></TabItem>
-      <TabItem Header="ItemsRepeater"><pages:ItemsRepeaterPage/></TabItem>
+      <TabItem Header="ItemsRepeater"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <pages:ItemsRepeaterPage/>
+      </TabItem>
       <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
       <TabItem Header="ListBox"><pages:ListBoxPage/></TabItem>
       <TabItem Header="Menu"><pages:MenuPage/></TabItem>
       <TabItem Header="Notifications"><pages:NotificationsPage/></TabItem>
-	  <TabItem Header="NumericUpDown"><pages:NumericUpDownPage/></TabItem>
+	    <TabItem Header="NumericUpDown"><pages:NumericUpDownPage/></TabItem>
       <TabItem Header="Pointers (Touch)"><pages:PointersPage/></TabItem>
       <TabItem Header="ProgressBar"><pages:ProgressBarPage/></TabItem>
       <TabItem Header="RadioButton"><pages:RadioButtonPage/></TabItem>
@@ -50,12 +53,12 @@
       <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
       <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
       <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
-    <TabControl.Tag>
+      <TabControl.Tag>
         <ComboBox x:Name="Themes" SelectedIndex="0" Width="100" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Bottom">
             <ComboBoxItem>Light</ComboBoxItem>
             <ComboBoxItem>Dark</ComboBoxItem>
         </ComboBox>
-    </TabControl.Tag>
+      </TabControl.Tag>
     </TabControl>
   </Grid>
 </UserControl>

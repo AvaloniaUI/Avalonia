@@ -7,6 +7,7 @@
     <AvaloniaResource Include="**\*.xaml">
       <SubType>Designer</SubType>
     </AvaloniaResource>
+    <AvaloniaResource Include="Assets\*" />
   </ItemGroup>
 
   <Import Project="..\..\build\BuildTargets.targets" />

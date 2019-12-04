@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Logging;
@@ -121,7 +120,7 @@ namespace Avalonia
         {
             var visualChildren = new AvaloniaList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
-            visualChildren.Validate = ValidateVisualChild;
+            visualChildren.Validate = visual => ValidateVisualChild(visual);
             visualChildren.CollectionChanged += VisualChildrenChanged;
             VisualChildren = visualChildren;
         }
@@ -173,7 +172,22 @@ namespace Avalonia
         /// </summary>
         public bool IsEffectivelyVisible
         {
-            get { return this.GetSelfAndVisualAncestors().All(x => x.IsVisible); }
+            get
+            {
+                IVisual node = this;
+
+                while (node != null)
+                {
+                    if (!node.IsVisible)
+                    {
+                        return false;
+                    }
+
+                    node = node.VisualParent;
+                }
+
+                return true;
+            }
         }
 
         /// <summary>
@@ -359,7 +373,7 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            Logger.Verbose(LogArea.Visual, this, "Attached to visual tree");
+            Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Visual, this, "Attached to visual tree");
 
             _visualRoot = e.Root;
 
@@ -388,7 +402,7 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            Logger.Verbose(LogArea.Visual, this, "Detached from visual tree");
+            Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Visual, this, "Detached from visual tree");
 
             _visualRoot = null;
 
@@ -453,8 +467,7 @@ namespace Avalonia
                     return;
                 }
 
-                Logger.Log(
-                    LogEventLevel.Warning,
+                Logger.TryGet(LogEventLevel.Warning)?.Log(
                     LogArea.Binding,
                     this,
                     "Error in binding to {Target}.{Property}: {Message}",
@@ -553,7 +566,7 @@ namespace Avalonia
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
             {
-                var root = this.GetVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
+                var root = this.FindAncestorOfType<IRenderRoot>();
                 var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
                 OnAttachedToVisualTreeCore(e);
             }

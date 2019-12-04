@@ -1,18 +1,32 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using static Avalonia.X11.XLib;
+
 namespace Avalonia.X11
 {
     unsafe class XI2Manager
     {
+        private static readonly XiEventType[] DefaultEventTypes = new XiEventType[]
+        {
+            XiEventType.XI_Motion,
+            XiEventType.XI_ButtonPress,
+            XiEventType.XI_ButtonRelease
+        };
+
+        private static readonly XiEventType[] MultiTouchEventTypes = new XiEventType[]
+        {
+            XiEventType.XI_TouchBegin,
+            XiEventType.XI_TouchUpdate,
+            XiEventType.XI_TouchEnd
+        };
+
         private X11Info _x11;
         private bool _multitouch;
         private Dictionary<IntPtr, IXI2Client> _clients = new Dictionary<IntPtr, IXI2Client>();
+
         class DeviceInfo
         {
             public int Id { get; }
@@ -78,8 +92,6 @@ namespace Avalonia.X11
         
         private PointerDeviceInfo _pointerDevice;
         private AvaloniaX11Platform _platform;
-        private readonly TouchDevice _touchDevice = new TouchDevice();
-
 
         public bool Init(AvaloniaX11Platform platform)
         {
@@ -125,20 +137,18 @@ namespace Avalonia.X11
         public XEventMask AddWindow(IntPtr xid, IXI2Client window)
         {
             _clients[xid] = window;
-            var events = new List<XiEventType>
-            {
-                XiEventType.XI_Motion,
-                XiEventType.XI_ButtonPress,
-                XiEventType.XI_ButtonRelease
-            };
+
+            var eventsLength = DefaultEventTypes.Length;
 
             if (_multitouch)
-                events.AddRange(new[]
-                {
-                    XiEventType.XI_TouchBegin,
-                    XiEventType.XI_TouchUpdate,
-                    XiEventType.XI_TouchEnd
-                });
+                eventsLength += MultiTouchEventTypes.Length;
+
+            var events = new List<XiEventType>(eventsLength);
+
+            events.AddRange(DefaultEventTypes);
+
+            if (_multitouch)
+                events.AddRange(MultiTouchEventTypes);
 
             XiSelectEvents(_x11.Display, xid,
                 new Dictionary<int, List<XiEventType>> {[_pointerDevice.Id] = events});
@@ -186,7 +196,7 @@ namespace Avalonia.X11
                     (ev.Type == XiEventType.XI_TouchUpdate ?
                         RawPointerEventType.TouchUpdate :
                         RawPointerEventType.TouchEnd);
-                client.ScheduleInput(new RawTouchEventArgs(_touchDevice,
+                client.ScheduleInput(new RawTouchEventArgs(client.TouchDevice,
                     ev.Timestamp, client.InputRoot, type, ev.Position, ev.Modifiers, ev.Detail));
                 return;
             }
@@ -220,10 +230,10 @@ namespace Avalonia.X11
                 }
 
                 if (scrollDelta != default)
-                    client.ScheduleInput(new RawMouseWheelEventArgs(_platform.MouseDevice, ev.Timestamp,
+                    client.ScheduleInput(new RawMouseWheelEventArgs(client.MouseDevice, ev.Timestamp,
                         client.InputRoot, ev.Position, scrollDelta, ev.Modifiers));
                 if (_pointerDevice.HasMotion(ev))
-                    client.ScheduleInput(new RawPointerEventArgs(_platform.MouseDevice, ev.Timestamp, client.InputRoot,
+                    client.ScheduleInput(new RawPointerEventArgs(client.MouseDevice, ev.Timestamp, client.InputRoot,
                         RawPointerEventType.Move, ev.Position, ev.Modifiers));
             }
 
@@ -236,7 +246,7 @@ namespace Avalonia.X11
                     : ev.Button == 3 ? (down ? RawPointerEventType.RightButtonDown : RawPointerEventType.RightButtonUp)
                     : (RawPointerEventType?)null;
                 if (type.HasValue)
-                    client.ScheduleInput(new RawPointerEventArgs(_platform.MouseDevice, ev.Timestamp, client.InputRoot,
+                    client.ScheduleInput(new RawPointerEventArgs(client.MouseDevice, ev.Timestamp, client.InputRoot,
                         type.Value, ev.Position, ev.Modifiers));
             }
             
@@ -298,5 +308,7 @@ namespace Avalonia.X11
     {
         IInputRoot InputRoot { get; }
         void ScheduleInput(RawInputEventArgs args);
+        IMouseDevice MouseDevice { get; }
+        TouchDevice TouchDevice { get; }
     }
 }

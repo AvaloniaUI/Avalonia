@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Collections;
@@ -9,10 +10,12 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -30,6 +33,8 @@ namespace Avalonia.Controls.UnitTests
                 Template = CreateTreeViewTemplate(),
                 Items = CreateTestTreeData(),
             };
+
+            var root = new TestRoot(target);
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
@@ -74,6 +79,8 @@ namespace Avalonia.Controls.UnitTests
                 Template = CreateTreeViewTemplate(),
                 Items = CreateTestTreeData(),
             };
+
+            var root = new TestRoot(target);
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
@@ -525,6 +532,8 @@ namespace Avalonia.Controls.UnitTests
                 Items = data,
             };
 
+            var root = new TestRoot(target);
+
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
@@ -843,6 +852,125 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, target.SelectedItems.Count);
         }
 
+        [Fact]
+        public void TreeViewItems_Level_Should_Be_Set()
+        {
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+            };
+
+            var visualRoot = new TestRoot();
+            visualRoot.Child = target;
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+            ExpandAll(target);
+
+            Assert.Equal(0, GetItem(target, 0).Level);
+            Assert.Equal(1, GetItem(target, 0, 0).Level);
+            Assert.Equal(1, GetItem(target, 0, 1).Level);
+            Assert.Equal(1, GetItem(target, 0, 2).Level);
+            Assert.Equal(2, GetItem(target, 0, 1, 0).Level);
+        }
+
+        [Fact]
+        public void TreeViewItems_Level_Should_Be_Set_For_Derived_TreeView()
+        {
+            var tree = CreateTestTreeData();
+            var target = new DerivedTreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+            };
+
+            var visualRoot = new TestRoot();
+            visualRoot.Child = target;
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+            ExpandAll(target);
+
+            Assert.Equal(0, GetItem(target, 0).Level);
+            Assert.Equal(1, GetItem(target, 0, 0).Level);
+            Assert.Equal(1, GetItem(target, 0, 1).Level);
+            Assert.Equal(1, GetItem(target, 0, 2).Level);
+            Assert.Equal(2, GetItem(target, 0, 1, 0).Level);
+        }
+
+        [Fact]
+        public void Adding_Node_To_Removed_And_ReAdded_Parent_Should_Not_Crash()
+        {
+            // Issue #2985
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+            };
+
+            var visualRoot = new TestRoot();
+            visualRoot.Child = target;
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+            ExpandAll(target);
+
+            var parent = tree[0];
+            var node = parent.Children[1];
+
+            parent.Children.Remove(node);
+            parent.Children.Add(node);
+
+            var item = target.ItemContainerGenerator.Index.ContainerFromItem(node);
+            ApplyTemplates(new[] { item });
+
+            // #2985 causes ArgumentException here.
+            node.Children.Add(new Node());
+        }
+
+        [Fact]
+        public void Auto_Expanding_In_Style_Should_Not_Break_Range_Selection()
+        {
+            /// Issue #2980.
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                var target = new DerivedTreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    SelectionMode = SelectionMode.Multiple,
+                    Items = new List<Node>
+                {
+                    new Node { Value = "Root1", },
+                    new Node { Value = "Root2", },
+                },
+                };
+
+                var visualRoot = new TestRoot
+                {
+                    Styles =
+                    {
+                        new Style(x => x.OfType<TreeViewItem>())
+                        {
+                            Setters =
+                            {
+                                new Setter(TreeViewItem.IsExpandedProperty, true),
+                            },
+                        },
+                    },
+                    Child = target,
+                };
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+
+                _mouse.Click(GetItem(target, 0));
+                _mouse.Click(GetItem(target, 1), modifiers: InputModifiers.Shift);
+            }
+        }
+
         private void ApplyTemplates(TreeView tree)
         {
             tree.ApplyTemplate();
@@ -860,6 +988,19 @@ namespace Avalonia.Controls.UnitTests
                 control.HeaderPresenter.ApplyTemplate();
                 ApplyTemplates(control.Presenter.Panel.Children);
             }
+        }
+
+        private TreeViewItem GetItem(TreeView target, params int[] indexes)
+        {
+            var c = (ItemsControl)target;
+
+            foreach (var index in indexes)
+            {
+                var item = ((IList)c.Items)[index];
+                c = (ItemsControl)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+            }
+
+            return (TreeViewItem)c;
         }
 
         private IList<Node> CreateTestTreeData()
@@ -927,6 +1068,14 @@ namespace Avalonia.Controls.UnitTests
                     }.RegisterInNameScope(scope)
                 }
             });
+        }
+
+        private void ExpandAll(TreeView tree)
+        {
+            foreach (var i in tree.ItemContainerGenerator.Containers)
+            {
+                tree.ExpandSubTree((TreeViewItem)i.ContainerControl);
+            }
         }
 
         private List<string> ExtractItemHeader(TreeView tree, int level)
@@ -1018,6 +1167,10 @@ namespace Avalonia.Controls.UnitTests
             {
                 return data is Node;
             }
+        }
+
+        private class DerivedTreeView : TreeView
+        {
         }
     }
 }

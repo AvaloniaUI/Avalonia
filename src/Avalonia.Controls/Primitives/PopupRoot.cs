@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
+    public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
     {
         private readonly TopLevel _parent;
         private PopupPositionerParameters _positionerParameters;
@@ -41,6 +41,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Initializes a new instance of the <see cref="PopupRoot"/> class.
         /// </summary>
+        /// <param name="parent">The popup parent.</param>
+        /// <param name="impl">The popup implementation.</param>
         /// <param name="dependencyResolver">
         /// The dependency resolver to use. If null the default dependency resolver will be used.
         /// </param>

@@ -4,8 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
@@ -18,15 +17,14 @@ namespace Avalonia.Interactivity
     {
         private Dictionary<RoutedEvent, List<EventSubscription>> _eventHandlers;
 
+        private static readonly Dictionary<Type, HandlerInvokeSignature> s_invokeHandlerCache = new Dictionary<Type, HandlerInvokeSignature>();
+
         /// <summary>
         /// Gets the interactive parent of the object for bubbling and tunneling events.
         /// </summary>
         IInteractive IInteractive.InteractiveParent => ((IVisual)this).VisualParent as IInteractive;
 
-        private Dictionary<RoutedEvent, List<EventSubscription>> EventHandlers
-        {
-            get { return _eventHandlers ?? (_eventHandlers = new Dictionary<RoutedEvent, List<EventSubscription>>()); }
-        }
+        private Dictionary<RoutedEvent, List<EventSubscription>> EventHandlers => _eventHandlers ?? (_eventHandlers = new Dictionary<RoutedEvent, List<EventSubscription>>());
 
         /// <summary>
         /// Adds a handler for the specified routed event.
@@ -45,24 +43,14 @@ namespace Avalonia.Interactivity
             Contract.Requires<ArgumentNullException>(routedEvent != null);
             Contract.Requires<ArgumentNullException>(handler != null);
 
-            List<EventSubscription> subscriptions;
-
-            if (!EventHandlers.TryGetValue(routedEvent, out subscriptions))
-            {
-                subscriptions = new List<EventSubscription>();
-                EventHandlers.Add(routedEvent, subscriptions);
-            }
-
-            var sub = new EventSubscription
+            var subscription = new EventSubscription
             {
                 Handler = handler,
                 Routes = routes,
                 AlsoIfHandled = handledEventsToo,
             };
 
-            subscriptions.Add(sub);
-
-            return Disposable.Create(() => subscriptions.Remove(sub));
+            return AddEventSubscription(routedEvent, subscription);
         }
 
         /// <summary>
@@ -80,7 +68,37 @@ namespace Avalonia.Interactivity
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false) where TEventArgs : RoutedEventArgs
         {
-            return AddHandler(routedEvent, (Delegate)handler, routes, handledEventsToo);
+            Contract.Requires<ArgumentNullException>(routedEvent != null);
+            Contract.Requires<ArgumentNullException>(handler != null);
+
+            // EventHandler delegate is not covariant, this forces us to create small wrapper
+            // that will cast our type erased instance and invoke it.
+            Type eventArgsType = routedEvent.EventArgsType;
+
+            if (!s_invokeHandlerCache.TryGetValue(eventArgsType, out var invokeAdapter))
+            {
+                void InvokeAdapter(Delegate baseHandler, object sender, RoutedEventArgs args)
+                {
+                    var typedHandler = (EventHandler<TEventArgs>)baseHandler;
+                    var typedArgs = (TEventArgs)args;
+
+                    typedHandler(sender, typedArgs);
+                }
+
+                invokeAdapter = InvokeAdapter;
+
+                s_invokeHandlerCache.Add(eventArgsType, invokeAdapter);
+            }
+
+            var subscription = new EventSubscription
+            {
+                InvokeAdapter = invokeAdapter,
+                Handler = handler,
+                Routes = routes,
+                AlsoIfHandled = handledEventsToo,
+            };
+
+            return AddEventSubscription(routedEvent, subscription);
         }
 
         /// <summary>
@@ -153,10 +171,9 @@ namespace Avalonia.Interactivity
 
             e.Route = RoutingStrategies.Bubble;
 
-            foreach (var target in this.GetBubbleEventRoute())
-            {
-                ((Interactive)target).RaiseEventImpl(e);
-            }
+            var traverser = HierarchyTraverser<RaiseEventTraverse, NopTraverse>.Create(e);
+
+            traverser.Traverse(this);
         }
 
         /// <summary>
@@ -169,10 +186,9 @@ namespace Avalonia.Interactivity
 
             e.Route = RoutingStrategies.Tunnel;
 
-            foreach (var target in this.GetTunnelEventRoute())
-            {
-                ((Interactive)target).RaiseEventImpl(e);
-            }
+            var traverser = HierarchyTraverser<NopTraverse, RaiseEventTraverse>.Create(e);
+
+            traverser.Traverse(this);
         }
 
         /// <summary>
@@ -196,9 +212,115 @@ namespace Avalonia.Interactivity
 
                     if (correctRoute && notFinished)
                     {
-                        sub.Handler.DynamicInvoke(this, e);
+                        if (sub.InvokeAdapter != null)
+                        {
+                            sub.InvokeAdapter(sub.Handler, this, e);
+                        }
+                        else
+                        {
+                            sub.Handler.DynamicInvoke(this, e);
+                        }
                     }
                 }
+            }
+        }
+
+        private List<EventSubscription> GetEventSubscriptions(RoutedEvent routedEvent)
+        {
+            if (!EventHandlers.TryGetValue(routedEvent, out var subscriptions))
+            {
+                subscriptions = new List<EventSubscription>();
+                EventHandlers.Add(routedEvent, subscriptions);
+            }
+
+            return subscriptions;
+        }
+
+        private IDisposable AddEventSubscription(RoutedEvent routedEvent, EventSubscription subscription)
+        {
+            List<EventSubscription> subscriptions = GetEventSubscriptions(routedEvent);
+
+            subscriptions.Add(subscription);
+
+            return new UnsubscribeDisposable(subscriptions, subscription);
+        }
+
+        private sealed class UnsubscribeDisposable : IDisposable
+        {
+            private readonly List<EventSubscription> _subscriptions;
+            private readonly EventSubscription _subscription;
+
+            public UnsubscribeDisposable(List<EventSubscription> subscriptions, EventSubscription subscription)
+            {
+                _subscriptions = subscriptions;
+                _subscription = subscription;
+            }
+
+            public void Dispose()
+            {
+                _subscriptions.Remove(_subscription);
+            }
+        }
+
+        private interface ITraverse
+        {
+            void Execute(IInteractive target, RoutedEventArgs e);
+        }
+
+        private struct NopTraverse : ITraverse
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Execute(IInteractive target, RoutedEventArgs e)
+            {
+            }
+        }
+
+        private struct RaiseEventTraverse : ITraverse
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Execute(IInteractive target, RoutedEventArgs e)
+            {
+                ((Interactive)target).RaiseEventImpl(e);
+            }
+        }
+
+        /// <summary>
+        /// Traverses interactive hierarchy allowing for raising events.
+        /// </summary>
+        /// <typeparam name="TPreTraverse">Called before parent is traversed.</typeparam>
+        /// <typeparam name="TPostTraverse">Called after parent has been traversed.</typeparam>
+        private struct HierarchyTraverser<TPreTraverse, TPostTraverse>
+            where TPreTraverse : struct, ITraverse
+            where TPostTraverse : struct, ITraverse
+        {
+            private TPreTraverse _preTraverse;
+            private TPostTraverse _postTraverse;
+            private readonly RoutedEventArgs _args;
+
+            private HierarchyTraverser(TPreTraverse preTraverse, TPostTraverse postTraverse, RoutedEventArgs args)
+            {
+                _preTraverse = preTraverse;
+                _postTraverse = postTraverse;
+                _args = args;
+            }
+
+            public static HierarchyTraverser<TPreTraverse, TPostTraverse> Create(RoutedEventArgs args)
+            {
+                return new HierarchyTraverser<TPreTraverse, TPostTraverse>(new TPreTraverse(), new TPostTraverse(), args);
+            }
+
+            public void Traverse(IInteractive target)
+            {
+                _preTraverse.Execute(target, _args);
+
+                IInteractive parent = target.InteractiveParent;
+
+                if (parent != null)
+                {
+                    Traverse(parent);
+                }
+
+                _postTraverse.Execute(target, _args);
             }
         }
     }

@@ -56,7 +56,7 @@ namespace Avalonia.Controls
         {
             ErrorsProperty.Changed.Subscribe(ErrorsChanged);
             HasErrorsProperty.Changed.Subscribe(HasErrorsChanged);
-            TemplatedParentProperty.Changed.AddClassHandler<DataValidationErrors>(x => x.OnTemplatedParentChange);
+            TemplatedParentProperty.Changed.AddClassHandler<DataValidationErrors>((x, e) => x.OnTemplatedParentChange(e));
         }
 
         private void OnTemplatedParentChange(AvaloniaPropertyChangedEventArgs e)

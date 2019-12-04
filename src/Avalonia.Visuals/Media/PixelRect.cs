@@ -10,7 +10,7 @@ namespace Avalonia
     /// <summary>
     /// Represents a rectangle in device pixels.
     /// </summary>
-    public readonly struct PixelRect
+    public readonly struct PixelRect : IEquatable<PixelRect>
     {
         /// <summary>
         /// An empty rectangle.
@@ -148,7 +148,7 @@ namespace Avalonia
         /// <returns>True if the rects are equal; otherwise false.</returns>
         public static bool operator ==(PixelRect left, PixelRect right)
         {
-            return left.Position == right.Position && left.Size == right.Size;
+            return left.Equals(right);
         }
 
         /// <summary>
@@ -197,19 +197,21 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Returns a boolean indicating whether the rect is equal to the other given rect.
+        /// </summary>
+        /// <param name="other">The other rect to test equality against.</param>
+        /// <returns>True if this rect is equal to other; False otherwise.</returns>
+        public bool Equals(PixelRect other)
+        {
+            return Position == other.Position && Size == other.Size;
+        }
+
+        /// <summary>
         /// Returns a boolean indicating whether the given object is equal to this rectangle.
         /// </summary>
         /// <param name="obj">The object to compare against.</param>
         /// <returns>True if the object is equal to this rectangle; false otherwise.</returns>
-        public override bool Equals(object obj)
-        {
-            if (obj is PixelRect other)
-            {
-                return this == other;
-            }
-
-            return false;
-        }
+        public override bool Equals(object obj) => obj is PixelRect other && Equals(other);
 
         /// <summary>
         /// Returns the hash code for this instance.
@@ -432,7 +434,7 @@ namespace Avalonia
         /// <returns>The parsed <see cref="PixelRect"/>.</returns>
         public static PixelRect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelRect"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelRect."))
             {
                 return new PixelRect(
                     tokenizer.ReadInt32(),

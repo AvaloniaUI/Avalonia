@@ -1,51 +1,23 @@
 <Styles xmlns="https://github.com/avaloniaui">
-  <Style Selector="GridSplitter:vertical">
-    <Setter Property="Width" Value="6"/>
-    <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}"/>
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Border Background="{TemplateBinding Background}">
-          <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <StackPanel.Styles>
-              <Style Selector="Ellipse">
-                <Setter Property="HorizontalAlignment" Value="Center"/>
-                <Setter Property="Width" Value="4"/>
-                <Setter Property="Height" Value="4"/>
-                <Setter Property="Fill" Value="{DynamicResource ThemeControlMidBrush}"/>
-                <Setter Property="Margin" Value="1"/>
-              </Style>
-            </StackPanel.Styles>
-            <Ellipse/>
-            <Ellipse/>
-            <Ellipse/>
-          </StackPanel>
-        </Border>
-      </ControlTemplate>
-    </Setter>
-  </Style>
-  <Style Selector="GridSplitter:horizontal">
-    <Setter Property="Height" Value="6"/>
-    <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}"/>
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Border Background="{TemplateBinding Background}">
-          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <StackPanel.Styles>
-              <Style Selector="Ellipse">
-                <Setter Property="VerticalAlignment" Value="Center"/>
-                <Setter Property="Width" Value="4"/>
-                <Setter Property="Height" Value="4"/>
-                <Setter Property="Fill" Value="{DynamicResource ThemeControlMidBrush}"/>
-                <Setter Property="Margin" Value="1"/>
-              </Style>
-            </StackPanel.Styles>
-            <Ellipse/>
-            <Ellipse/>
-            <Ellipse/>
-          </StackPanel>
-        </Border>
-      </ControlTemplate>
-    </Setter>
-  </Style>
-</Styles>
 
+  <Style Selector="GridSplitter">
+    <Setter Property="Focusable" Value="True" />
+    <Setter Property="MinWidth" Value="6" />
+    <Setter Property="MinHeight" Value="6" />
+    <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+    <Setter Property="PreviewContent">
+      <Template>
+        <Rectangle Fill="{DynamicResource HighlightBrush}" />
+      </Template>
+    </Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border 
+          BorderBrush="{TemplateBinding BorderBrush}"
+          BorderThickness="{TemplateBinding BorderThickness}"
+          Background="{TemplateBinding Background}"/>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+</Styles>

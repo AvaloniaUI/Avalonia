@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
@@ -15,6 +16,34 @@ using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
+    public class MacOSTopLevelWindowHandle : IPlatformHandle, IMacOSTopLevelPlatformHandle
+    {
+        IAvnWindowBase _native;
+
+        public MacOSTopLevelWindowHandle(IAvnWindowBase native)
+        {
+            _native = native;
+        }
+
+        public IntPtr Handle => NSWindow;
+
+        public string HandleDescriptor => "NSWindow";
+
+        public IntPtr NSView => _native.ObtainNSViewHandle();
+
+        public IntPtr NSWindow => _native.ObtainNSWindowHandle();
+
+        public IntPtr GetNSViewRetained()
+        {
+            return _native.ObtainNSViewHandleRetained();
+        }
+
+        public IntPtr GetNSWindowRetained()
+        {
+            return _native.ObtainNSWindowHandleRetained();
+        }
+    }
+
     public abstract class WindowBaseImpl : IWindowBaseImpl,
         IFramebufferPlatformSurface
     {
@@ -23,7 +52,7 @@ namespace Avalonia.Native
         private object _syncRoot = new object();
         private bool _deferredRendering = false;
         private bool _gpu = false;
-        private readonly IMouseDevice _mouse;
+        private readonly MouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
         private readonly IStandardCursorFactory _cursorFactory;
         private Size _savedLogicalSize;
@@ -37,17 +66,25 @@ namespace Avalonia.Native
             _deferredRendering = opts.UseDeferredRendering;
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
-            _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
+            _mouse = new MouseDevice();
             _cursorFactory = AvaloniaLocator.Current.GetService<IStandardCursorFactory>();
         }
 
         protected void Init(IAvnWindowBase window, IAvnScreens screens)
         {
             _native = window;
+
+            Handle = new MacOSTopLevelWindowHandle(window);
+            
             _glSurface = new GlPlatformSurface(window);
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
             _savedScaling = Scaling;
+
+            var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
+                    .FirstOrDefault(m => m.Bounds.Contains(Position));
+
+            Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d));
         }
 
         public Size ClientSize 
@@ -90,7 +127,7 @@ namespace Avalonia.Native
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action Closed { get; set; }
-        public IMouseDevice MouseDevice => AvaloniaNativePlatform.MouseDevice;
+        public IMouseDevice MouseDevice => _mouse;
         public abstract IPopupImpl CreatePopup();
 
 
@@ -136,6 +173,7 @@ namespace Avalonia.Native
                 {
                     n?.Dispose();
                 }
+                _parent._mouse.Dispose();
             }
 
             void IAvnWindowBaseEvents.Activated() => _parent.Activated?.Invoke();
@@ -198,7 +236,7 @@ namespace Avalonia.Native
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawTextInputEventArgs(_keyboard, timeStamp, text);
+            var args = new RawTextInputEventArgs(_keyboard, timeStamp, _inputRoot, text);
 
             Input?.Invoke(args);
 
@@ -209,7 +247,7 @@ namespace Avalonia.Native
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawKeyEventArgs(_keyboard, timeStamp, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
+            var args = new RawKeyEventArgs(_keyboard, timeStamp, _inputRoot, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
 
             Input?.Invoke(args);
 
@@ -295,12 +333,13 @@ namespace Avalonia.Native
             _native.Hide();
         }
 
-        public void BeginMoveDrag()
+        public void BeginMoveDrag(PointerPressedEventArgs e)
         {
             _native.BeginMoveDrag();
         }
 
-        public Size MaxClientSize => _native.GetMaxClientSize().ToAvaloniaSize();
+        public Size MaxClientSize => Screen.AllScreens.Select(s => s.Bounds.Size.ToSize(s.PixelDensity))
+            .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
         public void SetTopmost(bool value)
         {
@@ -336,11 +375,11 @@ namespace Avalonia.Native
             _native.SetMinMaxSize(minSize.ToAvnSize(), maxSize.ToAvnSize());
         }
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
 
         }
 
-        public IPlatformHandle Handle => new PlatformHandle(IntPtr.Zero, "NOT SUPPORTED");
+        public IPlatformHandle Handle { get; private set; }
     }
 }

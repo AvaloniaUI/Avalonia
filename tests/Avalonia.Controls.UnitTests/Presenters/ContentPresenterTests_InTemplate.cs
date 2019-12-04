@@ -343,6 +343,19 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Same(logicalParent, ((IStyledElement)child).StylingParent);
         }
 
+        [Fact]
+        public void Should_Clear_Host_When_Host_Template_Cleared()
+        {
+            var (target, host) = CreateTarget();
+
+            Assert.Same(host, target.Host);
+
+            host.Template = null;
+            host.ApplyTemplate();
+
+            Assert.Null(target.Host);
+        }
+
         (ContentPresenter presenter, ContentControl templatedParent) CreateTarget()
         {
             var templatedParent = new ContentControl

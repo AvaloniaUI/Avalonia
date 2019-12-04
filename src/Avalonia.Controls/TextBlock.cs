@@ -352,10 +352,11 @@ namespace Avalonia.Controls
             return new FormattedText
             {
                 Constraint = constraint,
-                Typeface = new Typeface(FontFamily, FontSize, FontStyle, FontWeight),
+                Typeface = new Typeface(FontFamily, FontWeight, FontStyle),
+                FontSize = FontSize,
                 Text = text ?? string.Empty,
                 TextAlignment = TextAlignment,
-                Wrapping = TextWrapping,
+                TextWrapping = TextWrapping,
             };
         }
 

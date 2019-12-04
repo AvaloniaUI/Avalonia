@@ -393,14 +393,14 @@ namespace Avalonia.Controls
         {
             FocusableProperty.OverrideDefaultValue<DatePicker>(true);
 
-            DisplayDateProperty.Changed.AddClassHandler<DatePicker>(x => x.OnDisplayDateChanged);
-            DisplayDateStartProperty.Changed.AddClassHandler<DatePicker>(x => x.OnDisplayDateStartChanged);
-            DisplayDateEndProperty.Changed.AddClassHandler<DatePicker>(x => x.OnDisplayDateEndChanged);
-            IsDropDownOpenProperty.Changed.AddClassHandler<DatePicker>(x => x.OnIsDropDownOpenChanged);
-            SelectedDateProperty.Changed.AddClassHandler<DatePicker>(x => x.OnSelectedDateChanged);
-            SelectedDateFormatProperty.Changed.AddClassHandler<DatePicker>(x => x.OnSelectedDateFormatChanged);
-            CustomDateFormatStringProperty.Changed.AddClassHandler<DatePicker>(x => x.OnCustomDateFormatStringChanged);
-            TextProperty.Changed.AddClassHandler<DatePicker>(x => x.OnTextChanged);
+            DisplayDateProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnDisplayDateChanged(e));
+            DisplayDateStartProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnDisplayDateStartChanged(e));
+            DisplayDateEndProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnDisplayDateEndChanged(e));
+            IsDropDownOpenProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnIsDropDownOpenChanged(e));
+            SelectedDateProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnSelectedDateChanged(e));
+            SelectedDateFormatProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnSelectedDateFormatChanged(e));
+            CustomDateFormatStringProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnCustomDateFormatStringChanged(e));
+            TextProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnTextChanged(e));
         }
         /// <summary>
         /// Initializes a new instance of the
@@ -1042,7 +1042,8 @@ namespace Avalonia.Controls
                         }
                     }
                     DateTime? d = SetTextBoxValue(s);
-                    if (!SelectedDate.Equals(d))
+                    
+                    if (SelectedDate != d)
                     {
                         SelectedDate = d;
                     }
@@ -1058,7 +1059,8 @@ namespace Avalonia.Controls
             else
             {
                 DateTime? d = SetTextBoxValue(_defaultText);
-                if (!SelectedDate.Equals(d))
+
+                if (SelectedDate != d)
                 {
                     SelectedDate = d;
                 }

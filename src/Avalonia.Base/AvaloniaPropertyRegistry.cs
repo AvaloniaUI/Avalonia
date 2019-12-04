@@ -24,8 +24,10 @@ namespace Avalonia
             new Dictionary<Type, List<AvaloniaProperty>>();
         private readonly Dictionary<Type, List<AvaloniaProperty>> _attachedCache =
             new Dictionary<Type, List<AvaloniaProperty>>();
-        private readonly Dictionary<Type, List<KeyValuePair<AvaloniaProperty, object>>> _initializedCache =
-            new Dictionary<Type, List<KeyValuePair<AvaloniaProperty, object>>>();
+        private readonly Dictionary<Type, List<PropertyInitializationData>> _initializedCache =
+            new Dictionary<Type, List<PropertyInitializationData>>();
+        private readonly Dictionary<Type, List<AvaloniaProperty>> _inheritedCache =
+            new Dictionary<Type, List<AvaloniaProperty>>();
 
         /// <summary>
         /// Gets the <see cref="AvaloniaPropertyRegistry"/> instance
@@ -104,6 +106,46 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets all inherited <see cref="AvaloniaProperty"/>s registered on a type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
+        public IEnumerable<AvaloniaProperty> GetRegisteredInherited(Type type)
+        {
+            Contract.Requires<ArgumentNullException>(type != null);
+
+            if (_inheritedCache.TryGetValue(type, out var result))
+            {
+                return result;
+            }
+
+            result = new List<AvaloniaProperty>();
+            var visited = new HashSet<AvaloniaProperty>();
+
+            foreach (var property in GetRegistered(type))
+            {
+                if (property.Inherits)
+                {
+                    result.Add(property);
+                    visited.Add(property);
+                }
+            }
+            foreach (var property in GetRegisteredAttached(type))
+            {
+                if (property.Inherits)
+                {
+                    if (!visited.Contains(property))
+                    {
+                        result.Add(property);
+                    }
+                }
+            }
+
+            _inheritedCache.Add(type, result);
+            return result;
+        }
+
+        /// <summary>
         /// Gets all <see cref="AvaloniaProperty"/>s registered on a object.
         /// </summary>
         /// <param name="o">The object.</param>
@@ -131,12 +173,20 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(type != null);
             Contract.Requires<ArgumentNullException>(name != null);
 
-            if (name.Contains('.'))
+            if (name.Contains("."))
             {
                 throw new InvalidOperationException("Attached properties not supported.");
             }
 
-            return GetRegistered(type).FirstOrDefault(x => x.Name == name);
+            foreach (AvaloniaProperty x in GetRegistered(type))
+            {
+                if (x.Name == name)
+                {
+                    return x;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -230,6 +280,7 @@ namespace Avalonia
             
             _registeredCache.Clear();
             _initializedCache.Clear();
+            _inheritedCache.Clear();
         }
 
         /// <summary>
@@ -266,6 +317,7 @@ namespace Avalonia
             
             _attachedCache.Clear();
             _initializedCache.Clear();
+            _inheritedCache.Clear();
         }
 
         internal void NotifyInitialized(AvaloniaObject o)
@@ -286,35 +338,73 @@ namespace Avalonia
                 property.NotifyInitialized(e);
             }
 
-            if (!_initializedCache.TryGetValue(type, out var items))
+            if (!_initializedCache.TryGetValue(type, out var initializationData))
             {
-                var build = new Dictionary<AvaloniaProperty, object>();
+                var visited = new HashSet<AvaloniaProperty>();
 
-                foreach (var property in GetRegistered(type))
+                initializationData = new List<PropertyInitializationData>();
+
+                foreach (AvaloniaProperty property in GetRegistered(type))
                 {
-                    var value = !property.IsDirect ?
-                        ((IStyledPropertyAccessor)property).GetDefaultValue(type) :
-                        null;
-                    build.Add(property, value);
+                    if (property.IsDirect)
+                    {
+                        initializationData.Add(new PropertyInitializationData(property, (IDirectPropertyAccessor)property));
+                    }
+                    else
+                    {
+                        initializationData.Add(new PropertyInitializationData(property, (IStyledPropertyAccessor)property, type));
+                    }
+
+                    visited.Add(property);
                 }
 
-                foreach (var property in GetRegisteredAttached(type))
+                foreach (AvaloniaProperty property in GetRegisteredAttached(type))
                 {
-                    if (!build.ContainsKey(property))
+                    if (!visited.Contains(property))
                     {
-                        var value = ((IStyledPropertyAccessor)property).GetDefaultValue(type);
-                        build.Add(property, value);
+                        initializationData.Add(new PropertyInitializationData(property, (IStyledPropertyAccessor)property, type));
+
+                        visited.Add(property);
                     }
                 }
 
-                items = build.ToList();
-                _initializedCache.Add(type, items);
+                _initializedCache.Add(type, initializationData);
             }
 
-            foreach (var i in items)
+            foreach (PropertyInitializationData data in initializationData)
             {
-                var value = i.Key.IsDirect ? o.GetValue(i.Key) : i.Value;
-                Notify(i.Key, value);
+                if (!data.Property.HasNotifyInitializedObservers)
+                {
+                    continue;
+                }
+
+                object value = data.IsDirect ? data.DirectAccessor.GetValue(o) : data.Value;
+
+                Notify(data.Property, value);
+            }
+        }
+
+        private readonly struct PropertyInitializationData
+        {
+            public AvaloniaProperty Property { get; }
+            public object Value { get; }
+            public bool IsDirect { get; }
+            public IDirectPropertyAccessor DirectAccessor { get; }
+
+            public PropertyInitializationData(AvaloniaProperty property, IDirectPropertyAccessor directAccessor)
+            {
+                Property = property;
+                Value = null;
+                IsDirect = true;
+                DirectAccessor = directAccessor;
+            }
+
+            public PropertyInitializationData(AvaloniaProperty property, IStyledPropertyAccessor styledAccessor, Type type)
+            {
+                Property = property;
+                Value = styledAccessor.GetDefaultValue(type);
+                IsDirect = false;
+                DirectAccessor = null;
             }
         }
     }

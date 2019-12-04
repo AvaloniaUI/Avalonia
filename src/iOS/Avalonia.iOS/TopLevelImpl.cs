@@ -16,14 +16,17 @@ namespace Avalonia.iOS
     [Adopts("UIKeyInput")]
     class TopLevelImpl : UIView, ITopLevelImpl, IFramebufferPlatformSurface
     {
-        private IInputRoot _inputRoot;
         private readonly KeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
+
+        private IInputRoot _inputRoot;
 
         public TopLevelImpl()
         {
             _keyboardHelper = new KeyboardEventsHelper<TopLevelImpl>(this);
             AutoresizingMask = UIViewAutoresizing.All;
             _keyboardHelper.ActivateAutoShowKeyboard();
+
+            Surfaces = new object[] { this };
         }
 
         [Export("hasText")]
@@ -76,8 +79,8 @@ namespace Avalonia.iOS
         {
             //Not supported
         }
-        
-        public IEnumerable<object> Surfaces => new object[] { this };
+
+        public IEnumerable<object> Surfaces { get; }
         
         public override void TouchesEnded(NSSet touches, UIEvent evt)
         {

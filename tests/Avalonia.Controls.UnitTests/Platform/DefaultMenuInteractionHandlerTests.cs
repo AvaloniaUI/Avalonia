@@ -18,7 +18,9 @@ namespace Avalonia.Controls.UnitTests.Platform
             default);
         
         static PointerReleasedEventArgs CreateReleased(IInteractive source) => new PointerReleasedEventArgs(source,
-            new FakePointer(), (IVisual)source, default,0, new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased), default);
+            new FakePointer(), (IVisual)source, default,0,
+            new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased),
+            default, MouseButton.Left);
         
         public class TopLevel
         {

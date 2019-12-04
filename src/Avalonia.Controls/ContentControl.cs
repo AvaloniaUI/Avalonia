@@ -1,11 +1,13 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Collections;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
@@ -39,12 +41,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             AvaloniaProperty.Register<ContentControl, VerticalAlignment>(nameof(VerticalContentAlignment));
 
-        /// <summary>
-        /// Initializes static members of the <see cref="ContentControl"/> class.
-        /// </summary>
         static ContentControl()
         {
-            ContentControlMixin.Attach<ContentControl>(ContentProperty, x => x.LogicalChildren);
+            ContentProperty.Changed.AddClassHandler<ContentControl>((x, e) => x.ContentChanged(e));
         }
 
         /// <summary>
@@ -95,20 +94,39 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        void IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
+        IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
+
+        /// <inheritdoc/>
+        bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
         {
-            RegisterContentPresenter(presenter);
+            return RegisterContentPresenter(presenter);
         }
 
         /// <summary>
         /// Called when an <see cref="IContentPresenter"/> is registered with the control.
         /// </summary>
         /// <param name="presenter">The presenter.</param>
-        protected virtual void RegisterContentPresenter(IContentPresenter presenter)
+        protected virtual bool RegisterContentPresenter(IContentPresenter presenter)
         {
             if (presenter.Name == "PART_ContentPresenter")
             {
                 Presenter = presenter;
+                return true;
+            }
+
+            return false;
+        }
+
+        private void ContentChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is ILogical oldChild)
+            {
+                LogicalChildren.Remove(oldChild);
+            }
+
+            if (e.NewValue is ILogical newChild)
+            {
+                LogicalChildren.Add(newChild);
             }
         }
     }

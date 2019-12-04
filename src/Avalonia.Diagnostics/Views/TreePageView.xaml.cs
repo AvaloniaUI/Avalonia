@@ -70,7 +70,10 @@ namespace Avalonia.Diagnostics.Views
         private void TreeViewItemTemplateApplied(object sender, TemplateAppliedEventArgs e)
         {
             var item = (TreeViewItem)sender;
-            var header = item.HeaderPresenter.Child;
+            var headerPresenter = item.HeaderPresenter;
+            headerPresenter.ApplyTemplate();
+
+            var header = headerPresenter.Child;
             header.PointerEnter += AddAdorner;
             header.PointerLeave += RemoveAdorner;
             item.TemplateApplied -= TreeViewItemTemplateApplied;

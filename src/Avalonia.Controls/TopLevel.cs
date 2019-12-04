@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Reactive.Linq;
-using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -15,7 +13,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
-using Avalonia.VisualTree;
 using JetBrains.Annotations;
 
 namespace Avalonia.Controls
@@ -269,9 +266,15 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
-            PlatformImpl = null;
+            var logicalArgs = new LogicalTreeAttachmentEventArgs(this);
+            ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
-            Closed?.Invoke(this, EventArgs.Empty);
+            var visualArgs = new VisualTreeAttachmentEventArgs(this, this);
+            OnDetachedFromVisualTreeCore(visualArgs);
+
+            (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
+            PlatformImpl = null;
+            OnClosed(EventArgs.Empty);
             Renderer?.Dispose();
             Renderer = null;
         }
@@ -296,10 +299,7 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         protected virtual void HandleScalingChanged(double scaling)
         {
-            foreach (ILayoutable control in this.GetSelfAndVisualDescendants())
-            {
-                control.InvalidateMeasure();
-            }
+            LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
         }
 
         /// <inheritdoc/>
@@ -318,6 +318,12 @@ namespace Avalonia.Controls
         protected virtual void OnOpened(EventArgs e) => Opened?.Invoke(this, e);
 
         /// <summary>
+        /// Raises the <see cref="Closed"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnClosed(EventArgs e) => Closed?.Invoke(this, e);
+
+        /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a
         /// warning if not found.
         /// </summary>
@@ -330,7 +336,7 @@ namespace Avalonia.Controls
 
             if (result == null)
             {
-                Logger.Warning(
+                Logger.TryGet(LogEventLevel.Warning)?.Log(
                     LogArea.Control,
                     this,
                     "Could not create {Service} : maybe Application.RegisterServices() wasn't called?",

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Avalonia.Layout
 {
@@ -18,9 +17,11 @@ namespace Avalonia.Layout
             _shouldEnqueue = shouldEnqueue;
         }
 
-        private Func<T, bool> _shouldEnqueue;
-        private Queue<T> _inner = new Queue<T>();
-        private Dictionary<T, Info> _loopQueueInfo = new Dictionary<T, Info>();
+        private readonly Func<T, bool> _shouldEnqueue;
+        private readonly Queue<T> _inner = new Queue<T>();
+        private readonly Dictionary<T, Info> _loopQueueInfo = new Dictionary<T, Info>();
+        private readonly List<KeyValuePair<T, Info>> _notFinalizedBuffer = new List<KeyValuePair<T, Info>>();
+
         private int _maxEnqueueCountPerLoop = 1;
 
         public int Count => _inner.Count;
@@ -60,13 +61,19 @@ namespace Avalonia.Layout
 
         public void EndLoop()
         {
-            var notfinalized = _loopQueueInfo.Where(v => v.Value.Count == _maxEnqueueCountPerLoop).ToArray();
+            foreach (KeyValuePair<T, Info> info in _loopQueueInfo)
+            {
+                if (info.Value.Count >= _maxEnqueueCountPerLoop)
+                {
+                    _notFinalizedBuffer.Add(info);
+                }
+            }
 
             _loopQueueInfo.Clear();
 
-            //prevent layout cycle but add to next layout the non arranged/measured items that might have caused cycle
-            //one more time as a final attempt
-            foreach (var item in notfinalized)
+            // Prevent layout cycle but add to next layout the non arranged/measured items that might have caused cycle
+            // one more time as a final attempt.
+            foreach (var item in _notFinalizedBuffer)
             {
                 if (_shouldEnqueue(item.Key))
                 {
@@ -74,6 +81,8 @@ namespace Avalonia.Layout
                     _inner.Enqueue(item.Key);
                 }
             }
+
+            _notFinalizedBuffer.Clear();
         }
     }
 }

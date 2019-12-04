@@ -22,5 +22,6 @@
     <PackageReference Include="SharpGenTools.Sdk" Version="1.1.2" PrivateAssets="all" />
     <PackageReference Include="SharpGen.Runtime.COM" Version="1.1.0" />
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
+    <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
   </ItemGroup>
 </Project>

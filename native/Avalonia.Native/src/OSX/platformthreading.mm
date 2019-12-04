@@ -10,12 +10,6 @@ class PlatformThreadingInterface;
 -(Signaler*) init;
 @end
 
-
-@interface ActionCallback : NSObject
-- (ActionCallback*) initWithCallback: (IAvnActionCallback*) callback;
-- (void) action;
-@end
-
 @implementation ActionCallback
 {
     ComPtr<IAvnActionCallback> _callback;
@@ -57,16 +51,36 @@ class PlatformThreadingInterface : public ComSingleObject<IAvnPlatformThreadingI
 {
 private:
     Signaler* _signaler;
+    bool _wasRunningAtLeastOnce = false;
     
     class LoopCancellation : public ComSingleObject<IAvnLoopCancellation, &IID_IAvnLoopCancellation>
     {
     public:
         FORWARD_IUNKNOWN()
-        bool Cancelled = 0;
-        virtual void Cancel() override
+        bool Running = false;
+        bool Cancelled = false;
+        virtual void Cancel()
         {
-            Cancelled = 1;
+            Cancelled = true;
+            if(Running)
+            {
+                Running = false;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSApplication sharedApplication] stop:nil];
+                    NSEvent* event = [NSEvent otherEventWithType:NSEventTypeApplicationDefined
+                                                        location:NSMakePoint(0, 0)
+                                                   modifierFlags:0
+                                                       timestamp:0
+                                                    windowNumber:0
+                                                         context:nil
+                                                         subtype:0
+                                                           data1:0
+                                                           data2:0];
+                    [NSApp postEvent:event atStart:YES];
+                });
+            }
         }
+
     };
     
 public:
@@ -99,30 +113,17 @@ public:
         return new LoopCancellation();
     }
     
-    virtual void RunLoop(IAvnLoopCancellation* cancel) override
+    virtual HRESULT RunLoop(IAvnLoopCancellation* cancel) override
     {
-        @autoreleasepool {
-            auto can = dynamic_cast<LoopCancellation*>(cancel);
-            [[NSApplication sharedApplication] activateIgnoringOtherApps:true];
-            while(true)
-            {
-                @autoreleasepool
-                {
-                    if(can != NULL && can->Cancelled)
-                        return;
-                    NSEvent* ev = [[NSApplication sharedApplication]
-                                   nextEventMatchingMask:NSEventMaskAny
-                                   untilDate: [NSDate dateWithTimeIntervalSinceNow:1]
-                                   inMode:NSDefaultRunLoopMode
-                                   dequeue:true];
-                    if(can != NULL && can->Cancelled)
-                        return;
-                    if(ev != NULL)
-                        [[NSApplication sharedApplication] sendEvent:ev];
-                }
-            }
-            NSDebugLog(@"RunLoop exited");
-        }
+        auto can = dynamic_cast<LoopCancellation*>(cancel);
+        if(can->Cancelled)
+            return S_OK;
+        if(_wasRunningAtLeastOnce)
+            return E_FAIL;
+        can->Running = true;
+        _wasRunningAtLeastOnce = true;
+        [NSApp run];
+        return S_OK;
     }
     
     virtual void Signal(int priority) override

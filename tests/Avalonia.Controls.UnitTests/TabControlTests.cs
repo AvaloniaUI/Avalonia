@@ -4,6 +4,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -42,6 +43,29 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(0, target.SelectedIndex);
             Assert.Equal(selected, target.SelectedItem);
+        }
+
+        [Fact]
+        public void Pre_Selecting_TabItem_Should_Set_SelectedContent_After_It_Was_Added()
+        {
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+            };
+
+            const string secondContent = "Second";
+
+            var items = new AvaloniaList<object>
+            {
+                new TabItem { Header = "First"},
+                new TabItem { Header = "Second", Content = secondContent, IsSelected = true }
+            };
+
+            target.Items = items;
+
+            ApplyTemplate(target);
+
+            Assert.Equal(secondContent, target.SelectedContent);
         }
 
         [Fact]
@@ -183,27 +207,27 @@ namespace Avalonia.Controls.UnitTests
 
             ApplyTemplate(target);
 
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             var dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = ((Button)target.ContentPart.Child).DataContext;
             Assert.Equal(items[1], dataContext);
 
             target.SelectedIndex = 2;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Base", dataContext);
 
             target.SelectedIndex = 3;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Qux", dataContext);
 
             target.SelectedIndex = 4;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = target.ContentPart.DataContext;
             Assert.Equal("Base", dataContext);
         }
@@ -279,12 +303,31 @@ namespace Avalonia.Controls.UnitTests
             };
 
             ApplyTemplate(target);
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
 
             var content = Assert.IsType<TextBlock>(target.ContentPart.Child);
             Assert.Equal("bar", content.Tag);
             Assert.Same(target, content.GetLogicalParent());
             Assert.Single(target.GetLogicalChildren(), content);
+        }
+
+        [Fact]
+        public void Should_Not_Propagate_DataContext_To_TabItem_Content()
+        {
+            var dataContext = "DataContext";
+
+            var tabItem = new TabItem();
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = dataContext,
+                Items = new AvaloniaList<object> { tabItem }
+            };
+
+            ApplyTemplate(target);
+
+            Assert.NotEqual(dataContext, tabItem.Content);
         }
 
         private IControlTemplate TabControlTemplate()

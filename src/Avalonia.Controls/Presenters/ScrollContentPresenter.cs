@@ -73,7 +73,7 @@ namespace Avalonia.Controls.Presenters
         static ScrollContentPresenter()
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
-            ChildProperty.Changed.AddClassHandler<ScrollContentPresenter>(x => x.ChildChanged);
+            ChildProperty.Changed.AddClassHandler<ScrollContentPresenter>((x, e) => x.ChildChanged(e));
             AffectsArrange<ScrollContentPresenter>(OffsetProperty);
         }
 
@@ -141,7 +141,7 @@ namespace Avalonia.Controls.Presenters
         /// <returns>True if the scroll offset was changed; otherwise false.</returns>
         public bool BringDescendantIntoView(IVisual target, Rect targetRect)
         {
-            if (Child == null)
+            if (Child?.IsEffectivelyVisible != true)
             {
                 return false;
             }
@@ -246,7 +246,7 @@ namespace Avalonia.Controls.Presenters
                 if (isLogical)
                     _activeLogicalGestureScrolls?.TryGetValue(e.Id, out delta);
                 delta += e.Delta;
-                
+
                 if (Extent.Height > Viewport.Height)
                 {
                     double dy;
@@ -293,7 +293,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private void OnScrollGestureEnded(object sender, ScrollGestureEndedEventArgs e) 
+        private void OnScrollGestureEnded(object sender, ScrollGestureEndedEventArgs e)
             => _activeLogicalGestureScrolls?.Remove(e.Id);
 
         /// <inheritdoc/>

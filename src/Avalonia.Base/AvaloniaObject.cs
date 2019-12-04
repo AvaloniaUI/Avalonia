@@ -82,6 +82,7 @@ namespace Avalonia
 
             set
             {
+                VerifyAccess();
                 if (_inheritanceParent != value)
                 {
                     if (_inheritanceParent != null)
@@ -89,25 +90,33 @@ namespace Avalonia
                         _inheritanceParent.InheritablePropertyChanged -= ParentPropertyChanged;
                     }
 
-                    var properties = AvaloniaPropertyRegistry.Instance.GetRegistered(this)
-                        .Concat(AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(this.GetType()));
-                    var inherited = (from property in properties
-                                     where property.Inherits
-                                     select new
-                                     {
-                                         Property = property,
-                                         Value = GetValue(property),
-                                     }).ToList();
-
+                    var oldInheritanceParent = _inheritanceParent;
                     _inheritanceParent = value;
+                    var valuestore = _values;
 
-                    foreach (var i in inherited)
+                    foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegisteredInherited(GetType()))
                     {
-                        object newValue = GetValue(i.Property);
-
-                        if (!Equals(i.Value, newValue))
+                        if (valuestore != null && valuestore.GetValue(property) != AvaloniaProperty.UnsetValue)
                         {
-                            RaisePropertyChanged(i.Property, i.Value, newValue, BindingPriority.LocalValue);
+                            // if local value set there can be no change
+                            continue;
+                        }
+                        // get the value as it would have been with the previous InheritanceParent
+                        object oldValue;
+                        if (oldInheritanceParent is AvaloniaObject aobj)
+                        {
+                            oldValue = aobj.GetValueOrDefaultUnchecked(property);
+                        }
+                        else
+                        {
+                            oldValue = ((IStyledPropertyAccessor)property).GetDefaultValue(GetType());
+                        }
+
+                        object newValue = GetDefaultValue(property);
+
+                        if (!Equals(oldValue, newValue))
+                        {
+                            RaisePropertyChanged(property, oldValue, newValue, BindingPriority.LocalValue);
                         }
                     }
 
@@ -201,27 +210,20 @@ namespace Avalonia
         /// <returns>The value.</returns>
         public object GetValue(AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            if (property is null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
+
             VerifyAccess();
 
             if (property.IsDirect)
             {
                 return ((IDirectPropertyAccessor)GetRegistered(property)).GetValue(this);
             }
-            else if (_values != null)
-            {
-                var result = Values.GetValue(property);
-
-                if (result == AvaloniaProperty.UnsetValue)
-                {
-                    result = GetDefaultValue(property);
-                }
-
-                return result;
-            }
             else
             {
-                return GetDefaultValue(property);
+                return GetValueOrDefaultUnchecked(property);
             }
         }
 
@@ -233,7 +235,10 @@ namespace Avalonia
         /// <returns>The value.</returns>
         public T GetValue<T>(AvaloniaProperty<T> property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            if (property is null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
 
             return (T)GetValue((AvaloniaProperty)property);
         }
@@ -328,8 +333,6 @@ namespace Avalonia
 
             VerifyAccess();
 
-            var description = GetDescription(source);
-
             if (property.IsDirect)
             {
                 if (property.IsReadOnly)
@@ -337,12 +340,12 @@ namespace Avalonia
                     throw new ArgumentException($"The property {property.Name} is readonly.");
                 }
 
-                Logger.Verbose(
-                    LogArea.Property, 
+                Logger.TryGet(LogEventLevel.Verbose)?.Log(
+                    LogArea.Property,
                     this,
-                    "Bound {Property} to {Binding} with priority LocalValue", 
-                    property, 
-                    description);
+                    "Bound {Property} to {Binding} with priority LocalValue",
+                    property,
+                    GetDescription(source));
 
                 if (_directBindings == null)
                 {
@@ -353,12 +356,12 @@ namespace Avalonia
             }
             else
             {
-                Logger.Verbose(
+                Logger.TryGet(LogEventLevel.Verbose)?.Log(
                     LogArea.Property,
                     this,
                     "Bound {Property} to {Binding} with priority {Priority}",
                     property,
-                    description,
+                    GetDescription(source),
                     priority);
 
                 return Values.AddBinding(property, source, priority);
@@ -408,7 +411,7 @@ namespace Avalonia
             {
                 RaisePropertyChanged(property, oldValue, newValue, (BindingPriority)priority);
 
-                Logger.Verbose(
+                Logger.TryGet(LogEventLevel.Verbose)?.Log(
                     LogArea.Property,
                     this,
                     "{Property} changed from {$Old} to {$Value} with priority {Priority}",
@@ -460,8 +463,7 @@ namespace Avalonia
         /// <param name="e">The binding error.</param>
         protected internal virtual void LogBindingError(AvaloniaProperty property, Exception e)
         {
-            Logger.Log(
-                LogEventLevel.Warning,
+            Logger.TryGet(LogEventLevel.Warning)?.Log(
                 LogArea.Binding,
                 this,
                 "Error in binding to {Target}.{Property}: {Message}",
@@ -598,8 +600,44 @@ namespace Avalonia
         private object GetDefaultValue(AvaloniaProperty property)
         {
             if (property.Inherits && InheritanceParent is AvaloniaObject aobj)
-                return aobj.GetValue(property);
+                return aobj.GetValueOrDefaultUnchecked(property);
             return ((IStyledPropertyAccessor) property).GetDefaultValue(GetType());
+        }
+
+        /// <summary>
+        /// Gets the value or default value for a property.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>The default value.</returns>
+        private object GetValueOrDefaultUnchecked(AvaloniaProperty property)
+        {
+            var aobj = this;
+            var valuestore = aobj._values;
+            if (valuestore != null)
+            {
+                var result = valuestore.GetValue(property);
+                if (result != AvaloniaProperty.UnsetValue)
+                {
+                    return result;
+                }
+            }
+            if (property.Inherits)
+            {
+                while (aobj.InheritanceParent is AvaloniaObject parent)
+                {
+                    aobj = parent;
+                    valuestore = aobj._values;
+                    if (valuestore != null)
+                    {
+                        var result = valuestore.GetValue(property);
+                        if (result != AvaloniaProperty.UnsetValue)
+                        {
+                            return result;
+                        }
+                    }
+                }
+            }
+            return ((IStyledPropertyAccessor)property).GetDefaultValue(GetType());
         }
 
         /// <summary>
@@ -778,7 +816,7 @@ namespace Avalonia
         /// <param name="priority">The priority.</param>
         private void LogPropertySet(AvaloniaProperty property, object value, BindingPriority priority)
         {
-            Logger.Verbose(
+            Logger.TryGet(LogEventLevel.Verbose)?.Log(
                 LogArea.Property,
                 this,
                 "Set {Property} to {$Value} with priority {Priority}",

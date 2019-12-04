@@ -1031,6 +1031,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("shcore.dll")]
         public static extern long GetDpiForMonitor(IntPtr hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
 
+        [DllImport("gdi32.dll")]
+        public static extern int GetDeviceCaps(IntPtr hdc, DEVICECAP nIndex);
+
         [DllImport("shcore.dll")]
         public static extern void GetScaleFactorForMonitor(IntPtr hMon, out uint pScale);
 
@@ -1051,10 +1054,10 @@ namespace Avalonia.Win32.Interop
         public static extern bool GetMonitorInfo([In] IntPtr hMonitor, ref MONITORINFO lpmi);
 
         [DllImport("user32")]
-        public static extern bool GetTouchInputInfo(
+        public static extern unsafe bool GetTouchInputInfo(
             IntPtr hTouchInput,
             uint        cInputs,
-            [Out]TOUCHINPUT[] pInputs,
+            TOUCHINPUT* pInputs,
             int         cbSize
         );
         
@@ -1095,7 +1098,10 @@ namespace Avalonia.Win32.Interop
         
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         public static extern HRESULT RegisterDragDrop(IntPtr hwnd, IDropTarget target);
-        
+
+        [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        public static extern HRESULT RevokeDragDrop(IntPtr hwnd);
+
         [DllImport("ole32.dll", EntryPoint = "OleInitialize")]
         public static extern HRESULT OleInitialize(IntPtr val);
 
@@ -1115,7 +1121,7 @@ namespace Avalonia.Win32.Interop
         public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
-        internal static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, int[] finalEffect);
+        internal static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, out int finalEffect);
 
 
 
@@ -1145,6 +1151,12 @@ namespace Avalonia.Win32.Interop
                 MONITOR_DEFAULTTOPRIMARY = 0x00000001,
                 MONITOR_DEFAULTTONEAREST = 0x00000002
             }
+        }
+
+        public enum DEVICECAP
+        {
+            HORZRES = 8,
+            DESKTOPHORZRES = 118
         }
 
         public enum PROCESS_DPI_AWARENESS

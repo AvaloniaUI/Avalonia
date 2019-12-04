@@ -45,7 +45,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         static ItemsPresenterBase()
         {
-            TemplatedParentProperty.Changed.AddClassHandler<ItemsPresenterBase>(x => x.TemplatedParentChanged);
+            TemplatedParentProperty.Changed.AddClassHandler<ItemsPresenterBase>((x,e) => x.TemplatedParentChanged(e));
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Avalonia.Controls.Presenters
                 _itemsSubscription?.Dispose();
                 _itemsSubscription = null;
 
-                if (_createdPanel && value is INotifyCollectionChanged incc)
+                if (!IsHosted && _createdPanel && value is INotifyCollectionChanged incc)
                 {
                     _itemsSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
                 }
@@ -130,6 +130,8 @@ namespace Avalonia.Controls.Presenters
             private set;
         }
 
+        protected bool IsHosted => TemplatedParent is IItemsPresenterHost;
+
         /// <inheritdoc/>
         public override sealed void ApplyTemplate()
         {
@@ -142,6 +144,15 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         public virtual void ScrollIntoView(object item)
         {
+        }
+
+        /// <inheritdoc/>
+        void IItemsPresenter.ItemsChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (Panel != null)
+            {
+                ItemsChanged(e);
+            }
         }
 
         /// <summary>
@@ -215,7 +226,7 @@ namespace Avalonia.Controls.Presenters
 
             _createdPanel = true;
 
-            if (_itemsSubscription == null && Items is INotifyCollectionChanged incc)
+            if (!IsHosted && _itemsSubscription == null && Items is INotifyCollectionChanged incc)
             {
                 _itemsSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
             }

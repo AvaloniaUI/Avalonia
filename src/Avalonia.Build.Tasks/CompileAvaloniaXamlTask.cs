@@ -34,7 +34,7 @@ namespace Avalonia.Build.Tasks
 
             var res = XamlCompilerTaskExecutor.Compile(BuildEngine, input,
                 File.ReadAllLines(ReferencesFilePath).Where(l => !string.IsNullOrWhiteSpace(l)).ToArray(),
-                ProjectDirectory, OutputPath);
+                ProjectDirectory, OutputPath, VerifyIl);
             if (!res.Success)
                 return false;
             if (!res.WrittenFile)
@@ -66,6 +66,8 @@ namespace Avalonia.Build.Tasks
         public string ProjectDirectory { get; set; }
         
         public string OutputPath { get; set; }
+
+        public bool VerifyIl { get; set; }
         
         public IBuildEngine BuildEngine { get; set; }
         public ITaskHost HostObject { get; set; }

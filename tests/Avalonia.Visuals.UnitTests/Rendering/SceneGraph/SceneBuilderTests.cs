@@ -476,6 +476,64 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void Should_Update_When_Control_Moved()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                Decorator moveFrom;
+                Decorator moveTo;
+                Canvas moveMe;
+                var tree = new TestRoot
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = new StackPanel
+                    {
+                        Children =
+                        {
+                            (moveFrom = new Decorator
+                            {
+                                Child = moveMe = new Canvas(),
+                            }),
+                            (moveTo = new Decorator()),
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var moveFromNode = (VisualNode)scene.FindNode(moveFrom);
+                var moveToNode = (VisualNode)scene.FindNode(moveTo);
+
+                Assert.Equal(1, moveFromNode.Children.Count);
+                Assert.Same(moveMe, moveFromNode.Children[0].Visual);
+                Assert.Empty(moveToNode.Children);
+
+                moveFrom.Child = null;
+                moveTo.Child = moveMe;
+
+                scene = scene.CloneScene();
+                moveFromNode = (VisualNode)scene.FindNode(moveFrom);
+                moveToNode = (VisualNode)scene.FindNode(moveTo);
+
+                moveFromNode.SortChildren(scene);
+                moveToNode.SortChildren(scene);
+                sceneBuilder.Update(scene, moveFrom);
+                sceneBuilder.Update(scene, moveTo);
+                sceneBuilder.Update(scene, moveMe);
+
+                Assert.Empty(moveFromNode.Children);
+                Assert.Equal(1, moveToNode.Children.Count);
+                Assert.Same(moveMe, moveToNode.Children[0].Visual);
+            }
+        }
+
+        [Fact]
         public void Should_Update_When_Control_Made_Invisible()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -516,6 +574,58 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Null(result.FindNode(border));
                 Assert.Null(result.FindNode(canvas));
                 Assert.Equal(new Rect(0, 0, 100, 100), result.Layers.Single().Dirty.Single());
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Dispose_Active_VisualNode_When_Control_Reparented_And_Child_Made_Invisible()
+        {
+            // Issue #3115
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                StackPanel panel;
+                Border border1;
+                Border border2;
+                var tree = new TestRoot
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = panel = new StackPanel
+                    {
+                        Children =
+                        {
+                            (border1 = new Border
+                            {
+                                Background = Brushes.Red,
+                            }),
+                            (border2 = new Border
+                            {
+                                Background = Brushes.Green,
+                            }),
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var decorator = new Decorator();
+                tree.Child = null;
+                decorator.Child = panel;
+                tree.Child = decorator;
+                border1.IsVisible = false;
+
+                scene = scene.CloneScene();
+                sceneBuilder.Update(scene, decorator);
+
+                var panelNode = (VisualNode)scene.FindNode(panel);
+                Assert.Equal(2, panelNode.Children.Count);
+                Assert.False(panelNode.Children[0].Disposed);
+                Assert.False(panelNode.Children[1].Disposed);
             }
         }
 

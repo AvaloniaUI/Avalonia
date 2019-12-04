@@ -46,8 +46,8 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         static CarouselPresenter()
         {
-            IsVirtualizedProperty.Changed.AddClassHandler<CarouselPresenter>(x => x.IsVirtualizedChanged);
-            SelectedIndexProperty.Changed.AddClassHandler<CarouselPresenter>(x => x.SelectedIndexChanged);
+            IsVirtualizedProperty.Changed.AddClassHandler<CarouselPresenter>((x, e) => x.IsVirtualizedChanged(e));
+            SelectedIndexProperty.Changed.AddClassHandler<CarouselPresenter>((x, e) => x.SelectedIndexChanged(e));
         }
 
         /// <summary>

@@ -38,6 +38,11 @@ namespace Avalonia.Data
         public object FallbackValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the value to use when the binding result is null.
+        /// </summary>
+        public object TargetNullValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the binding mode.
         /// </summary>
         public BindingMode Mode { get; set; } = BindingMode.OneWay;
@@ -56,6 +61,12 @@ namespace Avalonia.Data
         /// Gets or sets the string format.
         /// </summary>
         public string StringFormat { get; set; }
+
+        public MultiBinding()
+        {
+            FallbackValue = AvaloniaProperty.UnsetValue;
+            TargetNullValue = AvaloniaProperty.UnsetValue;
+        }
 
         /// <inheritdoc/>
         public InstancedBinding Initiate(
@@ -76,7 +87,12 @@ namespace Avalonia.Data
             }
             
             var children = Bindings.Select(x => x.Initiate(target, null));
-            var input = children.Select(x => x.Observable).CombineLatest().Select(x => ConvertValue(x, targetType, converter));
+
+            var input = children.Select(x => x.Observable)
+                                .CombineLatest()
+                                .Select(x => ConvertValue(x, targetType, converter))
+                                .Where(x => x != BindingOperations.DoNothing);
+
             var mode = Mode == BindingMode.Default ?
                 targetProperty?.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
 
@@ -97,9 +113,9 @@ namespace Avalonia.Data
             var culture = CultureInfo.CurrentCulture;
             var converted = converter.Convert(values, targetType, ConverterParameter, culture);
 
-            if (converted == BindingOperations.DoNothing)
+            if (converted == null)
             {
-                return converted;
+                converted = TargetNullValue;
             }
 
             if (converted == AvaloniaProperty.UnsetValue)

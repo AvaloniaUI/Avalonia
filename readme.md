@@ -8,9 +8,9 @@
 
 ## About
 
-**Avalonia** is a WPF/UWP-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of Operating Systems such as Windows (.NET Framework, .NET Core), Linux (via Xorg), MacOS and with experimental support for Android and iOS.
+**Avalonia** is a WPF/UWP-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of Operating Systems such as Windows (.NET Framework, .NET Core), Linux (via Xorg), macOS and with experimental support for Android and iOS.
 
-**Avalonia** is ready for **General-Purpose Desktop App Development**. However there may be some bugs and breaking changes as we continue along into this project's development. To see the status for some of our features, please see our [Roadmap here](https://github.com/AvaloniaUI/Avalonia/issues/2239).
+**Avalonia** is ready for **General-Purpose Desktop App Development**. However, there may be some bugs and breaking changes as we continue along into this project's development. To see the status of some of our features, please see our [Roadmap here](https://github.com/AvaloniaUI/Avalonia/issues/2239).
 
 | Control catalog | Desktop platforms | Mobile platforms |
 |---|---|---|
@@ -20,11 +20,11 @@
 
 Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started. After installing it, open "New Project" dialog in Visual Studio, choose "Avalonia" in "Visual C#" section, select "Avalonia .NET Core Application" and press OK (<a href="http://avaloniaui.net/docs/quickstart/images/new-project-dialog.png">screenshot</a>). Now you can write code and markup that will work on multiple platforms!
 
-For those without Visual Studio, starter guide for .NET Core CLI can be found [here](http://avaloniaui.net/docs/quickstart/create-new-project#net-core).
+For those without Visual Studio, a starter guide for .NET Core CLI can be found [here](http://avaloniaui.net/docs/quickstart/create-new-project#net-core).
 
 Avalonia is delivered via <b>NuGet</b> package manager. You can find the packages here: ([stable(ish)](https://www.nuget.org/packages/Avalonia/), [nightly](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed))
 
-Use these commands in Package Manager console to install Avalonia manually:
+Use these commands in the Package Manager console to install Avalonia manually:
 ```
 Install-Package Avalonia
 Install-Package Avalonia.Desktop

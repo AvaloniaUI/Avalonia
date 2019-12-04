@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
 using Avalonia.Logging;
 using Avalonia.VisualTree;
 
@@ -329,7 +328,7 @@ namespace Avalonia.Layout
                 DesiredSize = desiredSize;
                 _previousMeasure = availableSize;
 
-                Logger.Verbose(LogArea.Layout, this, "Measure requested {DesiredSize}", DesiredSize);
+                Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Layout, this, "Measure requested {DesiredSize}", DesiredSize);
 
                 if (DesiredSize != previousDesiredSize)
                 {
@@ -356,7 +355,7 @@ namespace Avalonia.Layout
 
             if (!IsArrangeValid || _previousArrange != rect)
             {
-                Logger.Verbose(LogArea.Layout, this, "Arrange to {Rect} ", rect);
+                Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Layout, this, "Arrange to {Rect} ", rect);
 
                 IsArrangeValid = true;
                 ArrangeCore(rect);
@@ -381,7 +380,7 @@ namespace Avalonia.Layout
         {
             if (IsMeasureValid)
             {
-                Logger.Verbose(LogArea.Layout, this, "Invalidated measure");
+                Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Layout, this, "Invalidated measure");
 
                 IsMeasureValid = false;
                 IsArrangeValid = false;
@@ -402,7 +401,7 @@ namespace Avalonia.Layout
         {
             if (IsArrangeValid)
             {
-                Logger.Verbose(LogArea.Layout, this, "Invalidated arrange");
+                Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Layout, this, "Invalidated arrange");
 
                 IsArrangeValid = false;
                 (VisualRoot as ILayoutRoot)?.LayoutManager?.InvalidateArrange(this);
@@ -518,17 +517,25 @@ namespace Avalonia.Layout
                 var width = measured.Width;
                 var height = measured.Height;
 
-                if (!double.IsNaN(Width))
                 {
-                    width = Width;
+                    double widthCache = Width;
+
+                    if (!double.IsNaN(widthCache))
+                    {
+                        width = widthCache;
+                    }
                 }
 
                 width = Math.Min(width, MaxWidth);
                 width = Math.Max(width, MinWidth);
 
-                if (!double.IsNaN(Height))
                 {
-                    height = Height;
+                    double heightCache = Height;
+
+                    if (!double.IsNaN(heightCache))
+                    {
+                        height = heightCache;
+                    }
                 }
 
                 height = Math.Min(height, MaxHeight);
@@ -562,11 +569,19 @@ namespace Avalonia.Layout
             double width = 0;
             double height = 0;
 
-            foreach (ILayoutable child in this.GetVisualChildren())
+            var visualChildren = VisualChildren;
+            var visualCount = visualChildren.Count;
+
+            for (var i = 0; i < visualCount; i++)
             {
-                child.Measure(availableSize);
-                width = Math.Max(width, child.DesiredSize.Width);
-                height = Math.Max(height, child.DesiredSize.Height);
+                IVisual visual = visualChildren[i];
+
+                if (visual is ILayoutable layoutable)
+                {
+                    layoutable.Measure(availableSize);
+                    width = Math.Max(width, layoutable.DesiredSize.Width);
+                    height = Math.Max(height, layoutable.DesiredSize.Height);
+                }
             }
 
             return new Size(width, height);
@@ -594,6 +609,7 @@ namespace Avalonia.Layout
                 var verticalAlignment = VerticalAlignment;
                 var size = availableSizeMinusMargins;
                 var scale = GetLayoutScale();
+                var useLayoutRounding = UseLayoutRounding;
 
                 if (horizontalAlignment != HorizontalAlignment.Stretch)
                 {
@@ -607,7 +623,7 @@ namespace Avalonia.Layout
 
                 size = LayoutHelper.ApplyLayoutConstraints(this, size);
 
-                if (UseLayoutRounding)
+                if (useLayoutRounding)
                 {
                     size = new Size(
                         Math.Ceiling(size.Width * scale) / scale, 
@@ -641,7 +657,7 @@ namespace Avalonia.Layout
                         break;
                 }
 
-                if (UseLayoutRounding)
+                if (useLayoutRounding)
                 {
                     originX = Math.Floor(originX * scale) / scale;
                     originY = Math.Floor(originY * scale) / scale;
@@ -658,21 +674,28 @@ namespace Avalonia.Layout
         /// <returns>The actual size used.</returns>
         protected virtual Size ArrangeOverride(Size finalSize)
         {
-            foreach (ILayoutable child in this.GetVisualChildren().OfType<ILayoutable>())
+            var arrangeRect = new Rect(finalSize);
+
+            var visualChildren = VisualChildren;
+            var visualCount = visualChildren.Count;
+
+            for (var i = 0; i < visualCount; i++)
             {
-                child.Arrange(new Rect(finalSize));
+                IVisual visual = visualChildren[i];
+
+                if (visual is ILayoutable layoutable)
+                {
+                    layoutable.Arrange(arrangeRect);
+                }
             }
 
             return finalSize;
         }
 
         /// <inheritdoc/>
-        protected override sealed void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
+        protected sealed override void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            foreach (ILayoutable i in this.GetSelfAndVisualDescendants())
-            {
-                i.InvalidateMeasure();
-            }
+            LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
 
             base.OnVisualParentChanged(oldParent, newParent);
         }
