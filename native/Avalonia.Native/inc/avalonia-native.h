@@ -92,9 +92,17 @@ enum AvnRawMouseEventType
     RightButtonUp,
     MiddleButtonDown,
     MiddleButtonUp,
+    XButton1Down,
+    XButton1Up,
+    XButton2Down,
+    XButton2Up,
     Move,
     Wheel,
-    NonClientLeftButtonDown
+    NonClientLeftButtonDown,
+    TouchBegin,
+    TouchUpdate,
+    TouchEnd,
+    TouchCancel
 };
 
 enum AvnRawKeyEventType
@@ -112,7 +120,9 @@ enum AvnInputModifiers
     Windows = 8,
     LeftMouseButton = 16,
     RightMouseButton = 32,
-    MiddleMouseButton = 64
+    MiddleMouseButton = 64,
+    XButton1MouseButton = 128,
+    XButton2MouseButton = 256
 };
 
 enum AvnWindowState
@@ -212,6 +222,10 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT GetSoftwareFramebuffer(AvnFramebuffer*ret) = 0;
     virtual HRESULT SetMainMenu(IAvnAppMenu* menu) = 0;
     virtual HRESULT ObtainMainMenu(IAvnAppMenu** retOut) = 0;
+    virtual HRESULT ObtainNSWindowHandle(void** retOut) = 0;
+    virtual HRESULT ObtainNSWindowHandleRetained(void** retOut) = 0;
+    virtual HRESULT ObtainNSViewHandle(void** retOut) = 0;
+    virtual HRESULT ObtainNSViewHandleRetained(void** retOut) = 0;
     virtual bool TryLock() = 0;
     virtual void Unlock() = 0;
 };

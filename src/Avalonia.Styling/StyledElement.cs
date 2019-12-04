@@ -288,7 +288,7 @@ namespace Avalonia
                     var list = new AvaloniaList<ILogical>
                     {
                         ResetBehavior = ResetBehavior.Remove,
-                        Validate = ValidateLogicalChild
+                        Validate = logical => ValidateLogicalChild(logical)
                     };
                     list.CollectionChanged += LogicalChildrenCollectionChanged;
                     _logicalChildren = list;

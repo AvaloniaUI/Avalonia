@@ -79,7 +79,7 @@ namespace Avalonia.X11
                     atoms = atoms.Concat(new[] {_x11.Atoms.TARGETS, _x11.Atoms.MULTIPLE})
                         .ToArray();
                     XChangeProperty(_x11.Display, window, property,
-                        target, 32, PropertyMode.Replace, atoms, atoms.Length);
+                        _x11.Atoms.XA_ATOM, 32, PropertyMode.Replace, atoms, atoms.Length);
                     return property;
                 }
                 else if(target == _x11.Atoms.SAVE_TARGETS && _x11.Atoms.SAVE_TARGETS != IntPtr.Zero)

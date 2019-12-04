@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Layout
 {
@@ -60,6 +61,32 @@ namespace Avalonia.Layout
             child?.Arrange(new Rect(availableSize).Deflate(padding));
 
             return availableSize;
+        }
+
+        /// <summary>
+        /// Invalidates measure for given control and all visual children recursively.
+        /// </summary>
+        public static void InvalidateSelfAndChildrenMeasure(ILayoutable control)
+        {
+            void InnerInvalidateMeasure(IVisual target)
+            {
+                if (target is ILayoutable targetLayoutable)
+                {
+                    targetLayoutable.InvalidateMeasure();
+                }
+
+                var visualChildren = target.VisualChildren;
+                var visualChildrenCount = visualChildren.Count;
+
+                for (int i = 0; i < visualChildrenCount; i++)
+                {
+                    IVisual child = visualChildren[i];
+
+                    InnerInvalidateMeasure(child);
+                }
+            }
+
+            InnerInvalidateMeasure(control);
         }
     }
 }
