@@ -28,6 +28,10 @@ namespace Avalonia.UnitTests
                 return CreatePopupMock().Object;
 
             });
+            mock.Setup(x => x.Dispose()).Callback(() =>
+            {
+                mock.Object.Closed?.Invoke();
+            });
             PixelPoint pos = default;
             mock.SetupGet(x => x.Position).Returns(() => pos);
             mock.Setup(x => x.Move(It.IsAny<PixelPoint>())).Callback(new Action<PixelPoint>(np => pos = np));

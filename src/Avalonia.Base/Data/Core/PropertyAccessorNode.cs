@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core
@@ -41,7 +39,17 @@ namespace Avalonia.Data.Core
         {
             reference.TryGetTarget(out object target);
 
-            var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(target, PropertyName));
+            IPropertyAccessorPlugin plugin = null;
+
+            foreach (IPropertyAccessorPlugin x in ExpressionObserver.PropertyAccessors)
+            {
+                if (x.Match(target, PropertyName))
+                {
+                    plugin = x;
+                    break;
+                }
+            }
+
             var accessor = plugin?.Start(reference, PropertyName);
 
             if (_enableValidation && Next == null)

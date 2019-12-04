@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
 using Avalonia.Logging;
 using Avalonia.VisualTree;
 
@@ -694,12 +693,9 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc/>
-        protected override sealed void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
+        protected sealed override void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            foreach (ILayoutable i in this.GetSelfAndVisualDescendants())
-            {
-                i.InvalidateMeasure();
-            }
+            LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
 
             base.OnVisualParentChanged(oldParent, newParent);
         }
