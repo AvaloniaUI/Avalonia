@@ -234,7 +234,7 @@ namespace Avalonia.Direct2D1.Media
         public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX, double radiusY)
         {
             var rc = rect.ToDirect2D();
-            var isRounded = Math.Abs(radiusX) > double.Epsilon || Math.Abs(radiusX) > double.Epsilon;
+            var isRounded = Math.Abs(radiusX) > double.Epsilon || Math.Abs(radiusY) > double.Epsilon;
 
             if (brush != null)
             {

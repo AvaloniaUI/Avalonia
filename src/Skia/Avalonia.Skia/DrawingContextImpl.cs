@@ -187,7 +187,7 @@ namespace Avalonia.Skia
         public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX, double radiusY)
         {
             var rc = rect.ToSKRect();
-            var isRounded = Math.Abs(radiusX) > double.Epsilon || Math.Abs(radiusX) > double.Epsilon;
+            var isRounded = Math.Abs(radiusX) > double.Epsilon || Math.Abs(radiusY) > double.Epsilon;
 
             if (brush != null)
             {
