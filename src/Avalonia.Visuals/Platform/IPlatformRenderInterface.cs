@@ -113,12 +113,9 @@ namespace Avalonia.Platform
         IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride);
 
         /// <summary>
-        ///     Creates a glyph typeface for specified typeface.
+        ///     Creates a font manager implementation.
         /// </summary>
-        /// <param name="typeface">The typeface.</param>
-        /// <returns>
-        ///     The glyph typeface implementation.
-        /// </returns>
-        IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface);
+        /// <returns>The font manager.</returns>
+        IFontManagerImpl CreateFontManager();
     }
 }

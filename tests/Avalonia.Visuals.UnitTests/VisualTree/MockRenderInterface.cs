@@ -8,8 +8,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 {
     class MockRenderInterface : IPlatformRenderInterface
     {
-        public IEnumerable<string> InstalledFontNames => new string[0];
-
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
@@ -53,6 +51,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         }
 
         public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IFontManagerImpl CreateFontManager()
         {
             throw new NotImplementedException();
         }

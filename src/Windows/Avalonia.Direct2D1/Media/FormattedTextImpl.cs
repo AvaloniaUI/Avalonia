@@ -22,7 +22,7 @@ namespace Avalonia.Direct2D1.Media
         {
             Text = text;
 
-            using (var font = Direct2D1FontCollectionCache.GetFont(typeface))
+            var font = ((GlyphTypefaceImpl)typeface.GlyphTypeface.PlatformImpl).DWFont;
             using (var textFormat = new DWrite.TextFormat(Direct2D1Platform.DirectWriteFactory,
                 typeface.FontFamily.Name, font.FontFamily.FontCollection, (DWrite.FontWeight)typeface.Weight,
                 (DWrite.FontStyle)typeface.Style, DWrite.FontStretch.Normal, (float)fontSize))

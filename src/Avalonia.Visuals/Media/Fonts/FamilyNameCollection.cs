@@ -54,28 +54,65 @@ namespace Avalonia.Media.Fonts
         /// </value>
         internal IReadOnlyList<string> Names { get; }
 
-        /// <inheritdoc />
         /// <summary>
-        /// Returns an enumerator that iterates through the collection.
+        /// Returns an enumerator for the name collection.
         /// </summary>
-        /// <returns>
-        /// An enumerator that can be used to iterate through the collection.
-        /// </returns>
-        public IEnumerator<string> GetEnumerator()
+        public Enumerator GetEnumerator()
         {
-            return Names.GetEnumerator();
+            return new Enumerator(this);
         }
 
-        /// <inheritdoc />
-        /// <summary>
-        /// Returns an enumerator that iterates through a collection.
-        /// </summary>
-        /// <returns>
-        /// An <see cref="T:System.Collections.IEnumerator"></see> object that can be used to iterate through the collection.
-        /// </returns>
+        IEnumerator<string> IEnumerable<string>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public struct Enumerator : IEnumerator, IEnumerator<string>
+        {
+            private readonly IReadOnlyList<string> _names;
+            private int _pos;
+
+            public Enumerator(IReadOnlyList<string> names)
+            {
+                _names = names;
+                _pos = -1;
+                Current = default;
+            }
+
+            public string Current
+            {
+                get;
+                private set;
+            }
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() { }
+
+            public bool MoveNext()
+            {
+                if (_pos >= _names.Count - 1)
+                {
+                    return false;
+                }
+
+                Current = _names[++_pos];
+
+                return true;
+
+            }
+
+            public void Reset()
+            {
+                _pos = -1;
+
+                Current = default;
+            }
         }
 
         /// <summary>
@@ -129,6 +166,21 @@ namespace Avalonia.Media.Fonts
 
                 return hash;
             }
+        }
+
+        public static bool operator !=(FamilyNameCollection a, FamilyNameCollection b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator ==(FamilyNameCollection a, FamilyNameCollection b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+
+            return !(a is null) && a.Equals(b);
         }
 
         /// <summary>

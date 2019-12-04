@@ -14,9 +14,9 @@ namespace Avalonia.Skia
     {
         private bool _isDisposed;
 
-        public GlyphTypefaceImpl(Typeface typeface)
+        public GlyphTypefaceImpl(SKTypeface typeface)
         {
-            Typeface = TypefaceCache.Get(typeface.FontFamily, typeface.Weight, typeface.Style).SKTypeface;
+            Typeface = typeface;
 
             Face = new Face(GetTable)
             {
@@ -81,7 +81,6 @@ namespace Avalonia.Skia
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public int LineGap { get; }
 
-        //ToDo: Get these values from HarfBuzz
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public int UnderlinePosition { get; }
 
