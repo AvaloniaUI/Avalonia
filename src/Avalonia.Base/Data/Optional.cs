@@ -66,11 +66,31 @@ namespace Avalonia.Data
         public override string ToString() => HasValue ? _value?.ToString() ?? "(null)" : "(empty)";
 
         /// <summary>
+        /// Gets the value if present, otherwise the default value.
+        /// </summary>
+        /// <returns>The value.</returns>
+        public T GetValueOrDefault() => HasValue ? _value : default;
+
+        /// <summary>
         /// Gets the value if present, otherwise a default value.
         /// </summary>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>The value.</returns>
         public T GetValueOrDefault(T defaultValue = default) => HasValue ? _value : defaultValue;
+
+        /// <summary>
+        /// Gets the value if present, otherwise the default value.
+        /// </summary>
+        /// <returns>
+        /// The value if present and of the correct type, `default(TResult)` if the value is
+        /// not present or of an incorrect type.
+        /// </returns>
+        public TResult GetValueOrDefault<TResult>()
+        {
+            return HasValue ?
+                _value is TResult result ? result : default
+                : default;
+        }
 
         /// <summary>
         /// Gets the value if present, otherwise a default value.
