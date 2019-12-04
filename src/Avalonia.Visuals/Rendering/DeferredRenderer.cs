@@ -445,7 +445,7 @@ namespace Avalonia.Rendering
             foreach (var r in _dirtyRectsDisplay)
             {
                 var brush = new ImmutableSolidColorBrush(Colors.Magenta, r.Opacity);
-                context.FillRectangle(brush, r.Rect);
+                context.DrawRectangle(brush,null, r.Rect);
             }
         }
 

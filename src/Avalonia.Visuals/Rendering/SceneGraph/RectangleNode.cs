@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -21,14 +22,16 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="rect">The rectangle to draw.</param>
-        /// <param name="cornerRadius">The rectangle corner radius.</param>
+        /// <param name="radiusY">The radius in the Y dimension of the rounded corners.</param>
+        /// <param name="radiusX">The radius in the X dimension of the rounded corners.</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public RectangleNode(
             Matrix transform,
             IBrush brush,
             IPen pen,
             Rect rect,
-            float cornerRadius,
+            double radiusX,
+            double radiusY,
             IDictionary<IVisual, Scene> childScenes = null)
             : base(rect, transform, pen)
         {
@@ -36,7 +39,8 @@ namespace Avalonia.Rendering.SceneGraph
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Rect = rect;
-            CornerRadius = cornerRadius;
+            RadiusX = radiusX;
+            RadiusY = radiusY;
             ChildScenes = childScenes;
         }
 
@@ -61,9 +65,14 @@ namespace Avalonia.Rendering.SceneGraph
         public Rect Rect { get; }
 
         /// <summary>
-        /// Gets the rectangle corner radius.
+        /// The radius in the X dimension of the rounded corners.
         /// </summary>
-        public float CornerRadius { get; }
+        public double RadiusX { get; }
+
+        /// <summary>
+        /// The radius in the Y dimension of the rounded corners.
+        /// </summary>
+        public double RadiusY { get; }
 
         /// <inheritdoc/>
         public override IDictionary<IVisual, Scene> ChildScenes { get; }
@@ -75,19 +84,21 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill of the other draw operation.</param>
         /// <param name="pen">The stroke of the other draw operation.</param>
         /// <param name="rect">The rectangle of the other draw operation.</param>
-        /// <param name="cornerRadius">The rectangle corner radius of the other draw operation.</param>
+        /// <param name="radiusX"></param>
+        /// <param name="radiusY"></param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, IPen pen, Rect rect, float cornerRadius)
+        public bool Equals(Matrix transform, IBrush brush, IPen pen, Rect rect, double radiusX, double radiusY)
         {
             return transform == Transform &&
-                Equals(brush, Brush) &&
-                Equals(Pen, pen) &&
-                rect == Rect &&
-                cornerRadius == CornerRadius;
+                   Equals(brush, Brush) &&
+                   Equals(Pen, pen) &&
+                   rect == Rect &&
+                   Math.Abs(radiusX - RadiusX) < double.Epsilon &&
+                   Math.Abs(radiusY - RadiusY) < double.Epsilon;
         }
 
         /// <inheritdoc/>
@@ -95,15 +106,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             context.Transform = Transform;
 
-            if (Brush != null)
-            {
-                context.FillRectangle(Brush, Rect, CornerRadius);
-            }
-
-            if (Pen != null)
-            {
-                context.DrawRectangle(Pen, Rect, CornerRadius);
-            }
+            context.DrawRectangle(Brush, Pen, Rect, RadiusX, RadiusY);
         }
 
         /// <inheritdoc/>
