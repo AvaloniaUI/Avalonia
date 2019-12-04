@@ -54,23 +54,23 @@ namespace Avalonia.Data
         public bool Equals(Optional<T> other) => this == other;
 
         /// <inheritdoc/>
-        public override int GetHashCode() => HasValue ? Value!.GetHashCode() : 0;
+        public override int GetHashCode() => HasValue ? _value?.GetHashCode() ?? 0 : 0;
 
         /// <summary>
         /// Casts the value (if any) to an <see cref="object"/>.
         /// </summary>
         /// <returns>The cast optional value.</returns>
-        public Optional<object> ToObject() => HasValue ? new Optional<object>(Value) : default;
+        public Optional<object> ToObject() => HasValue ? new Optional<object>(_value) : default;
 
         /// <inheritdoc/>
-        public override string ToString() => HasValue ? Value?.ToString() ?? "(null)" : "(empty)";
+        public override string ToString() => HasValue ? _value?.ToString() ?? "(null)" : "(empty)";
 
         /// <summary>
         /// Gets the value if present, otherwise a default value.
         /// </summary>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>The value.</returns>
-        public T ValueOrDefault(T defaultValue = default) => HasValue ? Value : defaultValue;
+        public T ValueOrDefault(T defaultValue = default) => HasValue ? _value : defaultValue;
 
         /// <summary>
         /// Gets the value if present, otherwise a default value.
@@ -84,7 +84,7 @@ namespace Avalonia.Data
         public TResult ValueOrDefault<TResult>(TResult defaultValue = default)
         {
             return HasValue ?
-                Value is TResult result ? result : default
+                _value is TResult result ? result : default
                 : defaultValue;
         }
 

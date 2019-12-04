@@ -135,10 +135,10 @@ namespace Avalonia.Data
         /// Converts the binding value to an <see cref="Optional{T}"/>.
         /// </summary>
         /// <returns></returns>
-        public Optional<T> ToOptional() => HasValue ? new Optional<T>(Value) : default;
+        public Optional<T> ToOptional() => HasValue ? new Optional<T>(_value) : default;
 
         /// <inheritdoc/>
-        public override string ToString() => HasError ? $"Error: {Error!.Message}" : Value?.ToString() ?? "(null)";
+        public override string ToString() => HasError ? $"Error: {Error!.Message}" : _value?.ToString() ?? "(null)";
 
         /// <summary>
         /// Converts the value to untyped representation, using <see cref="AvaloniaProperty.UnsetValue"/>,
@@ -152,7 +152,7 @@ namespace Avalonia.Data
             {
                 BindingValueType.UnsetValue => AvaloniaProperty.UnsetValue,
                 BindingValueType.DoNothing => BindingOperations.DoNothing,
-                BindingValueType.Value => Value,
+                BindingValueType.Value => _value,
                 BindingValueType.BindingError => 
                     new BindingNotification(Error, BindingErrorType.Error),
                 BindingValueType.BindingErrorWithFallback =>
@@ -190,7 +190,7 @@ namespace Avalonia.Data
         /// </summary>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>The value.</returns>
-        public T ValueOrDefault(T defaultValue = default) => HasValue ? Value : defaultValue;
+        public T ValueOrDefault(T defaultValue = default) => HasValue ? _value : defaultValue;
 
         /// <summary>
         /// Gets the value of the binding value if present, otherwise a default value.
@@ -204,7 +204,7 @@ namespace Avalonia.Data
         public TResult ValueOrDefault<TResult>(TResult defaultValue = default)
         {
             return HasValue ?
-                Value is TResult result ? result : default
+                _value is TResult result ? result : default
                 : defaultValue;
         }
 
