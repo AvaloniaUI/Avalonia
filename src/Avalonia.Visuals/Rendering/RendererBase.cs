@@ -51,7 +51,7 @@ namespace Avalonia.Rendering
             var rect = new Rect(clientRect.Right - size.Width, 0, size.Width, size.Height);
 
             context.Transform = Matrix.Identity;
-            context.FillRectangle(Brushes.Black, rect);
+            context.DrawRectangle(Brushes.Black,null, rect);
             context.DrawText(Brushes.White, rect.TopLeft, _fpsText.PlatformImpl);
         }
     }

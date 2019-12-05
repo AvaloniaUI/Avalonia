@@ -92,9 +92,17 @@ enum AvnRawMouseEventType
     RightButtonUp,
     MiddleButtonDown,
     MiddleButtonUp,
+    XButton1Down,
+    XButton1Up,
+    XButton2Down,
+    XButton2Up,
     Move,
     Wheel,
-    NonClientLeftButtonDown
+    NonClientLeftButtonDown,
+    TouchBegin,
+    TouchUpdate,
+    TouchEnd,
+    TouchCancel
 };
 
 enum AvnRawKeyEventType
@@ -112,7 +120,9 @@ enum AvnInputModifiers
     Windows = 8,
     LeftMouseButton = 16,
     RightMouseButton = 32,
-    MiddleMouseButton = 64
+    MiddleMouseButton = 64,
+    XButton1MouseButton = 128,
+    XButton2MouseButton = 256
 };
 
 enum AvnWindowState

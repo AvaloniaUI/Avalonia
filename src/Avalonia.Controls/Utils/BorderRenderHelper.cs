@@ -90,23 +90,17 @@ namespace Avalonia.Controls.Utils
             {
                 var borderThickness = borders.Top;
                 var top = borderThickness * 0.5;
-                var cornerRadius = (float)Math.Max(0, radii.TopLeft - borderThickness - top);
 
-                if (background != null)
+                IPen pen = null;
+
+                if (borderThickness > 0)
                 {
-                    var topLeft = new Point(borders.Left, borders.Top);
-                    var bottomRight = new Point(size.Width - borders.Right, size.Height - borders.Bottom);
-                    var innerRect = new Rect(topLeft, bottomRight);
-                    context.FillRectangle(background, innerRect, cornerRadius);
+                    pen = new Pen(borderBrush, borderThickness);
                 }
 
-                if (borderBrush != null && borderThickness > 0)
-                {
-                    var topLeft = new Point(top, top);
-                    var bottomRight = new Point(size.Width - top, size.Height - top);
-                    var outerRect = new Rect(topLeft, bottomRight);
-                    context.DrawRectangle(new Pen(borderBrush, borderThickness), outerRect, (float)radii.TopLeft);
-                }
+                var rect = new Rect(top, top, size.Width - borderThickness, size.Height - borderThickness);
+
+                context.DrawRectangle(background, pen, rect, radii.TopLeft, radii.TopLeft);
             }
         }    
 
