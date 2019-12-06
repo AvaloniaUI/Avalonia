@@ -11,6 +11,9 @@ using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Platform;
+using SharpDX.DirectWrite;
+using GlyphRun = Avalonia.Media.GlyphRun;
+using TextAlignment = Avalonia.Media.TextAlignment;
 
 namespace Avalonia
 {
@@ -195,6 +198,53 @@ namespace Avalonia.Direct2D1
         public IFontManagerImpl CreateFontManager()
         {
             return new FontManagerImpl();
+        }
+
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        {
+            var glyphTypeface = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.PlatformImpl;
+
+            var glyphCount = glyphRun.GlyphIndices.Length;
+
+            var run = new SharpDX.DirectWrite.GlyphRun
+            {
+                FontFace = glyphTypeface.FontFace,
+                FontSize = (float)glyphRun.FontRenderingEmSize
+            };
+
+            var indices = new short[glyphCount];
+
+            for (var i = 0; i < glyphCount; i++)
+            {
+                indices[i] = (short)glyphRun.GlyphIndices[i];
+            }
+
+            run.Indices = indices;
+
+            run.Advances = new float[glyphCount];
+
+            width = 0;
+
+            for (var i = 0; i < glyphCount; i++)
+            {
+                run.Advances[i] = (float)glyphRun.GlyphAdvances[i];
+                width += run.Advances[i];
+            }
+
+            run.Offsets = new GlyphOffset[glyphCount];
+
+            for (var i = 0; i < glyphCount; i++)
+            {
+                var offset = glyphRun.GlyphOffsets[i];
+
+                run.Offsets[i] = new GlyphOffset
+                {
+                    AdvanceOffset = (float)offset.X,
+                    AscenderOffset = (float)offset.Y
+                };
+            }
+
+            return new GlyphRunImpl(run);
         }
     }
 }

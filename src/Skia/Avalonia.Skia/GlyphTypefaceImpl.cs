@@ -61,6 +61,8 @@ namespace Avalonia.Skia
             {
                 StrikethroughThickness = strikethroughThickness;
             }
+
+            IsFixedPitch = Typeface.IsFixedPitch;
         }
 
         public Face Face { get; }
@@ -92,6 +94,9 @@ namespace Avalonia.Skia
 
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public int StrikethroughThickness { get; }
+
+        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        public bool IsFixedPitch { get; }
 
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public ushort GetGlyph(uint codepoint)
