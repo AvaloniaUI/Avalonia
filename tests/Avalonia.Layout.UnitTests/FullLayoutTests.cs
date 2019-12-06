@@ -182,6 +182,8 @@ namespace Avalonia.Layout.UnitTests
                     It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()))
                 .Returns(new FormattedTextMock("TEST"));
 
+            renderInterface.Setup(x => x.CreateFontManager()).Returns(new MockFontManagerImpl());
+
             var streamGeometry = new Mock<IStreamGeometryImpl>();
             streamGeometry.Setup(x =>
                     x.Open())
