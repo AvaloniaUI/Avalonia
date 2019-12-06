@@ -83,5 +83,11 @@ namespace Avalonia.UnitTests
         {
             return new MockFontManagerImpl();
         }
+
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        {
+            width = 0;
+            return Mock.Of<IGlyphRunImpl>();
+        }
     }
 }

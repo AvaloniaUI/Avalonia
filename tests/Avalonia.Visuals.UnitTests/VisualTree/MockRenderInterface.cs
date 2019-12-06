@@ -51,7 +51,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
         {
             throw new NotImplementedException();
         }
