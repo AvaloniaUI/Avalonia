@@ -13,12 +13,30 @@ namespace Avalonia.Visuals.UnitTests.Media
                 .Bind<IPlatformRenderInterface>().ToSingleton<MockPlatformRenderInterface>();
         }
 
+        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 0, 0, 0)]
+        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 0, 3, 30)]
+        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 1, 0, 10)]
+        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 2, 0, 20)]
+        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 2, 1, 30)]
+        [Theory]
+        public void Should_Get_Distance_From_CharacterHit(double[] advances, ushort[] clusters, int start, int trailingLength, double expectedDistance)
+        {
+            using (var glyphRun = CreateGlyphRun(advances, clusters))
+            {
+                var characterHit = new CharacterHit(start, trailingLength);
+
+                var distance = glyphRun.GetDistanceFromCharacterHit(characterHit);
+
+                Assert.Equal(expectedDistance, distance);
+            }
+        }
+
         [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 25.0, 0, 3, true)]
         [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 20.0, 2, 0, true)]
         [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 26.0, 2, 1, true)]
         [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 35.0, 2, 1, false)]
         [Theory]
-        public void Should_Get_TextBounds_FromDistance(double[] advances, ushort[] clusters, double distance, int start,
+        public void Should_Get_CharacterHit_FromDistance(double[] advances, ushort[] clusters, double distance, int start,
             int trailingLengthExpected, bool isInsideExpected)
         {
             using (var glyphRun = CreateGlyphRun(advances, clusters))

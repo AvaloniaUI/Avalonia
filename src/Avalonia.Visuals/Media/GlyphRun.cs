@@ -193,16 +193,15 @@ namespace Avalonia.Media
         {
             var distance = 0.0;
 
-            var end = _glyphClusters.AsSpan().BinarySearch((ushort)characterHit.FirstCharacterIndex);
+            var end = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-            if (end < 0)
+            for (var i = 0; i < _glyphClusters.Length; i++)
             {
-                return 0;
-            }
+                if (_glyphClusters[i] >= end)
+                {
+                    break;
+                }
 
-            // If TrailingLength > 0 we have to use the next cluster while TrailingLength != 0
-            for (var i = 0; i < end + characterHit.TrailingLength; i++)
-            {
                 if (GlyphAdvances.IsEmpty)
                 {
                     var glyph = GlyphIndices[i];
@@ -279,7 +278,6 @@ namespace Avalonia.Media
 
         public CharacterHit GetNextCaretCharacterHit(CharacterHit characterHit)
         {
-
             if (characterHit.TrailingLength == 0)
             {
                 return FindNearestCharacterHit(characterHit.FirstCharacterIndex, out _);
@@ -412,7 +410,7 @@ namespace Avalonia.Media
         {
             if (_glyphRunImpl != null)
             {
-                throw new InvalidOperationException("GlyphRun can't be changed after is has been initialized.'");
+                throw new InvalidOperationException("GlyphRun can't be changed after it has been initialized.'");
             }
 
             field = value;

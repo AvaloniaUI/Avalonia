@@ -10,7 +10,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Rendering.SceneGraph
 {
     /// <summary>
-    /// A node in the scene graph which represents a text draw.
+    /// A node in the scene graph which represents a glyph run draw.
     /// </summary>
     internal class GlyphRunNode : BrushDrawOperation
     {
@@ -48,7 +48,7 @@ namespace Avalonia.Rendering.SceneGraph
         public IBrush Foreground { get; }
 
         /// <summary>
-        /// Gets the text to draw.
+        /// Gets the glyph run to draw.
         /// </summary>
         public GlyphRun GlyphRun { get; }
 
@@ -72,7 +72,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="transform">The transform of the other draw operation.</param>
         /// <param name="foreground">The foreground of the other draw operation.</param>
-        /// <param name="glyphRun">The text of the other draw operation.</param>
+        /// <param name="glyphRun">The glyph run of the other draw operation.</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent
