@@ -67,6 +67,11 @@ namespace Avalonia.Media
         public int StrikethroughThickness => PlatformImpl.StrikethroughThickness;
 
         /// <summary>
+        ///     A <see cref="bool"/> value indicating whether all glyphs in the font have the same advancement. 
+        /// </summary>
+        public bool IsFixedPitch => PlatformImpl.IsFixedPitch;
+
+        /// <summary>
         ///     Returns an glyph index for the specified codepoint.
         /// </summary>
         /// <remarks>

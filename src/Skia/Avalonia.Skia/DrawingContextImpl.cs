@@ -233,6 +233,20 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        {
+            using (var paint = CreatePaint(foreground, glyphRun.Bounds.Size))
+            {
+                var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
+
+                paint.ApplyTo(glyphRunImpl.Paint);
+
+                Canvas.DrawText(glyphRunImpl.TextBlob, (float)baselineOrigin.X,
+                    (float)baselineOrigin.Y, glyphRunImpl.Paint);
+            }
+        }
+
+        /// <inheritdoc />
         public IRenderTargetBitmapImpl CreateLayer(Size size)
         {
             return CreateRenderTarget(size);

@@ -87,6 +87,14 @@ namespace Avalonia.Platform
         void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text);
 
         /// <summary>
+        /// Draws a glyph run.
+        /// </summary>
+        /// <param name="foreground">The foreground.</param>
+        /// <param name="glyphRun">The glyph run.</param>
+        /// <param name="baselineOrigin">The baseline origin of the glyph run.</param>
+        void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin);
+
+        /// <summary>
         /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer
         /// for the current render target.
         /// </summary>

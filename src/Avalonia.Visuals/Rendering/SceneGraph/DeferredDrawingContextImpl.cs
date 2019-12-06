@@ -190,6 +190,21 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        {
+            var next = NextDrawAs<GlyphRunNode>();
+
+            if (next == null || !next.Item.Equals(Transform, foreground, glyphRun))
+            {
+                Add(new GlyphRunNode(Transform, foreground, glyphRun, baselineOrigin, CreateChildScene(foreground)));
+            }
+
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
         public IRenderTargetBitmapImpl CreateLayer(Size size)
         {
             throw new NotSupportedException("Creating layers on a deferred drawing context not supported");
