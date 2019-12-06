@@ -37,7 +37,7 @@ namespace Avalonia.Input
         {
             if (Captured != null)
                 Captured.DetachedFromVisualTree -= OnCaptureDetached;
-            var oldCapture = control;
+            var oldCapture = Captured;
             Captured = control;
             PlatformCapture(control);
             if (oldCapture != null)
@@ -55,9 +55,11 @@ namespace Avalonia.Input
                 Captured.DetachedFromVisualTree += OnCaptureDetached;
         }
 
-        IInputElement GetNextCapture(IVisual parent) =>
-            parent as IInputElement ?? parent.GetVisualAncestors().OfType<IInputElement>().FirstOrDefault();
-        
+        IInputElement GetNextCapture(IVisual parent)
+        {
+            return parent as IInputElement ?? parent.FindAncestorOfType<IInputElement>();
+        }
+
         private void OnCaptureDetached(object sender, VisualTreeAttachmentEventArgs e)
         {
             Capture(GetNextCapture(e.Parent));

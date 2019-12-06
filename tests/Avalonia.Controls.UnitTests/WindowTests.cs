@@ -228,8 +228,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var windowImpl = Mock.Of<IWindowImpl>(x => x.Scaling == 1);
-                var target = new Window(windowImpl);
+                var target = new Window();
 
                 target.Show();
                 target.Close();

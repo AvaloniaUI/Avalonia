@@ -5,6 +5,7 @@
 #include "window.h"
 #include "KeyTransform.h"
 #include "cursor.h"
+#include "menu.h"
 #include <OpenGL/gl.h>
 
 class SoftwareDrawingOperation
@@ -63,9 +64,11 @@ public:
     SoftwareDrawingOperation CurrentSwDrawingOperation;
     AvnPoint lastPositionSet;
     NSString* _lastTitle;
+    IAvnAppMenu* _mainMenu;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events)
     {
+        _mainMenu = nullptr;
         BaseEvents = events;
         View = [[AvnView alloc] initWithParent:this];
 
@@ -78,6 +81,54 @@ public:
         [Window setStyleMask:NSWindowStyleMaskBorderless];
         [Window setBackingType:NSBackingStoreBuffered];
         [Window setContentView: View];
+    }
+    
+    virtual HRESULT ObtainNSWindowHandle(void** ret) override
+    {
+        if (ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret =  (__bridge void*)Window;
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT ObtainNSWindowHandleRetained(void** ret) override
+    {
+        if (ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret =  (__bridge_retained void*)Window;
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT ObtainNSViewHandle(void** ret) override
+    {
+        if (ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret =  (__bridge void*)View;
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT ObtainNSViewHandleRetained(void** ret) override
+    {
+        if (ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret =  (__bridge_retained void*)View;
+        
+        return S_OK;
     }
     
     virtual AvnWindow* GetNSWindow() override
@@ -93,6 +144,7 @@ public:
             UpdateStyle();
             
             [Window makeKeyAndOrderFront:Window];
+            [NSApp activateIgnoringOtherApps:YES];
             
             [Window setTitle:_lastTitle];
             [Window setTitleVisibility:NSWindowTitleVisible];
@@ -122,6 +174,7 @@ public:
             if(Window != nullptr)
             {
                 [Window makeKeyWindow];
+                [NSApp activateIgnoringOtherApps:YES];
             }
         }
         
@@ -207,6 +260,31 @@ public:
             
             return S_OK;
         }
+    }
+    
+    virtual HRESULT SetMainMenu(IAvnAppMenu* menu) override
+    {
+        _mainMenu = menu;
+        
+        auto nativeMenu = dynamic_cast<AvnAppMenu*>(menu);
+        
+        auto nsmenu = nativeMenu->GetNative();
+        
+        [Window applyMenu:nsmenu];
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT ObtainMainMenu(IAvnAppMenu** ret) override
+    {
+        if(ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret = _mainMenu;
+        
+        return S_OK;
     }
     
     virtual bool TryLock() override
@@ -638,7 +716,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     AvnFramebuffer _swRenderedFrameBuffer;
     bool _queuedDisplayFromThread;
     NSTrackingArea* _area;
-    bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isMouseOver;
+    bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed, _isMouseOver;
     NSEvent* _lastMouseDownEvent;
     bool _lastKeyHandled;
 }
@@ -661,6 +739,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     self = [super init];
     [self setWantsBestResolutionOpenGLSurface:true];
+    [self setWantsLayer:YES];
     _parent = parent;
     _area = nullptr;
     return self;
@@ -825,8 +904,15 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     if(type == Wheel)
     {
-        delta.X = [event scrollingDeltaX] / 5;
-        delta.Y = [event scrollingDeltaY] / 5;
+        auto speed = 5;
+        
+        if([event hasPreciseScrollingDeltas])
+        {
+            speed = 50;
+        }
+        
+        delta.X = [event scrollingDeltaX] / speed;
+        delta.Y = [event scrollingDeltaY] / speed;
         
         if(delta.X == 0 && delta.Y == 0)
         {
@@ -856,9 +942,23 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)otherMouseDown:(NSEvent *)event
 {
-    _isMiddlePressed = true;
     _lastMouseDownEvent = event;
-    [self mouseEvent:event withType:MiddleButtonDown];
+
+    switch(event.buttonNumber)
+    {
+        case 3:
+            _isMiddlePressed = true;
+            [self mouseEvent:event withType:MiddleButtonDown];
+            break;
+        case 4:
+            _isXButton1Pressed = true;
+            [self mouseEvent:event withType:XButton1Down];
+            break;
+        case 5:
+            _isXButton2Pressed = true;
+            [self mouseEvent:event withType:XButton2Down];
+            break;
+    }
 }
 
 - (void)rightMouseDown:(NSEvent *)event
@@ -876,8 +976,21 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)otherMouseUp:(NSEvent *)event
 {
-    _isMiddlePressed = false;
-    [self mouseEvent:event withType:MiddleButtonUp];
+    switch(event.buttonNumber)
+    {
+        case 3:
+            _isMiddlePressed = false;
+            [self mouseEvent:event withType:MiddleButtonUp];
+            break;
+        case 4:
+            _isXButton1Pressed = false;
+            [self mouseEvent:event withType:XButton1Up];
+            break;
+        case 5:
+            _isXButton2Pressed = false;
+            [self mouseEvent:event withType:XButton2Up];
+            break;
+    }
 }
 
 - (void)rightMouseUp:(NSEvent *)event
@@ -976,6 +1089,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         rv |= MiddleMouseButton;
     if (_isRightPressed)
         rv |= RightMouseButton;
+    if (_isXButton1Pressed)
+        rv |= XButton1MouseButton;
+    if (_isXButton2Pressed)
+        rv |= XButton2MouseButton;
     
     return (AvnInputModifiers)rv;
 }
@@ -1042,6 +1159,19 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     ComPtr<WindowBaseImpl> _parent;
     bool _canBecomeKeyAndMain;
     bool _closed;
+    NSMenu* _menu;
+    bool _isAppMenuApplied;
+}
+
++(void)closeAll
+{
+    NSArray<NSWindow*>* windows = [NSArray arrayWithArray:[NSApp windows]];
+    auto numWindows = [windows count];
+    
+    for(int i = 0; i < numWindows; i++)
+    {
+        [[windows objectAtIndex:i] performClose:nil];
+    }
 }
 
 - (void)dealloc
@@ -1062,6 +1192,32 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         [self orderOut:self];
         [NSApp endModalSession:session];
+    }
+}
+
+-(void) applyMenu:(NSMenu *)menu
+{
+    if(menu == nullptr)
+    {
+        menu = [NSMenu new];
+    }
+    
+    _menu = menu;
+    
+    if ([self isKeyWindow])
+    {
+        auto appMenu = ::GetAppMenuItem();
+        
+        if(appMenu != nullptr)
+        {
+            [[appMenu menu] removeItem:appMenu];
+            
+            [_menu insertItem:appMenu atIndex:0];
+            
+            _isAppMenuApplied = true;
+        }
+        
+        [NSApp setMenu:menu];
     }
 }
 
@@ -1157,6 +1313,24 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     if([self activateAppropriateChild: true])
     {
+        if(_menu == nullptr)
+        {
+            _menu = [NSMenu new];
+        }
+        
+        auto appMenu = ::GetAppMenuItem();
+        
+        if(appMenu != nullptr)
+        {
+            [[appMenu menu] removeItem:appMenu];
+            
+            [_menu insertItem:appMenu atIndex:0];
+            
+            _isAppMenuApplied = true;
+        }
+        
+        [NSApp setMenu:_menu];
+        
         _parent->BaseEvents->Activated();
         [super becomeKeyWindow];
     }
@@ -1201,6 +1375,28 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     if(_parent)
         _parent->BaseEvents->Deactivated();
+    
+    auto appMenuItem = ::GetAppMenuItem();
+    
+    if(appMenuItem != nullptr)
+    {
+        auto appMenu = ::GetAppMenu();
+        
+        auto nativeAppMenu = dynamic_cast<AvnAppMenu*>(appMenu);
+        
+        [[appMenuItem menu] removeItem:appMenuItem];
+        
+        [nativeAppMenu->GetNative() addItem:appMenuItem];
+        
+        [NSApp setMenu:nativeAppMenu->GetNative()];
+    }
+    else
+    {
+        [NSApp setMenu:nullptr];
+    }
+    
+    // remove window menu items from appmenu?
+    
     [super resignKeyWindow];
 }
 

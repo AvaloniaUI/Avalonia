@@ -2,6 +2,7 @@
   <PropertyGroup>
     <AvaloniaBuildTasksLocation>$(MSBuildThisFileDirectory)\..\src\Avalonia.Build.Tasks\bin\$(Configuration)\netstandard2.0\Avalonia.Build.Tasks.dll</AvaloniaBuildTasksLocation>
     <AvaloniaUseExternalMSBuild>true</AvaloniaUseExternalMSBuild>
+    <AvaloniaXamlIlVerifyIl>true</AvaloniaXamlIlVerifyIl>
   </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)\..\packages\Avalonia\AvaloniaBuildTasks.props"/>
   <Import Project="$(MSBuildThisFileDirectory)\..\packages\Avalonia\AvaloniaBuildTasks.targets"/>

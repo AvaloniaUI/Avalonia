@@ -103,11 +103,11 @@ namespace Avalonia.Styling.UnitTests
             Assert.Equal(typeof(Control1), target.TargetType);
         }
 
-        public class Control1 : TestControlBase
+        public class Control1 : Control
         {
         }
 
-        public class Control2 : TestControlBase
+        public class Control2 : Control
         {
         }
     }

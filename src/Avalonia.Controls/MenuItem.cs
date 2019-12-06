@@ -102,13 +102,13 @@ namespace Avalonia.Controls
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
             CommandProperty.Changed.Subscribe(CommandChanged);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
-            HeaderProperty.Changed.AddClassHandler<MenuItem>(x => x.HeaderChanged);
-            IconProperty.Changed.AddClassHandler<MenuItem>(x => x.IconChanged);
-            IsSelectedProperty.Changed.AddClassHandler<MenuItem>(x => x.IsSelectedChanged);
+            HeaderProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.HeaderChanged(e));
+            IconProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.IconChanged(e));
+            IsSelectedProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.IsSelectedChanged(e));
             ItemsPanelProperty.OverrideDefaultValue<MenuItem>(DefaultPanel);
-            ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
-            SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
-            IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>(x => x.SubMenuOpenChanged);
+            ClickEvent.AddClassHandler<MenuItem>((x, e) => x.OnClick(e));
+            SubmenuOpenedEvent.AddClassHandler<MenuItem>((x, e) => x.OnSubmenuOpened(e));
+            IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.SubMenuOpenChanged(e));
         }
 
         public MenuItem()
@@ -337,7 +337,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerEnter(e);
 
-            var point = e.GetPointerPoint(null);
+            var point = e.GetCurrentPoint(null);
             RaiseEvent(new PointerEventArgs(PointerEnterItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
                 e.Timestamp, point.Properties, e.KeyModifiers));
         }
@@ -347,7 +347,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerLeave(e);
 
-            var point = e.GetPointerPoint(null);
+            var point = e.GetCurrentPoint(null);
             RaiseEvent(new PointerEventArgs(PointerLeaveItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
                 e.Timestamp, point.Properties, e.KeyModifiers));
         }

@@ -1080,6 +1080,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new TestSelector
             {
                 Items = items,
+                SelectionMode = SelectionMode.Multiple,
                 Template = Template(),
             };
 

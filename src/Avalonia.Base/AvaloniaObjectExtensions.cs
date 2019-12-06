@@ -192,9 +192,9 @@ namespace Avalonia
         {
             return observable.Subscribe(e =>
             {
-                if (e.Sender is TTarget)
+                if (e.Sender is TTarget target)
                 {
-                    action((TTarget)e.Sender, e);
+                    action(target, e);
                 }
             });
         }
@@ -207,6 +207,7 @@ namespace Avalonia
         /// <param name="observable">The property changed observable.</param>
         /// <param name="handler">Given a TTarget, returns the handler.</param>
         /// <returns>A disposable that can be used to terminate the subscription.</returns>
+        [Obsolete("Use overload taking Action<TTarget, AvaloniaPropertyChangedEventArgs>.")]
         public static IDisposable AddClassHandler<TTarget>(
             this IObservable<AvaloniaPropertyChangedEventArgs> observable,
             Func<TTarget, Action<AvaloniaPropertyChangedEventArgs>> handler)
@@ -238,9 +239,7 @@ namespace Avalonia
             Func<TTarget, Action<AvaloniaPropertyChangedEventArgs>> handler)
             where TTarget : class
         {
-            var target = e.Sender as TTarget;
-
-            if (target != null)
+            if (e.Sender is TTarget target)
             {
                 handler(target)(e);
             }

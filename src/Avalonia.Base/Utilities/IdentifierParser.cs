@@ -15,7 +15,7 @@ namespace Avalonia.Utilities
         {
             if (IsValidIdentifierStart(r.Peek))
             {
-                return r.TakeWhile(IsValidIdentifierChar);
+                return r.TakeWhile(c => IsValidIdentifierChar(c));
             }
             else
             {

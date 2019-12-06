@@ -5,12 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media.Fonts;
-using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
-    public class FontFamily
+    public sealed class FontFamily
     {
+        static FontFamily()
+        {
+            Default = new FontFamily(FontManager.Default.DefaultFontFamilyName);
+        }
+
         /// <inheritdoc />
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Media.FontFamily" /> class.
@@ -30,9 +34,7 @@ namespace Avalonia.Media
         {
             if (string.IsNullOrEmpty(name))
             {
-                FamilyNames = new FamilyNameCollection(string.Empty);
-
-                return;
+                throw new ArgumentNullException(nameof(name));
             }
 
             var fontFamilySegment = GetFontFamilyIdentifier(name);
@@ -53,13 +55,16 @@ namespace Avalonia.Media
         /// <summary>
         /// Represents the default font family
         /// </summary>
-        public static FontFamily Default => new FontFamily(string.Empty);
+        public static FontFamily Default { get; }
 
         /// <summary>
         /// Represents all font families in the system. This can be an expensive call depending on platform implementation.
         /// </summary>
+        /// <remarks>
+        /// Consider using the new <see cref="FontManager"/> instead.
+        /// </remarks>
         public static IEnumerable<FontFamily> SystemFontFamilies =>
-            AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().InstalledFontNames.Select(name => new FontFamily(name));
+            FontManager.Default.GetInstalledFontFamilyNames().Select(name => new FontFamily(name));
 
         /// <summary>
         /// Gets the primary family name of the font family.
@@ -179,29 +184,25 @@ namespace Avalonia.Media
         {
             unchecked
             {
-                var hash = (int)2186146271;
-
-                hash = (hash * 15768619) ^ FamilyNames.GetHashCode();
-
-                if (Key != null)
-                {
-                    hash = (hash * 15768619) ^ Key.GetHashCode();
-                }
-
-                return hash;
+                return ((FamilyNames != null ? FamilyNames.GetHashCode() : 0) * 397) ^ (Key != null ? Key.GetHashCode() : 0);
             }
         }
 
         public override bool Equals(object obj)
         {
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
             if (!(obj is FontFamily other))
             {
                 return false;
             }
 
-            if (Key != null)
+            if (!Equals(Key, other.Key))
             {
-                return other.FamilyNames.Equals(FamilyNames) && other.Key.Equals(Key);
+                return false;
             }
 
             return other.FamilyNames.Equals(FamilyNames);

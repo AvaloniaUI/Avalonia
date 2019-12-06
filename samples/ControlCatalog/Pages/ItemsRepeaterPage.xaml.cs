@@ -20,6 +20,7 @@ namespace ControlCatalog.Pages
             _repeater = this.FindControl<ItemsRepeater>("repeater");
             _scroller = this.FindControl<ScrollViewer>("scroller");
             _repeater.PointerPressed += RepeaterClick;
+            _repeater.KeyDown += RepeaterOnKeyDown;
             DataContext = new ItemsRepeaterPageViewModel();
         }
 
@@ -76,6 +77,14 @@ namespace ControlCatalog.Pages
         {
             var item = (e.Source as TextBlock)?.DataContext as ItemsRepeaterPageViewModel.Item;
             ((ItemsRepeaterPageViewModel)DataContext).SelectedItem = item;
+        }
+
+        private void RepeaterOnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.F5)
+            {
+                ((ItemsRepeaterPageViewModel)DataContext).ResetItems();
+            }
         }
     }
 }

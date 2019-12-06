@@ -1,0 +1,6 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PackageReference Include="HarfBuzzSharp" Version="2.6.1-rc.153" />
+    <PackageReference Condition="'$(IncludeLinuxSkia)' == 'true'" Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.6.1-rc.153" />
+  </ItemGroup>
+</Project>

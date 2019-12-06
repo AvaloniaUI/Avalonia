@@ -109,7 +109,7 @@ namespace Avalonia.Controls
 
         static DataGridRowGroupHeader()
         {
-            SublevelIndentProperty.Changed.AddClassHandler<DataGridRowGroupHeader>(x => x.OnSublevelIndentChanged);
+            SublevelIndentProperty.Changed.AddClassHandler<DataGridRowGroupHeader>((x,e) => x.OnSublevelIndentChanged(e));
         }
 
         /// <summary>

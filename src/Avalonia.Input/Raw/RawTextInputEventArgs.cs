@@ -5,11 +5,16 @@ namespace Avalonia.Input.Raw
 {
     public class RawTextInputEventArgs : RawInputEventArgs
     {
-        public string Text { get; set; }
-
-        public RawTextInputEventArgs(IKeyboardDevice device, ulong timestamp, string text) : base(device, timestamp)
+        public RawTextInputEventArgs(
+            IKeyboardDevice device,
+            ulong timestamp,
+            IInputRoot root,
+            string text)
+            : base(device, timestamp, root)
         {
             Text = text;
         }
+
+        public string Text { get; set; }
     }
 }

@@ -32,7 +32,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
     {
         /// <summary>
         /// The application-global data templates.
@@ -45,8 +45,35 @@ namespace Avalonia
         private Styles _styles;
         private IResourceDictionary _resources;
 
+        /// <summary>
+        /// Defines the <see cref="DataContext"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object> DataContextProperty =
+            StyledElement.DataContextProperty.AddOwner<Application>();
+
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
+        /// <summary>
+        /// Creates an instance of the <see cref="Application"/> class.
+        /// </summary>
+        public Application()
+        {
+            Name = "Avalonia Application";
+        }
+
+        /// <summary>
+        /// Gets or sets the Applications's data context.
+        /// </summary>
+        /// <remarks>
+        /// The data context property specifies the default object that will
+        /// be used for data binding.
+        /// </remarks>
+        public object DataContext
+        {
+            get { return GetValue(DataContextProperty); }
+            set { SetValue(DataContextProperty, value); }
+        }
 
         /// <summary>
         /// Gets the current instance of the <see cref="Application"/> class.
@@ -210,5 +237,22 @@ namespace Avalonia
         {
             ResourcesChanged?.Invoke(this, e);
         }
+
+        private string _name;
+        /// <summary>
+        /// Defines Name property
+        /// </summary>
+        public static readonly DirectProperty<Application, string> NameProperty =
+            AvaloniaProperty.RegisterDirect<Application, string>("Name", o => o.Name, (o, v) => o.Name = v);
+
+        /// <summary>
+        /// Application name to be used for various platform-specific purposes
+        /// </summary>
+        public string Name
+        {
+            get => _name;
+            set => SetAndRaise(NameProperty, ref _name, value);
+        }
+
     }
 }
