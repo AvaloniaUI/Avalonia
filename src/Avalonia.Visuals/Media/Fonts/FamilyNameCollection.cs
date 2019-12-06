@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts
 {
@@ -57,9 +58,9 @@ namespace Avalonia.Media.Fonts
         /// <summary>
         /// Returns an enumerator for the name collection.
         /// </summary>
-        public Enumerator GetEnumerator()
+        public ImmutableReadOnlyListStructEnumerator<string> GetEnumerator()
         {
-            return new Enumerator(this);
+            return new ImmutableReadOnlyListStructEnumerator<string>(this);
         }
 
         IEnumerator<string> IEnumerable<string>.GetEnumerator()
@@ -70,49 +71,6 @@ namespace Avalonia.Media.Fonts
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        public struct Enumerator : IEnumerator, IEnumerator<string>
-        {
-            private readonly IReadOnlyList<string> _names;
-            private int _pos;
-
-            public Enumerator(IReadOnlyList<string> names)
-            {
-                _names = names;
-                _pos = -1;
-                Current = default;
-            }
-
-            public string Current
-            {
-                get;
-                private set;
-            }
-
-            object IEnumerator.Current => Current;
-
-            public void Dispose() { }
-
-            public bool MoveNext()
-            {
-                if (_pos >= _names.Count - 1)
-                {
-                    return false;
-                }
-
-                Current = _names[++_pos];
-
-                return true;
-
-            }
-
-            public void Reset()
-            {
-                _pos = -1;
-
-                Current = default;
-            }
         }
 
         /// <summary>

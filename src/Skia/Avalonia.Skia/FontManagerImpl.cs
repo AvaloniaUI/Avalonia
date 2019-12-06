@@ -30,7 +30,7 @@ namespace Avalonia.Skia
             return _skFontManager.FontFamilies;
         }
 
-        [ThreadStatic] private static string[] s_languageTagBuffer;
+        [ThreadStatic] private static string[] t_languageTagBuffer;
 
         public bool TryMatchCharacter(int codepoint, FontWeight fontWeight, FontStyle fontStyle,
             FontFamily fontFamily, CultureInfo culture, out FontKey fontKey)
@@ -40,20 +40,20 @@ namespace Avalonia.Skia
                 culture = CultureInfo.CurrentUICulture;
             }
 
-            if (s_languageTagBuffer == null)
+            if (t_languageTagBuffer == null)
             {
-                s_languageTagBuffer = new string[2];
+                t_languageTagBuffer = new string[2];
             }
 
-            s_languageTagBuffer[0] = culture.TwoLetterISOLanguageName;
-            s_languageTagBuffer[1] = culture.ThreeLetterISOLanguageName;
+            t_languageTagBuffer[0] = culture.TwoLetterISOLanguageName;
+            t_languageTagBuffer[1] = culture.ThreeLetterISOLanguageName;
 
             if (fontFamily != null)
             {
                 foreach (var familyName in fontFamily.FamilyNames)
                 {
                     var skTypeface = _skFontManager.MatchCharacter(familyName, (SKFontStyleWeight)fontWeight,
-                        SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle, s_languageTagBuffer, codepoint);
+                        SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle, t_languageTagBuffer, codepoint);
 
                     if (skTypeface == null)
                     {
@@ -68,7 +68,7 @@ namespace Avalonia.Skia
             else
             {
                 var skTypeface = _skFontManager.MatchCharacter(null, (SKFontStyleWeight)fontWeight,
-                    SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle, s_languageTagBuffer, codepoint);
+                    SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle, t_languageTagBuffer, codepoint);
 
                 if (skTypeface != null)
                 {

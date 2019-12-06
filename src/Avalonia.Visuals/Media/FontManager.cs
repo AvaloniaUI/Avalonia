@@ -70,9 +70,9 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        ///     Get all installed fonts.
-        /// <param name="checkForUpdates">If <c>true</c> the font collection is updated.</param>
+        ///     Get all installed font family names.
         /// </summary>
+        /// <param name="checkForUpdates">If <c>true</c> the font collection is updated.</param>
         public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) =>
             PlatformImpl.GetInstalledFontFamilyNames(checkForUpdates);
 

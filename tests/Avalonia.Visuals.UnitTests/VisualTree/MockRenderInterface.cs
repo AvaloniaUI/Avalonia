@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Visuals.UnitTests.VisualTree
 {
@@ -57,7 +58,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
         public IFontManagerImpl CreateFontManager()
         {
-            throw new NotImplementedException();
+            return new MockFontManagerImpl();
         }
 
         public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? fmt)
