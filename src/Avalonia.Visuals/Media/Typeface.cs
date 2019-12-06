@@ -13,8 +13,6 @@ namespace Avalonia.Media
     [DebuggerDisplay("Name = {FontFamily.Name}, Weight = {Weight}, Style = {Style}")]
     public class Typeface : IEquatable<Typeface>
     {
-        public static readonly Typeface Default = new Typeface(FontFamily.Default);
-
         private GlyphTypeface _glyphTypeface;
 
         /// <summary>
@@ -49,6 +47,8 @@ namespace Avalonia.Media
             : this(new FontFamily(fontFamilyName), weight, style)
         {
         }
+
+        public static Typeface Default => FontManager.Current?.GetOrAddTypeface(FontFamily.Default);
 
         /// <summary>
         /// Gets the font family.

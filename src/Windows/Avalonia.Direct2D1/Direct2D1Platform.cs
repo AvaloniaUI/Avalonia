@@ -28,8 +28,6 @@ namespace Avalonia.Direct2D1
 {
     public class Direct2D1Platform : IPlatformRenderInterface
     {
-        private readonly ConcurrentDictionary<Typeface, GlyphTypefaceImpl> _glyphTypefaceCache =
-            new ConcurrentDictionary<Typeface, GlyphTypefaceImpl>();
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
         public static SharpDX.Direct3D11.Device Direct3D11Device { get; private set; }
@@ -109,7 +107,6 @@ namespace Avalonia.Direct2D1
         {
             InitializeDirect2D();
             AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(s_instance);
-            AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl());
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
         }
 
@@ -194,9 +191,10 @@ namespace Avalonia.Direct2D1
             return new WicBitmapImpl(format, data, size, dpi, stride);
         }
 
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        /// <inheritdoc />
+        public IFontManagerImpl CreateFontManager()
         {
-            return _glyphTypefaceCache.GetOrAdd(typeface, new GlyphTypefaceImpl(typeface));
+            return new FontManagerImpl();
         }
     }
 }

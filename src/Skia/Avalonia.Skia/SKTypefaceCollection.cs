@@ -5,58 +5,59 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
+using SkiaSharp;
 
 namespace Avalonia.Skia
 {
     internal class SKTypefaceCollection
     {
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<FontKey, TypefaceCollectionEntry>> _fontFamilies =
-            new ConcurrentDictionary<string, ConcurrentDictionary<FontKey, TypefaceCollectionEntry>>();
+        private readonly ConcurrentDictionary<FontKey, SKTypeface> _typefaces =
+            new ConcurrentDictionary<FontKey, SKTypeface>();
 
-        public void AddEntry(string familyName, FontKey key, TypefaceCollectionEntry entry)
+        public void AddTypeface(FontKey key, SKTypeface typeface)
         {
-            if (!_fontFamilies.TryGetValue(familyName, out var fontFamily))
-            {
-                fontFamily = new ConcurrentDictionary<FontKey, TypefaceCollectionEntry>();
+            _typefaces.TryAdd(key, typeface);
+        }
 
-                _fontFamilies.TryAdd(familyName, fontFamily);
+        public SKTypeface Get(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle)
+        {
+            var key = new FontKey(fontFamily, fontWeight, fontStyle);
+
+            return GetNearestMatch(_typefaces, key);
+        }
+
+        private static SKTypeface GetNearestMatch(IDictionary<FontKey, SKTypeface> typefaces, FontKey key)
+        {
+            if (typefaces.ContainsKey(key))
+            {
+                return typefaces[key];
             }
 
-            fontFamily.TryAdd(key, entry);
-        }
-
-        public TypefaceCollectionEntry Get(string familyName, FontWeight fontWeight, FontStyle fontStyle)
-        {
-            var key = new FontKey(fontWeight, fontStyle);
-
-            return _fontFamilies.TryGetValue(familyName, out var fontFamily) ?
-                fontFamily.GetOrAdd(key, GetFallback(fontFamily, key)) :
-                new TypefaceCollectionEntry(Typeface.Default, SkiaSharp.SKTypeface.Default);
-        }
-
-        private static TypefaceCollectionEntry GetFallback(IDictionary<FontKey, TypefaceCollectionEntry> fontFamily, FontKey key)
-        {
-            var keys = fontFamily.Keys.Where(
+            var keys = typefaces.Keys.Where(
                 x => ((int)x.Weight <= (int)key.Weight || (int)x.Weight > (int)key.Weight) && x.Style == key.Style).ToArray();
 
             if (!keys.Any())
             {
-                keys = fontFamily.Keys.Where(
+                keys = typefaces.Keys.Where(
                     x => x.Weight == key.Weight && (x.Style >= key.Style || x.Style < key.Style)).ToArray();
 
                 if (!keys.Any())
                 {
-                    keys = fontFamily.Keys.Where(
+                    keys = typefaces.Keys.Where(
                         x => ((int)x.Weight <= (int)key.Weight || (int)x.Weight > (int)key.Weight) &&
                              (x.Style >= key.Style || x.Style < key.Style)).ToArray();
                 }
             }
 
-            key = keys.FirstOrDefault();
+            if (keys.Length == 0)
+            {
+                return SKTypeface.Default;
+            }
 
-            fontFamily.TryGetValue(key, out var entry);
+            key = keys[0];
 
-            return entry;
+            return typefaces[key];
         }
     }
 }
