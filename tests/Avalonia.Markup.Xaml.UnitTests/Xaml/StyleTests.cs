@@ -64,6 +64,33 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void ControlTemplate_Can_Be_Added_To_Style_Resources()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformWrapper))
+            {
+                var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Styles>
+        <Style>
+            <Style.Resources>
+                 <ControlTemplate x:Key='controlTemplate' TargetType='{x:Type Button}'>
+                    <ContentPresenter Content='{TemplateBinding Content}'/>
+                 </ControlTemplate>
+            </Style.Resources>
+        </Style>
+    </UserControl.Styles>
+</UserControl>";
+                var loader = new AvaloniaXamlLoader();
+                var userControl = (UserControl)loader.Load(xaml);
+                var controlTemplate = (ControlTemplate)((Style)userControl.Styles[0]).Resources["controlTemplate"];
+
+                Assert.NotNull(controlTemplate);
+                Assert.Equal(typeof(Button), controlTemplate.TargetType);
+            }
+        }
+
+        [Fact]
         public void SolidColorBrush_Can_Be_Added_To_Style_Resources()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformWrapper))
