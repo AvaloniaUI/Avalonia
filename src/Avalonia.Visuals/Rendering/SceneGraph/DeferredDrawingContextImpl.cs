@@ -190,7 +190,6 @@ namespace Avalonia.Rendering.SceneGraph
                 ++_drawOperationindex;
             }
         }
-
         public IRenderTargetBitmapImpl CreateLayer(Size size)
         {
             throw new NotSupportedException("Creating layers on a deferred drawing context not supported");
@@ -356,7 +355,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             using (var refCounted = RefCountable.Create(node))
             {
-                Add(refCounted);
+                Add(refCounted); 
             }
         }
 

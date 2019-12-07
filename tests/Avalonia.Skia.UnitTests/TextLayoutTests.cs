@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Text;
 using Avalonia.UnitTests;
+using Avalonia.Utility;
 using Xunit;
 
 namespace Avalonia.Skia.UnitTests
@@ -413,7 +414,6 @@ namespace Avalonia.Skia.UnitTests
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(
                     renderInterface: new PlatformRenderInterface(null),
-                    fontManagerImpl: new FontManagerImpl(),
                     textFormatter: new TextFormatter())))
             {
                 var buffer = new ReadOnlySlice<char>(text.AsMemory());

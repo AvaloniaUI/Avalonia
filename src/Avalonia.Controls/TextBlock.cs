@@ -354,7 +354,6 @@ namespace Avalonia.Controls
             }
 
             FormattedText.Constraint = Bounds.Size;
-
             context.DrawText(Foreground, new Point(), FormattedText);
         }
 

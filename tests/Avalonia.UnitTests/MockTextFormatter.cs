@@ -3,6 +3,7 @@ using Avalonia.Media;
 using Avalonia.Media.Text;
 using Avalonia.Media.Text.Unicode;
 using Avalonia.Platform;
+using Avalonia.Utility;
 
 namespace Avalonia.UnitTests
 {

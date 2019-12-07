@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Media.Text;
 using Avalonia.Media.Text.Unicode;
+using Avalonia.Utility;
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Media.Text

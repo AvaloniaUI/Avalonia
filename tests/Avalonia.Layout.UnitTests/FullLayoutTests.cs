@@ -142,16 +142,6 @@ namespace Avalonia.Layout.UnitTests
             globalStylesResources.Setup(x => x.TryGetResource("FontSizeNormal", out outObj)).Returns(true);
 
             var renderInterface = new Mock<IPlatformRenderInterface>();
-            renderInterface.Setup(x =>
-                x.CreateFormattedText(
-                    It.IsAny<string>(),
-                    It.IsAny<Typeface>(),
-                    It.IsAny<double>(),
-                    It.IsAny<TextAlignment>(),
-                    It.IsAny<TextWrapping>(),
-                    It.IsAny<Size>(),
-                    It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()))
-                .Returns(new FormattedTextMock("TEST"));
 
             renderInterface.Setup(x => x.CreateFontManager()).Returns(new MockFontManagerImpl());
 

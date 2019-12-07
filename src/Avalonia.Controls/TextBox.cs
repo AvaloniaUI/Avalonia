@@ -895,9 +895,15 @@ namespace Avalonia.Controls
                     SelectionStart = SelectionEnd = CaretIndex = start;
                     return true;
                 }
-                return false;
+                else
+                {
+                    return false;
+                }
             }
-            return true;
+            else
+            {
+                return true;
+            }
         }
 
         private string GetSelection()

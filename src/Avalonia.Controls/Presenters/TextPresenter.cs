@@ -97,7 +97,7 @@ namespace Avalonia.Controls.Presenters
             get => GetValue(SelectionForegroundBrushProperty);
             set => SetValue(SelectionForegroundBrushProperty, value);
         }
-
+        
         public IBrush CaretBrush
         {
             get => GetValue(CaretBrushProperty);
@@ -180,9 +180,7 @@ namespace Avalonia.Controls.Presenters
                         caretBrush = new SolidColorBrush(Color.FromRgb(red, green, blue));
                     }
                     else
-                    {
                         caretBrush = Brushes.Black;
-                    }
                 }
 
                 if (_caretBlink)
@@ -223,10 +221,12 @@ namespace Avalonia.Controls.Presenters
                     _caretBlink = true;
                     _caretTimer.Stop();
                     _caretTimer.Start();
+                    InvalidateVisual();
                 }
                 else
                 {
                     _caretTimer.Start();
+                    InvalidateVisual();
                     _caretTimer.Stop();
                 }
 
@@ -277,7 +277,10 @@ namespace Avalonia.Controls.Presenters
 
             if (length > 0)
             {
-                result.Spans = new[] { new FormattedTextStyleSpan(start, length, foreground: SelectionForegroundBrush) };
+                result.Spans = new[]
+                {
+                    new FormattedTextStyleSpan(start, length, SelectionForegroundBrush),
+                };
             }
 
             return result;

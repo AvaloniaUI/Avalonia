@@ -33,7 +33,7 @@ namespace Avalonia.UnitTests
             windowingPlatform: new MockWindowingPlatform());
 
         public static readonly TestServices MockPlatformRenderInterface = new TestServices(
-            renderInterface: new MockPlatformRenderInterface());
+            renderInterface: new MockPlatformRenderInterface(),
             textFormatter: new MockTextFormatter());
 
         public static readonly TestServices MockPlatformWrapper = new TestServices(
