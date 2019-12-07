@@ -1,4 +1,7 @@
-﻿namespace Avalonia.Collections.Pooled
+﻿// This source file is adapted from the Collections.Pooled.
+// (https://github.com/jtmueller/Collections.Pooled/tree/master/Collections.Pooled/)
+
+namespace Avalonia.Collections.Pooled
 {
     /// <summary>
     /// This enum allows control over how data is treated when internal

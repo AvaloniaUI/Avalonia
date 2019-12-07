@@ -1,4 +1,7 @@
-﻿using System;
+﻿// This source file is adapted from the Collections.Pooled.
+// (https://github.com/jtmueller/Collections.Pooled/tree/master/Collections.Pooled/)
+
+using System;
 using System.Collections.Generic;
 
 namespace Avalonia.Collections.Pooled
