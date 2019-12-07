@@ -55,7 +55,9 @@ jobs:
 
   - task: Xcode@5
     inputs:
+      scheme: ''
       sdk: 'macosx10.14'
+      configuration: 'Release'
       xcodeVersion: '10' # Options: 8, 9, default, specifyPath
 
   - task: CmdLine@2
