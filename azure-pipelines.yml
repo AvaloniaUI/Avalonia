@@ -55,13 +55,8 @@ jobs:
 
   - task: Xcode@5
     inputs:
-      actions: 'build'
-      scheme: ''
       sdk: 'macosx10.14'
-      configuration: 'Release'
-      xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
       xcodeVersion: '10' # Options: 8, 9, default, specifyPath
-      args: '-derivedDataPath ./'
 
   - task: CmdLine@2
     displayName: 'Install CastXML'
