@@ -2,7 +2,16 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Avalonia</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Assets\BidiData.trie" />
+    <None Remove="Assets\LineBreakClasses.trie" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\BidiData.trie" />
+    <EmbeddedResource Include="Assets\LineBreakClasses.trie" />
+  </ItemGroup>
   <ItemGroup> 
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />

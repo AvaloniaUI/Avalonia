@@ -41,7 +41,7 @@ namespace RenderDemo.Pages
             {
                 var canvas = (context as ISkiaDrawingContextImpl)?.SkCanvas;
                 if (canvas == null)
-                    context.DrawText(Brushes.Black, new Point(), _noSkia.PlatformImpl);
+                    _noSkia.TextLayout.Draw (context, Brushes.Black, new Point());
                 else
                 {
                     canvas.Save();

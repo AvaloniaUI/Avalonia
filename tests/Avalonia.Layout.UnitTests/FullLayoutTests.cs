@@ -134,35 +134,6 @@ namespace Avalonia.Layout.UnitTests
         {
             return v.Bounds.Position;
         }
-
-        class FormattedTextMock : IFormattedTextImpl
-        {
-            public FormattedTextMock(string text)
-            {
-                Text = text;
-            }
-
-            public Size Constraint { get; set; }
-
-            public string Text { get; }
-
-            public Rect Bounds => Rect.Empty;
-
-            public void Dispose()
-            {
-            }
-
-            public IEnumerable<FormattedTextLine> GetLines() => new FormattedTextLine[0];
-
-            public TextHitTestResult HitTestPoint(Point point) => new TextHitTestResult();
-
-            public Rect HitTestTextPosition(int index) => new Rect();
-
-            public IEnumerable<Rect> HitTestTextRange(int index, int length) => new Rect[0];
-
-            public Size Measure() => Constraint;
-        }
-
         private void RegisterServices()
         {
             var globalStyles = new Mock<IGlobalStyles>();
@@ -209,6 +180,7 @@ namespace Avalonia.Layout.UnitTests
                 .Bind<IGlobalStyles>().ToConstant(globalStyles.Object)
                 .Bind<IRuntimePlatform>().ToConstant(new AppBuilder().RuntimePlatform)
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface.Object)
+                .Bind<ITextFormatter>().ToConstant(new MockTextFormatter())
                 .Bind<IStyler>().ToConstant(new Styler())
                 .Bind<IWindowingPlatform>().ToConstant(new Avalonia.Controls.UnitTests.WindowingPlatformMock(() => windowImpl.Object));
 

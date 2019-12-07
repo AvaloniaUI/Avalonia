@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Avalonia.Media.Text;
 using Xunit;
 
 #if AVALONIA_SKIA
@@ -18,13 +19,12 @@ using Avalonia.Direct2D1.RenderTests;
 namespace Avalonia.Direct2D1.RenderTests.Media
 #endif
 {
-    public class FormattedTextImplTests : TestBase
+    public class FormattedTextTests : TestBase
     {
-        private const string FontName = "Courier New";
         private const double FontSize = 12;
         private const double MediumFontSize = 18;
         private const double BigFontSize = 32;
-        private const double FontSizeHeight = 13.594;//real value 13.59375
+        private const double FontSizeHeight = 14.062;//real value 14.0625
         private const string stringword = "word";
         private const string stringmiddle = "The quick brown fox jumps over the lazy dog";
         private const string stringmiddle2lines = "The quick brown fox\njumps over the lazy dog";
@@ -37,18 +37,19 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 " at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus " +
 "pretium ornare est.";
 
-        public FormattedTextImplTests()
+
+        public FormattedTextTests()
             : base(@"Media\FormattedText")
         {
         }
 
-        private IFormattedTextImpl Create(string text,
-            string fontFamily,
+        private FormattedText Create(string text,
             double fontSize,
             FontStyle fontStyle,
             TextAlignment textAlignment,
             FontWeight fontWeight,
             TextWrapping wrapping,
+            TextTrimming trimming,
             double widthConstraint)
         {
             var r = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
@@ -57,31 +58,45 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 fontSize,
                 textAlignment,
                 wrapping,
-                widthConstraint == -1 ? Size.Infinity : new Size(widthConstraint, double.PositiveInfinity),
-                null);
+                trimming,
+                widthConstraint == -1 ? Size.Infinity : new Size(widthConstraint, double.PositiveInfinity));
         }
 
-        private IFormattedTextImpl Create(string text, double fontSize)
+        private FormattedText Create(string text, double fontSize)
         {
-            return Create(text, FontName, fontSize,
-                FontStyle.Normal, TextAlignment.Left,
-                FontWeight.Normal, TextWrapping.NoWrap,
+            return Create(
+                text,
+                fontSize,
+                FontStyle.Normal,
+                TextAlignment.Left,
+                FontWeight.Normal,
+                TextWrapping.NoWrap,
+                TextTrimming.None,
                 -1);
         }
 
-        private IFormattedTextImpl Create(string text, double fontSize, TextAlignment alignment, double widthConstraint)
+        private FormattedText Create(string text, double fontSize, TextAlignment alignment, double widthConstraint)
         {
-            return Create(text, FontName, fontSize,
-                FontStyle.Normal, alignment,
-                FontWeight.Normal, TextWrapping.NoWrap,
+            return Create(
+                text,
+                fontSize,
+                FontStyle.Normal,
+                alignment,
+                FontWeight.Normal,
+                TextWrapping.NoWrap,
+                TextTrimming.None,
                 widthConstraint);
         }
 
-        private IFormattedTextImpl Create(string text, double fontSize, TextWrapping wrap, double widthConstraint)
+        private FormattedText Create(string text, double fontSize, TextWrapping wrap, TextTrimming trimming, double widthConstraint)
         {
-            return Create(text, FontName, fontSize,
-                FontStyle.Normal, TextAlignment.Left,
-                FontWeight.Normal, wrap,
+            return Create(text,
+                fontSize,
+                FontStyle.Normal,
+                TextAlignment.Left,
+                FontWeight.Normal,
+                wrap,
+                trimming,
                 widthConstraint);
         }
 
@@ -91,11 +106,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData("x", FontSize, 7.20, FontSizeHeight)]
         [InlineData(stringword, FontSize, 28.80, FontSizeHeight)]
         [InlineData(stringmiddle, FontSize, 309.65, FontSizeHeight)]
-        [InlineData(stringmiddle, MediumFontSize, 464.48, 20.391)]
-        [InlineData(stringmiddle, BigFontSize, 825.73, 36.25)]
+        [InlineData(stringmiddle, MediumFontSize, 464.48, 21.093)]
+        [InlineData(stringmiddle, BigFontSize, 825.73, 37.5)]
         [InlineData(stringmiddle2lines, FontSize, 165.63, 2 * FontSizeHeight)]
-        [InlineData(stringmiddle2lines, MediumFontSize, 248.44, 2 * 20.391)]
-        [InlineData(stringmiddle2lines, BigFontSize, 441.67, 2 * 36.25)]
+        [InlineData(stringmiddle2lines, MediumFontSize, 248.44, 2 * 21.093)]
+        [InlineData(stringmiddle2lines, BigFontSize, 441.67, 2 * 37.5)]
         [InlineData(stringlong, FontSize, 2160.35, FontSizeHeight)]
         [InlineData(stringmiddlenewlines, FontSize, 72.01, 4 * FontSizeHeight)]
         public void Should_Measure_String_Correctly(string input, double fontSize, double expWidth, double expHeight)
@@ -106,11 +121,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             Assert.Equal(expWidth, size.Width, 2);
             Assert.Equal(expHeight, size.Height, 2);
 
-            var linesHeight = fmt.GetLines().Sum(l => l.Height);
+            var linesHeight = fmt.TextLayout.TextLines.Sum(l => l.LineMetrics.Size.Height);
 
             Assert.Equal(expHeight, linesHeight, 2);
         }
-        
+
         [Theory]
         [InlineData("", 1, -1, TextWrapping.NoWrap)]
         [InlineData("x", 1, -1, TextWrapping.NoWrap)]
@@ -128,13 +143,13 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                                                             double widthConstraint,
                                                             TextWrapping wrap)
         {
-            var fmt = Create(input, FontSize, wrap, widthConstraint);
+            var fmt = Create(input, FontSize, wrap, TextTrimming.None, widthConstraint);
             var constrained = fmt;
 
-            var lines = constrained.GetLines().ToArray();
+            var lines = constrained.TextLayout.TextLines.ToArray();
             Assert.Equal(linesCount, lines.Count());
         }
-        
+
         [Theory]
         [InlineData("x", 0, 0, true, false, 0)]
         [InlineData(stringword, -1, -1, false, false, 0)]
@@ -165,11 +180,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             var fmt = Create(input, FontSize);
             var htRes = fmt.HitTestPoint(new Point(x, y));
 
-            Assert.Equal(pos, htRes.TextPosition);
+            Assert.Equal(pos, htRes.CharacterHit.FirstCharacterIndex);
             Assert.Equal(isInside, htRes.IsInside);
             Assert.Equal(isTrailing, htRes.IsTrailing);
         }
-        
+
         [Theory]
         [InlineData("", 0, 0, 0, 0, FontSizeHeight)]
         [InlineData("x", 0, 0, 0, 7.20, FontSizeHeight)]
@@ -191,7 +206,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             Assert.Equal(width, r.Width, 2);
             Assert.Equal(height, r.Height, 2);
         }
-        
+
         [Theory]
         [InlineData("x", 0, 200, 200 - 7.20, 0, 7.20, FontSizeHeight)]
         [InlineData(stringword, 0, 200, 171.20, 0, 7.20, FontSizeHeight)]
@@ -210,7 +225,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             Assert.Equal(width, r.Width, 2);
             Assert.Equal(height, r.Height, 2);
         }
-        
+
         [Theory]
         [InlineData("x", 0, 200, 100 - 7.20 / 2, 0, 7.20, FontSizeHeight)]
         [InlineData(stringword, 0, 200, 85.6, 0, 7.20, FontSizeHeight)]
@@ -229,14 +244,14 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             Assert.Equal(width, r.Width, 2);
             Assert.Equal(height, r.Height, 2);
         }
-        
+
         [Theory]
-        [InlineData("x", 0, 1, "0,0,7.20,13.59")]
-        [InlineData(stringword, 0, 4, "0,0,28.80,13.59")]
-        [InlineData(stringmiddlenewlines, 10, 10, "0,13.59,57.61,13.59")]
-        [InlineData(stringmiddlenewlines, 10, 20, "0,13.59,57.61,13.59;0,27.19,64.81,13.59")]
-        [InlineData(stringmiddlenewlines, 10, 15, "0,13.59,57.61,13.59;0,27.19,36.01,13.59")]
-        [InlineData(stringmiddlenewlines, 15, 15, "36.01,13.59,21.60,13.59;0,27.19,64.81,13.59")]
+        [InlineData("x", 0, 1, "0,0,7.20,14.06")]
+        [InlineData(stringword, 0, 4, "0,0,28.80,14.06")]
+        [InlineData(stringmiddlenewlines, 10, 10, "0,14.06,57.61,14.06")]
+        [InlineData(stringmiddlenewlines, 10, 20, "0,14.06,57.61,14.06;0,28.12,64.81,14.06")]
+        [InlineData(stringmiddlenewlines, 10, 15, "0,14.06,57.61,14.06;0,28.12,36.01,14.06")]
+        [InlineData(stringmiddlenewlines, 15, 15, "36.01,14.06,21.60,14.06;0,28.12,64.81,14.06")]
         public void Should_HitTestRange_Correctly(string input,
                             int index, int length,
                             string expectedRects)
@@ -248,6 +263,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 .Select(sd => double.Parse(sd, CultureInfo.InvariantCulture)).ToArray();
                 return new Rect(v[0], v[1], v[2], v[3]);
             }).ToArray();
+
+            var compare = input.Substring(index, length);
 
             var fmt = Create(input, FontSize);
             var htRes = fmt.HitTestTextRange(index, length).ToArray();

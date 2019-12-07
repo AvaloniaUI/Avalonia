@@ -15,6 +15,13 @@ using BitmapInterpolationMode = Avalonia.Visuals.Media.Imaging.BitmapInterpolati
 
 namespace Avalonia.Direct2D1.Media
 {
+    using System.Linq;
+
+    using SharpDX.DirectWrite;
+
+    using BitmapRenderTarget = SharpDX.Direct2D1.BitmapRenderTarget;
+    using GlyphRun = Avalonia.Media.GlyphRun;
+
     /// <summary>
     /// Draws using Direct2D1.
     /// </summary>
@@ -288,29 +295,6 @@ namespace Avalonia.Direct2D1.Media
                                 (float)pen.Thickness,
                                 d2dStroke);
                         }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Draws text.
-        /// </summary>
-        /// <param name="foreground">The foreground brush.</param>
-        /// <param name="origin">The upper-left corner of the text.</param>
-        /// <param name="text">The text.</param>
-        public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
-        {
-            if (!string.IsNullOrEmpty(text.Text))
-            {
-                var impl = (FormattedTextImpl)text;
-
-                using (var brush = CreateBrush(foreground, impl.Bounds.Size))
-                using (var renderer = new AvaloniaTextRenderer(this, _deviceContext, brush.PlatformBrush))
-                {
-                    if (brush.PlatformBrush != null)
-                    {
-                        impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
                     }
                 }
             }

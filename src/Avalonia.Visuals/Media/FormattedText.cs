@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Collections.Generic;
-using Avalonia.Platform;
+using Avalonia.Media.Text;
 
 namespace Avalonia.Media
 {
@@ -11,31 +11,31 @@ namespace Avalonia.Media
     /// </summary>
     public class FormattedText
     {
-        private readonly IPlatformRenderInterface _platform;
         private Size _constraint = Size.Infinity;
-        private IFormattedTextImpl _platformImpl;
+        private TextLayout _textLayout;
         private IReadOnlyList<FormattedTextStyleSpan> _spans;
         private Typeface _typeface;
         private double _fontSize;
         private string _text;
         private TextAlignment _textAlignment;
         private TextWrapping _textWrapping;
+        private TextTrimming _textTrimming;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FormattedText"/> class.
-        /// </summary>
         public FormattedText()
         {
-            _platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FormattedText"/> class.
-        /// </summary>
-        /// <param name="platform">The platform render interface.</param>
-        public FormattedText(IPlatformRenderInterface platform)
+        public FormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment,
+            TextWrapping textWrapping, TextTrimming textTrimming, Size constraint)
         {
-            _platform = platform;
+            _text = text;
+            _typeface = typeface;
+            _fontSize = fontSize;
+            _textAlignment = textAlignment;
+            _textWrapping = textWrapping;
+            _textTrimming = textTrimming;
+            _constraint = constraint;
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Avalonia.Media
         /// Gets the bounds of the text within the <see cref="Constraint"/>.
         /// </summary>
         /// <returns>The bounds of the text.</returns>
-        public Rect Bounds => PlatformImpl.Bounds;
+        public Rect Bounds => TextLayout.Bounds;
 
         /// <summary>
         /// Gets or sets the constraint of the text.
@@ -75,7 +75,15 @@ namespace Avalonia.Media
         public Size Constraint
         {
             get => _constraint;
-            set => Set(ref _constraint, value);
+            set
+            {
+                if (value == _constraint)
+                {
+                    return;
+                }
+
+                Set(ref _constraint, value);
+            }
         }
 
         /// <summary>
@@ -135,38 +143,22 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets platform-specific platform implementation.
+        /// Gets or sets the text trimming.
         /// </summary>
-        public IFormattedTextImpl PlatformImpl
+        public TextTrimming TextTrimming
         {
-            get
-            {
-                if (_platformImpl == null)
-                {
-                    _platformImpl = _platform.CreateFormattedText(
-                        _text,
-                        _typeface,
-                        _fontSize,
-                        _textAlignment,
-                        _textWrapping,
-                        _constraint,
-                        _spans);
-                }
-
-                return _platformImpl;
-            }
+            get => _textTrimming;
+            set => Set(ref _textTrimming, value);
         }
 
         /// <summary>
-        /// Gets the lines in the text.
+        /// Gets the actual text layout.
         /// </summary>
-        /// <returns>
-        /// A collection of <see cref="FormattedTextLine"/> objects.
-        /// </returns>
-        public IEnumerable<FormattedTextLine> GetLines()
-        {
-            return PlatformImpl.GetLines();
-        }
+        public TextLayout TextLayout =>
+            _textLayout ?? (_textLayout = new TextLayout(
+                Text, Typeface, FontSize, TextAlignment,
+                TextWrapping, TextTrimming,
+                Constraint, Spans));
 
         /// <summary>
         /// Hit tests a point in the text.
@@ -177,7 +169,7 @@ namespace Avalonia.Media
         /// </returns>
         public TextHitTestResult HitTestPoint(Point point)
         {
-            return PlatformImpl.HitTestPoint(point);
+            return TextLayout.HitTestPoint(point);
         }
 
         /// <summary>
@@ -187,7 +179,7 @@ namespace Avalonia.Media
         /// <returns>The character bounds.</returns>
         public Rect HitTestTextPosition(int index)
         {
-            return PlatformImpl.HitTestTextPosition(index);
+            return TextLayout.HitTestTextPosition(index);
         }
 
         /// <summary>
@@ -198,13 +190,13 @@ namespace Avalonia.Media
         /// <returns>The character bounds.</returns>
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
-            return PlatformImpl.HitTestTextRange(index, length);
+            return TextLayout.HitTestTextRange(index, length);
         }
 
         private void Set<T>(ref T field, T value)
         {
             field = value;
-            _platformImpl = null;
+            _textLayout = null;
         }
     }
 }

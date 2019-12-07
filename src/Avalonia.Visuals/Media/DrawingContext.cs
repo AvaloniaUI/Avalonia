@@ -183,7 +183,7 @@ namespace Avalonia.Media
 
             if (foreground != null)
             {
-                PlatformImpl.DrawText(foreground, origin, text.PlatformImpl);
+                text.TextLayout.Draw(PlatformImpl, foreground, origin);
             }
         }
 

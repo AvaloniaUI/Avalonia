@@ -2,18 +2,15 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
-using Avalonia.Media;
 using Avalonia.Platform;
 using SharpDX.DirectWrite;
 using GlyphRun = Avalonia.Media.GlyphRun;
-using TextAlignment = Avalonia.Media.TextAlignment;
 
 namespace Avalonia
 {
@@ -116,25 +113,6 @@ namespace Avalonia.Direct2D1
         public IBitmapImpl CreateBitmap(PixelSize size, Vector dpi)
         {
             return new WicBitmapImpl(size, dpi);
-        }
-
-        public IFormattedTextImpl CreateFormattedText(
-            string text,
-            Typeface typeface,
-            double fontSize,
-            TextAlignment textAlignment,
-            TextWrapping wrapping,
-            Size constraint,
-            IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return new FormattedTextImpl(
-                text,
-                typeface,
-                fontSize,
-                textAlignment,
-                wrapping,
-                constraint,
-                spans);
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
