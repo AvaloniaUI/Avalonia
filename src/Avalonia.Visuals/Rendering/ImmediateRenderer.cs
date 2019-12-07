@@ -164,6 +164,11 @@ namespace Avalonia.Rendering
             return HitTest(root, p, filter);
         }
 
+        public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter)
+        {
+            return HitTest(root, p, filter).FirstOrDefault();
+        }
+
         /// <inheritdoc/>
         public void RecalculateChildren(IVisual visual) => AddDirty(visual);
 
