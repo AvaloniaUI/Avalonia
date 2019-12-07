@@ -218,7 +218,7 @@ namespace Avalonia.VisualTree
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            return visual.GetVisualsAt(p).FirstOrDefault();
+            return visual.GetVisualAt(p, x => x.IsVisible);
         }
 
         /// <summary>
