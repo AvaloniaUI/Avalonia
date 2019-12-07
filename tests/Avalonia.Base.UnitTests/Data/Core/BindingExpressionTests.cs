@@ -139,6 +139,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 ExpressionObserver.Create(data, o => o.StringValue),
                 typeof(int),
                 42,
+                AvaloniaProperty.UnsetValue,
                 DefaultValueConverter.Instance);
             var result = await target.Take(1);
 
@@ -160,6 +161,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 ExpressionObserver.Create(data, o => o.StringValue, true),
                 typeof(int),
                 42,
+                AvaloniaProperty.UnsetValue,
                 DefaultValueConverter.Instance);
             var result = await target.Take(1);
 
@@ -181,6 +183,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 ExpressionObserver.Create(data, o => o.StringValue),
                 typeof(int),
                 "bar",
+                AvaloniaProperty.UnsetValue,
                 DefaultValueConverter.Instance);
             var result = await target.Take(1);
 
@@ -203,6 +206,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 ExpressionObserver.Create(data, o => o.StringValue, true),
                 typeof(int),
                 "bar",
+                AvaloniaProperty.UnsetValue,
                 DefaultValueConverter.Instance);
             var result = await target.Take(1);
 
@@ -238,6 +242,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 ExpressionObserver.Create(data, o => o.DoubleValue),
                 typeof(string),
                 "9.8",
+                AvaloniaProperty.UnsetValue,
                 DefaultValueConverter.Instance);
 
             target.OnNext("foo");
@@ -349,6 +354,29 @@ namespace Avalonia.Base.UnitTests.Data.Core
             target.Subscribe(x => result = x);
 
             Assert.Equal("foo", result);
+
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
+        public async Task Null_Value_Should_Use_TargetNullValue()
+        {
+            var data = new Class1 { StringValue = "foo" };
+
+            var target = new BindingExpression(
+                ExpressionObserver.Create(data, o => o.StringValue),
+                typeof(string),
+                AvaloniaProperty.UnsetValue,
+                "bar",
+                DefaultValueConverter.Instance);
+
+            object result = null;
+            target.Subscribe(x => result = x);
+
+            Assert.Equal("foo", result);
+            
+            data.StringValue = null;
+            Assert.Equal("bar", result);
 
             GC.KeepAlive(data);
         }

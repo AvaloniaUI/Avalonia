@@ -47,7 +47,9 @@ namespace Avalonia.Skia
 
                 var typeface = SKTypeface.FromStream(assetStream);
 
-                typeFaceCollection.AddTypeFace(typeface);
+                var key = new FontKey(fontFamily, (FontWeight)typeface.FontWeight, (FontStyle)typeface.FontSlant);
+
+                typeFaceCollection.AddTypeface(key, typeface);
             }
 
             return typeFaceCollection;

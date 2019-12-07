@@ -144,7 +144,7 @@ namespace Avalonia.Styling.UnitTests
             Assert.Equal(new[] { true, false }, result);
         }
 
-        public class Control1 : TestControlBase
+        public class Control1 : Control
         {
         }
     }

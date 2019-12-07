@@ -1,5 +1,7 @@
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 
 namespace ControlCatalog.Pages
 {
@@ -14,7 +16,7 @@ namespace ControlCatalog.Pages
         {
             AvaloniaXamlLoader.Load(this);
             var fontComboBox = this.Find<ComboBox>("fontComboBox");
-            fontComboBox.Items = Avalonia.Media.FontFamily.SystemFontFamilies;
+            fontComboBox.Items = FontManager.Current.GetInstalledFontFamilyNames().Select(x => new FontFamily(x));
             fontComboBox.SelectedIndex = 0;
         }
     }

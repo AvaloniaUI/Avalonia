@@ -21,8 +21,6 @@ namespace Avalonia.Skia
 
         private GRContext GrContext { get; }
 
-        public IEnumerable<string> InstalledFontNames => SKFontManager.Default.FontFamilies;
-
         public PlatformRenderInterface(ICustomSkiaGpu customSkiaGpu)
         {
             if (customSkiaGpu != null)
@@ -52,12 +50,13 @@ namespace Avalonia.Skia
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            return new FormattedTextImpl(text, typeface, textAlignment, wrapping, constraint, spans);
+            return new FormattedTextImpl(text, typeface, fontSize, textAlignment, wrapping, constraint, spans);
         }
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
@@ -150,6 +149,97 @@ namespace Avalonia.Skia
         public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
         {
             return new WriteableBitmapImpl(size, dpi, format);
+        }
+
+        /// <inheritdoc />
+        public IFontManagerImpl CreateFontManager()
+        {
+            return new FontManagerImpl();
+        }
+
+        /// <inheritdoc />
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        {
+            var count = glyphRun.GlyphIndices.Length;
+
+            var glyphTypeface = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.PlatformImpl;
+
+            var typeface = glyphTypeface.Typeface;
+
+            var paint = new SKPaint
+            {
+                TextSize = (float)glyphRun.FontRenderingEmSize,
+                Typeface = typeface,
+                TextEncoding = SKTextEncoding.GlyphId,
+                IsAntialias = true,
+                IsStroke = false,
+                SubpixelText = true
+            };
+
+            using (var textBlobBuilder = new SKTextBlobBuilder())
+            {
+                var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
+
+                if (glyphRun.GlyphOffsets.IsEmpty)
+                {
+                    width = 0;
+
+                    var buffer = textBlobBuilder.AllocateHorizontalRun(paint, count, 0);
+
+                    if (!glyphTypeface.IsFixedPitch)
+                    {
+                        var positions = buffer.GetPositionSpan();
+
+                        for (var i = 0; i < count; i++)
+                        {
+                            positions[i] = (float)width;
+
+                            if (glyphRun.GlyphAdvances.IsEmpty)
+                            {
+                                width += glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
+                            }
+                            else
+                            {
+                                width += glyphRun.GlyphAdvances[i];
+                            }
+                        }
+                    }
+
+                    buffer.SetGlyphs(glyphRun.GlyphIndices.AsSpan());
+                }
+                else
+                {
+                    var buffer = textBlobBuilder.AllocatePositionedRun(paint, count);
+
+                    var glyphPositions = buffer.GetPositionSpan();
+
+                    var currentX = 0.0;
+
+                    for (var i = 0; i < count; i++)
+                    {
+                        var glyphOffset = glyphRun.GlyphOffsets[i];
+
+                        glyphPositions[i] = new SKPoint((float)(currentX + glyphOffset.X), (float)glyphOffset.Y);
+
+                        if (glyphRun.GlyphAdvances.IsEmpty)
+                        {
+                            currentX += glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
+                        }
+                        else
+                        {
+                            currentX += glyphRun.GlyphAdvances[i];
+                        }
+                    }
+
+                    buffer.SetGlyphs(glyphRun.GlyphIndices.AsSpan());
+
+                    width = currentX;
+                }
+
+                var textBlob = textBlobBuilder.Build();
+
+                return new GlyphRunImpl(paint, textBlob);
+            }
         }
     }
 }

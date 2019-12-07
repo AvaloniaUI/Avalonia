@@ -92,8 +92,6 @@ namespace Avalonia.X11
         
         private PointerDeviceInfo _pointerDevice;
         private AvaloniaX11Platform _platform;
-        private readonly TouchDevice _touchDevice = new TouchDevice();
-
 
         public bool Init(AvaloniaX11Platform platform)
         {
@@ -198,7 +196,7 @@ namespace Avalonia.X11
                     (ev.Type == XiEventType.XI_TouchUpdate ?
                         RawPointerEventType.TouchUpdate :
                         RawPointerEventType.TouchEnd);
-                client.ScheduleInput(new RawTouchEventArgs(_touchDevice,
+                client.ScheduleInput(new RawTouchEventArgs(client.TouchDevice,
                     ev.Timestamp, client.InputRoot, type, ev.Position, ev.Modifiers, ev.Detail));
                 return;
             }
@@ -232,23 +230,27 @@ namespace Avalonia.X11
                 }
 
                 if (scrollDelta != default)
-                    client.ScheduleInput(new RawMouseWheelEventArgs(_platform.MouseDevice, ev.Timestamp,
+                    client.ScheduleInput(new RawMouseWheelEventArgs(client.MouseDevice, ev.Timestamp,
                         client.InputRoot, ev.Position, scrollDelta, ev.Modifiers));
                 if (_pointerDevice.HasMotion(ev))
-                    client.ScheduleInput(new RawPointerEventArgs(_platform.MouseDevice, ev.Timestamp, client.InputRoot,
+                    client.ScheduleInput(new RawPointerEventArgs(client.MouseDevice, ev.Timestamp, client.InputRoot,
                         RawPointerEventType.Move, ev.Position, ev.Modifiers));
             }
 
             if (ev.Type == XiEventType.XI_ButtonPress || ev.Type == XiEventType.XI_ButtonRelease)
             {
                 var down = ev.Type == XiEventType.XI_ButtonPress;
-                var type =
-                    ev.Button == 1 ? (down ? RawPointerEventType.LeftButtonDown : RawPointerEventType.LeftButtonUp)
-                    : ev.Button == 2 ? (down ? RawPointerEventType.MiddleButtonDown : RawPointerEventType.MiddleButtonUp)
-                    : ev.Button == 3 ? (down ? RawPointerEventType.RightButtonDown : RawPointerEventType.RightButtonUp)
-                    : (RawPointerEventType?)null;
+                var type = ev.Button switch
+                {
+                    1 => down ? RawPointerEventType.LeftButtonDown : RawPointerEventType.LeftButtonUp,
+                    2 => down ? RawPointerEventType.MiddleButtonDown : RawPointerEventType.MiddleButtonUp,
+                    3 => down ? RawPointerEventType.RightButtonDown : RawPointerEventType.RightButtonUp,
+                    8 => down ? RawPointerEventType.XButton1Down : RawPointerEventType.XButton1Up,
+                    9 => down ? RawPointerEventType.XButton2Down : RawPointerEventType.XButton2Up,
+                    _ => (RawPointerEventType?)null
+                };
                 if (type.HasValue)
-                    client.ScheduleInput(new RawPointerEventArgs(_platform.MouseDevice, ev.Timestamp, client.InputRoot,
+                    client.ScheduleInput(new RawPointerEventArgs(client.MouseDevice, ev.Timestamp, client.InputRoot,
                         type.Value, ev.Position, ev.Modifiers));
             }
             
@@ -285,12 +287,14 @@ namespace Avalonia.X11
                 var buttons = ev->buttons.Mask;
                 if (XIMaskIsSet(buttons, 1))
                     Modifiers |= RawInputModifiers.LeftMouseButton;
-                
                 if (XIMaskIsSet(buttons, 2))
                     Modifiers |= RawInputModifiers.MiddleMouseButton;
-                
                 if (XIMaskIsSet(buttons, 3))
                     Modifiers |= RawInputModifiers.RightMouseButton;
+                if (XIMaskIsSet(buttons, 8))
+                    Modifiers |= RawInputModifiers.XButton1MouseButton;
+                if (XIMaskIsSet(buttons, 9))
+                    Modifiers |= RawInputModifiers.XButton2MouseButton;
             }
 
             Valuators = new Dictionary<int, double>();
@@ -310,5 +314,7 @@ namespace Avalonia.X11
     {
         IInputRoot InputRoot { get; }
         void ScheduleInput(RawInputEventArgs args);
+        IMouseDevice MouseDevice { get; }
+        TouchDevice TouchDevice { get; }
     }
 }

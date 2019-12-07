@@ -14,13 +14,14 @@ namespace Avalonia.Input
     /// <summary>
     /// Represents a mouse device.
     /// </summary>
-    public class MouseDevice : IMouseDevice
+    public class MouseDevice : IMouseDevice, IDisposable
     {
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
 
         private readonly Pointer _pointer;
+        private bool _disposed;
 
         public MouseDevice(Pointer pointer = null)
         {
@@ -119,6 +120,10 @@ namespace Avalonia.Input
                 rv++;
             if (props.IsRightButtonPressed)
                 rv++;
+            if (props.IsXButton1Pressed)
+                rv++;
+            if (props.IsXButton2Pressed)
+                rv++;
             return rv;
         }
         
@@ -126,7 +131,9 @@ namespace Avalonia.Input
         {
             Contract.Requires<ArgumentNullException>(e != null);
 
-            var mouse = (IMouseDevice)e.Device;
+            var mouse = (MouseDevice)e.Device;
+            if(mouse._disposed)
+                return;
 
             Position = e.Root.PointToScreen(e.Position);
             var props = CreateProperties(e);
@@ -139,6 +146,8 @@ namespace Avalonia.Input
                 case RawPointerEventType.LeftButtonDown:
                 case RawPointerEventType.RightButtonDown:
                 case RawPointerEventType.MiddleButtonDown:
+                case RawPointerEventType.XButton1Down:
+                case RawPointerEventType.XButton2Down:
                     if (ButtonCount(props) > 1)
                         e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
                     else
@@ -148,6 +157,8 @@ namespace Avalonia.Input
                 case RawPointerEventType.LeftButtonUp:
                 case RawPointerEventType.RightButtonUp:
                 case RawPointerEventType.MiddleButtonUp:
+                case RawPointerEventType.XButton1Up:
+                case RawPointerEventType.XButton2Up:
                     if (ButtonCount(props) != 0)
                         e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
                     else
@@ -183,12 +194,20 @@ namespace Avalonia.Input
                 kind = PointerUpdateKind.MiddleButtonPressed;
             if (args.Type == RawPointerEventType.RightButtonDown)
                 kind = PointerUpdateKind.RightButtonPressed;
+            if (args.Type == RawPointerEventType.XButton1Down)
+                kind = PointerUpdateKind.XButton1Pressed;
+            if (args.Type == RawPointerEventType.XButton2Down)
+                kind = PointerUpdateKind.XButton2Pressed;
             if (args.Type == RawPointerEventType.LeftButtonUp)
                 kind = PointerUpdateKind.LeftButtonReleased;
             if (args.Type == RawPointerEventType.MiddleButtonUp)
                 kind = PointerUpdateKind.MiddleButtonReleased;
             if (args.Type == RawPointerEventType.RightButtonUp)
                 kind = PointerUpdateKind.RightButtonReleased;
+            if (args.Type == RawPointerEventType.XButton1Up)
+                kind = PointerUpdateKind.XButton1Released;
+            if (args.Type == RawPointerEventType.XButton2Up)
+                kind = PointerUpdateKind.XButton2Released;
             
             return new PointerPointProperties(args.InputModifiers, kind);
         }
@@ -440,6 +459,12 @@ namespace Avalonia.Input
                 el.RaiseEvent(e);
                 el = (IInputElement)el.VisualParent;
             }
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
+            _pointer?.Dispose();
         }
     }
 }

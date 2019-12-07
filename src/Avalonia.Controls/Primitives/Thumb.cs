@@ -73,7 +73,6 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            e.Device.Capture(this);
             e.Handled = true;
             _lastPoint = e.GetPosition(this);
 
@@ -92,7 +91,6 @@ namespace Avalonia.Controls.Primitives
         {
             if (_lastPoint.HasValue)
             {
-                e.Device.Capture(null);
                 e.Handled = true;
                 _lastPoint = null;
 

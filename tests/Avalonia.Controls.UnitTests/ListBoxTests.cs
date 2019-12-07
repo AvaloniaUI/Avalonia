@@ -4,6 +4,7 @@
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
@@ -45,6 +46,26 @@ namespace Avalonia.Controls.UnitTests
             Prepare(target);
 
             Assert.IsType<ItemsPresenter>(target.Presenter);
+        }
+
+        [Fact]
+        public void ListBox_Should_Find_Scrollviewer_In_Template()
+        {
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+            };
+
+            ScrollViewer viewer = null;
+
+            target.TemplateApplied += (sender, e) =>
+            {
+                viewer = target.Scroll as ScrollViewer;
+            };
+
+            Prepare(target);
+
+            Assert.NotNull(viewer);
         }
 
         [Fact]
@@ -225,6 +246,23 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(false, item.IsSelected);
         }
 
+        [Fact]
+        public void Can_Decrease_Number_Of_Materialized_Items_By_Removing_From_Source_Collection()
+        {
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 20).Select(x => $"Item {x}"));
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 })
+            };
+
+            Prepare(target);
+            target.Scroll.Offset = new Vector(0, 1);
+
+            items.RemoveRange(0, 11);
+        }
+
         private void RaisePressedEvent(ListBox listBox, ListBoxItem item, MouseButton mouseButton)
         {
             _mouse.Click(listBox, item, mouseButton);
@@ -363,14 +401,26 @@ namespace Avalonia.Controls.UnitTests
         private FuncControlTemplate ScrollViewerTemplate()
         {
             return new FuncControlTemplate<ScrollViewer>((parent, scope) =>
-                new ScrollContentPresenter
+                new Panel
                 {
-                    Name = "PART_ContentPresenter",
-                    [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
-                    [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
-                    [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
-                    [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
-                }.RegisterInNameScope(scope));
+                    Children =
+                    {
+                        new ScrollContentPresenter
+                        {
+                            Name = "PART_ContentPresenter",
+                            [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
+                            [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
+                            [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
+                            [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
+                        }.RegisterInNameScope(scope),
+                        new ScrollBar
+                        {
+                            Name = "verticalScrollBar",
+                            [~ScrollBar.MaximumProperty] = parent[~ScrollViewer.VerticalScrollBarMaximumProperty],
+                            [~~ScrollBar.ValueProperty] = parent[~~ScrollViewer.VerticalScrollBarValueProperty],
+                        }
+                    }
+                });
         }
 
         private void Prepare(ListBox target)

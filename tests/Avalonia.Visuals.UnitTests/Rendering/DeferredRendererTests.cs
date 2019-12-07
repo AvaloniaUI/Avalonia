@@ -370,6 +370,81 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         }
 
         [Fact]
+        public void Should_Update_VisualNodes_When_Child_Moved_To_New_Parent_And_New_Root()
+        {
+            var dispatcher = new ImmediateDispatcher();
+            var loop = new Mock<IRenderLoop>();
+
+            Decorator moveFrom;
+            Decorator moveTo;
+            Canvas moveMe;
+
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (moveFrom = new Decorator
+                        {
+                            Child = moveMe = new Canvas(),
+                        })
+                    }
+                }
+            };
+
+            var otherRoot = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (moveTo = new Decorator())
+                    }
+                }
+            };
+
+            var sceneBuilder = new SceneBuilder();
+            var target = new DeferredRenderer(
+                root,
+                loop.Object,
+                sceneBuilder: sceneBuilder,
+                dispatcher: dispatcher);
+
+            var otherSceneBuilder = new SceneBuilder();
+            var otherTarget = new DeferredRenderer(
+                otherRoot,
+                loop.Object,
+                sceneBuilder: otherSceneBuilder,
+                dispatcher: dispatcher);
+
+            root.Renderer = target;
+            otherRoot.Renderer = otherTarget;
+
+            target.Start();
+            otherTarget.Start();
+
+            RunFrame(target);
+            RunFrame(otherTarget);
+
+            moveFrom.Child = null;
+            moveTo.Child = moveMe;
+
+            RunFrame(target);
+            RunFrame(otherTarget);
+
+            var scene = target.UnitTestScene();
+            var otherScene = otherTarget.UnitTestScene();
+
+            var moveFromNode = (VisualNode)scene.FindNode(moveFrom);
+            var moveToNode = (VisualNode)otherScene.FindNode(moveTo);
+
+            Assert.Empty(moveFromNode.Children);
+            Assert.Equal(1, moveToNode.Children.Count);
+            Assert.Same(moveMe, moveToNode.Children[0].Visual);
+        }
+
+        [Fact]
         public void Should_Push_Opacity_For_Controls_With_Less_Than_1_Opacity()
         {
             var root = new TestRoot
@@ -391,7 +466,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var animation = new BehaviorSubject<double>(0.5);
 
             context.Verify(x => x.PushOpacity(0.5), Times.Once);
-            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
+            context.Verify(x => x.DrawRectangle(Brushes.Red, null, new Rect(0, 0, 100, 100), 0, 0), Times.Once);
             context.Verify(x => x.PopOpacity(), Times.Once);
         }
 
@@ -421,7 +496,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var animation = new BehaviorSubject<double>(0.5);
 
             context.Verify(x => x.PushOpacity(0.5), Times.Never);
-            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Never);
+            context.Verify(x => x.DrawRectangle(Brushes.Red, null, new Rect(0, 0, 100, 100), 0, 0), Times.Never);
             context.Verify(x => x.PopOpacity(), Times.Never);
         }
 
@@ -447,7 +522,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var animation = new BehaviorSubject<double>(0.5);
 
             context.Verify(x => x.PushOpacityMask(Brushes.Green, new Rect(0, 0, 100, 100)), Times.Once);
-            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
+            context.Verify(x => x.DrawRectangle(Brushes.Red, null, new Rect(0, 0, 100, 100), 0, 0), Times.Once);
             context.Verify(x => x.PopOpacityMask(), Times.Once);
         }
 
@@ -566,7 +641,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var context = GetLayerContext(target, border);
 
             context.Verify(x => x.PushOpacity(0.5), Times.Never);
-            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
+            context.Verify(x => x.DrawRectangle(Brushes.Red, null, new Rect(0, 0, 100, 100), 0, 0), Times.Once);
             context.Verify(x => x.PopOpacity(), Times.Never);
         }
 
