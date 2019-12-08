@@ -9,11 +9,9 @@ namespace Avalonia.Media
 {
     public sealed class GlyphTypeface : IDisposable
     {
-        private static readonly IPlatformRenderInterface s_platformRenderInterface =
-            AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-
-        public GlyphTypeface(Typeface typeface) : this(s_platformRenderInterface.CreateGlyphTypeface(typeface))
+        public GlyphTypeface(Typeface typeface)
         {
+            PlatformImpl = FontManager.Current?.PlatformImpl.CreateGlyphTypeface(typeface);
         }
 
         public GlyphTypeface(IGlyphTypefaceImpl platformImpl)
@@ -67,6 +65,11 @@ namespace Avalonia.Media
         ///     Gets a value that indicates the thickness of the underline in design em size.
         /// </summary>
         public int StrikethroughThickness => PlatformImpl.StrikethroughThickness;
+
+        /// <summary>
+        ///     A <see cref="bool"/> value indicating whether all glyphs in the font have the same advancement. 
+        /// </summary>
+        public bool IsFixedPitch => PlatformImpl.IsFixedPitch;
 
         /// <summary>
         ///     Returns an glyph index for the specified codepoint.

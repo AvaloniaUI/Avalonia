@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Controls;
 using Moq;
 using Xunit;
 
@@ -44,11 +45,11 @@ namespace Avalonia.Styling.UnitTests
             Assert.Equal(SelectorMatchResult.AlwaysThisType, target.Match(control).Result);
         }
 
-        public class Control1 : TestControlBase
+        public class Control1 : Control
         {
         }
 
-        public class Control2 : TestControlBase
+        public class Control2 : Control
         {
         }
     }

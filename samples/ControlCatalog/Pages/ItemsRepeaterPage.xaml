@@ -15,6 +15,7 @@
       </ComboBox>
       <Button Command="{Binding AddItem}">Add Item</Button>
       <Button Command="{Binding RandomizeHeights}">Randomize Heights</Button>
+      <Button Command="{Binding ResetItems}">Reset items</Button>
     </StackPanel>
     <Border BorderThickness="1" BorderBrush="{DynamicResource ThemeBorderMidBrush}" Margin="0 0 0 16">
       <ScrollViewer Name="scroller"
@@ -23,7 +24,7 @@
         <ItemsRepeater Name="repeater" Background="Transparent" Items="{Binding Items}">
           <ItemsRepeater.ItemTemplate>
             <DataTemplate>
-              <TextBlock Height="{Binding Height}" Text="{Binding Text}"/>
+              <TextBlock Focusable="True" Height="{Binding Height}" Text="{Binding Text}"/>
             </DataTemplate>
           </ItemsRepeater.ItemTemplate>
         </ItemsRepeater>
