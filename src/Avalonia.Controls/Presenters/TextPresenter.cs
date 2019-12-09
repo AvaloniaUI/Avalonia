@@ -279,7 +279,7 @@ namespace Avalonia.Controls.Presenters
             {
                 result.Spans = new[]
                 {
-                    new FormattedTextStyleSpan(start, length, SelectionForegroundBrush),
+                    new FormattedTextStyleSpan(start, length, foreground: SelectionForegroundBrush),
                 };
             }
 
