@@ -31,7 +31,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Parses a <see cref="Transform"/> string.
         /// </summary>
-        /// <param name="s">The string.</param>
+        /// <param name="s">Six comma-delimited double values that describe the new <see cref="Transform"/>. For details check <see cref="Matrix.Parse(string)"/> </param>
         /// <returns>The <see cref="Transform"/>.</returns>
         public static Transform Parse(string s)
         {
