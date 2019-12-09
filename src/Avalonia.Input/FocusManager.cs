@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
@@ -17,8 +18,8 @@ namespace Avalonia.Input
         /// <summary>
         /// The focus scopes in which the focus is currently defined.
         /// </summary>
-        private readonly Dictionary<IFocusScope, IInputElement> _focusScopes =
-            new Dictionary<IFocusScope, IInputElement>();
+        private readonly ConditionalWeakTable<IFocusScope, IInputElement> _focusScopes =
+            new ConditionalWeakTable<IFocusScope, IInputElement>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FocusManager"/> class.
@@ -110,7 +111,18 @@ namespace Avalonia.Input
         {
             Contract.Requires<ArgumentNullException>(scope != null);
 
-            _focusScopes[scope] = element;
+            if (_focusScopes.TryGetValue(scope, out IInputElement existingElement))
+            {
+                if (element != existingElement)
+                {
+                    _focusScopes.Remove(scope);
+                    _focusScopes.Add(scope, element);
+                }
+            }
+            else
+            {
+                _focusScopes.Add(scope, element);
+            }
 
             if (Scope == scope)
             {
