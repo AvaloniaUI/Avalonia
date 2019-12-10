@@ -168,6 +168,50 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
+        public void AttachedToLogicalParent_Should_Have_Source_Set()
+        {
+            var root = new TestRoot();
+            var canvas = new Canvas();
+            var border = new Border { Child = canvas };
+            var raised = 0;
+
+            void Attached(object sender, LogicalTreeAttachmentEventArgs e)
+            {
+                Assert.Same(border, e.Source);
+                ++raised;
+            }
+
+            border.AttachedToLogicalTree += Attached;
+            canvas.AttachedToLogicalTree += Attached;
+
+            root.Child = border;
+
+            Assert.Equal(2, raised);
+        }
+
+        [Fact]
+        public void AttachedToLogicalParent_Should_Have_Parent_Set()
+        {
+            var root = new TestRoot();
+            var canvas = new Canvas();
+            var border = new Border { Child = canvas };
+            var raised = 0;
+
+            void Attached(object sender, LogicalTreeAttachmentEventArgs e)
+            {
+                Assert.Same(root, e.Parent);
+                ++raised;
+            }
+
+            border.AttachedToLogicalTree += Attached;
+            canvas.AttachedToLogicalTree += Attached;
+
+            root.Child = border;
+
+            Assert.Equal(2, raised);
+        }
+
+        [Fact]
         public void DetachedFromLogicalParent_Should_Be_Called_When_Removed_From_Tree()
         {
             var root = new TestRoot();
@@ -211,6 +255,25 @@ namespace Avalonia.Styling.UnitTests
             root.Child = null;
 
             Assert.True(raised);
+        }
+
+        [Fact]
+        public void Parent_Should_Be_Null_When_DetachedFromLogicalParent_Called()
+        {
+            var target = new TestControl();
+            var root = new TestRoot(target);
+            var called = 0;
+
+            target.DetachedFromLogicalTree += (s, e) =>
+            {
+                Assert.Null(target.Parent);
+                Assert.Null(target.InheritanceParent);
+                ++called;
+            };
+
+            root.Child = null;
+
+            Assert.Equal(1, called);
         }
 
         [Fact]
