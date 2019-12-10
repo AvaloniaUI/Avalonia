@@ -41,6 +41,9 @@
       <TabItem Header="RenderTargetBitmap">
         <pages:RenderTargetBitmapPage/>
       </TabItem>
+      <TabItem Header="GlyphRun">
+        <pages:GlyphRunPage/>
+      </TabItem>
     </TabControl>
   </DockPanel>
 </Window>

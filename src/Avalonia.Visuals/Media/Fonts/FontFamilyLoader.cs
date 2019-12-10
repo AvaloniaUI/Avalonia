@@ -10,13 +10,6 @@ namespace Avalonia.Media.Fonts
 {
     public static class FontFamilyLoader
     {
-        private static readonly IAssetLoader s_assetLoader;
-
-        static FontFamilyLoader()
-        {
-            s_assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
-        }
-
         /// <summary>
         /// Loads all font assets that belong to the specified <see cref="FontFamilyKey"/>
         /// </summary>
@@ -42,7 +35,9 @@ namespace Avalonia.Media.Fonts
         /// <returns></returns>
         private static IEnumerable<Uri> GetFontAssetsBySource(FontFamilyKey fontFamilyKey)
         {
-            var availableAssets = s_assetLoader.GetAssets(fontFamilyKey.Source, fontFamilyKey.BaseUri);
+            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+
+            var availableAssets = assetLoader.GetAssets(fontFamilyKey.Source, fontFamilyKey.BaseUri);
 
             var matchingAssets =
                 availableAssets.Where(x => x.AbsolutePath.EndsWith(".ttf") || x.AbsolutePath.EndsWith(".otf"));
@@ -58,9 +53,11 @@ namespace Avalonia.Media.Fonts
         /// <returns></returns>
         private static IEnumerable<Uri> GetFontAssetsByExpression(FontFamilyKey fontFamilyKey)
         {
+            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+
             var fileName = GetFileName(fontFamilyKey, out var fileExtension, out var location);
 
-            var availableResources = s_assetLoader.GetAssets(location, fontFamilyKey.BaseUri);
+            var availableResources = assetLoader.GetAssets(location, fontFamilyKey.BaseUri);
 
             string compareTo;
 

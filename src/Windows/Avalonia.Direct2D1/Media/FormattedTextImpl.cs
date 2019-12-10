@@ -22,10 +22,16 @@ namespace Avalonia.Direct2D1.Media
         {
             Text = text;
 
-            using (var font = Direct2D1FontCollectionCache.GetFont(typeface))
-            using (var textFormat = new DWrite.TextFormat(Direct2D1Platform.DirectWriteFactory,
-                typeface.FontFamily.Name, font.FontFamily.FontCollection, (DWrite.FontWeight)typeface.Weight,
-                (DWrite.FontStyle)typeface.Style, DWrite.FontStretch.Normal, (float)fontSize))
+            var font = ((GlyphTypefaceImpl)typeface.GlyphTypeface.PlatformImpl).DWFont;
+            var familyName = font.FontFamily.FamilyNames.GetString(0);
+            using (var textFormat = new DWrite.TextFormat(
+                Direct2D1Platform.DirectWriteFactory, 
+                familyName, 
+                font.FontFamily.FontCollection, 
+                (DWrite.FontWeight)typeface.Weight,
+                (DWrite.FontStyle)typeface.Style, 
+                DWrite.FontStretch.Normal, 
+                (float)fontSize))
             {
                 textFormat.WordWrapping =
                     wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;

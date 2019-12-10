@@ -316,6 +316,22 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
+        /// <summary>
+        /// Draws a glyph run.
+        /// </summary>
+        /// <param name="foreground">The foreground.</param>
+        /// <param name="glyphRun">The glyph run.</param>
+        /// <param name="baselineOrigin"></param>
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        {
+            using (var brush = CreateBrush(foreground, glyphRun.Bounds.Size))
+            {
+                var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
+
+                _renderTarget.DrawGlyphRun(baselineOrigin.ToSharpDX(), glyphRunImpl.GlyphRun, brush.PlatformBrush, MeasuringMode.Natural);
+            }
+        }
+
         public IRenderTargetBitmapImpl CreateLayer(Size size)
         {
             if (_layerFactory != null)
