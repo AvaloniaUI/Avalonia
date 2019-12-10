@@ -812,7 +812,13 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)drawRect:(NSRect)dirtyRect
 {
+    if (_parent == nullptr)
+    {
+        return;
+    }
+        
     _parent->BaseEvents->RunRenderPriorityJobs();
+    
     @synchronized (self) {
         if(_swRenderedFrame != NULL)
         {
