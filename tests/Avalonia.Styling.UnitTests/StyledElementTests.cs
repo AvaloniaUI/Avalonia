@@ -77,6 +77,29 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
+        public void Adding_Element_With_Null_Parent_To_Logical_Tree_Should_Throw()
+        {
+            var target = new Border();
+            var visualParent = new Panel();
+            var logicalParent = new Panel();
+            var root = new TestRoot();
+
+            // Set the logical parent...
+            ((ISetLogicalParent)target).SetParent(logicalParent);
+
+            // ...so that when it's added to `visualParent`, the parent won't be set again.
+            visualParent.Children.Add(target);
+
+            // Clear the logical parent. It's now a logical child of `visualParent` but doesn't have
+            // a logical parent itself.
+            ((ISetLogicalParent)target).SetParent(null);
+
+            // In this case, attaching the control to a logical tree should throw.
+            logicalParent.Children.Add(visualParent);
+            Assert.Throws<InvalidOperationException>(() => root.Child = logicalParent);
+        }
+
+        [Fact]
         public void AttachedToLogicalParent_Should_Be_Called_When_Added_To_Tree()
         {
             var root = new TestRoot();

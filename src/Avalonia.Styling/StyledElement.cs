@@ -704,6 +704,12 @@ namespace Avalonia
 
         private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
         {
+            if (this.GetLogicalParent() == null && !(this is IStyleRoot))
+            {
+                throw new InvalidOperationException(
+                    $"AttachedToLogicalTreeCore called for '{GetType().Name}' but control has no logical parent.");
+            }
+
             // This method can be called when a control is already attached to the logical tree
             // in the following scenario:
             // - ListBox gets assigned Items containing ListBoxItem
