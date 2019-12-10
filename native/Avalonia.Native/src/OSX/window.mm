@@ -1268,6 +1268,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [self setReleasedWhenClosed:false];
     _parent = parent;
     [self setDelegate:self];
+    _closed = false;
     
     _lastScaling = [self backingScaleFactor];
     return self;
