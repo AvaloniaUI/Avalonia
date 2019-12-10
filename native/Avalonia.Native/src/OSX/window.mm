@@ -291,7 +291,14 @@ public:
     {
         @autoreleasepool
         {
-            return [View lockFocusIfCanDraw] == YES;
+            @try
+            {
+                return [View lockFocusIfCanDraw] == YES;
+            }
+            @catch (NSException*)
+            {
+                return NO;
+            }
         }
     }
     

@@ -233,8 +233,17 @@ public:
         auto f = GetFeature();
         if(f == NULL)
             return E_FAIL;
-        if(![_view lockFocusIfCanDraw])
+        
+        @try
+        {
+            if(![_view lockFocusIfCanDraw])
+                return E_ABORT;
+        }
+        @catch(NSException* exception)
+        {
             return E_ABORT;
+        }
+        
         
         auto gl = _context;
         CGLLockContext([_context CGLContextObj]);
