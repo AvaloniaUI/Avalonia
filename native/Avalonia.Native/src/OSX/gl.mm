@@ -1,6 +1,7 @@
 #include "common.h"
 #include <OpenGL/gl.h>
 #include <dlfcn.h>
+#include "window.h"
 
 template <typename T, size_t N> char (&ArrayCounter(T (&a)[N]))[N];
 #define ARRAY_COUNT(a) (sizeof(ArrayCounter(a)))
@@ -181,12 +182,12 @@ extern IAvnGlFeature* GetGlFeature()
 
 class AvnGlRenderingSession : public ComSingleObject<IAvnGlSurfaceRenderingSession, &IID_IAvnGlSurfaceRenderingSession>
 {
-    NSView* _view;
-    NSWindow* _window;
+    AvnView* _view;
+    AvnWindow* _window;
     NSOpenGLContext* _context;
 public:
     FORWARD_IUNKNOWN()
-    AvnGlRenderingSession(NSWindow*window, NSView* view, NSOpenGLContext* context)
+    AvnGlRenderingSession(AvnWindow*window, AvnView* view, NSOpenGLContext* context)
     {
         _context = context;
         _window = window;
@@ -195,14 +196,12 @@ public:
     
     virtual HRESULT GetPixelSize(AvnPixelSize* ret)  override
     {
-        auto fsize = [_view convertSizeToBacking: [_view frame].size];
-        ret->Width = (int)fsize.width;
-        ret->Height = (int)fsize.height;
+        *ret = [_view getPixelSize];
         return S_OK;
     }
     virtual HRESULT GetScaling(double* ret)  override
     {
-        *ret = [_window backingScaleFactor];
+        *ret = [_window getScaling];
         return S_OK;
     }
     
