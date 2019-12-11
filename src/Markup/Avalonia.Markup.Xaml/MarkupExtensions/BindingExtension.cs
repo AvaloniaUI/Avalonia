@@ -45,7 +45,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 Source = Source,
                 StringFormat = StringFormat,
                 RelativeSource = RelativeSource,
-                DefaultAnchor = new WeakReference(GetDefaultAnchor(descriptorContext))
+                DefaultAnchor = new WeakReference(GetDefaultAnchor(descriptorContext)),
+                TargetNullValue = TargetNullValue
             };
         }
 
@@ -83,5 +84,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public string StringFormat { get; set; }
 
         public RelativeSource RelativeSource { get; set; }
+        
+        public object TargetNullValue { get; set; }
     }
 }
