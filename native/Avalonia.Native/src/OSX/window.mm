@@ -1313,9 +1313,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         [self restoreParentWindow];
         parent->BaseEvents->Closed();
         [parent->View onClosed];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self setContentView: nil];
-        });
     }
 }
 
