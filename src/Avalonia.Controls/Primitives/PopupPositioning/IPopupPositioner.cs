@@ -305,8 +305,8 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             positionerParameters.ConstraintAdjustment = PopupPositionerConstraintAdjustment.All;
             if (placement == PlacementMode.Pointer)
             {
-                positionerParameters.AnchorRectangle = new Rect(pointer, new Size(0, 0));
-                positionerParameters.Anchor = PopupPositioningEdge.BottomRight;
+                positionerParameters.AnchorRectangle = new Rect(pointer, new Size(1, 1));
+                positionerParameters.Anchor = PopupPositioningEdge.TopLeft;
                 positionerParameters.Gravity = PopupPositioningEdge.BottomRight;
             }
             else
