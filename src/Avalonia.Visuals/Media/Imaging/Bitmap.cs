@@ -75,7 +75,7 @@ namespace Avalonia.Media.Imaging
         public Vector Dpi => PlatformImpl.Item.Dpi;
 
         /// <inheritdoc/>
-        public Size Size => PlatformImpl.Item.PixelSize.ToSize(Dpi);
+        public Size Size => PlatformImpl.Item.PixelSize.ToSizeWithDpi(Dpi);
 
         /// <inheritdoc/>
         public PixelSize PixelSize => PlatformImpl.Item.PixelSize;

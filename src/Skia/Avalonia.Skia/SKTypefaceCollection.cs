@@ -1,74 +1,63 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
     internal class SKTypefaceCollection
     {
-        private readonly ConcurrentDictionary<FontKey, SKTypeface> _cachedTypefaces =
+        private readonly ConcurrentDictionary<FontKey, SKTypeface> _typefaces =
             new ConcurrentDictionary<FontKey, SKTypeface>();
 
-        public void AddTypeFace(SKTypeface typeface)
+        public void AddTypeface(FontKey key, SKTypeface typeface)
         {
-            var key = new FontKey(typeface.FamilyName, (SKFontStyleWeight)typeface.FontWeight, typeface.FontSlant);
-
-            _cachedTypefaces.TryAdd(key, typeface);
+            _typefaces.TryAdd(key, typeface);
         }
 
-        public SKTypeface GetTypeFace(Typeface typeface)
+        public SKTypeface Get(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle)
         {
-            SKFontStyleSlant skStyle = SKFontStyleSlant.Upright;
+            var key = new FontKey(fontFamily, fontWeight, fontStyle);
 
-            switch (typeface.Style)
-            {
-                case FontStyle.Italic:
-                    skStyle = SKFontStyleSlant.Italic;
-                    break;
-
-                case FontStyle.Oblique:
-                    skStyle = SKFontStyleSlant.Oblique;
-                    break;
-            }
-
-            var key = new FontKey(typeface.FontFamily.Name, (SKFontStyleWeight)typeface.Weight, skStyle);
-
-            return _cachedTypefaces.TryGetValue(key, out var skTypeface) ? skTypeface : TypefaceCache.Default;
+            return GetNearestMatch(_typefaces, key);
         }
 
-        private struct FontKey
+        private static SKTypeface GetNearestMatch(IDictionary<FontKey, SKTypeface> typefaces, FontKey key)
         {
-            public readonly string Name;
-            public readonly SKFontStyleSlant Slant;
-            public readonly SKFontStyleWeight Weight;
-
-            public FontKey(string name, SKFontStyleWeight weight, SKFontStyleSlant slant)
+            if (typefaces.ContainsKey(key))
             {
-                Name = name;
-                Slant = slant;
-                Weight = weight;
+                return typefaces[key];
             }
 
-            public override int GetHashCode()
-            {
-                int hash = 17;
-                hash = hash * 31 + Name.GetHashCode();
-                hash = hash * 31 + (int)Slant;
-                hash = hash * 31 + (int)Weight;
+            var keys = typefaces.Keys.Where(
+                x => ((int)x.Weight <= (int)key.Weight || (int)x.Weight > (int)key.Weight) && x.Style == key.Style).ToArray();
 
-                return hash;
+            if (!keys.Any())
+            {
+                keys = typefaces.Keys.Where(
+                    x => x.Weight == key.Weight && (x.Style >= key.Style || x.Style < key.Style)).ToArray();
+
+                if (!keys.Any())
+                {
+                    keys = typefaces.Keys.Where(
+                        x => ((int)x.Weight <= (int)key.Weight || (int)x.Weight > (int)key.Weight) &&
+                             (x.Style >= key.Style || x.Style < key.Style)).ToArray();
+                }
             }
 
-            public override bool Equals(object other)
+            if (keys.Length == 0)
             {
-                return other is FontKey ? Equals((FontKey)other) : false;
+                return SKTypeface.Default;
             }
 
-            private bool Equals(FontKey other)
-            {
-                return Name == other.Name && Slant == other.Slant &&
-                       Weight == other.Weight;
-            }
+            key = keys[0];
+
+            return typefaces[key];
         }
     }
 }

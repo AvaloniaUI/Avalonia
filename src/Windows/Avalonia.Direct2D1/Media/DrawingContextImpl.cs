@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using SharpDX;
 using SharpDX.Direct2D1;
@@ -173,7 +174,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p2">The second point of the line.</param>
-        public void DrawLine(Pen pen, Point p1, Point p2)
+        public void DrawLine(IPen pen, Point p1, Point p2)
         {
             if (pen != null)
             {
@@ -201,7 +202,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
         {
             if (brush != null)
             {
@@ -229,34 +230,64 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-        /// <summary>
-        /// Draws the outline of a rectangle.
-        /// </summary>
-        /// <param name="pen">The pen.</param>
-        /// <param name="rect">The rectangle bounds.</param>
-        /// <param name="cornerRadius">The corner radius.</param>
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius)
+        /// <inheritdoc />
+        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX, double radiusY)
         {
-            using (var brush = CreateBrush(pen.Brush, rect.Size))
-            using (var d2dStroke = pen.ToDirect2DStrokeStyle(_deviceContext))
+            var rc = rect.ToDirect2D();
+            var isRounded = Math.Abs(radiusX) > double.Epsilon || Math.Abs(radiusY) > double.Epsilon;
+
+            if (brush != null)
             {
-                if (brush.PlatformBrush != null)
+                using (var b = CreateBrush(brush, rect.Size))
                 {
-                    if (cornerRadius == 0)
+                    if (b.PlatformBrush != null)
                     {
-                        _deviceContext.DrawRectangle(
-                            rect.ToDirect2D(),
-                            brush.PlatformBrush,
-                            (float)pen.Thickness,
-                            d2dStroke);
+                        if (isRounded)
+                        {
+                            _deviceContext.FillRoundedRectangle(
+                                new RoundedRectangle
+                                {
+                                    Rect = new RawRectangleF(
+                                        (float)rect.X,
+                                        (float)rect.Y,
+                                        (float)rect.Right,
+                                        (float)rect.Bottom),
+                                    RadiusX = (float)radiusX,
+                                    RadiusY = (float)radiusY
+                                },
+                                b.PlatformBrush);
+                        }
+                        else
+                        {
+                            _deviceContext.FillRectangle(rc, b.PlatformBrush);
+                        }
                     }
-                    else
+                }
+            }
+
+            if (pen?.Brush != null)
+            {
+                using (var wrapper = CreateBrush(pen.Brush, rect.Size))
+                using (var d2dStroke = pen.ToDirect2DStrokeStyle(_deviceContext))
+                {
+                    if (wrapper.PlatformBrush != null)
                     {
-                        _deviceContext.DrawRoundedRectangle(
-                            new RoundedRectangle { Rect = rect.ToDirect2D(), RadiusX = cornerRadius, RadiusY = cornerRadius },
-                            brush.PlatformBrush,
-                            (float)pen.Thickness,
-                            d2dStroke);
+                        if (isRounded)
+                        {
+                            _deviceContext.DrawRoundedRectangle(
+                                new RoundedRectangle { Rect = rc, RadiusX = (float)radiusX, RadiusY = (float)radiusY },
+                                wrapper.PlatformBrush,
+                                (float)pen.Thickness,
+                                d2dStroke);
+                        }
+                        else
+                        {
+                            _deviceContext.DrawRectangle(
+                                rc,
+                                wrapper.PlatformBrush,
+                                (float)pen.Thickness,
+                                d2dStroke);
+                        }
                     }
                 }
             }
@@ -274,7 +305,7 @@ namespace Avalonia.Direct2D1.Media
             {
                 var impl = (FormattedTextImpl)text;
 
-                using (var brush = CreateBrush(foreground, impl.Size))
+                using (var brush = CreateBrush(foreground, impl.Bounds.Size))
                 using (var renderer = new AvaloniaTextRenderer(this, _deviceContext, brush.PlatformBrush))
                 {
                     if (brush.PlatformBrush != null)
@@ -286,37 +317,18 @@ namespace Avalonia.Direct2D1.Media
         }
 
         /// <summary>
-        /// Draws a filled rectangle.
+        /// Draws a glyph run.
         /// </summary>
-        /// <param name="brush">The brush.</param>
-        /// <param name="rect">The rectangle bounds.</param>
-        /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius)
+        /// <param name="foreground">The foreground.</param>
+        /// <param name="glyphRun">The glyph run.</param>
+        /// <param name="baselineOrigin"></param>
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
         {
-            using (var b = CreateBrush(brush, rect.Size))
+            using (var brush = CreateBrush(foreground, glyphRun.Bounds.Size))
             {
-                if (b.PlatformBrush != null)
-                {
-                    if (cornerRadius == 0)
-                    {
-                        _deviceContext.FillRectangle(rect.ToDirect2D(), b.PlatformBrush);
-                    }
-                    else
-                    {
-                        _deviceContext.FillRoundedRectangle(
-                            new RoundedRectangle
-                            {
-                                Rect = new RawRectangleF(
-                                        (float)rect.X,
-                                        (float)rect.Y,
-                                        (float)rect.Right,
-                                        (float)rect.Bottom),
-                                RadiusX = cornerRadius,
-                                RadiusY = cornerRadius
-                            },
-                            b.PlatformBrush);
-                    }
-                }
+                var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
+
+                _renderTarget.DrawGlyphRun(baselineOrigin.ToSharpDX(), glyphRunImpl.GlyphRun, brush.PlatformBrush, MeasuringMode.Natural);
             }
         }
 
@@ -330,7 +342,7 @@ namespace Avalonia.Direct2D1.Media
             {
                 var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
                 var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
-                var pixelSize = PixelSize.FromSize(size, dpi);
+                var pixelSize = PixelSize.FromSizeWithDpi(size, dpi);
                 return platform.CreateRenderTargetBitmap(pixelSize, dpi);
             }
         }
@@ -438,12 +450,12 @@ namespace Avalonia.Direct2D1.Media
                         // D2D alters the DPI of the render target, which messes stuff up. PixelSize.FromSize
                         // will do the rounding for us.
                         var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
-                        var pixelSize = PixelSize.FromSize(intermediateSize, dpi);
+                        var pixelSize = PixelSize.FromSizeWithDpi(intermediateSize, dpi);
 
                         using (var intermediate = new BitmapRenderTarget(
                             _deviceContext,
                             CompatibleRenderTargetOptions.None,
-                            pixelSize.ToSize(dpi).ToSharpDX()))
+                            pixelSize.ToSizeWithDpi(dpi).ToSharpDX()))
                         {
                             using (var ctx = new RenderTarget(intermediate).CreateDrawingContext(_visualBrushRenderer))
                             {
@@ -508,5 +520,7 @@ namespace Avalonia.Direct2D1.Media
         {
             PopLayer();
         }
+        
+        public void Custom(ICustomDrawOperation custom) => custom.Render(this);
     }
 }

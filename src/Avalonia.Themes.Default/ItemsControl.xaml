@@ -4,8 +4,7 @@
       <ItemsPresenter Name="PART_ItemsPresenter"
                       Items="{TemplateBinding Items}"
                       ItemsPanel="{TemplateBinding ItemsPanel}"
-                      ItemTemplate="{TemplateBinding ItemTemplate}"
-                      MemberSelector="{TemplateBinding MemberSelector}"/>
+                      ItemTemplate="{TemplateBinding ItemTemplate}"/>
     </ControlTemplate>
   </Setter>
 </Style>

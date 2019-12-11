@@ -12,7 +12,14 @@
                                 Extent="{TemplateBinding Extent, Mode=TwoWay}"
                                 Margin="{TemplateBinding Padding}"
                                 Offset="{TemplateBinding Offset, Mode=TwoWay}"
-                                Viewport="{TemplateBinding Viewport, Mode=TwoWay}"/>
+                                Viewport="{TemplateBinding Viewport, Mode=TwoWay}">
+          <ScrollContentPresenter.GestureRecognizers>
+            <ScrollGestureRecognizer 
+              CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
+              CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
+            />
+          </ScrollContentPresenter.GestureRecognizers>  
+        </ScrollContentPresenter>
         <ScrollBar Name="horizontalScrollBar"
                    Orientation="Horizontal"
                    Maximum="{TemplateBinding HorizontalScrollBarMaximum}"
@@ -29,6 +36,7 @@
                    Visibility="{TemplateBinding VerticalScrollBarVisibility}"
                    Grid.Column="1"
                    Focusable="False"/>
+        <Panel Grid.Row="1" Grid.Column="1" Background="{DynamicResource ThemeControlMidBrush}"/>
       </Grid>
     </ControlTemplate>
   </Setter>

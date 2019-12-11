@@ -12,7 +12,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Immutable Skia bitmap.
     /// </summary>
-    public class ImmutableBitmap : IDrawableBitmapImpl
+    internal class ImmutableBitmap : IDrawableBitmapImpl
     {
         private readonly SKImage _image;
 
@@ -24,7 +24,8 @@ namespace Avalonia.Skia
         {
             using (var skiaStream = new SKManagedStream(stream))
             {
-                _image = SKImage.FromEncodedData(SKData.Create(skiaStream));
+                using (var data = SKData.Create(skiaStream))
+                    _image = SKImage.FromEncodedData(data);
 
                 if (_image == null)
                 {

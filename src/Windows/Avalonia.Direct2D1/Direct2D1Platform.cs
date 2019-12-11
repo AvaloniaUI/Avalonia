@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Controls;
@@ -10,6 +11,9 @@ using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Platform;
+using SharpDX.DirectWrite;
+using GlyphRun = Avalonia.Media.GlyphRun;
+using TextAlignment = Avalonia.Media.TextAlignment;
 
 namespace Avalonia
 {
@@ -40,7 +44,6 @@ namespace Avalonia.Direct2D1
         public static SharpDX.WIC.ImagingFactory ImagingFactory { get; private set; }
 
         public static SharpDX.DXGI.Device1 DxgiDevice { get; private set; }
-
 
         private static readonly object s_initLock = new object();
         private static bool s_initialized = false;
@@ -118,6 +121,7 @@ namespace Avalonia.Direct2D1
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -126,6 +130,7 @@ namespace Avalonia.Direct2D1
             return new FormattedTextImpl(
                 text,
                 typeface,
+                fontSize,
                 textAlignment,
                 wrapping,
                 constraint,
@@ -169,10 +174,10 @@ namespace Avalonia.Direct2D1
             return new WriteableWicBitmapImpl(size, dpi, format);
         }
 
-        public IStreamGeometryImpl CreateStreamGeometry()
-        {
-            return new StreamGeometryImpl();
-        }
+        public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
+        public IGeometryImpl CreateLineGeometry(Point p1, Point p2) => new LineGeometryImpl(p1, p2);
+        public IGeometryImpl CreateRectangleGeometry(Rect rect) => new RectangleGeometryImpl(rect);
+        public IStreamGeometryImpl CreateStreamGeometry() => new StreamGeometryImpl();
 
         public IBitmapImpl LoadBitmap(string fileName)
         {
@@ -187,6 +192,59 @@ namespace Avalonia.Direct2D1
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new WicBitmapImpl(format, data, size, dpi, stride);
+        }
+
+        /// <inheritdoc />
+        public IFontManagerImpl CreateFontManager()
+        {
+            return new FontManagerImpl();
+        }
+
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        {
+            var glyphTypeface = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.PlatformImpl;
+
+            var glyphCount = glyphRun.GlyphIndices.Length;
+
+            var run = new SharpDX.DirectWrite.GlyphRun
+            {
+                FontFace = glyphTypeface.FontFace,
+                FontSize = (float)glyphRun.FontRenderingEmSize
+            };
+
+            var indices = new short[glyphCount];
+
+            for (var i = 0; i < glyphCount; i++)
+            {
+                indices[i] = (short)glyphRun.GlyphIndices[i];
+            }
+
+            run.Indices = indices;
+
+            run.Advances = new float[glyphCount];
+
+            width = 0;
+
+            for (var i = 0; i < glyphCount; i++)
+            {
+                run.Advances[i] = (float)glyphRun.GlyphAdvances[i];
+                width += run.Advances[i];
+            }
+
+            run.Offsets = new GlyphOffset[glyphCount];
+
+            for (var i = 0; i < glyphCount; i++)
+            {
+                var offset = glyphRun.GlyphOffsets[i];
+
+                run.Offsets[i] = new GlyphOffset
+                {
+                    AdvanceOffset = (float)offset.X,
+                    AscenderOffset = (float)offset.Y
+                };
+            }
+
+            return new GlyphRunImpl(run);
         }
     }
 }

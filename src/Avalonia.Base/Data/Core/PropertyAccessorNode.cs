@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core
@@ -37,9 +35,21 @@ namespace Avalonia.Data.Core
             return false;
         }
 
-        protected override void StartListeningCore(WeakReference reference)
+        protected override void StartListeningCore(WeakReference<object> reference)
         {
-            var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference.Target, PropertyName));
+            reference.TryGetTarget(out object target);
+
+            IPropertyAccessorPlugin plugin = null;
+
+            foreach (IPropertyAccessorPlugin x in ExpressionObserver.PropertyAccessors)
+            {
+                if (x.Match(target, PropertyName))
+                {
+                    plugin = x;
+                    break;
+                }
+            }
+
             var accessor = plugin?.Start(reference, PropertyName);
 
             if (_enableValidation && Next == null)
@@ -59,8 +69,8 @@ namespace Avalonia.Data.Core
                     $"Could not find a matching property accessor for {PropertyName}.");
             }
 
-            accessor.Subscribe(ValueChanged);
             _accessor = accessor;
+            accessor.Subscribe(ValueChanged);
         }
 
         protected override void StopListeningCore()

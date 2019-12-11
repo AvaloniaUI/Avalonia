@@ -1,14 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-      <TargetFrameworks>netstandard2.0</TargetFrameworks>
+      <TargetFramework>netstandard2.0</TargetFramework>
+      <PackageId>Avalonia.Desktop</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
       <ProjectReference Include="../../src/Windows/Avalonia.Win32/Avalonia.Win32.csproj" />
       <ProjectReference Include="../../src/Windows/Avalonia.Direct2D1/Avalonia.Direct2D1.csproj" />
       <ProjectReference Include="../../src/Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
-      <ProjectReference Include="../../src/Gtk/Avalonia.Gtk3/Avalonia.Gtk3.csproj" />
       <ProjectReference Include="../../src/Avalonia.Native/Avalonia.Native.csproj" />
       <ProjectReference Include="../../packages/Avalonia/Avalonia.csproj" />
+      <ProjectReference Include="../Avalonia.X11/Avalonia.X11.csproj" />
   </ItemGroup>
 </Project>

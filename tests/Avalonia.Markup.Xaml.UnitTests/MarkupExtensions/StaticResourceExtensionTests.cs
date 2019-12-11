@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
-    public class StaticResourceExtensionTests
+    public class StaticResourceExtensionTests : XamlTestBase
     {
         [Fact]
         public void StaticResource_Can_Be_Assigned_To_Property()
@@ -534,12 +534,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 {
                     new Setter(
                         Window.TemplateProperty,
-                        new FuncControlTemplate<Window>(x =>
+                        new FuncControlTemplate<Window>((x, scope) =>
                             new ContentPresenter
                             {
                                 Name = "PART_ContentPresenter",
                                 [!ContentPresenter.ContentProperty] = x[!Window.ContentProperty],
-                            }))
+                            }.RegisterInNameScope(scope)))
                 }
             };
         }

@@ -1,0 +1,8 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)/NetFX.props" />	
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
+    <Content Include="$(MSBuildThisFileDirectory)/xunit.runner.mono.json" Link="xunit.runner.json" >
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

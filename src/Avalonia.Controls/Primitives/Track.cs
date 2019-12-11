@@ -1,9 +1,13 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
+// Portions of this source file are adapted from the Windows Presentation Foundation project.
+// (https://github.com/dotnet/wpf/) 
+// 
+// Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -33,6 +37,9 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Button> DecreaseButtonProperty =
             AvaloniaProperty.Register<Track, Button>(nameof(DecreaseButton));
 
+        public static readonly StyledProperty<bool> IsDirectionReversedProperty =
+            AvaloniaProperty.Register<Track, bool>(nameof(IsDirectionReversed));
+
         private double _minimum;
         private double _maximum = 100.0;
         private double _value;
@@ -41,9 +48,9 @@ namespace Avalonia.Controls.Primitives
         {
             PseudoClass<Track, Orientation>(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
             PseudoClass<Track, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
-            ThumbProperty.Changed.AddClassHandler<Track>(x => x.ThumbChanged);
-            IncreaseButtonProperty.Changed.AddClassHandler<Track>(x => x.ButtonChanged);
-            DecreaseButtonProperty.Changed.AddClassHandler<Track>(x => x.ButtonChanged);
+            ThumbProperty.Changed.AddClassHandler<Track>((x,e) => x.ThumbChanged(e));
+            IncreaseButtonProperty.Changed.AddClassHandler<Track>((x, e) => x.ButtonChanged(e));
+            DecreaseButtonProperty.Changed.AddClassHandler<Track>((x, e) => x.ButtonChanged(e));
             AffectsArrange<Track>(MinimumProperty, MaximumProperty, ValueProperty, OrientationProperty);
         }
 
@@ -96,110 +103,268 @@ namespace Avalonia.Controls.Primitives
             set { SetValue(DecreaseButtonProperty, value); }
         }
 
-        protected override Size MeasureOverride(Size availableSize)
+        public bool IsDirectionReversed
         {
-            var thumb = Thumb;
-
-            if (thumb != null)
-            {
-                thumb.Measure(availableSize);
-
-                if (Orientation == Orientation.Horizontal)
-                {
-                    return new Size(0, thumb.DesiredSize.Height);
-                }
-                else
-                {
-                    return new Size(thumb.DesiredSize.Width, 0);
-                }
-            }
-
-            return base.MeasureOverride(availableSize);
+            get { return GetValue(IsDirectionReversedProperty); }
+            set { SetValue(IsDirectionReversedProperty, value); }
         }
 
-        protected override Size ArrangeOverride(Size finalSize)
+        private double ThumbCenterOffset { get; set; }
+        private double Density { get; set; }
+
+        /// <summary>
+        /// Calculates the distance along the <see cref="Thumb"/> of a specified point along the
+        /// track.
+        /// </summary>
+        /// <param name="point">The specified point.</param>
+        /// <returns>
+        /// The distance between the Thumb and the specified pt value.
+        /// </returns>
+        public virtual double ValueFromPoint(Point point)
         {
-            var thumb = Thumb;
-            var increaseButton = IncreaseButton;
-            var decreaseButton = DecreaseButton;
+            double val;
 
-            var range = Maximum - Minimum;
-            var offset = Math.Min(Value - Minimum, range);
-            var viewportSize = ViewportSize;
-            var extent = range + viewportSize;
-
+            // Find distance from center of thumb to given point.
             if (Orientation == Orientation.Horizontal)
             {
-                double thumbWidth = 0;
-
-                if (double.IsNaN(viewportSize))
-                {
-                    thumbWidth = thumb?.DesiredSize.Width ?? 0;
-                }
-                else if (extent > 0)
-                {
-                    thumbWidth = finalSize.Width * viewportSize / extent;
-                }
-
-                var remaining = finalSize.Width - thumbWidth;
-                var firstWidth = range <= 0 ? 0 : remaining * offset / range;
-
-                if (decreaseButton != null)
-                {
-                    decreaseButton.Arrange(new Rect(0, 0, firstWidth, finalSize.Height));
-                }
-
-                if (thumb != null)
-                {
-                    thumb.Arrange(new Rect(firstWidth, 0, thumbWidth, finalSize.Height));
-                }
-
-                if (increaseButton != null)
-                {
-                    increaseButton.Arrange(new Rect(
-                        firstWidth + thumbWidth,
-                        0,
-                        Math.Max(0, remaining - firstWidth),
-                        finalSize.Height));
-                }
+                val = Value + ValueFromDistance(point.X - ThumbCenterOffset, point.Y - (Bounds.Height * 0.5));
             }
             else
             {
-                double thumbHeight = 0;
+                val = Value + ValueFromDistance(point.X - (Bounds.Width * 0.5), point.Y - ThumbCenterOffset);
+            }
 
-                if (double.IsNaN(viewportSize))
-                {
-                    thumbHeight = thumb?.DesiredSize.Height ?? 0;
-                }
-                else if (extent > 0)
-                {
-                    thumbHeight = finalSize.Height * viewportSize / extent;
-                }
+            return Math.Max(Minimum, Math.Min(Maximum, val));
+        }
 
-                var remaining = finalSize.Height - thumbHeight;
-                var firstHeight = range <= 0 ? 0 : remaining * offset / range;
+        /// <summary>
+        /// Calculates the change in the <see cref="Value"/> of the <see cref="Track"/> when the
+        /// <see cref="Thumb"/> moves.
+        /// </summary>
+        /// <param name="horizontal">The horizontal displacement of the thumb.</param>
+        /// <param name="vertical">The vertical displacement of the thumb.</param>        
+        public virtual double ValueFromDistance(double horizontal, double vertical)
+        {
+            double scale = IsDirectionReversed ? -1 : 1;
 
-                if (decreaseButton != null)
-                {
-                    decreaseButton.Arrange(new Rect(0, 0, finalSize.Width, firstHeight));
-                }
+            if (Orientation == Orientation.Horizontal)
+            {
+                return scale * horizontal * Density;
+            }
+            else
+            {
+                // Increases in y cause decreases in Sliders value
+                return -1 * scale * vertical * Density;
+            }
+        }
 
-                if (thumb != null)
-                {
-                    thumb.Arrange(new Rect(0, firstHeight, finalSize.Width, thumbHeight));
-                }
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            Size desiredSize = new Size(0.0, 0.0);
 
-                if (increaseButton != null)
+            // Only measure thumb.
+            // Repeat buttons will be sized based on thumb
+            if (Thumb != null)
+            {
+                Thumb.Measure(availableSize);
+                desiredSize = Thumb.DesiredSize;
+            }
+
+            if (!double.IsNaN(ViewportSize))
+            {
+                // ScrollBar can shrink to 0 in the direction of scrolling
+                if (Orientation == Orientation.Vertical)
+                    desiredSize = desiredSize.WithHeight(0.0);
+                else
+                    desiredSize = desiredSize.WithWidth(0.0);
+            }
+
+            return desiredSize;
+        }
+
+        protected override Size ArrangeOverride(Size arrangeSize)
+        {
+            double decreaseButtonLength, thumbLength, increaseButtonLength;
+            var isVertical = Orientation == Orientation.Vertical;
+            var viewportSize = Math.Max(0.0, ViewportSize);
+
+            // If viewport is NaN, compute thumb's size based on its desired size,
+            // otherwise compute the thumb base on the viewport and extent properties
+            if (double.IsNaN(ViewportSize))
+            {
+                ComputeSliderLengths(arrangeSize, isVertical, out decreaseButtonLength, out thumbLength, out increaseButtonLength);
+            }
+            else
+            {
+                // Don't arrange if there's not enough content or the track is too small
+                if (!ComputeScrollBarLengths(arrangeSize, viewportSize, isVertical, out decreaseButtonLength, out thumbLength, out increaseButtonLength))
                 {
-                    increaseButton.Arrange(new Rect(
-                        0,
-                        firstHeight + thumbHeight,
-                        finalSize.Width,
-                        Math.Max(remaining - firstHeight, 0)));
+                    return arrangeSize;
                 }
             }
 
-            return finalSize;
+            // Layout the pieces of track
+            var offset = new Point();
+            var pieceSize = arrangeSize;
+            var isDirectionReversed = IsDirectionReversed;
+
+            if (isVertical)
+            {
+                CoerceLength(ref decreaseButtonLength, arrangeSize.Height);
+                CoerceLength(ref increaseButtonLength, arrangeSize.Height);
+                CoerceLength(ref thumbLength, arrangeSize.Height);
+
+                offset = offset.WithY(isDirectionReversed ? decreaseButtonLength + thumbLength : 0.0);
+                pieceSize = pieceSize.WithHeight(increaseButtonLength);
+
+                if (IncreaseButton != null)
+                {
+                    IncreaseButton.Arrange(new Rect(offset, pieceSize));
+                }
+
+                offset = offset.WithY(isDirectionReversed ? 0.0 : increaseButtonLength + thumbLength);
+                pieceSize = pieceSize.WithHeight(decreaseButtonLength);
+
+                if (DecreaseButton != null)
+                {
+                    DecreaseButton.Arrange(new Rect(offset, pieceSize));
+                }
+
+                offset = offset.WithY(isDirectionReversed ? decreaseButtonLength : increaseButtonLength);
+                pieceSize = pieceSize.WithHeight(thumbLength);
+
+                if (Thumb != null)
+                {
+                    Thumb.Arrange(new Rect(offset, pieceSize));
+                }
+
+                ThumbCenterOffset = offset.Y + (thumbLength * 0.5);
+            }
+            else
+            {
+                CoerceLength(ref decreaseButtonLength, arrangeSize.Width);
+                CoerceLength(ref increaseButtonLength, arrangeSize.Width);
+                CoerceLength(ref thumbLength, arrangeSize.Width);
+
+                offset = offset.WithY(isDirectionReversed ? increaseButtonLength + thumbLength : 0.0);
+                pieceSize = pieceSize.WithWidth(decreaseButtonLength);
+
+                if (DecreaseButton != null)
+                {
+                    DecreaseButton.Arrange(new Rect(offset, pieceSize));
+                }
+
+                offset = offset.WithX(isDirectionReversed ? 0.0 : decreaseButtonLength + thumbLength);
+                pieceSize = pieceSize.WithWidth(increaseButtonLength);
+
+                if (IncreaseButton != null)
+                {
+                    IncreaseButton.Arrange(new Rect(offset, pieceSize));
+                }
+
+                offset = offset.WithX(isDirectionReversed ? increaseButtonLength : decreaseButtonLength);
+                pieceSize = pieceSize.WithWidth(thumbLength);
+
+                if (Thumb != null)
+                {
+                    Thumb.Arrange(new Rect(offset, pieceSize));
+                }
+
+                ThumbCenterOffset = offset.X + (thumbLength * 0.5);
+            }
+
+            return arrangeSize;
+        }
+
+        private static void CoerceLength(ref double componentLength, double trackLength)
+        {
+            if (componentLength < 0)
+            {
+                componentLength = 0.0;
+            }
+            else if (componentLength > trackLength || double.IsNaN(componentLength))
+            {
+                componentLength = trackLength;
+            }
+        }
+
+        private void ComputeSliderLengths(Size arrangeSize, bool isVertical, out double decreaseButtonLength, out double thumbLength, out double increaseButtonLength)
+        {
+            double min = Minimum;
+            double range = Math.Max(0.0, Maximum - min);
+            double offset = Math.Min(range, Value - min);
+
+            double trackLength;
+
+            // Compute thumb size
+            if (isVertical)
+            {
+                trackLength = arrangeSize.Height;
+                thumbLength = Thumb == null ? 0 : Thumb.DesiredSize.Height;
+            }
+            else
+            {
+                trackLength = arrangeSize.Width;
+                thumbLength = Thumb == null ? 0 : Thumb.DesiredSize.Width;
+            }
+
+            CoerceLength(ref thumbLength, trackLength);
+
+            double remainingTrackLength = trackLength - thumbLength;
+
+            decreaseButtonLength = remainingTrackLength * offset / range;
+            CoerceLength(ref decreaseButtonLength, remainingTrackLength);
+
+            increaseButtonLength = remainingTrackLength - decreaseButtonLength;
+            CoerceLength(ref increaseButtonLength, remainingTrackLength);
+
+            Density = range / remainingTrackLength;
+        }
+
+        private bool ComputeScrollBarLengths(Size arrangeSize, double viewportSize, bool isVertical, out double decreaseButtonLength, out double thumbLength, out double increaseButtonLength)
+        {
+            var min = Minimum;
+            var range = Math.Max(0.0, Maximum - min);
+            var offset = Math.Min(range, Value - min);
+            var extent = Math.Max(0.0, range) + viewportSize;
+            var trackLength = isVertical ? arrangeSize.Height : arrangeSize.Width;
+            double thumbMinLength = 10;
+
+            thumbLength = trackLength * viewportSize / extent;
+            CoerceLength(ref thumbLength, trackLength);
+            thumbLength = Math.Max(thumbMinLength, thumbLength);
+
+            // If we don't have enough content to scroll, disable the track.
+            var notEnoughContentToScroll = MathUtilities.LessThanOrClose(range, 0.0);
+            var thumbLongerThanTrack = thumbLength > trackLength;
+
+            // if there's not enough content or the thumb is longer than the track, 
+            // hide the track and don't arrange the pieces
+            if (notEnoughContentToScroll || thumbLongerThanTrack)
+            {
+                ShowChildren(false);
+                ThumbCenterOffset = Double.NaN;
+                Density = Double.NaN;
+                decreaseButtonLength = 0.0;
+                increaseButtonLength = 0.0;
+                return false; // don't arrange
+            }
+            else
+            {
+                ShowChildren(true);
+            }
+
+            // Compute lengths of increase and decrease button
+            double remainingTrackLength = trackLength - thumbLength;
+            decreaseButtonLength = remainingTrackLength * offset / range;
+            CoerceLength(ref decreaseButtonLength, remainingTrackLength);
+
+            increaseButtonLength = remainingTrackLength - decreaseButtonLength;
+            CoerceLength(ref increaseButtonLength, remainingTrackLength);
+
+            Density = range / remainingTrackLength;
+
+            return true;
         }
 
         private void ThumbChanged(AvaloniaPropertyChangedEventArgs e)
@@ -243,25 +408,29 @@ namespace Avalonia.Controls.Primitives
 
         private void ThumbDragged(object sender, VectorEventArgs e)
         {
-            double range = Maximum - Minimum;
-            double value = Value;
-            double offset;
+            Value = MathUtilities.Clamp(
+                Value + ValueFromDistance(e.Vector.X, e.Vector.Y),
+                Minimum,
+                Maximum);
+        }
 
-            if (Orientation == Orientation.Horizontal)
+        private void ShowChildren(bool visible)
+        {
+            // WPF sets Visible = Hidden here but we don't have that, and setting IsVisible = false
+            // will cause us to stop being laid out. Instead show/hide the child controls.
+            if (Thumb != null)
             {
-                offset = e.Vector.X / ((Bounds.Size.Width - Thumb.Bounds.Size.Width) / range);
-            }
-            else
-            {
-                offset = e.Vector.Y * (range / (Bounds.Size.Height - Thumb.Bounds.Size.Height));
+                Thumb.IsVisible = visible;
             }
 
-            if (!double.IsNaN(offset) && !double.IsInfinity(offset))
+            if (IncreaseButton != null)
             {
-                value += offset;
-                value = Math.Max(value, Minimum);
-                value = Math.Min(value, Maximum);
-                Value = value;
+                IncreaseButton.IsVisible = visible;
+            }
+
+            if (DecreaseButton != null)
+            {
+                DecreaseButton.IsVisible = visible;
             }
         }
     }

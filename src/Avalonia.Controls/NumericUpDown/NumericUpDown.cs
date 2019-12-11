@@ -288,6 +288,13 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc />
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            CommitInput();
+            base.OnLostFocus(e);
+        }
+
+        /// <inheritdoc />
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             if (TextBox != null)
@@ -487,7 +494,7 @@ namespace Avalonia.Controls
         {
             if (e == null)
             {
-                throw new ArgumentNullException("e");
+                throw new ArgumentNullException(nameof(e));
             }
 
             var handler = Spinned;
@@ -797,9 +804,9 @@ namespace Avalonia.Controls
 
         private void TextBoxOnPointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (e.Device.Captured != Spinner)
+            if (e.Pointer.Captured != Spinner)
             {
-                Dispatcher.UIThread.InvokeAsync(() => { e.Device.Capture(Spinner); }, DispatcherPriority.Input);
+                Dispatcher.UIThread.InvokeAsync(() => { e.Pointer.Capture(Spinner); }, DispatcherPriority.Input);
             }
         }
 
@@ -812,7 +819,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the <see cref="Value"/> changes.
         /// </summary>
-        public event EventHandler<SpinEventArgs> ValueChanged
+        public event EventHandler<NumericUpDownValueChangedEventArgs> ValueChanged
         {
             add { AddHandler(ValueChangedEvent, value); }
             remove { RemoveHandler(ValueChangedEvent, value); }
@@ -958,11 +965,11 @@ namespace Avalonia.Controls
         {
             if (value < Minimum)
             {
-                throw new ArgumentOutOfRangeException(nameof(Minimum), string.Format("Value must be greater than Minimum value of {0}", Minimum));
+                throw new ArgumentOutOfRangeException(nameof(value), string.Format("Value must be greater than Minimum value of {0}", Minimum));
             }
             else if (value > Maximum)
             {
-                throw new ArgumentOutOfRangeException(nameof(Maximum), string.Format("Value must be less than Maximum value of {0}", Maximum));
+                throw new ArgumentOutOfRangeException(nameof(value), string.Format("Value must be less than Maximum value of {0}", Maximum));
             }
         }
 

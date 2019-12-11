@@ -6,10 +6,13 @@
         Foreground="{DynamicResource ThemeForegroundBrush}"
         FontSize="{DynamicResource FontSizeNormal}">
   <Grid>
-    <DropDown x:Name="Themes" SelectedIndex="0" Width="100" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-      <DropDownItem>Light</DropDownItem>
-      <DropDownItem>Dark</DropDownItem>
-    </DropDown>
+    <Grid.Styles>
+        <Style Selector="TextBlock.h2">
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="MaxWidth" Value="400"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+    </Grid.Styles>  
     <TabControl Classes="sidebar" Name="Sidebar">
       <TabItem Header="AutoCompleteBox"><pages:AutoCompleteBoxPage/></TabItem>
       <TabItem Header="Border"><pages:BorderPage/></TabItem>
@@ -19,24 +22,43 @@
       <TabItem Header="Canvas"><pages:CanvasPage/></TabItem>
       <TabItem Header="Carousel"><pages:CarouselPage/></TabItem>
       <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
+      <TabItem Header="ComboBox"><pages:ComboBoxPage/></TabItem>
       <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
+      <TabItem Header="DataGrid" 
+               ScrollViewer.VerticalScrollBarVisibility="Disabled"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+          <pages:DataGridPage/>
+      </TabItem>
       <TabItem Header="DatePicker"><pages:DatePickerPage/></TabItem>
       <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
-      <TabItem Header="DropDown"><pages:DropDownPage/></TabItem>
       <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
       <TabItem Header="Image"><pages:ImagePage/></TabItem>
+      <TabItem Header="ItemsRepeater"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <pages:ItemsRepeaterPage/>
+      </TabItem>
       <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
       <TabItem Header="ListBox"><pages:ListBoxPage/></TabItem>
       <TabItem Header="Menu"><pages:MenuPage/></TabItem>
-	  <TabItem Header="NumericUpDown"><pages:NumericUpDownPage/></TabItem>
+      <TabItem Header="Notifications"><pages:NotificationsPage/></TabItem>
+	    <TabItem Header="NumericUpDown"><pages:NumericUpDownPage/></TabItem>
+      <TabItem Header="Pointers (Touch)"><pages:PointersPage/></TabItem>
       <TabItem Header="ProgressBar"><pages:ProgressBarPage/></TabItem>
       <TabItem Header="RadioButton"><pages:RadioButtonPage/></TabItem>
       <TabItem Header="Slider"><pages:SliderPage/></TabItem>
+      <TabItem Header="TabControl"><pages:TabControlPage/></TabItem>
+      <TabItem Header="TabStrip"><pages:TabStripPage/></TabItem>
       <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
       <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
       <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
-      <TabItem Header="TabControl"><pages:TabControlPage/></TabItem>
       <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
+      <TabControl.Tag>
+        <ComboBox x:Name="Themes" SelectedIndex="0" Width="100" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+            <ComboBoxItem>Light</ComboBoxItem>
+            <ComboBoxItem>Dark</ComboBoxItem>
+        </ComboBox>
+      </TabControl.Tag>
     </TabControl>
   </Grid>
 </UserControl>

@@ -27,6 +27,16 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<RowDefinition, GridLength>(nameof(Height), new GridLength(1, GridUnitType.Star));
 
         /// <summary>
+        /// Initializes static members of the <see cref="RowDefinition"/> class.
+        /// </summary>
+        static RowDefinition()
+        {
+            AffectsParentMeasure(MaxHeightProperty, MinHeightProperty);
+
+            HeightProperty.Changed.AddClassHandler<DefinitionBase>(OnUserSizePropertyChanged);
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RowDefinition"/> class.
         /// </summary>
         public RowDefinition()
@@ -55,19 +65,21 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the actual calculated height of the row.
         /// </summary>
-        public double ActualHeight
-        {
-            get;
-            internal set;
-        }
+        public double ActualHeight => Parent?.GetFinalRowDefinitionHeight(Index) ?? 0d;
 
         /// <summary>
         /// Gets or sets the maximum height of the row in DIPs.
         /// </summary>
         public double MaxHeight
         {
-            get { return GetValue(MaxHeightProperty); }
-            set { SetValue(MaxHeightProperty, value); }
+            get
+            {
+                return GetValue(MaxHeightProperty);
+            }
+            set
+            {
+                SetValue(MaxHeightProperty, value);
+            }
         }
 
         /// <summary>
@@ -75,8 +87,14 @@ namespace Avalonia.Controls
         /// </summary>
         public double MinHeight
         {
-            get { return GetValue(MinHeightProperty); }
-            set { SetValue(MinHeightProperty, value); }
+            get
+            {
+                return GetValue(MinHeightProperty);
+            }
+            set
+            {
+                SetValue(MinHeightProperty, value);
+            }
         }
 
         /// <summary>
@@ -84,8 +102,18 @@ namespace Avalonia.Controls
         /// </summary>
         public GridLength Height
         {
-            get { return GetValue(HeightProperty); }
-            set { SetValue(HeightProperty, value); }
+            get
+            {
+                return GetValue(HeightProperty);
+            }
+            set
+            {
+                SetValue(HeightProperty, value);
+            }
         }
+
+        internal override GridLength UserSizeValueCache => this.Height;
+        internal override double UserMinSizeValueCache => this.MinHeight;
+        internal override double UserMaxSizeValueCache => this.MaxHeight;
     }
 }

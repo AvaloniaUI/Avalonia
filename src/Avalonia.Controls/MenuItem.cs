@@ -9,6 +9,7 @@ using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -23,8 +24,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly StyledProperty<ICommand> CommandProperty =
-            AvaloniaProperty.Register<MenuItem, ICommand>(nameof(Command));
+        public static readonly DirectProperty<MenuItem, ICommand> CommandProperty =
+            Button.CommandProperty.AddOwner<MenuItem>(
+                menuItem => menuItem.Command, 
+                (menuItem, command) => menuItem.Command = command, 
+                enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
@@ -86,9 +90,8 @@ namespace Avalonia.Controls
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel());
 
-        /// <summary>
-        /// The submenu popup.
-        /// </summary>
+        private ICommand _command;
+        private bool _commandCanExecute = true;
         private Popup _popup;
 
         /// <summary>
@@ -99,13 +102,13 @@ namespace Avalonia.Controls
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
             CommandProperty.Changed.Subscribe(CommandChanged);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
-            HeaderProperty.Changed.AddClassHandler<MenuItem>(x => x.HeaderChanged);
-            IconProperty.Changed.AddClassHandler<MenuItem>(x => x.IconChanged);
-            IsSelectedProperty.Changed.AddClassHandler<MenuItem>(x => x.IsSelectedChanged);
+            HeaderProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.HeaderChanged(e));
+            IconProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.IconChanged(e));
+            IsSelectedProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.IsSelectedChanged(e));
             ItemsPanelProperty.OverrideDefaultValue<MenuItem>(DefaultPanel);
-            ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
-            SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
-            IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>(x => x.SubMenuOpenChanged);
+            ClickEvent.AddClassHandler<MenuItem>((x, e) => x.OnClick(e));
+            SubmenuOpenedEvent.AddClassHandler<MenuItem>((x, e) => x.OnSubmenuOpened(e));
+            IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.SubMenuOpenChanged(e));
         }
 
         public MenuItem()
@@ -159,8 +162,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ICommand Command
         {
-            get { return GetValue(CommandProperty); }
-            set { SetValue(CommandProperty, value); }
+            get { return _command; }
+            set { SetAndRaise(CommandProperty, ref _command, value); }
         }
 
         /// <summary>
@@ -221,10 +224,12 @@ namespace Avalonia.Controls
         public bool IsTopLevel => Parent is Menu;
 
         /// <inheritdoc/>
-        bool IMenuItem.IsPointerOverSubMenu => _popup.PopupRoot?.IsPointerOver ?? false;
+        bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false; 
 
         /// <inheritdoc/>
         IMenuElement IMenuItem.Parent => Parent as IMenuElement;
+
+        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
 
         /// <inheritdoc/>
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
@@ -281,13 +286,33 @@ namespace Avalonia.Controls
             return new MenuItemContainerGenerator(this);
         }
 
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+
+            if (Command != null)
+            {
+                Command.CanExecuteChanged += CanExecuteChanged;
+            }
+        }
+
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromLogicalTree(e);
+
+            if (Command != null)
+            {
+                Command.CanExecuteChanged -= CanExecuteChanged;
+            }
+        }
+
         /// <summary>
         /// Called when the <see cref="MenuItem"/> is clicked.
         /// </summary>
         /// <param name="e">The click event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
-            if (Command != null)
+            if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
             {
                 Command.Execute(CommandParameter);
                 e.Handled = true;
@@ -312,12 +337,9 @@ namespace Avalonia.Controls
         {
             base.OnPointerEnter(e);
 
-            RaiseEvent(new PointerEventArgs
-            {
-                Device = e.Device,
-                RoutedEvent = PointerEnterItemEvent,
-                Source = this,
-            });
+            var point = e.GetCurrentPoint(null);
+            RaiseEvent(new PointerEventArgs(PointerEnterItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
+                e.Timestamp, point.Properties, e.KeyModifiers));
         }
 
         /// <inheritdoc/>
@@ -325,12 +347,9 @@ namespace Avalonia.Controls
         {
             base.OnPointerLeave(e);
 
-            RaiseEvent(new PointerEventArgs
-            {
-                Device = e.Device,
-                RoutedEvent = PointerLeaveItemEvent,
-                Source = this,
-            });
+            var point = e.GetCurrentPoint(null);
+            RaiseEvent(new PointerEventArgs(PointerLeaveItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
+                e.Timestamp, point.Properties, e.KeyModifiers));
         }
 
         /// <summary>
@@ -375,6 +394,22 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        {
+            base.UpdateDataValidation(property, status);
+            if (property == CommandProperty)
+            {
+                if (status?.ErrorType == BindingErrorType.Error)
+                {
+                    if (_commandCanExecute)
+                    {
+                        _commandCanExecute = false;
+                        UpdateIsEffectivelyEnabled();
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Closes all submenus of the menu item.
         /// </summary>
@@ -394,14 +429,17 @@ namespace Avalonia.Controls
         {
             if (e.Sender is MenuItem menuItem)
             {
-                if (e.OldValue is ICommand oldCommand)
+                if (((ILogical)menuItem).IsAttachedToLogicalTree)
                 {
-                    oldCommand.CanExecuteChanged -= menuItem.CanExecuteChanged;
-                }
+                    if (e.OldValue is ICommand oldCommand)
+                    {
+                        oldCommand.CanExecuteChanged -= menuItem.CanExecuteChanged;
+                    }
 
-                if (e.NewValue is ICommand newCommand)
-                {
-                    newCommand.CanExecuteChanged += menuItem.CanExecuteChanged;
+                    if (e.NewValue is ICommand newCommand)
+                    {
+                        newCommand.CanExecuteChanged += menuItem.CanExecuteChanged;
+                    }
                 }
 
                 menuItem.CanExecuteChanged(menuItem, EventArgs.Empty);
@@ -415,13 +453,17 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void CanExecuteChanged(object sender, EventArgs e)
         {
-            // HACK: Just set the IsEnabled property for the moment. This needs to be changed to
-            // use IsEnabledCore etc. but it will do for now.
-            IsEnabled = Command == null || Command.CanExecute(CommandParameter);
+            var canExecute = Command == null || Command.CanExecute(CommandParameter);
+
+            if (canExecute != _commandCanExecute)
+            {
+                _commandCanExecute = canExecute;
+                UpdateIsEffectivelyEnabled();
+            }
         }
 
         /// <summary>
-        /// Called when the <see cref="Header"/> property changes.
+        /// Called when the <see cref="HeaderedSelectingItemsControl.Header"/> property changes.
         /// </summary>
         /// <param name="e">The property change event.</param>
         private void HeaderChanged(AvaloniaPropertyChangedEventArgs e)

@@ -7,9 +7,7 @@
         <Border Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
-          <Border Name="PART_Indicator"
-                  BorderThickness="1"
-                  Background="{TemplateBinding Foreground}"/>
+          <Border Name="PART_Indicator" Background="{TemplateBinding Foreground}"/>
         </Border>
       </ControlTemplate>
     </Setter>
@@ -33,7 +31,7 @@
   <Style Selector="ProgressBar:horizontal:indeterminate /template/ Border#PART_Indicator">
       <Style.Animations>
           <Animation Duration="0:0:3"
-                     RepeatCount="Loop"
+                     IterationCount="Infinite"
                      Easing="LinearEasing">
               <KeyFrame Cue="0%">
                   <Setter Property="TranslateTransform.X"
@@ -49,7 +47,7 @@
   <Style Selector="ProgressBar:vertical:indeterminate /template/ Border#PART_Indicator">
       <Style.Animations>
           <Animation Duration="0:0:3"
-                     RepeatCount="Loop"
+                     IterationCount="Infinite"
                      Easing="LinearEasing">
               <KeyFrame Cue="0%">
                   <Setter Property="TranslateTransform.Y"

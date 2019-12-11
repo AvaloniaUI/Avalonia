@@ -30,8 +30,7 @@ namespace Avalonia.Controls
         {
             SelectableMixin.Attach<TabItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
-            IsSelectedProperty.Changed.AddClassHandler<TabItem>(x => x.UpdateSelectedContent);
-            DataContextProperty.Changed.AddClassHandler<TabItem>(x => x.UpdateHeader);
+            DataContextProperty.Changed.AddClassHandler<TabItem>((x, e) => x.UpdateHeader(e));
         }
 
         /// <summary>
@@ -53,8 +52,6 @@ namespace Avalonia.Controls
             get { return GetValue(IsSelectedProperty); }
             set { SetValue(IsSelectedProperty, value); }
         }
-
-        internal TabControl ParentTabControl { get; set; }
 
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
         {
@@ -82,24 +79,6 @@ namespace Avalonia.Controls
                     Header = obj.NewValue;
                 }
             }          
-        }
-
-        private void UpdateSelectedContent(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (!IsSelected)
-            {
-                return;
-            }
-
-            if (ParentTabControl.SelectedContentTemplate != ContentTemplate)
-            {
-                ParentTabControl.SelectedContentTemplate = ContentTemplate;
-            }
-
-            if (ParentTabControl.SelectedContent != Content)
-            {
-                ParentTabControl.SelectedContent = Content;
-            }
         }
     }
 }

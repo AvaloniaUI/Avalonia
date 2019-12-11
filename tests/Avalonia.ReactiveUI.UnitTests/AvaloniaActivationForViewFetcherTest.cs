@@ -1,3 +1,6 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
@@ -10,14 +13,16 @@ using ReactiveUI;
 using DynamicData;
 using Xunit;
 using Splat;
+using Avalonia.Markup.Xaml;
+using Avalonia.ReactiveUI;
 
-namespace Avalonia 
+namespace Avalonia.ReactiveUI.UnitTests
 {
     public class AvaloniaActivationForViewFetcherTest
     {
-        public class TestUserControl : UserControl, IActivatable { }
+        public class TestUserControl : UserControl, IActivatableView { }
 
-        public class TestUserControlWithWhenActivated : UserControl, IActivatable
+        public class TestUserControlWithWhenActivated : UserControl, IActivatableView
         {
             public bool Active { get; private set; }
 
@@ -33,7 +38,7 @@ namespace Avalonia
             }
         }
 
-        public class TestWindowWithWhenActivated : Window, IActivatable
+        public class TestWindowWithWhenActivated : Window, IActivatableView
         {
             public bool Active { get; private set; }
 
@@ -49,7 +54,7 @@ namespace Avalonia
             }
         }
 
-        public class ActivatableViewModel : ISupportsActivation
+        public class ActivatableViewModel : IActivatableViewModel
         {
             public ViewModelActivator Activator { get; }
 
@@ -70,12 +75,40 @@ namespace Avalonia
 
         public class ActivatableWindow : ReactiveWindow<ActivatableViewModel>
         {
-            public ActivatableWindow() => this.WhenActivated(disposables => { });
+            public ActivatableWindow()
+            {
+                InitializeComponent();
+                Assert.IsType<Border>(Content);
+                this.WhenActivated(disposables => { });
+            }
+
+            private void InitializeComponent()
+            {
+                var loader = new AvaloniaXamlLoader();
+                loader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'>
+    <Border/>
+</Window>", null, this);
+            }
         }
 
         public class ActivatableUserControl : ReactiveUserControl<ActivatableViewModel>
         {
-            public ActivatableUserControl() => this.WhenActivated(disposables => { });
+            public ActivatableUserControl()
+            {
+                InitializeComponent();
+                Assert.IsType<Border>(Content);
+                this.WhenActivated(disposables => { });
+            }
+
+            private void InitializeComponent()
+            {
+                var loader = new AvaloniaXamlLoader();
+                loader.Load(@"
+<UserControl xmlns='https://github.com/avaloniaui'>
+    <Border/>
+</UserControl>", null, this);
+            }
         }
 
         public AvaloniaActivationForViewFetcherTest()
@@ -138,7 +171,7 @@ namespace Avalonia
         [Fact]
         public void Activation_For_View_Fetcher_Should_Support_Windows() 
         {
-            using (var application = UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
             {
                 var window = new TestWindowWithWhenActivated();
                 Assert.False(window.Active);
@@ -154,7 +187,7 @@ namespace Avalonia
         [Fact]
         public void Activatable_Window_View_Model_Is_Activated_And_Deactivated() 
         {
-            using (var application = UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
             {
                 var viewModel = new ActivatableViewModel();
                 var window = new ActivatableWindow { ViewModel = viewModel };

@@ -14,7 +14,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that writes to a surface.
     /// </summary>
-    public class SurfaceRenderTarget : IRenderTargetBitmapImpl, IDrawableBitmapImpl
+    internal class SurfaceRenderTarget : IRenderTargetBitmapImpl, IDrawableBitmapImpl
     {
         private readonly SKSurface _surface;
         private readonly SKCanvas _canvas;
@@ -45,6 +45,7 @@ namespace Avalonia.Skia
         /// <summary>
         /// Create backing Skia surface.
         /// </summary>
+        /// <param name="gpu">GPU.</param>
         /// <param name="width">Width.</param>
         /// <param name="height">Height.</param>
         /// <param name="format">Format.</param>
@@ -137,7 +138,7 @@ namespace Avalonia.Skia
         {
             var colorType = PixelFormatHelper.ResolveColorType(format);
 
-            return new SKImageInfo(width, height, colorType, SKAlphaType.Premul);
+            return new SKImageInfo(Math.Max(width, 1), Math.Max(height, 1), colorType, SKAlphaType.Premul);
         }
 
         /// <summary>

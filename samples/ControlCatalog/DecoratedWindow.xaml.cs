@@ -18,23 +18,23 @@ namespace ControlCatalog
         {
             var ctl = this.FindControl<Control>(name);
             ctl.Cursor = new Cursor(cursor);
-            ctl.PointerPressed += delegate
+            ctl.PointerPressed += (i, e) =>
             {
-                PlatformImpl?.BeginResizeDrag(edge);
+                PlatformImpl?.BeginResizeDrag(edge, e);
             };
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            this.FindControl<Control>("TitleBar").PointerPressed += delegate
+            this.FindControl<Control>("TitleBar").PointerPressed += (i, e) =>
             {
-                PlatformImpl?.BeginMoveDrag();
+                PlatformImpl?.BeginMoveDrag(e);
             };
             SetupSide("Left", StandardCursorType.LeftSide, WindowEdge.West);
             SetupSide("Right", StandardCursorType.RightSide, WindowEdge.East);
             SetupSide("Top", StandardCursorType.TopSide, WindowEdge.North);
-            SetupSide("Bottom", StandardCursorType.BottomSize, WindowEdge.South);
+            SetupSide("Bottom", StandardCursorType.BottomSide, WindowEdge.South);
             SetupSide("TopLeft", StandardCursorType.TopLeftCorner, WindowEdge.NorthWest);
             SetupSide("TopRight", StandardCursorType.TopRightCorner, WindowEdge.NorthEast);
             SetupSide("BottomLeft", StandardCursorType.BottomLeftCorner, WindowEdge.SouthWest);

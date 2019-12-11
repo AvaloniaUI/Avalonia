@@ -1,12 +1,9 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
@@ -106,6 +103,14 @@ namespace Avalonia.Controls
                 FontWeightProperty,
                 FontSizeProperty,
                 FontStyleProperty);
+
+            Observable.Merge(
+                TextProperty.Changed,
+                TextAlignmentProperty.Changed,
+                FontSizeProperty.Changed,
+                FontStyleProperty.Changed,
+                FontWeightProperty.Changed
+            ).AddClassHandler<TextBlock>((x,_) => x.OnTextPropertiesChanged());
         }
 
         /// <summary>
@@ -114,18 +119,6 @@ namespace Avalonia.Controls
         public TextBlock()
         {
             _text = string.Empty;
-
-            Observable.Merge(
-                this.GetObservable(TextProperty).Select(_ => Unit.Default),
-                this.GetObservable(TextAlignmentProperty).Select(_ => Unit.Default),
-                this.GetObservable(FontSizeProperty).Select(_ => Unit.Default),
-                this.GetObservable(FontStyleProperty).Select(_ => Unit.Default),
-                this.GetObservable(FontWeightProperty).Select(_ => Unit.Default))
-                .Subscribe(_ =>
-                {
-                    InvalidateFormattedText();
-                    InvalidateMeasure();
-                });
         }
 
         /// <summary>
@@ -359,10 +352,11 @@ namespace Avalonia.Controls
             return new FormattedText
             {
                 Constraint = constraint,
-                Typeface = new Typeface(FontFamily, FontSize, FontStyle, FontWeight),
+                Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily, FontWeight, FontStyle),
+                FontSize = FontSize,
                 Text = text ?? string.Empty,
                 TextAlignment = TextAlignment,
-                Wrapping = TextWrapping,
+                TextWrapping = TextWrapping,
             };
         }
 
@@ -396,7 +390,7 @@ namespace Avalonia.Controls
                     FormattedText.Constraint = Size.Infinity;
                 }
 
-                return FormattedText.Measure();
+                return FormattedText.Bounds.Size;
             }
 
             return new Size();
@@ -405,6 +399,12 @@ namespace Avalonia.Controls
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
+            InvalidateFormattedText();
+            InvalidateMeasure();
+        }
+
+        private void OnTextPropertiesChanged()
+        {
             InvalidateFormattedText();
             InvalidateMeasure();
         }

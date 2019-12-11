@@ -2,15 +2,15 @@
 
 # Avalonia
 
-| Gitter Chat | Build Status (Win, Linux, OSX) | Open Collective |
-|---|---|---|
-|  [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) | [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) | [![Backers on Open Collective](https://opencollective.com/Avalonia/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/Avalonia/sponsors/badge.svg)](#sponsors) |
+| Gitter Chat | Build Status (Win, Linux, OSX) | Open Collective | NuGet | MyGet |
+|---|---|---|---|---|
+|  [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) | [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) | [![Backers on Open Collective](https://opencollective.com/Avalonia/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/Avalonia/sponsors/badge.svg)](#sponsors) | [![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) | [![MyGet](https://img.shields.io/myget/avalonia-ci/vpre/Avalonia.svg?label=myget)](https://www.myget.org/gallery/avalonia-ci) |
 
 ## About
 
-Avalonia is a WPF-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of OSs: Windows (.NET Framework, .NET Core), Linux (GTK), MacOS, Android and iOS.
+**Avalonia** is a WPF/UWP-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of Operating Systems such as Windows (.NET Framework, .NET Core), Linux (via Xorg), macOS and with experimental support for Android and iOS.
 
-**Avalonia is currently in beta** which means that the framework is generally usable for writing applications, but there may be some bugs and breaking changes as we continue development.
+**Avalonia** is ready for **General-Purpose Desktop App Development**. However, there may be some bugs and breaking changes as we continue along into this project's development. To see the status of some of our features, please see our [Roadmap here](https://github.com/AvaloniaUI/Avalonia/issues/2239).
 
 | Control catalog | Desktop platforms | Mobile platforms |
 |---|---|---|
@@ -20,11 +20,11 @@ Avalonia is a WPF-inspired cross-platform XAML-based UI framework providing a fl
 
 Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started. After installing it, open "New Project" dialog in Visual Studio, choose "Avalonia" in "Visual C#" section, select "Avalonia .NET Core Application" and press OK (<a href="http://avaloniaui.net/docs/quickstart/images/new-project-dialog.png">screenshot</a>). Now you can write code and markup that will work on multiple platforms!
 
-For those without Visual Studio, starter guide for .NET Core CLI can be found [here](http://avaloniaui.net/docs/quickstart/create-new-project#net-core).
+For those without Visual Studio, a starter guide for .NET Core CLI can be found [here](http://avaloniaui.net/docs/quickstart/create-new-project#net-core).
 
 Avalonia is delivered via <b>NuGet</b> package manager. You can find the packages here: ([stable(ish)](https://www.nuget.org/packages/Avalonia/), [nightly](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed))
 
-Use these commands in Package Manager console to install Avalonia manually:
+Use these commands in the Package Manager console to install Avalonia manually:
 ```
 Install-Package Avalonia
 Install-Package Avalonia.Desktop
@@ -32,19 +32,16 @@ Install-Package Avalonia.Desktop
 
 ## Bleeding Edge Builds
 
-Try out the latest build of Avalonia available for download here:
-https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master/artifacts
-
 or use nightly build feeds as described here:
 https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed
 
 ## Documentation
 
-As mentioned above, Avalonia is still in beta and as such there's not much documentation yet. You can take a look at the [getting started page](http://avaloniaui.net/docs/quickstart/) for an overview of how to get started but probably the best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia).
+You can take a look at the [getting started page](http://avaloniaui.net/docs/quickstart/) for an overview of how to get started but probably the best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia). 
 
 There's also a high-level [architecture document](http://avaloniaui.net/architecture/project-structure) that is currently a little bit out of date, and I've also started writing blog posts on Avalonia at http://grokys.github.io/.
 
-Contributions are always welcome!
+Contributions for our docs are always welcome!
 
 ## Building and Using
 
@@ -80,6 +77,4 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/Avalonia/sponsor/6/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/6/avatar.svg"></a>
 <a href="https://opencollective.com/Avalonia/sponsor/7/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/7/avatar.svg"></a>
 <a href="https://opencollective.com/Avalonia/sponsor/8/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/9/avatar.svg"></a>
-
-
+<a href="https://opencollective.com/Avalonia/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/9/avatar.svg"></a> 

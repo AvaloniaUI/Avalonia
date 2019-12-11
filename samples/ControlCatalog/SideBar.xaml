@@ -1,6 +1,14 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="ControlCatalog.SideBar">
+>
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <TabControl Classes="sidebar">
+                <TabItem Header="Item1"/>
+                <TabItem Header="Item2"/>
+            </TabControl> 
+        </Border>
+    </Design.PreviewWith>
     <Style Selector="TabControl.sidebar">
         <Setter Property="TabStripPlacement" Value="Left"/>
         <Setter Property="Padding" Value="8 0 0 0"/>
@@ -16,23 +24,28 @@
                             Name="PART_ScrollViewer"
                             HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                             VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
-                            Background="{TemplateBinding Background}">
+                            Background="{TemplateBinding Background}"
+                            DockPanel.Dock="Left">
                             <ItemsPresenter
                                 Name="PART_ItemsPresenter"                          
                                 Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
-                                ItemTemplate="{TemplateBinding ItemTemplate}"
-                                MemberSelector="{TemplateBinding MemberSelector}">
+                                ItemTemplate="{TemplateBinding ItemTemplate}">
                             </ItemsPresenter>
                         </ScrollViewer>
-                        <ContentPresenter
-                            Name="PART_Content"
-                            Margin="{TemplateBinding Padding}"                           
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                            Content="{TemplateBinding SelectedContent}"
-                            ContentTemplate="{TemplateBinding SelectedContentTemplate}">
-                        </ContentPresenter>
+                        <ContentControl Content="{TemplateBinding Tag}" HorizontalContentAlignment="Right" DockPanel.Dock="Bottom"/>
+                        <ScrollViewer
+                            HorizontalScrollBarVisibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedItem.(ScrollViewer.HorizontalScrollBarVisibility)}"
+                            VerticalScrollBarVisibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedItem.(ScrollViewer.VerticalScrollBarVisibility)}">
+                            <ContentPresenter
+                                    Name="PART_SelectedContentHost"
+                                    Margin="{TemplateBinding Padding}"                           
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Content="{TemplateBinding SelectedContent}"
+                                    ContentTemplate="{TemplateBinding SelectedContentTemplate}">
+                            </ContentPresenter>
+                        </ScrollViewer>
                     </DockPanel>
                 </Border>
             </ControlTemplate>
@@ -48,20 +61,22 @@
         <Setter Property="Opacity" Value="0.5"/>
         <Setter Property="Transitions">
             <Transitions>
-                <DoubleTransition Property="Opacity" Duration="0:0:0.5"/>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.150"/>
             </Transitions>
         </Setter>
+        <Setter Property="(ScrollViewer.HorizontalScrollBarVisibility)" Value="Auto"/>
+        <Setter Property="(ScrollViewer.VerticalScrollBarVisibility)" Value="Auto"/>
     </Style>
     <Style Selector="TabControl.sidebar > TabItem:pointerover">
         <Setter Property="Opacity" Value="1"/>
     </Style>
-    <Style Selector="TabControl.sidebar > TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="TabControl.sidebar > TabItem:pointerover">
         <Setter Property="Background" Value="Transparent"/>
     </Style>
     <Style Selector="TabControl.sidebar > TabItem:selected">
         <Setter Property="Opacity" Value="1"/>
     </Style>
-    <Style Selector="TabControl.sidebar > TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="TabControl.sidebar > TabItem:selected">
         <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}"/>
     </Style>
 </Styles>

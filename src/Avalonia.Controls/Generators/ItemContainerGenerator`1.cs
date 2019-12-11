@@ -79,11 +79,7 @@ namespace Avalonia.Controls.Generators
         }
 
         /// <inheritdoc/>
-        public override bool TryRecycle(
-            int oldIndex,
-            int newIndex,
-            object item,
-            IMemberSelector selector)
+        public override bool TryRecycle(int oldIndex, int newIndex, object item)
         {
             var container = ContainerFromIndex(oldIndex);
 
@@ -92,16 +88,14 @@ namespace Avalonia.Controls.Generators
                 throw new IndexOutOfRangeException("Could not recycle container: not materialized.");
             }
 
-            var i = selector != null ? selector.Select(item) : item;
-
-            container.SetValue(ContentProperty, i);
+            container.SetValue(ContentProperty, item);
 
             if (!(item is IControl))
             {
-                container.DataContext = i;
+                container.DataContext = item;
             }
 
-            var info = MoveContainer(oldIndex, newIndex, i);
+            var info = MoveContainer(oldIndex, newIndex, item);
             RaiseRecycled(new ItemContainerEventArgs(info));
 
             return true;

@@ -27,7 +27,7 @@ namespace Avalonia.Rendering.SceneGraph
             Point origin,
             IFormattedTextImpl text,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(new Rect(origin, text.Size), transform, null)
+            : base(text.Bounds.Translate(origin), transform, null)
         {
             Transform = transform;
             Foreground = foreground?.ToImmutable();

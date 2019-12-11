@@ -29,7 +29,7 @@ namespace Avalonia.Styling.UnitTests
                 .Template()
                 .OfType<Border>();
 
-            Assert.True(selector.Match(border).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, selector.Match(border).Result);
         }
 
         [Fact]
@@ -47,7 +47,24 @@ namespace Avalonia.Styling.UnitTests
                 .Template()
                 .OfType<Border>();
 
-            Assert.False(selector.Match(border).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.NeverThisInstance, selector.Match(border).Result);
+        }
+
+        [Fact]
+        public void Control_In_Template_Of_Wrong_Type_Is_Not_Matched_With_Template_Selector()
+        {
+            var target = new Mock<IVisual>();
+            var templatedControl = target.As<ITemplatedControl>();
+            var styleable = target.As<IStyleable>();
+            BuildVisualTree(target);
+
+            var border = (Border)target.Object.GetVisualChildren().Single();
+            var selector = default(Selector)
+                .OfType<Button>()
+                .Template()
+                .OfType<Border>();
+
+            Assert.Equal(SelectorMatchResult.NeverThisInstance, selector.Match(border).Result);
         }
 
         [Fact]
@@ -64,7 +81,7 @@ namespace Avalonia.Styling.UnitTests
                 .Template()
                 .OfType<TextBlock>();
 
-            Assert.True(selector.Match(textBlock).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, selector.Match(textBlock).Result);
         }
 
         [Fact]
@@ -80,7 +97,7 @@ namespace Avalonia.Styling.UnitTests
 
             var selector = default(Selector).OfType(styleKey).Template().OfType<Border>();
 
-            Assert.True(selector.Match(border).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, selector.Match(border).Result);
         }
 
         [Fact]
@@ -96,7 +113,7 @@ namespace Avalonia.Styling.UnitTests
             styleable.Setup(x => x.Classes).Returns(new Classes("foo"));
             var border = (Border)target.Object.VisualChildren.Single();
             var selector = default(Selector).OfType(styleKey).Class("foo").Template().OfType<Border>();
-            var activator = selector.Match(border).ObservableResult;
+            var activator = selector.Match(border).Activator;
 
             Assert.True(await activator.Take(1));
         }
@@ -112,7 +129,7 @@ namespace Avalonia.Styling.UnitTests
             styleable.Setup(x => x.Classes).Returns(new Classes("bar"));
             var border = (Border)target.Object.VisualChildren.Single();
             var selector = default(Selector).OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
-            var activator = selector.Match(border).ObservableResult;
+            var activator = selector.Match(border).Activator;
 
             Assert.False(await activator.Take(1));
         }
@@ -128,7 +145,7 @@ namespace Avalonia.Styling.UnitTests
             styleable.Setup(x => x.Classes).Returns(new Classes("foo"));
             var border = (Border)target.Object.VisualChildren.Single();
             var selector = default(Selector).OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
-            var activator = selector.Match(border).ObservableResult;
+            var activator = selector.Match(border).Activator;
             var inccDebug = (INotifyCollectionChangedDebug)styleable.Object.Classes;
 
             using (activator.Subscribe(_ => { }))

@@ -1,18 +1,12 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Controls;
-using Avalonia.Markup.Data;
-using Avalonia.Markup.Xaml.PortableXaml;
-using Avalonia.Platform;
-using Portable.Xaml;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
 using System.Text;
+using Avalonia.Markup.Xaml.XamlIl;
+using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml
 {
@@ -21,36 +15,7 @@ namespace Avalonia.Markup.Xaml
     /// </summary>
     public class AvaloniaXamlLoader
     {
-        private readonly AvaloniaXamlSchemaContext _context = GetContext();
-
-        public bool IsDesignMode
-        {
-            get => _context.IsDesignMode;
-            set => _context.IsDesignMode = value;
-        }
-
-        private static AvaloniaXamlSchemaContext GetContext()
-        {
-            var result = AvaloniaLocator.Current.GetService<AvaloniaXamlSchemaContext>();
-
-            if (result == null)
-            {
-                result = AvaloniaXamlSchemaContext.Create();
-
-                AvaloniaLocator.CurrentMutable
-                    .Bind<AvaloniaXamlSchemaContext>()
-                    .ToConstant(result);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AvaloniaXamlLoader"/> class.
-        /// </summary>
-        public AvaloniaXamlLoader()
-        {
-        }
+        public bool IsDesignMode { get; set; }
 
         /// <summary>
         /// Loads the XAML into a Avalonia component.
@@ -58,56 +23,8 @@ namespace Avalonia.Markup.Xaml
         /// <param name="obj">The object to load the XAML into.</param>
         public static void Load(object obj)
         {
-            Contract.Requires<ArgumentNullException>(obj != null);
-
-            var loader = new AvaloniaXamlLoader();
-            loader.Load(obj.GetType(), obj);
-        }
-
-        /// <summary>
-        /// Loads the XAML for a type.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="rootInstance">
-        /// The optional instance into which the XAML should be loaded.
-        /// </param>
-        /// <returns>The loaded object.</returns>
-        public object Load(Type type, object rootInstance = null)
-        {
-            Contract.Requires<ArgumentNullException>(type != null);
-
-            // HACK: Currently Visual Studio is forcing us to change the extension of xaml files
-            // in certain situations, so we try to load .xaml and if that's not found we try .xaml.
-            // Ideally we'd be able to use .xaml everywhere
-            var assetLocator = AvaloniaLocator.Current.GetService<IAssetLoader>();
-
-            if (assetLocator == null)
-            {
-                throw new InvalidOperationException(
-                    "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
-            }
-
-            foreach (var uri in GetUrisFor(assetLocator, type))
-            {
-                if (assetLocator.Exists(uri))
-                {
-                    using (var stream = assetLocator.Open(uri))
-                    {
-                        var initialize = rootInstance as ISupportInitialize;
-                        initialize?.BeginInit();
-                        try
-                        {
-                            return Load(stream, type.Assembly, rootInstance, uri);
-                        }
-                        finally
-                        {
-                            initialize?.EndInit();
-                        }
-                    }
-                }
-            }
-
-            throw new FileNotFoundException("Unable to find view for " + type.FullName);
+            throw new XamlLoadException(
+                $"No precompiled XAML found for {obj.GetType()}, make sure to specify x:Class and include your XAML file as AvaloniaResource");
         }
 
         /// <summary>
@@ -117,11 +34,8 @@ namespace Avalonia.Markup.Xaml
         /// <param name="baseUri">
         /// A base URI to use if <paramref name="uri"/> is relative.
         /// </param>
-        /// <param name="rootInstance">
-        /// The optional instance into which the XAML should be loaded.
-        /// </param>
         /// <returns>The loaded object.</returns>
-        public object Load(Uri uri, Uri baseUri = null, object rootInstance = null)
+        public object Load(Uri uri, Uri baseUri = null)
         {
             Contract.Requires<ArgumentNullException>(uri != null);
 
@@ -133,21 +47,27 @@ namespace Avalonia.Markup.Xaml
                     "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
             }
 
+            var compiledLoader = assetLocator.GetAssembly(uri, baseUri)
+                ?.GetType("CompiledAvaloniaXaml.!XamlLoader")
+                ?.GetMethod("TryLoad", new[] {typeof(string)});
+            if (compiledLoader != null)
+            {
+                var uriString = (!uri.IsAbsoluteUri && baseUri != null ? new Uri(baseUri, uri) : uri)
+                    .ToString();
+                var compiledResult = compiledLoader.Invoke(null, new object[] {uriString});
+                if (compiledResult != null)
+                    return compiledResult;
+            }
+            
+            
             var asset = assetLocator.OpenAndGetAssembly(uri, baseUri);
             using (var stream = asset.stream)
             {
                 var absoluteUri = uri.IsAbsoluteUri ? uri : new Uri(baseUri, uri);
-                try
-                {
-                    return Load(stream, asset.assembly, rootInstance, absoluteUri);
-                }
-                catch (Exception e)
-                {
-                    throw new XamlLoadException("Error loading xaml at " + absoluteUri + ": " + e.Message, e);
-                }
+                return Load(stream, asset.assembly, null, absoluteUri);
             }
         }
-
+        
         /// <summary>
         /// Loads XAML from a string.
         /// </summary>
@@ -177,83 +97,9 @@ namespace Avalonia.Markup.Xaml
         /// </param>
         /// <param name="uri">The URI of the XAML</param>
         /// <returns>The loaded object.</returns>
-        public object Load(Stream stream, Assembly localAssembly, object rootInstance = null, Uri uri = null)
-        {
-            var readerSettings = new XamlXmlReaderSettings()
-            {
-                BaseUri = uri,
-                LocalAssembly = localAssembly
-            };
+        public object Load(Stream stream, Assembly localAssembly, object rootInstance = null, Uri uri = null) 
+            => AvaloniaXamlIlRuntimeCompiler.Load(stream, localAssembly, rootInstance, uri, IsDesignMode);
 
-            var reader = new XamlXmlReader(stream, _context, readerSettings);
-
-            object result = LoadFromReader(
-                reader,
-                AvaloniaXamlContext.For(readerSettings, rootInstance));
-
-            var topLevel = result as TopLevel;
-
-            if (topLevel != null)
-            {
-                DelayedBinding.ApplyBindings(topLevel);
-            }
-
-            return result;
-        }
-
-        internal static object LoadFromReader(XamlReader reader, AvaloniaXamlContext context = null, IAmbientProvider parentAmbientProvider = null)
-        {
-            var writer = AvaloniaXamlObjectWriter.Create(
-                                    (AvaloniaXamlSchemaContext)reader.SchemaContext,
-                                    context,
-                                    parentAmbientProvider);
-
-            XamlServices.Transform(reader, writer);
-            writer.ApplyAllDelayedProperties();
-            return writer.Result;
-        }
-
-        internal static object LoadFromReader(XamlReader reader)
-        {
-            //return XamlServices.Load(reader);
-            return LoadFromReader(reader, null);
-        }
-
-
-        private static readonly DataContractSerializer s_xamlInfoSerializer =
-            new DataContractSerializer(typeof(AvaloniaResourceXamlInfo));
-        /// <summary>
-        /// Gets the URI for a type.
-        /// </summary>
-        /// <param name="assetLocator"></param>
-        /// <param name="type">The type.</param>
-        /// <returns>The URI.</returns>
-        private static IEnumerable<Uri> GetUrisFor(IAssetLoader assetLocator, Type type)
-        {
-            var asm = type.GetTypeInfo().Assembly.GetName().Name;
-            var xamlInfoUri = new Uri($"avares://{asm}/!AvaloniaResourceXamlInfo");
-            var typeName = type.FullName;
-            if (typeName == null)
-                throw new ArgumentException("Type doesn't have a FullName");
-            
-            if (assetLocator.Exists(xamlInfoUri))
-            {
-                using (var xamlInfoStream = assetLocator.Open(xamlInfoUri))
-                {
-                    var xamlInfo = (AvaloniaResourceXamlInfo)s_xamlInfoSerializer.ReadObject(xamlInfoStream);
-                    if (xamlInfo.ClassToResourcePathIndex.TryGetValue(typeName, out var rv) == true)
-                    {
-                        yield return new Uri($"avares://{asm}{rv}");
-                        yield break;
-                    }
-                }
-            }
-            
-            
-            yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
-            yield return new Uri("resm:" + typeName + ".paml?assembly=" + asm);
-        }
-        
         public static object Parse(string xaml, Assembly localAssembly = null)
             => new AvaloniaXamlLoader().Load(xaml, localAssembly);
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -42,6 +43,29 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(0, target.SelectedIndex);
             Assert.Equal(selected, target.SelectedItem);
+        }
+
+        [Fact]
+        public void Pre_Selecting_TabItem_Should_Set_SelectedContent_After_It_Was_Added()
+        {
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+            };
+
+            const string secondContent = "Second";
+
+            var items = new AvaloniaList<object>
+            {
+                new TabItem { Header = "First"},
+                new TabItem { Header = "Second", Content = secondContent, IsSelected = true }
+            };
+
+            target.Items = items;
+
+            ApplyTemplate(target);
+
+            Assert.Equal(secondContent, target.SelectedContent);
         }
 
         [Fact]
@@ -129,7 +153,7 @@ namespace Avalonia.Controls.UnitTests
                 },
             };
 
-            var template = new FuncControlTemplate<TabItem>(x => new Decorator());
+            var template = new FuncControlTemplate<TabItem>((x, __) => new Decorator());
 
             using (UnitTestApplication.Start(TestServices.RealStyler))
             {
@@ -176,34 +200,34 @@ namespace Avalonia.Controls.UnitTests
                 DataContext = "Base",
                 DataTemplates =
                 {
-                    new FuncDataTemplate<Item>(x => new Button { Content = x })
+                    new FuncDataTemplate<Item>((x, __) => new Button { Content = x })
                 },
                 Items = items,
             };
 
             ApplyTemplate(target);
 
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             var dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = ((Button)target.ContentPart.Child).DataContext;
             Assert.Equal(items[1], dataContext);
 
             target.SelectedIndex = 2;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Base", dataContext);
 
             target.SelectedIndex = 3;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Qux", dataContext);
 
             target.SelectedIndex = 4;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = target.ContentPart.DataContext;
             Assert.Equal("Base", dataContext);
         }
@@ -267,38 +291,77 @@ namespace Avalonia.Controls.UnitTests
             Assert.Null(page.Content);
         }
 
+        [Fact]
+        public void DataTemplate_Created_Content_Should_Be_Logical_Child_After_ApplyTemplate()
+        {
+            TabControl target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                ContentTemplate = new FuncDataTemplate<string>((x, _) =>
+                    new TextBlock { Tag = "bar", Text = x }),
+                Items = new[] { "Foo" },
+            };
+
+            ApplyTemplate(target);
+            ((ContentPresenter)target.ContentPart).UpdateChild();
+
+            var content = Assert.IsType<TextBlock>(target.ContentPart.Child);
+            Assert.Equal("bar", content.Tag);
+            Assert.Same(target, content.GetLogicalParent());
+            Assert.Single(target.GetLogicalChildren(), content);
+        }
+
+        [Fact]
+        public void Should_Not_Propagate_DataContext_To_TabItem_Content()
+        {
+            var dataContext = "DataContext";
+
+            var tabItem = new TabItem();
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = dataContext,
+                Items = new AvaloniaList<object> { tabItem }
+            };
+
+            ApplyTemplate(target);
+
+            Assert.NotEqual(dataContext, tabItem.Content);
+        }
+
         private IControlTemplate TabControlTemplate()
         {
-            return new FuncControlTemplate<TabControl>(parent =>
-
+            return new FuncControlTemplate<TabControl>((parent, scope) =>
                 new StackPanel
                 {
-                    Children = {
-                                   new ItemsPresenter
-                                   {
-                                       Name = "PART_ItemsPresenter",
-                                       [!TabStrip.ItemsProperty] = parent[!TabControl.ItemsProperty],
-                                       [!TabStrip.ItemTemplateProperty] = parent[!TabControl.ItemTemplateProperty],
-                                   },
-                                   new ContentPresenter
-                                   {
-                                       Name = "PART_Content",
-                                       [!ContentPresenter.ContentProperty] = parent[!TabControl.SelectedContentProperty],
-                                       [!ContentPresenter.ContentTemplateProperty] = parent[!TabControl.SelectedContentTemplateProperty],
-                                   }
-                               }
+                    Children =
+                    {
+                        new ItemsPresenter
+                        {
+                            Name = "PART_ItemsPresenter",
+                            [!TabStrip.ItemsProperty] = parent[!TabControl.ItemsProperty],
+                            [!TabStrip.ItemTemplateProperty] = parent[!TabControl.ItemTemplateProperty],
+                        }.RegisterInNameScope(scope),
+                        new ContentPresenter
+                        {
+                            Name = "PART_SelectedContentHost",
+                            [!ContentPresenter.ContentProperty] = parent[!TabControl.SelectedContentProperty],
+                            [!ContentPresenter.ContentTemplateProperty] = parent[!TabControl.SelectedContentTemplateProperty],
+                        }.RegisterInNameScope(scope)
+                    }
                 });
         }
 
         private IControlTemplate TabItemTemplate()
         {
-            return new FuncControlTemplate<TabItem>(parent =>
+            return new FuncControlTemplate<TabItem>((parent, scope) =>
                 new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = parent[!TabItem.HeaderProperty],
                     [!ContentPresenter.ContentTemplateProperty] = parent[!TabItem.HeaderTemplateProperty]
-                });
+                }.RegisterInNameScope(scope));
         }
 
         private void ApplyTemplate(TabControl target)

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
@@ -32,6 +33,11 @@ namespace Avalonia.Markup.Parsers
         public static IEnumerable<ISyntax> Parse(string s)
         {
             var r = new CharacterReader(s.AsSpan());
+            return Parse(ref r, null);
+        }
+
+        private static IEnumerable<ISyntax> Parse(ref CharacterReader r, char? end)
+        {
             var state = State.Start;
             var selector = new List<ISyntax>();
             while (!r.End && state != State.End)
@@ -43,7 +49,7 @@ namespace Avalonia.Markup.Parsers
                         state = ParseStart(ref r);
                         break;
                     case State.Middle:
-                        state = ParseMiddle(ref r);
+                        (state, syntax) = ParseMiddle(ref r, end);
                         break;
                     case State.CanHaveType:
                         state = ParseCanHaveType(ref r);
@@ -107,29 +113,37 @@ namespace Avalonia.Markup.Parsers
             return State.TypeName;
         }
 
-        private static State ParseMiddle(ref CharacterReader r)
+        private static (State, ISyntax) ParseMiddle(ref CharacterReader r, char? end)
         {
             if (r.TakeIf(':'))
             {
-                return State.Colon;
+                return (State.Colon, null);
             }
             else if (r.TakeIf('.'))
             {
-                return State.Class;
+                return (State.Class, null);
             }
             else if (r.TakeIf(char.IsWhiteSpace) || r.Peek == '>')
             {
-                return State.Traversal;
+                return (State.Traversal, null);
             }
             else if (r.TakeIf('/'))
             {
-                return State.Template;
+                return (State.Template, null);
             }
             else if (r.TakeIf('#'))
             {
-                return State.Name;
+                return (State.Name, null);
             }
-            return State.TypeName;
+            else if (r.TakeIf(','))
+            {
+                return (State.Start, new CommaSyntax());
+            }
+            else if (end.HasValue && !r.End && r.Peek == end.Value)
+            {
+                return (State.End, null);
+            }
+            return (State.TypeName, null);
         }
 
         private static State ParseCanHaveType(ref CharacterReader r)
@@ -151,15 +165,22 @@ namespace Avalonia.Markup.Parsers
             }
 
             const string IsKeyword = "is";
+            const string NotKeyword = "not";
+
             if (identifier.SequenceEqual(IsKeyword.AsSpan()) && r.TakeIf('('))
             {
                 var syntax = ParseType(ref r, new IsSyntax());
-                if (r.End || !r.TakeIf(')'))
-                {
-                    throw new ExpressionParseException(r.Position, $"Expected ')', got {r.Peek}");
-                }
+                Expect(ref r, ')');
 
                 return (State.CanHaveType, syntax);
+            }
+            if (identifier.SequenceEqual(NotKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var argument = Parse(ref r, ')');
+                Expect(ref r, ')');
+
+                var syntax = new NotSyntax { Argument = argument };
+                return (State.Middle, syntax);
             }
             else
             {
@@ -254,7 +275,7 @@ namespace Avalonia.Markup.Parsers
         private static TSyntax ParseType<TSyntax>(ref CharacterReader r, TSyntax syntax)
             where TSyntax : ITypeSyntax
         {
-            ReadOnlySpan<char> ns = null;
+            ReadOnlySpan<char> ns = default;
             ReadOnlySpan<char> type;
             var namespaceOrTypeName = r.ParseIdentifier();
 
@@ -280,6 +301,18 @@ namespace Avalonia.Markup.Parsers
             syntax.Xmlns = ns.ToString();
             syntax.TypeName = type.ToString();
             return syntax;
+        }
+
+        private static void Expect(ref CharacterReader r, char c)
+        {
+            if (r.End)
+            {
+                throw new ExpressionParseException(r.Position, $"Expected '{c}', got end of selector.");
+            }
+            else if (!r.TakeIf(')'))
+            {
+                throw new ExpressionParseException(r.Position, $"Expected '{c}', got '{r.Peek}'.");
+            }
         }
 
         public interface ISyntax
@@ -374,6 +407,24 @@ namespace Avalonia.Markup.Parsers
             public override bool Equals(object obj)
             {
                 return obj is TemplateSyntax;
+            }
+        }
+
+        public class NotSyntax : ISyntax
+        {
+            public IEnumerable<ISyntax> Argument { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                return (obj is NotSyntax not) && Argument.SequenceEqual(not.Argument);
+            }
+        }
+
+        public class CommaSyntax : ISyntax
+        {
+            public override bool Equals(object obj)
+            {
+                return obj is CommaSyntax or;
             }
         }
     }

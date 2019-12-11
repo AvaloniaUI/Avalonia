@@ -56,12 +56,12 @@ namespace Avalonia.Controls
         {
             if (value < 0 || double.IsNaN(value) || double.IsInfinity(value))
             {
-                throw new ArgumentException("Invalid value", "value");
+                throw new ArgumentException("Invalid value", nameof(value));
             }
 
             if (type < GridUnitType.Auto || type > GridUnitType.Star)
             {
-                throw new ArgumentException("Invalid value", "type");
+                throw new ArgumentException("Invalid value", nameof(type));
             }
 
             _type = type;

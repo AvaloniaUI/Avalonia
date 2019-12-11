@@ -97,6 +97,13 @@ namespace Avalonia.Shared.PlatformSupport
             return (asset.GetStream(), asset.Assembly);
         }
 
+        public Assembly GetAssembly(Uri uri, Uri baseUri)
+        {
+            if (!uri.IsAbsoluteUri && baseUri != null)
+                uri = new Uri(baseUri, uri);
+            return GetAssembly(uri).Assembly;
+        }
+
         /// <summary>
         /// Gets all assets of a folder and subfolders that match specified uri.
         /// </summary>
@@ -235,6 +242,7 @@ namespace Avalonia.Shared.PlatformSupport
                     throw new InvalidOperationException(
                         $"Assembly {name} needs to be referenced and explicitly loaded before loading resources");
 #else
+                    name = Uri.UnescapeDataString(name);
                     AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
 #endif
                 }

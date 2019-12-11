@@ -3,7 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
+using System.Diagnostics;
+using System.Threading;
 using Avalonia.Data;
 
 namespace Avalonia
@@ -110,20 +111,7 @@ namespace Avalonia
 
             entry.Start(binding);
 
-            return Disposable.Create(() =>
-            {
-                if (!entry.HasCompleted)
-                {
-                    Bindings.Remove(node);
-
-                    entry.Dispose();
-
-                    if (entry.Index >= ActiveBindingIndex)
-                    {
-                        ActivateFirstBinding();
-                    }
-                }
-            });
+            return new RemoveBindingDisposable(node, Bindings, this);
         }
 
         /// <summary>
@@ -190,6 +178,50 @@ namespace Avalonia
             Value = DirectValue;
             ActiveBindingIndex = -1;
             Owner.LevelValueChanged(this);
+        }
+
+        private sealed class RemoveBindingDisposable : IDisposable
+        {
+            private readonly LinkedList<PriorityBindingEntry> _bindings;
+            private readonly PriorityLevel _priorityLevel;
+            private LinkedListNode<PriorityBindingEntry> _binding;
+
+            public RemoveBindingDisposable(
+                LinkedListNode<PriorityBindingEntry> binding,
+                LinkedList<PriorityBindingEntry> bindings,
+                PriorityLevel priorityLevel)
+            {
+                _binding = binding;
+                _bindings = bindings;
+                _priorityLevel = priorityLevel;
+            }
+
+            public void Dispose()
+            {
+                LinkedListNode<PriorityBindingEntry> binding = Interlocked.Exchange(ref _binding, null);
+
+                if (binding == null)
+                {
+                    // Some system is trying to remove binding twice.
+                    Debug.Assert(false);
+
+                    return;
+                }
+
+                PriorityBindingEntry entry = binding.Value;
+
+                if (!entry.HasCompleted)
+                {
+                    _bindings.Remove(binding);
+
+                    entry.Dispose();
+
+                    if (entry.Index >= _priorityLevel.ActiveBindingIndex)
+                    {
+                        _priorityLevel.ActivateFirstBinding();
+                    }
+                }
+            }
         }
     }
 }

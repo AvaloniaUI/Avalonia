@@ -1,10 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+        <TargetFrameworks Condition="$(Configuration) == 'Debug'">netstandard2.0;netcoreapp2.0</TargetFrameworks>
+        <OutputType>exe</OutputType>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
-        <DefineConstants>$(DefineConstants);BUILDTASK</DefineConstants>
-        <Packable>false</Packable>
+        <DefineConstants>$(DefineConstants);BUILDTASK;XAMLIL_CECIL_INTERNAL;XAMLIL_INTERNAL</DefineConstants>
+        <CopyLocalLockFileAssemblies Condition="$(TargetFramework) == 'netstandard2.0'">true</CopyLocalLockFileAssemblies>
+        <NoWarn>NU1605</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,6 +17,54 @@
       <Compile Include="../Markup/Avalonia.Markup.Xaml/PortableXaml/AvaloniaResourceXamlInfo.cs">
         <Link>Shared/AvaloniaResourceXamlInfo.cs</Link>
       </Compile>
-      <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" />
+      <Compile Include="../Markup/Avalonia.Markup.Xaml/XamlIl/CompilerExtensions/**/*.cs">
+        <Link>XamlIlExtensions/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Remove="external/cecil/**/*.*" />
+      <Compile Include="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\src\XamlIl\**\*.cs">
+        <Link>XamlIl/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Include="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\src\XamlIl.Cecil\**\*.cs">
+        <Link>XamlIl.Cecil/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Include="../Markup/Avalonia.Markup\Markup\Parsers\SelectorGrammar.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Include="../Markup/Avalonia.Markup.Xaml/Parsers/PropertyParser.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Include="../Avalonia.Base/Data/Core/ExpressionParseException.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      <Compile Include="../Avalonia.Base/Utilities/CharacterReader.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>      
+      <Compile Include="../Avalonia.Base/Utilities/IdentifierParser.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
+      
+      <Compile Remove="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\**\obj\**\*.cs" />
+      <Compile Remove="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\src\XamlIl\TypeSystem\SreTypeSystem.cs" />
+      <PackageReference Include="Avalonia.Unofficial.Cecil" Version="20190417.2.0" PrivateAssets="All" />
+      <PackageReference Condition="$(TargetFramework) == 'netstandard2.0'" Include="ILRepack.MSBuild.Task" Version="2.0.13" PrivateAssets="All" />
+      <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
     </ItemGroup>
+
+  <Target Name="ILRepack" AfterTargets="Build" Condition="$(TargetFramework) == 'netstandard2.0'">
+
+    <PropertyGroup>
+      <WorkingDirectory>$(MSBuildThisFileDirectory)bin\$(Configuration)\$(TargetFramework)</WorkingDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <InputAssemblies Include="Mono.Cecil.dll" />
+    </ItemGroup>
+    <ILRepack OutputType="$(OutputType)" MainAssembly="$(AssemblyName).dll" OutputAssembly="$(AssemblyName).dll" InputAssemblies="@(InputAssemblies)" WorkingDirectory="$(WorkingDirectory)" />
+    <ItemGroup>
+      <DeleteNonNeededResults Include="$(WorkingDirectory)\*.dll" />
+      <DeleteNonNeededResults Remove="$(WorkingDirectory)\Avalonia.Build.Tasks.dll" />
+    </ItemGroup>
+    <Delete Files="@(DeleteNonNeededResults)" />
+
+  </Target>
 </Project>

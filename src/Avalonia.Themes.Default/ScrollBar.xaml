@@ -1,129 +1,140 @@
 <Styles xmlns="https://github.com/avaloniaui">
-    <Style Selector="ScrollBar">
-        <Setter Property="Template">
-            <ControlTemplate>
-                <Border Background="{DynamicResource ThemeControlMidBrush}">
-                    <Grid RowDefinitions="Auto,*,Auto">
-                        <RepeatButton Name="PART_LineUpButton"
-                                      Classes="repeat"
-                                      Grid.Row="0"
-                                      Grid.Column="0"
-                                      Focusable="False">
-                            <Path Data="M 0,4 C0,4 0,6 0,6 0,6 3.5,2.5 3.5,2.5 3.5,2.5 7,6 7,6 7,6 7,4 7,4 7,4 3.5,0.5 3.5,0.5 3.5,0.5 0,4 0,4 z"
-                                  Stretch="Uniform"
-                                  Fill="{DynamicResource ThemeForegroundLowBrush}" />
-                        </RepeatButton>
-                        <Track Grid.Row="1"
-                               Grid.Column="1"
-                               Minimum="{TemplateBinding Minimum}"
-                               Maximum="{TemplateBinding Maximum}"
-                               Value="{TemplateBinding Value, Mode=TwoWay}"
-                               ViewportSize="{TemplateBinding ViewportSize}"
-                               Orientation="{TemplateBinding Orientation}">
-                            <Track.DecreaseButton>
-                                <RepeatButton Name="PART_PageUpButton"
-                                              Classes="repeattrack"
-                                              Focusable="False"/>
-                            </Track.DecreaseButton>
-                            <Track.IncreaseButton>
-                                <RepeatButton Name="PART_PageDownButton"
-                                              Classes="repeattrack"
-                                              Focusable="False"/>
-                            </Track.IncreaseButton>
-                            <Thumb Name="thumb">
-                                <Thumb.Template>
-                                    <ControlTemplate>
-                                        <Border Background="{DynamicResource ThemeControlHighBrush}" />
-                                    </ControlTemplate>
-                                </Thumb.Template>
-                            </Thumb>
-                        </Track>
-                        <RepeatButton Name="PART_LineDownButton"
-                                      Classes="repeat"
-                                      Grid.Row="2"
-                                      Grid.Column="2"
-                                      Focusable="False">
-                            <Path Data="M 0,2.5 C0,2.5 0,0.5 0,0.5 0,0.5 3.5,4 3.5,4 3.5,4 7,0.5 7,0.5 7,0.5 7,2.5 7,2.5 7,2.5 3.5,6 3.5,6 3.5,6 0,2.5 0,2.5 z"
-                                  Stretch="Uniform"
-                                  Fill="{DynamicResource ThemeForegroundLowBrush}" />
-                        </RepeatButton>
-                    </Grid>
-                </Border>
-            </ControlTemplate>
-        </Setter>
-    </Style>
-    <Style Selector="ScrollBar:horizontal">
-        <Setter Property="Height" Value="{DynamicResource ScrollBarThickness}" />
-        <Setter Property="Template">
-            <ControlTemplate>
-                <Border Background="{DynamicResource ThemeControlMidBrush}">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-                        <RepeatButton Name="PART_LineUpButton"
-                                      Classes="repeat"
-                                      Grid.Row="0"
-                                      Grid.Column="0"
-                                      Focusable="False">
-                            <Path Data="M 3.18,7 C3.18,7 5,7 5,7 5,7 1.81,3.5 1.81,3.5 1.81,3.5 5,0 5,0 5,0 3.18,0 3.18,0 3.18,0 0,3.5 0,3.5 0,3.5 3.18,7 3.18,7 z"
-                                  Stretch="Uniform"
-                                  Fill="{DynamicResource ThemeForegroundLowBrush}" />
-                        </RepeatButton>
-                        <Track Grid.Row="1"
-                               Grid.Column="1"
-                               Minimum="{TemplateBinding Minimum}"
-                               Maximum="{TemplateBinding Maximum}"
-                               Value="{TemplateBinding Value, Mode=TwoWay}"
-                               ViewportSize="{TemplateBinding ViewportSize}"
-                               Orientation="{TemplateBinding Orientation}">
-                            <Track.DecreaseButton>
-                                <RepeatButton Name="PART_PageUpButton"
-                                              Classes="repeattrack"
-                                              Focusable="False"/>
-                            </Track.DecreaseButton>
-                            <Track.IncreaseButton>
-                                <RepeatButton Name="PART_PageDownButton"
-                                              Classes="repeattrack"
-                                              Focusable="False"/>
-                            </Track.IncreaseButton>
-                            <Thumb Name="thumb">
-                                <Thumb.Template>
-                                    <ControlTemplate>
-                                        <Border Background="{DynamicResource ThemeControlHighBrush}" />
-                                    </ControlTemplate>
-                                </Thumb.Template>
-                            </Thumb>
-                        </Track>
-                        <RepeatButton Name="PART_LineDownButton"
-                                      Classes="repeat"
-                                      Grid.Row="2"
-                                      Grid.Column="2"
-                                      Focusable="False">
-                            <Path Data="M 1.81,7 C1.81,7 0,7 0,7 0,7 3.18,3.5 3.18,3.5 3.18,3.5 0,0 0,0 0,0 1.81,0 1.81,0 1.81,0 5,3.5 5,3.5 5,3.5 1.81,7 1.81,7 z"
-                                  Stretch="Uniform"
-                                  Fill="{DynamicResource ThemeForegroundLowBrush}" />
-                        </RepeatButton>
-                    </Grid>
-                </Border>
-            </ControlTemplate>
-        </Setter>
-    </Style>
-    <Style Selector="ScrollBar:horizontal /template/ Thumb#thumb">
-        <Setter Property="MinWidth" Value="{DynamicResource ScrollBarThickness}" />
-    </Style>
-    <Style Selector="ScrollBar:vertical">
-        <Setter Property="Width" Value="{DynamicResource ScrollBarThickness}" />
-    </Style>
-    <Style Selector="ScrollBar:vertical /template/ Thumb#thumb">
-        <Setter Property="MinHeight" Value="{DynamicResource ScrollBarThickness}" />
-    </Style>
-    <Style Selector="ScrollBar /template/ RepeatButton.repeat">
-        <Setter Property="Padding" Value="2" />
-        <Setter Property="BorderThickness" Value="0" />
-    </Style>
-    <Style Selector="ScrollBar /template/ RepeatButton.repeattrack">
-        <Setter Property="Template">
-            <ControlTemplate>
-                <Border Background="{TemplateBinding Background}" />
-            </ControlTemplate>
-        </Setter>
-    </Style>
+  <Style Selector="ScrollBar">
+    <Setter Property="Cursor" Value="Arrow" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{DynamicResource ThemeControlMidBrush}">
+          <Grid RowDefinitions="Auto,*,Auto">
+            <RepeatButton Name="PART_LineUpButton" HorizontalAlignment="Center"
+                          Classes="repeat"
+                          Grid.Row="0"
+                          Focusable="False"
+                          MinHeight="{DynamicResource ScrollBarThickness}">
+              <Path Data="M 0 4 L 8 4 L 4 0 Z" />
+            </RepeatButton>
+            <Track Grid.Row="1"
+                   Grid.Column="1"
+                   Minimum="{TemplateBinding Minimum}"
+                   Maximum="{TemplateBinding Maximum}"
+                   Value="{TemplateBinding Value, Mode=TwoWay}"
+                   ViewportSize="{TemplateBinding ViewportSize}"
+                   Orientation="{TemplateBinding Orientation}"
+                   IsDirectionReversed="True">
+              <Track.DecreaseButton>
+                <RepeatButton Name="PART_PageUpButton"
+                              Classes="repeattrack"
+                              Focusable="False"/>
+              </Track.DecreaseButton>
+              <Track.IncreaseButton>
+                <RepeatButton Name="PART_PageDownButton"
+                              Classes="repeattrack"
+                              Focusable="False"/>
+              </Track.IncreaseButton>
+              <Thumb Name="thumb"/>
+            </Track>
+            <RepeatButton Name="PART_LineDownButton" HorizontalAlignment="Center"
+                          Classes="repeat"
+                          Grid.Row="2"
+                          Grid.Column="2"
+                          Focusable="False"
+                          MinHeight="{DynamicResource ScrollBarThickness}">
+              <Path Data="M 0 0 L 4 4 L 8 0 Z" />
+            </RepeatButton>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ScrollBar:horizontal">
+    <Setter Property="Height" Value="{DynamicResource ScrollBarThickness}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{DynamicResource ThemeControlMidBrush}">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <RepeatButton Name="PART_LineUpButton" VerticalAlignment="Center"
+                          Classes="repeat"
+                          Grid.Row="0"
+                          Grid.Column="0"
+                          Focusable="False"
+                          MinWidth="{DynamicResource ScrollBarThickness}">
+              <Path Data="M 4 0 L 4 8 L 0 4 Z" />
+            </RepeatButton>
+            <Track Grid.Row="1"
+                   Grid.Column="1"
+                   Minimum="{TemplateBinding Minimum}"
+                   Maximum="{TemplateBinding Maximum}"
+                   Value="{TemplateBinding Value, Mode=TwoWay}"
+                   ViewportSize="{TemplateBinding ViewportSize}"
+                   Orientation="{TemplateBinding Orientation}">
+              <Track.DecreaseButton>
+                <RepeatButton Name="PART_PageUpButton"
+                              Classes="repeattrack"
+                              Focusable="False"/>
+              </Track.DecreaseButton>
+              <Track.IncreaseButton>
+                <RepeatButton Name="PART_PageDownButton"
+                              Classes="repeattrack"
+                              Focusable="False"/>
+              </Track.IncreaseButton>
+              <Thumb Name="thumb"/>
+            </Track>
+            <RepeatButton Name="PART_LineDownButton" VerticalAlignment="Center"
+                          Classes="repeat"
+                          Grid.Row="2"
+                          Grid.Column="2"
+                          Focusable="False"
+                          MinWidth="{DynamicResource ScrollBarThickness}">
+              <Path Data="M 0 0 L 4 4 L 0 8 Z"  />
+            </RepeatButton>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ScrollBar /template/ Thumb#thumb">
+    <Setter Property="Background" Value="{DynamicResource ThemeControlMidHighBrush}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style Selector="ScrollBar /template/ Thumb#thumb:pointerover">
+    <Setter Property="Background" Value="{DynamicResource ThemeControlHighBrush}"/>
+  </Style>
+  <Style Selector="ScrollBar /template/ Thumb#thumb:pressed">
+    <Setter Property="Background" Value="{DynamicResource ThemeControlVeryHighBrush}"/>
+  </Style>
+  <Style Selector="ScrollBar:horizontal /template/ Thumb#thumb">
+    <Setter Property="MinWidth" Value="{DynamicResource ScrollBarThickness}" />
+    <Setter Property="Height" Value="{DynamicResource ScrollBarThumbThickness}" />
+  </Style>
+  <Style Selector="ScrollBar:vertical">
+    <Setter Property="Width" Value="{DynamicResource ScrollBarThickness}" />
+  </Style>
+  <Style Selector="ScrollBar:vertical /template/ Thumb#thumb">
+    <Setter Property="MinHeight" Value="{DynamicResource ScrollBarThickness}" />
+    <Setter Property="Width" Value="{DynamicResource ScrollBarThumbThickness}" />
+  </Style>
+  <Style Selector="ScrollBar /template/ RepeatButton.repeat">
+    <Setter Property="Padding" Value="2" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <Style Selector="ScrollBar /template/ RepeatButton.repeattrack">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}" />
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="ScrollBar /template/ RepeatButton > Path">
+    <Setter Property="Fill" Value="{DynamicResource ThemeForegroundLowBrush}" />
+  </Style>
+
+  <Style Selector="ScrollBar /template/ RepeatButton:pointerover > Path">
+    <Setter Property="Fill" Value="{DynamicResource ThemeAccentBrush}" />
+  </Style>
 </Styles>

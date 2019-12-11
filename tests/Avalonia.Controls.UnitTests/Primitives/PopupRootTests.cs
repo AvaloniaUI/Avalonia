@@ -21,7 +21,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var target = CreateTarget();
+                var target = CreateTarget(new Window());
 
                 Assert.True(((ILogical)target).IsAttachedToLogicalTree);
             }
@@ -32,7 +32,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var target = CreateTarget();
+                var target = CreateTarget(new Window());
 
                 Assert.True(target.Presenter.IsAttachedToLogicalTree);
             }
@@ -43,28 +43,71 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
+                var window = new Window();
                 var target = new TemplatedControlWithPopup
                 {
                     PopupContent = new Canvas(),
                 };
+                window.Content = target;
 
-                var root = new TestRoot { Child = target };
-
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
                 target.ApplyTemplate();
                 target.Popup.Open();
 
-                Assert.Equal(target.Popup, ((IStyleHost)target.Popup.PopupRoot).StylingParent);
+                Assert.Equal(target.Popup, ((IStyleHost)target.Popup.Host).StylingParent);
             }
         }
 
+        [Fact]
+        public void PopupRoot_Should_Have_Template_Applied()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var target = new Popup {PlacementMode = PlacementMode.Pointer};
+                var child = new Control();
+
+                window.Content = target;
+                window.ApplyTemplate();
+                target.Open();
+
+               
+                Assert.Single(((Visual)target.Host).GetVisualChildren());
+
+                var templatedChild = ((Visual)target.Host).GetVisualChildren().Single();
+                
+                Assert.IsType<VisualLayerManager>(templatedChild);
+                var contentPresenter = templatedChild.VisualChildren.Single();
+                Assert.IsType<ContentPresenter>(contentPresenter);
+                
+                
+                Assert.Equal((PopupRoot)target.Host, ((IControl)templatedChild).TemplatedParent);
+                Assert.Equal((PopupRoot)target.Host, ((IControl)contentPresenter).TemplatedParent);
+            }
+        }
+        
+        [Fact]
+        public void PopupRoot_Should_Have_Null_VisualParent()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new Popup() {PlacementTarget = new Window()};
+
+                target.Open();
+
+                Assert.Null(((Visual)target.Host).GetVisualParent());
+            }
+        }
+        
         [Fact]
         public void Attaching_PopupRoot_To_Parent_Logical_Tree_Raises_DetachedFromLogicalTree_And_AttachedToLogicalTree()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var child = new Decorator();
-                var target = CreateTarget();
                 var window = new Window();
+                var target = CreateTarget(window);
                 var detachedCount = 0;
                 var attachedCount = 0;
 
@@ -88,8 +131,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var child = new Decorator();
-                var target = CreateTarget();
                 var window = new Window();
+                var target = CreateTarget(window);
                 var detachedCount = 0;
                 var attachedCount = 0;
 
@@ -117,29 +160,31 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
+                var window = new Window();
                 var target = new TemplatedControlWithPopup
                 {
                     PopupContent = new Canvas(),
                 };
+                window.Content = target;
 
-                var root = new TestRoot { Child = target };
-
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
                 target.ApplyTemplate();
                 target.Popup.Open();
                 target.PopupContent = null;
             }
         }
 
-        private PopupRoot CreateTarget()
+        private PopupRoot CreateTarget(TopLevel popupParent)
         {
-            var result = new PopupRoot
+            var result = new PopupRoot(popupParent, popupParent.PlatformImpl.CreatePopup())
             {
-                Template = new FuncControlTemplate<PopupRoot>(parent =>
+                Template = new FuncControlTemplate<PopupRoot>((parent, scope) =>
                     new ContentPresenter
                     {
                         Name = "PART_ContentPresenter",
                         [!ContentPresenter.ContentProperty] = parent[!PopupRoot.ContentProperty],
-                    }),
+                    }.RegisterInNameScope(scope)),
             };
 
             result.ApplyTemplate();
@@ -154,10 +199,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             public TemplatedControlWithPopup()
             {
-                Template = new FuncControlTemplate<TemplatedControlWithPopup>(parent =>
+                Template = new FuncControlTemplate<TemplatedControlWithPopup>((parent, _) =>
                     new Popup
                     {
                         [!Popup.ChildProperty] = parent[!TemplatedControlWithPopup.PopupContentProperty],
+                        PlacementTarget = parent
                     });
             }
 

@@ -1,53 +1,58 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels">
-    <UserControl.Resources>
-        <vm:BoolToBrushConverter x:Key="boolToBrush" />
-    </UserControl.Resources>
-    <Grid ColumnDefinitions="*,4,3*">
-        <TreeView Name="tree" Items="{Binding Nodes}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}" Grid.RowSpan="2">
-            <TreeView.DataTemplates>
-                <TreeDataTemplate DataType="vm:EventTreeNodeBase"
-                                  ItemsSource="{Binding Children}">
-                    <CheckBox Content="{Binding Text}" IsChecked="{Binding IsEnabled, Mode=TwoWay}" />
-                </TreeDataTemplate>
-            </TreeView.DataTemplates>
-            <TreeView.Styles>
-                <Style Selector="TreeViewItem">
-                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
-                </Style>
-            </TreeView.Styles>
-        </TreeView>
-                          
-        <GridSplitter Width="4" Grid.Column="1" />
-        <Grid RowDefinitions="*,4,2*,Auto" Grid.Column="2">
-            <ListBox Name="eventsList" Items="{Binding RecordedEvents}" SelectedItem="{Binding SelectedEvent, Mode=TwoWay}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Background="{Binding IsHandled, Converter={StaticResource boolToBrush}}" Text="{Binding DisplayText}" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <GridSplitter Height="4" Grid.Row="1" />
-            <DockPanel Grid.Row="2" LastChildFill="True">
-                <TextBlock DockPanel.Dock="Top" FontSize="16" Text="Event chain:" />
-                <ListBox Items="{Binding SelectedEvent.EventChain}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Background="{Binding Handled, Converter={StaticResource boolToBrush}}">
-                                <TextBlock Text="{Binding Route}" />
-                                <TextBlock Text=": " />
-                                <TextBlock Text="{Binding HandlerName}" />
-                                <TextBlock Text=" handled: " />
-                                <TextBlock Text="{Binding Handled}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </DockPanel>
-            <StackPanel Orientation="Horizontal" Grid.Row="3">
-                <Button Content="Clear" Margin="3" Command="{Binding Clear}"  />
-            </StackPanel>
-        </Grid>
+             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
+             x:Class="Avalonia.Diagnostics.Views.EventsView">
+  <UserControl.Resources>
+    <vm:BoolToBrushConverter x:Key="boolToBrush" />
+  </UserControl.Resources>
+  <Grid ColumnDefinitions="*,4,3*">
+    <TreeView Name="tree" Items="{Binding Nodes}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}"
+              Grid.RowSpan="2">
+      <TreeView.DataTemplates>
+        <TreeDataTemplate DataType="vm:EventTreeNodeBase"
+                          ItemsSource="{Binding Children}">
+          <CheckBox Content="{Binding Text}" IsChecked="{Binding IsEnabled, Mode=TwoWay}" />
+        </TreeDataTemplate>
+      </TreeView.DataTemplates>
+      <TreeView.Styles>
+        <Style Selector="TreeViewItem">
+          <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+        </Style>
+      </TreeView.Styles>
+    </TreeView>
+
+    <GridSplitter Width="4" Grid.Column="1" />
+    <Grid RowDefinitions="*,4,2*,Auto" Grid.Column="2">
+      <ListBox Name="eventsList" Items="{Binding RecordedEvents}"
+               SelectedItem="{Binding SelectedEvent, Mode=TwoWay}">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Background="{Binding IsHandled, Converter={StaticResource boolToBrush}}"
+                       Text="{Binding DisplayText}" />
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <GridSplitter Height="4" Grid.Row="1" />
+      <DockPanel Grid.Row="2" LastChildFill="True">
+        <TextBlock DockPanel.Dock="Top" FontSize="16" Text="Event chain:" />
+        <ListBox Items="{Binding SelectedEvent.EventChain}">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal"
+                          Background="{Binding Handled, Converter={StaticResource boolToBrush}}">
+                <TextBlock Text="{Binding Route}" />
+                <TextBlock Text=": " />
+                <TextBlock Text="{Binding HandlerName}" />
+                <TextBlock Text=" handled: " />
+                <TextBlock Text="{Binding Handled}" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+      <StackPanel Orientation="Horizontal" Grid.Row="3">
+        <Button Content="Clear" Margin="3" Command="{Binding Clear}" />
+      </StackPanel>
     </Grid>
+  </Grid>
 </UserControl>

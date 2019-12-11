@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Avalonia.Platform.Interop;
 
 namespace Avalonia.OpenGL
 {
@@ -7,40 +8,66 @@ namespace Avalonia.OpenGL
     
     public class GlInterface : GlInterfaceBase
     {
-        private readonly Func<string, bool, IntPtr> _getProcAddress;
+        public string Version { get; }
+        public string Vendor { get; }
+        public string Renderer { get; }
 
         public GlInterface(Func<string, bool, IntPtr> getProcAddress) : base(getProcAddress)
         {
-            _getProcAddress = getProcAddress;
+            Version = GetString(GlConsts.GL_VERSION);
+            Renderer = GetString(GlConsts.GL_RENDERER);
+            Vendor = GetString(GlConsts.GL_VENDOR);
         }
 
-        public IntPtr GetProcAddress(string proc) => _getProcAddress(proc, true);
+        public GlInterface(Func<Utf8Buffer, IntPtr> n) : this(ConvertNative(n))
+        {
+            
+        }
 
+        public static GlInterface FromNativeUtf8GetProcAddress(Func<Utf8Buffer, IntPtr> getProcAddress) =>
+            new GlInterface(getProcAddress);
+
+        
         public T GetProcAddress<T>(string proc) => Marshal.GetDelegateForFunctionPointer<T>(GetProcAddress(proc));
 
         // ReSharper disable UnassignedGetOnlyAutoProperty
-        
+        public delegate int GlGetError();
+        [GlEntryPoint("glGetError")]
+        public GlGetError GetError { get; }
+
         public delegate void GlClearStencil(int s);
-        [EntryPoint("glClearStencil")]
+        [GlEntryPoint("glClearStencil")]
         public GlClearStencil ClearStencil { get; }
 
-        public delegate void GlClearColor(int r, int g, int b, int a);
-        [EntryPoint("glClearColor")]
+        public delegate void GlClearColor(float r, float g, float b, float a);
+        [GlEntryPoint("glClearColor")]
         public GlClearColor ClearColor { get; }
 
         public delegate void GlClear(int bits);
-        [EntryPoint("glClear")]
+        [GlEntryPoint("glClear")]
         public GlClear Clear { get; }
 
         public delegate void GlViewport(int x, int y, int width, int height);
-        [EntryPoint("glViewport")]
+        [GlEntryPoint("glViewport")]
         public GlViewport Viewport { get; }
         
-        [EntryPoint("glFlush")]
+        [GlEntryPoint("glFlush")]
         public Action Flush { get; }
 
+        public delegate IntPtr GlGetString(int v);
+        [GlEntryPoint("glGetString")]
+        public GlGetString GetStringNative { get; }
+
+        public string GetString(int v)
+        {
+            var ptr = GetStringNative(v);
+            if (ptr != IntPtr.Zero)
+                return Marshal.PtrToStringAnsi(ptr);
+            return null;
+        }
+
         public delegate void GlGetIntegerv(int name, out int rv);
-        [EntryPoint("glGetIntegerv")]
+        [GlEntryPoint("glGetIntegerv")]
         public GlGetIntegerv GetIntegerv { get; }
 
         // ReSharper restore UnassignedGetOnlyAutoProperty

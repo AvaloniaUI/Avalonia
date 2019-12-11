@@ -18,6 +18,7 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="text">The text.</param>
         /// <param name="typeface">The base typeface.</param>
+        /// <param name="fontSize">The font size.</param>
         /// <param name="textAlignment">The text alignment.</param>
         /// <param name="wrapping">The text wrapping mode.</param>
         /// <param name="constraint">The text layout constraints.</param>
@@ -26,10 +27,33 @@ namespace Avalonia.Platform
         IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans);
+
+        /// <summary>
+        /// Creates an ellipse geometry implementation.
+        /// </summary>
+        /// <param name="rect">The bounds of the ellipse.</param>
+        /// <returns>An ellipse geometry..</returns>
+        IGeometryImpl CreateEllipseGeometry(Rect rect);
+
+        /// <summary>
+        /// Creates a line geometry implementation.
+        /// </summary>
+        /// <param name="p1">The start of the line.</param>
+        /// <param name="p2">The end of the line.</param>
+        /// <returns>A line geometry.</returns>
+        IGeometryImpl CreateLineGeometry(Point p1, Point p2);
+
+        /// <summary>
+        /// Creates a rectangle geometry implementation.
+        /// </summary>
+        /// <param name="rect">The bounds of the rectangle.</param>
+        /// <returns>A rectangle.</returns>
+        IGeometryImpl CreateRectangleGeometry(Rect rect);
 
         /// <summary>
         /// Creates a stream geometry implementation.
@@ -87,5 +111,19 @@ namespace Avalonia.Platform
         /// <param name="stride">The number of bytes per row.</param>
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
         IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride);
+
+        /// <summary>
+        ///     Creates a font manager implementation.
+        /// </summary>
+        /// <returns>The font manager.</returns>
+        IFontManagerImpl CreateFontManager();
+
+        /// <summary>
+        /// Creates a platform implementation of a glyph run.
+        /// </summary>
+        /// <param name="glyphRun">The glyph run.</param>
+        /// <param name="width">The glyph run's width.</param>
+        /// <returns></returns>
+        IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width);
     }
 }

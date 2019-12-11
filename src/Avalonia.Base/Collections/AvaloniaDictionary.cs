@@ -148,7 +148,7 @@ namespace Avalonia.Collections
         {
             if (_inner.TryGetValue(key, out TValue value))
             {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Count"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
 
                 if (CollectionChanged != null)
@@ -209,7 +209,7 @@ namespace Avalonia.Collections
 
         private void NotifyAdd(TKey key, TValue value)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Count"));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
             
 

@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 
@@ -24,7 +25,7 @@ namespace Avalonia.Rendering.SceneGraph
         public GeometryNode(
             Matrix transform,
             IBrush brush,
-            Pen pen,
+            IPen pen,
             IGeometryImpl geometry,
             IDictionary<IVisual, Scene> childScenes = null)
             : base(geometry.GetRenderBounds(pen), transform, null)
@@ -49,7 +50,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the stroke pen.
         /// </summary>
-        public Pen Pen { get; }
+        public ImmutablePen Pen { get; }
 
         /// <summary>
         /// Gets the geometry to draw.
@@ -71,11 +72,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, Pen pen, IGeometryImpl geometry)
+        public bool Equals(Matrix transform, IBrush brush, IPen pen, IGeometryImpl geometry)
         {
             return transform == Transform &&
                 Equals(brush, Brush) && 
-                pen == Pen &&
+                Equals(Pen, pen) &&
                 Equals(geometry, Geometry);
         }
 
@@ -89,9 +90,14 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public override bool HitTest(Point p)
         {
-            p *= Transform.Invert();
-            return (Brush != null && Geometry.FillContains(p)) || 
-                (Pen != null && Geometry.StrokeContains(Pen, p));
+            if (Transform.HasInverse)
+            {
+                p *= Transform.Invert();
+                return (Brush != null && Geometry.FillContains(p)) ||
+                    (Pen != null && Geometry.StrokeContains(Pen, p));
+            }
+
+            return false;
         }
     }
 }

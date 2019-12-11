@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Input;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -57,8 +58,8 @@ namespace Avalonia.Controls.Primitives
             PseudoClass<ScrollBar, Orientation>(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
             PseudoClass<ScrollBar, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
 
-            Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>(o => o.OnThumbDragDelta, RoutingStrategies.Bubble);
-            Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>(o => o.OnThumbDragComplete, RoutingStrategies.Bubble);
+            Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
+            Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragComplete(e), RoutingStrategies.Bubble);
         }
 
         /// <summary>
@@ -216,25 +217,25 @@ namespace Avalonia.Controls.Primitives
 
         private void SmallDecrement()
         {
-            Value = Math.Max(Value - SmallChange * ViewportSize, Minimum);
+            Value = Math.Max(Value - SmallChange, Minimum);
             OnScroll(ScrollEventType.SmallDecrement);
         }
 
         private void SmallIncrement()
         {
-            Value = Math.Min(Value + SmallChange * ViewportSize, Maximum);
+            Value = Math.Min(Value + SmallChange, Maximum);
             OnScroll(ScrollEventType.SmallIncrement);
         }
 
         private void LargeDecrement()
         {
-            Value = Math.Max(Value - LargeChange * ViewportSize, Minimum);
+            Value = Math.Max(Value - LargeChange, Minimum);
             OnScroll(ScrollEventType.LargeDecrement);
         }
 
         private void LargeIncrement()
         {
-            Value = Math.Min(Value + LargeChange * ViewportSize, Maximum);
+            Value = Math.Min(Value + LargeChange, Maximum);
             OnScroll(ScrollEventType.LargeIncrement);
         }
 

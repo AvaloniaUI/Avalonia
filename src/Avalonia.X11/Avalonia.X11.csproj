@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <PackageId>Avalonia.X11</PackageId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
+        <ProjectReference Include="..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+        <ProjectReference Include="..\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj" />
+    </ItemGroup>
+
+</Project>

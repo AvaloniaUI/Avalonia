@@ -1,19 +1,23 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A tab control that displays a tab strip along with the content of the selected tab.
     /// </summary>
-    public class TabControl : SelectingItemsControl
+    public class TabControl : SelectingItemsControl, IContentPresenterHost
     {
         /// <summary>
         /// Defines the <see cref="TabStripPlacement"/> property.
@@ -65,6 +69,7 @@ namespace Avalonia.Controls
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
+            SelectedIndexProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent(e));
         }
 
         /// <summary>
@@ -129,7 +134,86 @@ namespace Avalonia.Controls
 
         internal ItemsPresenter ItemsPresenterPart { get; private set; }
 
-        internal ContentPresenter ContentPart { get; private set; }
+        internal IContentPresenter ContentPart { get; private set; }
+
+        /// <inheritdoc/>
+        IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
+
+        /// <inheritdoc/>
+        bool IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
+        {
+            return RegisterContentPresenter(presenter);
+        }
+
+        protected override void OnContainersMaterialized(ItemContainerEventArgs e)
+        {
+            base.OnContainersMaterialized(e);
+
+            if (SelectedContent != null || SelectedIndex == -1)
+            {
+                return;
+            }
+
+            var container = (TabItem)ItemContainerGenerator.ContainerFromIndex(SelectedIndex);
+
+            if (container == null)
+            {
+                return;
+            }
+
+            UpdateSelectedContent(container);
+        }
+
+        private void UpdateSelectedContent(AvaloniaPropertyChangedEventArgs e)
+        {
+            var index = (int)e.NewValue;
+
+            if (index == -1)
+            {
+                SelectedContentTemplate = null;
+
+                SelectedContent = null;
+
+                return;
+            }
+
+            var container = (TabItem)ItemContainerGenerator.ContainerFromIndex(index);
+
+            if (container == null)
+            {
+                return;
+            }
+
+            UpdateSelectedContent(container);
+        }
+
+        private void UpdateSelectedContent(IContentControl item)
+        {
+            if (SelectedContentTemplate != item.ContentTemplate)
+            {
+                SelectedContentTemplate = item.ContentTemplate;
+            }
+
+            if (SelectedContent != item.Content)
+            {
+                SelectedContent = item.Content;
+            }
+        }
+
+        /// <summary>
+        /// Called when an <see cref="IContentPresenter"/> is registered with the control.
+        /// </summary>
+        /// <param name="presenter">The presenter.</param>
+        protected virtual bool RegisterContentPresenter(IContentPresenter presenter)
+        {
+            if (presenter.Name == "PART_SelectedContentHost")
+            {
+                ContentPart = presenter;
+                return true;
+            }
+
+            return false;
+        }
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
@@ -141,8 +225,6 @@ namespace Avalonia.Controls
             base.OnTemplateApplied(e);
 
             ItemsPresenterPart = e.NameScope.Get<ItemsPresenter>("PART_ItemsPresenter");
-
-            ContentPart = e.NameScope.Get<ContentPresenter>("PART_Content");
         }
 
         /// <inheritdoc/>
@@ -161,9 +243,23 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.MouseButton == MouseButton.Left)
+            if (e.MouseButton == MouseButton.Left && e.Pointer.Type == PointerType.Mouse)
             {
                 e.Handled = UpdateSelectionFromEventSource(e.Source);
+            }
+        }
+
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            if (e.InitialPressMouseButton == MouseButton.Left && e.Pointer.Type != PointerType.Mouse)
+            {
+                var container = GetContainerFromEventSource(e.Source);
+                if (container != null
+                    && container.GetVisualsAt(e.GetPosition(container))
+                        .Any(c => container == c || container.IsVisualAncestorOf(c)))
+                {
+                    e.Handled = UpdateSelectionFromEventSource(e.Source);
+                }
             }
         }
     }

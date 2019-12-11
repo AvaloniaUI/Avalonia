@@ -146,7 +146,7 @@ namespace Avalonia.Layout.UnitTests
 
             public string Text { get; }
 
-            public Size Size => new Size();
+            public Rect Bounds => Rect.Empty;
 
             public void Dispose()
             {
@@ -175,11 +175,14 @@ namespace Avalonia.Layout.UnitTests
                 x.CreateFormattedText(
                     It.IsAny<string>(),
                     It.IsAny<Typeface>(),
+                    It.IsAny<double>(),
                     It.IsAny<TextAlignment>(),
                     It.IsAny<TextWrapping>(),
                     It.IsAny<Size>(),
                     It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()))
                 .Returns(new FormattedTextMock("TEST"));
+
+            renderInterface.Setup(x => x.CreateFontManager()).Returns(new MockFontManagerImpl());
 
             var streamGeometry = new Mock<IStreamGeometryImpl>();
             streamGeometry.Setup(x =>

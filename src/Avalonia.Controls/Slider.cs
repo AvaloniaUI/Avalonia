@@ -5,6 +5,7 @@ using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -44,11 +45,9 @@ namespace Avalonia.Controls
             OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
             PseudoClass<Slider, Orientation>(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
             PseudoClass<Slider, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
-            Thumb.DragStartedEvent.AddClassHandler<Slider>(x => x.OnThumbDragStarted, RoutingStrategies.Bubble);
-            Thumb.DragDeltaEvent.AddClassHandler<Slider>(x => x.OnThumbDragDelta, RoutingStrategies.Bubble);
-            Thumb.DragCompletedEvent.AddClassHandler<Slider>(x => x.OnThumbDragCompleted, RoutingStrategies.Bubble);
-            SmallChangeProperty.OverrideDefaultValue<Slider>(1);
-            LargeChangeProperty.OverrideDefaultValue<Slider>(10);
+            Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
+            Thumb.DragDeltaEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
+            Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e), RoutingStrategies.Bubble);
         }
 
         /// <summary>

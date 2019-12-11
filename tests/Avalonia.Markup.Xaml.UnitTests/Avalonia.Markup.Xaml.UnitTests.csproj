@@ -1,9 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;net47</TargetFrameworks>
     <OutputType>Library</OutputType>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
+  <Import Project="..\..\build\UnitTests.NetFX.props" />
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\Rx.props" />
@@ -27,13 +29,11 @@
     <EmbeddedResource Include="Xaml\Style1.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Xaml\Style2.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <AvaloniaResource Include="Xaml\XamlIlClassWithPrecompiledXaml.xaml" />
+    <AvaloniaResource Include="Xaml\XamlIlClassWithCustomProperty.xaml" />
   </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
+  <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

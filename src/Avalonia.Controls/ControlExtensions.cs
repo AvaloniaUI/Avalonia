@@ -15,7 +15,7 @@ namespace Avalonia.Controls
     public static class ControlExtensions
     {
         /// <summary>
-        /// Tries to being the control into view.
+        /// Tries to bring the control into view.
         /// </summary>
         /// <param name="control">The control.</param>
         public static void BringIntoView(this IControl control)
@@ -26,7 +26,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Tries to being the control into view.
+        /// Tries to bring the control into view.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="rect">The area of the control to being into view.</param>
@@ -34,14 +34,17 @@ namespace Avalonia.Controls
         {
             Contract.Requires<ArgumentNullException>(control != null);
 
-            var ev = new RequestBringIntoViewEventArgs
+            if (control.IsEffectivelyVisible)
             {
-                RoutedEvent = Control.RequestBringIntoViewEvent,
-                TargetObject = control,
-                TargetRect = rect,
-            };
+                var ev = new RequestBringIntoViewEventArgs
+                {
+                    RoutedEvent = Control.RequestBringIntoViewEvent,
+                    TargetObject = control,
+                    TargetRect = rect,
+                };
 
-            control.RaiseEvent(ev);
+                control.RaiseEvent(ev);
+            }
         }
 
         /// <summary>

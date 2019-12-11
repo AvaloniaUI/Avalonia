@@ -17,7 +17,7 @@ namespace Avalonia
     {
         public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.UseWindowingSubsystem(() => Android.AndroidPlatform.Initialize(builder.Instance), "Android");
+            builder.UseWindowingSubsystem(() => Android.AndroidPlatform.Initialize(builder.ApplicationType), "Android");
             builder.UseSkia();
             return builder;
         }
@@ -41,7 +41,7 @@ namespace Avalonia.Android
             _scalingFactor = global::Android.App.Application.Context.Resources.DisplayMetrics.ScaledDensity;
         }
 
-        public static void Initialize(Avalonia.Application app)
+        public static void Initialize(Type appType)
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToTransient<ClipboardImpl>()
@@ -55,7 +55,7 @@ namespace Avalonia.Android
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<IAssetLoader>().ToConstant(new AssetLoader(app.GetType().Assembly));
+                .Bind<IAssetLoader>().ToConstant(new AssetLoader(appType.Assembly));
 
             SkiaPlatform.Initialize();
             ((global::Android.App.Application) global::Android.App.Application.Context.ApplicationContext)
@@ -70,11 +70,6 @@ namespace Avalonia.Android
         public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
             throw new NotSupportedException();
-        }
-
-        public IPopupImpl CreatePopup()
-        {
-            return new PopupImpl();
         }
     }
 }

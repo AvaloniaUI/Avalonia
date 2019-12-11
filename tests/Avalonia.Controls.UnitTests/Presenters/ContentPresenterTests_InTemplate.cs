@@ -1,9 +1,14 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -136,17 +141,6 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void DataTemplate_Created_Control_Should_Be_NameScope()
-        {
-            var (target, _) = CreateTarget();
-
-            target.Content = "Foo";
-
-            Assert.IsType<TextBlock>(target.Child);
-            Assert.NotNull(NameScope.GetNameScope((Control)target.Child));
-        }
-
-        [Fact]
         public void Assigning_Control_To_Content_Should_Not_Set_DataContext()
         {
             var (target, _) = CreateTarget();
@@ -169,7 +163,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             var (target, _) = CreateTarget();
 
-            target.ContentTemplate = new FuncDataTemplate<string>(_ => new Canvas());
+            target.ContentTemplate = new FuncDataTemplate<string>((_, __) => new Canvas());
             target.Content = "Foo";
 
             Assert.IsType<Canvas>(target.Child);
@@ -183,7 +177,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Content = "Foo";
             Assert.IsType<TextBlock>(target.Child);
 
-            target.ContentTemplate = new FuncDataTemplate<string>(_ => new Canvas());
+            target.ContentTemplate = new FuncDataTemplate<string>((_, __) => new Canvas());
             Assert.IsType<Canvas>(target.Child);
 
             target.ContentTemplate = null;
@@ -208,7 +202,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         public void Recycles_DataTemplate()
         {
             var (target, _) = CreateTarget();
-            target.DataTemplates.Add(new FuncDataTemplate<string>(_ => new Border(), true));
+            target.DataTemplates.Add(new FuncDataTemplate<string>((_, __) => new Border(), true));
 
             target.Content = "foo";
 
@@ -238,7 +232,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         public void Detects_DataTemplate_Doesnt_Support_Recycling()
         {
             var (target, _) = CreateTarget();
-            target.DataTemplates.Add(new FuncDataTemplate<string>(_ => new Border(), false));
+            target.DataTemplates.Add(new FuncDataTemplate<string>((_, __) => new Border(), false));
 
             target.Content = "foo";
 
@@ -255,7 +249,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var (target, _) = CreateTarget();
 
             target.DataTemplates.Add(new FuncDataTemplate<string>(x => x == "bar", _ => new Canvas(), true));
-            target.DataTemplates.Add(new FuncDataTemplate<string>(_ => new Border(), true));
+            target.DataTemplates.Add(new FuncDataTemplate<string>((_, __) => new Border(), true));
 
             target.Content = "foo";
 
@@ -266,15 +260,111 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.IsType<Canvas>(target.Child);
         }
 
+        [Fact]
+        public void Should_Not_Bind_Old_Child_To_New_DataContext()
+        {
+            // Test for issue #1099.
+            var textBlock = new TextBlock
+            {
+                [!TextBlock.TextProperty] = new Binding(),
+            };
+
+            var (target, host) = CreateTarget();
+            host.DataTemplates.Add(new FuncDataTemplate<string>((_, __) => textBlock));
+            host.DataTemplates.Add(new FuncDataTemplate<int>((_, __) => new Canvas()));
+
+            target.Content = "foo";
+            Assert.Same(textBlock, target.Child);
+
+            textBlock.PropertyChanged += (s, e) =>
+            {
+                Assert.NotEqual(e.NewValue, "42");
+            };
+
+            target.Content = 42;
+        }
+
+        [Fact]
+        public void Should_Not_Bind_Child_To_Wrong_DataContext_When_Removing()
+        {
+            // Test for issue #2823
+            var canvas = new Canvas();
+            var (target, host) = CreateTarget();
+            var viewModel = new TestViewModel { Content = "foo" };
+            var dataContexts = new List<object>();
+
+            target.Bind(ContentPresenter.ContentProperty, (IBinding)new TemplateBinding(ContentControl.ContentProperty));
+            canvas.GetObservable(ContentPresenter.DataContextProperty).Subscribe(x => dataContexts.Add(x));
+
+            host.DataTemplates.Add(new FuncDataTemplate<string>((_, __) => canvas));
+            host.Bind(ContentControl.ContentProperty, new Binding(nameof(TestViewModel.Content)));
+            host.DataContext = viewModel;
+
+            Assert.Same(canvas, target.Child);
+
+            viewModel.Content = 42;
+
+            Assert.Equal(new object[]
+            {
+                null,
+                "foo",
+                null,
+            }, dataContexts);
+        }
+
+        [Fact]
+        public void Should_Set_InheritanceParent_Even_When_LogicalParent_Is_Already_Set()
+        {
+            var logicalParent = new Canvas();
+            var child = new TextBlock();
+            var (target, host) = CreateTarget();
+
+            ((ISetLogicalParent)child).SetParent(logicalParent);
+            target.Content = child;
+
+            Assert.Same(logicalParent, child.Parent);
+
+            // InheritanceParent is exposed via StylingParent.
+            Assert.Same(target, ((IStyledElement)child).StylingParent);
+        }
+
+        [Fact]
+        public void Should_Reset_InheritanceParent_When_Child_Removed()
+        {
+            var logicalParent = new Canvas();
+            var child = new TextBlock();
+            var (target, _) = CreateTarget();
+
+            ((ISetLogicalParent)child).SetParent(logicalParent);
+            target.Content = child;
+            target.Content = null;
+
+            // InheritanceParent is exposed via StylingParent.
+            Assert.Same(logicalParent, ((IStyledElement)child).StylingParent);
+        }
+
+        [Fact]
+        public void Should_Clear_Host_When_Host_Template_Cleared()
+        {
+            var (target, host) = CreateTarget();
+
+            Assert.Same(host, target.Host);
+
+            host.Template = null;
+            host.ApplyTemplate();
+
+            Assert.Null(target.Host);
+        }
+
         (ContentPresenter presenter, ContentControl templatedParent) CreateTarget()
         {
             var templatedParent = new ContentControl
             {
-                Template = new FuncControlTemplate<ContentControl>(x => 
+                Template = new FuncControlTemplate<ContentControl>((_, s) => 
                     new ContentPresenter
                     {
                         Name = "PART_ContentPresenter",
-                    }),
+                    }.RegisterInNameScope(s)),
             };
             var root = new TestRoot { Child = templatedParent };
 
@@ -286,6 +376,26 @@ namespace Avalonia.Controls.UnitTests.Presenters
         private class TestContentControl : ContentControl
         {
             public IControl Child { get; set; }
+        }
+
+        private class TestViewModel : INotifyPropertyChanged
+        {
+            private object _content;
+
+            public object Content
+            {
+                get => _content;
+                set
+                {
+                    if (_content != value)
+                    {
+                        _content = value;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Content)));
+                    }
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
         }
     }
 }

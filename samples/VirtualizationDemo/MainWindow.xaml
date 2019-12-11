@@ -1,4 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="VirtualizationDemo.MainWindow"
         Title="AvaloniaUI Virtualization Test"
         Width="800"
         Height="600">
@@ -7,9 +9,9 @@
                     Margin="16 0 0 0" 
                     MinWidth="150"
                     Spacing="4">
-            <DropDown Items="{Binding VirtualizationModes}"
+            <ComboBox Items="{Binding VirtualizationModes}"
                       SelectedItem="{Binding VirtualizationMode}"/>
-            <DropDown Items="{Binding Orientations}"
+            <ComboBox Items="{Binding Orientations}"
                       SelectedItem="{Binding Orientation}"/>
             <TextBox Watermark="Item Count"
                      UseFloatingWatermark="True"
@@ -24,10 +26,10 @@
                      UseFloatingWatermark="True"
                      Text="{Binding #listBox.Scroll.Viewport, Mode=OneWay}"/>
             <TextBlock>Horiz. ScrollBar</TextBlock>
-            <DropDown Items="{Binding ScrollBarVisibilities}"
+            <ComboBox Items="{Binding ScrollBarVisibilities}"
                       SelectedItem="{Binding HorizontalScrollBarVisibility}"/>
             <TextBlock>Vert. ScrollBar</TextBlock>
-            <DropDown Items="{Binding ScrollBarVisibilities}"
+            <ComboBox Items="{Binding ScrollBarVisibilities}"
                       SelectedItem="{Binding VerticalScrollBarVisibility}"/>
             <TextBox Watermark="Item to Create"
                      UseFloatingWatermark="True"
@@ -37,6 +39,8 @@
             <Button Command="{Binding RecreateCommand}">Recreate</Button>
             <Button Command="{Binding SelectFirstCommand}">Select First</Button>
             <Button Command="{Binding SelectLastCommand}">Select Last</Button>
+            <Button Command="{Binding RandomizeSize}">Randomize Size</Button>
+            <Button Command="{Binding ResetSize}">Reset Size</Button>
         </StackPanel>
 
         <ListBox Name="listBox" 
@@ -53,7 +57,7 @@
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Header}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Header}" Height="{Binding Height}" TextWrapping="Wrap"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

@@ -67,13 +67,15 @@ namespace Avalonia.LeakTests
             {
                 Func<Window> run = () =>
                 {
+                    var scope = new NameScope();
                     var window = new Window
                     {
                         Content = new Canvas
                         {
                             Name = "foo"
-                        }
+                        }.RegisterInNameScope(scope)
                     };
+                    NameScope.SetNameScope(window, scope);
 
                     window.Show();
 
@@ -84,6 +86,8 @@ namespace Avalonia.LeakTests
 
                     // Clear the content and ensure the Canvas is removed.
                     window.Content = null;
+                    NameScope.SetNameScope(window, null);
+
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
@@ -279,7 +283,7 @@ namespace Avalonia.LeakTests
                             DataTemplates =
                             {
                                 new FuncTreeDataTemplate<Node>(
-                                    x => new TextBlock { Text = x.Name },
+                                    (x, _) => new TextBlock { Text = x.Name },
                                     x => x.Children)
                             },
                             Items = nodes
@@ -307,6 +311,39 @@ namespace Avalonia.LeakTests
             }
         }
 
+
+        [Fact]
+        public void Slider_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new Slider()
+                    };
+
+                    window.Show();
+
+                    // Do a layout and make sure that Slider gets added to visual tree.
+                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    Assert.IsType<Slider>(window.Presenter.Child);
+
+                    // Clear the content and ensure the Slider is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Slider>()).ObjectsCount));
+            }
+        }
 
         [Fact]
         public void RendererIsDisposed()
@@ -348,6 +385,7 @@ namespace Avalonia.LeakTests
         {
             public bool DrawFps { get; set; }
             public bool DrawDirtyRects { get; set; }
+            public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
 
             public void AddDirty(IVisual visual)
             {
@@ -360,6 +398,10 @@ namespace Avalonia.LeakTests
             public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter) => null;
 
             public void Paint(Rect rect)
+            {
+            }
+
+            public void RecalculateChildren(IVisual visual)
             {
             }
 

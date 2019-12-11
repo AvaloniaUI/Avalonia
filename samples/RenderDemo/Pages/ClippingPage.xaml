@@ -1,14 +1,16 @@
-<UserControl
-xmlns="https://github.com/avaloniaui">
+<UserControl 
+  xmlns="https://github.com/avaloniaui" 
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+  x:Class="RenderDemo.Pages.ClippingPage">
   <Grid ColumnDefinitions="Auto" RowDefinitions="Auto,Auto">
     <Grid.Styles>
       <Styles>
-        <Style Selector="Border#clipped :pointerover">
+        <Style Selector="Border#clipped:pointerover">
           <Setter Property="Border.Background" Value="Crimson"/>
         </Style>
         <Style Selector="Border#clipChild">
           <Style.Animations>
-            <Animation Duration="0:0:2" RepeatCount="Loop">
+            <Animation Duration="0:0:2" IterationCount="Infinite">
               <KeyFrame Cue="100%">
                 <Setter Property="RotateTransform.Angle" Value="360"/>
               </KeyFrame>
@@ -17,10 +19,10 @@ xmlns="https://github.com/avaloniaui">
         </Style>
       </Styles>
     </Grid.Styles>
-    <Border Name="clipped"
-            Background="Yellow"
-            Width="100"
-            Height="100"
+    <Border Name="clipped" 
+            Background="Yellow" 
+            Width="100" 
+            Height="100" 
             Clip="M 58.625 0.07421875
                   C 50.305778 0.26687364 42.411858 7.0346526 41.806641 15.595703
                   C 42.446442 22.063923 39.707425 13.710754 36.982422 12.683594

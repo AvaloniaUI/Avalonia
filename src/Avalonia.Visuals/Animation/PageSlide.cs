@@ -74,34 +74,36 @@ namespace Avalonia.Animation
             var distance = Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
             var translateProperty = Orientation == SlideAxis.Horizontal ? TranslateTransform.XProperty : TranslateTransform.YProperty;
 
-
-            // TODO: Implement relevant transition logic here (or discard this class)
-            // in favor of XAML based transition for pages
             if (from != null)
             {
                 var animation = new Animation
                 {
-                    new KeyFrame
-                    (
-                        new Setter
-                        {
-                            Property = translateProperty,
-                            Value = 0d
-                        }
-                    )
+                    Children = 
                     {
-                        Cue = new Cue(0d)
-                    },
-                    new KeyFrame
-                    (
-                        new Setter
+                        new KeyFrame
                         {
-                            Property = translateProperty,
-                            Value = forward ? -distance : distance
-                        }
-                    )
-                    {
-                        Cue = new Cue(1d)
+                            Setters =
+                            {
+                                new Setter
+                                {
+                                    Property = translateProperty,
+                                Value = 0d
+                                }
+                            },
+                            Cue = new Cue(0d)
+                        },
+                        new KeyFrame
+                        {
+                            Setters =
+                            {
+                                new Setter
+                                {
+                                    Property = translateProperty,
+                                    Value = forward ? -distance : distance
+                                }
+                            },
+                            Cue = new Cue(1d)
+                        }                       
                     }
                 };
                 animation.Duration = Duration;
@@ -113,29 +115,34 @@ namespace Avalonia.Animation
                 to.IsVisible = true;
                 var animation = new Animation
                 {
+                    Children =
+                    {
 
-                    new KeyFrame
-                    (
-                        new Setter
+                        new KeyFrame
                         {
-                            Property = translateProperty,
-                            Value = forward ? distance : -distance
-                        }
-                    )
-                    {
-                        Cue = new Cue(0d)
-                    },
-                    new KeyFrame
-                    (
-                        new Setter
+                            Setters =
+                            {
+                                new Setter
+                                {
+                                    Property = translateProperty,
+                                    Value = forward ? distance : -distance
+                                }
+                            },
+                            Cue = new Cue(0d)
+                        },
+                        new KeyFrame
                         {
-                            Property = translateProperty,
-                            Value = 0d
+                            Setters =
+                            {
+                                new Setter
+                                {
+                                    Property = translateProperty,
+                                    Value = 0d
+                                }
+                            },
+                            Cue = new Cue(1d)
                         }
-                    )
-                    {
-                        Cue = new Cue(1d)
-                    },
+                    }
                 };
                 animation.Duration = Duration;
                 tasks.Add(animation.RunAsync(to));

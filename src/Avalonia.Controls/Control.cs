@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.ComponentModel;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -19,7 +21,7 @@ namespace Avalonia.Controls
     ///
     /// - A <see cref="Tag"/> property to allow user-defined data to be attached to the control.
     /// </remarks>
-    public class Control : InputElement, IControl, INamed, ISupportInitialize, IVisualBrushInitialize, IRequiresTemplateInSetter
+    public class Control : InputElement, IControl, INamed, ISupportInitialize, IVisualBrushInitialize, ISetterValue
     {
         /// <summary>
         /// Defines the <see cref="FocusAdorner"/> property.
@@ -88,6 +90,13 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
+
+        /// <inheritdoc/>
+        void ISetterValue.Initialize(ISetter setter)
+        {
+            throw new InvalidOperationException(
+                "Cannot use a control as a Setter value. Wrap the control in a <Template>.");
+        }
 
         /// <inheritdoc/>
         void IVisualBrushInitialize.EnsureInitialized()

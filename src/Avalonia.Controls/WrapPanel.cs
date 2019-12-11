@@ -1,11 +1,11 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+// This source file is adapted from the Windows Presentation Foundation project. 
+// (https://github.com/dotnet/wpf/) 
+// 
+// Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Utilities;
 
 using static System.Math;
 
@@ -15,7 +15,7 @@ namespace Avalonia.Controls
     /// Positions child elements in sequential position from left to right, 
     /// breaking content to the next line at the edge of the containing box. 
     /// Subsequent ordering happens sequentially from top to bottom or from right to left, 
-    /// depending on the value of the Orientation property.
+    /// depending on the value of the <see cref="Orientation"/> property.
     /// </summary>
     public class WrapPanel : Panel, INavigableContainer
     {
@@ -26,11 +26,23 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<WrapPanel, Orientation>(nameof(Orientation), defaultValue: Orientation.Horizontal);
 
         /// <summary>
+        /// Defines the <see cref="ItemWidth"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> ItemWidthProperty =
+            AvaloniaProperty.Register<WrapPanel, double>(nameof(ItemWidth), double.NaN);
+
+        /// <summary>
+        /// Defines the <see cref="ItemHeight"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> ItemHeightProperty =
+            AvaloniaProperty.Register<WrapPanel, double>(nameof(ItemHeight), double.NaN);
+
+        /// <summary>
         /// Initializes static members of the <see cref="WrapPanel"/> class.
         /// </summary>
         static WrapPanel()
         {
-            AffectsMeasure<WrapPanel>(OrientationProperty);
+            AffectsMeasure<WrapPanel>(OrientationProperty, ItemWidthProperty, ItemHeightProperty);
         }
 
         /// <summary>
@@ -43,6 +55,24 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the width of all items in the WrapPanel.
+        /// </summary>
+        public double ItemWidth
+        {
+            get { return GetValue(ItemWidthProperty); }
+            set { SetValue(ItemWidthProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the height of all items in the WrapPanel.
+        /// </summary>
+        public double ItemHeight
+        {
+            get { return GetValue(ItemHeightProperty); }
+            set { SetValue(ItemHeightProperty, value); }
+        }
+
+        /// <summary>
         /// Gets the next control in the specified direction.
         /// </summary>
         /// <param name="direction">The movement direction.</param>
@@ -51,7 +81,9 @@ namespace Avalonia.Controls
         /// <returns>The control.</returns>
         IInputElement INavigableContainer.GetControl(NavigationDirection direction, IInputElement from, bool wrap)
         {
-            var horiz = Orientation == Orientation.Horizontal;
+            var orientation = Orientation;
+            var children = Children;
+            bool horiz = orientation == Orientation.Horizontal;
             int index = Children.IndexOf((IControl)from);
 
             switch (direction)
@@ -60,7 +92,7 @@ namespace Avalonia.Controls
                     index = 0;
                     break;
                 case NavigationDirection.Last:
-                    index = Children.Count - 1;
+                    index = children.Count - 1;
                     break;
                 case NavigationDirection.Next:
                     ++index;
@@ -82,9 +114,9 @@ namespace Avalonia.Controls
                     break;
             }
 
-            if (index >= 0 && index < Children.Count)
+            if (index >= 0 && index < children.Count)
             {
-                return Children[index];
+                return children[index];
             }
             else
             {
@@ -92,119 +124,156 @@ namespace Avalonia.Controls
             }
         }
 
-        private UVSize CreateUVSize(Size size) => new UVSize(Orientation, size);
-
-        private UVSize CreateUVSize() => new UVSize(Orientation);
-
         /// <inheritdoc/>
-        protected override Size MeasureOverride(Size availableSize)
+        protected override Size MeasureOverride(Size constraint)
         {
-            var desiredSize = CreateUVSize();
-            var lineSize = CreateUVSize();
-            var uvAvailableSize = CreateUVSize(availableSize);
+            double itemWidth = ItemWidth;
+            double itemHeight = ItemHeight;
+            var orientation = Orientation;
+            var children = Children;
+            var curLineSize = new UVSize(orientation);
+            var panelSize = new UVSize(orientation);
+            var uvConstraint = new UVSize(orientation, constraint.Width, constraint.Height);
+            bool itemWidthSet = !double.IsNaN(itemWidth);
+            bool itemHeightSet = !double.IsNaN(itemHeight);
 
-            foreach (var child in Children)
+            var childConstraint = new Size(
+                itemWidthSet ? itemWidth : constraint.Width,
+                itemHeightSet ? itemHeight : constraint.Height);
+            
+            for (int i = 0, count = children.Count; i < count; i++)
             {
-                child.Measure(availableSize);
-                var childSize = CreateUVSize(child.DesiredSize);
-                if (lineSize.U + childSize.U <= uvAvailableSize.U) // same line
+                var child = children[i];
+                if (child != null)
                 {
-                    lineSize.U += childSize.U;
-                    lineSize.V = Max(lineSize.V, childSize.V);
-                }
-                else // moving to next line
-                {
-                    desiredSize.U = Max(lineSize.U, uvAvailableSize.U);
-                    desiredSize.V += lineSize.V;
-                    lineSize = childSize;
+                    // Flow passes its own constraint to children
+                    child.Measure(childConstraint);
+
+                    // This is the size of the child in UV space
+                    var sz = new UVSize(orientation,
+                        itemWidthSet ? itemWidth : child.DesiredSize.Width,
+                        itemHeightSet ? itemHeight : child.DesiredSize.Height);
+
+                    if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvConstraint.U)) // Need to switch to another line
+                    {
+                        panelSize.U = Max(curLineSize.U, panelSize.U);
+                        panelSize.V += curLineSize.V;
+                        curLineSize = sz;
+
+                        if (MathUtilities.GreaterThan(sz.U, uvConstraint.U)) // The element is wider then the constraint - give it a separate line                    
+                        {
+                            panelSize.U = Max(sz.U, panelSize.U);
+                            panelSize.V += sz.V;
+                            curLineSize = new UVSize(orientation);
+                        }
+                    }
+                    else // Continue to accumulate a line
+                    {
+                        curLineSize.U += sz.U;
+                        curLineSize.V = Max(sz.V, curLineSize.V);
+                    }
                 }
             }
-            // last element
-            desiredSize.U = Max(lineSize.U, desiredSize.U);
-            desiredSize.V += lineSize.V;
 
-            return desiredSize.ToSize();
+            // The last line size, if any should be added
+            panelSize.U = Max(curLineSize.U, panelSize.U);
+            panelSize.V += curLineSize.V;
+
+            // Go from UV space to W/H space
+            return new Size(panelSize.Width, panelSize.Height);
         }
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
+            double itemWidth = ItemWidth;
+            double itemHeight = ItemHeight;
+            var orientation = Orientation;
+            var children = Children;
+            int firstInLine = 0;
             double accumulatedV = 0;
-            var uvFinalSize = CreateUVSize(finalSize);
-            var lineSize = CreateUVSize();
-            int firstChildInLineIndex = 0;
-            for (int index = 0; index < Children.Count; index++)
+            double itemU = orientation == Orientation.Horizontal ? itemWidth : itemHeight;
+            var curLineSize = new UVSize(orientation);
+            var uvFinalSize = new UVSize(orientation, finalSize.Width, finalSize.Height);
+            bool itemWidthSet = !double.IsNaN(itemWidth);
+            bool itemHeightSet = !double.IsNaN(itemHeight);
+            bool useItemU = orientation == Orientation.Horizontal ? itemWidthSet : itemHeightSet;
+
+            for (int i = 0; i < children.Count; i++)
             {
-                var child = Children[index];
-                var childSize = CreateUVSize(child.DesiredSize);
-                if (lineSize.U + childSize.U <= uvFinalSize.U) // same line
+                var child = children[i];
+                if (child != null)
                 {
-                    lineSize.U += childSize.U;
-                    lineSize.V = Max(lineSize.V, childSize.V);
-                }
-                else // moving to next line
-                {
-                    var controlsInLine = GetControlsBetween(firstChildInLineIndex, index);
-                    ArrangeLine(accumulatedV, lineSize.V, controlsInLine);
-                    accumulatedV += lineSize.V;
-                    lineSize = childSize;
-                    firstChildInLineIndex = index;
+                    var sz = new UVSize(orientation,
+                        itemWidthSet ? itemWidth : child.DesiredSize.Width,
+                        itemHeightSet ? itemHeight : child.DesiredSize.Height);
+
+                    if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvFinalSize.U)) // Need to switch to another line
+                    {
+                        ArrangeLine(accumulatedV, curLineSize.V, firstInLine, i, useItemU, itemU);
+
+                        accumulatedV += curLineSize.V;
+                        curLineSize = sz;
+
+                        if (MathUtilities.GreaterThan(sz.U, uvFinalSize.U)) // The element is wider then the constraint - give it a separate line                    
+                        {
+                            // Switch to next line which only contain one element
+                            ArrangeLine(accumulatedV, sz.V, i, ++i, useItemU, itemU);
+
+                            accumulatedV += sz.V;
+                            curLineSize = new UVSize(orientation);
+                        }
+                        firstInLine = i;
+                    }
+                    else // Continue to accumulate a line
+                    {
+                        curLineSize.U += sz.U;
+                        curLineSize.V = Max(sz.V, curLineSize.V);
+                    }
                 }
             }
 
-            if (firstChildInLineIndex < Children.Count)
+            // Arrange the last line, if any
+            if (firstInLine < children.Count)
             {
-                var controlsInLine = GetControlsBetween(firstChildInLineIndex, Children.Count);
-                ArrangeLine(accumulatedV, lineSize.V, controlsInLine);
+                ArrangeLine(accumulatedV, curLineSize.V, firstInLine, children.Count, useItemU, itemU);
             }
+
             return finalSize;
         }
 
-        private IEnumerable<IControl> GetControlsBetween(int first, int last)
+        private void ArrangeLine(double v, double lineV, int start, int end, bool useItemU, double itemU)
         {
-            return Children.Skip(first).Take(last - first);
-        }
-
-        private void ArrangeLine(double v, double lineV, IEnumerable<IControl> controls)
-        {
+            var orientation = Orientation;
+            var children = Children;
             double u = 0;
-            bool isHorizontal = (Orientation == Orientation.Horizontal);
-            foreach (var child in controls)
+            bool isHorizontal = orientation == Orientation.Horizontal;
+
+            for (int i = start; i < end; i++)
             {
-                var childSize = CreateUVSize(child.DesiredSize);
-                var x = isHorizontal ? u : v;
-                var y = isHorizontal ? v : u;
-                var width = isHorizontal ? childSize.U : lineV;
-                var height = isHorizontal ? lineV : childSize.U;
-                child.Arrange(new Rect(x, y, width, height));
-                u += childSize.U;
+                var child = children[i];
+                if (child != null)
+                {
+                    var childSize = new UVSize(orientation, child.DesiredSize.Width, child.DesiredSize.Height);
+                    double layoutSlotU = useItemU ? itemU : childSize.U;
+                    child.Arrange(new Rect(
+                        isHorizontal ? u : v,
+                        isHorizontal ? v : u,
+                        isHorizontal ? layoutSlotU : lineV,
+                        isHorizontal ? lineV : layoutSlotU));
+                    u += layoutSlotU;
+                }
             }
         }
-        /// <summary>
-        /// Used to not not write separate code for horizontal and vertical orientation.
-        /// U is direction in line. (x if orientation is horizontal)
-        /// V is direction of lines. (y if orientation is horizontal)
-        /// </summary>
-        [DebuggerDisplay("U = {U} V = {V}")]
+
         private struct UVSize
         {
-            private readonly Orientation _orientation;
-
-            internal double U;
-
-            internal double V;
-
-            private UVSize(Orientation orientation, double width, double height)
+            internal UVSize(Orientation orientation, double width, double height)
             {
                 U = V = 0d;
                 _orientation = orientation;
                 Width = width;
                 Height = height;
-            }
-
-            internal UVSize(Orientation orientation, Size size)
-                : this(orientation, size.Width, size.Height)
-            {
             }
 
             internal UVSize(Orientation orientation)
@@ -213,41 +282,19 @@ namespace Avalonia.Controls
                 _orientation = orientation;
             }
 
-            private double Width
-            {
-                get { return (_orientation == Orientation.Horizontal ? U : V); }
-                set
-                {
-                    if (_orientation == Orientation.Horizontal)
-                    {
-                        U = value;
-                    }
-                    else
-                    {
-                        V = value;
-                    }
-                }
-            }
+            internal double U;
+            internal double V;
+            private Orientation _orientation;
 
-            private double Height
+            internal double Width
             {
-                get { return (_orientation == Orientation.Horizontal ? V : U); }
-                set
-                {
-                    if (_orientation == Orientation.Horizontal)
-                    {
-                        V = value;
-                    }
-                    else
-                    {
-                        U = value;
-                    }
-                }
+                get { return _orientation == Orientation.Horizontal ? U : V; }
+                set { if (_orientation == Orientation.Horizontal) U = value; else V = value; }
             }
-
-            public Size ToSize()
+            internal double Height
             {
-                return new Size(Width, Height);
+                get { return _orientation == Orientation.Horizontal ? V : U; }
+                set { if (_orientation == Orientation.Horizontal) V = value; else U = value; }
             }
         }
     }

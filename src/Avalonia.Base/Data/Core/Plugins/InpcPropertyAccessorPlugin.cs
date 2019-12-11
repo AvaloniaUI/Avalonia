@@ -28,12 +28,12 @@ namespace Avalonia.Data.Core.Plugins
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
         /// </returns>
-        public IPropertyAccessor Start(WeakReference reference, string propertyName)
+        public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)
         {
             Contract.Requires<ArgumentNullException>(reference != null);
             Contract.Requires<ArgumentNullException>(propertyName != null);
 
-            var instance = reference.Target;
+            reference.TryGetTarget(out object instance);
             var p = instance.GetType().GetRuntimeProperties().FirstOrDefault(x => x.Name == propertyName);
 
             if (p != null)
@@ -50,11 +50,11 @@ namespace Avalonia.Data.Core.Plugins
 
         private class Accessor : PropertyAccessorBase, IWeakSubscriber<PropertyChangedEventArgs>
         {
-            private readonly WeakReference _reference;
+            private readonly WeakReference<object> _reference;
             private readonly PropertyInfo _property;
             private bool _eventRaised;
 
-            public Accessor(WeakReference reference,  PropertyInfo property)
+            public Accessor(WeakReference<object> reference,  PropertyInfo property)
             {
                 Contract.Requires<ArgumentNullException>(reference != null);
                 Contract.Requires<ArgumentNullException>(property != null);
@@ -69,7 +69,7 @@ namespace Avalonia.Data.Core.Plugins
             {
                 get
                 {
-                    var o = _reference.Target;
+                    var o = GetReferenceTarget();
                     return (o != null) ? _property.GetValue(o) : null;
                 }
             }
@@ -79,7 +79,7 @@ namespace Avalonia.Data.Core.Plugins
                 if (_property.CanWrite)
                 {
                     _eventRaised = false;
-                    _property.SetValue(_reference.Target, value);
+                    _property.SetValue(GetReferenceTarget(), value);
 
                     if (!_eventRaised)
                     {
@@ -103,13 +103,13 @@ namespace Avalonia.Data.Core.Plugins
 
             protected override void SubscribeCore()
             {
-                SendCurrentValue();
                 SubscribeToChanges();
+                SendCurrentValue();
             }
 
             protected override void UnsubscribeCore()
             {
-                var inpc = _reference.Target as INotifyPropertyChanged;
+                var inpc = GetReferenceTarget() as INotifyPropertyChanged;
 
                 if (inpc != null)
                 {
@@ -118,6 +118,13 @@ namespace Avalonia.Data.Core.Plugins
                         nameof(inpc.PropertyChanged),
                         this);
                 }
+            }
+
+            private object GetReferenceTarget()
+            {
+                _reference.TryGetTarget(out object target);
+
+                return target;
             }
 
             private void SendCurrentValue()
@@ -132,7 +139,7 @@ namespace Avalonia.Data.Core.Plugins
 
             private void SubscribeToChanges()
             {
-                var inpc = _reference.Target as INotifyPropertyChanged;
+                var inpc = GetReferenceTarget() as INotifyPropertyChanged;
 
                 if (inpc != null)
                 {

@@ -1,6 +1,7 @@
-<UserControl
-xmlns="https://github.com/avaloniaui"
-xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<UserControl 
+  xmlns="https://github.com/avaloniaui" 
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+  x:Class="RenderDemo.Pages.AnimationsPage">
   <UserControl.Styles>
     <Styles>
       <Styles.Resources>
@@ -43,7 +44,7 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
       <Style Selector="Border.Rect1:pointerover">
         <Style.Animations>
           <Animation Duration="0:0:2.5"
-                     RepeatCount="4"
+                     IterationCount="4"
                      FillMode="None"
                      PlaybackDirection="AlternateReverse"
                      Easing="SineEaseInOut">
@@ -73,7 +74,7 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         <Style.Animations>
           <Animation Duration="0:0:0.5"
                      Easing="QuadraticEaseInOut"
-                     RepeatCount="Loop">
+                     IterationCount="Infinite">
             <KeyFrame Cue="50%">
               <Setter Property="ScaleTransform.ScaleX" Value="0.8"/>
               <Setter Property="ScaleTransform.ScaleY" Value="0.8"/>
@@ -87,6 +88,7 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
           <Animation Duration="0:0:3" Easing="BounceEaseInOut">
             <KeyFrame Cue="48%">
               <Setter Property="TranslateTransform.Y" Value="-100"/>
+              <Setter Property="Background" Value="Magenta"/>
             </KeyFrame>
           </Animation>
         </Style.Animations>
@@ -99,6 +101,35 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
             </KeyFrame>
             <KeyFrame Cue="75%">
               <Setter Property="SkewTransform.AngleX" Value="20"/>
+            </KeyFrame>
+          </Animation>
+        </Style.Animations>
+      </Style>
+      <Style Selector="Border.Rect6">
+        <Style.Animations>
+          <Animation Duration="0:0:3"
+                     IterationCount="Infinite"
+                     PlaybackDirection="Alternate">
+            <KeyFrame Cue="0%">
+              <Setter Property="Background" Value="Red"/>
+            </KeyFrame>
+            <KeyFrame Cue="15%">
+              <Setter Property="Background" Value="Yellow"/>
+            </KeyFrame>
+            <KeyFrame Cue="30%">
+              <Setter Property="Background" Value="Green"/>
+            </KeyFrame>
+            <KeyFrame Cue="45%">
+              <Setter Property="Background" Value="Cyan"/>
+            </KeyFrame>
+            <KeyFrame Cue="60%">
+              <Setter Property="Background" Value="Blue"/>
+            </KeyFrame>
+            <KeyFrame Cue="75%">
+              <Setter Property="Background" Value="Indigo"/>
+            </KeyFrame>
+            <KeyFrame Cue="90%">
+              <Setter Property="Background" Value="Violet"/>
             </KeyFrame>
           </Animation>
         </Style.Animations>
@@ -120,6 +151,7 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         <Border Classes="Test Rect3"/>
         <Border Classes="Test Rect4" Background="Navy"/>
         <Border Classes="Test Rect5" Background="SeaGreen"/>
+        <Border Classes="Test Rect6" Background="Red"/>
       </WrapPanel>
     </StackPanel>
   </Grid>

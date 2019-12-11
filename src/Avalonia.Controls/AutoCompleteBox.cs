@@ -58,7 +58,6 @@ namespace Avalonia.Controls
     /// <see cref="E:Avalonia.Controls.AutoCompleteBox.Populating" />
     /// event.
     /// </summary>
-    /// <QualityBand>Stable</QualityBand>
     public class PopulatingEventArgs : CancelEventArgs
     {
         /// <summary>
@@ -97,7 +96,6 @@ namespace Avalonia.Controls
     /// <typeparam name="T">The type used for filtering the
     /// <see cref="T:Avalonia.Controls.AutoCompleteBox" />. This type can
     /// be either a string or an object.</typeparam>
-    /// <QualityBand>Stable</QualityBand>
     public delegate bool AutoCompleteFilterPredicate<T>(string search, T item);
 
     /// <summary>
@@ -107,7 +105,6 @@ namespace Avalonia.Controls
     /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
     /// property for display in the drop-down.
     /// </summary>
-    /// <QualityBand>Stable</QualityBand>
     public enum AutoCompleteFilterMode
     {
         /// <summary>
@@ -348,7 +345,6 @@ namespace Avalonia.Controls
         /// </summary>
         private IDisposable _collectionChangeSubscription;
 
-        private IMemberSelector _valueMemberSelector;
         private Func<string, CancellationToken, Task<IEnumerable<object>>> _asyncPopulator;
         private CancellationTokenSource _populationCancellationTokenSource;
 
@@ -544,12 +540,6 @@ namespace Avalonia.Controls
                 o => o.Items,
                 (o, v) => o.Items = v);
 
-        public static readonly DirectProperty<AutoCompleteBox, IMemberSelector> ValueMemberSelectorProperty =
-            AvaloniaProperty.RegisterDirect<AutoCompleteBox, IMemberSelector>(
-                nameof(ValueMemberSelector),
-                o => o.ValueMemberSelector,
-                (o, v) => o.ValueMemberSelector = v);
-
         public static readonly DirectProperty<AutoCompleteBox, Func<string, CancellationToken, Task<IEnumerable<object>>>> AsyncPopulatorProperty =
             AvaloniaProperty.RegisterDirect<AutoCompleteBox, Func<string, CancellationToken, Task<IEnumerable<object>>>>(
                 nameof(AsyncPopulator),
@@ -714,7 +704,7 @@ namespace Avalonia.Controls
                 added.Add(e.NewValue);
             }
 
-            OnSelectionChanged(new SelectionChangedEventArgs(SelectionChangedEvent, removed, added));
+            OnSelectionChanged(new SelectionChangedEventArgs(SelectionChangedEvent, added, removed));
         }
 
         /// <summary>
@@ -798,7 +788,7 @@ namespace Avalonia.Controls
                 var template =
                     new FuncDataTemplate(
                         typeof(object),
-                        o =>
+                        (o, _) =>
                         {
                             var control = new ContentControl();
                             control.Bind(ContentControl.ContentProperty, value);
@@ -815,15 +805,15 @@ namespace Avalonia.Controls
         {
             FocusableProperty.OverrideDefaultValue<AutoCompleteBox>(true);
 
-            MinimumPopulateDelayProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnMinimumPopulateDelayChanged);
-            IsDropDownOpenProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnIsDropDownOpenChanged);
-            SelectedItemProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnSelectedItemPropertyChanged);
-            TextProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnTextPropertyChanged);
-            SearchTextProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnSearchTextPropertyChanged);
-            FilterModeProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnFilterModePropertyChanged);
-            ItemFilterProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnItemFilterPropertyChanged);
-            ItemsProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnItemsPropertyChanged);
-            IsEnabledProperty.Changed.AddClassHandler<AutoCompleteBox>(x => x.OnControlIsEnabledChanged);
+            MinimumPopulateDelayProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnMinimumPopulateDelayChanged(e));
+            IsDropDownOpenProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnIsDropDownOpenChanged(e));
+            SelectedItemProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnSelectedItemPropertyChanged(e));
+            TextProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnTextPropertyChanged(e));
+            SearchTextProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnSearchTextPropertyChanged(e));
+            FilterModeProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnFilterModePropertyChanged(e));
+            ItemFilterProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemFilterPropertyChanged(e));
+            ItemsProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemsPropertyChanged(e));
+            IsEnabledProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnControlIsEnabledChanged(e));
         }
 
         /// <summary>
@@ -959,20 +949,6 @@ namespace Avalonia.Controls
                     OnValueMemberBindingChanged(value);
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets or sets the MemberSelector that is used to get values for
-        /// display in the text portion of the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control.
-        /// </summary>
-        /// <value>The MemberSelector that is used to get values for display in
-        /// the text portion of the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control.</value>
-        public IMemberSelector ValueMemberSelector
-        {
-            get { return _valueMemberSelector; }
-            set { SetAndRaise(ValueMemberSelectorProperty, ref _valueMemberSelector, value); }
         }
 
         /// <summary>
@@ -1844,11 +1820,6 @@ namespace Avalonia.Controls
                 return _valueBindingEvaluator.GetDynamicValue(value) ?? String.Empty;
             }
 
-            if (_valueMemberSelector != null)
-            {
-                value = _valueMemberSelector.Select(value);
-            }
-
             return value == null ? String.Empty : value.ToString();
         }
 
@@ -1893,7 +1864,7 @@ namespace Avalonia.Controls
         {
             bool callTextChanged = false;
             // Update the Text dependency property
-            if ((userInitiated == null || userInitiated == true) && Text != value)
+            if ((userInitiated ?? true) && Text != value)
             {
                 _ignoreTextPropertyChange++;
                 Text = value;

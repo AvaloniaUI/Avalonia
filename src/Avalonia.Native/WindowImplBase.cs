@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
@@ -15,7 +16,35 @@ using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
-    public class WindowBaseImpl : IWindowBaseImpl,
+    public class MacOSTopLevelWindowHandle : IPlatformHandle, IMacOSTopLevelPlatformHandle
+    {
+        IAvnWindowBase _native;
+
+        public MacOSTopLevelWindowHandle(IAvnWindowBase native)
+        {
+            _native = native;
+        }
+
+        public IntPtr Handle => NSWindow;
+
+        public string HandleDescriptor => "NSWindow";
+
+        public IntPtr NSView => _native.ObtainNSViewHandle();
+
+        public IntPtr NSWindow => _native.ObtainNSWindowHandle();
+
+        public IntPtr GetNSViewRetained()
+        {
+            return _native.ObtainNSViewHandleRetained();
+        }
+
+        public IntPtr GetNSWindowRetained()
+        {
+            return _native.ObtainNSWindowHandleRetained();
+        }
+    }
+
+    public abstract class WindowBaseImpl : IWindowBaseImpl,
         IFramebufferPlatformSurface
     {
         IInputRoot _inputRoot;
@@ -23,7 +52,7 @@ namespace Avalonia.Native
         private object _syncRoot = new object();
         private bool _deferredRendering = false;
         private bool _gpu = false;
-        private readonly IMouseDevice _mouse;
+        private readonly MouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
         private readonly IStandardCursorFactory _cursorFactory;
         private Size _savedLogicalSize;
@@ -31,25 +60,31 @@ namespace Avalonia.Native
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
 
-        public WindowBaseImpl()
+        public WindowBaseImpl(AvaloniaNativePlatformOptions opts)
         {
-            var opts = AvaloniaLocator.Current.GetService<AvaloniaNativeOptions>();
-
             _gpu = opts.UseGpu;
             _deferredRendering = opts.UseDeferredRendering;
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
-            _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
+            _mouse = new MouseDevice();
             _cursorFactory = AvaloniaLocator.Current.GetService<IStandardCursorFactory>();
         }
 
         protected void Init(IAvnWindowBase window, IAvnScreens screens)
         {
             _native = window;
+
+            Handle = new MacOSTopLevelWindowHandle(window);
+            
             _glSurface = new GlPlatformSurface(window);
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
             _savedScaling = Scaling;
+
+            var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
+                    .FirstOrDefault(m => m.Bounds.Contains(Position));
+
+            Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d));
         }
 
         public Size ClientSize 
@@ -92,7 +127,8 @@ namespace Avalonia.Native
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action Closed { get; set; }
-        public IMouseDevice MouseDevice => AvaloniaNativePlatform.MouseDevice;
+        public IMouseDevice MouseDevice => _mouse;
+        public abstract IPopupImpl CreatePopup();
 
 
         class FramebufferWrapper : ILockedFramebuffer
@@ -137,6 +173,7 @@ namespace Avalonia.Native
                 {
                     n?.Dispose();
                 }
+                _parent._mouse.Dispose();
             }
 
             void IAvnWindowBaseEvents.Activated() => _parent.Activated?.Invoke();
@@ -159,7 +196,7 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.PositionChanged(AvnPoint position)
             {
-                _parent.PositionChanged?.Invoke(position.ToAvaloniaPoint());
+                _parent.PositionChanged?.Invoke(position.ToAvaloniaPixelPoint());
             }
 
             void IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
@@ -199,7 +236,7 @@ namespace Avalonia.Native
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawTextInputEventArgs(_keyboard, timeStamp, text);
+            var args = new RawTextInputEventArgs(_keyboard, timeStamp, _inputRoot, text);
 
             Input?.Invoke(args);
 
@@ -210,7 +247,7 @@ namespace Avalonia.Native
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawKeyEventArgs(_keyboard, timeStamp, (RawKeyEventType)type, (Key)key, (InputModifiers)modifiers);
+            var args = new RawKeyEventArgs(_keyboard, timeStamp, _inputRoot, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
 
             Input?.Invoke(args);
 
@@ -224,11 +261,11 @@ namespace Avalonia.Native
             switch (type)
             {
                 case AvnRawMouseEventType.Wheel:
-                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (InputModifiers)modifiers));
+                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
                     break;
 
                 default:
-                    Input?.Invoke(new RawMouseEventArgs(_mouse, timeStamp, _inputRoot, (RawMouseEventType)type, point.ToAvaloniaPoint(), (InputModifiers)modifiers));
+                    Input?.Invoke(new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers));
                     break;
             }
         }
@@ -275,20 +312,20 @@ namespace Avalonia.Native
         }
 
 
-        public Point Position
+        public PixelPoint Position
         {
-            get => _native.GetPosition().ToAvaloniaPoint();
+            get => _native.GetPosition().ToAvaloniaPixelPoint();
             set => _native.SetPosition(value.ToAvnPoint());
         }
 
-        public Point PointToClient(Point point)
+        public Point PointToClient(PixelPoint point)
         {
             return _native.PointToClient(point.ToAvnPoint()).ToAvaloniaPoint();
         }
 
-        public Point PointToScreen(Point point)
+        public PixelPoint PointToScreen(Point point)
         {
-            return _native.PointToScreen(point.ToAvnPoint()).ToAvaloniaPoint();
+            return _native.PointToScreen(point.ToAvnPoint()).ToAvaloniaPixelPoint();
         }
 
         public void Hide()
@@ -296,12 +333,13 @@ namespace Avalonia.Native
             _native.Hide();
         }
 
-        public void BeginMoveDrag()
+        public void BeginMoveDrag(PointerPressedEventArgs e)
         {
             _native.BeginMoveDrag();
         }
 
-        public Size MaxClientSize => _native.GetMaxClientSize().ToAvaloniaSize();
+        public Size MaxClientSize => Screen.AllScreens.Select(s => s.Bounds.Size.ToSize(s.PixelDensity))
+            .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
         public void SetTopmost(bool value)
         {
@@ -315,12 +353,17 @@ namespace Avalonia.Native
 
         public void SetCursor(IPlatformHandle cursor)
         {
+            if (_native == null)
+            {
+                return;
+            }
+            
             var newCursor = cursor as AvaloniaNativeCursor;
             newCursor = newCursor ?? (_cursorFactory.GetCursor(StandardCursorType.Arrow) as AvaloniaNativeCursor);
             _native.Cursor = newCursor.Cursor;
         }
 
-        public Action<Point> PositionChanged { get; set; }
+        public Action<PixelPoint> PositionChanged { get; set; }
 
         public Action<RawInputEventArgs> Input { get; set; }
 
@@ -337,11 +380,11 @@ namespace Avalonia.Native
             _native.SetMinMaxSize(minSize.ToAvnSize(), maxSize.ToAvnSize());
         }
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
 
         }
 
-        public IPlatformHandle Handle => new PlatformHandle(IntPtr.Zero, "NOT SUPPORTED");
+        public IPlatformHandle Handle { get; private set; }
     }
 }

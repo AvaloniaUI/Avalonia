@@ -1,0 +1,8 @@
+# editorconfig.org
+
+# top-most EditorConfig file
+root = false
+
+# C# files
+[*.cs]
+dotnet_style_require_accessibility_modifiers = never

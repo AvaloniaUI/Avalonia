@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 
@@ -10,6 +9,8 @@ namespace Avalonia.Data
 {
     public static class BindingOperations
     {
+        public static readonly object DoNothing = new object();
+
         /// <summary>
         /// Applies an <see cref="InstancedBinding"/> a property on an <see cref="IAvaloniaObject"/>.
         /// </summary>
@@ -54,18 +55,34 @@ namespace Avalonia.Data
 
                     if (source != null)
                     {
+                        // Perf: Avoid allocating closure in the outer scope.
+                        var targetCopy = target;
+                        var propertyCopy = property;
+                        var bindingCopy = binding;
+
                         return source
                             .Where(x => BindingNotification.ExtractValue(x) != AvaloniaProperty.UnsetValue)
                             .Take(1)
-                            .Subscribe(x => target.SetValue(property, x, binding.Priority));
+                            .Subscribe(x => targetCopy.SetValue(propertyCopy, x, bindingCopy.Priority));
                     }
                     else
                     {
                         target.SetValue(property, binding.Value, binding.Priority);
                         return Disposable.Empty;
                     }
+
                 case BindingMode.OneWayToSource:
-                    return target.GetObservable(property).Subscribe(binding.Subject);
+                {
+                    // Perf: Avoid allocating closure in the outer scope.
+                    var bindingCopy = binding;
+
+                    return Observable.CombineLatest(
+                        binding.Observable,
+                        target.GetObservable(property),
+                        (_, v) => v)
+                    .Subscribe(x => bindingCopy.Subject.OnNext(x));
+                }
+
                 default:
                     throw new ArgumentException("Invalid binding mode.");
             }

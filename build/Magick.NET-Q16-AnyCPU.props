@@ -1,5 +1,5 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="7.0.6.102" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="7.9.0.2" />
   </ItemGroup>
 </Project>

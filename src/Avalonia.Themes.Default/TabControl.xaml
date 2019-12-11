@@ -14,11 +14,10 @@
                             Name="PART_ItemsPresenter"
                             Items="{TemplateBinding Items}"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
-                            ItemTemplate="{TemplateBinding ItemTemplate}"
-                            MemberSelector="{TemplateBinding MemberSelector}"                     >
+                            ItemTemplate="{TemplateBinding ItemTemplate}">
                         </ItemsPresenter>
                         <ContentPresenter
-                            Name="PART_Content"
+                            Name="PART_SelectedContentHost"
                             Margin="{TemplateBinding Padding}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"

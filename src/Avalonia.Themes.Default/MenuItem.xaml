@@ -1,17 +1,17 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib">
+        xmlns:sys="clr-namespace:System;assembly=netstandard">
   
   <Style Selector="MenuItem">
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="BorderThickness" Value="1"/>
-    <Setter Property="Padding" Value="6,0"/>
+    <Setter Property="Padding" Value="6 0"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="root"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
-          <Grid ColumnDefinitions="22,13,*,20">
+          <Grid ColumnDefinitions="20,5,*,20">
             <ContentPresenter Name="icon"
                               Content="{TemplateBinding Icon}"
                               Width="16"
@@ -50,21 +50,12 @@
               <Border Background="{TemplateBinding Background}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">
-                <ScrollViewer>
-                  <Panel>
+                <ScrollViewer>                  
                     <ItemsPresenter Name="PART_ItemsPresenter"
                                     Items="{TemplateBinding Items}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
                                     ItemTemplate="{TemplateBinding ItemTemplate}"
-                                    Margin="2"
-                                    MemberSelector="{TemplateBinding MemberSelector}"/>
-                    <Rectangle Name="iconSeparator"
-                               Fill="{DynamicResource ThemeControlMidBrush}"
-                               HorizontalAlignment="Left"
-                               IsHitTestVisible="False"
-                               Margin="29,2,0,2"
-                               Width="1"/>
-                  </Panel>
+                                    Margin="4 2"/>                                      
                 </ScrollViewer>
               </Border>
             </Popup>
@@ -78,13 +69,14 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Separator Background="{DynamicResource ThemeControlMidBrush}"
-                   Margin="29,1,0,1"
+                   Margin="20,1,0,1"
                    Height="1"/>
       </ControlTemplate>
     </Setter>
   </Style>
 
   <Style Selector="Menu > MenuItem">
+    <Setter Property="Padding" Value="6 0"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="root"
@@ -109,20 +101,11 @@
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">
                 <ScrollViewer>
-                  <Panel>
-                    <ItemsPresenter Name="PART_ItemsPresenter"
+                  <ItemsPresenter Name="PART_ItemsPresenter"
                                     Items="{TemplateBinding Items}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
                                     ItemTemplate="{TemplateBinding ItemTemplate}"
-                                    Margin="2"
-                                    MemberSelector="{TemplateBinding MemberSelector}"/>
-                    <Rectangle Name="iconSeparator"
-                               Fill="{DynamicResource ThemeControlMidBrush}"
-                               HorizontalAlignment="Left"
-                               IsHitTestVisible="False"
-                               Margin="29,2,0,2"
-                               Width="1"/>
-                  </Panel>
+                                    Margin="2"/>
                 </ScrollViewer>
               </Border>
             </Popup>

@@ -4,31 +4,29 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts
 {
-    using System.Text;
-
-    public class FamilyNameCollection : IEnumerable<string>
-    {    
+    public sealed class FamilyNameCollection : IReadOnlyList<string>
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="FamilyNameCollection"/> class.
         /// </summary>
         /// <param name="familyNames">The family names.</param>
         /// <exception cref="ArgumentException">familyNames</exception>
-        public FamilyNameCollection(IEnumerable<string> familyNames)
+        public FamilyNameCollection(string familyNames)
         {
-            Contract.Requires<ArgumentNullException>(familyNames != null);
+            if (familyNames == null)
+            {
+                throw new ArgumentNullException(nameof(familyNames));
+            }
 
-            var names = new List<string>(familyNames);
+            Names = familyNames.Split(',').Select(x => x.Trim()).ToArray();
 
-            if (names.Count == 0) throw new ArgumentException($"{nameof(familyNames)} must not be empty.");
-
-            Names = new ReadOnlyCollection<string>(names);
-
-            PrimaryFamilyName = Names.First();
+            PrimaryFamilyName = Names[0];
 
             HasFallbacks = Names.Count > 1;
         }
@@ -55,27 +53,21 @@ namespace Avalonia.Media.Fonts
         /// <value>
         /// The names.
         /// </value>
-        internal ReadOnlyCollection<string> Names { get; }
+        internal IReadOnlyList<string> Names { get; }
 
-        /// <inheritdoc />
         /// <summary>
-        /// Returns an enumerator that iterates through the collection.
+        /// Returns an enumerator for the name collection.
         /// </summary>
-        /// <returns>
-        /// An enumerator that can be used to iterate through the collection.
-        /// </returns>
-        public IEnumerator<string> GetEnumerator()
+        public ImmutableReadOnlyListStructEnumerator<string> GetEnumerator()
         {
-            return Names.GetEnumerator();
+            return new ImmutableReadOnlyListStructEnumerator<string>(this);
         }
 
-        /// <inheritdoc />
-        /// <summary>
-        /// Returns an enumerator that iterates through a collection.
-        /// </summary>
-        /// <returns>
-        /// An <see cref="T:System.Collections.IEnumerator"></see> object that can be used to iterate through the collection.
-        /// </returns>
+        IEnumerator<string> IEnumerable<string>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
@@ -95,7 +87,10 @@ namespace Avalonia.Media.Fonts
             {
                 builder.Append(Names[index]);
 
-                if (index == Names.Count - 1) break;
+                if (index == Names.Count - 1)
+                {
+                    break;
+                }
 
                 builder.Append(", ");
             }
@@ -111,7 +106,39 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public override int GetHashCode()
         {
-            return ToString().GetHashCode();
+            if (Count == 0)
+            {
+                return 0;
+            }
+
+            unchecked
+            {
+                int hash = 17;
+
+                for (var i = 0; i < Names.Count; i++)
+                {
+                    string name = Names[i];
+
+                    hash = hash * 23 + name.GetHashCode();
+                }
+
+                return hash;
+            }
+        }
+
+        public static bool operator !=(FamilyNameCollection a, FamilyNameCollection b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator ==(FamilyNameCollection a, FamilyNameCollection b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+
+            return !(a is null) && a.Equals(b);
         }
 
         /// <summary>
@@ -123,9 +150,29 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public override bool Equals(object obj)
         {
-            if (!(obj is FamilyNameCollection other)) return false;
+            if (!(obj is FamilyNameCollection other))
+            {
+                return false;
+            }
 
-            return other.ToString().Equals(ToString());
+            if (other.Count != Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < Count; i++)
+            {
+                if (Names[i] != other.Names[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
+
+        public int Count => Names.Count;
+
+        public string this[int index] => Names[index];
     }
 }

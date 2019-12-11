@@ -24,13 +24,13 @@ namespace Avalonia
     /// <see cref="IPriorityValueOwner.Changed"/> method on the 
     /// owner object is fired with the old and new values.
     /// </remarks>
-    internal class PriorityValue
+    internal sealed class PriorityValue : ISetAndNotifyHandler<(object,int)>
     {
         private readonly Type _valueType;
         private readonly SingleOrDictionary<int, PriorityLevel> _levels = new SingleOrDictionary<int, PriorityLevel>();
-
         private readonly Func<object, object> _validate;
         private (object value, int priority) _value;
+        private DeferredSetter<object> _setter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.
@@ -197,7 +197,7 @@ namespace Avalonia
         /// <param name="error">The binding error.</param>
         public void LevelError(PriorityLevel level, BindingNotification error)
         {
-            error.LogIfError(Owner, Property);
+            Owner.LogError(Property, error.Error);
         }
 
         /// <summary>
@@ -242,22 +242,27 @@ namespace Avalonia
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
-            Owner.Setter.SetAndNotify(Property,
-                ref _value,
-                UpdateCore,
-                (value, priority));
+            var newValue = (value, priority);
+
+            if (newValue == _value)
+            {
+                return;
+            }
+
+            if (_setter == null)
+            {
+                _setter = Owner.GetNonDirectDeferredSetter(Property);
+            }
+
+            _setter.SetAndNotifyCallback(Property, this, ref _value, newValue);
         }
 
-        private bool UpdateCore(
-            object update,
-            ref (object value, int priority) backing,
-            Action<Action> notify)
-            => UpdateCore(((object, int))update, ref backing, notify);
+        void ISetAndNotifyHandler<(object, int)>.HandleSetAndNotify(AvaloniaProperty property, ref (object, int) backing, (object, int) value)
+        {
+            SetAndNotify(ref backing, value);
+        }
 
-        private bool UpdateCore(
-            (object value, int priority) update,
-            ref (object value, int priority) backing,
-            Action<Action> notify)
+        private void SetAndNotify(ref (object value, int priority) backing, (object value, int priority) update)
         {
             var val = update.value;
             var notification = val as BindingNotification;
@@ -286,7 +291,7 @@ namespace Avalonia
 
                 if (notification == null || notification.HasValue)
                 {
-                    notify(() => Owner?.Changed(Property, ValuePriority, old, Value));
+                    Owner?.Changed(Property, ValuePriority, old, Value);
                 }
 
                 if (notification != null)
@@ -296,7 +301,7 @@ namespace Avalonia
             }
             else
             {
-                Logger.Error(
+                Logger.TryGet(LogEventLevel.Error)?.Log(
                     LogArea.Binding,
                     Owner,
                     "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
@@ -305,7 +310,6 @@ namespace Avalonia
                     val,
                     val?.GetType());
             }
-            return true;
         }
     }
 }

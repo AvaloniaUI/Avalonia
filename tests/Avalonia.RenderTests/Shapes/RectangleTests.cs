@@ -21,6 +21,26 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
         }
 
         [Fact]
+        public async Task Rectangle_0px_Stroke()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Fill = Brushes.Transparent,
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 0
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
         public async Task Rectangle_1px_Stroke()
         {
             Decorator target = new Decorator

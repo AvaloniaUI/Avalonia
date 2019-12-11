@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ItemsRepeaterPage">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0 0 0 16">
+      <TextBlock Classes="h1">ItemsRepeater</TextBlock>
+      <TextBlock Classes="h2">A data-driven collection control that incorporates a flexible layout system, custom views, and virtualization.</TextBlock>
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Right" Margin="8 0" Spacing="4">
+      <ComboBox SelectedIndex="0" SelectionChanged="LayoutChanged">
+        <ComboBoxItem>Stack - Vertical</ComboBoxItem>
+        <ComboBoxItem>Stack - Horizontal</ComboBoxItem>
+        <ComboBoxItem>UniformGrid - Vertical</ComboBoxItem>
+        <ComboBoxItem>UniformGrid - Horizontal</ComboBoxItem>
+      </ComboBox>
+      <Button Command="{Binding AddItem}">Add Item</Button>
+      <Button Command="{Binding RandomizeHeights}">Randomize Heights</Button>
+      <Button Command="{Binding ResetItems}">Reset items</Button>
+    </StackPanel>
+    <Border BorderThickness="1" BorderBrush="{DynamicResource ThemeBorderMidBrush}" Margin="0 0 0 16">
+      <ScrollViewer Name="scroller"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Auto">
+        <ItemsRepeater Name="repeater" Background="Transparent" Items="{Binding Items}">
+          <ItemsRepeater.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Focusable="True" Height="{Binding Height}" Text="{Binding Text}"/>
+            </DataTemplate>
+          </ItemsRepeater.ItemTemplate>
+        </ItemsRepeater>
+      </ScrollViewer>
+    </Border>
+  </DockPanel>
+</UserControl>

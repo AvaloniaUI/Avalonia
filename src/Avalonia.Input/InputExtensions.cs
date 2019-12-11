@@ -13,6 +13,8 @@ namespace Avalonia.Input
     /// </summary>
     public static class InputExtensions
     {
+        private static readonly Func<IVisual, bool> s_hitTestDelegate = IsHitTestVisible;
+
         /// <summary>
         /// Returns the active input elements at a point on an <see cref="IInputElement"/>.
         /// </summary>
@@ -25,7 +27,7 @@ namespace Avalonia.Input
         {
             Contract.Requires<ArgumentNullException>(element != null);
 
-            return element.GetVisualsAt(p, IsHitTestVisible).Cast<IInputElement>();
+            return element.GetVisualsAt(p, s_hitTestDelegate).Cast<IInputElement>();
         }
 
         /// <summary>
@@ -45,7 +47,7 @@ namespace Avalonia.Input
             return element != null &&
                    element.IsVisible &&
                    element.IsHitTestVisible &&
-                   element.IsEnabledCore &&
+                   element.IsEffectivelyEnabled &&
                    element.IsAttachedToVisualTree;
         }
     }

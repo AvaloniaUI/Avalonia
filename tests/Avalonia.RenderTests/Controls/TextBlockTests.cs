@@ -20,7 +20,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         {
         }
 
-        [Fact]
+        [Win32Fact("Has text")]
         public async Task Wrapping_NoWrap()
         {
             Decorator target = new Decorator

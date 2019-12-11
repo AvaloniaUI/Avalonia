@@ -182,8 +182,9 @@ namespace Avalonia.Controls.UnitTests
                 var input = new RawKeyEventArgs(
                     new Mock<IKeyboardDevice>().Object,
                     0,
+                    target,
                     RawKeyEventType.KeyDown,
-                    Key.A, InputModifiers.None);
+                    Key.A, RawInputModifiers.None);
                 impl.Object.Input(input);
 
                 inputManagerMock.Verify(x => x.ProcessInput(input));
@@ -202,21 +203,9 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Template = CreateTemplate();
                 target.Content = child;
+                target.ApplyTemplate();
 
-                Assert.Throws<InvalidOperationException>(() => target.ApplyTemplate());
-            }
-        }
-
-        [Fact]
-        public void Exiting_Application_Notifies_Top_Level()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var impl = new Mock<ITopLevelImpl>();
-                impl.SetupAllProperties();
-                var target = new TestTopLevel(impl.Object);
-                UnitTestApplication.Current.Exit();
-                Assert.True(target.IsClosed);
+                Assert.Throws<InvalidOperationException>(() => target.Presenter.ApplyTemplate());
             }
         }
 
@@ -237,14 +226,32 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Close_Should_Notify_MouseDevice()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                var mouseDevice = new Mock<IMouseDevice>();
+                impl.SetupAllProperties();
+                impl.Setup(x => x.MouseDevice).Returns(mouseDevice.Object);
+
+                var target = new TestTopLevel(impl.Object);
+
+                impl.Object.Closed();
+
+                mouseDevice.Verify(x => x.TopLevelClosed(target));
+            }
+        }
+
         private FuncControlTemplate<TestTopLevel> CreateTemplate()
         {
-            return new FuncControlTemplate<TestTopLevel>(x =>
+            return new FuncControlTemplate<TestTopLevel>((x, scope) =>
                 new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
-                });
+                }.RegisterInNameScope(scope));
         }
 
         private class TestTopLevel : TopLevel
@@ -259,12 +266,6 @@ namespace Avalonia.Controls.UnitTests
             }
 
             protected override ILayoutManager CreateLayoutManager() => _layoutManager;
-
-            protected override void HandleApplicationExiting()
-            {
-                base.HandleApplicationExiting();
-                IsClosed = true;
-            }
         }
     }
 }

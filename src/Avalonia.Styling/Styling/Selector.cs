@@ -18,6 +18,14 @@ namespace Avalonia.Styling
         public abstract bool InTemplate { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this selector is a combinator.
+        /// </summary>
+        /// <remarks>
+        /// A combinator is a selector such as Child or Descendent which links simple selectors.
+        /// </remarks>
+        public abstract bool IsCombinator { get; }
+
+        /// <summary>
         /// Gets the target type of the selector, if available.
         /// </summary>
         public abstract Type TargetType { get; }
@@ -33,25 +41,32 @@ namespace Avalonia.Styling
         /// <returns>A <see cref="SelectorMatch"/>.</returns>
         public SelectorMatch Match(IStyleable control, bool subscribe = true)
         {
-            List<IObservable<bool>> inputs = new List<IObservable<bool>>();
-            Selector selector = this;
+            var inputs = new List<IObservable<bool>>();
+            var selector = this;
+            var alwaysThisType = true;
+            var hitCombinator = false;
 
             while (selector != null)
             {
-                if (selector.InTemplate && control.TemplatedParent == null)
-                {
-                    return SelectorMatch.False;
-                }
+                hitCombinator |= selector.IsCombinator;
 
                 var match = selector.Evaluate(control, subscribe);
 
-                if (match.ImmediateResult == false)
+                if (!match.IsMatch)
                 {
-                    return match;
+                    return hitCombinator ? SelectorMatch.NeverThisInstance : match;
                 }
-                else if (match.ObservableResult != null)
+                else if (selector.InTemplate && control.TemplatedParent == null)
                 {
-                    inputs.Add(match.ObservableResult);
+                    return SelectorMatch.NeverThisInstance;
+                }
+                else if (match.Result == SelectorMatchResult.AlwaysThisInstance)
+                {
+                    alwaysThisType = false;
+                }
+                else if (match.Result == SelectorMatchResult.Sometimes)
+                {
+                    inputs.Add(match.Activator);
                 }
 
                 selector = selector.MovePrevious();
@@ -63,7 +78,9 @@ namespace Avalonia.Styling
             }
             else
             {
-                return SelectorMatch.True;
+                return alwaysThisType && !hitCombinator ? 
+                    SelectorMatch.AlwaysThisType :
+                    SelectorMatch.AlwaysThisInstance;
             }
         }
 

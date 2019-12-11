@@ -17,6 +17,11 @@ namespace Avalonia
         event EventHandler<AvaloniaPropertyChangedEventArgs> PropertyChanged;
 
         /// <summary>
+        /// Raised when an inheritable <see cref="AvaloniaProperty"/> value changes on this object.
+        /// </summary>
+        event EventHandler<AvaloniaPropertyChangedEventArgs> InheritablePropertyChanged;
+
+        /// <summary>
         /// Gets a <see cref="AvaloniaProperty"/> value.
         /// </summary>
         /// <param name="property">The property.</param>

@@ -31,6 +31,13 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public void Expression_Cannot_Start_With_Period_Then_Token()
+        {
+            Assert.Throws<ExpressionParseException>(
+                () => ExpressionObserverBuilder.Parse(".Bar"));
+        }
+
+        [Fact]
         public void Expression_Cannot_Have_Empty_Indexer()
         {
             Assert.Throws<ExpressionParseException>(

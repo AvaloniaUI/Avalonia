@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
@@ -13,7 +13,6 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-using System.Threading.Tasks;
 
 namespace Avalonia.Rendering
 {
@@ -29,10 +28,11 @@ namespace Avalonia.Rendering
         private readonly ISceneBuilder _sceneBuilder;
 
         private bool _running;
+        private bool _disposed;
         private volatile IRef<Scene> _scene;
         private DirtyVisuals _dirty;
+        private HashSet<IVisual> _recalculateChildren;
         private IRef<IRenderTargetBitmapImpl> _overlay;
-        private object _rendering = new object();
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
         private IRef<IDrawOperation> _currentDraw;
@@ -99,6 +99,9 @@ namespace Avalonia.Rendering
         /// </summary>
         public string DebugFramesPath { get; set; }
 
+        /// <inheritdoc/>
+        public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
+
         /// <summary>
         /// Gets the render layers.
         /// </summary>
@@ -122,15 +125,36 @@ namespace Avalonia.Rendering
         {
             lock (_sceneLock)
             {
+                if (_disposed)
+                    return;
+                _disposed = true;
                 var scene = _scene;
                 _scene = null;
                 scene?.Dispose();
             }
 
             Stop();
+            DisposeRenderTarget();
+        }
 
-            Layers.Clear();
-            RenderTarget?.Dispose();
+        public void RecalculateChildren(IVisual visual) => _recalculateChildren?.Add(visual);
+
+        void DisposeRenderTarget()
+        {
+            using (var l = _lock.TryLock())
+            {
+                if(l == null)
+                {
+                    // We are still trying to render on the render thread, try again a bit later
+                    DispatcherTimer.RunOnce(DisposeRenderTarget, TimeSpan.FromMilliseconds(50),
+                        DispatcherPriority.Background);
+                    return;
+                }
+
+                Layers.Clear();
+                RenderTarget?.Dispose();
+                RenderTarget = null;
+            }
         }
 
         /// <inheritdoc/>
@@ -152,7 +176,8 @@ namespace Avalonia.Rendering
             var t = (IRenderLoopTask)this;
             if(t.NeedsUpdate)
                 UpdateScene();
-            Render(true);
+            if(_scene?.Item != null)
+                Render(true);
         }
 
         /// <inheritdoc/>
@@ -208,6 +233,8 @@ namespace Avalonia.Rendering
 
         internal void UnitTestRender() => Render(false);
 
+        internal Scene UnitTestScene() => _scene.Item;
+
         private void Render(bool forceComposite)
         {
             using (var l = _lock.TryLock())
@@ -220,26 +247,20 @@ namespace Avalonia.Rendering
                 {
                     try
                     {
-                        IDrawingContextImpl GetContext()
-                        {
-                            if (context != null)
-                                return context;
-                            if (RenderTarget == null)
-                                RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
-                            return context = RenderTarget.CreateDrawingContext(this);
+                        var (scene, updated) = UpdateRenderLayersAndConsumeSceneIfNeeded(ref context);
 
-                        }
-
-                        var (scene, updated) = UpdateRenderLayersAndConsumeSceneIfNeeded(GetContext);
                         using (scene)
                         {
-                            var overlay = DrawDirtyRects || DrawFps;
-                            if (DrawDirtyRects)
-                                _dirtyRectsDisplay.Tick();
-                            if (overlay)
-                                RenderOverlay(scene.Item, GetContext());
-                            if (updated || forceComposite || overlay)
-                                RenderComposite(scene.Item, GetContext());
+                            if (scene?.Item != null)
+                            {
+                                var overlay = DrawDirtyRects || DrawFps;
+                                if (DrawDirtyRects)
+                                    _dirtyRectsDisplay.Tick();
+                                if (overlay)
+                                    RenderOverlay(scene.Item, ref context);
+                                if (updated || forceComposite || overlay)
+                                    RenderComposite(scene.Item, ref context);
+                            }
                         }
                     }
                     finally
@@ -249,14 +270,14 @@ namespace Avalonia.Rendering
                 }
                 catch (RenderTargetCorruptedException ex)
                 {
-                    Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                    Logger.TryGet(LogEventLevel.Information)?.Log("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
                     RenderTarget?.Dispose();
                     RenderTarget = null;
                 }
             }
         }
 
-        private (IRef<Scene> scene, bool updated) UpdateRenderLayersAndConsumeSceneIfNeeded(Func<IDrawingContextImpl> contextFactory,
+        private (IRef<Scene> scene, bool updated) UpdateRenderLayersAndConsumeSceneIfNeeded(ref IDrawingContextImpl context,
             bool recursiveCall = false)
         {
             IRef<Scene> sceneRef;
@@ -269,7 +290,8 @@ namespace Avalonia.Rendering
                 var scene = sceneRef.Item;
                 if (scene.Generation != _lastSceneId)
                 {
-                    var context = contextFactory();
+                    EnsureDrawingContext(ref context);
+
                     Layers.Update(scene, context);
 
                     RenderToLayers(scene);
@@ -290,18 +312,18 @@ namespace Avalonia.Rendering
                     if (!recursiveCall && Dispatcher.UIThread.CheckAccess() && NeedsUpdate)
                     {
                         UpdateScene();
-                        var (rs, _) = UpdateRenderLayersAndConsumeSceneIfNeeded(contextFactory, true);
+                        var (rs, _) = UpdateRenderLayersAndConsumeSceneIfNeeded(ref context, true);
                         return (rs, true);
                     }
-                    
+
                     // Indicate that we have updated the layers
                     return (sceneRef.Clone(), true);
                 }
-                
+
                 // Just return scene, layers weren't updated
                 return (sceneRef.Clone(), false);
             }
-            
+
         }
 
 
@@ -336,28 +358,49 @@ namespace Avalonia.Rendering
 
         private void RenderToLayers(Scene scene)
         {
-            if (scene.Layers.HasDirty)
+            foreach (var layer in scene.Layers)
             {
-                foreach (var layer in scene.Layers)
-                {
-                    var renderTarget = Layers[layer.LayerRoot].Bitmap;
-                    var node = (VisualNode)scene.FindNode(layer.LayerRoot);
+                var renderLayer = Layers[layer.LayerRoot];
+                if (layer.Dirty.IsEmpty && !renderLayer.IsEmpty)
+                    continue;
+                var renderTarget = renderLayer.Bitmap;
+                var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
-                    if (node != null)
+                if (node != null)
+                {
+                    using (var context = renderTarget.Item.CreateDrawingContext(this))
                     {
-                        using (var context = renderTarget.Item.CreateDrawingContext(this))
+                        if (renderLayer.IsEmpty)
                         {
+                            // Render entire layer root node
+                            context.Clear(Colors.Transparent);
+                            context.Transform = Matrix.Identity;
+                            context.PushClip(node.ClipBounds);
+                            Render(context, node, layer.LayerRoot, node.ClipBounds);
+                            context.PopClip();
+                            if (DrawDirtyRects)
+                            {
+                                _dirtyRectsDisplay.Add(node.ClipBounds);
+                            }
+
+                            renderLayer.IsEmpty = false;
+                        }
+                        else
+                        {
+                            var scale = scene.Scaling;
+
                             foreach (var rect in layer.Dirty)
                             {
+                                var snappedRect = SnapToDevicePixels(rect, scale);
                                 context.Transform = Matrix.Identity;
-                                context.PushClip(rect);
+                                context.PushClip(snappedRect);
                                 context.Clear(Colors.Transparent);
-                                Render(context, node, layer.LayerRoot, rect);
+                                Render(context, node, layer.LayerRoot, snappedRect);
                                 context.PopClip();
 
                                 if (DrawDirtyRects)
                                 {
-                                    _dirtyRectsDisplay.Add(rect);
+                                    _dirtyRectsDisplay.Add(snappedRect);
                                 }
                             }
                         }
@@ -366,8 +409,20 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void RenderOverlay(Scene scene, IDrawingContextImpl parentContent)
+        private static Rect SnapToDevicePixels(Rect rect, double scale)
         {
+            return new Rect(
+                Math.Floor(rect.X * scale) / scale,
+                Math.Floor(rect.Y * scale) / scale,
+                Math.Ceiling(rect.Width * scale) / scale,
+                Math.Ceiling(rect.Height * scale) / scale);
+                
+        }
+
+        private void RenderOverlay(Scene scene, ref IDrawingContextImpl parentContent)
+        {
+            EnsureDrawingContext(ref parentContent);
+
             if (DrawDirtyRects)
             {
                 var overlay = GetOverlay(parentContent, scene.Size, scene.Scaling);
@@ -390,14 +445,16 @@ namespace Avalonia.Rendering
             foreach (var r in _dirtyRectsDisplay)
             {
                 var brush = new ImmutableSolidColorBrush(Colors.Magenta, r.Opacity);
-                context.FillRectangle(brush, r.Rect);
+                context.DrawRectangle(brush,null, r.Rect);
             }
         }
 
-        private void RenderComposite(Scene scene, IDrawingContextImpl context)
+        private void RenderComposite(Scene scene, ref IDrawingContextImpl context)
         {
+            EnsureDrawingContext(ref context);
+
             context.Clear(Colors.Transparent);
-            
+
             var clientRect = new Rect(scene.Size);
 
             foreach (var layer in scene.Layers)
@@ -437,11 +494,34 @@ namespace Avalonia.Rendering
             }
         }
 
+        private void EnsureDrawingContext(ref IDrawingContextImpl context)
+        {
+            if (context != null)
+            {
+                return;
+            }
+
+            if ((RenderTarget as IRenderTargetWithCorruptionInfo)?.IsCorrupted == true)
+            {
+                RenderTarget.Dispose();
+                RenderTarget = null;
+            }
+
+            if (RenderTarget == null)
+            {
+                RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+            }
+
+            context = RenderTarget.CreateDrawingContext(this);
+        }
+
         private void UpdateScene()
         {
             Dispatcher.UIThread.VerifyAccess();
             lock (_sceneLock)
             {
+                if (_disposed)
+                    return;
                 if (_scene?.Item.Generation > _lastSceneId)
                     return;
             }
@@ -453,10 +533,19 @@ namespace Avalonia.Rendering
                 if (_dirty == null)
                 {
                     _dirty = new DirtyVisuals();
+                    _recalculateChildren = new HashSet<IVisual>();
                     _sceneBuilder.UpdateAll(scene);
                 }
-                else if (_dirty.Count > 0)
+                else
                 {
+                    foreach (var visual in _recalculateChildren)
+                    {
+                        var node = scene.FindNode(visual);
+                        ((VisualNode)node)?.SortChildren(scene);
+                    }
+
+                    _recalculateChildren.Clear();
+
                     foreach (var visual in _dirty)
                     {
                         _sceneBuilder.Update(scene, visual);
@@ -471,6 +560,21 @@ namespace Avalonia.Rendering
                 }
 
                 _dirty.Clear();
+
+                if (SceneInvalidated != null)
+                {
+                    var rect = new Rect();
+
+                    foreach (var layer in scene.Layers)
+                    {
+                        foreach (var dirty in layer.Dirty)
+                        {
+                            rect = rect.Union(dirty);
+                        }
+                    }
+
+                    SceneInvalidated(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
+                }
             }
             else
             {

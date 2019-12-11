@@ -14,14 +14,14 @@ namespace Avalonia.Animation
     /// </summary>
     public class CrossFade : IPageTransition
     {
-        private Animation _fadeOutAnimation;
-        private Animation _fadeInAnimation;
+        private readonly Animation _fadeOutAnimation;
+        private readonly Animation _fadeInAnimation;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossFade"/> class.
         /// </summary>
         public CrossFade()
-            :this(TimeSpan.Zero)
+            : this(TimeSpan.Zero)
         {
         }
 
@@ -33,30 +33,40 @@ namespace Avalonia.Animation
         {
             _fadeOutAnimation = new Animation
             {
-                new KeyFrame
-                (
-                    new Setter
-                    {
-                        Property = Visual.OpacityProperty,
-                        Value = 0d
-                    }
-                )
+                Children =
                 {
-                    Cue = new Cue(1d)
+                    new KeyFrame()
+                    {
+                        Setters =
+                        {
+                            new Setter
+                            {
+                                Property = Visual.OpacityProperty,
+                                Value = 0d
+                            }
+                        },
+                        Cue = new Cue(1d)
+                    }
+
                 }
             };
             _fadeInAnimation = new Animation
             {
-                new KeyFrame
-                (
-                    new Setter
-                    {
-                        Property = Visual.OpacityProperty,
-                        Value = 0d
-                    }
-                )
+                Children =
                 {
-                    Cue = new Cue(0d)
+                    new KeyFrame()
+                    {
+                        Setters =
+                        {
+                            new Setter
+                            {
+                                Property = Visual.OpacityProperty,
+                                Value = 1d
+                            }
+                        },
+                        Cue = new Cue(1d)
+                    }
+
                 }
             };
             _fadeOutAnimation.Duration = _fadeInAnimation.Duration = duration;

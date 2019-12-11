@@ -1,5 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Avalonia.Utilities
 {
@@ -8,161 +10,119 @@ namespace Avalonia.Utilities
     /// Used to fix #855.
     /// </summary>
     /// <typeparam name="TSetRecord">The type of value with which to track the delayed assignment.</typeparam>
-    class DeferredSetter<TSetRecord>
+    internal sealed class DeferredSetter<TSetRecord>
     {
-        private struct NotifyDisposable : IDisposable
-        {
-            private readonly SettingStatus status;
+        private readonly SingleOrQueue<TSetRecord> _pendingValues;
+        private bool _isNotifying;
 
-            internal NotifyDisposable(SettingStatus status)
+        public DeferredSetter()
+        {
+            _pendingValues = new SingleOrQueue<TSetRecord>();
+        }
+
+        private static void SetAndRaisePropertyChanged(AvaloniaObject source, AvaloniaProperty<TSetRecord> property, ref TSetRecord backing, TSetRecord value)
+        {
+            var old = backing;
+
+            backing = value;
+
+            source.RaisePropertyChanged(property, old, value);
+        }
+
+        public bool SetAndNotify(
+            AvaloniaObject source,
+            AvaloniaProperty<TSetRecord> property,
+            ref TSetRecord backing,
+            TSetRecord value)
+        {
+            if (!_isNotifying)
             {
-                this.status = status;
-                status.Notifying = true;
+                using (new NotifyDisposable(this))
+                {
+                    SetAndRaisePropertyChanged(source, property, ref backing, value);
+                }
+
+                if (!_pendingValues.Empty)
+                {
+                    using (new NotifyDisposable(this))
+                    {
+                        while (!_pendingValues.Empty)
+                        {
+                            SetAndRaisePropertyChanged(source, property, ref backing, _pendingValues.Dequeue());
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            _pendingValues.Enqueue(value);
+
+            return false;
+        }
+
+        public bool SetAndNotifyCallback<TValue>(AvaloniaProperty property, ISetAndNotifyHandler<TValue> setAndNotifyHandler, ref TValue backing, TValue value)
+            where TValue : TSetRecord
+        {
+            if (!_isNotifying)
+            {
+                using (new NotifyDisposable(this))
+                {
+                    setAndNotifyHandler.HandleSetAndNotify(property, ref backing, value);
+                }
+
+                if (!_pendingValues.Empty)
+                {
+                    using (new NotifyDisposable(this))
+                    {
+                        while (!_pendingValues.Empty)
+                        {
+                            setAndNotifyHandler.HandleSetAndNotify(property, ref backing, (TValue)_pendingValues.Dequeue());
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            _pendingValues.Enqueue(value);
+
+            return false;
+        }
+
+        /// <summary>
+        /// Disposable that marks the property as currently notifying.
+        /// When disposed, marks the property as done notifying.
+        /// </summary>
+        private readonly struct NotifyDisposable : IDisposable
+        {
+            private readonly DeferredSetter<TSetRecord> _setter;
+
+            internal NotifyDisposable(DeferredSetter<TSetRecord> setter)
+            {
+                _setter = setter;
+                _setter._isNotifying = true;
             }
 
             public void Dispose()
             {
-                status.Notifying = false;
+                _setter._isNotifying = false;
             }
         }
+    }
 
+    /// <summary>
+    /// Handler for set and notify requests.
+    /// </summary>
+    /// <typeparam name="TValue">Value type.</typeparam>
+    internal interface ISetAndNotifyHandler<TValue>
+    {
         /// <summary>
-        /// Information on current setting/notification status of a property.
+        /// Handles deferred setter requests to set a value.
         /// </summary>
-        private class SettingStatus
-        {
-            public bool Notifying { get; set; }
-
-            private SingleOrQueue<TSetRecord> pendingValues;
-            
-            public SingleOrQueue<TSetRecord> PendingValues
-            {
-                get
-                {
-                    return pendingValues ?? (pendingValues = new SingleOrQueue<TSetRecord>());
-                }
-            }
-        }
-
-        private Dictionary<AvaloniaProperty, SettingStatus> _setRecords;
-        private Dictionary<AvaloniaProperty, SettingStatus> SetRecords
-            => _setRecords ?? (_setRecords = new Dictionary<AvaloniaProperty, SettingStatus>());
-
-        private SettingStatus GetOrCreateStatus(AvaloniaProperty property)
-        {
-            if (!SetRecords.TryGetValue(property, out var status))
-            {
-                status = new SettingStatus();
-                SetRecords.Add(property, status);
-            }
-
-            return status;
-        }
-
-        /// <summary>
-        /// Mark the property as currently notifying.
-        /// </summary>
-        /// <param name="property">The property to mark as notifying.</param>
-        /// <returns>Returns a disposable that when disposed, marks the property as done notifying.</returns>
-        private NotifyDisposable MarkNotifying(AvaloniaProperty property)
-        {
-            Contract.Requires<InvalidOperationException>(!IsNotifying(property));
-
-            SettingStatus status = GetOrCreateStatus(property);
-
-            return new NotifyDisposable(status);
-        }
-
-        /// <summary>
-        /// Check if the property is currently notifying listeners.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns>If the property is currently notifying listeners.</returns>
-        private bool IsNotifying(AvaloniaProperty property)
-            => SetRecords.TryGetValue(property, out var value) && value.Notifying;
-
-        /// <summary>
-        /// Add a pending assignment for the property.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="value">The value to assign.</param>
-        private void AddPendingSet(AvaloniaProperty property, TSetRecord value)
-        {
-            Contract.Requires<InvalidOperationException>(IsNotifying(property));
-
-            GetOrCreateStatus(property).PendingValues.Enqueue(value);
-        }
-
-        /// <summary>
-        /// Checks if there are any pending assignments for the property.
-        /// </summary>
-        /// <param name="property">The property to check.</param>
-        /// <returns>If the property has any pending assignments.</returns>
-        private bool HasPendingSet(AvaloniaProperty property)
-        {
-            return SetRecords.TryGetValue(property, out var status) && !status.PendingValues.Empty;
-        }
-
-        /// <summary>
-        /// Gets the first pending assignment for the property.
-        /// </summary>
-        /// <param name="property">The property to check.</param>
-        /// <returns>The first pending assignment for the property.</returns>
-        private TSetRecord GetFirstPendingSet(AvaloniaProperty property)
-        {
-            return GetOrCreateStatus(property).PendingValues.Dequeue();
-        }
-
-        public delegate bool SetterDelegate<TValue>(TSetRecord record, ref TValue backing, Action<Action> notifyCallback);
-
-        /// <summary>
-        /// Set the property and notify listeners while ensuring we don't get into a stack overflow as happens with #855 and #824
-        /// </summary>
-        /// <param name="property">The property to set.</param>
-        /// <param name="backing">The backing field for the property</param>
-        /// <param name="setterCallback">
-        /// A callback that actually sets the property.
-        /// The first parameter is the value to set, and the second is a wrapper that takes a callback that sends the property-changed notification.
-        /// </param>
-        /// <param name="value">The value to try to set.</param>
-        public bool SetAndNotify<TValue>(
-            AvaloniaProperty property,
-            ref TValue backing,
-            SetterDelegate<TValue> setterCallback,
-            TSetRecord value)
-        {
-            Contract.Requires<ArgumentNullException>(setterCallback != null);
-            if (!IsNotifying(property))
-            {
-                bool updated = false;
-                if (!object.Equals(value, backing))
-                {
-                    updated = setterCallback(value, ref backing, notification =>
-                    {
-                        using (MarkNotifying(property))
-                        {
-                            notification();
-                        }
-                    });
-                }
-                while (HasPendingSet(property))
-                {
-                    updated |= setterCallback(GetFirstPendingSet(property), ref backing, notification =>
-                    {
-                        using (MarkNotifying(property))
-                        {
-                            notification();
-                        }
-                    });
-                }
-
-                return updated;
-            }
-            else if(!object.Equals(value, backing))
-            {
-                AddPendingSet(property, value);
-            }
-            return false;
-        }
+        /// <param name="property">Property being set.</param>
+        /// <param name="backing">Backing field reference.</param>
+        /// <param name="value">New value.</param>
+        void HandleSetAndNotify(AvaloniaProperty property, ref TValue backing, TValue value);
     }
 }

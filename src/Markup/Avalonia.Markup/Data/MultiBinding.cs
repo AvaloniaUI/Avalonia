@@ -19,18 +19,28 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets the collection of child bindings.
         /// </summary>
-        [Content]
+        [Content, AssignBinding]
         public IList<IBinding> Bindings { get; set; } = new List<IBinding>();
 
         /// <summary>
-        /// Gets or sets the <see cref="IValueConverter"/> to use.
+        /// Gets or sets the <see cref="IMultiValueConverter"/> to use.
         /// </summary>
         public IMultiValueConverter Converter { get; set; }
+
+        /// <summary>
+        /// Gets or sets a parameter to pass to <see cref="Converter"/>.
+        /// </summary>
+        public object ConverterParameter { get; set; }
 
         /// <summary>
         /// Gets or sets the value to use when the binding is unable to produce a value.
         /// </summary>
         public object FallbackValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value to use when the binding result is null.
+        /// </summary>
+        public object TargetNullValue { get; set; }
 
         /// <summary>
         /// Gets or sets the binding mode.
@@ -47,6 +57,17 @@ namespace Avalonia.Data
         /// </summary>
         public RelativeSource RelativeSource { get; set; }
 
+        /// <summary>
+        /// Gets or sets the string format.
+        /// </summary>
+        public string StringFormat { get; set; }
+
+        public MultiBinding()
+        {
+            FallbackValue = AvaloniaProperty.UnsetValue;
+            TargetNullValue = AvaloniaProperty.UnsetValue;
+        }
+
         /// <inheritdoc/>
         public InstancedBinding Initiate(
             IAvaloniaObject target,
@@ -54,14 +75,24 @@ namespace Avalonia.Data
             object anchor = null,
             bool enableDataValidation = false)
         {
-            if (Converter == null)
-            {
-                throw new NotSupportedException("MultiBinding without Converter not currently supported.");
-            }
-
             var targetType = targetProperty?.PropertyType ?? typeof(object);
+            var converter = Converter;
+            // We only respect `StringFormat` if the type of the property we're assigning to will
+            // accept a string. Note that this is slightly different to WPF in that WPF only applies
+            // `StringFormat` for target type `string` (not `object`).
+            if (!string.IsNullOrWhiteSpace(StringFormat) && 
+                (targetType == typeof(string) || targetType == typeof(object)))
+            {
+                converter = new StringFormatMultiValueConverter(StringFormat, converter);
+            }
+            
             var children = Bindings.Select(x => x.Initiate(target, null));
-            var input = children.Select(x => x.Observable).CombineLatest().Select(x => ConvertValue(x, targetType));
+
+            var input = children.Select(x => x.Observable)
+                                .CombineLatest()
+                                .Select(x => ConvertValue(x, targetType, converter))
+                                .Where(x => x != BindingOperations.DoNothing);
+
             var mode = Mode == BindingMode.Default ?
                 targetProperty?.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
 
@@ -77,11 +108,17 @@ namespace Avalonia.Data
             }
         }
 
-        private object ConvertValue(IList<object> values, Type targetType)
+        private object ConvertValue(IList<object> values, Type targetType, IMultiValueConverter converter)
         {
-            var converted = Converter.Convert(values, targetType, null, CultureInfo.CurrentCulture);
+            var culture = CultureInfo.CurrentCulture;
+            var converted = converter.Convert(values, targetType, ConverterParameter, culture);
 
-            if (converted == AvaloniaProperty.UnsetValue && FallbackValue != null)
+            if (converted == null)
+            {
+                converted = TargetNullValue;
+            }
+
+            if (converted == AvaloniaProperty.UnsetValue)
             {
                 converted = FallbackValue;
             }

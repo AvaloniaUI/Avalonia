@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.Presenters
@@ -34,12 +35,6 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
             ItemsControl.ItemTemplateProperty.AddOwner<ItemsPresenterBase>();
 
-        /// <summary>
-        /// Defines the <see cref="MemberSelector"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IMemberSelector> MemberSelectorProperty =
-            ItemsControl.MemberSelectorProperty.AddOwner<ItemsPresenterBase>();
-
         private IEnumerable _items;
         private IDisposable _itemsSubscription;
         private bool _createdPanel;
@@ -50,7 +45,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         static ItemsPresenterBase()
         {
-            TemplatedParentProperty.Changed.AddClassHandler<ItemsPresenterBase>(x => x.TemplatedParentChanged);
+            TemplatedParentProperty.Changed.AddClassHandler<ItemsPresenterBase>((x,e) => x.TemplatedParentChanged(e));
         }
 
         /// <summary>
@@ -68,7 +63,7 @@ namespace Avalonia.Controls.Presenters
                 _itemsSubscription?.Dispose();
                 _itemsSubscription = null;
 
-                if (_createdPanel && value is INotifyCollectionChanged incc)
+                if (!IsHosted && _createdPanel && value is INotifyCollectionChanged incc)
                 {
                     _itemsSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
                 }
@@ -127,15 +122,6 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Selects a member from <see cref="Items"/> to use as the list item.
-        /// </summary>
-        public IMemberSelector MemberSelector
-        {
-            get { return GetValue(MemberSelectorProperty); }
-            set { SetValue(MemberSelectorProperty, value); }
-        }
-
-        /// <summary>
         /// Gets the panel used to display the items.
         /// </summary>
         public IPanel Panel
@@ -143,6 +129,8 @@ namespace Avalonia.Controls.Presenters
             get;
             private set;
         }
+
+        protected bool IsHosted => TemplatedParent is IItemsPresenterHost;
 
         /// <inheritdoc/>
         public override sealed void ApplyTemplate()
@@ -156,6 +144,15 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         public virtual void ScrollIntoView(object item)
         {
+        }
+
+        /// <inheritdoc/>
+        void IItemsPresenter.ItemsChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (Panel != null)
+            {
+                ItemsChanged(e);
+            }
         }
 
         /// <summary>
@@ -205,7 +202,13 @@ namespace Avalonia.Controls.Presenters
         /// has been set, the items collection has been modified, or the panel has been created.
         /// </summary>
         /// <param name="e">A description of the change.</param>
-        protected abstract void ItemsChanged(NotifyCollectionChangedEventArgs e);
+        /// <remarks>
+        /// The panel is guaranteed to be created when this method is called.
+        /// </remarks>
+        protected virtual void ItemsChanged(NotifyCollectionChangedEventArgs e)
+        {
+            ItemContainerSync.ItemsChanged(this, Items, e);
+        }
 
         /// <summary>
         /// Creates the <see cref="Panel"/> when <see cref="ApplyTemplate"/> is called for the first
@@ -223,7 +226,7 @@ namespace Avalonia.Controls.Presenters
 
             _createdPanel = true;
 
-            if (_itemsSubscription == null && Items is INotifyCollectionChanged incc)
+            if (!IsHosted && _itemsSubscription == null && Items is INotifyCollectionChanged incc)
             {
                 _itemsSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
             }

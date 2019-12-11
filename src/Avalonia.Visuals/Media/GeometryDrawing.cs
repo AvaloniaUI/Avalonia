@@ -23,7 +23,7 @@
         public static readonly StyledProperty<Pen> PenProperty =
             AvaloniaProperty.Register<GeometryDrawing, Pen>(nameof(Pen));
 
-        public Pen Pen
+        public IPen Pen
         {
             get => GetValue(PenProperty);
             set => SetValue(PenProperty, value);
@@ -31,7 +31,10 @@
 
         public override void Draw(DrawingContext context)
         {
-            context.DrawGeometry(Brush, Pen, Geometry);
+            if (Geometry != null)
+            {
+                context.DrawGeometry(Brush, Pen, Geometry);
+            }
         }
 
         public override Rect GetBounds()

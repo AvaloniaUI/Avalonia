@@ -7,13 +7,15 @@ namespace Avalonia
 {
     internal class ValueStore : IPriorityValueOwner
     {
+        private readonly AvaloniaPropertyValueStore<object> _propertyValues;
+        private readonly AvaloniaPropertyValueStore<object> _deferredSetters;
         private readonly AvaloniaObject _owner;
-        private readonly Dictionary<AvaloniaProperty, object> _values =
-            new Dictionary<AvaloniaProperty, object>();
 
         public ValueStore(AvaloniaObject owner)
         {
             _owner = owner;
+            _propertyValues = new AvaloniaPropertyValueStore<object>();
+            _deferredSetters = new AvaloniaPropertyValueStore<object>();
         }
 
         public IDisposable AddBinding(
@@ -23,7 +25,7 @@ namespace Avalonia
         {
             PriorityValue priorityValue;
 
-            if (_values.TryGetValue(property, out var v))
+            if (_propertyValues.TryGetValue(property, out var v))
             {
                 priorityValue = v as PriorityValue;
 
@@ -31,13 +33,13 @@ namespace Avalonia
                 {
                     priorityValue = CreatePriorityValue(property);
                     priorityValue.SetValue(v, (int)BindingPriority.LocalValue);
-                    _values[property] = priorityValue;
+                    _propertyValues.SetValue(property, priorityValue);
                 }
             }
             else
             {
                 priorityValue = CreatePriorityValue(property);
-                _values.Add(property, priorityValue);
+                _propertyValues.AddValue(property, priorityValue);
             }
 
             return priorityValue.Add(source, (int)priority);
@@ -47,7 +49,7 @@ namespace Avalonia
         {
             PriorityValue priorityValue;
 
-            if (_values.TryGetValue(property, out var v))
+            if (_propertyValues.TryGetValue(property, out var v))
             {
                 priorityValue = v as PriorityValue;
 
@@ -55,7 +57,8 @@ namespace Avalonia
                 {
                     if (priority == (int)BindingPriority.LocalValue)
                     {
-                        _values[property] = Validate(property, value);
+                        Validate(property, ref value);
+                        _propertyValues.SetValue(property, value);
                         Changed(property, priority, v, value);
                         return;
                     }
@@ -63,7 +66,7 @@ namespace Avalonia
                     {
                         priorityValue = CreatePriorityValue(property);
                         priorityValue.SetValue(v, (int)BindingPriority.LocalValue);
-                        _values[property] = priorityValue;
+                        _propertyValues.SetValue(property, priorityValue);
                     }
                 }
             }
@@ -76,14 +79,15 @@ namespace Avalonia
 
                 if (priority == (int)BindingPriority.LocalValue)
                 {
-                    _values.Add(property, Validate(property, value));
+                    Validate(property, ref value);
+                    _propertyValues.AddValue(property, value);
                     Changed(property, priority, AvaloniaProperty.UnsetValue, value);
                     return;
                 }
                 else
                 {
                     priorityValue = CreatePriorityValue(property);
-                    _values.Add(property, priorityValue);
+                    _propertyValues.AddValue(property, priorityValue);
                 }
             }
 
@@ -100,13 +104,21 @@ namespace Avalonia
             _owner.PriorityValueChanged(property, priority, oldValue, newValue);
         }
 
-        public IDictionary<AvaloniaProperty, object> GetSetValues() => _values;
+        public IDictionary<AvaloniaProperty, object> GetSetValues()
+        {
+            return _propertyValues.ToDictionary();
+        }
+
+        public void LogError(AvaloniaProperty property, Exception e)
+        {
+            _owner.LogBindingError(property, e);
+        }
 
         public object GetValue(AvaloniaProperty property)
         {
             var result = AvaloniaProperty.UnsetValue;
 
-            if (_values.TryGetValue(property, out var value))
+            if (_propertyValues.TryGetValue(property, out var value))
             {
                 result = (value is PriorityValue priorityValue) ? priorityValue.Value : value;
             }
@@ -116,12 +128,12 @@ namespace Avalonia
 
         public bool IsAnimating(AvaloniaProperty property)
         {
-            return _values.TryGetValue(property, out var value) && value is PriorityValue priority && priority.IsAnimating;
+            return _propertyValues.TryGetValue(property, out var value) && value is PriorityValue priority && priority.IsAnimating;
         }
 
         public bool IsSet(AvaloniaProperty property)
         {
-            if (_values.TryGetValue(property, out var value))
+            if (_propertyValues.TryGetValue(property, out var value))
             {
                 return ((value as PriorityValue)?.Value ?? value) != AvaloniaProperty.UnsetValue;
             }
@@ -131,7 +143,7 @@ namespace Avalonia
 
         public void Revalidate(AvaloniaProperty property)
         {
-            if (_values.TryGetValue(property, out var value))
+            if (_propertyValues.TryGetValue(property, out var value))
             {
                 (value as PriorityValue)?.Revalidate();
             }
@@ -156,27 +168,38 @@ namespace Avalonia
                 validate2);
         }
 
-        private object Validate(AvaloniaProperty property, object value)
+        private void Validate(AvaloniaProperty property, ref object value)
         {
             var validate = ((IStyledPropertyAccessor)property).GetValidationFunc(_owner.GetType());
 
             if (validate != null && value != AvaloniaProperty.UnsetValue)
             {
-                return validate(_owner, value);
+                value = validate(_owner, value);
             }
-
-            return value;
         }
 
-        private DeferredSetter<object> _deferredSetter;
-
-        public DeferredSetter<object> Setter
+        private DeferredSetter<T> GetDeferredSetter<T>(AvaloniaProperty property)
         {
-            get
+            if (_deferredSetters.TryGetValue(property, out var deferredSetter))
             {
-                return _deferredSetter ??
-                    (_deferredSetter = new DeferredSetter<object>());
+                return (DeferredSetter<T>)deferredSetter;
             }
+
+            var newDeferredSetter = new DeferredSetter<T>();
+
+            _deferredSetters.AddValue(property, newDeferredSetter);
+
+            return newDeferredSetter;
+        }
+
+        public DeferredSetter<object> GetNonDirectDeferredSetter(AvaloniaProperty property)
+        {
+            return GetDeferredSetter<object>(property);
+        }
+
+        public DeferredSetter<T> GetDirectDeferredSetter<T>(AvaloniaProperty<T> property)
+        {
+            return GetDeferredSetter<T>(property);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Avalonia.Remote.Protocol
         public DefaultMessageTypeResolver(params Assembly[] assemblies)
         {
             foreach (var asm in
-                (assemblies ?? new Assembly[0]).Concat(new[]
+                (assemblies ?? Array.Empty<Assembly>()).Concat(new[]
                     {typeof(AvaloniaRemoteMessageGuidAttribute).GetTypeInfo().Assembly}))
             {
                 foreach (var t in asm.ExportedTypes)

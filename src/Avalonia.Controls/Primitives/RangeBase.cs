@@ -44,13 +44,13 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="SmallChange"/> property.
         /// </summary>
         public static readonly StyledProperty<double> SmallChangeProperty =
-            AvaloniaProperty.Register<RangeBase, double>(nameof(SmallChange), 0.1);
+            AvaloniaProperty.Register<RangeBase, double>(nameof(SmallChange), 1);
 
         /// <summary>
         /// Defines the <see cref="LargeChange"/> property.
         /// </summary>
         public static readonly StyledProperty<double> LargeChangeProperty =
-            AvaloniaProperty.Register<RangeBase, double>(nameof(LargeChange), 1);
+            AvaloniaProperty.Register<RangeBase, double>(nameof(LargeChange), 10);
 
         private double _minimum;
         private double _maximum = 100.0;
@@ -75,10 +75,21 @@ namespace Avalonia.Controls.Primitives
 
             set
             {
-                value = ValidateMinimum(value);
-                SetAndRaise(MinimumProperty, ref _minimum, value);
-                Maximum = ValidateMaximum(Maximum);
-                Value = ValidateValue(Value);
+                if (!ValidateDouble(value))
+                {
+                    return;
+                }
+
+                if (IsInitialized)
+                {
+                    SetAndRaise(MinimumProperty, ref _minimum, value);
+                    Maximum = ValidateMaximum(Maximum);
+                    Value = ValidateValue(Value);
+                }
+                else
+                {
+                    SetAndRaise(MinimumProperty, ref _minimum, value);
+                }
             }
         }
 
@@ -94,9 +105,21 @@ namespace Avalonia.Controls.Primitives
 
             set
             {
-                value = ValidateMaximum(value);
-                SetAndRaise(MaximumProperty, ref _maximum, value);
-                Value = ValidateValue(Value);
+                if (!ValidateDouble(value))
+                {
+                    return;
+                }
+
+                if (IsInitialized)
+                {
+                    value = ValidateMaximum(value);
+                    SetAndRaise(MaximumProperty, ref _maximum, value);
+                    Value = ValidateValue(Value);
+                }
+                else
+                {
+                    SetAndRaise(MaximumProperty, ref _maximum, value);
+                }
             }
         }
 
@@ -112,8 +135,20 @@ namespace Avalonia.Controls.Primitives
 
             set
             {
-                value = ValidateValue(value);
-                SetAndRaise(ValueProperty, ref _value, value);
+                if (!ValidateDouble(value))
+                {
+                    return;
+                }
+
+                if (IsInitialized)
+                {
+                    value = ValidateValue(value);
+                    SetAndRaise(ValueProperty, ref _value, value);
+                }
+                else
+                {
+                    SetAndRaise(ValueProperty, ref _value, value);
+                }
             }
         }
 
@@ -129,28 +164,21 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(LargeChangeProperty, value);
         }
 
-        /// <summary>
-        /// Throws an exception if the double value is NaN or Inf.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="property">The name of the property being set.</param>
-        private static void ValidateDouble(double value, string property)
+        protected override void OnInitialized()
         {
-            if (double.IsInfinity(value) || double.IsNaN(value))
-            {
-                throw new ArgumentException($"{value} is not a valid value for {property}.");
-            }
+            base.OnInitialized();
+
+            Maximum = ValidateMaximum(Maximum);
+            Value = ValidateValue(Value);
         }
 
         /// <summary>
-        /// Validates the <see cref="Minimum"/> property.
+        /// Checks if the double value is not inifinity nor NaN.
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <returns>The coerced value.</returns>
-        private double ValidateMinimum(double value)
+        private static bool ValidateDouble(double value)
         {
-            ValidateDouble(value, "Minimum");
-            return value;
+            return !double.IsInfinity(value) || !double.IsNaN(value);
         }
 
         /// <summary>
@@ -160,7 +188,6 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The coerced value.</returns>
         private double ValidateMaximum(double value)
         {
-            ValidateDouble(value, "Maximum");
             return Math.Max(value, Minimum);
         }
 
@@ -171,7 +198,6 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The coerced value.</returns>
         private double ValidateValue(double value)
         {
-            ValidateDouble(value, "Value");
             return MathUtilities.Clamp(value, Minimum, Maximum);
         }
     }

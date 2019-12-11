@@ -15,6 +15,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -469,7 +470,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 VirtualizationMode = ItemVirtualizationMode.None,
                 Items = items,
-                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 }),
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
             };
 
             target.ApplyTemplate();
@@ -717,6 +718,119 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(10, target.Panel.Children.Count);
         }
 
+        [Fact]
+        public void Scroll_To_Last_Should_Work()
+        {
+            var target = CreateTarget(itemCount: 11);
+            var scroller = (TestScroller)target.Parent;
+
+            scroller.Width = scroller.Height = 100;
+            scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+
+            var last = (target.Items as IList)[10];
+
+            target.ScrollIntoView(last);
+
+            Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
+            Assert.Same(target.Panel.Children[9].DataContext, last);
+        }
+
+        [Fact]
+        public void Second_Scroll_To_Last_Should_Work()
+        {
+            var target = CreateTarget(itemCount: 11);
+            var scroller = (TestScroller)target.Parent;
+
+            scroller.Width = scroller.Height = 100;
+            scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+
+            var last = (target.Items as IList)[10];
+
+            target.ScrollIntoView(last);
+
+            Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
+            Assert.Same(target.Panel.Children[9].DataContext, last);
+
+            target.ScrollIntoView(last);
+
+            Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
+            Assert.Same(target.Panel.Children[9].DataContext, last);
+        }
+
+        [Fact]
+        public void Scrolling_Less_Than_A_Page_Should_Move_Recycled_Items()
+        {
+            var target = CreateTarget();
+            var items = (IList<string>)target.Items;
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var containers = target.Panel.Children.ToList();
+            var scroller = (ScrollContentPresenter)target.Parent;
+
+            scroller.Offset = new Vector(0, 5);
+
+            var scrolledContainers = containers
+                .Skip(5)
+                .Take(5)
+                .Concat(containers.Take(5)).ToList();
+
+            Assert.Equal(new Vector(0, 5), ((ILogicalScrollable)target).Offset);
+            Assert.Equal(scrolledContainers, target.Panel.Children);
+
+            for (var i = 0; i < target.Panel.Children.Count; ++i)
+            {
+                Assert.Equal(items[i + 5], target.Panel.Children[i].DataContext);
+            }
+
+            scroller.Offset = new Vector(0, 0);
+            Assert.Equal(new Vector(0, 0), ((ILogicalScrollable)target).Offset);
+            Assert.Equal(containers, target.Panel.Children);
+
+            var dcs = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            for (var i = 0; i < target.Panel.Children.Count; ++i)
+            {
+                Assert.Equal(items[i], target.Panel.Children[i].DataContext);
+            }
+        }
+
+        [Fact]
+        public void Scrolling_More_Than_A_Page_Should_Recycle_Items()
+        {
+            var target = CreateTarget(itemCount: 50);
+            var items = (IList<string>)target.Items;
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var containers = target.Panel.Children.ToList();
+            var scroller = (ScrollContentPresenter)target.Parent;
+
+            scroller.Offset = new Vector(0, 20);
+
+            Assert.Equal(new Vector(0, 20), ((ILogicalScrollable)target).Offset);
+            Assert.Equal(containers, target.Panel.Children);
+
+            for (var i = 0; i < target.Panel.Children.Count; ++i)
+            {
+                Assert.Equal(items[i + 20], target.Panel.Children[i].DataContext);
+            }
+
+            scroller.Offset = new Vector(0, 0);
+
+            Assert.Equal(new Vector(0, 0), ((ILogicalScrollable)target).Offset);
+            Assert.Equal(containers, target.Panel.Children);
+
+            for (var i = 0; i < target.Panel.Children.Count; ++i)
+            {
+                Assert.Equal(items[i], target.Panel.Children[i].DataContext);
+            }
+        }
+
         public class Vertical
         {
             [Fact]
@@ -902,86 +1016,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             }
         }
 
-        public class WithContainers
-        {
-            [Fact]
-            public void Scrolling_Less_Than_A_Page_Should_Move_Recycled_Items()
-            {
-                var target = CreateTarget();
-                var items = (IList<string>)target.Items;
-
-                target.ApplyTemplate();
-                target.Measure(new Size(100, 100));
-                target.Arrange(new Rect(0, 0, 100, 100));
-
-                var containers = target.Panel.Children.ToList();
-                var scroller = (ScrollContentPresenter)target.Parent;
-
-                scroller.Offset = new Vector(0, 5);
-
-                var scrolledContainers = containers
-                    .Skip(5)
-                    .Take(5)
-                    .Concat(containers.Take(5)).ToList();
-
-                Assert.Equal(new Vector(0, 5), ((ILogicalScrollable)target).Offset);
-                Assert.Equal(scrolledContainers, target.Panel.Children);
-
-                for (var i = 0; i < target.Panel.Children.Count; ++i)
-                {
-                    Assert.Equal(items[i + 5], target.Panel.Children[i].DataContext);
-                }
-
-                scroller.Offset = new Vector(0, 0);
-                Assert.Equal(new Vector(0, 0), ((ILogicalScrollable)target).Offset);
-                Assert.Equal(containers, target.Panel.Children);
-
-                var dcs = target.Panel.Children.Select(x => x.DataContext).ToList();
-
-                for (var i = 0; i < target.Panel.Children.Count; ++i)
-                {
-                    Assert.Equal(items[i], target.Panel.Children[i].DataContext);
-                }
-            }
-
-            [Fact]
-            public void Scrolling_More_Than_A_Page_Should_Recycle_Items()
-            {
-                var target = CreateTarget(itemCount: 50);
-                var items = (IList<string>)target.Items;
-
-                target.ApplyTemplate();
-                target.Measure(new Size(100, 100));
-                target.Arrange(new Rect(0, 0, 100, 100));
-
-                var containers = target.Panel.Children.ToList();
-                var scroller = (ScrollContentPresenter)target.Parent;
-
-                scroller.Offset = new Vector(0, 20);
-
-                Assert.Equal(new Vector(0, 20), ((ILogicalScrollable)target).Offset);
-                Assert.Equal(containers, target.Panel.Children);
-
-                for (var i = 0; i < target.Panel.Children.Count; ++i)
-                {
-                    Assert.Equal(items[i + 20], target.Panel.Children[i].DataContext);
-                }
-
-                scroller.Offset = new Vector(0, 0);
-
-                Assert.Equal(new Vector(0, 0), ((ILogicalScrollable)target).Offset);
-                Assert.Equal(containers, target.Panel.Children);
-
-                for (var i = 0; i < target.Panel.Children.Count; ++i)
-                {
-                    Assert.Equal(items[i], target.Panel.Children[i].DataContext);
-                }
-            }
-        }
-
         private static ItemsPresenter CreateTarget(
             Orientation orientation = Orientation.Vertical,
-            bool useContainers = true,
             int itemCount = 20,
             bool useAvaloniaList = false)
         {
@@ -995,11 +1031,11 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 CanHorizontallyScroll = true,
                 CanVerticallyScroll = true,
-                Content = result = new TestItemsPresenter(useContainers)
+                Content = result = new TestItemsPresenter
                 {
                     Items = items,
                     ItemsPanel = VirtualizingPanelTemplate(orientation),
-                    ItemTemplate = ItemTemplate(),
+                    DataTemplates = { StringDataTemplate() },
                     VirtualizationMode = ItemVirtualizationMode.Simple,
                 }
             };
@@ -1008,9 +1044,9 @@ namespace Avalonia.Controls.UnitTests.Presenters
             return result;
         }
 
-        private static IDataTemplate ItemTemplate()
+        private static IDataTemplate StringDataTemplate()
         {
-            return new FuncDataTemplate<string>(x => new Canvas
+            return new FuncDataTemplate<string>((x, _) => new Canvas
             {
                 Width = 10,
                 Height = 10,
@@ -1026,7 +1062,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             });
         }
 
-        private class TestScroller : ScrollContentPresenter, IRenderRoot, ILayoutRoot
+        private class TestScroller : ScrollContentPresenter, IRenderRoot, ILayoutRoot, IStyleRoot
         {
             public IRenderer Renderer { get; }
             public Size ClientSize { get; }
@@ -1038,46 +1074,20 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             public ILayoutManager LayoutManager { get; } = new LayoutManager();
 
-            public IRenderTarget CreateRenderTarget()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Invalidate(Rect rect)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Point PointToClient(Point point)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Point PointToScreen(Point point)
-            {
-                throw new NotImplementedException();
-            }
-
-            protected override Size MeasureOverride(Size availableSize)
-            {
-                return base.MeasureOverride(availableSize);
-            }
+            public IRenderTarget CreateRenderTarget() => throw new NotImplementedException();
+            public void Invalidate(Rect rect) => throw new NotImplementedException();
+            public Point PointToClient(PixelPoint p) => throw new NotImplementedException();
+            public PixelPoint PointToScreen(Point p) => throw new NotImplementedException();
         }
 
         private class TestItemsPresenter : ItemsPresenter
         {
-            private bool _useContainers;
-
-            public TestItemsPresenter(bool useContainers)
-            {
-                _useContainers = useContainers;
-            }
-
             protected override IItemContainerGenerator CreateItemContainerGenerator()
             {
-                return _useContainers ?
-                    new ItemContainerGenerator<TestContainer>(this, TestContainer.ContentProperty, null) :
-                    new ItemContainerGenerator(this);
+                return new ItemContainerGenerator<TestContainer>(
+                    this,
+                    TestContainer.ContentProperty,
+                    null);
             }
         }
 
@@ -1085,8 +1095,12 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             public TestContainer()
             {
-                Width = 10;
-                Height = 10;
+                Template = new FuncControlTemplate<TestContainer>((parent, scope) => new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
+                    [~ContentPresenter.ContentTemplateProperty] = parent[~ContentControl.ContentTemplateProperty],
+                }.RegisterInNameScope(scope));
             }
         }
     }

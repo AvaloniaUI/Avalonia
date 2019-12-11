@@ -4,6 +4,8 @@
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -12,11 +14,8 @@ namespace Avalonia.Controls.Primitives
         private static readonly FuncTemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new WrapPanel { Orientation = Orientation.Horizontal });
 
-        private static IMemberSelector s_MemberSelector = new FuncMemberSelector<object, object>(SelectHeader);
-
         static TabStrip()
         {
-            MemberSelectorProperty.OverrideDefaultValue<TabStrip>(s_MemberSelector);
             SelectionModeProperty.OverrideDefaultValue<TabStrip>(SelectionMode.AlwaysSelected);
             FocusableProperty.OverrideDefaultValue(typeof(TabStrip), false);
             ItemsPanelProperty.OverrideDefaultValue<TabStrip>(DefaultPanel);
@@ -46,16 +45,15 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPointerPressed(e);
 
-            if (e.MouseButton == MouseButton.Left)
+            if (e.Source is IVisual source)
             {
-                e.Handled = UpdateSelectionFromEventSource(e.Source);
-            }
-        }
+                var point = e.GetCurrentPoint(source);
 
-        private static object SelectHeader(object o)
-        {
-            var headered = o as IHeadered;
-            return (headered != null) ? (headered.Header ?? string.Empty) : o;
+                if (point.Properties.IsLeftButtonPressed)
+                {
+                    e.Handled = UpdateSelectionFromEventSource(e.Source);
+                }
+            }
         }
     }
 }

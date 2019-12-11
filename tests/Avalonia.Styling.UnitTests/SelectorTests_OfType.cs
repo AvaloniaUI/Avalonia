@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Controls;
 using Moq;
 using Xunit;
 
@@ -14,7 +15,7 @@ namespace Avalonia.Styling.UnitTests
             var control = new Control1();
             var target = default(Selector).OfType<Control1>();
 
-            Assert.True(target.Match(control).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.AlwaysThisType, target.Match(control).Result);
         }
 
         [Fact]
@@ -23,7 +24,16 @@ namespace Avalonia.Styling.UnitTests
             var control = new Control2();
             var target = default(Selector).OfType<Control1>();
 
-            Assert.False(target.Match(control).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.NeverThisType, target.Match(control).Result);
+        }
+
+        [Fact]
+        public void OfType_Class_Doesnt_Match_Control_Of_Wrong_Type()
+        {
+            var control = new Control2();
+            var target = default(Selector).OfType<Control1>().Class("foo");
+
+            Assert.Equal(SelectorMatchResult.NeverThisType, target.Match(control).Result);
         }
 
         [Fact]
@@ -32,14 +42,14 @@ namespace Avalonia.Styling.UnitTests
             var control = new Control1 { TemplatedParent = new Mock<ITemplatedControl>().Object };
             var target = default(Selector).OfType<Control1>();
 
-            Assert.True(target.Match(control).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.AlwaysThisType, target.Match(control).Result);
         }
 
-        public class Control1 : TestControlBase
+        public class Control1 : Control
         {
         }
 
-        public class Control2 : TestControlBase
+        public class Control2 : Control
         {
         }
     }

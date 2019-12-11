@@ -19,14 +19,16 @@ namespace Avalonia
         /// <summary>
         /// Represents an unset property value.
         /// </summary>
-        public static readonly object UnsetValue = new Unset();
+        public static readonly object UnsetValue = new UnsetValueType();
 
-        private static int s_nextId = 1;
+        private static int s_nextId;
         private readonly Subject<AvaloniaPropertyChangedEventArgs> _initialized;
         private readonly Subject<AvaloniaPropertyChangedEventArgs> _changed;
         private readonly PropertyMetadata _defaultMetadata;
         private readonly Dictionary<Type, PropertyMetadata> _metadata;
         private readonly Dictionary<Type, PropertyMetadata> _metadataCache = new Dictionary<Type, PropertyMetadata>();
+
+        private bool _hasMetadataOverrides;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaProperty"/> class.
@@ -91,6 +93,9 @@ namespace Avalonia
             Notifying = source.Notifying;
             Id = source.Id;
             _defaultMetadata = source._defaultMetadata;
+
+            // Properties that have different owner can't use fast path for metadata.
+            _hasMetadataOverrides = true;
 
             if (metadata != null)
             {
@@ -446,31 +451,12 @@ namespace Avalonia
         ///
         public PropertyMetadata GetMetadata(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-
-            PropertyMetadata result;
-            Type currentType = type;
-
-            if (_metadataCache.TryGetValue(type, out result))
+            if (!_hasMetadataOverrides)
             {
-                return result;
+                return _defaultMetadata;
             }
 
-            while (currentType != null)
-            {
-                if (_metadata.TryGetValue(currentType, out result))
-                {
-                    _metadataCache[type] = result;
-
-                    return result;
-                }
-
-                currentType = currentType.GetTypeInfo().BaseType;
-            }
-
-            _metadataCache[type] = _defaultMetadata;
-
-            return _defaultMetadata;
+            return GetMetadataWithOverrides(type);
         }
 
         /// <summary>
@@ -491,6 +477,11 @@ namespace Avalonia
         {
             return Name;
         }
+
+        /// <summary>
+        /// True if <see cref="Initialized"/> has any observers.
+        /// </summary>
+        internal bool HasNotifyInitializedObservers => _initialized.HasObservers;
 
         /// <summary>
         /// Notifies the <see cref="Initialized"/> observable.
@@ -530,6 +521,39 @@ namespace Avalonia
             metadata.Merge(baseMetadata, this);
             _metadata.Add(type, metadata);
             _metadataCache.Clear();
+
+            _hasMetadataOverrides = true;
+        }
+
+        private PropertyMetadata GetMetadataWithOverrides(Type type)
+        {
+            if (type is null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (_metadataCache.TryGetValue(type, out PropertyMetadata result))
+            {
+                return result;
+            }
+
+            Type currentType = type;
+
+            while (currentType != null)
+            {
+                if (_metadata.TryGetValue(currentType, out result))
+                {
+                    _metadataCache[type] = result;
+
+                    return result;
+                }
+
+                currentType = currentType.GetTypeInfo().BaseType;
+            }
+
+            _metadataCache[type] = _defaultMetadata;
+
+            return _defaultMetadata;
         }
 
         [DebuggerHidden]
@@ -546,16 +570,17 @@ namespace Avalonia
             }
         }
 
+        
+    }
+    /// <summary>
+    /// Class representing the <see cref="AvaloniaProperty.UnsetValue"/>.
+    /// </summary>
+    public class UnsetValueType
+    {
         /// <summary>
-        /// Class representing the <see cref="UnsetValue"/>.
+        /// Returns the string representation of the <see cref="AvaloniaProperty.UnsetValue"/>.
         /// </summary>
-        private class Unset
-        {
-            /// <summary>
-            /// Returns the string representation of the <see cref="UnsetValue"/>.
-            /// </summary>
-            /// <returns>The string "(unset)".</returns>
-            public override string ToString() => "(unset)";
-        }
+        /// <returns>The string "(unset)".</returns>
+        public override string ToString() => "(unset)";
     }
 }

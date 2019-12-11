@@ -5,6 +5,8 @@ using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -92,9 +94,9 @@ namespace Avalonia.Controls.Presenters
         {
             AffectsRender<ContentPresenter>(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty, CornerRadiusProperty);
             AffectsMeasure<ContentPresenter>(BorderThicknessProperty, PaddingProperty);
-            ContentProperty.Changed.AddClassHandler<ContentPresenter>(x => x.ContentChanged);
-            ContentTemplateProperty.Changed.AddClassHandler<ContentPresenter>(x => x.ContentChanged);
-            TemplatedParentProperty.Changed.AddClassHandler<ContentPresenter>(x => x.TemplatedParentChanged);
+            ContentProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
+            ContentTemplateProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
+            TemplatedParentProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.TemplatedParentChanged(e));
         }
 
         /// <summary>
@@ -188,6 +190,11 @@ namespace Avalonia.Controls.Presenters
             set { SetValue(PaddingProperty, value); }
         }
 
+        /// <summary>
+        /// Gets the host content control.
+        /// </summary>
+        internal IContentPresenterHost Host { get; private set; }
+
         /// <inheritdoc/>
         public sealed override void ApplyTemplate()
         {
@@ -213,11 +220,18 @@ namespace Avalonia.Controls.Presenters
             var content = Content;
             var oldChild = Child;
             var newChild = CreateChild();
+            var logicalChildren = Host?.LogicalChildren ?? LogicalChildren;
 
             // Remove the old child if we're not recycling it.
-            if (oldChild != null && newChild != oldChild)
+            if (newChild != oldChild)
             {
-                VisualChildren.Remove(oldChild);
+
+                if (oldChild != null)
+                {
+                    VisualChildren.Remove(oldChild);
+                    logicalChildren.Remove(oldChild);
+                    ((ISetInheritanceParent)oldChild).SetParent(oldChild.Parent);
+                }
             }
 
             // Set the DataContext if the data isn't a control.
@@ -238,17 +252,11 @@ namespace Avalonia.Controls.Presenters
             else if (newChild != oldChild)
             {
                 ((ISetInheritanceParent)newChild).SetParent(this);
-
                 Child = newChild;
 
-                if (oldChild?.Parent == this)
+                if (!logicalChildren.Contains(newChild))
                 {
-                    LogicalChildren.Remove(oldChild);
-                }
-
-                if (newChild.Parent == null && TemplatedParent == null)
-                {
-                    LogicalChildren.Add(newChild);
+                    logicalChildren.Add(newChild);
                 }
 
                 VisualChildren.Add(newChild);
@@ -297,12 +305,6 @@ namespace Avalonia.Controls.Presenters
                 {
                     _dataTemplate = dataTemplate;
                     newChild = _dataTemplate.Build(content);
-
-                    // Give the new control its own name scope.
-                    if (newChild is Control controlResult)
-                    {
-                        NameScope.SetNameScope(controlResult, new NameScope());
-                    }
                 }
             }
             else
@@ -411,6 +413,7 @@ namespace Avalonia.Controls.Presenters
             {
                 VisualChildren.Remove(Child);
                 LogicalChildren.Remove(Child);
+                ((ISetInheritanceParent)Child).SetParent(Child.Parent);
                 Child = null;
                 _dataTemplate = null;
             }
@@ -432,7 +435,8 @@ namespace Avalonia.Controls.Presenters
 
         private void TemplatedParentChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            (e.NewValue as IContentPresenterHost)?.RegisterContentPresenter(this);
+            var host = e.NewValue as IContentPresenterHost;
+            Host = host?.RegisterContentPresenter(this) == true ? host : null;
         }
     }
 }

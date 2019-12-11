@@ -14,7 +14,13 @@ namespace Avalonia.Controls
 
     public abstract class FileSystemDialog : SystemDialog
     {
-        public string InitialDirectory { get; set; }
+        [Obsolete("Use Directory")]
+        public string InitialDirectory
+        {
+            get => Directory;
+            set => Directory = value;
+        }
+        public string Directory { get; set; }
     }
 
     public class SaveFileDialog : FileDialog
@@ -27,7 +33,7 @@ namespace Avalonia.Controls
                 throw new ArgumentNullException(nameof(parent));
             return ((await AvaloniaLocator.Current.GetService<ISystemDialogImpl>()
                  .ShowFileDialogAsync(this, parent?.PlatformImpl)) ??
-             new string[0]).FirstOrDefault();
+             Array.Empty<string>()).FirstOrDefault();
         }
     }
 
@@ -45,8 +51,12 @@ namespace Avalonia.Controls
 
     public class OpenFolderDialog : FileSystemDialog
     {
-        public string DefaultDirectory { get; set; }
-
+        [Obsolete("Use Directory")]
+        public string DefaultDirectory
+        {
+            get => Directory;
+            set => Directory = value;
+        }
         public Task<string> ShowAsync(Window parent)
         {
             if(parent == null)

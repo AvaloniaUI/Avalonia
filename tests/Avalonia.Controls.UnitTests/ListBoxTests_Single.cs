@@ -9,8 +9,8 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
-using Avalonia.Markup.Data;
 using Avalonia.Styling;
+using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -18,6 +18,8 @@ namespace Avalonia.Controls.UnitTests
 {
     public class ListBoxTests_Single
     {
+        MouseTestHelper _mouse = new MouseTestHelper();
+        
         [Fact]
         public void Focusing_Item_With_Tab_Should_Not_Select_It()
         {
@@ -68,12 +70,7 @@ namespace Avalonia.Controls.UnitTests
             };
 
             ApplyTemplate(target);
-
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _mouse.Click(target.Presenter.Panel.Children[0]);
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -90,11 +87,7 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplate(target);
             target.SelectedIndex = 0;
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _mouse.Click(target.Presenter.Panel.Children[0]);
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -111,11 +104,7 @@ namespace Avalonia.Controls.UnitTests
 
             ApplyTemplate(target);
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _mouse.Click(target.Presenter.Panel.Children[0]);
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -133,11 +122,7 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplate(target);
             target.SelectedIndex = 0;
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _mouse.Click(target.Presenter.Panel.Children[0]);
 
             Assert.Equal(-1, target.SelectedIndex);
         }
@@ -155,11 +140,7 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplate(target);
             target.SelectedIndex = 0;
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _mouse.Click(target.Presenter.Panel.Children[0]);
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -177,11 +158,7 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplate(target);
             target.SelectedIndex = 1;
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _mouse.Click(target.Presenter.Panel.Children[0]);
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -268,7 +245,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private Control CreateListBoxTemplate(ITemplatedControl parent)
+        private Control CreateListBoxTemplate(ITemplatedControl parent, INameScope scope)
         {
             return new ScrollViewer
             {
@@ -277,17 +254,18 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Name = "PART_ItemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
-                }
+                }.RegisterInNameScope(scope)
             };
         }
 
-        private Control CreateScrollViewerTemplate(ITemplatedControl parent)
+        private Control CreateScrollViewerTemplate(ITemplatedControl parent, INameScope scope)
         {
             return new ScrollContentPresenter
             {
                 Name = "PART_ContentPresenter",
-                [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty).ToBinding(),
-            };
+                [~ContentPresenter.ContentProperty] =
+                    parent.GetObservable(ContentControl.ContentProperty).ToBinding(),
+            }.RegisterInNameScope(scope);
         }
 
         private void ApplyTemplate(ListBox target)

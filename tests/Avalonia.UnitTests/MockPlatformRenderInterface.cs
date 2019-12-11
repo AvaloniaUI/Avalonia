@@ -12,12 +12,28 @@ namespace Avalonia.UnitTests
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             return Mock.Of<IFormattedTextImpl>();
+        }
+
+        public IGeometryImpl CreateEllipseGeometry(Rect rect)
+        {
+            return Mock.Of<IGeometryImpl>();
+        }
+
+        public IGeometryImpl CreateLineGeometry(Point p1, Point p2)
+        {
+            return Mock.Of<IGeometryImpl>();
+        }
+
+        public IGeometryImpl CreateRectangleGeometry(Rect rect)
+        {
+            return Mock.Of<IGeometryImpl>();
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
@@ -61,6 +77,17 @@ namespace Avalonia.UnitTests
             int stride)
         {
             throw new NotImplementedException();
+        }
+
+        public IFontManagerImpl CreateFontManager()
+        {
+            return new MockFontManagerImpl();
+        }
+
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        {
+            width = 0;
+            return Mock.Of<IGlyphRunImpl>();
         }
     }
 }

@@ -1,4 +1,4 @@
-<Style xmlns="https://github.com/avaloniaui" Selector="UserControl">
+<Style xmlns="https://github.com/avaloniaui" Selector=":is(UserControl)">
   <Setter Property="Template">
     <ControlTemplate>
       <ContentPresenter Name="PART_ContentPresenter"

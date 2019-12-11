@@ -1,10 +1,11 @@
-﻿<Project Sdk="AggregatePackage.NuGet.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
       <TargetFrameworks>netstandard2.0;net461;netcoreapp2.0</TargetFrameworks>
+      <PackageId>Avalonia</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
-      <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" EmbedReference="false" />
+      <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj"/>
       <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" />
 
   </ItemGroup>
@@ -39,10 +40,6 @@
     <Content Include="*.targets">
       <Pack>true</Pack>
       <PackagePath>build\</PackagePath>
-    </Content>
-    <Content Include="../../src/Avalonia.Build.Tasks/bin/$(Configuration)/netstandard2.0/Avalonia.Build.Tasks.dll">
-      <Pack>true</Pack>
-      <PackagePath>tools\</PackagePath>
     </Content>
   </ItemGroup>
   <Import Project="..\..\build\SharedVersion.props" />

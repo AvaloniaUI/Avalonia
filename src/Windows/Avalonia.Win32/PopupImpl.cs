@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 
@@ -57,5 +58,19 @@ namespace Avalonia.Win32
                     return base.WndProc(hWnd, msg, wParam, lParam);
             }
         }
+
+        public PopupImpl(IWindowBaseImpl parent)
+        {
+            PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
+        }
+
+        private void MoveResize(PixelPoint position, Size size, double scaling)
+        {
+            Move(position);
+            Resize(size);
+            //TODO: We ignore the scaling override for now
+        }
+
+        public IPopupPositioner PopupPositioner { get; }
     }
 }

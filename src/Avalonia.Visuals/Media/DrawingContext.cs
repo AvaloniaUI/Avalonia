@@ -2,23 +2,27 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Rendering.SceneGraph;
+using Avalonia.Threading;
 using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media
 {
     public sealed class DrawingContext : IDisposable
     {
+        private readonly bool _ownsImpl;
         private int _currentLevel;
 
 
-        static readonly Stack<Stack<PushedState>> StateStackPool = new Stack<Stack<PushedState>>();
-        static readonly Stack<Stack<TransformContainer>> TransformStackPool = new Stack<Stack<TransformContainer>>();
+        private static ThreadSafeObjectPool<Stack<PushedState>> StateStackPool { get; } =
+            ThreadSafeObjectPool<Stack<PushedState>>.Default;
 
-        private Stack<PushedState> _states = StateStackPool.Count == 0 ? new Stack<PushedState>() : StateStackPool.Pop();
+        private static ThreadSafeObjectPool<Stack<TransformContainer>> TransformStackPool { get; } =
+            ThreadSafeObjectPool<Stack<TransformContainer>>.Default;
 
-        private Stack<TransformContainer> _transformContainers = TransformStackPool.Count == 0
-            ? new Stack<TransformContainer>()
-            : TransformStackPool.Pop();
+        private Stack<PushedState> _states = StateStackPool.Get();
+
+        private Stack<TransformContainer> _transformContainers = TransformStackPool.Get();
 
         readonly struct TransformContainer
         {
@@ -34,6 +38,13 @@ namespace Avalonia.Media
 
         public DrawingContext(IDrawingContextImpl impl)
         {
+            PlatformImpl = impl;
+            _ownsImpl = true;
+        }
+        
+        public DrawingContext(IDrawingContextImpl impl, bool ownsImpl)
+        {
+            _ownsImpl = ownsImpl;
             PlatformImpl = impl;
         }
 
@@ -83,7 +94,7 @@ namespace Avalonia.Media
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p2">The second point of the line.</param>
-        public void DrawLine(Pen pen, Point p1, Point p2)
+        public void DrawLine(IPen pen, Point p1, Point p2)
         {
             if (PenIsVisible(pen))
             {
@@ -97,12 +108,50 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
+        public void DrawGeometry(IBrush brush, IPen pen, Geometry geometry)
         {
+            Contract.Requires<ArgumentNullException>(geometry != null);
+
             if (brush != null || PenIsVisible(pen))
             {
                 PlatformImpl.DrawGeometry(brush, pen, geometry.PlatformImpl);
             }
+        }
+
+        /// <summary>
+        /// Draws a rectangle with the specified Brush and Pen.
+        /// </summary>
+        /// <param name="brush">The brush used to fill the rectangle, or <c>null</c> for no fill.</param>
+        /// <param name="pen">The pen used to stroke the rectangle, or <c>null</c> for no stroke.</param>
+        /// <param name="rect">The rectangle bounds.</param>
+        /// <param name="radiusX">The radius in the X dimension of the rounded corners.
+        ///     This value will be clamped to the range of 0 to Width/2
+        /// </param>
+        /// <param name="radiusY">The radius in the Y dimension of the rounded corners.
+        ///     This value will be clamped to the range of 0 to Height/2
+        /// </param>
+        /// <remarks>
+        /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
+        /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
+        /// </remarks>
+        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0, double radiusY = 0)
+        {
+            if (brush == null && !PenIsVisible(pen))
+            {
+                return;
+            }
+
+            if (Math.Abs(radiusX) > double.Epsilon)
+            {
+                radiusX = Math.Min(radiusX, rect.Width / 2);
+            }
+
+            if (Math.Abs(radiusY) > double.Epsilon)
+            {
+                radiusY = Math.Min(radiusY, rect.Height / 2);
+            }
+
+            PlatformImpl.DrawRectangle(brush, pen, rect, radiusX, radiusY);
         }
 
         /// <summary>
@@ -111,13 +160,16 @@ namespace Avalonia.Media
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f)
+        public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0.0f)
         {
-            if (PenIsVisible(pen))
-            {
-                PlatformImpl.DrawRectangle(pen, rect, cornerRadius);
-            }
+            DrawRectangle(null, pen, rect, cornerRadius, cornerRadius);
         }
+
+        /// <summary>
+        /// Draws a custom drawing operation
+        /// </summary>
+        /// <param name="custom">custom operation</param>
+        public void Custom(ICustomDrawOperation custom) => PlatformImpl.Custom(custom);
 
         /// <summary>
         /// Draws text.
@@ -136,6 +188,22 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Draws a glyph run.
+        /// </summary>
+        /// <param name="foreground">The foreground brush.</param>
+        /// <param name="glyphRun">The glyph run.</param>
+        /// <param name="baselineOrigin">The baseline origin of the glyph run.</param>
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        {
+            Contract.Requires<ArgumentNullException>(glyphRun != null);
+
+            if (foreground != null)
+            {
+                PlatformImpl.DrawGlyphRun(foreground, glyphRun, baselineOrigin);
+            }
+        }
+
+        /// <summary>
         /// Draws a filled rectangle.
         /// </summary>
         /// <param name="brush">The brush.</param>
@@ -143,10 +211,7 @@ namespace Avalonia.Media
         /// <param name="cornerRadius">The corner radius.</param>
         public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f)
         {
-            if (brush != null && rect != Rect.Empty)
-            {
-                PlatformImpl.FillRectangle(brush, rect, cornerRadius);
-            }
+            DrawRectangle(brush, null, rect, cornerRadius, cornerRadius);
         }
 
         public readonly struct PushedState : IDisposable
@@ -299,14 +364,17 @@ namespace Avalonia.Media
         {
             while (_states.Count != 0)
                 _states.Peek().Dispose();
-            StateStackPool.Push(_states);
+            StateStackPool.Return(_states);
             _states = null;
-            TransformStackPool.Push(_transformContainers);
+            if (_transformContainers.Count != 0)
+                throw new InvalidOperationException("Transform container stack is non-empty");
+            TransformStackPool.Return(_transformContainers);
             _transformContainers = null;
-            PlatformImpl.Dispose();
+            if (_ownsImpl)
+                PlatformImpl.Dispose();
         }
 
-        private static bool PenIsVisible(Pen pen)
+        private static bool PenIsVisible(IPen pen)
         {
             return pen?.Brush != null && pen.Thickness > 0;
         }

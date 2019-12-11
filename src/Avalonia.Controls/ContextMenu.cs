@@ -1,34 +1,32 @@
 using System;
-using System.Reactive.Linq;
-using System.Linq;
 using System.ComponentModel;
+using System.Linq;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Platform;
-using System.Collections.Generic;
-using Avalonia.Input;
-using Avalonia.LogicalTree;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
 {
-    public class ContextMenu : SelectingItemsControl, IMenu
+    /// <summary>
+    /// A control context menu.
+    /// </summary>
+    public class ContextMenu : MenuBase
     {
-        private readonly IMenuInteractionHandler _interaction;
-        private bool _isOpen;
+        private static readonly ITemplate<IPanel> DefaultPanel =
+            new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup _popup;
-
-        /// <summary>
-        /// Defines the <see cref="IsOpen"/> property.
-        /// </summary>
-        public static readonly DirectProperty<ContextMenu, bool> IsOpenProperty =
-                            AvaloniaProperty.RegisterDirect<ContextMenu, bool>(nameof(IsOpen), o => o.IsOpen);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContextMenu"/> class.
         /// </summary>
         public ContextMenu()
+            : this(new DefaultMenuInteractionHandler(true))
         {
-            _interaction = AvaloniaLocator.Current.GetService<IMenuInteractionHandler>() ??
-                new DefaultMenuInteractionHandler();
         }
 
         /// <summary>
@@ -36,10 +34,8 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="interactionHandler">The menu interaction handler.</param>
         public ContextMenu(IMenuInteractionHandler interactionHandler)
+            : base(interactionHandler)
         {
-            Contract.Requires<ArgumentNullException>(interactionHandler != null);
-
-            _interaction = interactionHandler;
         }
 
         /// <summary>
@@ -47,42 +43,8 @@ namespace Avalonia.Controls
         /// </summary>
         static ContextMenu()
         {
+            ItemsPanelProperty.OverrideDefaultValue(typeof(ContextMenu), DefaultPanel);
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the popup is open
-        /// </summary>
-        public bool IsOpen => _isOpen;
-
-        /// <inheritdoc/>
-        IMenuInteractionHandler IMenu.InteractionHandler => _interaction;
-
-        /// <inheritdoc/>
-        IMenuItem IMenuElement.SelectedItem
-        {
-            get
-            {
-                var index = SelectedIndex;
-                return (index != -1) ?
-                    (IMenuItem)ItemContainerGenerator.ContainerFromIndex(index) :
-                    null;
-            }
-            set
-            {
-                SelectedIndex = ItemContainerGenerator.IndexFromContainer(value);
-            }
-        }
-
-        /// <inheritdoc/>
-        IEnumerable<IMenuItem> IMenuElement.SubItems
-        {
-            get
-            {
-                return ItemContainerGenerator.Containers
-                    .Select(x => x.ContainerControl)
-                    .OfType<IMenuItem>();
-            }
         }
 
         /// <summary>
@@ -121,7 +83,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Opens the menu.
         /// </summary>
-        public void Open() => Open(null);
+        public override void Open() => Open(null);
 
         /// <summary>
         /// Opens a context menu on the specified control.
@@ -129,9 +91,16 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         public void Open(Control control)
         {
+            if (control == null)
+                throw new ArgumentNullException(nameof(control));
+            if (IsOpen)
+            {
+                return;
+            }
+
             if (_popup == null)
             {
-                _popup = new Popup()
+                _popup = new Popup
                 {
                     PlacementMode = PlacementMode.Pointer,
                     PlacementTarget = control,
@@ -139,30 +108,59 @@ namespace Avalonia.Controls
                     ObeyScreenEdges = true
                 };
 
+                _popup.Opened += PopupOpened;
                 _popup.Closed += PopupClosed;
-                _interaction.Attach(this);
             }
 
             ((ISetLogicalParent)_popup).SetParent(control);
             _popup.Child = this;
             _popup.IsOpen = true;
 
-            SetAndRaise(IsOpenProperty, ref _isOpen, true);
+            IsOpen = true;
+
+            RaiseEvent(new RoutedEventArgs
+            {
+                RoutedEvent = MenuOpenedEvent,
+                Source = this,
+            });
         }
 
         /// <summary>
         /// Closes the menu.
         /// </summary>
-        public void Close()
+        public override void Close()
         {
+            if (!IsOpen)
+            {
+                return;
+            }
+
             if (_popup != null && _popup.IsVisible)
             {
                 _popup.IsOpen = false;
             }
+        }
 
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        {
+            return new MenuItemContainerGenerator(this);
+        }
+
+        private void CloseCore()
+        {
             SelectedIndex = -1;
+            IsOpen = false;
 
-            SetAndRaise(IsOpenProperty, ref _isOpen, false);
+            RaiseEvent(new RoutedEventArgs
+            {
+                RoutedEvent = MenuClosedEvent,
+                Source = this,
+            });
+        }
+
+        private void PopupOpened(object sender, EventArgs e)
+        {
+            Focus();
         }
 
         private void PopupClosed(object sender, EventArgs e)
@@ -176,8 +174,7 @@ namespace Avalonia.Controls
                     i.IsSubMenuOpen = false;
                 }
 
-                contextMenu._isOpen = false;
-                contextMenu.SelectedIndex = -1;
+                contextMenu.CloseCore();
             }
         }
 
@@ -186,7 +183,7 @@ namespace Avalonia.Controls
             var control = (Control)sender;
             var contextMenu = control.ContextMenu;
 
-            if (control.ContextMenu._isOpen)
+            if (control.ContextMenu.IsOpen)
             {
                 if (contextMenu.CancelClosing())
                     return;
@@ -195,7 +192,7 @@ namespace Avalonia.Controls
                 e.Handled = true;
             }
 
-            if (e.MouseButton == MouseButton.Right)
+            if (e.InitialPressMouseButton == MouseButton.Right)
             {
                 if (contextMenu.CancelOpening())
                     return;
@@ -217,11 +214,6 @@ namespace Avalonia.Controls
             var eventArgs = new CancelEventArgs();
             ContextMenuOpening?.Invoke(this, eventArgs);
             return eventArgs.Cancel;
-        }
-
-        bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap)
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Media;
+using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
 
@@ -49,7 +50,7 @@ namespace Avalonia.Platform
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p2">The second point of the line.</param>
-        void DrawLine(Pen pen, Point p1, Point p2);
+        void DrawLine(IPen pen, Point p1, Point p2);
 
         /// <summary>
         /// Draws a geometry.
@@ -57,15 +58,25 @@ namespace Avalonia.Platform
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry);
+        void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry);
 
         /// <summary>
-        /// Draws the outline of a rectangle.
+        /// Draws a rectangle with the specified Brush and Pen.
         /// </summary>
-        /// <param name="pen">The pen.</param>
+        /// <param name="brush">The brush used to fill the rectangle, or <c>null</c> for no fill.</param>
+        /// <param name="pen">The pen used to stroke the rectangle, or <c>null</c> for no stroke.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        /// <param name="cornerRadius">The corner radius.</param>
-        void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f);
+        /// <param name="radiusX">The radius in the X dimension of the rounded corners.
+        ///     This value will be clamped to the range of 0 to Width/2
+        /// </param>
+        /// <param name="radiusY">The radius in the Y dimension of the rounded corners.
+        ///     This value will be clamped to the range of 0 to Height/2
+        /// </param>
+        /// <remarks>
+        /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
+        /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
+        /// </remarks>
+        void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0, double radiusY = 0);
 
         /// <summary>
         /// Draws text.
@@ -76,12 +87,12 @@ namespace Avalonia.Platform
         void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text);
 
         /// <summary>
-        /// Draws a filled rectangle.
+        /// Draws a glyph run.
         /// </summary>
-        /// <param name="brush">The brush.</param>
-        /// <param name="rect">The rectangle bounds.</param>
-        /// <param name="cornerRadius">The corner radius.</param>
-        void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f);
+        /// <param name="foreground">The foreground.</param>
+        /// <param name="glyphRun">The glyph run.</param>
+        /// <param name="baselineOrigin">The baseline origin of the glyph run.</param>
+        void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin);
 
         /// <summary>
         /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer
@@ -139,5 +150,11 @@ namespace Avalonia.Platform
         /// Pops the latest pushed geometry clip.
         /// </summary>
         void PopGeometryClip();
+
+        /// <summary>
+        /// Adds a custom draw operation
+        /// </summary>
+        /// <param name="custom">Custom draw operation</param>
+        void Custom(ICustomDrawOperation custom);
     }
 }

@@ -1,5 +1,5 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" >
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Style Selector="TabControl.sidebar">
         <Setter Property="TabStripPlacement" Value="Left"/>
         <Setter Property="Padding" Value="8 0 0 0"/>
@@ -17,15 +17,14 @@
                             VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                             Background="{TemplateBinding Background}">
                             <ItemsPresenter
-                                Name="PART_ItemsPresenter"                                                            
+                                Name="PART_ItemsPresenter"                          
                                 Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
-                                ItemTemplate="{TemplateBinding ItemTemplate}"
-                                MemberSelector="{TemplateBinding MemberSelector}">
+                                ItemTemplate="{TemplateBinding ItemTemplate}">
                             </ItemsPresenter>
                         </ScrollViewer>
                         <ContentPresenter
-                            Name="PART_Content"
+                            Name="PART_SelectedContentHost"
                             Margin="{TemplateBinding Padding}"                           
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -47,7 +46,7 @@
         <Setter Property="Opacity" Value="0.5"/>
         <Setter Property="Transitions">
             <Transitions>
-                <DoubleTransition Property="Opacity" Duration="0:0:0.5"/>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.150"/>
             </Transitions>
         </Setter>
     </Style>

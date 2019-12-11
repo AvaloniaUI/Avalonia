@@ -1,24 +1,26 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels">
-  <Grid ColumnDefinitions="*,4,3*">    
+             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Avalonia.Diagnostics.Views.TreePageView">
+  <Grid ColumnDefinitions="*,Auto,3*">
     <TreeView Name="tree" Items="{Binding Nodes}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:TreeNode"
                           ItemsSource="{Binding Children}">
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="{Binding Type}"/>
-            <TextBlock Text="{Binding Classes}"/>
+            <TextBlock Text="{Binding Type}" />
+            <TextBlock Text="{Binding Classes}" />
           </StackPanel>
         </TreeDataTemplate>
       </TreeView.DataTemplates>
       <TreeView.Styles>
         <Style Selector="TreeViewItem">
-          <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+          <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
         </Style>
       </TreeView.Styles>
     </TreeView>
 
-    <GridSplitter Width="4" Grid.Column="1"/>
-    <ContentControl Content="{Binding Details}" Grid.Column="2"/>
+    <GridSplitter Grid.Column="1" />
+    <ContentControl Content="{Binding Details}" Grid.Column="2" />
   </Grid>
 </UserControl>

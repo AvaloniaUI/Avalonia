@@ -14,6 +14,7 @@ using System.Linq;
 using Xunit;
 using Avalonia.Rendering;
 using Avalonia.Media;
+using Avalonia.Data;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
@@ -53,7 +54,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var target = new ContentPresenter
             {
                 ContentTemplate =
-                    new FuncDataTemplate<string>(t => new ContentControl() { Content = t }, false)
+                    new FuncDataTemplate<string>((t, _) => new ContentControl() { Content = t }, false)
             };
 
             var parentMock = new Mock<Control>();
@@ -92,14 +93,14 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             var contentControl = new ContentControl
             {
-                Template = new FuncControlTemplate<ContentControl>(c => new ContentPresenter()
+                Template = new FuncControlTemplate<ContentControl>((c, scope) => new ContentPresenter()
                 {
                     Name = "PART_ContentPresenter",
                     [~ContentPresenter.ContentProperty] = c[~ContentControl.ContentProperty],
                     [~ContentPresenter.ContentTemplateProperty] = c[~ContentControl.ContentTemplateProperty]
-                }),
+                }.RegisterInNameScope(scope)),
                 ContentTemplate =
-                    new FuncDataTemplate<string>(t => new ContentControl() { Content = t }, false)
+                    new FuncDataTemplate<string>((t, _) => new ContentControl() { Content = t }, false)
             };
 
             var parentMock = new Mock<Control>();
@@ -143,7 +144,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var target = new ContentPresenter
             {
                 ContentTemplate =
-                    new FuncDataTemplate<string>(t => new ContentControl() { Content = t }, false)
+                    new FuncDataTemplate<string>((t, _) => new ContentControl() { Content = t }, false)
             };
 
             var parentMock = new Mock<Control>();
@@ -178,7 +179,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var target = new ContentPresenter
             {
                 ContentTemplate =
-                    new FuncDataTemplate<string>(t => new ContentControl() { Content = t }, false)
+                    new FuncDataTemplate<string>((t, _) => new ContentControl() { Content = t }, false)
             };
 
             target.Content = "foo";
@@ -204,7 +205,6 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.NotEqual(foo, logicalChildren.First());
         }
 
-
         [Fact]
         public void Changing_Background_Brush_Color_Should_Invalidate_Visual()
         {
@@ -220,6 +220,52 @@ namespace Avalonia.Controls.UnitTests.Presenters
             ((SolidColorBrush)target.Background).Color = Colors.Green;
 
             renderer.Verify(x => x.AddDirty(target), Times.Once);
+        }
+
+        [Fact]
+        public void Should_Not_Bind_Old_Child_To_New_DataContext()
+        {
+            // Test for issue #1099.
+            var textBlock = new TextBlock
+            {
+                [!TextBlock.TextProperty] = new Binding(),
+            };
+
+            var target = new ContentPresenter()
+            {
+                DataTemplates =
+                {
+                    new FuncDataTemplate<string>((x, _) => textBlock),
+                    new FuncDataTemplate<int>((x, _) => new Canvas()),
+                },
+            };
+
+            var root = new TestRoot(target);
+            target.Content = "foo";
+            Assert.Same(textBlock, target.Child);
+
+            textBlock.PropertyChanged += (s, e) =>
+            {
+                Assert.NotEqual(e.NewValue, "42");
+            };
+
+            target.Content = 42;
+        }
+
+        [Fact]
+        public void Should_Reset_InheritanceParent_When_Child_Removed()
+        {
+            var logicalParent = new Canvas();
+            var child = new TextBlock();
+            var target = new ContentPresenter();
+            var root = new TestRoot(target);
+
+            ((ISetLogicalParent)child).SetParent(logicalParent);
+            target.Content = child;
+            target.Content = null;
+
+            // InheritanceParent is exposed via StylingParent.
+            Assert.Same(logicalParent, ((IStyledElement)child).StylingParent);
         }
     }
 }

@@ -65,13 +65,7 @@ namespace Avalonia.Styling
 
             set
             {
-                if (value is IRequiresTemplateInSetter)
-                {
-                    throw new ArgumentException(
-                        "Cannot assign a control to Setter.Value. Wrap the control in a <Template>.",
-                        "value");
-                }
-
+                (value as ISetterValue)?.Initialize(this);
                 _value = value;
             }
         }
@@ -105,7 +99,6 @@ namespace Avalonia.Styling
                 if (template != null && !isPropertyOfTypeITemplate)
                 {
                     var materialized = template.Build();
-                    NameScope.SetNameScope((StyledElement)materialized, new NameScope());
                     value = materialized;
                 }
 

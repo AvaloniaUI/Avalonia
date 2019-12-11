@@ -58,6 +58,21 @@ namespace Avalonia.Media.Fonts
             }
         }
 
+        public static bool operator !=(FontFamilyKey a, FontFamilyKey b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator ==(FontFamilyKey a, FontFamilyKey b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+
+            return !(a is null) && a.Equals(b);
+        }
+
         /// <summary>
         /// Determines whether the specified <see cref="object" />, is equal to this instance.
         /// </summary>
@@ -95,7 +110,7 @@ namespace Avalonia.Media.Fonts
         {
             if (!Source.IsAbsoluteUri && BaseUri != null)
             {
-                return BaseUri.Authority + Source;
+                return BaseUri.AbsoluteUri + Source.OriginalString;
             }
 
             return Source.ToString();

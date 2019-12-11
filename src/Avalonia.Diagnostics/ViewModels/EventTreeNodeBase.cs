@@ -12,10 +12,10 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _isExpanded;
         private bool? _isEnabled = false;
 
-        public EventTreeNodeBase(EventTreeNodeBase parent, string text)
+        protected EventTreeNodeBase(EventTreeNodeBase parent, string text)
         {
-            this.Parent = parent;
-            this.Text = text;
+            Parent = parent;
+            Text = text;
         }
 
         public IAvaloniaReadOnlyList<EventTreeNodeBase> Children
@@ -26,14 +26,14 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public bool IsExpanded
         {
-            get { return _isExpanded; }
-            set { RaiseAndSetIfChanged(ref _isExpanded, value); }
+            get => _isExpanded;
+            set => RaiseAndSetIfChanged(ref _isExpanded, value);
         }
 
         public virtual bool? IsEnabled
         {
-            get { return _isEnabled; }
-            set { RaiseAndSetIfChanged(ref _isEnabled, value); }
+            get => _isEnabled;
+            set => RaiseAndSetIfChanged(ref _isEnabled, value);
         }
 
         public EventTreeNodeBase Parent
@@ -44,7 +44,6 @@ namespace Avalonia.Diagnostics.ViewModels
         public string Text
         {
             get;
-            private set;
         }
 
         internal void UpdateChecked()
@@ -55,7 +54,9 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 if (Children == null)
                     return false;
+
                 bool? value = false;
+
                 for (int i = 0; i < Children.Count; i++)
                 {
                     if (i == 0)

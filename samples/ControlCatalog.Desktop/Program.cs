@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
 using Avalonia.Platform;
+using Avalonia.ReactiveUI;
 using Serilog;
 
 namespace ControlCatalog
@@ -22,7 +23,10 @@ namespace ControlCatalog
         /// This method is needed for IDE previewer infrastructure
         /// </summary>
         public static AppBuilder BuildAvaloniaApp()
-            => AppBuilder.Configure<App>().LogToDebug().UsePlatformDetect().UseReactiveUI();
+            => AppBuilder.Configure<App>()
+                .LogToDebug()
+                .UsePlatformDetect()
+                .UseReactiveUI();
 
         private static void ConfigureAssetAssembly(AppBuilder builder)
         {

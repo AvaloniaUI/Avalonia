@@ -25,6 +25,11 @@ namespace Avalonia.Markup.Xaml.Styling
             _baseUri = baseUri;
         }
 
+        public StyleInclude(IServiceProvider serviceProvider)
+        {
+            _baseUri = serviceProvider.GetContextBaseUri();
+        }
+        
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged
         {
@@ -62,12 +67,14 @@ namespace Avalonia.Markup.Xaml.Styling
         IResourceNode IResourceNode.ResourceParent => _parent;
 
         /// <inheritdoc/>
-        public void Attach(IStyleable control, IStyleHost container)
+        public bool Attach(IStyleable control, IStyleHost container)
         {
             if (Source != null)
             {
-                Loaded.Attach(control, container);
+                return Loaded.Attach(control, container);
             }
+
+            return false;
         }
 
         public void Detach()
@@ -79,7 +86,7 @@ namespace Avalonia.Markup.Xaml.Styling
         }
 
         /// <inheritdoc/>
-        public bool TryGetResource(string key, out object value) => Loaded.TryGetResource(key, out value);
+        public bool TryGetResource(object key, out object value) => Loaded.TryGetResource(key, out value);
 
         /// <inheritdoc/>
         void ISetStyleParent.NotifyResourcesChanged(ResourcesChangedEventArgs e)

@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
-    public class BindingTests_RelativeSource
+    public class BindingTests_RelativeSource : XamlTestBase
     {
         [Fact]
         public void Binding_To_DataContext_Works()
@@ -73,6 +73,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var button = window.FindControl<Button>("button");
 
                 window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 Assert.Equal("border2", button.Content);
             }
@@ -169,6 +170,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var button = window.FindControl<Button>("button");
 
                 window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 Assert.Equal("border1", button.Content);
             }
@@ -293,6 +295,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var button = window.FindControl<Button>("button");
 
                 window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 Assert.Equal("title", button.Content);
             }

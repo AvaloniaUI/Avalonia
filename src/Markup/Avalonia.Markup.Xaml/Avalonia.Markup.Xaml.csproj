@@ -1,57 +1,67 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <DefineConstants>PCL;NETSTANDARD;NETSTANDARD2_0;HAS_TYPE_CONVERTER;HAS_CUSTOM_ATTRIBUTE_PROVIDER</DefineConstants>
+    <DefineConstants>PCL;NETSTANDARD;NETSTANDARD2_0;HAS_TYPE_CONVERTER;HAS_CUSTOM_ATTRIBUTE_PROVIDER;XAMLIL_INTERNAL</DefineConstants>
+    <UseCecil>false</UseCecil>
+    <DefineConstants Condition="$(UseCecil) == true">$(DefineConstants);RUNTIME_XAML_CECIL</DefineConstants>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
-    <IsPackable>false</IsPackable>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
     <ItemGroup>
         <Compile Include="AvaloniaXamlLoader.cs" />
         <Compile Include="Converters\AvaloniaUriTypeConverter.cs" />
         <Compile Include="Converters\FontFamilyTypeConverter.cs" />
-        <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
-        <Compile Include="Converters\ParseTypeConverter.cs" />
-        <Compile Include="Converters\SetterValueTypeConverter.cs" />
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />
+        <Compile Include="Extensions.cs" />
+        <Compile Include="MarkupExtension.cs" />
         <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
         <Compile Include="MarkupExtensions\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
         <Compile Include="MarkupExtensions\StyleIncludeExtension.cs" />
         <Compile Include="Parsers\PropertyParser.cs" />
-        <Compile Include="PortableXaml\AvaloniaResourceXamlInfo.cs" />
-        <Compile Include="PortableXaml\AvaloniaXamlContext.cs" />
-        <Compile Include="PortableXaml\AttributeExtensions.cs" />
-        <Compile Include="PortableXaml\AvaloniaMemberAttributeProvider.cs" />
-        <Compile Include="PortableXaml\AvaloniaNameScope.cs" />
-        <Compile Include="AvaloniaTypeConverters.cs" />
-        <Compile Include="PortableXaml\AvaloniaXamlObjectWriter.cs" />
-        <Compile Include="PortableXaml\AvaloniaRuntimeTypeProvider.cs" />
-        <Compile Include="PortableXaml\AvaloniaXamlSchemaContext.cs" />
         <Compile Include="Converters\BitmapTypeConverter.cs" />
         <Compile Include="Converters\IconTypeConverter.cs" />
         <Compile Include="Converters\AvaloniaPropertyTypeConverter.cs" />
         <Compile Include="Converters\PointsListTypeConverter.cs" />
-        <Compile Include="Converters\SelectorTypeConverter.cs" />
         <Compile Include="MarkupExtensions\BindingExtension.cs" />
         <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
-        <Compile Include="PortableXaml\AvaloniaTypeAttributeProvider.cs" />
-        <Compile Include="PortableXaml\AvaloniaXamlType.cs" />
-        <Compile Include="PortableXaml\TypeDescriptorExtensions.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="Styling\StyleInclude.cs" />
         <Compile Include="Templates\ControlTemplate.cs" />
         <Compile Include="Templates\DataTemplate.cs" />
         <Compile Include="Templates\FocusAdornerTemplate.cs" />
         <Compile Include="Templates\ItemsPanelTemplate.cs" />
-        <Compile Include="Templates\MemberSelector.cs" />
         <Compile Include="Templates\Template.cs" />
         <Compile Include="Templates\TemplateContent.cs" />
-        <Compile Include="Templates\TemplateLoader.cs" />
         <Compile Include="Templates\TreeDataTemplate.cs" />
+        <Compile Include="XamlIl\AvaloniaXamlIlRuntimeCompiler.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaBindingExtensionHackTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlAvaloniaPropertyResolver.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlConstructorServiceProviderTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlDesignPropertiesTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlMetadataRemover.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlTransformInstanceAttachedProperties.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlTransitionsTypeMetadataTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlWellKnownTypes.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\XamlIlAvaloniaPropertyHelper.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\AvaloniaXamlIlCompiler.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\AvaloniaXamlIlLanguage.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AddNameScopeRegistration.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlSetterTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\IgnoredDirectivesTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlSelectorTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\XNameTransformer.cs" />
+        <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
+        <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
+        <Compile Include="XamlIl\Runtime\XamlIlRuntimeHelpers.cs" />
         <Compile Include="XamlLoadException.cs" />
-        <Compile Include="PortableXaml\portable.xaml.github\src\Portable.Xaml\**\*.cs" Exclude="PortableXaml\portable.xaml.github\src\Portable.Xaml\Assembly\**\*.cs" />
+        <Compile Include="XamlIl\xamlil.github\src\XamlIl\**\*.cs" />
+        <Compile Condition="$(UseCecil) == true" Include="XamlIl\xamlil.github\src\XamlIl.Cecil\**\*.cs" />
+        <Compile Remove="XamlIl\xamlil.github\**\obj\**\*.cs" />
+        <Compile Include="..\Avalonia.Markup\Markup\Parsers\SelectorGrammar.cs" />
+        <Compile Include="XamlTypes.cs" />
     </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj" />
@@ -63,6 +73,8 @@
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+    <PackageReference Condition="$(UseCecil) == true" Include="Mono.Cecil" Version="0.10.3" />
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
 </Project>

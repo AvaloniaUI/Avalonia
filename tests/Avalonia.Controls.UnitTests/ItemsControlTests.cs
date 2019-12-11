@@ -12,6 +12,7 @@ using Xunit;
 using System.Collections.ObjectModel;
 using Avalonia.UnitTests;
 using Avalonia.Input;
+using System.Collections.Generic;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -23,7 +24,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl
             {
                 Template = GetTemplate(),
-                ItemTemplate = new FuncDataTemplate<string>(_ => new Canvas()),
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
             };
 
             target.Items = new[] { "Foo" };
@@ -102,6 +103,28 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(child.Parent, target);
             Assert.Equal(child.GetLogicalParent(), target);
             Assert.Equal(new[] { child }, target.GetLogicalChildren());
+        }
+
+        [Fact]
+        public void Added_Container_Should_Have_LogicalParent_Set_To_ItemsControl()
+        {
+            var item = new Border();
+            var items = new ObservableCollection<Border>();
+
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = items,
+            };
+
+            var root = new TestRoot(true, target);
+
+            root.Measure(new Size(100, 100));
+            root.Arrange(new Rect(0, 0, 100, 100));
+
+            items.Add(item);
+
+            Assert.Equal(target, item.Parent);
         }
 
         [Fact]
@@ -411,7 +434,7 @@ namespace Avalonia.Controls.UnitTests
                 DataContext = "Base",
                 DataTemplates =
                 {
-                    new FuncDataTemplate<Item>(x => new Button { Content = x })
+                    new FuncDataTemplate<Item>((x, __) => new Button { Content = x })
                 },
                 Items = items,
             };
@@ -428,27 +451,6 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(
                 new object[] { items[0], items[1], "Base", "Base" },
                 dataContexts);
-        }
-
-        [Fact]
-        public void MemberSelector_Should_Select_Member()
-        {
-            var target = new ItemsControl
-            {
-                Template = GetTemplate(),
-                Items = new[] { new Item("Foo"), new Item("Bar") },
-                MemberSelector = new FuncMemberSelector<Item, string>(x => x.Value),
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-            var text = target.Presenter.Panel.Children
-                .Cast<ContentPresenter>()
-                .Select(x => x.Content)
-                .ToList();
-
-            Assert.Equal(new[] { "Foo", "Bar" }, text);
         }
 
         [Fact]
@@ -470,29 +472,6 @@ namespace Avalonia.Controls.UnitTests
 
             var item = target.Presenter.Panel.LogicalChildren[0];
             Assert.Null(NameScope.GetNameScope((TextBlock)item));
-        }
-
-        [Fact]
-        public void DataTemplate_Created_Content_Should_Be_NameScope()
-        {
-            var items = new object[]
-            {
-                "foo",
-            };
-
-            var target = new ItemsControl
-            {
-                Template = GetTemplate(),
-                Items = items,
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-            var container = (ContentPresenter)target.Presenter.Panel.LogicalChildren[0];
-            container.UpdateChild();
-
-            Assert.NotNull(NameScope.GetNameScope((TextBlock)container.Child));
         }
 
         [Fact]
@@ -566,6 +545,36 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Presenter_Items_Should_Be_In_Sync()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = new object[]
+                {
+                    new Button(),
+                    new Button(),
+                },
+            };
+
+            var root = new TestRoot { Child = target };
+            var otherPanel = new StackPanel();
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            
+            target.ItemContainerGenerator.Materialized += (s, e) =>
+            {
+                Assert.IsType<Canvas>(e.Containers[0].Item);
+            };
+
+            target.Items = new[]
+            {
+                new Canvas()
+            };
+        }
+
         private class Item
         {
             public Item(string value)
@@ -578,7 +587,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<ItemsControl>(parent =>
+            return new FuncControlTemplate<ItemsControl>((parent, scope) =>
             {
                 return new Border
                 {
@@ -586,9 +595,8 @@ namespace Avalonia.Controls.UnitTests
                     Child = new ItemsPresenter
                     {
                         Name = "PART_ItemsPresenter",
-                        MemberSelector = parent.MemberSelector,
                         [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
-                    }
+                    }.RegisterInNameScope(scope)
                 };
             });
         }

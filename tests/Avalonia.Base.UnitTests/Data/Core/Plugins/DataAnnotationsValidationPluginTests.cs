@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.UnitTests;
@@ -19,7 +20,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             var target = new DataAnnotationsValidationPlugin();
             var data = new Data();
 
-            Assert.True(target.Match(new WeakReference(data), nameof(Data.Between5And10)));
+            Assert.True(target.Match(new WeakReference<object>(data), nameof(Data.Between5And10)));
         }
 
         [Fact]
@@ -28,7 +29,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             var target = new DataAnnotationsValidationPlugin();
             var data = new Data();
 
-            Assert.True(target.Match(new WeakReference(data), nameof(Data.PhoneNumber)));
+            Assert.True(target.Match(new WeakReference<object>(data), nameof(Data.PhoneNumber)));
         }
 
         [Fact]
@@ -37,7 +38,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             var target = new DataAnnotationsValidationPlugin();
             var data = new Data();
 
-            Assert.False(target.Match(new WeakReference(data), nameof(Data.Unvalidated)));
+            Assert.False(target.Match(new WeakReference<object>(data), nameof(Data.Unvalidated)));
         }
 
         [Fact]
@@ -46,8 +47,8 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new DataAnnotationsValidationPlugin();
             var data = new Data();
-            var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.Between5And10));
-            var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.Between5And10), accessor);
+            var accessor = inpcAccessorPlugin.Start(new WeakReference<object>(data), nameof(data.Between5And10));
+            var validator = validatorPlugin.Start(new WeakReference<object>(data), nameof(data.Between5And10), accessor);
             var result = new List<object>();
             
             var errmsg = new RangeAttribute(5, 10).FormatErrorMessage(nameof(Data.Between5And10));
@@ -78,25 +79,26 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new DataAnnotationsValidationPlugin();
             var data = new Data();
-            var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.PhoneNumber));
-            var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.PhoneNumber), accessor);
+            var accessor = inpcAccessorPlugin.Start(new WeakReference<object>(data), nameof(data.PhoneNumber));
+            var validator = validatorPlugin.Start(new WeakReference<object>(data), nameof(data.PhoneNumber), accessor);
             var result = new List<object>();
 
             validator.Subscribe(x => result.Add(x));
             validator.SetValue("123456", BindingPriority.LocalValue);
             validator.SetValue("abcdefghijklm", BindingPriority.LocalValue);
 
-            Assert.Equal(new[]
-            {
-                new BindingNotification(null),
-                new BindingNotification("123456"),
-                new BindingNotification(
-                    new AggregateException(
-                        new ValidationException("The PhoneNumber field is not a valid phone number."),
-                        new ValidationException("The field PhoneNumber must be a string or array type with a maximum length of '10'.")),
-                    BindingErrorType.DataValidationError,
-                    "abcdefghijklm"),
-            }, result);
+            Assert.Equal(3, result.Count);
+            Assert.Equal(new BindingNotification(null), result[0]);
+            Assert.Equal(new BindingNotification("123456"), result[1]);
+            var errorResult = (BindingNotification)result[2];
+            Assert.Equal(BindingErrorType.DataValidationError, errorResult.ErrorType);
+            Assert.Equal("abcdefghijklm", errorResult.Value);
+            var exceptions = ((AggregateException)(errorResult.Error)).InnerExceptions;
+            Assert.True(exceptions.Any(ex =>
+                ex.Message.Contains("The PhoneNumber field is not a valid phone number.")));
+            Assert.True(exceptions.Any(ex =>
+                ex.Message.Contains("The field PhoneNumber must be a string or array type with a maximum length of '10'.")));
+
         }
 
         private class Data

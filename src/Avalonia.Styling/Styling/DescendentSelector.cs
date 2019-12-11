@@ -23,6 +23,9 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
+        public override bool IsCombinator => true;
+
+        /// <inheritdoc/>
         public override bool InTemplate => _parent.InTemplate;
 
         /// <inheritdoc/>
@@ -51,16 +54,13 @@ namespace Avalonia.Styling
                 {
                     var match = _parent.Match((IStyleable)c, subscribe);
 
-                    if (match.ImmediateResult != null)
+                    if (match.Result == SelectorMatchResult.Sometimes)
                     {
-                        if (match.ImmediateResult == true)
-                        {
-                            return SelectorMatch.True;
-                        }
+                        descendantMatches.Add(match.Activator);
                     }
-                    else
+                    else if (match.IsMatch)
                     {
-                        descendantMatches.Add(match.ObservableResult);
+                        return SelectorMatch.AlwaysThisInstance;
                     }
                 }
             }
@@ -71,7 +71,7 @@ namespace Avalonia.Styling
             }
             else
             {
-                return SelectorMatch.False;
+                return SelectorMatch.NeverThisInstance;
             }
         }
 

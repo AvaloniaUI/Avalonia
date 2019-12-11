@@ -1,6 +1,6 @@
 <Style xmlns="https://github.com/avaloniaui"
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-       xmlns:sys="clr-namespace:System;assembly=mscorlib">
+       xmlns:sys="clr-namespace:System;assembly=netstandard">
     <Style.Resources>
 
         <Color x:Key="ThemeAccentColor">#CC119EDA</Color>
@@ -12,9 +12,14 @@
         <Color x:Key="ThemeBorderLowColor">#FFAAAAAA</Color>
         <Color x:Key="ThemeBorderMidColor">#FF888888</Color>
         <Color x:Key="ThemeBorderHighColor">#FF333333</Color>
-        <Color x:Key="ThemeControlLowColor">#FFFFFFFF</Color>
-        <Color x:Key="ThemeControlMidColor">#FFAAAAAA</Color>
-        <Color x:Key="ThemeControlHighColor">#FF888888</Color>
+      
+      
+        <Color x:Key="ThemeControlLowColor">#FF868999</Color>
+        <Color x:Key="ThemeControlMidColor">#FFF5F5F5</Color>
+        <Color x:Key="ThemeControlMidHighColor">#FFC2C3C9</Color>
+        <Color x:Key="ThemeControlHighColor">#FF686868</Color>
+        <Color x:Key="ThemeControlVeryHighColor">#FF5B5B5B</Color>
+
         <Color x:Key="ThemeControlHighlightLowColor">#FFF0F0F0</Color>
         <Color x:Key="ThemeControlHighlightMidColor">#FFD0D0D0</Color>
         <Color x:Key="ThemeControlHighlightHighColor">#FF808080</Color>
@@ -22,6 +27,7 @@
         <Color x:Key="ThemeForegroundLowColor">#FF808080</Color>
 
         <Color x:Key="HighlightColor">#FF086F9E</Color>
+        <Color x:Key="HighlightForegroundColor">#FFFFFFFF</Color>
         <Color x:Key="ErrorColor">#FFFF0000</Color>
         <Color x:Key="ErrorLowColor">#10FF0000</Color>
 
@@ -31,7 +37,9 @@
         <SolidColorBrush x:Key="ThemeBorderHighBrush" Color="{DynamicResource ThemeBorderHighColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeControlLowBrush" Color="{DynamicResource ThemeControlLowColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeControlMidBrush" Color="{DynamicResource ThemeControlMidColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeControlMidHighBrush" Color="{DynamicResource ThemeControlMidHighColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeControlHighBrush" Color="{DynamicResource ThemeControlHighColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeControlVeryHighBrush" Color="{DynamicResource ThemeControlVeryHighColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeControlHighlightLowBrush" Color="{DynamicResource ThemeControlHighlightLowColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeControlHighlightMidBrush" Color="{DynamicResource ThemeControlHighlightMidColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeControlHighlightHighBrush" Color="{DynamicResource ThemeControlHighlightHighColor}"></SolidColorBrush>
@@ -39,12 +47,19 @@
         <SolidColorBrush x:Key="ThemeForegroundLowBrush" Color="{DynamicResource ThemeForegroundLowColor}"></SolidColorBrush>
 
         <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource HighlightColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="HighlightForegroundBrush" Color="{DynamicResource HighlightForegroundColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeAccentBrush" Color="{DynamicResource ThemeAccentColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeAccentBrush2" Color="{DynamicResource ThemeAccentColor2}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeAccentBrush3" Color="{DynamicResource ThemeAccentColor3}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeAccentBrush4" Color="{DynamicResource ThemeAccentColor4}"></SolidColorBrush>
         <SolidColorBrush x:Key="ErrorBrush" Color="{DynamicResource ErrorColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ErrorLowBrush" Color="{DynamicResource ErrorLowColor}"></SolidColorBrush>
+
+        <SolidColorBrush x:Key="NotificationCardBackgroundBrush" Color="#444444" Opacity="0.75"/>
+        <SolidColorBrush x:Key="NotificationCardInformationBackgroundBrush" Color="#007ACC" Opacity="0.75"/>
+        <SolidColorBrush x:Key="NotificationCardSuccessBackgroundBrush" Color="#1F9E45" Opacity="0.75"/>
+        <SolidColorBrush x:Key="NotificationCardWarningBackgroundBrush" Color="#FDB328" Opacity="0.75"/>
+        <SolidColorBrush x:Key="NotificationCardErrorBackgroundBrush" Color="#BD202C" Opacity="0.75"/>
 
         <Thickness x:Key="ThemeBorderThickness">1</Thickness>
         <sys:Double x:Key="ThemeDisabledOpacity">0.5</sys:Double>
@@ -53,6 +68,7 @@
         <sys:Double x:Key="FontSizeNormal">12</sys:Double>
         <sys:Double x:Key="FontSizeLarge">16</sys:Double>
 
-        <sys:Double x:Key="ScrollBarThickness">10</sys:Double>
+        <sys:Double x:Key="ScrollBarThickness">18</sys:Double>
+        <sys:Double x:Key="ScrollBarThumbThickness">8</sys:Double>
     </Style.Resources>
 </Style>

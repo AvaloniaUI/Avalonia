@@ -1,3 +1,6 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System.Collections.Concurrent;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
@@ -44,7 +47,9 @@ namespace Avalonia.Skia
 
                 var typeface = SKTypeface.FromStream(assetStream);
 
-                typeFaceCollection.AddTypeFace(typeface);
+                var key = new FontKey(fontFamily, (FontWeight)typeface.FontWeight, (FontStyle)typeface.FontSlant);
+
+                typeFaceCollection.AddTypeface(key, typeface);
             }
 
             return typeFaceCollection;

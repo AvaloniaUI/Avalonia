@@ -7,10 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A002B9E232135EE00021753 /* app.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A002B9D232135EE00021753 /* app.mm */; };
+		37155CE4233C00EB0034DCE9 /* menu.h in Headers */ = {isa = PBXBuildFile; fileRef = 37155CE3233C00EB0034DCE9 /* menu.h */; };
 		37A517B32159597E00FBA241 /* Screens.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37A517B22159597E00FBA241 /* Screens.mm */; };
 		37C09D8821580FE4006A6758 /* SystemDialogs.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37C09D8721580FE4006A6758 /* SystemDialogs.mm */; };
 		37DDA9B0219330F8002E132B /* AvnString.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37DDA9AF219330F8002E132B /* AvnString.mm */; };
 		37E2330F21583241000CB7E2 /* KeyTransform.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37E2330E21583241000CB7E2 /* KeyTransform.mm */; };
+		520624B322973F4100C4DCEF /* menu.mm in Sources */ = {isa = PBXBuildFile; fileRef = 520624B222973F4100C4DCEF /* menu.mm */; };
 		5B21A982216530F500CEE36E /* cursor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B21A981216530F500CEE36E /* cursor.mm */; };
 		5B8BD94F215BFEA6005ED2A7 /* clipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */; };
 		AB00E4F72147CA920032A60A /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB00E4F62147CA920032A60A /* main.mm */; };
@@ -22,6 +25,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1A002B9D232135EE00021753 /* app.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = app.mm; sourceTree = "<group>"; };
+		37155CE3233C00EB0034DCE9 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = menu.h; sourceTree = "<group>"; };
 		379860FE214DA0C000CD0246 /* KeyTransform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KeyTransform.h; sourceTree = "<group>"; };
 		37A4E71A2178846A00EACBCD /* headers */ = {isa = PBXFileReference; lastKnownFileType = folder; name = headers; path = ../../inc; sourceTree = "<group>"; };
 		37A517B22159597E00FBA241 /* Screens.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Screens.mm; sourceTree = "<group>"; };
@@ -30,6 +35,7 @@
 		37DDA9AF219330F8002E132B /* AvnString.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AvnString.mm; sourceTree = "<group>"; };
 		37DDA9B121933371002E132B /* AvnString.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AvnString.h; sourceTree = "<group>"; };
 		37E2330E21583241000CB7E2 /* KeyTransform.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = KeyTransform.mm; sourceTree = "<group>"; };
+		520624B222973F4100C4DCEF /* menu.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = menu.mm; sourceTree = "<group>"; };
 		5B21A981216530F500CEE36E /* cursor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = cursor.mm; sourceTree = "<group>"; };
 		5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = clipboard.mm; sourceTree = "<group>"; };
 		5BF943652167AD1D009CAE35 /* cursor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cursor.h; sourceTree = "<group>"; };
@@ -68,6 +74,7 @@
 		AB7A61E62147C814003C5833 = {
 			isa = PBXGroup;
 			children = (
+				1A002B9D232135EE00021753 /* app.mm */,
 				37DDA9B121933371002E132B /* AvnString.h */,
 				37DDA9AF219330F8002E132B /* AvnString.mm */,
 				37A4E71A2178846A00EACBCD /* headers */,
@@ -82,6 +89,8 @@
 				AB661C1F2148286E00291242 /* window.mm */,
 				37C09D8A21581EF2006A6758 /* window.h */,
 				AB00E4F62147CA920032A60A /* main.mm */,
+				37155CE3233C00EB0034DCE9 /* menu.h */,
+				520624B222973F4100C4DCEF /* menu.mm */,
 				37A517B22159597E00FBA241 /* Screens.mm */,
 				37C09D8721580FE4006A6758 /* SystemDialogs.mm */,
 				AB7A61F02147C815003C5833 /* Products */,
@@ -104,6 +113,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				37155CE4233C00EB0034DCE9 /* menu.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,6 +157,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = AB7A61E62147C814003C5833;
@@ -164,11 +175,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A002B9E232135EE00021753 /* app.mm in Sources */,
 				5B8BD94F215BFEA6005ED2A7 /* clipboard.mm in Sources */,
 				5B21A982216530F500CEE36E /* cursor.mm in Sources */,
 				37DDA9B0219330F8002E132B /* AvnString.mm in Sources */,
 				AB8F7D6B21482D7F0057DBA5 /* platformthreading.mm in Sources */,
 				37E2330F21583241000CB7E2 /* KeyTransform.mm in Sources */,
+				520624B322973F4100C4DCEF /* menu.mm in Sources */,
 				37A517B32159597E00FBA241 /* Screens.mm in Sources */,
 				AB00E4F72147CA920032A60A /* main.mm in Sources */,
 				37C09D8821580FE4006A6758 /* SystemDialogs.mm in Sources */,

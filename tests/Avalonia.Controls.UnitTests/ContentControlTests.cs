@@ -50,6 +50,7 @@ namespace Avalonia.Controls.UnitTests
             root.Child = target;
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             styler.Verify(x => x.ApplyStyles(It.IsAny<ContentControl>()), Times.Once());
             styler.Verify(x => x.ApplyStyles(It.IsAny<Border>()), Times.Once());
@@ -126,7 +127,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ContentControl
             {
                 Template = GetTemplate(),
-                ContentTemplate = new FuncDataTemplate<string>(_ => new Canvas()),
+                ContentTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
             };
 
             target.Content = "Foo";
@@ -302,8 +303,8 @@ namespace Avalonia.Controls.UnitTests
 
             var target = new ContentControl
             {
-                Template = new FuncControlTemplate<ContentControl>(_ => presenter),
-                ContentTemplate = new FuncDataTemplate<string>(x => new Canvas()),
+                Template = new FuncControlTemplate<ContentControl>((_, __) => presenter),
+                ContentTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
                 Content = "foo",
             };
                         
@@ -331,9 +332,48 @@ namespace Avalonia.Controls.UnitTests
             Assert.Null(textBlock.GetLogicalParent());
         }
 
+        [Fact]
+        public void Should_Set_Child_LogicalParent_After_Removing_And_Adding_Back_To_Logical_Tree()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                var target = new ContentControl();
+                var root = new TestRoot
+                {
+                    Styles =
+                    {
+                        new Style(x => x.OfType<ContentControl>())
+                        {
+                            Setters =
+                            {
+                                new Setter(ContentControl.TemplateProperty, GetTemplate()),
+                            }
+                        }
+                    },
+                    Child = target
+                };
+
+                target.Content = "Foo";
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+
+                Assert.Equal(target, target.Presenter.Child.LogicalParent);
+
+                root.Child = null;
+
+                Assert.Null(target.Template);
+
+                target.Content = null;
+                root.Child = target;
+                target.Content = "Bar";
+
+                Assert.Equal(target, target.Presenter.Child.LogicalParent);
+            }
+        }
+
         private FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<ContentControl>(parent =>
+            return new FuncControlTemplate<ContentControl>((parent, scope) =>
             {
                 return new Border
                 {
@@ -343,7 +383,7 @@ namespace Avalonia.Controls.UnitTests
                         Name = "PART_ContentPresenter",
                         [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
                         [~ContentPresenter.ContentTemplateProperty] = parent[~ContentControl.ContentTemplateProperty],
-                    }
+                    }.RegisterInNameScope(scope)
                 };
             });
         }

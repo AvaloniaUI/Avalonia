@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Avalonia.Animation.Animators;
 using Avalonia.Data;
 using Avalonia.Reactive;
 

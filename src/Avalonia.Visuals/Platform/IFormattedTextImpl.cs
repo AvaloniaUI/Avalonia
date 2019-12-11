@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 
@@ -17,9 +18,9 @@ namespace Avalonia.Platform
         Size Constraint { get; }
 
         /// <summary>
-        /// The measured size of the text.
+        /// The measured bounds of the text.
         /// </summary>
-        Size Size { get; }
+        Rect Bounds{ get; }
 
         /// <summary>
         /// Gets the text.

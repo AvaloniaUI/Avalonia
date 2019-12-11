@@ -14,13 +14,13 @@ using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 public partial class Build
 {
     [Parameter("configuration")]
-    public string NukeArgConfiguration { get; set; }
+    public string Configuration { get; set; }
     
     [Parameter("skip-tests")]
-    public bool NukeArgSkipTests { get; set; }
+    public bool SkipTests { get; set; }
     
     [Parameter("force-nuget-version")]
-    public string NukeArgForceNugetVersion { get; set; }
+    public string ForceNugetVersion { get; set; }
     
     public class BuildParameters
     {
@@ -47,6 +47,7 @@ public partial class Build
         public bool PublishTestResults { get; }
         public string Version { get; }
         public AbsolutePath ArtifactsDir { get; }
+        public AbsolutePath NugetIntermediateRoot { get; }
         public AbsolutePath NugetRoot { get; }
         public AbsolutePath ZipRoot { get; }
         public AbsolutePath BinRoot { get; }
@@ -63,8 +64,8 @@ public partial class Build
        public BuildParameters(Build b)
         {
             // ARGUMENTS
-            Configuration = b.NukeArgConfiguration ?? "Release";
-            SkipTests = b.NukeArgSkipTests;
+            Configuration = b.Configuration ?? "Release";
+            SkipTests = b.SkipTests;
 
             // CONFIGURATION
             MainRepo = "https://github.com/AvaloniaUI/Avalonia";
@@ -101,14 +102,14 @@ public partial class Build
             IsNuGetRelease = IsMainRepo && IsReleasable && IsReleaseBranch;
 
             // VERSION
-            Version = b.NukeArgForceNugetVersion ?? GetVersion();
+            Version = b.ForceNugetVersion ?? GetVersion();
 
             if (IsRunningOnAzure)
             {
                 if (!IsNuGetRelease)
                 {
                     // Use AssemblyVersion with Build as version
-                    Version += "-build" + Environment.GetEnvironmentVariable("BUILD_BUILDID") + "-beta";
+                    Version += "-cibuild" + int.Parse(Environment.GetEnvironmentVariable("BUILD_BUILDID")).ToString("0000000") + "-beta";
                 }
 
                 PublishTestResults = true;
@@ -117,6 +118,7 @@ public partial class Build
             // DIRECTORIES
             ArtifactsDir = RootDirectory / "artifacts";
             NugetRoot = ArtifactsDir / "nuget";
+            NugetIntermediateRoot = RootDirectory / "build-intermediate" / "nuget";
             ZipRoot = ArtifactsDir / "zip";
             BinRoot = ArtifactsDir / "bin";
             TestResultsRoot = ArtifactsDir / "test-results";
@@ -130,9 +132,9 @@ public partial class Build
             ZipTargetControlCatalogDesktopDir = ZipRoot / ("ControlCatalog.Desktop-" + FileZipSuffix);
         }
 
-        private static string GetVersion()
+        string GetVersion()
         {
-            var xdoc = XDocument.Load("./build/SharedVersion.props");
+            var xdoc = XDocument.Load(RootDirectory / "build/SharedVersion.props");
             return xdoc.Descendants().First(x => x.Name.LocalName == "Version").Value;
         }
     }

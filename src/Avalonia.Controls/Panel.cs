@@ -31,7 +31,6 @@ namespace Avalonia.Controls
         static Panel()
         {
             AffectsRender<Panel>(BackgroundProperty);
-            ClipToBoundsProperty.OverrideDefaultValue<Panel>(true);
         }
 
         /// <summary>
@@ -113,7 +112,7 @@ namespace Avalonia.Controls
                 case NotifyCollectionChangedAction.Add:
                     controls = e.NewItems.OfType<Control>().ToList();
                     LogicalChildren.InsertRange(e.NewStartingIndex, controls);
-                    VisualChildren.AddRange(e.NewItems.OfType<Visual>());
+                    VisualChildren.InsertRange(e.NewStartingIndex, e.NewItems.OfType<Visual>());
                     break;
 
                 case NotifyCollectionChangedAction.Move:

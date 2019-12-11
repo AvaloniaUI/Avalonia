@@ -9,7 +9,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// A Skia implementation of a <see cref="ITransformedGeometryImpl"/>.
     /// </summary>
-    public class TransformedGeometryImpl : GeometryImpl, ITransformedGeometryImpl
+    internal class TransformedGeometryImpl : GeometryImpl, ITransformedGeometryImpl
     {
         /// <summary>
         ///  Initializes a new instance of the <see cref="TransformedGeometryImpl"/> class.

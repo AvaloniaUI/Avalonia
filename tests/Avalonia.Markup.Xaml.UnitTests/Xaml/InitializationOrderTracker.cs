@@ -4,6 +4,7 @@
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {

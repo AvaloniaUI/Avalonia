@@ -195,3 +195,14 @@ Logs/
 ModuleCache.noindex/
 Build/Intermediates.noindex/
 info.plist
+build-intermediate
+obj-Direct2D1/
+obj-Skia/
+
+##################
+# Vim
+##################
+.vim
+coc-settings.json
+.ccls-cache
+.ccls

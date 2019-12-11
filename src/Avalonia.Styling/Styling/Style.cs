@@ -106,20 +106,14 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         bool IResourceProvider.HasResources => _resources?.Count > 0;
 
-        /// <summary>
-        /// Attaches the style to a control if the style's selector matches.
-        /// </summary>
-        /// <param name="control">The control to attach to.</param>
-        /// <param name="container">
-        /// The control that contains this style. May be null.
-        /// </param>
-        public void Attach(IStyleable control, IStyleHost container)
+        /// <inheritdoc/>
+        public bool Attach(IStyleable control, IStyleHost container)
         {
             if (Selector != null)
             {
                 var match = Selector.Match(control);
 
-                if (match.ImmediateResult != false)
+                if (match.IsMatch)
                 {
                     var controlSubscriptions = GetSubscriptions(control);
                     
@@ -129,9 +123,10 @@ namespace Avalonia.Styling
                     {
                         foreach (var animation in Animations)
                         {
-                            IObservable<bool> obsMatch = match.ObservableResult;
+                            var obsMatch = match.Activator;
 
-                            if (match.ImmediateResult == true)
+                            if (match.Result == SelectorMatchResult.AlwaysThisType ||
+                                match.Result == SelectorMatchResult.AlwaysThisInstance)
                             {
                                 obsMatch = Observable.Return(true);
                             }
@@ -143,13 +138,16 @@ namespace Avalonia.Styling
 
                     foreach (var setter in Setters)
                     {
-                        var sub = setter.Apply(this, control, match.ObservableResult);
+                        var sub = setter.Apply(this, control, match.Activator);
                         subs.Add(sub);
                     }
 
                     controlSubscriptions.Add(subs);
+                    controlSubscriptions.Add(Disposable.Create(() => Subscriptions.Remove(subs)));
                     Subscriptions.Add(subs);
                 }
+
+                return match.Result != SelectorMatchResult.NeverThisType;
             }
             else if (control == container)
             {
@@ -162,14 +160,18 @@ namespace Avalonia.Styling
                     var sub = setter.Apply(this, control, null);
                     subs.Add(sub);
                 }
-                
+
                 controlSubscriptions.Add(subs);
+                controlSubscriptions.Add(Disposable.Create(() => Subscriptions.Remove(subs)));
                 Subscriptions.Add(subs);
+                return true;
             }
+
+            return false;
         }
 
         /// <inheritdoc/>
-        public bool TryGetResource(string key, out object result)
+        public bool TryGetResource(object key, out object result)
         {
             result = null;
             return _resources?.TryGetResource(key, out result) ?? false;
@@ -223,7 +225,7 @@ namespace Avalonia.Styling
         {
             if (!_applied.TryGetValue(control, out var subscriptions))
             {
-                subscriptions = new CompositeDisposable(2);
+                subscriptions = new CompositeDisposable(3);
                 subscriptions.Add(control.StyleDetach.Subscribe(ControlDetach));
                 _applied.Add(control, subscriptions);
             }

@@ -16,7 +16,9 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             TemplatedControl.IsTemplateFocusTarget="True">
-                        <Grid ColumnDefinitions="16, *"
+                        <Grid Name="PART_Header"
+                              ColumnDefinitions="16, Auto"
+                              HorizontalAlignment="Left"
                               Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource LeftMarginConverter}}" >
                             <ToggleButton Name="expander"
                                           Focusable="False"
@@ -32,8 +34,7 @@
                     <ItemsPresenter Name="PART_ItemsPresenter"
                                     IsVisible="{TemplateBinding IsExpanded}"
                                     Items="{TemplateBinding Items}"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}"
-                                    MemberSelector="{TemplateBinding MemberSelector}"/>
+                                    ItemsPanel="{TemplateBinding ItemsPanel}"/>
                 </StackPanel>
             </ControlTemplate>
         </Setter>

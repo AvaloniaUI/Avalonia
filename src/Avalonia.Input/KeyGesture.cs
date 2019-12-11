@@ -1,41 +1,56 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Avalonia.Input
 {
+    /// <summary>
+    /// Defines a keyboard input combination.
+    /// </summary>
     public sealed class KeyGesture : IEquatable<KeyGesture>
     {
-        public KeyGesture()
+        private static readonly Dictionary<string, Key> s_keySynonyms = new Dictionary<string, Key>
         {
-            
-        }
+            { "+", Key.OemPlus }, { "-", Key.OemMinus }, { ".", Key.OemPeriod }, { ",", Key.OemComma }
+        };
 
-        public KeyGesture(Key key, InputModifiers modifiers = InputModifiers.None)
+        [Obsolete("Use constructor taking KeyModifiers")]
+        public KeyGesture(Key key, InputModifiers modifiers)
         {
             Key = key;
-            Modifiers = modifiers;
+            KeyModifiers = (KeyModifiers)(((int)modifiers) & 0xf);
         }
-        
+
+        public KeyGesture(Key key, KeyModifiers modifiers = KeyModifiers.None)
+        {
+            Key = key;
+            KeyModifiers = modifiers;
+        }
+
         public bool Equals(KeyGesture other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Key == other.Key && Modifiers == other.Modifiers;
+
+            return Key == other.Key && KeyModifiers == other.KeyModifiers;
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj is KeyGesture && Equals((KeyGesture) obj);
+
+            return obj is KeyGesture && Equals((KeyGesture)obj);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return ((int) Key*397) ^ (int) Modifiers;
+                return ((int)Key * 397) ^ (int)KeyModifiers;
             }
         }
 
@@ -49,78 +64,90 @@ namespace Avalonia.Input
             return !Equals(left, right);
         }
 
-        public Key Key { get; set; }
+        public Key Key { get; }
 
-        public InputModifiers Modifiers { get; set; }
+        [Obsolete("Use KeyModifiers")]
+        public InputModifiers Modifiers => (InputModifiers)KeyModifiers;
 
-        
-        static readonly Dictionary<string, Key> KeySynonyms = new Dictionary<string, Key>
-        {
-            {"+", Key.OemPlus },
-            {"-", Key.OemMinus},
-            {".", Key.OemPeriod }
-        };
-
-        //TODO: Move that to external key parser
-        static Key ParseKey(string key)
-        {
-            Key rv;
-            if (KeySynonyms.TryGetValue(key.ToLower(), out rv))
-                return rv;
-            return (Key)Enum.Parse(typeof (Key), key, true);
-        }
-
-        static InputModifiers ParseModifier(string modifier)
-        {
-            if (modifier.Equals("ctrl", StringComparison.OrdinalIgnoreCase))
-                return InputModifiers.Control;
-            return (InputModifiers) Enum.Parse(typeof (InputModifiers), modifier, true);
-        }
+        public KeyModifiers KeyModifiers { get; }
 
         public static KeyGesture Parse(string gesture)
         {
-            //string.Split can't be used here because "Ctrl++" is a perfectly valid key gesture
+            // string.Split can't be used here because "Ctrl++" is a perfectly valid key gesture
 
-            var parts = new List<string>();
+            var key = Key.None;
+            var keyModifiers = KeyModifiers.None;
 
             var cstart = 0;
+
             for (var c = 0; c <= gesture.Length; c++)
             {
                 var ch = c == gesture.Length ? '\0' : gesture[c];
-                if (c == gesture.Length || (ch == '+' && cstart != c))
+                bool isLast = c == gesture.Length;
+
+                if (isLast || (ch == '+' && cstart != c))
                 {
-                    parts.Add(gesture.Substring(cstart, c - cstart));
+                    var partSpan = gesture.AsSpan(cstart, c - cstart).Trim();
+
+                    if (isLast)
+                    {
+                        key = ParseKey(partSpan.ToString());
+                    }
+                    else
+                    {
+                        keyModifiers |= ParseModifier(partSpan);
+                    }
+
                     cstart = c + 1;
                 }
             }
-            for (var c = 0; c < parts.Count; c++)
-                parts[c] = parts[c].Trim();
 
-            var rv = new KeyGesture();
 
-            for (var c = 0; c < parts.Count; c++)
-            {
-                if (c == parts.Count - 1)
-                    rv.Key = ParseKey(parts[c]);
-                else
-                    rv.Modifiers |= ParseModifier(parts[c]);
-            }
-            return rv;
+            return new KeyGesture(key, keyModifiers);
         }
 
         public override string ToString()
         {
             var parts = new List<string>();
-            foreach (var flag in Enum.GetValues(typeof (InputModifiers)).Cast<InputModifiers>())
+
+            foreach (var flag in Enum.GetValues(typeof(KeyModifiers)).Cast<KeyModifiers>())
             {
-                if (Modifiers.HasFlag(flag) && flag != InputModifiers.None)
+                if (KeyModifiers.HasFlag(flag) && flag != KeyModifiers.None)
+                {
                     parts.Add(flag.ToString());
+                }
             }
+
             parts.Add(Key.ToString());
+
             return string.Join(" + ", parts);
         }
 
-        public bool Matches(KeyEventArgs keyEvent) => ResolveNumPadOperationKey(keyEvent.Key) == Key && keyEvent.Modifiers == Modifiers;
+        public bool Matches(KeyEventArgs keyEvent) => ResolveNumPadOperationKey(keyEvent.Key) == Key && keyEvent.KeyModifiers == KeyModifiers;
+
+        // TODO: Move that to external key parser
+        private static Key ParseKey(string key)
+        {
+            if (s_keySynonyms.TryGetValue(key.ToLower(), out Key rv))
+                return rv;
+
+            return (Key)Enum.Parse(typeof(Key), key, true);
+        }
+
+        private static KeyModifiers ParseModifier(ReadOnlySpan<char> modifier)
+        {
+            if (modifier.Equals("ctrl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                return KeyModifiers.Control;
+            }
+
+            if (modifier.Equals("cmd".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                return KeyModifiers.Meta;
+            }
+
+            return (KeyModifiers)Enum.Parse(typeof(KeyModifiers), modifier.ToString(), true);
+        }
 
         private Key ResolveNumPadOperationKey(Key key)
         {

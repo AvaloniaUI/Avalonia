@@ -10,7 +10,8 @@
               HorizontalAlignment="Center"
               Spacing="16">
             <Border Background="{DynamicResource ThemeAccentBrush}"
-              Padding="48,48,48,48">
+                    Margin="16"
+                    Padding="48,48,48,48">
                 <Border.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Standard _Menu Item"/>
@@ -31,7 +32,24 @@
                         </MenuItem>
                     </ContextMenu>
                 </Border.ContextMenu>
-                <TextBlock Text="Right Click Here"/>
+                <TextBlock Text="Defined in XAML"/>
+            </Border>
+            <Border Background="{DynamicResource ThemeAccentBrush}"
+                    Margin="16"
+                    Padding="48,48,48,48">
+                <Border.ContextMenu>
+                    <ContextMenu Items="{Binding MenuItems}">
+                        <ContextMenu.Styles>
+                            <Style Selector="MenuItem">
+                                <Setter Property="Header" Value="{Binding Header}"/>
+                                <Setter Property="Items" Value="{Binding Items}"/>
+                                <Setter Property="Command" Value="{Binding Command}"/>
+                                <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
+                            </Style>
+                        </ContextMenu.Styles>
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <TextBlock Text="Dynamically Generated"/>
             </Border>
         </StackPanel>
     </StackPanel>

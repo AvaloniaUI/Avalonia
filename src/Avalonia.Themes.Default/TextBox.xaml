@@ -3,6 +3,8 @@
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
+    <Setter Property="SelectionBrush" Value="{DynamicResource HighlightBrush}"/>
+    <Setter Property="SelectionForegroundBrush" Value="{DynamicResource HighlightForegroundBrush}"/>
     <Setter Property="Padding" Value="4"/>
     <Setter Property="Template">
       <ControlTemplate>
@@ -23,7 +25,7 @@
                            Path="UseFloatingWatermark"/>
                   <Binding RelativeSource="{RelativeSource TemplatedParent}"
                            Path="Text"
-                           Converter="{x:Static StringConverters.NotNullOrEmpty}"/>
+                           Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
                 </MultiBinding>
               </TextBlock.IsVisible>
             </TextBlock>
@@ -36,7 +38,7 @@
                   <TextBlock Name="watermark"
                              Opacity="0.5"
                              Text="{TemplateBinding Watermark}"
-                             IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.NullOrEmpty}}"/>
+                             IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
                   <TextPresenter Name="PART_TextPresenter"
                                  Text="{TemplateBinding Text, Mode=TwoWay}"
                                  CaretIndex="{TemplateBinding CaretIndex}"
@@ -44,7 +46,10 @@
                                  SelectionEnd="{TemplateBinding SelectionEnd}"
                                  TextAlignment="{TemplateBinding TextAlignment}"
                                  TextWrapping="{TemplateBinding TextWrapping}"
-                                 PasswordChar="{TemplateBinding PasswordChar}"/>
+                                 PasswordChar="{TemplateBinding PasswordChar}"
+                                 SelectionBrush="{TemplateBinding SelectionBrush}"
+                                 SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                 CaretBrush="{TemplateBinding CaretBrush}"/>
                 </Panel>
               </ScrollViewer>
             </DataValidationErrors>

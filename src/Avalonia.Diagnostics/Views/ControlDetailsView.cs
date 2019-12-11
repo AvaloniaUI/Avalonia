@@ -7,7 +7,6 @@ using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Media;
-using Avalonia.Styling;
 
 namespace Avalonia.Diagnostics.Views
 {
@@ -15,6 +14,7 @@ namespace Avalonia.Diagnostics.Views
     {
         private static readonly StyledProperty<ControlDetailsViewModel> ViewModelProperty =
             AvaloniaProperty.Register<ControlDetailsView, ControlDetailsViewModel>(nameof(ViewModel));
+
         private SimpleGrid _grid;
 
         public ControlDetailsView()
@@ -26,7 +26,7 @@ namespace Avalonia.Diagnostics.Views
 
         public ControlDetailsViewModel ViewModel
         {
-            get { return GetValue(ViewModelProperty); }
+            get => GetValue(ViewModelProperty);
             private set
             {
                 SetValue(ViewModelProperty, value);
@@ -38,48 +38,37 @@ namespace Avalonia.Diagnostics.Views
         {
             Func<object, IEnumerable<Control>> pt = PropertyTemplate;
 
-            Content = new ScrollViewer
-            {
-                Content = _grid = new SimpleGrid
-                {
-                    Styles =
-                    {
-                        new Style(x => x.Is<Control>())
-                        {
-                            Setters = new[]
-                            {
-                                new Setter(MarginProperty, new Thickness(2)),
-                            }
-                        },
-                    },
-                    [GridRepeater.TemplateProperty] = pt,
-                }
-            };
+            Content = new ScrollViewer { Content = _grid = new SimpleGrid { [GridRepeater.TemplateProperty] = pt } };
         }
 
         private IEnumerable<Control> PropertyTemplate(object i)
         {
             var property = (PropertyDetails)i;
 
+            var margin = new Thickness(2);
+
             yield return new TextBlock
             {
+                Margin = margin,
                 Text = property.Name,
                 TextWrapping = TextWrapping.NoWrap,
-                [!ToolTip.TipProperty] = property.GetObservable<string>(nameof(property.Diagnostic)).ToBinding(),
+                [!ToolTip.TipProperty] = property.GetObservable<string>(nameof(property.Diagnostic)).ToBinding()
             };
 
             yield return new TextBlock
             {
+                Margin = margin,
                 TextWrapping = TextWrapping.NoWrap,
                 [!TextBlock.TextProperty] = property.GetObservable<object>(nameof(property.Value))
                     .Select(v => v?.ToString())
-                    .ToBinding(),
+                    .ToBinding()
             };
 
             yield return new TextBlock
             {
+                Margin = margin,
                 TextWrapping = TextWrapping.NoWrap,
-                [!TextBlock.TextProperty] = property.GetObservable<string>((nameof(property.Priority))).ToBinding(),
+                [!TextBlock.TextProperty] = property.GetObservable<string>((nameof(property.Priority))).ToBinding()
             };
         }
     }

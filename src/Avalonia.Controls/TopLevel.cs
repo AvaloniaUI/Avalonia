@@ -13,7 +13,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
-using Avalonia.VisualTree;
 using JetBrains.Annotations;
 
 namespace Avalonia.Controls
@@ -49,7 +48,6 @@ namespace Avalonia.Controls
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
-        private readonly IApplicationLifecycle _applicationLifecycle;
         private readonly IPlatformRenderInterface _renderInterface;
         private Size _clientSize;
         private ILayoutManager _layoutManager;
@@ -87,16 +85,21 @@ namespace Avalonia.Controls
             }
 
             PlatformImpl = impl;
+
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
             var styler = TryGetService<IStyler>(dependencyResolver);
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
-            _applicationLifecycle = TryGetService<IApplicationLifecycle>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
 
             Renderer = impl.CreateRenderer(this);
+
+            if (Renderer != null)
+            {
+                Renderer.SceneInvalidated += SceneInvalidated;
+            }
 
             impl.SetInputRoot(this);
 
@@ -117,11 +120,6 @@ namespace Avalonia.Controls
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
                 .Switch().Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformCursor));
 
-            if (_applicationLifecycle != null)
-            {
-                _applicationLifecycle.OnExit += OnApplicationExiting;
-            }
-
             if (((IStyleHost)this).StylingParent is IResourceProvider applicationResources)
             {
                 WeakSubscriptionManager.Subscribe(
@@ -130,6 +128,11 @@ namespace Avalonia.Controls
                     this);
             }
         }
+
+        /// <summary>
+        /// Fired when the window is opened.
+        /// </summary>
+        public event EventHandler Opened;
 
         /// <summary>
         /// Fired when the window is closed.
@@ -231,17 +234,17 @@ namespace Avalonia.Controls
         {
             PlatformImpl?.Invalidate(rect);
         }
-
+        
         /// <inheritdoc/>
-        Point IRenderRoot.PointToClient(Point p)
+        Point IRenderRoot.PointToClient(PixelPoint p)
         {
-            return PlatformImpl?.PointToClient(p) ?? default(Point);
+            return PlatformImpl?.PointToClient(p) ?? default;
         }
 
         /// <inheritdoc/>
-        Point IRenderRoot.PointToScreen(Point p)
+        PixelPoint IRenderRoot.PointToScreen(Point p)
         {
-            return PlatformImpl?.PointToScreen(p) ?? default(Point);
+            return PlatformImpl?.PointToScreen(p) ?? default;
         }
         
         /// <summary>
@@ -263,12 +266,17 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
-            PlatformImpl = null;
+            var logicalArgs = new LogicalTreeAttachmentEventArgs(this);
+            ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
-            Closed?.Invoke(this, EventArgs.Empty);
+            var visualArgs = new VisualTreeAttachmentEventArgs(this, this);
+            OnDetachedFromVisualTreeCore(visualArgs);
+
+            (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
+            PlatformImpl = null;
+            OnClosed(EventArgs.Empty);
             Renderer?.Dispose();
             Renderer = null;
-            _applicationLifecycle.OnExit -= OnApplicationExiting;
         }
 
         /// <summary>
@@ -291,10 +299,7 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         protected virtual void HandleScalingChanged(double scaling)
         {
-            foreach (ILayoutable control in this.GetSelfAndVisualDescendants())
-            {
-                control.InvalidateMeasure();
-            }
+            LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
         }
 
         /// <inheritdoc/>
@@ -305,6 +310,18 @@ namespace Avalonia.Controls
             throw new InvalidOperationException(
                 $"Control '{GetType().Name}' is a top level control and cannot be added as a child.");
         }
+
+        /// <summary>
+        /// Raises the <see cref="Opened"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnOpened(EventArgs e) => Opened?.Invoke(this, e);
+
+        /// <summary>
+        /// Raises the <see cref="Closed"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnClosed(EventArgs e) => Closed?.Invoke(this, e);
 
         /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a
@@ -319,7 +336,7 @@ namespace Avalonia.Controls
 
             if (result == null)
             {
-                Logger.Warning(
+                Logger.TryGet(LogEventLevel.Warning)?.Log(
                     LogArea.Control,
                     this,
                     "Could not create {Service} : maybe Application.RegisterServices() wasn't called?",
@@ -329,18 +346,6 @@ namespace Avalonia.Controls
             return result;
         }
 
-        private void OnApplicationExiting(object sender, EventArgs args)
-        {
-            HandleApplicationExiting();
-        }
-
-        /// <summary>
-        /// Handles the application exiting, either from the last window closing, or a call to <see cref="IApplicationLifecycle.Exit"/>.
-        /// </summary>
-        protected virtual void HandleApplicationExiting()
-        {
-        }
-
         /// <summary>
         /// Handles input from <see cref="ITopLevelImpl.Input"/>.
         /// </summary>
@@ -348,6 +353,11 @@ namespace Avalonia.Controls
         private void HandleInput(RawInputEventArgs e)
         {
             _inputManager.ProcessInput(e);
+        }
+
+        private void SceneInvalidated(object sender, SceneInvalidatedEventArgs e)
+        {
+            (this as IInputRoot).MouseDevice.SceneInvalidated(this, e.DirtyRect);
         }
     }
 }

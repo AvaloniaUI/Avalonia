@@ -15,10 +15,10 @@ using Avalonia.Rendering;
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
     class TopLevelImpl : IAndroidView, ITopLevelImpl,  IFramebufferPlatformSurface
-
     {
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidTouchEventsHelper<TopLevelImpl> _touchHelper;
+
         private ViewImpl _view;
 
         public TopLevelImpl(Context context, bool placeOnTop = false)
@@ -27,6 +27,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot,
                 p => GetAvaloniaPointFromEvent(p));
+
+            Surfaces = new object[] { this };
 
             MaxClientSize = new Size(_view.Resources.DisplayMetrics.WidthPixels,
                 _view.Resources.DisplayMetrics.HeightPixels);
@@ -82,7 +84,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IPlatformHandle Handle => _view;
 
-        public IEnumerable<object> Surfaces => new object[] {this};
+        public IEnumerable<object> Surfaces { get; }
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
@@ -99,14 +101,14 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if (_view.Holder?.Surface?.IsValid == true) _view.Invalidate();
         }
 
-        public Point PointToClient(Point point)
+        public Point PointToClient(PixelPoint point)
         {
-            return point;
+            return point.ToPoint(1);
         }
 
-        public Point PointToScreen(Point point)
+        public PixelPoint PointToScreen(Point point)
         {
-            return point;
+            return PixelPoint.FromPoint(point, 1);
         }
 
         public void SetCursor(IPlatformHandle cursor)
@@ -190,6 +192,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 base.SurfaceChanged(holder, format, width, height);
             }
         }
+
+        public IPopupImpl CreatePopup() => null;
 
         ILockedFramebuffer IFramebufferPlatformSurface.Lock()=>new AndroidFramebuffer(_view.Holder.Surface);
     }

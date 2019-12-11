@@ -11,11 +11,13 @@ namespace Avalonia.Controls.Embedding.Offscreen
     {
         private double _scaling = 1;
         private Size _clientSize;
+
         public IInputRoot InputRoot { get; private set; }
+        public bool IsDisposed { get; private set; }
 
         public virtual void Dispose()
         {
-            //No-op
+            IsDisposed = true;
         }
 
         public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
@@ -49,9 +51,9 @@ namespace Avalonia.Controls.Embedding.Offscreen
         public Action<double> ScalingChanged { get; set; }
         public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 
-        public virtual Point PointToClient(Point point) => point;
+        public virtual Point PointToClient(PixelPoint point) => point.ToPoint(1);
 
-        public virtual Point PointToScreen(Point point) => point;
+        public virtual PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, 1);
 
         public virtual void SetCursor(IPlatformHandle cursor)
         {
@@ -59,5 +61,6 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public Action Closed { get; set; }
         public abstract IMouseDevice MouseDevice { get; }
+        public IPopupImpl CreatePopup() => null;
     }
 }

@@ -15,8 +15,7 @@
           <ItemsPresenter Name="PART_ItemsPresenter"
                           Items="{TemplateBinding Items}"
                           ItemsPanel="{TemplateBinding ItemsPanel}"
-                          Margin="{TemplateBinding Padding}"
-                          MemberSelector="{TemplateBinding MemberSelector}"/>
+                          Margin="{TemplateBinding Padding}"/>
         </ScrollViewer>
       </Border>
     </ControlTemplate>

@@ -6,13 +6,16 @@ using System.Globalization;
 
 namespace Avalonia.Utilities
 {
-    public static class IdentifierParser
+#if !BUILDTASK
+    public
+#endif
+    static class IdentifierParser
     {
         public static ReadOnlySpan<char> ParseIdentifier(this ref CharacterReader r)
         {
             if (IsValidIdentifierStart(r.Peek))
             {
-                return r.TakeWhile(IsValidIdentifierChar);
+                return r.TakeWhile(c => IsValidIdentifierChar(c));
             }
             else
             {

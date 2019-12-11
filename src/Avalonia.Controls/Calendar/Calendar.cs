@@ -117,7 +117,6 @@ namespace Avalonia.Controls
     /// <see cref="E:Avalonia.Controls.Calendar.DisplayModeChanged" />
     /// event.
     /// </summary>
-    /// <QualityBand>Mature</QualityBand>
     public class CalendarModeChangedEventArgs : RoutedEventArgs
     {
         /// <summary>
@@ -1566,7 +1565,7 @@ namespace Avalonia.Controls
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
-            if (!HasFocusInternal && e.MouseButton == MouseButton.Left)
+            if (!HasFocusInternal && e.InitialPressMouseButton == MouseButton.Left)
             {
                 FocusManager.Instance.Focus(this);
             }
@@ -2058,18 +2057,17 @@ namespace Avalonia.Controls
 
         static Calendar()
         {
-            IsEnabledProperty.Changed.AddClassHandler<Calendar>(x => x.OnIsEnabledChanged);
-            FirstDayOfWeekProperty.Changed.AddClassHandler<Calendar>(x => x.OnFirstDayOfWeekChanged);
-            IsTodayHighlightedProperty.Changed.AddClassHandler<Calendar>(x => x.OnIsTodayHighlightedChanged);
-            DisplayModeProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayModePropertyChanged);
-            SelectionModeProperty.Changed.AddClassHandler<Calendar>(x => x.OnSelectionModeChanged);
-            SelectedDateProperty.Changed.AddClassHandler<Calendar>(x => x.OnSelectedDateChanged);
-            DisplayDateProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayDateChanged);
-            DisplayDateStartProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayDateStartChanged);
-            DisplayDateEndProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayDateEndChanged);
-            KeyDownEvent.AddClassHandler<Calendar>(x => x.Calendar_KeyDown);
-            KeyUpEvent.AddClassHandler<Calendar>(x => x.Calendar_KeyUp);
-            
+            IsEnabledProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnIsEnabledChanged(e));
+            FirstDayOfWeekProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnFirstDayOfWeekChanged(e));
+            IsTodayHighlightedProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnIsTodayHighlightedChanged(e));
+            DisplayModeProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayModePropertyChanged(e));
+            SelectionModeProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnSelectionModeChanged(e));
+            SelectedDateProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnSelectedDateChanged(e));
+            DisplayDateProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayDateChanged(e));
+            DisplayDateStartProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayDateStartChanged(e));
+            DisplayDateEndProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayDateEndChanged(e));
+            KeyDownEvent.AddClassHandler<Calendar>((x,e) => x.Calendar_KeyDown(e));
+            KeyUpEvent.AddClassHandler<Calendar>((x,e) => x.Calendar_KeyUp(e));
         }
 
         /// <summary>

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-
 using Avalonia.Diagnostics.Models;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -12,8 +11,8 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class EventTreeNode : EventTreeNodeBase
     {
-        private RoutedEvent _event;
-        private EventsViewModel _parentViewModel;
+        private readonly RoutedEvent _event;
+        private readonly EventsViewModel _parentViewModel;
         private bool _isRegistered;
         private FiredEvent _currentEvent;
 
@@ -23,8 +22,8 @@ namespace Avalonia.Diagnostics.ViewModels
             Contract.Requires<ArgumentNullException>(@event != null);
             Contract.Requires<ArgumentNullException>(vm != null);
 
-            this._event = @event;
-            this._parentViewModel = vm;
+            _event = @event;
+            _parentViewModel = vm;
         }
 
         public override bool? IsEnabled
@@ -56,6 +55,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (IsEnabled.GetValueOrDefault() && !_isRegistered)
             {
+                // FIXME: This leaks event handlers.
                 _event.AddClassHandler(typeof(object), HandleEvent, (RoutingStrategies)7, handledEventsToo: true);
                 _isRegistered = true;
             }

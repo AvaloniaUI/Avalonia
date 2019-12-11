@@ -9,7 +9,22 @@
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
               Spacing="16">
-      <ListBox Items="{Binding}" Width="250" Height="350"></ListBox>
+      <StackPanel Orientation="Vertical" Spacing="8">
+        <ListBox Items="{Binding Items}" SelectedItem="{Binding SelectedItem}" AutoScrollToSelectedItem="True"  SelectedItems="{Binding SelectedItems}" SelectionMode="{Binding SelectionMode}" Width="250" Height="350"></ListBox>
+
+        <Button Command="{Binding AddItemCommand}">Add</Button>
+
+        <Button Command="{Binding RemoveItemCommand}">Remove</Button>
+
+        <Button Command="{Binding SelectRandomItemCommand}">Select Random Item</Button>
+
+        <ComboBox SelectedIndex="{Binding SelectionMode, Mode=TwoWay}">
+          <ComboBoxItem>Single</ComboBoxItem>
+          <ComboBoxItem>Multiple</ComboBoxItem>
+          <ComboBoxItem>Toggle</ComboBoxItem>
+          <ComboBoxItem>AlwaysSelected</ComboBoxItem>
+        </ComboBox>
+      </StackPanel>
     </StackPanel>
   </StackPanel>
 </UserControl>

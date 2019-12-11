@@ -1,21 +1,24 @@
-<UserControl xmlns="https://github.com/avaloniaui">
-  <Grid RowDefinitions="Auto,*,Auto">
-    <TabStrip SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
-      <TabStripItem Content="Logical Tree"/>
-      <TabStripItem Content="Visual Tree"/>
-      <TabStripItem Content="Events"/>
-    </TabStrip>
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Avalonia.Diagnostics.DevTools">
+  <Grid RowDefinitions="*,Auto" Margin="4">
 
-    <ContentControl Content="{Binding Content}" Grid.Row="1"/> 
-    
-    <StackPanel Spacing="4" Orientation="Horizontal" Grid.Row="2">
+    <TabControl Grid.Row="0" Items="{Binding Tools}" SelectedItem="{Binding SelectedTool}">
+      <TabControl.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Text="{Binding Name}" />
+        </DataTemplate>
+      </TabControl.ItemTemplate>
+    </TabControl>
+
+    <StackPanel Grid.Row="1" Spacing="4" Orientation="Horizontal">
       <TextBlock>Hold Ctrl+Shift over a control to inspect.</TextBlock>
-      <Separator Width="8"/>
+      <Separator Width="8" />
       <TextBlock>Focused:</TextBlock>
-      <TextBlock Text="{Binding FocusedControl}"/>
-      <Separator Width="8"/>
+      <TextBlock Text="{Binding FocusedControl}" />
+      <Separator Width="8" />
       <TextBlock>Pointer Over:</TextBlock>
-      <TextBlock Text="{Binding PointerOverElement}"/>
+      <TextBlock Text="{Binding PointerOverElement}" />
     </StackPanel>
   </Grid>
 </UserControl>

@@ -3,21 +3,28 @@
 
 using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
-    public class WindowImpl : WindowBaseImpl, IWindowImpl
+    public class WindowImpl : WindowBaseImpl, IWindowImpl, ITopLevelImplWithNativeMenuExporter
     {
+        private readonly IAvaloniaNativeFactory _factory;
+        private readonly AvaloniaNativePlatformOptions _opts;
         IAvnWindow _native;
-        public WindowImpl(IAvaloniaNativeFactory factory)
+        public WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(opts)
         {
+            _factory = factory;
+            _opts = opts;
             using (var e = new WindowEvents(this))
             {
                 Init(_native = factory.CreateWindow(e), factory.CreateScreens());
             }
+
+            NativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents
@@ -100,5 +107,12 @@ namespace Avalonia.Native
         }
 
         public Func<bool> Closing { get; set; }
+
+        public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
+
+        public void Move(PixelPoint point) => Position = point;
+
+        public override IPopupImpl CreatePopup() =>
+            _opts.OverlayPopups ? null : new PopupImpl(_factory, _opts, this);
     }
 }

@@ -12,14 +12,14 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests
 {
-    public class StyleTests
+    public class StyleTests : XamlTestBase
     {
         [Fact]
         public void Binding_Should_Be_Assigned_To_Setter_Value_Instead_Of_Bound()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformWrapper))
             {
-                var xaml = "<Style xmlns='https://github.com/avaloniaui'><Setter Value='{Binding}'/></Style>";
+                var xaml = "<Style Selector='Button' xmlns='https://github.com/avaloniaui'><Setter Property='Content' Value='{Binding}'/></Style>";
                 var loader = new AvaloniaXamlLoader();
                 var style = (Style)loader.Load(xaml);
                 var setter = (Setter)(style.Setters.First());

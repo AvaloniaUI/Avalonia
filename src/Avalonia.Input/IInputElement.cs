@@ -83,14 +83,14 @@ namespace Avalonia.Input
         Cursor Cursor { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the control is effectively enabled for user interaction.
+        /// Gets a value indicating whether this control and all its parents are enabled.
         /// </summary>
         /// <remarks>
         /// The <see cref="IsEnabled"/> property is used to toggle the enabled state for individual
-        /// controls. The <see cref="IsEnabledCore"/> property takes into account the
+        /// controls. The <see cref="IsEffectivelyEnabled"/> property takes into account the
         /// <see cref="IsEnabled"/> value of this control and its parent controls.
         /// </remarks>
-        bool IsEnabledCore { get; }
+        bool IsEffectivelyEnabled { get; }
 
         /// <summary>
         /// Gets a value indicating whether the control is focused.

@@ -8,7 +8,7 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia
 {
-    public class GlRenderTarget : IRenderTarget
+    internal class GlRenderTarget : IRenderTargetWithCorruptionInfo
     {
         private readonly GRContext _grContext;
         private IGlPlatformSurfaceRenderTarget _surface;
@@ -21,49 +21,70 @@ namespace Avalonia.Skia
 
         public void Dispose() => _surface.Dispose();
 
+        public bool IsCorrupted => (_surface as IGlPlatformSurfaceRenderTargetWithCorruptionInfo)?.IsCorrupted == true;
+        
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             var session = _surface.BeginDraw();
-            var disp = session.Display;
-            var gl = disp.GlInterface;
-            gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var fb);
-
-            var size = session.Size;
-            var scaling = session.Scaling;
-
-            GRBackendRenderTargetDesc desc = new GRBackendRenderTargetDesc
+            bool success = false;
+            try
             {
-                Width = size.Width,
-                Height = size.Height,
-                SampleCount = disp.SampleCount,
-                StencilBits = disp.StencilSize,
-                Config = GRPixelConfig.Rgba8888,
-                Origin=GRSurfaceOrigin.BottomLeft,
-                RenderTargetHandle = new IntPtr(fb)
-            };
+                var disp = session.Display;
+                var gl = disp.GlInterface;
+                gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var fb);
 
-            gl.Viewport(0, 0, desc.Width, desc.Height);
-            gl.ClearStencil(0);
-            gl.ClearColor(0, 0, 0, 0);
-            gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                var size = session.Size;
+                var scaling = session.Scaling;
+                if (size.Width <= 0 || size.Height <= 0 || scaling < 0)
+                {
+                    session.Dispose();
+                    throw new InvalidOperationException(
+                        $"Can't create drawing context for surface with {size} size and {scaling} scaling");
+                }
 
-            var surface = SKSurface.Create(_grContext, desc);
+                gl.Viewport(0, 0, size.Width, size.Height);
+                gl.ClearStencil(0);
+                gl.ClearColor(0, 0, 0, 0);
+                gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                lock (_grContext)
+                {
+                    _grContext.ResetContext();
 
-            var nfo = new DrawingContextImpl.CreateInfo
+                    GRBackendRenderTarget renderTarget =
+                        new GRBackendRenderTarget(size.Width, size.Height, disp.SampleCount, disp.StencilSize,
+                            new GRGlFramebufferInfo((uint)fb, GRPixelConfig.Rgba8888.ToGlSizedFormat()));
+                    var surface = SKSurface.Create(_grContext, renderTarget,
+                        GRSurfaceOrigin.BottomLeft,
+                        GRPixelConfig.Rgba8888.ToColorType());
+
+                    var nfo = new DrawingContextImpl.CreateInfo
+                    {
+                        GrContext = _grContext,
+                        Canvas = surface.Canvas,
+                        Dpi = SkiaPlatform.DefaultDpi * scaling,
+                        VisualBrushRenderer = visualBrushRenderer,
+                        DisableTextLcdRendering = true
+                    };
+
+                    
+                    var ctx = new DrawingContextImpl(nfo, Disposable.Create(() =>
+                    {
+
+                        surface.Canvas.Flush();
+                        surface.Dispose();
+                        renderTarget.Dispose();
+                        _grContext.Flush();
+                        session.Dispose();
+                    }));
+                    success = true;
+                    return ctx;
+                }
+            }
+            finally
             {
-                GrContext = _grContext,
-                Canvas = surface.Canvas,
-                Dpi = SkiaPlatform.DefaultDpi * scaling,
-                VisualBrushRenderer = visualBrushRenderer,
-                DisableTextLcdRendering = true
-            };
-
-            return new DrawingContextImpl(nfo, Disposable.Create(() =>
-            {
-                surface.Canvas.Flush();
-                surface.Dispose();
-                session.Dispose();
-            }));
+                if(!success)
+                    session.Dispose();
+            }
         }
     }
 }

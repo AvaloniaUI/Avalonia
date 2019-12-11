@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
+using Avalonia.Animation.Animators;
 
 namespace Avalonia.Animation
 {
@@ -35,13 +36,33 @@ namespace Avalonia.Animation
 
         private Transitions _transitions;
 
+        private Dictionary<AvaloniaProperty, IDisposable> _previousTransitions;
+
         /// <summary>
         /// Gets or sets the property transitions for the control.
         /// </summary>
         public Transitions Transitions
         {
-            get { return _transitions ?? (_transitions = new Transitions()); }
-            set { SetAndRaise(TransitionsProperty, ref _transitions, value); }
+            get
+            {
+                if (_transitions is null)
+                    _transitions = new Transitions();
+
+                if (_previousTransitions is null)
+                    _previousTransitions = new Dictionary<AvaloniaProperty, IDisposable>();
+
+                return _transitions;
+            }
+            set
+            {
+                if (value is null)
+                    return;
+
+                if (_previousTransitions is null)
+                    _previousTransitions = new Dictionary<AvaloniaProperty, IDisposable>();
+
+                SetAndRaise(TransitionsProperty, ref _transitions, value);
+            }
         }
 
         /// <summary>
@@ -51,13 +72,20 @@ namespace Avalonia.Animation
         /// <param name="e">The event args.</param>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Priority != BindingPriority.Animation && Transitions != null)
-            {
-                var match = Transitions.FirstOrDefault(x => x.Property == e.Property);
+            if (_transitions is null || _previousTransitions is null || e.Priority == BindingPriority.Animation) return;
 
-                if (match != null)
+            // PERF-SENSITIVE: Called on every property change. Don't use LINQ here (too many allocations).
+            foreach (var transition in _transitions)
+            {
+                if (transition.Property == e.Property)
                 {
-                    match.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
+                    if (_previousTransitions.TryGetValue(e.Property, out var dispose))
+                        dispose.Dispose();
+
+                    var instance = transition.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
+
+                    _previousTransitions[e.Property] = instance;
+                    return;
                 }
             }
         }

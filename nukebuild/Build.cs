@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.Git;
 using Nuke.Common.ProjectModel;
@@ -18,7 +19,7 @@ using static Nuke.Common.IO.PathConstruction;
 using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Xunit.XunitTasks;
-
+using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 
 /*
  Before editing this file, install support plugin for your IDE,
@@ -29,7 +30,26 @@ using static Nuke.Common.Tools.Xunit.XunitTasks;
  */
 
 partial class Build : NukeBuild
-{   
+{
+    static Lazy<string> MsBuildExe = new Lazy<string>(() =>
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            return null;
+
+        var msBuildDirectory = VSWhere("-latest -nologo -property installationPath -format value -prerelease").FirstOrDefault().Text;
+
+        if (!string.IsNullOrWhiteSpace(msBuildDirectory))
+        {
+            string msBuildExe = Path.Combine(msBuildDirectory, @"MSBuild\Current\Bin\MSBuild.exe");
+            if (!System.IO.File.Exists(msBuildExe))
+                msBuildExe = Path.Combine(msBuildDirectory, @"MSBuild\15.0\Bin\MSBuild.exe");
+
+            return msBuildExe;
+        }
+
+        return null;
+    }, false);
+
     BuildParameters Parameters { get; set; }
     protected override void OnBuildInitialized()
     {
@@ -56,13 +76,48 @@ partial class Build : NukeBuild
         Information("IsReleasable: " + Parameters.IsReleasable);
         Information("IsMyGetRelease: " + Parameters.IsMyGetRelease);
         Information("IsNuGetRelease: " + Parameters.IsNuGetRelease);
+
+        void ExecWait(string preamble, string command, string args)
+        {
+            Console.WriteLine(preamble);
+            Process.Start(new ProcessStartInfo(command, args) {UseShellExecute = false}).WaitForExit();
+        }
+        ExecWait("dotnet version:", "dotnet", "--version");
+        if (Parameters.IsRunningOnUnix)
+            ExecWait("Mono version:", "mono", "--version");
+
+
     }
 
+    IReadOnlyCollection<Output> MsBuildCommon(
+        string projectFile,
+        Configure<MSBuildSettings> configurator = null)
+    {
+        return MSBuild(projectFile, c =>
+        {
+            // This is required for VS2019 image on Azure Pipelines
+            if (Parameters.IsRunningOnWindows && Parameters.IsRunningOnAzure)
+            {
+                var javaSdk = Environment.GetEnvironmentVariable("JAVA_HOME_8_X64");
+                if (javaSdk != null)
+                    c = c.AddProperty("JavaSdkDirectory", javaSdk);
+            }
+
+            c = c.AddProperty("PackageVersion", Parameters.Version)
+                .AddProperty("iOSRoslynPathHackRequired", "true")
+                .SetToolPath(MsBuildExe.Value)
+                .SetConfiguration(Parameters.Configuration)
+                .SetVerbosity(MSBuildVerbosity.Minimal);
+            c = configurator?.Invoke(c) ?? c;
+            return c;
+        });
+    }
     Target Clean => _ => _.Executes(() =>
     {
         DeleteDirectories(Parameters.BuildDirs);
         EnsureCleanDirectories(Parameters.BuildDirs);
         EnsureCleanDirectory(Parameters.ArtifactsDir);
+        EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
         EnsureCleanDirectory(Parameters.NugetRoot);
         EnsureCleanDirectory(Parameters.ZipRoot);
         EnsureCleanDirectory(Parameters.TestResultsRoot);
@@ -72,15 +127,9 @@ partial class Build : NukeBuild
         .DependsOn(Clean)
         .Executes(() =>
         {
-
             if (Parameters.IsRunningOnWindows)
-                MSBuild(Parameters.MSBuildSolution, c => c
+                MsBuildCommon(Parameters.MSBuildSolution, c => c
                     .SetArgumentConfigurator(a => a.Add("/r"))
-                    .SetConfiguration(Parameters.Configuration)
-                    .SetVerbosity(MSBuildVerbosity.Minimal)
-                    .AddProperty("PackageVersion", Parameters.Version)
-                    .AddProperty("iOSRoslynPathHackRequired", "true")
-                    .SetToolsVersion(MSBuildToolsVersion._15_0)
                     .AddTargets("Build")
                 );
 
@@ -91,16 +140,32 @@ partial class Build : NukeBuild
                 );
         });
     
-    void RunCoreTest(string project, bool coreOnly = false)
+    void RunCoreTest(string project)
     {
         if(!project.EndsWith(".csproj"))
             project = System.IO.Path.Combine(project, System.IO.Path.GetFileName(project)+".csproj");
         Information("Running tests from " + project);
-        var frameworks = new List<string>(){"netcoreapp2.0"};
+        XDocument xdoc;
+        using (var s = File.OpenRead(project))
+            xdoc = XDocument.Load(s);
+
+        List<string> frameworks = null;
+        var targets = xdoc.Root.Descendants("TargetFrameworks").FirstOrDefault();
+        if (targets != null)
+            frameworks = targets.Value.Split(';').Where(f => !string.IsNullOrWhiteSpace(f)).ToList();
+        else 
+            frameworks = new List<string> {xdoc.Root.Descendants("TargetFramework").First().Value};
+        
         foreach(var fw in frameworks)
         {
-            if(!fw.StartsWith("netcoreapp") && coreOnly)
+            if (fw.StartsWith("net4")
+                && RuntimeInformation.IsOSPlatform(OSPlatform.Linux) 
+                && Environment.GetEnvironmentVariable("FORCE_LINUX_TESTS") != "1")
+            {
+                Information($"Skipping {fw} tests on Linux - https://github.com/mono/mono/issues/13969");
                 continue;
+            }
+
             Information("Running for " + fw);
             DotNetTest(c =>
             {
@@ -123,26 +188,28 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("./tests/Avalonia.Base.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Controls.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Input.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Interactivity.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Layout.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Markup.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Styling.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Visuals.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Skia.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.ReactiveUI.UnitTests", false);
+            RunCoreTest("./tests/Avalonia.Animation.UnitTests");
+            RunCoreTest("./tests/Avalonia.Base.UnitTests");
+            RunCoreTest("./tests/Avalonia.Controls.UnitTests");
+            RunCoreTest("./tests/Avalonia.Input.UnitTests");
+            RunCoreTest("./tests/Avalonia.Interactivity.UnitTests");
+            RunCoreTest("./tests/Avalonia.Layout.UnitTests");
+            RunCoreTest("./tests/Avalonia.Markup.UnitTests");
+            RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests");
+            RunCoreTest("./tests/Avalonia.Styling.UnitTests");
+            RunCoreTest("./tests/Avalonia.Visuals.UnitTests");
+            RunCoreTest("./tests/Avalonia.Skia.UnitTests");
+            RunCoreTest("./tests/Avalonia.ReactiveUI.UnitTests");
         });
 
     Target RunRenderTests => _ => _
-        .OnlyWhen(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
+        .OnlyWhen(() => !Parameters.SkipTests)
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", true);
-            RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", true);
+            RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj");
         });
     
     Target RunDesignerTests => _ => _
@@ -150,7 +217,7 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("./tests/Avalonia.DesignerSupport.Tests", false);
+            RunCoreTest("./tests/Avalonia.DesignerSupport.Tests");
         });
 
     [PackageExecutable("JetBrains.dotMemoryUnit", "dotMemoryUnit.exe")] readonly Tool DotMemoryUnit;
@@ -181,24 +248,30 @@ partial class Build : NukeBuild
                     GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.exe")));
         });
 
-    Target CreateNugetPackages => _ => _
+    Target CreateIntermediateNugetPackages => _ => _
         .DependsOn(Compile)
         .After(RunTests)
         .Executes(() =>
         {
             if (Parameters.IsRunningOnWindows)
 
-                MSBuild(Parameters.MSBuildSolution, c => c
-                    .SetConfiguration(Parameters.Configuration)
-                    .SetVerbosity(MSBuildVerbosity.Minimal)
-                    .AddProperty("PackageVersion", Parameters.Version)
-                    .AddProperty("iOSRoslynPathHackRequired", "true")
-                    .SetToolsVersion(MSBuildToolsVersion._15_0)
+                MsBuildCommon(Parameters.MSBuildSolution, c => c
                     .AddTargets("Pack"));
             else
                 DotNetPack(Parameters.MSBuildSolution, c =>
                     c.SetConfiguration(Parameters.Configuration)
                         .AddProperty("PackageVersion", Parameters.Version));
+        });
+
+    Target CreateNugetPackages => _ => _
+        .DependsOn(CreateIntermediateNugetPackages)
+        .Executes(() =>
+        {
+            var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.config");
+            EnsureCleanDirectory(Parameters.NugetRoot);
+            if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
+                new NumergeNukeLogger()))
+                throw new Exception("Package merge failed");
         });
     
     Target RunTests => _ => _

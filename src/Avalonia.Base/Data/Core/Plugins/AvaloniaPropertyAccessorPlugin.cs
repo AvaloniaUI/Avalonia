@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive.Linq;
+using System.Runtime.ExceptionServices;
 
 namespace Avalonia.Data.Core.Plugins
 {
@@ -31,12 +31,12 @@ namespace Avalonia.Data.Core.Plugins
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
         /// </returns>
-        public IPropertyAccessor Start(WeakReference reference, string propertyName)
+        public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)
         {
             Contract.Requires<ArgumentNullException>(reference != null);
             Contract.Requires<ArgumentNullException>(propertyName != null);
 
-            var instance = reference.Target;
+            reference.TryGetTarget(out object instance);
             var o = (AvaloniaObject)instance;
             var p = LookupProperty(o, propertyName);
 
@@ -76,7 +76,7 @@ namespace Avalonia.Data.Core.Plugins
             return false;
         }
 
-        private class Accessor : PropertyAccessorBase
+        private class Accessor : PropertyAccessorBase, IObserver<object>
         {
             private readonly WeakReference<AvaloniaObject> _reference;
             private readonly AvaloniaProperty _property;
@@ -117,13 +117,27 @@ namespace Avalonia.Data.Core.Plugins
 
             protected override void SubscribeCore()
             {
-                _subscription = Instance?.GetObservable(_property).Subscribe(PublishValue);
+                _subscription = Instance?.GetObservable(_property).Subscribe(this);
             }
 
             protected override void UnsubscribeCore()
             {
                 _subscription?.Dispose();
                 _subscription = null;
+            }
+
+            void IObserver<object>.OnCompleted()
+            {
+            }
+
+            void IObserver<object>.OnError(Exception error)
+            {
+                ExceptionDispatchInfo.Capture(error).Throw();
+            }
+
+            void IObserver<object>.OnNext(object value)
+            {
+                PublishValue(value);
             }
         }
     }

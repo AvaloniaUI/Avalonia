@@ -100,7 +100,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
         {
             var next = NextDrawAs<GeometryNode>();
 
@@ -137,7 +137,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawLine(Pen pen, Point p1, Point p2)
+        public void DrawLine(IPen pen, Point p1, Point p2)
         {
             var next = NextDrawAs<LineNode>();
 
@@ -152,18 +152,27 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
+        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0, double radiusY = 0)
         {
             var next = NextDrawAs<RectangleNode>();
 
-            if (next == null || !next.Item.Equals(Transform, null, pen, rect, cornerRadius))
+            if (next == null || !next.Item.Equals(Transform, brush, pen, rect, radiusX, radiusY))
             {
-                Add(new RectangleNode(Transform, null, pen, rect, cornerRadius, CreateChildScene(pen.Brush)));
+                Add(new RectangleNode(Transform, brush, pen, rect, radiusX, radiusY, CreateChildScene(brush)));
             }
             else
             {
                 ++_drawOperationindex;
             }
+        }
+        
+        public void Custom(ICustomDrawOperation custom)
+        {
+            var next = NextDrawAs<CustomDrawOperation>();
+            if (next == null || !next.Item.Equals(Transform, custom))
+                Add(new CustomDrawOperation(custom, Transform));
+            else
+                ++_drawOperationindex;
         }
 
         /// <inheritdoc/>
@@ -182,20 +191,20 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0)
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
         {
-            var next = NextDrawAs<RectangleNode>();
+            var next = NextDrawAs<GlyphRunNode>();
 
-            if (next == null || !next.Item.Equals(Transform, brush, null, rect, cornerRadius))
+            if (next == null || !next.Item.Equals(Transform, foreground, glyphRun))
             {
-                Add(new RectangleNode(Transform, brush, null, rect, cornerRadius, CreateChildScene(brush)));
+                Add(new GlyphRunNode(Transform, foreground, glyphRun, baselineOrigin, CreateChildScene(foreground)));
             }
+
             else
             {
                 ++_drawOperationindex;
             }
         }
-
         public IRenderTargetBitmapImpl CreateLayer(Size size)
         {
             throw new NotSupportedException("Creating layers on a deferred drawing context not supported");

@@ -2,13 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
-using Avalonia.Animation.Utils;
-using Avalonia.Collections;
-using Avalonia.Data;
-using Avalonia.Reactive;
+using Avalonia.Animation.Animators;
 
 namespace Avalonia.Animation
 {
@@ -33,8 +27,6 @@ namespace Avalonia.Animation
             this._onComplete = onComplete;
             this._clock = clock;
         }
-
-
         public void Dispose()
         {
             _lastInstance?.Dispose();
@@ -47,6 +39,7 @@ namespace Avalonia.Animation
         public void OnError(Exception error)
         {
             _lastInstance?.Dispose();
+            _lastInstance = null;
         }
 
         void IObserver<bool>.OnNext(bool matchVal)
@@ -54,10 +47,16 @@ namespace Avalonia.Animation
             if (matchVal != _lastMatch)
             {
                 _lastInstance?.Dispose();
+
                 if (matchVal)
                 {
                     _lastInstance = _animator.Run(_animation, _control, _clock, _onComplete);
                 }
+                else
+                {
+                    _lastInstance = null;
+                }
+
                 _lastMatch = matchVal;
             }
         }

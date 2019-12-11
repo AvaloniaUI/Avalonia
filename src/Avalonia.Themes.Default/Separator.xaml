@@ -11,13 +11,7 @@
     </Setter>
   </Style>
 
-  <Style Selector="MenuItem > Separator">
-    <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}"/>
-    <Setter Property="Margin" Value="29,1,0,1"/>
-    <Setter Property="Height" Value="1"/>
-  </Style>
-
-  <Style Selector="ContextMenu > Separator">
+  <Style Selector="MenuItem > Separator, ContextMenu > Separator">
     <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}"/>
     <Setter Property="Margin" Value="29,1,0,1"/>
     <Setter Property="Height" Value="1"/>

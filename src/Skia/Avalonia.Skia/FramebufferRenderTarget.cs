@@ -13,7 +13,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that renders to a framebuffer surface. No gpu acceleration available.
     /// </summary>
-    public class FramebufferRenderTarget : IRenderTarget
+    internal class FramebufferRenderTarget : IRenderTarget
     {
         private readonly IFramebufferPlatformSurface _platformSurface;
         private SKImageInfo _currentImageInfo;
@@ -42,7 +42,8 @@ namespace Avalonia.Skia
         {
             var framebuffer = _platformSurface.Lock();
             var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
-                framebuffer.Format.ToSkColorType(), SKAlphaType.Premul);
+                framebuffer.Format.ToSkColorType(),
+                framebuffer.Format == PixelFormat.Rgb565 ? SKAlphaType.Opaque : SKAlphaType.Premul);
 
             CreateSurface(framebufferImageInfo, framebuffer);
 
@@ -60,7 +61,7 @@ namespace Avalonia.Skia
                 DisableTextLcdRendering = true
             };
 
-            return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, framebuffer);
+            return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
         }
 
         /// <summary>
@@ -118,11 +119,7 @@ namespace Avalonia.Skia
             _conversionShim = null;
             _preFramebufferCopyHandler = null;
 
-            if (_conversionShim != null)
-            {
-                _framebufferSurface?.Dispose();
-            }
-
+            _framebufferSurface?.Dispose();
             _framebufferSurface = null;
             _currentFramebufferAddress = IntPtr.Zero;
         }

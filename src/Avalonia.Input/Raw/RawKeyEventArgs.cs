@@ -13,10 +13,11 @@ namespace Avalonia.Input.Raw
     {
         public RawKeyEventArgs(
             IKeyboardDevice device,
-            uint timestamp,
+            ulong timestamp,
+            IInputRoot root,
             RawKeyEventType type,
-            Key key, InputModifiers modifiers)
-            : base(device, timestamp)
+            Key key, RawInputModifiers modifiers)
+            : base(device, timestamp, root)
         {
             Key = key;
             Type = type;
@@ -25,7 +26,7 @@ namespace Avalonia.Input.Raw
 
         public Key Key { get; set; }
 
-        public InputModifiers Modifiers { get; set; }
+        public RawInputModifiers Modifiers { get; set; }
 
         public RawKeyEventType Type { get; set; }
     }

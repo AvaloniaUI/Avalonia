@@ -28,15 +28,18 @@ namespace Avalonia.Animation
 
         private void TimerTick(TimeSpan t)
         {
-            var interpVal = (double)t.Ticks / _duration.Ticks;
+            var interpVal = _duration.Ticks == 0 ? 1d : (double)t.Ticks / _duration.Ticks;
 
-            if (interpVal > 1d || interpVal < 0d)
+            // Clamp interpolation value.
+            if (interpVal >= 1d | interpVal < 0d)
             {
+                PublishNext(1d);
                 PublishCompleted();
-                return;
             }
-
-            PublishNext(interpVal);
+            else
+            {
+                PublishNext(interpVal);
+            }
         }
 
         protected override void Unsubscribed()

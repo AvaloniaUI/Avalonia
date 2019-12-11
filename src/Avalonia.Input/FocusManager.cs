@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
@@ -17,13 +18,13 @@ namespace Avalonia.Input
         /// <summary>
         /// The focus scopes in which the focus is currently defined.
         /// </summary>
-        private readonly Dictionary<IFocusScope, IInputElement> _focusScopes =
-            new Dictionary<IFocusScope, IInputElement>();
+        private readonly ConditionalWeakTable<IFocusScope, IInputElement> _focusScopes =
+            new ConditionalWeakTable<IFocusScope, IInputElement>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FocusManager"/> class.
         /// </summary>
-        public FocusManager()
+        static FocusManager()
         {
             InputElement.PointerPressedEvent.AddClassHandler(
                 typeof(IInputElement),
@@ -110,7 +111,18 @@ namespace Avalonia.Input
         {
             Contract.Requires<ArgumentNullException>(scope != null);
 
-            _focusScopes[scope] = element;
+            if (_focusScopes.TryGetValue(scope, out IInputElement existingElement))
+            {
+                if (element != existingElement)
+                {
+                    _focusScopes.Remove(scope);
+                    _focusScopes.Add(scope, element);
+                }
+            }
+            else
+            {
+                _focusScopes.Add(scope, element);
+            }
 
             if (Scope == scope)
             {
@@ -146,7 +158,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="e">The element.</param>
         /// <returns>True if the element can be focused.</returns>
-        private static bool CanFocus(IInputElement e) => e.Focusable && e.IsEnabledCore && e.IsVisible;
+        private static bool CanFocus(IInputElement e) => e.Focusable && e.IsEffectivelyEnabled && e.IsVisible;
 
         /// <summary>
         /// Gets the focus scope ancestors of the specified control, traversing popups.
@@ -174,24 +186,24 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void OnPreviewPointerPressed(object sender, RoutedEventArgs e)
+        private static void OnPreviewPointerPressed(object sender, RoutedEventArgs e)
         {
             var ev = (PointerPressedEventArgs)e;
 
             if (sender == e.Source && ev.MouseButton == MouseButton.Left)
             {
-                var element = (ev.Device?.Captured as IInputElement) ?? (e.Source as IInputElement);
+                IVisual element = ev.Pointer?.Captured ?? e.Source as IInputElement;
 
-                if (element == null || !CanFocus(element))
+                while (element != null)
                 {
-                    element = element.GetSelfAndVisualAncestors()
-                        .OfType<IInputElement>()
-                        .FirstOrDefault(CanFocus);
-                }
+                    if (element is IInputElement inputElement && CanFocus(inputElement))
+                    {
+                        Instance?.Focus(inputElement, NavigationMethod.Pointer, ev.InputModifiers);
 
-                if (element != null)
-                {
-                    Focus(element, NavigationMethod.Pointer, ev.InputModifiers);
+                        break;
+                    }
+                    
+                    element = element.VisualParent;
                 }
             }
         }

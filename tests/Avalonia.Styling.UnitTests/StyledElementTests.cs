@@ -10,6 +10,7 @@ using Avalonia.UnitTests;
 using Xunit;
 using Avalonia.LogicalTree;
 using Avalonia.Controls;
+using System.ComponentModel;
 
 namespace Avalonia.Styling.UnitTests
 {
@@ -236,21 +237,6 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Adding_To_Logical_Tree_Should_Register_With_NameScope()
-        {
-            using (AvaloniaLocator.EnterScope())
-            {
-                var root = new TestRoot();
-                var child = new Border();
-
-                child.Name = "foo";
-                root.Child = child;
-
-                Assert.Same(root.FindControl<Border>("foo"), child);
-            }
-        }
-
-        [Fact]
         public void Name_Cannot_Be_Set_After_Added_To_Logical_Tree()
         {
             using (AvaloniaLocator.EnterScope())
@@ -272,13 +258,10 @@ namespace Avalonia.Styling.UnitTests
                 var root = new TestRoot();
                 var child = new Border();
 
-                ((ISupportInitialize)child).BeginInit();
+                child.BeginInit();
                 root.Child = child;
                 child.Name = "foo";
-                Assert.Null(root.FindControl<Border>("foo"));
-                ((ISupportInitialize)child).EndInit();
-
-                Assert.Same(root.FindControl<Border>("foo"), child);
+                child.EndInit();
             }
         }
 

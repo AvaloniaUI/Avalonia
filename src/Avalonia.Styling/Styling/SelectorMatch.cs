@@ -6,50 +6,94 @@ using System;
 namespace Avalonia.Styling
 {
     /// <summary>
+    /// Describes how a <see cref="SelectorMatch"/> matches a control and its type.
+    /// </summary>
+    public enum SelectorMatchResult
+    {
+        /// <summary>
+        /// The selector never matches this type.
+        /// </summary>
+        NeverThisType,
+
+        /// <summary>
+        /// The selector never matches this instance, but can match this type.
+        /// </summary>
+        NeverThisInstance,
+
+        /// <summary>
+        /// The selector always matches this type.
+        /// </summary>
+        AlwaysThisType,
+
+        /// <summary>
+        /// The selector always matches this instance, but doesn't always match this type.
+        /// </summary>
+        AlwaysThisInstance,
+
+        /// <summary>
+        /// The selector matches this instance based on the <see cref="SelectorMatch.Activator"/>.
+        /// </summary>
+        Sometimes,
+    }
+
+    /// <summary>
     /// Holds the result of a <see cref="Selector"/> match.
     /// </summary>
     /// <remarks>
-    /// There are two types of selectors - ones whose match can never change for a particular
-    /// control (such as <see cref="Selectors.OfType(Selector, Type)"/>) and ones whose result can
-    /// change over time (such as <see cref="Selectors.Class(Selector, string)"/>. For the first
-    /// category of selectors, the value of <see cref="ImmediateResult"/> will be set but for the
-    /// second, <see cref="ImmediateResult"/> will be null and <see cref="ObservableResult"/> will
-    /// hold an observable which tracks the match.
+    /// A selector match describes whether and how a <see cref="Selector"/> matches a control, and
+    /// in addition whether the selector can ever match a control of the same type.
     /// </remarks>
     public class SelectorMatch
     {
-        public static readonly SelectorMatch False = new SelectorMatch(false);
-
-        public static readonly SelectorMatch True = new SelectorMatch(true);
+        /// <summary>
+        /// A selector match with the result of <see cref="SelectorMatchResult.NeverThisType"/>.
+        /// </summary>
+        public static readonly SelectorMatch NeverThisType = new SelectorMatch(SelectorMatchResult.NeverThisType);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SelectorMatch"/> class.
+        /// A selector match with the result of <see cref="SelectorMatchResult.NeverThisInstance"/>.
         /// </summary>
-        /// <param name="match">The immediate match value.</param>
-        public SelectorMatch(bool match)
-        {
-            ImmediateResult = match;
-        }
+        public static readonly SelectorMatch NeverThisInstance = new SelectorMatch(SelectorMatchResult.NeverThisInstance);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SelectorMatch"/> class.
+        /// A selector match with the result of <see cref="SelectorMatchResult.AlwaysThisType"/>.
         /// </summary>
-        /// <param name="match">The observable match value.</param>
+        public static readonly SelectorMatch AlwaysThisType = new SelectorMatch(SelectorMatchResult.AlwaysThisType);
+
+        /// <summary>
+        /// Gets a selector match with the result of <see cref="SelectorMatchResult.AlwaysThisInstance"/>.
+        /// </summary>
+        public static readonly SelectorMatch AlwaysThisInstance = new SelectorMatch(SelectorMatchResult.AlwaysThisInstance);
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SelectorMatch"/> class with a 
+        /// <see cref="SelectorMatchResult.Sometimes"/> result.
+        /// </summary>
+        /// <param name="match">The match activator.</param>
         public SelectorMatch(IObservable<bool> match)
         {
-            ObservableResult = match;
+            Contract.Requires<ArgumentNullException>(match != null);
+
+            Result = SelectorMatchResult.Sometimes;
+            Activator = match;
         }
 
+        private SelectorMatch(SelectorMatchResult result) => Result = result;
+
         /// <summary>
-        /// Gets the immediate result of the selector match, in the case of selectors that cannot
-        /// change over time.
+        /// Gets a value indicating whether the match was positive.
         /// </summary>
-        public bool? ImmediateResult { get; }
+        public bool IsMatch => Result >= SelectorMatchResult.AlwaysThisType;
+
+        /// <summary>
+        /// Gets the result of the match.
+        /// </summary>
+        public SelectorMatchResult Result { get; }
 
         /// <summary>
         /// Gets an observable which tracks the selector match, in the case of selectors that can
         /// change over time.
         /// </summary>
-        public IObservable<bool> ObservableResult { get; }
+        public IObservable<bool> Activator { get; }
     }
 }

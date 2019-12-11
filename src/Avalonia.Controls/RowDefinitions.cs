@@ -9,14 +9,13 @@ namespace Avalonia.Controls
     /// <summary>
     /// A collection of <see cref="RowDefinition"/>s.
     /// </summary>
-    public class RowDefinitions : AvaloniaList<RowDefinition>
+    public class RowDefinitions : DefinitionList<RowDefinition>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RowDefinitions"/> class.
         /// </summary>
-        public RowDefinitions()
+        public RowDefinitions() : base()
         {
-            ResetBehavior = ResetBehavior.Remove;
         }
 
         /// <summary>

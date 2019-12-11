@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Data
 {
-    public class BindingTests_Method
+    public class BindingTests_Method : XamlTestBase
     {
         [Fact]
         public void Binding_Method_To_Command_Works()
