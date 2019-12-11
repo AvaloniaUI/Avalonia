@@ -729,10 +729,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     AvnPixelSize _lastPixelSize;
 }
 
-- (void)dealloc
-{
-}
-
 - (void)onClosed
 {
     @synchronized (self)
@@ -1224,10 +1220,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         [[windows objectAtIndex:i] performClose:nil];
     }
-}
-
-- (void)dealloc
-{
 }
 
 - (void)pollModalSession:(nonnull NSModalSession)session
