@@ -9,5 +9,7 @@
       <Button Name="DecoratedWindow">Decorated window</Button>
       <Button Name="DecoratedWindowDialog">Decorated window (dialog)</Button>
       <Button Name="Dialog">Dialog</Button>
+      <Button Name="OwnedWindow">Owned window</Button>
+      <Button Name="OwnedWindowNoTaskbar">Owned window (not shown in taskbar)</Button>
   </StackPanel>
 </UserControl>

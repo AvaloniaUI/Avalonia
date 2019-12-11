@@ -82,6 +82,10 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetOwner(IWindowImpl owner)
+        {
+        }
+
         public IScreenImpl Screen { get; } = new ScreenStub();
 
         public void Activate()

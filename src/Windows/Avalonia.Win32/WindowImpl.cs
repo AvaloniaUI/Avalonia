@@ -46,8 +46,10 @@ namespace Avalonia.Win32
         private OleDropTarget _dropTarget;
         private Size _minSize;
         private Size _maxSize;
-        private WindowImpl _parent;
+        private WindowImpl _dialogParentWindow;
+        private WindowImpl _ownerWindow;
         private readonly List<WindowImpl> _disabledBy = new List<WindowImpl>();
+        private readonly List<WindowImpl> _owned = new List<WindowImpl>();
 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
@@ -59,7 +61,7 @@ namespace Avalonia.Win32
             _managedDrag = new ManagedWindowResizeDragHelper(this, capture =>
             {
                 if (capture)
-                    UnmanagedMethods.SetCapture(Handle.Handle);
+                    UnmanagedMethods.SetCapture(_hwnd);
                 else
                     UnmanagedMethods.ReleaseCapture();
             });
@@ -99,12 +101,12 @@ namespace Avalonia.Win32
             {
                 if (_decorated)
                 {
-                    var style = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
-                    var exStyle = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
+                    WindowStyles style = GetStyle();
+                    WindowStyles exStyle = GetExtendedStyle();
 
                     var padding = new RECT();
 
-                    if (UnmanagedMethods.AdjustWindowRectEx(ref padding, style, false, exStyle))
+                    if (UnmanagedMethods.AdjustWindowRectEx(ref padding, (uint) style, false, (uint) exStyle))
                     {
                         return new Thickness(-padding.left, -padding.top, padding.right, padding.bottom);
                     }
@@ -138,11 +140,41 @@ namespace Avalonia.Win32
             _maxSize = maxSize;
         }
 
+        public void SetOwner(IWindowImpl owner)
+        {
+            if (_dialogParentWindow != null)
+            {
+                throw new InvalidOperationException("Cannot set owner on dialog window.");
+            }
+
+            var newOwner = (WindowImpl)owner;
+
+            if (newOwner == _ownerWindow)
+            {
+                return;
+            }
+
+            if (newOwner != null)
+            {
+                if (_owned.Contains(newOwner))
+                {
+                    throw new ArgumentException("New owner cannot be a child of this window.", nameof(newOwner));
+                }
+            }
+
+            _ownerWindow?._owned.Remove(this);
+
+            _ownerWindow = newOwner;
+
+            _ownerWindow?._owned.Add(this);
+
+            SetOwnerHandle(newOwner?._hwnd ?? IntPtr.Zero);
+        }
+
         public IScreenImpl Screen
         {
             get;
         } = new ScreenImpl();
-
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
@@ -161,14 +193,13 @@ namespace Avalonia.Win32
         {
             int requestedClientWidth = (int)(value.Width * Scaling);
             int requestedClientHeight = (int)(value.Height * Scaling);
-            UnmanagedMethods.RECT clientRect;
-            UnmanagedMethods.GetClientRect(_hwnd, out clientRect);
-           
+
+            UnmanagedMethods.GetClientRect(_hwnd, out var clientRect);
+
             // do comparison after scaling to avoid rounding issues
             if (requestedClientWidth != clientRect.Width || requestedClientHeight != clientRect.Height)
             {
-                UnmanagedMethods.RECT windowRect;
-                UnmanagedMethods.GetWindowRect(_hwnd, out windowRect);
+                UnmanagedMethods.GetWindowRect(_hwnd, out var windowRect);
 
                 UnmanagedMethods.SetWindowPos(
                     _hwnd,
@@ -187,12 +218,6 @@ namespace Avalonia.Win32
         {
             get;
             private set;
-        }
-
-
-        void UpdateEnabled()
-        {
-            EnableWindow(_hwnd, _disabledBy.Count == 0);
         }
 
         public Size MaxClientSize
@@ -272,12 +297,13 @@ namespace Avalonia.Win32
 
         public void Hide()
         {
-            if (_parent != null)
+            if (_dialogParentWindow != null)
             {
-                _parent._disabledBy.Remove(this);
-                _parent.UpdateEnabled();
-                _parent = null;
+                _dialogParentWindow._disabledBy.Remove(this);
+                _dialogParentWindow.UpdateEnabled();
+                _dialogParentWindow = null;
             }
+
             UnmanagedMethods.ShowWindow(_hwnd, UnmanagedMethods.ShowWindowCommand.Hide);
         }
 
@@ -288,7 +314,37 @@ namespace Avalonia.Win32
                 return;
             }
 
-            UpdateWMStyles(()=> _decorated = value);
+            _decorated = value;
+
+            WindowStyles style = GetStyle();
+
+            const WindowStyles controlledFlags = WindowStyles.WS_CAPTION;
+
+            if (!_decorated)
+            {
+                style &= ~(controlledFlags);
+            }
+            else
+            {
+                style |= controlledFlags;
+            }
+
+            GetClientRect(_hwnd, out var oldClientRect);
+            var oldClientRectOrigin = new UnmanagedMethods.POINT();
+            ClientToScreen(_hwnd, ref oldClientRectOrigin);
+            oldClientRect.Offset(oldClientRectOrigin);
+
+            SetStyle(style);
+
+            RECT newRect = oldClientRect;
+
+            if (_decorated)
+            {
+                AdjustWindowRectEx(ref newRect, (uint)style, false, (uint) GetExtendedStyle());
+            }
+
+            SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
+                SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
         }
 
         public void Invalidate(Rect rect)
@@ -333,7 +389,20 @@ namespace Avalonia.Win32
 
         public virtual void Show()
         {
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, IntPtr.Zero);
+            IntPtr ownerHandle = IntPtr.Zero;
+
+            // Window was potentially shown as dialog so we have to restore owner.
+            if (_ownerWindow != null)
+            {
+                if (!_ownerWindow._owned.Contains(this))
+                {
+                    _ownerWindow._owned.Add(this);
+                }
+
+                ownerHandle = _ownerWindow._hwnd;
+            }
+
+            SetOwnerHandle(ownerHandle);
             ShowWindow(_showWindowState);
         }
 
@@ -345,7 +414,7 @@ namespace Avalonia.Win32
             e.Pointer.Capture(null);
         }
 
-        static readonly Dictionary<WindowEdge, UnmanagedMethods.HitTestValues> EdgeDic = new Dictionary<WindowEdge, UnmanagedMethods.HitTestValues>
+        private static readonly Dictionary<WindowEdge, UnmanagedMethods.HitTestValues> EdgeDic = new Dictionary<WindowEdge, UnmanagedMethods.HitTestValues>
         {
             {WindowEdge.East, UnmanagedMethods.HitTestValues.HTRIGHT},
             {WindowEdge.North, UnmanagedMethods.HitTestValues.HTTOP },
@@ -372,30 +441,29 @@ namespace Avalonia.Win32
         {
             get
             {
-                UnmanagedMethods.RECT rc;
-                UnmanagedMethods.GetWindowRect(_hwnd, out rc);
+                UnmanagedMethods.GetWindowRect(_hwnd, out var rc);
+
                 return new PixelPoint(rc.left, rc.top);
             }
             set
             {
                 UnmanagedMethods.SetWindowPos(
-                    Handle.Handle,
+                    _hwnd,
                     IntPtr.Zero,
                     value.X,
                     value.Y,
                     0,
                     0,
                     UnmanagedMethods.SetWindowPosFlags.SWP_NOSIZE | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
-
             }
         }
 
         public void ShowDialog(IWindowImpl parent)
         {
-            _parent = (WindowImpl)parent;
-            _parent._disabledBy.Add(this);
-            _parent.UpdateEnabled();
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, ((WindowImpl)parent)._hwnd);
+            _dialogParentWindow = (WindowImpl)parent;
+            _dialogParentWindow._disabledBy.Add(this);
+            _dialogParentWindow.UpdateEnabled();
+            SetOwnerHandle(((WindowImpl)parent)._hwnd);
             ShowWindow(_showWindowState);
         }
 
@@ -411,7 +479,7 @@ namespace Avalonia.Win32
         protected virtual IntPtr CreateWindowOverride(ushort atom)
         {
             return UnmanagedMethods.CreateWindowEx(
-                0,
+                (int)UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW,
                 atom,
                 null,
                 (int)UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW,
@@ -425,15 +493,6 @@ namespace Avalonia.Win32
                 IntPtr.Zero);
         }
 
-        bool ShouldIgnoreTouchEmulatedMessage()
-        {
-            if (!_multitouch)
-                return false;
-            var marker = 0xFF515700L;
-            var info = GetMessageExtraInfo().ToInt64();
-            return (info & marker) == marker;
-        }
-        
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         protected virtual unsafe IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
@@ -443,7 +502,7 @@ namespace Avalonia.Win32
             uint timestamp = unchecked((uint)UnmanagedMethods.GetMessageTime());
 
             RawInputEventArgs e = null;
-            
+
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
                 case UnmanagedMethods.WindowsMessage.WM_ACTIVATE:
@@ -484,11 +543,18 @@ namespace Avalonia.Win32
                     //Remove root reference to this class, so unmanaged delegate can be collected
                     s_instances.Remove(this);
                     Closed?.Invoke();
-                    if (_parent != null)
+
+                    if (_dialogParentWindow != null)
                     {
-                        _parent._disabledBy.Remove(this);
-                        _parent.UpdateEnabled();
+                        _dialogParentWindow._disabledBy.Remove(this);
+                        _dialogParentWindow.UpdateEnabled();
                     }
+
+                    if (_ownerWindow != null)
+                    {
+                        _ownerWindow._owned.Remove(this);
+                    }
+
                     _mouseDevice.Dispose();
                     _touchDevice?.Dispose();
                     //Free other resources
@@ -679,7 +745,7 @@ namespace Avalonia.Win32
                         CloseTouchInputHandle(lParam);
                         return IntPtr.Zero;
                     }
-                    
+
                     break;
                 case WindowsMessage.WM_NCPAINT:
                     if (!_decorated)
@@ -805,11 +871,11 @@ namespace Avalonia.Win32
         private void CreateWindow()
         {
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.
-            _wndProcDelegate = new UnmanagedMethods.WndProc(WndProc);
+            _wndProcDelegate = WndProc;
 
             _className = $"Avalonia-{Guid.NewGuid().ToString()}";
 
-            UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
+            var wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
                 cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
                 style = (int)(ClassStyles.CS_OWNDC | ClassStyles.CS_HREDRAW | ClassStyles.CS_VREDRAW), // Unique DC helps with performance when using Gpu based rendering
@@ -839,7 +905,7 @@ namespace Avalonia.Win32
             _multitouch = Win32Platform.Options.EnableMultitouch ?? false;
             if (_multitouch)
                 RegisterTouchWindow(_hwnd, 0);
-            
+
             if (UnmanagedMethods.ShCoreAvailable)
             {
                 uint dpix, dpiy;
@@ -857,6 +923,20 @@ namespace Avalonia.Win32
                     _scaling = dpix / 96.0;
                 }
             }
+        }
+
+        private bool ShouldIgnoreTouchEmulatedMessage()
+        {
+            if (!_multitouch)
+                return false;
+            var marker = 0xFF515700L;
+            var info = GetMessageExtraInfo().ToInt64();
+            return (info & marker) == marker;
+        }
+
+        private void UpdateEnabled()
+        {
+            EnableWindow(_hwnd, _disabledBy.Count == 0);
         }
 
         private void CreateDropTarget()
@@ -927,8 +1007,6 @@ namespace Avalonia.Win32
 
                 if (GetMonitorInfo(monitor, ref monitorInfo))
                 {
-                    RECT rcMonitorArea = monitorInfo.rcMonitor;
-
                     var x = monitorInfo.rcWork.left;
                     var y = monitorInfo.rcWork.top;
                     var cx = Math.Abs(monitorInfo.rcWork.right - x);
@@ -947,14 +1025,6 @@ namespace Avalonia.Win32
                 new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), hIcon);
         }
 
-        private static int ToInt32(IntPtr ptr)
-        {
-            if (IntPtr.Size == 4) return ptr.ToInt32();
-
-            return (int)(ptr.ToInt64() & 0xffffffff);
-        }
-
-
         public void ShowTaskbarIcon(bool value)
         {
             if (_taskbarIcon == value)
@@ -964,79 +1034,32 @@ namespace Avalonia.Win32
 
             _taskbarIcon = value;
 
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
+            var exStyle = GetExtendedStyle();
 
-            style &= ~(UnmanagedMethods.WindowStyles.WS_VISIBLE);
-
-            style |= UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW;
-
-            if (value)
-                style |= UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW;
+            if (_taskbarIcon)
+            {
+                exStyle |= UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW;
+            }
             else
-                style &= ~(UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW);
-
-            WINDOWPLACEMENT windowPlacement = UnmanagedMethods.WINDOWPLACEMENT.Default;
-            if (UnmanagedMethods.GetWindowPlacement(_hwnd, ref windowPlacement))
             {
-                //Toggle to make the styles stick
-                UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
-                UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE, (uint)style);
-                UnmanagedMethods.ShowWindow(_hwnd, windowPlacement.ShowCmd);
-            }
-        }
+                exStyle &= ~UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW;
 
-        private void UpdateWMStyles(Action change)
-        {
-            var oldDecorated = _decorated;
-
-            var oldThickness = BorderThickness;
-
-            change();
-
-            var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
-
-            const WindowStyles controlledFlags = WindowStyles.WS_OVERLAPPEDWINDOW;
-
-            style = style | controlledFlags ^ controlledFlags;
-
-            style |= WindowStyles.WS_OVERLAPPEDWINDOW;
-
-            if (!_decorated)
-            {
-                style ^= (WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU);
+                // TODO: To hide non-owned window from taskbar we need to parent it to a hidden window.
+                // Otherwise it will still show in the taskbar.
             }
 
-            if (!_resizable)
-            {
-                style ^= (WindowStyles.WS_SIZEFRAME);
-            }
+            // Flags used to just hide window without changing other properties, required to properly apply taskbar icon visibility.
+            const SetWindowPosFlags baseFlags = SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE |
+                                                SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
+                                                SetWindowPosFlags.SWP_NOSENDCHANGING;
 
-            GetClientRect(_hwnd, out var oldClientRect);
-            var oldClientRectOrigin = new UnmanagedMethods.POINT();
-            ClientToScreen(_hwnd, ref oldClientRectOrigin);
-            oldClientRect.Offset(oldClientRectOrigin);
-            
-            
-            SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
+            UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, 0, 0, 0, 0,
+                baseFlags | SetWindowPosFlags.SWP_HIDEWINDOW);
 
-            UnmanagedMethods.GetWindowRect(_hwnd, out var windowRect);
-            bool frameUpdated = false;
-            if (oldDecorated != _decorated)
-            {
-                var newRect = oldClientRect;
-                if (_decorated)
-                    AdjustWindowRectEx(ref newRect, (uint)style, false,
-                        GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE));
-                SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
-                    SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
-                frameUpdated = true;
-            }
+            SetExtendedStyle(exStyle);
 
-            if (!frameUpdated)
-                SetWindowPos(_hwnd, IntPtr.Zero, 0, 0, 0, 0,
-                    SetWindowPosFlags.SWP_FRAMECHANGED | SetWindowPosFlags.SWP_NOZORDER |
-                    SetWindowPosFlags.SWP_NOACTIVATE
-                    | SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE);
+            UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, 0, 0, 0, 0,
+                baseFlags | SetWindowPosFlags.SWP_SHOWWINDOW);
         }
 
         public void CanResize(bool value)
@@ -1046,8 +1069,36 @@ namespace Avalonia.Win32
                 return;
             }
 
-            UpdateWMStyles(()=> _resizable = value);
+            _resizable = value;
+
+            WindowStyles style = GetStyle();
+
+            const WindowStyles resizeFlags = WindowStyles.WS_SIZEFRAME | WindowStyles.WS_MAXIMIZEBOX;
+
+            if (_resizable)
+            {
+                style |= resizeFlags;
+            }
+            else
+            {
+                style &= ~(resizeFlags);
+            }
+
+            SetStyle(style);
         }
+
+        private void SetOwnerHandle(IntPtr ownerHandle)
+        {
+            SetWindowLongPtr(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_HWNDPARENT, ownerHandle);
+        }
+
+        private WindowStyles GetStyle() => (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
+
+        private WindowStyles GetExtendedStyle() => (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE);
+
+        private void SetStyle(WindowStyles style) => SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
+
+        private void SetExtendedStyle(WindowStyles style) => SetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE, (uint)style);
 
         public void SetTopmost(bool value)
         {
@@ -1069,15 +1120,23 @@ namespace Avalonia.Win32
         {
             get
             {
-                RECT rect;
-                GetClientRect(_hwnd, out rect);
+                GetClientRect(_hwnd, out var rect);
+
                 return new PixelSize(
                     Math.Max(1, rect.right - rect.left),
                     Math.Max(1, rect.bottom - rect.top));
             }
         }
-        IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
+
+        IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => _hwnd;
 
         private static int HighWord(int param) => param >> 16;
+
+        private static int ToInt32(IntPtr ptr)
+        {
+            if (IntPtr.Size == 4) return ptr.ToInt32();
+
+            return (int)(ptr.ToInt64() & 0xffffffff);
+        }
     }
 }

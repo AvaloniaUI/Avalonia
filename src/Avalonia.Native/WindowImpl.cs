@@ -106,6 +106,10 @@ namespace Avalonia.Native
             // NO OP on OSX
         }
 
+        public void SetOwner(IWindowImpl owner)
+        {
+        }
+
         public Func<bool> Closing { get; set; }
 
         public ITopLevelNativeMenuExporter NativeMenuExporter { get; }

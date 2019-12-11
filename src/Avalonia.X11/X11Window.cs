@@ -977,6 +977,10 @@ namespace Avalonia.X11
             UpdateSizeHints(null);
         }
 
+        public void SetOwner(IWindowImpl owner)
+        {
+        }
+
         public void SetTopmost(bool value)
         {
             SendNetWMMessage(_x11.Atoms._NET_WM_STATE,

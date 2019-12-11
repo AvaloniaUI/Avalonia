@@ -85,5 +85,10 @@ namespace Avalonia.Platform
         /// </summary>
         /// 
         void SetMinMaxSize(Size minSize, Size maxSize);
+
+        /// <summary>
+        /// Sets owner of the window.
+        /// </summary>
+        void SetOwner(IWindowImpl owner);
     }
 }

@@ -141,6 +141,7 @@ namespace Avalonia.Controls
             MaxWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size((double)e.NewValue, w.MaxHeight)));
             MaxHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size(w.MaxWidth, (double)e.NewValue)));
 
+            OwnerProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetOwner(((WindowBase)e.NewValue)?.PlatformImpl as IWindowImpl));
         }
 
         /// <summary>
@@ -162,6 +163,8 @@ namespace Avalonia.Controls
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
+
+            impl.SetTitle(Title);
         }
 
         /// <summary>

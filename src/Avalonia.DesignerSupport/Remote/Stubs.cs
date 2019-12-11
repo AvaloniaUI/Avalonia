@@ -102,6 +102,10 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetOwner(IWindowImpl owner)
+        {
+        }
+
         public void SetTitle(string title)
         {
         }
