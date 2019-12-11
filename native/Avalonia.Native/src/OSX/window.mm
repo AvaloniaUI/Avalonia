@@ -195,7 +195,11 @@ public:
     {
         @autoreleasepool
         {
-            [Window close];
+            if (Window != nullptr)
+            {
+                [Window close];
+            }
+            
             return S_OK;
         }
     }
