@@ -771,8 +771,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [self setWantsLayer:YES];
     _parent = parent;
     _area = nullptr;
-    _lastPixelSize.Height = 0;
-    _lastPixelSize.Width = 0;
+    _lastPixelSize.Height = 100;
+    _lastPixelSize.Width = 100;
     return self;
 }
 
