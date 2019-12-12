@@ -38,6 +38,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Equal("foobar", textBlock.Text);
             }
         }
+        
+        [Fact]
+        public void BindingExtension_Binds_To_TargetNullValue()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <TextBlock Name='textBlock' Text='{Binding Source={x:Null}, TargetNullValue='foobar'}'/>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                window.Show();
+
+                Assert.Equal("foobar", textBlock.Text);
+            }
+        }
 
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
