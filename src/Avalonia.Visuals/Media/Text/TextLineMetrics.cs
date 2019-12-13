@@ -52,6 +52,6 @@ namespace Avalonia.Media.Text
         /// <value>
         ///     The baseline origin.
         /// </value>
-        public Point BaselineOrigin { get; }
+        public Point BaselineOrigin { get; } //ToDo: Remove this and instead calculate the baseline on demand when drawing.
     }
 }

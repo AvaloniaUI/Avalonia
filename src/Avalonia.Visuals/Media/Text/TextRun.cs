@@ -6,7 +6,7 @@ using Avalonia.Media.Text.Unicode;
 
 namespace Avalonia.Media.Text
 {
-    [DebuggerDisplay("Text = {GlyphRun.Characters}")]
+    [DebuggerTypeProxy(typeof(TextRunDebuggerProxy))]
     public class TextRun
     {
         public TextRun(
@@ -78,31 +78,61 @@ namespace Avalonia.Media.Text
 
             return new SplitTextRunResult(firstTextRun, secondTextRun);
         }
-    }
 
-    internal readonly struct SplitTextRunResult
-    {
-        public SplitTextRunResult(TextRun first, TextRun second)
+        internal readonly struct SplitTextRunResult
         {
-            First = first;
+            public SplitTextRunResult(TextRun first, TextRun second)
+            {
+                First = first;
 
-            Second = second;
+                Second = second;
+            }
+
+            /// <summary>
+            ///     Gets the first text run.
+            /// </summary>
+            /// <value>
+            ///     The first text run.
+            /// </value>
+            public TextRun First { get; }
+
+            /// <summary>
+            ///     Gets the second text run.
+            /// </summary>
+            /// <value>
+            ///     The second text run.
+            /// </value>
+            public TextRun Second { get; }
         }
 
-        /// <summary>
-        ///     Gets the first text run.
-        /// </summary>
-        /// <value>
-        ///     The first text run.
-        /// </value>
-        public TextRun First { get; }
+        private class TextRunDebuggerProxy
+        {
+            private readonly TextRun _textRun;
 
-        /// <summary>
-        ///     Gets the second text run.
-        /// </summary>
-        /// <value>
-        ///     The second text run.
-        /// </value>
-        public TextRun Second { get; }
+            public TextRunDebuggerProxy(TextRun textRun)
+            {
+                _textRun = textRun;
+            }
+
+            public string Text
+            {
+                get
+                {
+                    unsafe
+                    {
+                        fixed (char* charsPtr = _textRun.GlyphRun.Characters.AsSpan())
+                        {
+                            return new string(charsPtr, 0, _textRun.GlyphRun.Characters.Length);
+                        }
+                    }
+                }
+            }
+
+            public GlyphRun GlyphRun => _textRun.GlyphRun;
+
+            public TextFormat TextFormat => _textRun.TextFormat;
+
+            public IBrush Foreground => _textRun.Foreground;
+        }
     }
 }

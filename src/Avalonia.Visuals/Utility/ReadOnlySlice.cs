@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Avalonia.Utilities;
 
 namespace Avalonia.Utility
@@ -12,6 +13,7 @@ namespace Avalonia.Utility
     ///     ReadOnlySlice enables the ability to work with a sequence within a region of memory and retains the position in within that region.
     /// </summary>
     /// <typeparam name="T">The type of elements in the slice.</typeparam>
+    [DebuggerTypeProxy(typeof(ReadOnlySlice<>.ReadOnlySliceDebugView))]
     public readonly struct ReadOnlySlice<T> : IReadOnlyList<T>
     {
         public ReadOnlySlice(ReadOnlyMemory<T> buffer) : this(buffer, 0, buffer.Length) { }
@@ -149,6 +151,25 @@ namespace Avalonia.Utility
         public static implicit operator ReadOnlySlice<T>(ReadOnlyMemory<T> memory)
         {
             return new ReadOnlySlice<T>(memory);
+        }
+
+        internal class ReadOnlySliceDebugView
+        {
+            private readonly ReadOnlySlice<T> _readOnlySlice;
+            public ReadOnlySliceDebugView(ReadOnlySlice<T> readOnlySlice)
+            {
+                _readOnlySlice = readOnlySlice;
+            }
+
+            public int Start => _readOnlySlice.Start;
+
+            public int End => _readOnlySlice.End;
+
+            public int Length => _readOnlySlice.Length;
+
+            public bool IsEmpty => _readOnlySlice.IsEmpty;
+
+            public ReadOnlyMemory<T> Items => _readOnlySlice.Buffer.Slice(Start, Length);
         }
     }
 }

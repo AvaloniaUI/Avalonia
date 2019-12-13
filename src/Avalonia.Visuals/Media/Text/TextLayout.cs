@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Avalonia.Media.Text.Unicode;
 using Avalonia.Platform;
@@ -157,14 +156,15 @@ namespace Avalonia.Media.Text
 
                         characterHit = currentRun.GlyphRun.GetCharacterHitFromDistance(distance, out isInside);
 
-                        return new TextHitTestResult(characterHit, isInside, characterHit.TrailingLength > 0);
+                        return new TextHitTestResult(characterHit, new Point(distance, currentY), isInside,
+                            characterHit.TrailingLength > 0);
                     }
 
                     var lastTextRun = currentLine.TextRuns[currentLine.TextRuns.Count - 1];
 
                     characterHit = lastTextRun.GlyphRun.GetCharacterHitFromDistance(currentX, out isInside);
 
-                    return new TextHitTestResult(characterHit, isInside,
+                    return new TextHitTestResult(characterHit, new Point(currentX, currentY), isInside,
                         characterHit.FirstCharacterIndex + characterHit.TrailingLength == _text.Length);
                 }
 
@@ -174,7 +174,9 @@ namespace Avalonia.Media.Text
 
                     characterHit = lastTextRun.GlyphRun.FindNearestCharacterHit(lastTextRun.GlyphRun.Characters.End, out _);
 
-                    return new TextHitTestResult(characterHit, false, true);
+                    var currentX = currentLine.LineMetrics.BaselineOrigin.X + currentLine.LineMetrics.Size.Width;
+
+                    return new TextHitTestResult(characterHit, new Point(currentX, currentY), false, true);
                 }
 
                 currentY += currentLine.LineMetrics.Size.Height;
@@ -234,7 +236,14 @@ namespace Avalonia.Media.Text
 
                     var distance = textRun.GlyphRun.GetDistanceFromCharacterHit(characterHit);
 
-                    return new Rect(currentX + distance - width, currentY, width, textRun.GlyphRun.Bounds.Height);
+                    currentX += distance - width;
+
+                    if (characterHit.TrailingLength == 0)
+                    {
+                        width = 0.0;
+                    }
+
+                    return new Rect(currentX, currentY, width, textRun.GlyphRun.Bounds.Height);
                 }
             }
 
@@ -286,7 +295,9 @@ namespace Avalonia.Media.Text
                     {
                         var startHit = textRun.GlyphRun.FindNearestCharacterHit(textPosition, out _);
 
-                        var offset = textRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startHit.FirstCharacterIndex));
+                        var offset =
+                            textRun.GlyphRun.GetDistanceFromCharacterHit(
+                                new CharacterHit(startHit.FirstCharacterIndex));
 
                         var length = textPosition - textRun.GlyphRun.Characters.Start;
 
@@ -303,7 +314,9 @@ namespace Avalonia.Media.Text
 
                     if (remainingLength < textRun.GlyphRun.Characters.Length)
                     {
-                        var characterHit = textRun.GlyphRun.FindNearestCharacterHit(textRun.GlyphRun.Characters.Start + remainingLength - 1, out _);
+                        var characterHit =
+                            textRun.GlyphRun.FindNearestCharacterHit(
+                                textRun.GlyphRun.Characters.Start + remainingLength - 1, out _);
 
                         width += textRun.GlyphRun.GetDistanceFromCharacterHit(characterHit);
 
@@ -484,7 +497,8 @@ namespace Avalonia.Media.Text
             var textPointer = textRun.Text;
             var drawingEffect = span.Foreground?.ToImmutable() ?? textRun.Foreground;
 
-            var textFormat = new TextFormat(span.Typeface ?? textRun.TextFormat.Typeface, span.FontSize ?? textRun.TextFormat.FontSize);
+            var textFormat = new TextFormat(span.Typeface ?? textRun.TextFormat.Typeface,
+                span.FontSize ?? textRun.TextFormat.FontSize);
 
             return new TextRunProperties(textPointer, textFormat, drawingEffect);
         }
@@ -598,8 +612,8 @@ namespace Avalonia.Media.Text
         /// <param name="spans"></param>
         private void CreateTextLines(IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            if (_text.Length == 0 || Math.Abs(_constraint.Width) < float.Epsilon ||
-                Math.Abs(_constraint.Height) < float.Epsilon)
+            if (_text.Length == 0 || Math.Abs(_constraint.Width) < double.Epsilon ||
+                Math.Abs(_constraint.Height) < double.Epsilon)
             {
                 var textLine = CreateEmptyTextLine(0);
 
@@ -642,8 +656,10 @@ namespace Avalonia.Media.Text
 
                         if (currentPosition + length < _text.Length)
                         {
-                            if (_text[lineBreaker.CurrentBreak.PositionWrap] == '\r' && _text[lineBreaker.CurrentBreak.PositionWrap - 1] == '\n'
-                                || _text[lineBreaker.CurrentBreak.PositionWrap] == '\n' && _text[lineBreaker.CurrentBreak.PositionWrap - 1] == '\r')
+                            if (_text[lineBreaker.CurrentBreak.PositionWrap] == '\r' &&
+                                _text[lineBreaker.CurrentBreak.PositionWrap - 1] == '\n'
+                                || _text[lineBreaker.CurrentBreak.PositionWrap] == '\n' &&
+                                _text[lineBreaker.CurrentBreak.PositionWrap - 1] == '\r')
                             {
                                 length++;
                             }
@@ -741,28 +757,28 @@ namespace Avalonia.Media.Text
                     {
                         if (measuredLength < text.End)
                         {
-                            var current = 0;
+                            var currentBreakPosition = 0;
 
                             var lineBreaker = new LineBreaker(text);
 
-                            while (current < measuredLength && lineBreaker.NextBreak())
+                            while (currentBreakPosition < measuredLength && lineBreaker.NextBreak())
                             {
-                                var next = lineBreaker.CurrentBreak.PositionWrap;
+                                var nextBreakPosition = lineBreaker.CurrentBreak.PositionWrap;
 
-                                if (next == -1)
+                                if (nextBreakPosition == -1)
                                 {
                                     break;
                                 }
 
-                                if (next > measuredLength)
+                                if (nextBreakPosition > measuredLength)
                                 {
                                     break;
                                 }
 
-                                current = next;
+                                currentBreakPosition = nextBreakPosition;
                             }
 
-                            measuredLength = current + 1;
+                            measuredLength = currentBreakPosition + 1;
                         }
                     }
 
@@ -776,7 +792,7 @@ namespace Avalonia.Media.Text
 
                     var textLineMetrics = CreateTextLineMetrics(trimmedRuns);
 
-                    return new TextLine(_text.AsSlice(0, measuredLength), textRuns, textLineMetrics);
+                    return new TextLine(_text.Take(measuredLength), textRuns, textLineMetrics);
                 }
 
                 availableWidth -= currentRun.GlyphRun.Bounds.Width;
@@ -807,32 +823,33 @@ namespace Avalonia.Media.Text
 
                 if (endPosition < text.Length)
                 {
-                    var current = currentPosition;
+                    var currentBreakPosition = currentPosition;
 
                     var lineBreaker = new LineBreaker(text);
 
-                    while (current < endPosition && lineBreaker.NextBreak())
+                    while (currentBreakPosition < endPosition && lineBreaker.NextBreak())
                     {
-                        var next = lineBreaker.CurrentBreak.PositionWrap;
+                        var nextBreakPosition = lineBreaker.CurrentBreak.PositionWrap;
 
-                        if (next == -1)
+                        if (nextBreakPosition == -1)
                         {
                             break;
                         }
 
-                        if (next > endPosition)
+                        if (nextBreakPosition > endPosition)
                         {
                             break;
                         }
 
-                        current = next;
+                        currentBreakPosition = nextBreakPosition;
                     }
 
-                    var length = current - currentPosition;
+                    var length = currentBreakPosition - currentPosition;
 
                     var splitResult = SplitTextRuns(currentTextRuns, length);
 
-                    textLines.Add(new TextLine(text.AsSlice(currentPosition, length), splitResult.First, CreateTextLineMetrics(splitResult.First)));
+                    textLines.Add(new TextLine(text.AsSlice(currentPosition, length), splitResult.First,
+                        CreateTextLineMetrics(splitResult.First)));
 
                     currentPosition += length;
 
@@ -946,11 +963,7 @@ namespace Avalonia.Media.Text
                         }
                     }
 
-                    first[0] = currentRun;
-
-                    //ToDo: Remove me
-                    Debug.Assert(!first.Contains(null));
-                    Debug.Assert(!second.Contains(null));
+                    first[i] = currentRun;
 
                     return new SplitTextRunsResult(first, second);
                 }
@@ -973,10 +986,6 @@ namespace Avalonia.Media.Text
                     first[i] = split.First;
 
                     second[0] = split.Second;
-
-                    //ToDo: Remove me
-                    Debug.Assert(!first.Contains(null));
-                    Debug.Assert(!second.Contains(null));
 
                     return new SplitTextRunsResult(first, second);
                 }

@@ -7,7 +7,7 @@ using Avalonia.Utility;
 
 namespace Avalonia.Media.Text
 {
-    [DebuggerDisplay("{" + nameof (Text) + "}")]
+    [DebuggerTypeProxy(typeof(TextLineDebuggerProxy))]
     public class TextLine
     {
         public TextLine(ReadOnlySlice<char> text, IReadOnlyList<TextRun> textRuns, TextLineMetrics lineMetrics)
@@ -40,5 +40,33 @@ namespace Avalonia.Media.Text
         ///     The line metrics.
         /// </value>
         public TextLineMetrics LineMetrics { get; }
+
+        private class TextLineDebuggerProxy
+        {
+            private readonly TextLine _textLine;
+
+            public TextLineDebuggerProxy(TextLine textLine)
+            {
+                _textLine = textLine;
+            }
+
+            public string Text
+            {
+                get
+                {
+                    unsafe
+                    {
+                        fixed (char* charsPtr = _textLine.Text.AsSpan())
+                        {
+                            return new string(charsPtr, 0, _textLine.Text.Length);
+                        }
+                    }
+                }
+            }
+
+            public IReadOnlyList<TextRun> TextRuns => _textLine.TextRuns;
+
+            public TextLineMetrics LineMetrics => _textLine.LineMetrics;
+        }
     }
 }

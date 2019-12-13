@@ -750,26 +750,9 @@ namespace Avalonia.Controls
 
                 var rect = _presenter.FormattedText.HitTestTextPosition(index);
 
-                if (rect.Width == 0d)
-                {
-                    CaretIndex = index;
+                var hitTestResult = _presenter.FormattedText.HitTestPoint(new Point(rect.X, rect.Y));
 
-                    return;
-                }
-
-                if (direction > 0)
-                {
-                    var hitTestResult = _presenter.FormattedText.HitTestPoint(
-                        new Point(rect.X + rect.Width, rect.Y));
-
-                    CaretIndex = hitTestResult.CharacterHit.FirstCharacterIndex + hitTestResult.CharacterHit.TrailingLength;
-                }
-                else
-                {
-                    var hitTestResult = _presenter.FormattedText.HitTestPoint(new Point(rect.X, rect.Y));
-
-                    CaretIndex = hitTestResult.CharacterHit.FirstCharacterIndex == CaretIndex ? index : hitTestResult.CharacterHit.FirstCharacterIndex;
-                }
+                CaretIndex = hitTestResult.CharacterHit.FirstCharacterIndex;
             }
             else
             {

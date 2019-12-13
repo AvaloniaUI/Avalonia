@@ -2,11 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Diagnostics;
 
 namespace Avalonia.Media.Text
 {
-    [DebuggerDisplay("Typeface = {Typeface.FontFamily.Name}, FontSize = {FontSize}")]
     public readonly struct TextFormat : IEquatable<TextFormat>
     {
         public TextFormat(Typeface typeface, double fontSize)

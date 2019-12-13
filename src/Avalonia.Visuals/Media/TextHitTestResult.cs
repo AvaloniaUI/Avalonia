@@ -1,8 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Media.Text;
-
 namespace Avalonia.Media
 {
     /// <summary>
@@ -10,9 +8,10 @@ namespace Avalonia.Media
     /// </summary>
     public readonly struct TextHitTestResult
     {
-        public TextHitTestResult(CharacterHit characterHit, bool isInside, bool isTrailing)
+        public TextHitTestResult(CharacterHit characterHit, Point caretPosition, bool isInside, bool isTrailing)
         {
             CharacterHit = characterHit;
+            CaretPosition = caretPosition;
             IsInside = isInside;
             IsTrailing = isTrailing;
         }
@@ -21,6 +20,11 @@ namespace Avalonia.Media
         /// Gets the hit region within the text.
         /// </summary>
         public CharacterHit CharacterHit { get; }
+
+        /// <summary>
+        /// Gets the current caret position.
+        /// </summary>
+        public Point CaretPosition { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the point is inside the bounds of the text.
