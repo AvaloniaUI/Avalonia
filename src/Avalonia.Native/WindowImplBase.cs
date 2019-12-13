@@ -353,6 +353,11 @@ namespace Avalonia.Native
 
         public void SetCursor(IPlatformHandle cursor)
         {
+            if (_native == null)
+            {
+                return;
+            }
+            
             var newCursor = cursor as AvaloniaNativeCursor;
             newCursor = newCursor ?? (_cursorFactory.GetCursor(StandardCursorType.Arrow) as AvaloniaNativeCursor);
             _native.Cursor = newCursor.Cursor;
