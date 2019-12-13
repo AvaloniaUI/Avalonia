@@ -195,7 +195,11 @@ public:
     {
         @autoreleasepool
         {
-            [Window close];
+            if (Window != nullptr)
+            {
+                [Window close];
+            }
+            
             return S_OK;
         }
     }
@@ -291,7 +295,14 @@ public:
     {
         @autoreleasepool
         {
-            return [View lockFocusIfCanDraw] == YES;
+            @try
+            {
+                return [View lockFocusIfCanDraw] == YES;
+            }
+            @catch (NSException*)
+            {
+                return NO;
+            }
         }
     }
     
@@ -719,15 +730,33 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed, _isMouseOver;
     NSEvent* _lastMouseDownEvent;
     bool _lastKeyHandled;
-}
-
-- (void)dealloc
-{
+    AvnPixelSize _lastPixelSize;
 }
 
 - (void)onClosed
 {
-    _parent = NULL;
+    @synchronized (self)
+    {
+        _parent = nullptr;
+    }
+}
+
+- (BOOL)lockFocusIfCanDraw
+{
+    @synchronized (self)
+    {
+        if(_parent == nullptr)
+        {
+            return NO;
+        }
+    }
+    
+    return [super lockFocusIfCanDraw];
+}
+
+-(AvnPixelSize) getPixelSize
+{
+    return _lastPixelSize;
 }
 
 - (NSEvent*) lastMouseDownEvent
@@ -742,6 +771,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [self setWantsLayer:YES];
     _parent = parent;
     _area = nullptr;
+    _lastPixelSize.Height = 100;
+    _lastPixelSize.Width = 100;
     return self;
 }
 
@@ -783,6 +814,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [self addTrackingArea:_area];
     
     _parent->UpdateCursor();
+    
+    auto fsize = [self convertSizeToBacking: [self frame].size];
+    _lastPixelSize.Width = (int)fsize.width;
+    _lastPixelSize.Height = (int)fsize.height;
 
     _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height});
 }
@@ -812,7 +847,13 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)drawRect:(NSRect)dirtyRect
 {
+    if (_parent == nullptr)
+    {
+        return;
+    }
+        
     _parent->BaseEvents->RunRenderPriorityJobs();
+    
     @synchronized (self) {
         if(_swRenderedFrame != NULL)
         {
@@ -879,7 +920,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void) viewDidChangeBackingProperties
 {
+    auto fsize = [self convertSizeToBacking: [self frame].size];
+    _lastPixelSize.Width = (int)fsize.width;
+    _lastPixelSize.Height = (int)fsize.height;
+    
     _parent->BaseEvents->ScalingChanged([_parent->Window backingScaleFactor]);
+    
     [super viewDidChangeBackingProperties];
 }
 
@@ -1161,6 +1207,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _closed;
     NSMenu* _menu;
     bool _isAppMenuApplied;
+    double _lastScaling;
+}
+
+-(double) getScaling
+{
+    return _lastScaling;
 }
 
 +(void)closeAll
@@ -1172,10 +1224,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         [[windows objectAtIndex:i] performClose:nil];
     }
-}
-
-- (void)dealloc
-{
 }
 
 - (void)pollModalSession:(nonnull NSModalSession)session
@@ -1232,6 +1280,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [self setReleasedWhenClosed:false];
     _parent = parent;
     [self setDelegate:self];
+    _closed = false;
+    
+    _lastScaling = [self backingScaleFactor];
     return self;
 }
 
@@ -1247,6 +1298,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return true;
 }
 
+- (void)windowDidChangeBackingProperties:(NSNotification *)notification
+{
+    _lastScaling = [self backingScaleFactor];
+}
+
 - (void)windowWillClose:(NSNotification *)notification
 {
     _closed = true;
@@ -1257,9 +1313,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         [self restoreParentWindow];
         parent->BaseEvents->Closed();
         [parent->View onClosed];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self setContentView: nil];
-        });
     }
 }
 
@@ -1406,18 +1459,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _parent->GetPosition(&position);
     _parent->BaseEvents->PositionChanged(position);
 }
-
-// TODO this breaks resizing.
-/*- (void)windowDidResize:(NSNotification *)notification
-{
-    
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
-    
-    if(parent != nullptr)
-    {
-        parent->WindowStateChanged();
-    }
-}*/
 @end
 
 class PopupImpl : public virtual WindowBaseImpl, public IAvnPopup
