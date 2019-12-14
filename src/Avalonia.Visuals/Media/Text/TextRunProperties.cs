@@ -40,14 +40,14 @@ namespace Avalonia.Media.Text
             return new TextRunProperties(text, TextFormat, Foreground);
         }
 
-        internal SplitResult Split(int length)
+        public SplitResult Split(int length)
         {
             var first = Text.Take(length);
             var second = Text.Skip(length);
             return new SplitResult(WithText(first), WithText(second));
         }
 
-        internal readonly struct SplitResult
+        public readonly struct SplitResult
         {
             public SplitResult(TextRunProperties first, TextRunProperties second)
             {

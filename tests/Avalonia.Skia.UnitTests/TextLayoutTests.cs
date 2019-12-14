@@ -55,6 +55,54 @@ namespace Avalonia.Skia.UnitTests
         }
 
         [Fact]
+        public void Should_Not_Alter_Lines_After_TextStyleSpan_Was_Applied()
+        {
+            using (UnitTestApplication.Start(
+                TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
+                    textFormatter: new TextFormatter())))
+            {
+                var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
+
+                for (var i = 1; i < s_multiLineText.Length; i++)
+                {
+                    var spans = new List<FormattedTextStyleSpan>
+                    {
+                        new FormattedTextStyleSpan(0, i, foreground: foreground)
+                    };
+
+                    var expected = new TextLayout(
+                        s_multiLineText,
+                        Typeface.Default,
+                        12.0f,
+                        TextAlignment.Left,
+                        TextWrapping.Wrap,
+                        TextTrimming.None,
+                        new Size(25, double.PositiveInfinity));
+
+                    var actual = new TextLayout(
+                        s_multiLineText,
+                        Typeface.Default,
+                        12.0f,
+                        TextAlignment.Left,
+                        TextWrapping.Wrap,
+                        TextTrimming.None,
+                        new Size(25, double.PositiveInfinity),
+                        spans);
+
+                    Assert.Equal(expected.TextLines.Count, actual.TextLines.Count);
+
+                    for (var j = 0; j < actual.TextLines.Count; j++)
+                    {
+                        Assert.Equal(expected.TextLines[j].Text.Length, actual.TextLines[j].Text.Length);
+
+                        Assert.Equal(expected.TextLines[j].TextRuns.Sum(x => x.GlyphRun.Characters.Length),
+                            actual.TextLines[j].TextRuns.Sum(x => x.GlyphRun.Characters.Length));
+                    }
+                }
+            }
+        }
+
+        [Fact]
         public void Should_Apply_TextStyleSpan_To_Text_At_Start()
         {
             using (UnitTestApplication.Start(

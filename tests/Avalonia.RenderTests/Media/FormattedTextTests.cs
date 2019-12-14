@@ -2,12 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 using Avalonia.Media;
 using Avalonia.Platform;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using Avalonia.Media.Text;
 using Xunit;
 
 #if AVALONIA_SKIA

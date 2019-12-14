@@ -831,12 +831,7 @@ namespace Avalonia.Media.Text
                     {
                         var nextBreakPosition = lineBreaker.CurrentBreak.PositionWrap;
 
-                        if (nextBreakPosition == -1)
-                        {
-                            break;
-                        }
-
-                        if (nextBreakPosition > endPosition)
+                        if (nextBreakPosition == -1 || nextBreakPosition > endPosition)
                         {
                             break;
                         }
@@ -845,6 +840,11 @@ namespace Avalonia.Media.Text
                     }
 
                     var length = currentBreakPosition - currentPosition;
+
+                    if (length == 0)
+                    {
+                        length = count;
+                    }
 
                     var splitResult = SplitTextRuns(currentTextRuns, length);
 
@@ -876,40 +876,44 @@ namespace Avalonia.Media.Text
         /// <param name="textRuns">The text runs.</param>
         /// <param name="availableWidth">The available width.</param>
         /// <returns></returns>
-        private static int MeasureText(IEnumerable<TextRun> textRuns, double availableWidth)
+        private static int MeasureText(IReadOnlyList<TextRun> textRuns, double availableWidth)
         {
             var measuredWidth = 0.0;
             var count = 0;
 
-            foreach (var textRun in textRuns)
+            for (var i = 0; measuredWidth < availableWidth && i < textRuns.Count; i++)
             {
-                if (textRun.GlyphRun.Bounds.Width + measuredWidth < availableWidth)
+                var textRun = textRuns[i];
+
+                if (textRun.GlyphRun.Bounds.Width + measuredWidth > availableWidth)
                 {
-                    measuredWidth += textRun.GlyphRun.Bounds.Width;
-                    count += textRun.GlyphRun.Characters.Length;
-                    continue;
-                }
+                    var index = 0;
 
-                var index = 0;
-
-                for (; index < textRun.GlyphRun.GlyphAdvances.Length; index++)
-                {
-                    var advance = textRun.GlyphRun.GlyphAdvances[index];
-
-                    if (measuredWidth + advance > availableWidth)
+                    for (; index < textRun.GlyphRun.GlyphAdvances.Length; index++)
                     {
-                        break;
+                        var advance = textRun.GlyphRun.GlyphAdvances[index];
+
+                        if (measuredWidth + advance > availableWidth)
+                        {
+                            break;
+                        }
+
+                        measuredWidth += advance;
                     }
 
-                    measuredWidth += advance;
+                    var cluster = textRun.GlyphRun.GlyphClusters[index];
+
+                    var characterHit = textRun.GlyphRun.FindNearestCharacterHit(cluster, out _);
+
+                    count += characterHit.FirstCharacterIndex - textRun.GlyphRun.Characters.Start +
+                             (textRun.GlyphRun.IsLeftToRight ? characterHit.TrailingLength : 0);
+
+                    break;
                 }
 
-                var cluster = textRun.GlyphRun.GlyphClusters[index];
+                measuredWidth += textRun.GlyphRun.Bounds.Width;
 
-                var characterHit = textRun.GlyphRun.FindNearestCharacterHit(cluster, out _);
-
-                count += characterHit.FirstCharacterIndex - textRun.GlyphRun.Characters.Start +
-                         (textRun.GlyphRun.IsLeftToRight ? characterHit.TrailingLength : 0);
+                count += textRun.GlyphRun.Characters.Length;
             }
 
             return count;

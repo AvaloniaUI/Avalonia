@@ -43,7 +43,7 @@ namespace Avalonia.Media.Text
         /// </value>
         public IBrush Foreground { get; }
 
-        internal SplitTextRunResult Split(int length)
+        public SplitTextRunResult Split(int length)
         {
             var glyphCount = 0;
 
@@ -79,7 +79,7 @@ namespace Avalonia.Media.Text
             return new SplitTextRunResult(firstTextRun, secondTextRun);
         }
 
-        internal readonly struct SplitTextRunResult
+        public readonly struct SplitTextRunResult
         {
             public SplitTextRunResult(TextRun first, TextRun second)
             {
