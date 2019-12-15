@@ -87,7 +87,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public string StringFormat { get; set; }
 
         public RelativeSource RelativeSource { get; set; }
-        
-        public object TargetNullValue { get; set; }
+
+        public object TargetNullValue { get; set; } = AvaloniaProperty.UnsetValue;
     }
 }
