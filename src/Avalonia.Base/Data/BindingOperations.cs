@@ -64,7 +64,10 @@ namespace Avalonia.Data
                         return source
                             .Where(x => BindingNotification.ExtractValue(x) != AvaloniaProperty.UnsetValue)
                             .Take(1)
-                            .Subscribe(x => targetCopy.SetValue(propertyCopy, x, bindingCopy.Priority));
+                            .Subscribe(x => targetCopy.SetValue(
+                                propertyCopy,
+                                BindingNotification.ExtractValue(x),
+                                bindingCopy.Priority));
                     }
                     else
                     {
