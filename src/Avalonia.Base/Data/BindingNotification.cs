@@ -30,6 +30,12 @@ namespace Avalonia.Data
     /// Represents a binding notification that can be a valid binding value, or a binding or
     /// data validation error.
     /// </summary>
+    /// <remarks>
+    /// This class is very similar to <see cref="BindingValue{T}"/>, but where <see cref="BindingValue{T}"/>
+    /// is used by typed bindings, this class is used to hold binding and data validation errors in
+    /// untyped bindings. As Avalonia moves towards using typed bindings by default we may want to remove
+    /// this class.
+    /// </remarks>
     public class BindingNotification
     {
         /// <summary>
