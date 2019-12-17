@@ -29,7 +29,7 @@ namespace Avalonia.Skia
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
 
-            var entry = TypefaceCache.Get(typeface.FontFamily, typeface.Weight, typeface.Style);
+            var glyphTypeface = (GlyphTypefaceImpl)typeface.GlyphTypeface.PlatformImpl;
 
             _paint = new SKPaint
             {
@@ -38,7 +38,7 @@ namespace Avalonia.Skia
                 IsAntialias = true,
                 LcdRenderText = true,
                 SubpixelText = true,
-                Typeface = entry.SKTypeface,
+                Typeface = glyphTypeface.Typeface,
                 TextSize = (float)fontSize,
                 TextAlign = textAlignment.ToSKTextAlign()
             };

@@ -53,7 +53,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
             var r = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             return r.CreateFormattedText(text,
-                new Typeface(fontFamily, fontWeight, fontStyle),
+                FontManager.Current.GetOrAddTypeface(fontFamily, fontWeight, fontStyle),
                 fontSize,
                 textAlignment,
                 wrapping,

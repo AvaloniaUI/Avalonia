@@ -48,6 +48,11 @@ namespace Avalonia.Platform
         int StrikethroughThickness { get; }
 
         /// <summary>
+        ///     A <see cref="bool"/> value indicating whether all glyphs in the font have the same advancement. 
+        /// </summary>
+        bool IsFixedPitch { get; }
+
+        /// <summary>
         ///     Returns an glyph index for the specified codepoint.
         /// </summary>
         /// <remarks>
