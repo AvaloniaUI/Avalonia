@@ -84,8 +84,24 @@ namespace Avalonia.X11.Glx
         [GlEntryPoint("glGetError")]
         public GlGetError GetError { get; }
 
-        public GlxInterface() : base(GlxGetProcAddress)
+        public GlxInterface() : base(SafeGetProcAddress)
         {
         }
+
+        // Ignores egl functions.
+        // On some Linux systems, glXGetProcAddress will return valid pointers for even EGL functions.
+        // This makes Skia try to load some data from EGL,
+        // which can then cause segmentation faults because they return garbage.
+        public static IntPtr SafeGetProcAddress(string proc, bool optional)
+        {
+            if (proc.StartsWith("egl", StringComparison.InvariantCulture))
+            {
+                return IntPtr.Zero;
+            }
+
+            return GlxConverted(proc, optional);
+        }
+
+        private static readonly Func<string, bool, IntPtr> GlxConverted = ConvertNative(GlxGetProcAddress);
     }
 }
