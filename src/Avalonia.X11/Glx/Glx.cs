@@ -94,7 +94,7 @@ namespace Avalonia.X11.Glx
         // which can then cause segmentation faults because they return garbage.
         public static IntPtr SafeGetProcAddress(string proc, bool optional)
         {
-            if (proc.StartsWith("egl"))
+            if (proc.StartsWith("egl", StringComparison.InvariantCulture))
             {
                 return IntPtr.Zero;
             }
