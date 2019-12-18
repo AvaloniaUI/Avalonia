@@ -236,24 +236,6 @@ namespace Avalonia
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
-        public T GetValue<T>(AvaloniaProperty<T> property)
-        {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-
-            return property switch
-            {
-                StyledPropertyBase<T> styled => GetValue(styled),
-                DirectPropertyBase<T> direct => GetValue(direct),
-                _ => throw new NotSupportedException("Unsupported AvaloniaProperty type.")
-            };
-        }
-
-        /// <summary>
-        /// Gets a <see cref="AvaloniaProperty"/> value.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <returns>The value.</returns>
         public T GetValue<T>(StyledPropertyBase<T> property)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
@@ -321,33 +303,6 @@ namespace Avalonia
             property = property ?? throw new ArgumentNullException(nameof(property));
 
             property.RouteSetValue(this, value, priority);
-        }
-
-        /// <summary>
-        /// Sets a <see cref="AvaloniaProperty"/> value.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="priority">The priority of the value.</param>
-        public void SetValue<T>(
-            AvaloniaProperty<T> property,
-            T value,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-
-            switch (property)
-            {
-                case StyledPropertyBase<T> styled:
-                    SetValue(styled, value, priority);
-                    break;
-                case DirectPropertyBase<T> direct:
-                    SetValue(direct, value);
-                    break;
-                default:
-                    throw new NotSupportedException("Unsupported AvaloniaProperty type.");
-            }
         }
 
         /// <summary>
