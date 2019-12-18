@@ -403,52 +403,6 @@ namespace Avalonia
         /// <summary>
         /// Binds a <see cref="AvaloniaProperty"/> to an observable.
         /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="source">The observable.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        public IDisposable Bind(
-            AvaloniaProperty property,
-            IObservable<BindingValue<object>> source,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            source = source ?? throw new ArgumentNullException(nameof(source));
-
-            return property.RouteBind(this, source, priority);
-        }
-
-        /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="source">The observable.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        public IDisposable Bind<T>(
-            AvaloniaProperty<T> property,
-            IObservable<BindingValue<T>> source,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            source = source ?? throw new ArgumentNullException(nameof(source));
-
-            return property switch
-            {
-                StyledPropertyBase<T> styled => Bind(styled, source, priority),
-                DirectPropertyBase<T> direct => Bind(direct, source),
-                _ => throw new NotSupportedException("Unsupported AvaloniaProperty type."),
-            };
-        }
-
-        /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
-        /// </summary>
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <param name="source">The observable.</param>
