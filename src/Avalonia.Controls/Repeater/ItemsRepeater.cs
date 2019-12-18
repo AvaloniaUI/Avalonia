@@ -22,7 +22,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="HorizontalCacheLength"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<double> HorizontalCacheLengthProperty =
+        public static readonly StyledProperty<double> HorizontalCacheLengthProperty =
             AvaloniaProperty.Register<ItemsRepeater, double>(nameof(HorizontalCacheLength), 2.0);
 
         /// <summary>
@@ -40,16 +40,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Layout"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<AttachedLayout> LayoutProperty =
+        public static readonly StyledProperty<AttachedLayout> LayoutProperty =
             AvaloniaProperty.Register<ItemsRepeater, AttachedLayout>(nameof(Layout), new StackLayout());
 
         /// <summary>
         /// Defines the <see cref="VerticalCacheLength"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<double> VerticalCacheLengthProperty =
+        public static readonly StyledProperty<double> VerticalCacheLengthProperty =
             AvaloniaProperty.Register<ItemsRepeater, double>(nameof(VerticalCacheLength), 2.0);
 
-        private static readonly AttachedProperty<VirtualizationInfo> VirtualizationInfoProperty =
+        private static readonly StyledProperty<VirtualizationInfo> VirtualizationInfoProperty =
             AvaloniaProperty.RegisterAttached<ItemsRepeater, IControl, VirtualizationInfo>("VirtualizationInfo");
 
         internal static readonly Rect InvalidRect = new Rect(-1, -1, -1, -1);

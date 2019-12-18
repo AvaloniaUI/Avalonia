@@ -17,10 +17,10 @@ namespace Avalonia.Controls
     /// </summary>
     public class LayoutTransformControl : Decorator
     {
-        public static readonly AvaloniaProperty<Transform> LayoutTransformProperty =
+        public static readonly StyledProperty<Transform> LayoutTransformProperty =
             AvaloniaProperty.Register<LayoutTransformControl, Transform>(nameof(LayoutTransform));
 
-        public static readonly AvaloniaProperty<bool> UseRenderTransformProperty =
+        public static readonly StyledProperty<bool> UseRenderTransformProperty =
             AvaloniaProperty.Register<LayoutTransformControl, bool>(nameof(LayoutTransform));
 
         static LayoutTransformControl()

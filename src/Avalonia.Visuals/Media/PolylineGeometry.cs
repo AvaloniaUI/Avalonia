@@ -23,7 +23,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="IsFilled"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<bool> IsFilledProperty =
+        public static readonly StyledProperty<bool> IsFilledProperty =
             AvaloniaProperty.Register<PolylineGeometry, bool>(nameof(IsFilled));
 
         private Points _points;
