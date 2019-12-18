@@ -112,5 +112,9 @@ namespace Avalonia.Media
                 () => InvalidateGeometry());
             _figuresPropertiesObserver = figures?.TrackItemPropertyChanged(_ => InvalidateGeometry());
         }
+
+
+        public override string ToString()
+            => $"{(FillRule != FillRule.EvenOdd ? "F1 " : "")}{(string.Join(" ", Figures))}";
     }
 }

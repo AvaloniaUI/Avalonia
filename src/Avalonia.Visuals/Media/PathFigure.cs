@@ -98,5 +98,8 @@ namespace Avalonia.Media
         }
 
         private PathSegments _segments;
+
+        public override string ToString()
+            => $"M {StartPoint} {string.Join(" ", _segments)}{(IsClosed ? "Z" : "")}";
     }
 }
