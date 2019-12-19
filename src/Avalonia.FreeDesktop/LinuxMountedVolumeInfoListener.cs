@@ -47,7 +47,8 @@ namespace Avalonia.FreeDesktop
 
             var fProcMounts = File.ReadAllLines(ProcMountsDir)
                                   .Select(x => x.Split(' '))
-                                  .Select(x => (x[0], x[1]));
+                                  .Select(x => (x[0], x[1]))
+                                  .Where(x => !x.Item2.StartsWith("/snap/", StringComparison.InvariantCultureIgnoreCase));
 
             var labelDirEnum = Directory.Exists(DevByLabelDir) ?
                                new DirectoryInfo(DevByLabelDir).GetFiles() : Enumerable.Empty<FileInfo>();
