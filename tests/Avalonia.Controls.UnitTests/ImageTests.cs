@@ -63,6 +63,19 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Measure_Should_Return_Correct_Size_With_StretchDirection_DownOnly()
+        {
+            var bitmap = CreateBitmap(50, 100);
+            var target = new Image();
+            target.StretchDirection = StretchDirection.DownOnly;
+            target.Source = bitmap;
+
+            target.Measure(new Size(150, 150));
+
+            Assert.Equal(new Size(50, 100), target.DesiredSize);
+        }
+
+        [Fact]
         public void Measure_Should_Return_Correct_Size_For_Infinite_Height()
         {
             var bitmap = CreateBitmap(50, 100);
