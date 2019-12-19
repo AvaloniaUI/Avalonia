@@ -27,7 +27,9 @@ namespace Avalonia.Controls
         /// Defines the <see cref="StretchDirection"/> property.
         /// </summary>
         public static readonly StyledProperty<StretchDirection> StretchDirectionProperty =
-            AvaloniaProperty.Register<Image, StretchDirection>(nameof(StretchDirection));
+            AvaloniaProperty.Register<Image, StretchDirection>(
+                nameof(StretchDirection),
+                StretchDirection.Both);
 
         static Image()
         {
@@ -74,7 +76,7 @@ namespace Avalonia.Controls
             {
                 Rect viewPort = new Rect(Bounds.Size);
                 Size sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
-                Vector scale = Stretch.CalculateScaling(Bounds.Size, sourceSize);
+                Vector scale = Stretch.CalculateScaling(Bounds.Size, sourceSize, StretchDirection);
                 Size scaledSize = sourceSize * scale;
                 Rect destRect = viewPort
                     .CenterRect(new Rect(scaledSize))
@@ -100,15 +102,8 @@ namespace Avalonia.Controls
 
             if (source != null)
             {
-                Size sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
-                if (double.IsInfinity(availableSize.Width) || double.IsInfinity(availableSize.Height))
-                {
-                    result = sourceSize;
-                }
-                else
-                {
-                    result = Stretch.CalculateSize(availableSize, sourceSize);
-                }
+                var sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
+                result = Stretch.CalculateSize(availableSize, sourceSize, StretchDirection);
             }
 
             return result;
