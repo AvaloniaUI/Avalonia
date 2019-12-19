@@ -390,8 +390,10 @@ namespace Avalonia.Controls
             {
                 return;
             }
+
             _undoRedoHelper.Snapshot();
             HandleTextInput(text);
+            _undoRedoHelper.Snapshot();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
