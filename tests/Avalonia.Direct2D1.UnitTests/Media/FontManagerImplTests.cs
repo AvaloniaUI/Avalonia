@@ -37,6 +37,30 @@ namespace Avalonia.Direct2D1.UnitTests.Media
         }
 
         [Fact]
+        public void Should_Create_Typeface_From_Fallback_Bold()
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                Direct2D1Platform.Initialize();
+
+                var fontManager = new FontManagerImpl();
+
+                var defaultName = fontManager.GetDefaultFontFamilyName();
+
+                var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
+                    new Typeface(new FontFamily("A, B, Arial"), FontWeight.Bold));
+
+                var font = glyphTypeface.DWFont;
+
+                Assert.Equal("Arial", font.FontFamily.FamilyNames.GetString(0));
+
+                Assert.Equal(SharpDX.DirectWrite.FontWeight.Bold, font.Weight);
+
+                Assert.Equal(SharpDX.DirectWrite.FontStyle.Normal, font.Style);
+            }
+        }
+
+        [Fact]
         public void Should_Create_Typeface_For_Unknown_Font()
         {
             using (AvaloniaLocator.EnterScope())
