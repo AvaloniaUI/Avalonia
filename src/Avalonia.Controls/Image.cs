@@ -86,7 +86,7 @@ namespace Avalonia.Controls
 
                 var interpolationMode = RenderOptions.GetBitmapInterpolationMode(this);
 
-                context.DrawImage(source, 1, sourceRect, destRect, interpolationMode);
+                context.DrawImage(source, sourceRect, destRect, interpolationMode);
             }
         }
 

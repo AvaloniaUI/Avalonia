@@ -20,7 +20,6 @@ namespace Avalonia.Media
 
         public void Draw(
             DrawingContext context,
-            double opacity,
             Rect sourceRect,
             Rect destRect,
             BitmapInterpolationMode bitmapInterpolationMode)

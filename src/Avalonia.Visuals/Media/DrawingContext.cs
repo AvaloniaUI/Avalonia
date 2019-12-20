@@ -77,15 +77,26 @@ namespace Avalonia.Media
         /// Draws an image.
         /// </summary>
         /// <param name="source">The image.</param>
-        /// <param name="opacity">The opacity to draw with.</param>
-        /// <param name="sourceRect">The rect in the image to draw.</param>
-        /// <param name="destRect">The rect in the output to draw to.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public void DrawImage(IImage source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = default)
+        /// <param name="rect">The rect in the output to draw to.</param>
+        public void DrawImage(IImage source, Rect rect)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            source.Draw(this, opacity, sourceRect, destRect, bitmapInterpolationMode);
+            DrawImage(source, new Rect(source.Size), rect);
+        }
+
+        /// <summary>
+        /// Draws an image.
+        /// </summary>
+        /// <param name="source">The image.</param>
+        /// <param name="sourceRect">The rect in the image to draw.</param>
+        /// <param name="destRect">The rect in the output to draw to.</param>
+        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
+        public void DrawImage(IImage source, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = default)
+        {
+            Contract.Requires<ArgumentNullException>(source != null);
+
+            source.Draw(this, sourceRect, destRect, bitmapInterpolationMode);
         }
 
         /// <summary>

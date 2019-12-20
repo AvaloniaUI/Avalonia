@@ -107,14 +107,13 @@ namespace Avalonia.Media.Imaging
         /// <inheritdoc/>
         void IImage.Draw(
             DrawingContext context,
-            double opacity,
             Rect sourceRect,
             Rect destRect,
             BitmapInterpolationMode bitmapInterpolationMode)
         {
             context.PlatformImpl.DrawBitmap(
                 PlatformImpl,
-                opacity,
+                1,
                 sourceRect,
                 destRect,
                 bitmapInterpolationMode);

@@ -17,13 +17,11 @@ namespace Avalonia.Media
         /// Draws the image to a <see cref="DrawingContext"/>.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         void Draw(
             DrawingContext context,
-            double opacity,
             Rect sourceRect,
             Rect destRect,
             BitmapInterpolationMode bitmapInterpolationMode);
