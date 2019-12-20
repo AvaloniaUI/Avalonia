@@ -23,6 +23,14 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Stretch> StretchProperty =
             AvaloniaProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
 
+        /// <summary>
+        /// Defines the <see cref="StretchDirection"/> property.
+        /// </summary>
+        public static readonly StyledProperty<StretchDirection> StretchDirectionProperty =
+            AvaloniaProperty.Register<Image, StretchDirection>(
+                nameof(StretchDirection),
+                StretchDirection.Both);
+
         static Image()
         {
             AffectsRender<Image>(SourceProperty, StretchProperty);
@@ -43,8 +51,17 @@ namespace Avalonia.Controls
         /// </summary>
         public Stretch Stretch
         {
-            get { return (Stretch)GetValue(StretchProperty); }
+            get { return GetValue(StretchProperty); }
             set { SetValue(StretchProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value controlling in what direction the image will be stretched.
+        /// </summary>
+        public StretchDirection StretchDirection
+        {
+            get { return GetValue(StretchDirectionProperty); }
+            set { SetValue(StretchDirectionProperty, value); }
         }
 
         /// <summary>
@@ -59,7 +76,7 @@ namespace Avalonia.Controls
             {
                 Rect viewPort = new Rect(Bounds.Size);
                 Size sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
-                Vector scale = Stretch.CalculateScaling(Bounds.Size, sourceSize);
+                Vector scale = Stretch.CalculateScaling(Bounds.Size, sourceSize, StretchDirection);
                 Size scaledSize = sourceSize * scale;
                 Rect destRect = viewPort
                     .CenterRect(new Rect(scaledSize))
@@ -85,15 +102,8 @@ namespace Avalonia.Controls
 
             if (source != null)
             {
-                Size sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
-                if (double.IsInfinity(availableSize.Width) || double.IsInfinity(availableSize.Height))
-                {
-                    result = sourceSize;
-                }
-                else
-                {
-                    result = Stretch.CalculateSize(availableSize, sourceSize);
-                }
+                var sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
+                result = Stretch.CalculateSize(availableSize, sourceSize, StretchDirection);
             }
 
             return result;
