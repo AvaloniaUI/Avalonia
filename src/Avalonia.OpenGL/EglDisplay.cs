@@ -169,12 +169,6 @@ namespace Avalonia.OpenGL
             return rv;
         }
 
-        public void ClearContext()
-        {
-            if (!_egl.MakeCurrent(_display, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero))
-                throw OpenGlException.GetFormattedException("eglMakeCurrent", _egl);
-        }
-
         public EglSurface CreateWindowSurface(IntPtr window)
         {
             var s = _egl.CreateWindowSurface(_display, _config, window, new[] {EGL_NONE, EGL_NONE});

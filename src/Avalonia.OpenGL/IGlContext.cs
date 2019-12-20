@@ -1,8 +1,10 @@
+using System;
+
 namespace Avalonia.OpenGL
 {
-    public interface IGlContext
+    public interface IGlContext : IDisposable
     {
         IGlDisplay Display { get; }
-        void MakeCurrent();
+        IDisposable MakeCurrent();
     }
 }

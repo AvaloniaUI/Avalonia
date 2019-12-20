@@ -2,11 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Imaging;
 using Avalonia.Platform;
 using SkiaSharp;
 
@@ -15,35 +18,21 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia platform render interface.
     /// </summary>
-    internal class PlatformRenderInterface : IPlatformRenderInterface
+    internal class PlatformRenderInterface : IPlatformRenderInterface, IOpenGlAwarePlatformRenderInterface
     {
-        private readonly ICustomSkiaGpu _customSkiaGpu;
+        private readonly ISkiaGpu _skiaGpu;
 
-        private GRContext GrContext { get; }
-
-        public PlatformRenderInterface(ICustomSkiaGpu customSkiaGpu)
+        public PlatformRenderInterface(ISkiaGpu skiaGpu)
         {
-            if (customSkiaGpu != null)
+            if (skiaGpu != null)
             {
-                _customSkiaGpu = customSkiaGpu;
-
-                GrContext = _customSkiaGpu.GrContext;
-
+                _skiaGpu = skiaGpu;
                 return;
             }
 
             var gl = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
-            if (gl != null)
-            {
-                var display = gl.ImmediateContext.Display;
-                gl.ImmediateContext.MakeCurrent();
-                using (var iface = display.Type == GlDisplayType.OpenGL2
-                    ? GRGlInterface.AssembleGlInterface((_, proc) => display.GlInterface.GetProcAddress(proc))
-                    : GRGlInterface.AssembleGlesInterface((_, proc) => display.GlInterface.GetProcAddress(proc)))
-                {
-                    GrContext = GRContext.Create(GRBackend.OpenGL, iface);
-                }
-            }
+            if (gl != null) 
+                _skiaGpu = new GlSkiaGpu(gl);
         }
 
         /// <inheritdoc />
@@ -119,26 +108,18 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
-            if (_customSkiaGpu != null)
+            if (!(surfaces is IList))
+                surfaces = surfaces.ToList();
+            var gpuRenderTarget = _skiaGpu?.TryCreateRenderTarget(surfaces);
+            if (gpuRenderTarget != null)
             {
-                ICustomSkiaRenderTarget customRenderTarget = _customSkiaGpu.TryCreateRenderTarget(surfaces);
-
-                if (customRenderTarget != null)
-                {
-                    return new CustomRenderTarget(customRenderTarget);
-                }
+                return new SkiaGpuRenderTarget(gpuRenderTarget);
             }
 
             foreach (var surface in surfaces)
             {
-                if (surface is IGlPlatformSurface glSurface && GrContext != null)
-                {
-                    return new GlRenderTarget(GrContext, glSurface);
-                }
                 if (surface is IFramebufferPlatformSurface framebufferSurface)
-                {
                     return new FramebufferRenderTarget(framebufferSurface);
-                }
             }
 
             throw new NotSupportedException(
@@ -240,6 +221,16 @@ namespace Avalonia.Skia
 
                 return new GlyphRunImpl(paint, textBlob);
             }
+        }
+
+        public IOpenGlTextureBitmapImpl CreateOpenGlTextureBitmap()
+        {
+            if (_skiaGpu is IOpenGlAwareSkiaGpu glAware)
+                return glAware.CreateOpenGlTextureBitmap();
+            if (_skiaGpu == null)
+                throw new PlatformNotSupportedException("GPU acceleration is not available");
+            throw new PlatformNotSupportedException(
+                "Current GPU acceleration backend does not support OpenGL integration");
         }
     }
 }

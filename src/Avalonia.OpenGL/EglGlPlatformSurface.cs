@@ -58,12 +58,12 @@ namespace Avalonia.OpenGL
                 {
                     if (IsCorrupted)
                         throw new RenderTargetCorruptedException();
-                    _context.MakeCurrent(_glSurface);
+                    var restoreContext = _context.MakeCurrent(_glSurface);
                     _display.EglInterface.WaitClient();
                     _display.EglInterface.WaitGL();
                     _display.EglInterface.WaitNative();
                     
-                    return new Session(_display, _context, _glSurface, _info, l);
+                    return new Session(_display, _context, _glSurface, _info, l, restoreContext);
                 }
                 catch
                 {
@@ -79,17 +79,19 @@ namespace Avalonia.OpenGL
                 private readonly IEglWindowGlPlatformSurfaceInfo _info;
                 private readonly EglDisplay _display;
                 private IDisposable _lock;
-                
+                private readonly IDisposable _restoreContext;
+
 
                 public Session(EglDisplay display, EglContext context,
                     EglSurface glSurface, IEglWindowGlPlatformSurfaceInfo info,
-                    IDisposable @lock)
+                    IDisposable @lock, IDisposable restoreContext)
                 {
                     _context = context;
                     _display = display;
                     _glSurface = glSurface;
                     _info = info;
                     _lock = @lock;
+                    _restoreContext = restoreContext;
                 }
 
                 public void Dispose()
@@ -100,7 +102,7 @@ namespace Avalonia.OpenGL
                     _display.EglInterface.WaitClient();
                     _display.EglInterface.WaitGL();
                     _display.EglInterface.WaitNative();
-                    _context.Display.ClearContext();
+                    _restoreContext.Dispose();
                     _lock.Dispose();
                 }
 

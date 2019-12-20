@@ -7,7 +7,9 @@ namespace Avalonia.X11.Glx
     class GlxGlPlatformFeature : IWindowingPlatformGlFeature
     {
         public GlxDisplay Display { get; private set; }
-        public IGlContext ImmediateContext { get; private set; }
+        public IGlContext CreateContext() => Display.CreateContext();
+
+        IGlDisplay IWindowingPlatformGlFeature.Display => Display;
         public GlxContext DeferredContext { get; private set; }
 
         public static bool TryInitialize(X11Info x11)
@@ -30,7 +32,6 @@ namespace Avalonia.X11.Glx
                 return new GlxGlPlatformFeature
                 {
                     Display = disp,
-                    ImmediateContext = disp.ImmediateContext,
                     DeferredContext = disp.DeferredContext
                 };
             }

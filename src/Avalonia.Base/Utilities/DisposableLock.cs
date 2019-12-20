@@ -1,18 +1,14 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Threading;
-using Avalonia.Utilities;
 
-namespace Avalonia.Rendering
+namespace Avalonia.Utilities
 {
-    public class ManagedDeferredRendererLock : DisposableLock, IDeferredRendererLock
+    public class DisposableLock
     {
         private readonly object _lock = new object();
 
         /// <summary>
-        /// Tries to lock the target surface or window
+        /// Tries to take a lock
         /// </summary>
         /// <returns>IDisposable if succeeded to obtain the lock</returns>
         public IDisposable TryLock()
@@ -23,7 +19,7 @@ namespace Avalonia.Rendering
         }
 
         /// <summary>
-        /// Enters a waiting lock, only use from platform code, not from the renderer
+        /// Enters a waiting lock
         /// </summary>
         public IDisposable Lock()
         {

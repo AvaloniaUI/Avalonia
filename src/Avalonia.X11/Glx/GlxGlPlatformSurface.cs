@@ -43,8 +43,8 @@ namespace Avalonia.X11.Glx
                 var l = _context.Lock();
                 try
                 {
-                    _context.MakeCurrent(_info.Handle);
-                    return new Session(_context, _info, l);
+
+                    return new Session(_context, _info, l, _context.MakeCurrent(_info.Handle));
                 }
                 catch
                 {
@@ -58,13 +58,15 @@ namespace Avalonia.X11.Glx
                 private readonly GlxContext _context;
                 private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
                 private IDisposable _lock;
+                private readonly IDisposable _clearContext;
 
                 public Session(GlxContext context, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info,
-                    IDisposable @lock)
+                    IDisposable @lock, IDisposable clearContext)
                 {
                     _context = context;
                     _info = info;
                     _lock = @lock;
+                    _clearContext = clearContext;
                 }
 
                 public void Dispose()
@@ -73,7 +75,7 @@ namespace Avalonia.X11.Glx
                     _context.Glx.WaitGL();
                     _context.Display.SwapBuffers(_info.Handle);
                     _context.Glx.WaitX();
-                    _context.Display.ClearContext();
+                    _clearContext.Dispose();
                     _lock.Dispose();
                 }
 

@@ -2,21 +2,35 @@
 using Avalonia.OpenGL;
 using Avalonia.Native.Interop;
 using System.Drawing;
+using System.Reactive.Disposables;
 using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
     class GlPlatformFeature : IWindowingPlatformGlFeature
     {
-
+        private GlContext _immediateContext;
         public GlPlatformFeature(IAvnGlFeature feature)
         {
             Display = new GlDisplay(feature.ObtainDisplay());
-            ImmediateContext = new GlContext(Display, feature.ObtainImmediateContext());
+            _immediateContext = new GlContext(Display, feature.ObtainImmediateContext());
         }
 
-        public IGlContext ImmediateContext { get; }
         public GlDisplay Display { get; }
+        IGlDisplay IWindowingPlatformGlFeature.Display => Display;
+
+        public IGlContext CreateContext()
+        {
+            if (_immediateContext != null)
+            {
+                var rv = _immediateContext;
+                _immediateContext = null;
+                return rv;
+            }
+
+            throw new PlatformNotSupportedException(
+                "OSX backend haven't switched to the new model yet, so there are no custom contexts, sorry");
+        }
     }
 
     class GlDisplay : IGlDisplay
@@ -58,9 +72,16 @@ namespace Avalonia.Native
 
         public IGlDisplay Display { get; }
 
-        public void MakeCurrent()
+        public IDisposable MakeCurrent()
         {
             Context.MakeCurrent();
+            // HACK: OSX backend haven't switched to the new model, so there are only 2 pre-created contexts now
+            return Disposable.Empty;
+        }
+
+        public void Dispose()
+        {
+            // HACK: OSX backend haven't switched to the new model, so there are only 2 pre-created contexts now
         }
     }
 

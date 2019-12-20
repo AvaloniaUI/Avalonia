@@ -31,8 +31,10 @@ namespace Avalonia.Skia
         private double _currentOpacity = 1.0f;
         private readonly bool _canTextUseLcdRendering;
         private Matrix _currentTransform;
-        private GRContext _grContext;
         private bool _disposed;
+        private GRContext _grContext;
+
+        public GRContext GrContext => _grContext;
         /// <summary>
         /// Context create info.
         /// </summary>

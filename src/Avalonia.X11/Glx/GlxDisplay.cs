@@ -17,7 +17,6 @@ namespace Avalonia.X11.Glx
         public int SampleCount { get; }
         public int StencilSize { get; }
         
-        public GlxContext ImmediateContext { get; }
         public GlxContext DeferredContext { get; }
         public GlxInterface Glx { get; } = new GlxInterface();
         public GlxDisplay(X11Info x11) 
@@ -81,35 +80,39 @@ namespace Avalonia.X11.Glx
             })).ToList();
             
             XLib.XFlush(_x11.Display);
-            
-            ImmediateContext = CreateContext(pbuffers[0],null);
-            DeferredContext = CreateContext(pbuffers[1], ImmediateContext);
-            ImmediateContext.MakeCurrent();
-            var err = Glx.GetError();
-            
-            GlInterface = new GlInterface(GlxInterface.SafeGetProcAddress);
-            if (GlInterface.Version == null)
-                throw new OpenGlException("GL version string is null, aborting");
-            if (GlInterface.Renderer == null)
-                throw new OpenGlException("GL renderer string is null, aborting");
 
-            if (Environment.GetEnvironmentVariable("AVALONIA_GLX_IGNORE_RENDERER_BLACKLIST") != "1")
+            DeferredContext = CreateContext(CreatePBuffer(), null, true);
+            using (DeferredContext.MakeCurrent())
             {
-                var blacklist = AvaloniaLocator.Current.GetService<X11PlatformOptions>()
-                    ?.GlxRendererBlacklist;
-                if (blacklist != null)
-                    foreach(var item in blacklist)
-                        if (GlInterface.Renderer.Contains(item))
-                            throw new OpenGlException($"Renderer '{GlInterface.Renderer}' is blacklisted by '{item}'");
+                GlInterface = new GlInterface(GlxInterface.SafeGetProcAddress);
+                if (GlInterface.Version == null)
+                    throw new OpenGlException("GL version string is null, aborting");
+                if (GlInterface.Renderer == null)
+                    throw new OpenGlException("GL renderer string is null, aborting");
+
+                if (Environment.GetEnvironmentVariable("AVALONIA_GLX_IGNORE_RENDERER_BLACKLIST") != "1")
+                {
+                    var blacklist = AvaloniaLocator.Current.GetService<X11PlatformOptions>()
+                        ?.GlxRendererBlacklist;
+                    if (blacklist != null)
+                        foreach (var item in blacklist)
+                            if (GlInterface.Renderer.Contains(item))
+                                throw new OpenGlException(
+                                    $"Renderer '{GlInterface.Renderer}' is blacklisted by '{item}'");
+                }
             }
-            
+
         }
 
-        public void ClearContext() => Glx.MakeContextCurrent(_x11.Display,
-            IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+        IntPtr CreatePBuffer()
+        {
+            return Glx.CreatePbuffer(_x11.Display, _fbconfig, new[] { GLX_PBUFFER_WIDTH, 1, GLX_PBUFFER_HEIGHT, 1, 0 });
+        }
 
-        public GlxContext CreateContext(IGlContext share) => CreateContext(IntPtr.Zero, share);
-        public GlxContext CreateContext(IntPtr defaultXid, IGlContext share)
+
+        public GlxContext CreateContext() => CreateContext(DeferredContext);
+        GlxContext CreateContext(IGlContext share) => CreateContext(CreatePBuffer(), share, true);
+        GlxContext CreateContext(IntPtr defaultXid, IGlContext share, bool ownsPBuffer)
         {
             var sharelist = ((GlxContext)share)?.Handle ?? IntPtr.Zero;
             IntPtr handle = default;
@@ -141,7 +144,7 @@ namespace Avalonia.X11.Glx
             
             if (handle == IntPtr.Zero)
                 throw new OpenGlException("Unable to create direct GLX context");
-            return new GlxContext(new GlxInterface(), handle, this, _x11, defaultXid);
+            return new GlxContext(new GlxInterface(), handle, this, _x11, defaultXid, ownsPBuffer);
         }
 
         public void SwapBuffers(IntPtr xid) => Glx.SwapBuffers(_x11.Display, xid);

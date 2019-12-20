@@ -87,6 +87,10 @@ namespace Avalonia.OpenGL
             IntPtr share, int[] attrs);
         [GlEntryPoint("eglCreateContext")]
         public EglCreateContext CreateContext { get; }
+        
+        public delegate bool EglDestroyContext(IntPtr display, IntPtr context);
+        [GlEntryPoint("eglDestroyContext")]
+        public EglDestroyContext DestroyContext { get; }
 
         public delegate IntPtr EglCreatePBufferSurface(IntPtr display, IntPtr config, int[] attrs);
         [GlEntryPoint("eglCreatePbufferSurface")]
@@ -95,6 +99,18 @@ namespace Avalonia.OpenGL
         public delegate bool EglMakeCurrent(IntPtr display, IntPtr draw, IntPtr read, IntPtr context);
         [GlEntryPoint("eglMakeCurrent")]
         public EglMakeCurrent MakeCurrent { get; }
+
+        public delegate IntPtr EglGetCurrentContext();
+        [GlEntryPoint("eglGetCurrentContext")]
+        public EglGetCurrentContext GetCurrentContext { get; }
+        
+        public delegate IntPtr EglGetCurrentDisplay();
+        [GlEntryPoint("eglGetCurrentDisplay")]
+        public EglGetCurrentContext GetCurrentDisplay { get; }
+
+        public delegate IntPtr EglGetCurrentSurface(int readDraw);
+        [GlEntryPoint("eglGetCurrentSurface")] 
+        public EglGetCurrentSurface GetCurrentSurface { get; }
 
         public delegate void EglDisplaySurfaceVoidDelegate(IntPtr display, IntPtr surface);
         [GlEntryPoint("eglDestroySurface")]

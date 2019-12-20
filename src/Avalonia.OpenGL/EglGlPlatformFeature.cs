@@ -5,8 +5,12 @@ namespace Avalonia.OpenGL
 {
     public class EglGlPlatformFeature : IWindowingPlatformGlFeature
     {
-        public IGlDisplay Display { get; set; }
-        public IGlContext ImmediateContext { get; set; }
+        private EglDisplay _display;
+        public IGlDisplay Display => _display;
+        public IGlContext CreateContext()
+        {
+            return _display.CreateContext(DeferredContext);
+        }
         public EglContext DeferredContext { get; set; }
 
         public static void TryInitialize()
@@ -21,12 +25,10 @@ namespace Avalonia.OpenGL
             try
             {
                 var disp = new EglDisplay();
-                var ctx = disp.CreateContext(null);
                 return new EglGlPlatformFeature
                 {
-                    Display = disp,
-                    ImmediateContext = ctx,
-                    DeferredContext = (EglContext)disp.CreateContext(ctx)
+                    _display = disp,
+                    DeferredContext = disp.CreateContext(null)
                 };
             }
             catch(Exception e)

@@ -15,10 +15,29 @@ namespace Avalonia.X11.Glx
         public GlxMakeContextCurrent MakeContextCurrent { get; }
         public delegate bool GlxMakeContextCurrent(IntPtr display, IntPtr draw, IntPtr read, IntPtr context);
 
+        [GlEntryPoint("glXGetCurrentContext")]
+        public GlxGetCurrentContext GetCurrentContext { get; }
+        public delegate IntPtr GlxGetCurrentContext();
+
+        [GlEntryPoint("glXGetCurrentDisplay")]
+        public GlxGetCurrentDisplay GetCurrentDisplay { get; }
+        public delegate IntPtr GlxGetCurrentDisplay();
+        
+        [GlEntryPoint("glXGetCurrentDrawable")]
+        public GlxGetCurrentDrawable GetCurrentDrawable { get; }
+        public delegate IntPtr GlxGetCurrentDrawable();
+        
+        [GlEntryPoint("glXGetCurrentReadDrawable")]
+        public GlxGetCurrentReadDrawable GetCurrentReadDrawable { get; }
+        public delegate IntPtr GlxGetCurrentReadDrawable();
+        
         [GlEntryPoint("glXCreatePbuffer")]
         public GlxCreatePbuffer CreatePbuffer { get; }
-
         public delegate IntPtr GlxCreatePbuffer(IntPtr dpy, IntPtr fbc, int[] attrib_list);
+        
+        [GlEntryPoint("glXDestroyPbuffer")]
+        public GlxDestroyPbuffer DestroyPbuffer { get; }
+        public delegate IntPtr GlxDestroyPbuffer(IntPtr dpy, IntPtr fb);
         
         [GlEntryPointAttribute("glXChooseVisual")]
         public GlxChooseVisual ChooseVisual { get; }

@@ -6,7 +6,7 @@ namespace Avalonia.OpenGL
 {
     public delegate IntPtr GlGetProcAddressDelegate(string procName);
     
-    public class GlInterface : GlInterfaceBase
+    public unsafe class GlInterface : GlInterfaceBase
     {
         public string Version { get; }
         public string Vendor { get; }
@@ -69,6 +69,61 @@ namespace Avalonia.OpenGL
         public delegate void GlGetIntegerv(int name, out int rv);
         [GlEntryPoint("glGetIntegerv")]
         public GlGetIntegerv GetIntegerv { get; }
+
+        public delegate void GlGenFramebuffers(int count, int[] res);
+        [GlEntryPoint("glGenFramebuffers")]
+        public GlGenFramebuffers GenFramebuffers { get; }
+        
+        public delegate void GlBindFramebuffer(int target, int fb);
+        [GlEntryPoint("glBindFramebuffer")]
+        public GlBindFramebuffer BindFramebuffer { get; }
+        
+        public delegate int GlCheckFramebufferStatus(int target);
+        [GlEntryPoint("glCheckFramebufferStatus")]
+        public GlCheckFramebufferStatus CheckFramebufferStatus { get; }
+        
+        public delegate void GlGenRenderbuffers(int count, int[] res);
+        [GlEntryPoint("glGenRenderbuffers")]
+        public GlGenRenderbuffers GenRenderbuffers { get; }
+        
+        public delegate void GlBindRenderbuffer(int target, int fb);
+        [GlEntryPoint("glBindRenderbuffer")]
+        public GlBindRenderbuffer BindRenderbuffer { get; }
+        
+        public delegate void GlRenderbufferStorage(int target, int internalFormat, int width, int height);
+        [GlEntryPoint("glRenderbufferStorage")]
+        public GlRenderbufferStorage RenderbufferStorage { get; }
+
+        public delegate void GlFramebufferRenderbuffer(int target, int attachment,
+            int renderbufferTarget, int renderbuffer);
+        [GlEntryPoint("glFramebufferRenderbuffer")]
+        public GlFramebufferRenderbuffer FramebufferRenderbuffer { get; }
+        
+        public delegate void GlGenTextures(int count, int[] res);
+        [GlEntryPoint("glGenTextures")]
+        public GlGenTextures GenTextures { get; }
+        
+        public delegate void GlBindTexture(int target, int fb);
+        [GlEntryPoint("glBindTexture")]
+        public GlBindTexture BindTexture { get; }
+
+        public delegate void GlTexImage2D(int target, int level, int internalFormat, int width, int height, int border,
+            int format, int type, IntPtr data);
+        [GlEntryPoint("glTexImage2D")]
+        public GlTexImage2D TexImage2D { get; }
+
+        public delegate void GlTexParameteri(int target, int name, int value);
+        [GlEntryPoint("glTexParameteri")]
+        public GlTexParameteri TexParameteri { get; }
+
+        public delegate void GlFramebufferTexture2D(int target, int attachment,
+            int texTarget, int texture, int level);
+        [GlEntryPoint("glFramebufferTexture2D")]
+        public GlFramebufferTexture2D FramebufferTexture2D { get; }
+
+        public delegate void GlDrawBuffers(int n, int[] bufs);
+        [GlEntryPoint("glDrawBuffers")]
+        public GlDrawBuffers DrawBuffers { get; }
 
         // ReSharper restore UnassignedGetOnlyAutoProperty
     }

@@ -8,7 +8,7 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia
 {
-    internal class GlRenderTarget : IRenderTargetWithCorruptionInfo
+    internal class GlRenderTarget : ISkiaGpuRenderTarget
     {
         private readonly GRContext _grContext;
         private IGlPlatformSurfaceRenderTarget _surface;
@@ -22,22 +22,52 @@ namespace Avalonia.Skia
         public void Dispose() => _surface.Dispose();
 
         public bool IsCorrupted => (_surface as IGlPlatformSurfaceRenderTargetWithCorruptionInfo)?.IsCorrupted == true;
-        
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+
+        class GlGpuSession : ISkiaGpuRenderSession
         {
-            var session = _surface.BeginDraw();
+            private readonly GRBackendRenderTarget _backendRenderTarget;
+            private readonly SKSurface _surface;
+            private readonly IGlPlatformSurfaceRenderingSession _glSession;
+
+            public GlGpuSession(GRContext grContext,
+                GRBackendRenderTarget backendRenderTarget,
+                SKSurface surface, 
+                IGlPlatformSurfaceRenderingSession glSession)
+            {
+                GrContext = grContext;
+                _backendRenderTarget = backendRenderTarget;
+                _surface = surface;
+                _glSession = glSession;
+            }
+            public void Dispose()
+            {
+                _surface.Canvas.Flush();
+                _surface.Dispose();
+                _backendRenderTarget.Dispose();
+                GrContext.Flush();
+                _glSession.Dispose();
+            }
+
+            public GRContext GrContext { get; }
+            public SKCanvas Canvas => _surface.Canvas;
+            public double ScaleFactor => _glSession.Scaling;
+        }
+
+        public ISkiaGpuRenderSession BeginRenderingSession()
+        {
+            var glSession = _surface.BeginDraw();
             bool success = false;
             try
             {
-                var disp = session.Display;
+                var disp = glSession.Display;
                 var gl = disp.GlInterface;
                 gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var fb);
 
-                var size = session.Size;
-                var scaling = session.Scaling;
+                var size = glSession.Size;
+                var scaling = glSession.Scaling;
                 if (size.Width <= 0 || size.Height <= 0 || scaling < 0)
                 {
-                    session.Dispose();
+                    glSession.Dispose();
                     throw new InvalidOperationException(
                         $"Can't create drawing context for surface with {size} size and {scaling} scaling");
                 }
@@ -50,40 +80,21 @@ namespace Avalonia.Skia
                 {
                     _grContext.ResetContext();
 
-                    GRBackendRenderTarget renderTarget =
+                    var renderTarget =
                         new GRBackendRenderTarget(size.Width, size.Height, disp.SampleCount, disp.StencilSize,
                             new GRGlFramebufferInfo((uint)fb, GRPixelConfig.Rgba8888.ToGlSizedFormat()));
                     var surface = SKSurface.Create(_grContext, renderTarget,
                         GRSurfaceOrigin.BottomLeft,
                         GRPixelConfig.Rgba8888.ToColorType());
 
-                    var nfo = new DrawingContextImpl.CreateInfo
-                    {
-                        GrContext = _grContext,
-                        Canvas = surface.Canvas,
-                        Dpi = SkiaPlatform.DefaultDpi * scaling,
-                        VisualBrushRenderer = visualBrushRenderer,
-                        DisableTextLcdRendering = true
-                    };
-
-                    
-                    var ctx = new DrawingContextImpl(nfo, Disposable.Create(() =>
-                    {
-
-                        surface.Canvas.Flush();
-                        surface.Dispose();
-                        renderTarget.Dispose();
-                        _grContext.Flush();
-                        session.Dispose();
-                    }));
                     success = true;
-                    return ctx;
+                    return new GlGpuSession(_grContext, renderTarget, surface, glSession);
                 }
             }
             finally
             {
                 if(!success)
-                    session.Dispose();
+                    glSession.Dispose();
             }
         }
     }
