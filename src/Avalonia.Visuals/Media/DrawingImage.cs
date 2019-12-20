@@ -1,14 +1,27 @@
-﻿using Avalonia.Metadata;
+﻿using System;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media
 {
-    public class DrawingImage : AvaloniaObject, IImage
+    /// <summary>
+    /// An <see cref="IImage"/> that uses a <see cref="Drawing"/> for content.
+    /// </summary>
+    public class DrawingImage : AvaloniaObject, IImage, IAffectsRender
     {
+        /// <summary>
+        /// Defines the <see cref="Drawing"/> property.
+        /// </summary>
         public static readonly StyledProperty<Drawing> DrawingProperty =
             AvaloniaProperty.Register<DrawingImage, Drawing>(nameof(Drawing));
 
+        /// <inheritdoc/>
+        public event EventHandler Invalidated;
+
+        /// <summary>
+        /// Gets or sets the drawing content.
+        /// </summary>
         [Content]
         public Drawing Drawing
         {
@@ -16,9 +29,11 @@ namespace Avalonia.Media
             set => SetValue(DrawingProperty, value);
         }
 
+        /// <inheritdoc/>
         public Size Size => Drawing?.GetBounds().Size ?? default;
 
-        public void Draw(
+        /// <inheritdoc/>
+        void IImage.Draw(
             DrawingContext context,
             Rect sourceRect,
             Rect destRect,
@@ -45,5 +60,22 @@ namespace Avalonia.Media
                 Drawing?.Draw(context);
             }
         }
+
+        /// <inheritdoc/>
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+
+            if (e.Property == DrawingProperty)
+            {
+                RaiseInvalidated(EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="Invalidated"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected void RaiseInvalidated(EventArgs e) => Invalidated?.Invoke(this, e);
     }
 }
