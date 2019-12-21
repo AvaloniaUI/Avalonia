@@ -127,21 +127,64 @@ namespace Avalonia.Media.Text
                 return new TextHitTestResult();
             }
 
-            var pointY = (float)point.Y;
-
-            var currentY = 0.0;
-
-            for (var i = 0; i < TextLines.Count; i++)
+            if (point == default)
             {
-                var currentLine = TextLines[i];
+                return new TextHitTestResult(new CharacterHit(), point, true, false);
+            }
 
-                CharacterHit characterHit;
+            GlyphRun currentGlyphRun = null;
+            var currentX = 0.0;
+            var currentY = 0.0;
+            var characterHit = new CharacterHit(_text.End + 1);
+            var isInside = false;
+            var isTrailing = false;
 
-                if (pointY < currentY + currentLine.LineMetrics.Size.Height)
+            foreach (var currentLine in TextLines)
+            {
+                currentX = 0;
+
+                if (point.Y < currentY + currentLine.LineMetrics.Size.Height)
                 {
-                    var currentX = currentLine.LineMetrics.BaselineOrigin.X;
+                    currentX = currentLine.LineMetrics.BaselineOrigin.X;
 
-                    bool isInside;
+                    if (point.X < 0.0)
+                    {
+                        currentGlyphRun = currentLine.TextRuns.FirstOrDefault()?.GlyphRun;
+
+                        if (currentGlyphRun != null)
+                        {
+                            characterHit =
+                                    currentGlyphRun.GetPreviousCaretCharacterHit(
+                                        new CharacterHit(currentGlyphRun.Characters.Start));
+                        }
+                        else
+                        {
+                            characterHit = new CharacterHit(currentLine.Text.Start);
+                        }
+
+                        break;
+                    }
+
+                    if (point.X > currentLine.LineMetrics.Size.Width)
+                    {
+                        currentGlyphRun = currentLine.TextRuns.LastOrDefault()?.GlyphRun;
+
+                        if (currentGlyphRun != null)
+                        {
+                            characterHit =
+                                currentGlyphRun.FindNearestCharacterHit(currentGlyphRun.Characters.End, out var width);
+
+                            isTrailing = width > 0;
+
+                            currentX += currentGlyphRun.Bounds.Width;
+                        }
+                        else
+                        {
+                            characterHit = new CharacterHit(currentLine.Text.End + 1);
+                        }
+
+                        break;
+                    }
 
                     foreach (var currentRun in currentLine.TextRuns)
                     {
@@ -154,35 +197,33 @@ namespace Avalonia.Media.Text
 
                         var distance = point.X - currentX;
 
-                        characterHit = currentRun.GlyphRun.GetCharacterHitFromDistance(distance, out isInside);
+                        currentGlyphRun = currentRun.GlyphRun;
 
-                        return new TextHitTestResult(characterHit, new Point(distance, currentY), isInside,
-                            characterHit.TrailingLength > 0);
+                        characterHit = currentGlyphRun.GetCharacterHitFromDistance(distance, out isInside);
+
+                        currentGlyphRun.FindNearestCharacterHit(characterHit.FirstCharacterIndex, out var width);
+
+                        isTrailing = width > 0.0 && characterHit.TrailingLength > 0;
+
+                        break;
                     }
-
-                    var lastTextRun = currentLine.TextRuns[currentLine.TextRuns.Count - 1];
-
-                    characterHit = lastTextRun.GlyphRun.GetCharacterHitFromDistance(currentX, out isInside);
-
-                    return new TextHitTestResult(characterHit, new Point(currentX, currentY), isInside,
-                        characterHit.FirstCharacterIndex + characterHit.TrailingLength == _text.Length);
-                }
-
-                if (i == TextLines.Count - 1)
-                {
-                    var lastTextRun = currentLine.TextRuns[currentLine.TextRuns.Count - 1];
-
-                    characterHit = lastTextRun.GlyphRun.FindNearestCharacterHit(lastTextRun.GlyphRun.Characters.End, out _);
-
-                    var currentX = currentLine.LineMetrics.BaselineOrigin.X + currentLine.LineMetrics.Size.Width;
-
-                    return new TextHitTestResult(characterHit, new Point(currentX, currentY), false, true);
                 }
 
                 currentY += currentLine.LineMetrics.Size.Height;
             }
 
-            return new TextHitTestResult();
+            if (currentGlyphRun == null)
+            {
+                currentGlyphRun = TextLines.Last().TextRuns.LastOrDefault()?.GlyphRun;
+
+                var width = 0.0;
+
+                currentGlyphRun?.FindNearestCharacterHit(_text.End, out width);
+
+                isTrailing = width > 0;
+            }
+
+            return new TextHitTestResult(characterHit, new Point(currentX, currentY), isInside, isTrailing);
         }
 
         /// <summary>
@@ -656,10 +697,9 @@ namespace Avalonia.Media.Text
 
                         if (currentPosition + length < _text.Length)
                         {
-                            if (_text[lineBreaker.CurrentBreak.PositionWrap] == '\r' &&
-                                _text[lineBreaker.CurrentBreak.PositionWrap - 1] == '\n'
-                                || _text[lineBreaker.CurrentBreak.PositionWrap] == '\n' &&
-                                _text[lineBreaker.CurrentBreak.PositionWrap - 1] == '\r')
+                            //The line breaker isn't treating \n\r as a pair so we have to fix that here.
+                            if (_text[lineBreaker.CurrentBreak.PositionMeasure] == '\n'
+                             && _text[lineBreaker.CurrentBreak.PositionWrap] == '\r')
                             {
                                 length++;
                             }

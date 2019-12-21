@@ -395,9 +395,48 @@ namespace Avalonia.Skia.UnitTests
 
                 var hitTestResult = layout.HitTestPoint(new Point(width, lineMetrics.BaselineOrigin.Y));
 
-                Assert.Equal(0, hitTestResult.CharacterHit.FirstCharacterIndex);
+                Assert.Equal(2, hitTestResult.CharacterHit.FirstCharacterIndex);
 
                 Assert.Equal(2, hitTestResult.CharacterHit.TrailingLength);
+            }
+        }
+
+
+        [Theory]
+        [InlineData("☝🏿", new ushort[] { 0 })]
+        [InlineData("☝🏿 ab", new ushort[] { 0, 3, 4, 5 })]
+        [InlineData("ab ☝🏿", new ushort[] { 0, 1, 2, 3 })]
+        public void Should_Create_Valid_Clusters_For_Text(string text, ushort[] clusters)
+        {
+            using (UnitTestApplication.Start(
+                TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
+                    textFormatter: new TextFormatter())))
+            {
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12.0f,
+                    TextAlignment.Left,
+                    TextWrapping.NoWrap,
+                    TextTrimming.None,
+                    new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+                var textLine = layout.TextLines[0];
+
+                var index = 0;
+
+                foreach (var textRun in textLine.TextRuns)
+                {
+                    var glyphRun = textRun.GlyphRun;
+
+                    var glyphClusters = glyphRun.GlyphClusters;
+
+                    var expected = clusters.Skip(index).Take(glyphClusters.Length);
+
+                    Assert.Equal(expected, glyphRun.GlyphClusters);
+
+                    index += glyphClusters.Length;
+                }
             }
         }
 

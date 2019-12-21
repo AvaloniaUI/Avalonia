@@ -149,25 +149,23 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [Theory]
         [InlineData("x", 0, 0, true, false, 0)]
         [InlineData(stringword, -1, -1, false, false, 0)]
-        [InlineData(stringword, 25, 13, true, false, 3)]
-        [InlineData(stringword, 28.70, 13.5, true, true, 3)]
-        [InlineData(stringword, 30, 13, false, true, 3)]
-        [InlineData(stringword + "\r\n", 30, 13, false, false, 4)]
-        [InlineData(stringword + "\r\nnext", 30, 13, false, false, 4)]
-        [InlineData(stringword, 300, 13, false, true, 3)]
-        [InlineData(stringword + "\r\n", 300, 13, false, false, 4)]
-        [InlineData(stringword + "\r\nnext", 300, 13, false, false, 4)]
-        [InlineData(stringword, 300, 300, false, true, 3)]
-        //TODO: Direct2D implementation return textposition 6
-        //but the text is 6 length, can't find the logic for me it should be 5
-        //[InlineData(stringword + "\r\n", 300, 300, false, false, 6)]
-        [InlineData(stringword + "\r\nnext", 300, 300, false, true, 9)]
-        [InlineData(stringword + "\r\nnext", 300, 25, false, true, 9)]
-        [InlineData(stringword, 28, 15, false, true, 3)]
-        [InlineData(stringword, 30, 15, false, true, 3)]
-        [InlineData(stringmiddle3lines, 30, 15, false, false, 9)]
-        [InlineData(stringmiddle3lines, 500, 13, false, false, 8)]
-        [InlineData(stringmiddle3lines, 30, 25, false, false, 9)]
+        [InlineData(stringword, 22, 13, true, false, 3)]
+        [InlineData(stringword, 28.70, 13.5, true, true, 4)]
+        [InlineData(stringword, 30, 13, false, true, 4)]
+        [InlineData(stringword + "\r\n", 30, 13, false, false, 6)]
+        [InlineData(stringword + "\r\nnext", 30, 13, false, false, 6)]
+        [InlineData(stringword, 300, 13, false, true, 4)]
+        [InlineData(stringword + "\r\n", 300, 13, false, false, 6)]
+        [InlineData(stringword + "\r\nnext", 300, 13, false, false, 6)]
+        [InlineData(stringword, 300, 300, false, true, 4)]
+        [InlineData(stringword + "\r\n", 300, 300, false, false, 6)]
+        [InlineData(stringword + "\r\nnext", 300, 300, false, true, 10)]
+        [InlineData(stringword + "\r\nnext", 300, 25, false, true, 10)]
+        [InlineData(stringword, 28, 15, false, true, 4)]
+        [InlineData(stringword, 30, 15, false, true, 4)]
+        [InlineData(stringmiddle3lines, 30, 15, false, false, 10)]
+        [InlineData(stringmiddle3lines, 500, 13, false, false, 9)]
+        [InlineData(stringmiddle3lines, 30, 25, false, false, 10)]
         [InlineData(stringmiddle3lines, -1, 30, false, false, 10)]
         public void Should_HitTestPoint_Correctly(string input,
                                     double x, double y,
@@ -175,8 +173,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
             var fmt = Create(input, FontSize);
             var htRes = fmt.HitTestPoint(new Point(x, y));
+            var characterHit = htRes.CharacterHit;
 
-            Assert.Equal(pos, htRes.CharacterHit.FirstCharacterIndex);
+            Assert.Equal(pos, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
             Assert.Equal(isInside, htRes.IsInside);
             Assert.Equal(isTrailing, htRes.IsTrailing);
         }

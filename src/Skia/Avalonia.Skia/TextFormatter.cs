@@ -134,7 +134,7 @@ namespace Avalonia.Skia
                 glyphRun.GlyphAdvances.Take(glyphCount),
                 glyphRun.GlyphOffsets.Take(glyphCount),
                 glyphRun.Characters.Take(textLength),
-                glyphRun.GlyphClusters.Take(textLength),
+                glyphRun.GlyphClusters.Take(glyphCount),
                 glyphRun.BidiLevel);
 
             glyphRun = new GlyphRun(glyphRun.GlyphTypeface, glyphRun.FontRenderingEmSize,
@@ -142,7 +142,7 @@ namespace Avalonia.Skia
                 glyphRun.GlyphAdvances.Skip(glyphCount),
                 glyphRun.GlyphOffsets.Skip(glyphCount),
                 glyphRun.Characters.Skip(textLength),
-                glyphRun.GlyphClusters.Skip(textLength),
+                glyphRun.GlyphClusters.Skip(glyphCount),
                 glyphRun.BidiLevel);
 
             return result;
@@ -214,30 +214,17 @@ namespace Avalonia.Skia
 
                 var glyphIndices = new ushort[len];
 
-                var clusters = new ushort[text.Length];
+                var clusters = new ushort[len];
 
                 var glyphAdvances = new double[len];
 
                 var glyphOffsets = new Vector[len];
 
-                var currentClusterIndex = 0;
-
                 for (var i = 0; i < len; i++)
                 {
                     glyphIndices[i] = (ushort)info[i].Codepoint;
 
-                    var currentCluster = (ushort)info[i].Cluster;
-
-                    clusters[currentClusterIndex] = currentCluster;
-
-                    CodepointReader.Peek(text, currentClusterIndex, out var count);
-
-                    currentClusterIndex++;
-
-                    if (count > 1)
-                    {
-                        clusters[currentClusterIndex++] = currentCluster;
-                    }
+                    clusters[i] = (ushort)info[i].Cluster;
 
                     var advanceX = pos[i].XAdvance * textScale;
                     // Depends on direction of layout
@@ -251,11 +238,11 @@ namespace Avalonia.Skia
                     glyphOffsets[i] = new Vector(offsetX, offsetY);
                 }
 
-                return new GlyphRun(glyphTypeface, textFormat.FontSize, 
+                return new GlyphRun(glyphTypeface, textFormat.FontSize,
                     new ReadOnlySlice<ushort>(glyphIndices),
                     new ReadOnlySlice<double>(glyphAdvances),
-                    new ReadOnlySlice<Vector>(glyphOffsets), 
-                    text, 
+                    new ReadOnlySlice<Vector>(glyphOffsets),
+                    text,
                     new ReadOnlySlice<ushort>(clusters));
             }
         }

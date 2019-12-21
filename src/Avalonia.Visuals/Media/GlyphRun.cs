@@ -157,7 +157,7 @@ namespace Avalonia.Media
         /// <summary>
         ///     
         /// </summary>
-        internal bool IsLeftToRight => ((BidiLevel & 1) == 0);
+        public bool IsLeftToRight => ((BidiLevel & 1) == 0);
 
         /// <summary>
         ///     Gets or sets the conservative bounding box of the <see cref="GlyphRun"/>.
@@ -193,15 +193,20 @@ namespace Avalonia.Media
         {
             var distance = 0.0;
 
-            var end = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+            var glyphIndex = FindGlyphIndex(characterHit.FirstCharacterIndex);
 
-            for (var i = 0; i < _glyphClusters.Length; i++)
+            var currentCluster = _glyphClusters[glyphIndex];
+
+            if (characterHit.TrailingLength > 0)
             {
-                if (_glyphClusters[i] >= end)
+                while (glyphIndex < _glyphClusters.Length && _glyphClusters[glyphIndex] == currentCluster)
                 {
-                    break;
+                    glyphIndex++;
                 }
+            }
 
+            for (var i = 0; i < glyphIndex; i++)
+            {
                 if (GlyphAdvances.IsEmpty)
                 {
                     var glyph = GlyphIndices[i];
@@ -245,33 +250,34 @@ namespace Avalonia.Media
 
             for (; index < GlyphIndices.Length; index++)
             {
+                double advance;
+
                 if (GlyphAdvances.IsEmpty)
                 {
                     var glyph = GlyphIndices[index];
 
-                    currentX += GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
+                    advance = GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
                 }
                 else
                 {
-                    currentX += GlyphAdvances[index];
+                    advance = GlyphAdvances[index];
                 }
 
-                if (currentX > distance)
+                if (currentX + advance >= distance)
                 {
                     break;
                 }
-            }
 
-            if (index == GlyphIndices.Length)
-            {
-                index--;
+                currentX += advance;
             }
 
             var characterHit = FindNearestCharacterHit(GlyphClusters[index], out var width);
 
-            isInside = distance < currentX && width > 0;
+            var offset = GetDistanceFromCharacterHit(new CharacterHit(characterHit.FirstCharacterIndex));
 
-            var isTrailing = distance > currentX - width / 2;
+            isInside = true;
+
+            var isTrailing = distance > offset + width / 2;
 
             return isTrailing ? characterHit : new CharacterHit(characterHit.FirstCharacterIndex);
         }
@@ -290,9 +296,17 @@ namespace Avalonia.Media
 
         public CharacterHit GetPreviousCaretCharacterHit(CharacterHit characterHit)
         {
-            return characterHit.TrailingLength == 0 ?
-                FindNearestCharacterHit(characterHit.FirstCharacterIndex - 1, out _) :
-                new CharacterHit(characterHit.FirstCharacterIndex);
+            if (characterHit.TrailingLength == 0)
+            {
+                if (characterHit.FirstCharacterIndex == Characters.Start)
+                {
+                    return new CharacterHit(Characters.Start);
+                }
+
+                return FindNearestCharacterHit(characterHit.FirstCharacterIndex - 1, out _);
+            }
+
+            return new CharacterHit(characterHit.FirstCharacterIndex);
         }
 
         private class ReverseComparer<T> : IComparer<T>
@@ -306,75 +320,95 @@ namespace Avalonia.Media
         private static readonly IComparer<ushort> s_ascendingComparer = Comparer<ushort>.Default;
         private static readonly IComparer<ushort> s_descendingComparer = new ReverseComparer<ushort>();
 
-        internal CharacterHit FindNearestCharacterHit(int index, out double width)
+        public int FindGlyphIndex(int characterIndex)
         {
-            width = 0.0;
-
-            if (index < 0)
+            if (IsLeftToRight)
             {
-                return default;
+                if (characterIndex < _glyphClusters[0])
+                {
+                    return 0;
+                }
+
+                if (characterIndex > _glyphClusters[_glyphClusters.Length - 1])
+                {
+                    return _glyphClusters.End;
+                }
+            }
+            else
+            {
+                if (characterIndex < _glyphClusters[_glyphClusters.Length - 1])
+                {
+                    return _glyphClusters.End;
+                }
+
+                if (characterIndex > _glyphClusters[0])
+                {
+                    return 0;
+                }
             }
 
             var comparer = IsLeftToRight ? s_ascendingComparer : s_descendingComparer;
 
             var clusters = _glyphClusters.AsSpan();
 
-            int start;
-
-            if (index == 0 && clusters[0] == 0)
-            {
-                start = 0;
-            }
-            else
-            {
-                // Find the start of the cluster at the character index.
-                start = clusters.BinarySearch((ushort)index, comparer);
-            }
+            // Find the start of the cluster at the character index.
+            var start = clusters.BinarySearch((ushort)characterIndex, comparer);
 
             // No cluster found.
             if (start < 0)
             {
-                while (index > 0 && start < 0)
+                while (characterIndex > 0 && start < 0)
                 {
-                    index--;
+                    characterIndex--;
 
-                    start = clusters.BinarySearch((ushort)index, comparer);
+                    start = clusters.BinarySearch((ushort)characterIndex, comparer);
                 }
 
                 if (start < 0)
                 {
-                    return default;
+                    return -1;
                 }
             }
 
-            var trailingLength = 0;
-
-            var currentCluster = clusters[start];
-
-            while (start > 0 && clusters[start - 1] == currentCluster)
+            while (start > 0 && clusters[start - 1] == clusters[start])
             {
                 start--;
             }
 
-            for (var lastIndex = start; lastIndex < _glyphClusters.Length; ++lastIndex)
-            {
-                if (_glyphClusters[lastIndex] != currentCluster)
-                {
-                    break;
-                }
+            return start;
+        }
 
+        public CharacterHit FindNearestCharacterHit(int index, out double width)
+        {
+            width = 0.0;
+
+            var start = FindGlyphIndex(index);
+
+            var currentCluster = _glyphClusters[start];
+
+            var trailingLength = 0;
+
+            while (start < _glyphClusters.Length && _glyphClusters[start] == currentCluster)
+            {
                 if (GlyphAdvances.IsEmpty)
                 {
-                    var glyph = GlyphIndices[lastIndex];
+                    var glyph = GlyphIndices[start];
 
                     width += GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
                 }
                 else
                 {
-                    width += GlyphAdvances[lastIndex];
+                    width += GlyphAdvances[start];
                 }
 
                 trailingLength++;
+                start++;
+            }
+
+            if (start == _glyphClusters.Length &&
+                currentCluster + trailingLength != Characters.Start + Characters.Length)
+            {
+                trailingLength = Characters.Start + Characters.Length - currentCluster;
             }
 
             return new CharacterHit(currentCluster, trailingLength);

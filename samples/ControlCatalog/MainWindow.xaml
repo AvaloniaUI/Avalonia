@@ -51,6 +51,67 @@
         <MenuItem Header="About" Command="{Binding AboutCommand}" />
       </MenuItem>
     </Menu>
-    <local:MainView />
+    <Grid ColumnDefinitions="*,*,*" RowDefinitions="*,*,*" ShowGridLines="True">
+      <TextBox Grid.Column="0" Grid.Row="0">
+        <TextBox.Text>
+X X X X Y (space; breakable)
+X X X X Y (no-break space; unbreakable)
+X X X X Y (en quad; breakable)
+X X X X Y (em quad; breakable)
+X X X X Y (en space; breakable)
+X X X X Y (em space; breakable)
+X X X X Y (three-per-em space; breakable)
+X X X X Y (four-per-em space; breakable)
+X X X X Y (six-per-em space; breakable)
+X X X X Y (figure space; unbreakable)
+X X X X Y (punctuation space; same width as a period)
+X X X X Y (thin space)
+X X X X Y (hair space)
+X​X​X​X​Y (zero width space; breakable)
+X﻿X﻿X﻿X﻿Y (zero width no-break space; unbreakable)
+        </TextBox.Text>
+      </TextBox>
+      <TextBox Grid.Column="1" Grid.Row="0">
+По оживлённым берегам
+Громады стройные теснятся
+Дворцов и башен; корабли
+Толпой со всех концов земли
+К богатым пристаням стремятся;
+      </TextBox>
+      <TextBox Grid.Column="2" Grid.Row="0" >
+पशुपतिरपि तान्यहानि कृच्छ्राद्
+अगमयदद्रिसुतासमागमोत्कः ।
+कमपरमवशं न विप्रकुर्युर्
+विभुमपि तं यदमी स्पृशन्ति भावाः ॥
+      </TextBox>
+      <TextBox Grid.Column="0" Grid.Row="1">
+子曰：「學而時習之，不亦說乎？有朋自遠方來，不亦樂乎？
+人不知而不慍，不亦君子乎？」
+有子曰：「其為人也孝弟，而好犯上者，鮮矣；
+不好犯上，而好作亂者，未之有也。君子務本，本立而道生。
+孝弟也者，其為仁之本與！」
+      </TextBox>
+      <TextBox Grid.Column="1" Grid.Row="1" >
+        á
+☝ No skin tone
+☝🏿 Dark
+☝🏾 Medium Dark
+☝🏽 Medium
+☝🏼 Medium Light
+☝🏻 Light
+      </TextBox>
+          <TextBox Grid.Column="2" Grid.Row="1">
+        Testing «ταБЬℓσ»: 1&lt;2 &amp; 4+1&gt;3, now 20% off!
+      </TextBox>
+      <TextBox Grid.Column="0" Grid.Row="2" >
+
+      </TextBox>
+      <TextBox Grid.Column="1" Grid.Row="2" >
+
+      </TextBox>
+      <TextBox Grid.Column="2" Grid.Row="2" >
+
+      </TextBox>
+    </Grid>
   </DockPanel>
 </Window>
