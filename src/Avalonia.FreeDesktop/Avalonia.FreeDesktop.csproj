@@ -12,4 +12,12 @@
     <PackageReference Include="Tmds.DBus" Version="0.7.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <DotNetCliToolReference Include="Tmds.DBus.Tool" Version="0.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tmds.DBus" Version="0.7.0" />
+  </ItemGroup>
+
 </Project>
