@@ -320,13 +320,13 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("glEnable")]
         public GlEnable Enable { get; }
 
-        public delegate void GlDeleteBuffer(int buffer);
-        [GlEntryPoint("glDeleteBuffer")]
-        public GlDeleteBuffer DeleteBuffer { get; }
+        public delegate void GlDeleteBuffers(int count, int[] buffers);
+        [GlEntryPoint("glDeleteBuffers")]
+        public GlDeleteBuffers DeleteBuffers { get; }
 
-        public delegate void GlDeleteVertexArray(int array);
-        [GlEntryPoint("glDeleteVertexArray", "glDeleteVertexArrayOES")]
-        public GlDeleteVertexArray DeleteVertexArray { get; }
+        public delegate void GlDeleteVertexArrays(int count, int[] buffers);
+        [GlEntryPoint("glDeleteVertexArrays", "glDeleteVertexArraysOES")]
+        public GlDeleteVertexArrays DeleteVertexArrays { get; }
 
         public delegate void GlDeleteProgram(int program);
         [GlEntryPoint("glDeleteProgram")]

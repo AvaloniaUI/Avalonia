@@ -243,9 +243,8 @@ namespace ControlCatalog.Pages
             GL.UseProgram(0);
 
             // Delete all resources.
-            GL.DeleteBuffer(_vertexBufferObject);
-            GL.DeleteBuffer(_indexBufferObject);
-            GL.DeleteVertexArray(_vertexArrayObject);
+            GL.DeleteBuffers(2, new[] { _vertexBufferObject, _indexBufferObject });
+            GL.DeleteVertexArrays(1, new[] { _vertexArrayObject });
             GL.DeleteProgram(_shaderProgram);
             GL.DeleteShader(_fragmentShader);
             GL.DeleteShader(_vertexShader);

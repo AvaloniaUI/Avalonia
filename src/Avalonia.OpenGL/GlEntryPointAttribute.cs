@@ -6,7 +6,7 @@ namespace Avalonia.OpenGL
     public class GlEntryPointAttribute : Attribute
     {
         public string[] EntryPoints { get; }
-        public bool Optional { get; }
+        public bool Optional { get; set; }
 
         public GlEntryPointAttribute(string entryPoint, bool optional = false)
         {
