@@ -22,7 +22,22 @@ namespace Avalonia.OpenGL
                         BindingFlags.Instance | BindingFlags.NonPublic);
                     if (field == null)
                         throw new InvalidProgramException($"Expected property {prop.Name} to have {fieldName}");
-                    var proc = getProcAddress(a.EntryPoint, a.Optional);
+                    IntPtr proc = IntPtr.Zero;
+                    if (a.EntryPoints.Length == 1)
+                        proc = getProcAddress(a.EntryPoints[0], a.Optional);
+                    else
+                    {
+                        foreach (var ep in a.EntryPoints)
+                        {
+                            proc = getProcAddress(ep, true);
+
+                        }
+
+                        if (proc == IntPtr.Zero && !a.Optional)
+                            throw new OpenGlException("Unable to resolve function by any of aliases " +
+                                                      string.Join(", ", a.EntryPoints));
+                    }
+
                     if (proc != IntPtr.Zero)
                         field.SetValue(this, Marshal.GetDelegateForFunctionPointer(proc, prop.PropertyType));
                 }

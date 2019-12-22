@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using Avalonia.Platform.Interop;
+using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.OpenGL
 {
@@ -74,6 +76,10 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("glGenFramebuffers")]
         public GlGenFramebuffers GenFramebuffers { get; }
         
+        public delegate void GlDeleteFramebuffers(int count, int[] framebuffers);
+        [GlEntryPoint("glDeleteFramebuffers")]
+        public GlDeleteFramebuffers DeleteFramebuffers { get; }
+        
         public delegate void GlBindFramebuffer(int target, int fb);
         [GlEntryPoint("glBindFramebuffer")]
         public GlBindFramebuffer BindFramebuffer { get; }
@@ -106,6 +112,11 @@ namespace Avalonia.OpenGL
         public delegate void GlBindTexture(int target, int fb);
         [GlEntryPoint("glBindTexture")]
         public GlBindTexture BindTexture { get; }
+        
+        public delegate void GlDeleteTextures(int count, int[] textures);
+        [GlEntryPoint("glDeleteTextures")]
+        public GlDeleteTextures DeleteTextures { get; }
+
 
         public delegate void GlTexImage2D(int target, int level, int internalFormat, int width, int height, int border,
             int format, int type, IntPtr data);
@@ -125,6 +136,207 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("glDrawBuffers")]
         public GlDrawBuffers DrawBuffers { get; }
 
+        public delegate int GlCreateShader(int shaderType);
+        [GlEntryPoint("glCreateShader")]
+        public GlCreateShader CreateShader { get; }
+
+        public delegate void GlShaderSource(int shader, int count, IntPtr strings, IntPtr lengths);
+        [GlEntryPoint("glShaderSource")]
+        public GlShaderSource ShaderSource { get; }
+
+        public void ShaderSourceString(int shader, string source)
+        {
+            using (var b = new Utf8Buffer(source))
+            {
+                var ptr = b.DangerousGetHandle();
+                var len = new IntPtr(b.ByteLen);
+                ShaderSource(shader, 1, new IntPtr(&ptr), new IntPtr(&len));
+            }
+        }
+
+        public delegate void GlCompileShader(int shader);
+        [GlEntryPoint("glCompileShader")]
+        public GlCompileShader CompileShader { get; }
+        
+        public delegate void GlGetShaderiv(int shader, int name, int* parameters);
+        [GlEntryPoint("glGetShaderiv")]
+        public GlGetShaderiv GetShaderiv { get; }
+
+        public delegate void GlGetShaderInfoLog(int shader, int maxLength, out int length, void*infoLog);
+        [GlEntryPoint("glGetShaderInfoLog")]
+        public GlGetShaderInfoLog GetShaderInfoLog { get; }
+
+        public unsafe string CompileShaderAndGetError(int shader, string source)
+        {
+            ShaderSourceString(shader, source);
+            CompileShader(shader);
+            int compiled;
+            GetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+            if (compiled != 0)
+                return null;
+            int logLength;
+            GetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
+            if (logLength == 0)
+                logLength = 4096;
+            var logData = new byte[logLength];
+            int len;
+            fixed (void* ptr = logData)
+                GetShaderInfoLog(shader, logLength, out len, ptr);
+            return Encoding.UTF8.GetString(logData,0, len);
+        }
+        
+        public delegate int GlCreateProgram();
+        [GlEntryPoint("glCreateProgram")]
+        public GlCreateProgram CreateProgram { get; }
+
+        public delegate void GlAttachShader(int program, int shader);
+        [GlEntryPoint("glAttachShader")]
+        public GlAttachShader AttachShader { get; }
+
+        public delegate void GlLinkProgram(int program);
+        [GlEntryPoint("glLinkProgram")]
+        public GlLinkProgram LinkProgram { get; }
+        
+        public delegate void GlGetProgramiv(int program, int name, int* parameters);
+        [GlEntryPoint("glGetProgramiv")]
+        public GlGetProgramiv GetProgramiv { get; }
+
+        public delegate void GlGetProgramInfoLog(int program, int maxLength, out int len, void* infoLog);
+        [GlEntryPoint("glGetProgramInfoLog")]
+        public GlGetProgramInfoLog GetProgramInfoLog { get; }
+
+        public unsafe string LinkProgramAndGetError(int program)
+        {
+            LinkProgram(program);
+            int compiled;
+            GetProgramiv(program, GL_LINK_STATUS, &compiled);
+            if (compiled != 0)
+                return null;
+            int logLength;
+            GetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+            var logData = new byte[logLength];
+            int len;
+            fixed (void* ptr = logData)
+                GetProgramInfoLog(program, logLength, out len, ptr);
+            return Encoding.UTF8.GetString(logData,0, len);
+        }
+
+        public delegate void GlBindAttribLocation(int program, int index, IntPtr name);
+        [GlEntryPoint("glBindAttribLocation")]
+        public GlBindAttribLocation BindAttribLocation { get; }
+
+        public void BindAttribLocationString(int program, int index, string name)
+        {
+            using (var b = new Utf8Buffer(name))
+                BindAttribLocation(program, index, b.DangerousGetHandle());
+        }
+        
+        public delegate void GlGenBuffers(int len, int[] rv);
+        [GlEntryPoint("glGenBuffers")]
+        public GlGenBuffers GenBuffers { get; }
+
+        public int GenBuffer()
+        {
+            var rv = new int[1];
+            GenBuffers(1, rv);
+            return rv[0];
+        }
+        
+        public delegate void GlBindBuffer(int target, int buffer);
+        [GlEntryPoint("glBindBuffer")]
+        public GlBindBuffer BindBuffer { get; }
+
+        public delegate void GlBufferData(int target, IntPtr size, IntPtr data, int usage);
+        [GlEntryPoint("glBufferData")]
+        public GlBufferData BufferData { get; }
+        
+        public delegate int GlGetAttribLocation(int program, IntPtr name);
+        [GlEntryPoint("glGetAttribLocation")]
+        public GlGetAttribLocation GetAttribLocation { get; }
+
+        public int GetAttribLocationString(int program, string name)
+        {
+            using (var b = new Utf8Buffer(name))
+                return GetAttribLocation(program, b.DangerousGetHandle());
+        }
+
+        public delegate void GlVertexAttribPointer(int index, int size, int type,
+            int normalized, int stride, IntPtr pointer);
+        [GlEntryPoint("glVertexAttribPointer")]
+        public GlVertexAttribPointer VertexAttribPointer { get; }
+        
+        public delegate void GlEnableVertexAttribArray(int index);
+        [GlEntryPoint("glEnableVertexAttribArray")]
+        public GlEnableVertexAttribArray EnableVertexAttribArray { get; }
+
+        public delegate void GlUseProgram(int program);
+        [GlEntryPoint("glUseProgram")]
+        public GlUseProgram UseProgram { get; }
+        
+        public delegate void GlDrawArrays(int mode, int first, IntPtr count);
+        [GlEntryPoint("glDrawArrays")]
+        public GlDrawArrays DrawArrays { get; }
+        
+        public delegate void GlDrawElements(int mode, int count, int type, IntPtr indices);
+        [GlEntryPoint("glDrawElements")]
+        public GlDrawElements DrawElements { get; }
+
+        
+        public delegate void GlGenVertexArrays(int n, int[] rv);
+        [GlEntryPoint("glGenVertexArrays", "glGenVertexArraysOES")]
+        public GlGenVertexArrays GenVertexArrays { get; }
+
+        public int GenVertexArray()
+        {
+            var rv = new int[1];
+            GenVertexArrays(1, rv);
+            return rv[0];
+        }
+
+        public delegate void GlBindVertexArray(int array);
+        [GlEntryPoint("glBindVertexArray", "glBindVertexArrayOES")]
+        public GlBindVertexArray BindVertexArray { get; }
+
+        public delegate int GlGetUniformLocation(int program, IntPtr name);
+        [GlEntryPoint("glGetUniformLocation")]
+        public GlGetUniformLocation GetUniformLocation { get; }
+
+        public int GetUniformLocationString(int program, string name)
+        {
+            using (var b = new Utf8Buffer(name))
+                return GetUniformLocation(program, b.DangerousGetHandle());
+        }
+        
+        public delegate void GlUniform1f(int location, float falue);
+        [GlEntryPoint("glUniform1f")]
+        public GlUniform1f Uniform1f { get; }
+
+        
+        public delegate void GlUniformMatrix4fv(int location, int count, bool transpose, void* value);
+        [GlEntryPoint("glUniformMatrix4fv")]
+        public GlUniformMatrix4fv UniformMatrix4fv { get; }
+        
+        public delegate void GlEnable(int what);
+        [GlEntryPoint("glEnable")]
+        public GlEnable Enable { get; }
+
+        public delegate void GlDeleteBuffer(int buffer);
+        [GlEntryPoint("glDeleteBuffer")]
+        public GlDeleteBuffer DeleteBuffer { get; }
+
+        public delegate void GlDeleteVertexArray(int array);
+        [GlEntryPoint("glDeleteVertexArray", "glDeleteVertexArrayOES")]
+        public GlDeleteVertexArray DeleteVertexArray { get; }
+
+        public delegate void GlDeleteProgram(int program);
+        [GlEntryPoint("glDeleteProgram")]
+        public GlDeleteProgram DeleteProgram { get; }
+
+        public delegate void GlDeleteShader(int shader);
+        [GlEntryPoint("glDeleteShader")]
+        public GlDeleteShader DeleteShader { get; }
+
+        
         // ReSharper restore UnassignedGetOnlyAutoProperty
     }
 }

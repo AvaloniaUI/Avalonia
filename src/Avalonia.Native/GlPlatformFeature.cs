@@ -49,7 +49,7 @@ namespace Avalonia.Native
             });
         }
 
-        public GlDisplayType Type => GlDisplayType.OpenGL2;
+        public GlDisplayType Type => GlDisplayType.OpenGl;
 
         public GlInterface GlInterface { get; }
 

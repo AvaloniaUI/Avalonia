@@ -10,7 +10,7 @@ namespace Avalonia.X11.Glx
         private readonly X11Info _x11;
         private readonly IntPtr _fbconfig;
         private readonly XVisualInfo* _visual;
-        public GlDisplayType Type => GlDisplayType.OpenGL2;
+        public GlDisplayType Type => GlDisplayType.OpenGl;
         public GlInterface GlInterface { get; }
         
         public XVisualInfo* VisualInfo => _visual;

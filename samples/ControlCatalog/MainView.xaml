@@ -14,6 +14,7 @@
         </Style>
     </Grid.Styles>  
     <TabControl Classes="sidebar" Name="Sidebar">
+      <TabItem Header="OpenGL"><pages:OpenGlPage/></TabItem>
       <TabItem Header="AutoCompleteBox"><pages:AutoCompleteBoxPage/></TabItem>
       <TabItem Header="Border"><pages:BorderPage/></TabItem>
       <TabItem Header="Button"><pages:ButtonPage/></TabItem>

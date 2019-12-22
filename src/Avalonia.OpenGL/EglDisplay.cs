@@ -81,7 +81,7 @@ namespace Avalonia.OpenGL
                     Attributes = new[] {EGL_NONE},
                     Api = EGL_OPENGL_API,
                     RenderableTypeBit = EGL_OPENGL_BIT,
-                    Type = GlDisplayType.OpenGL2
+                    Type = GlDisplayType.OpenGl
                 },
                 new
                 {
@@ -92,7 +92,7 @@ namespace Avalonia.OpenGL
                     },
                     Api = EGL_OPENGL_ES_API,
                     RenderableTypeBit = EGL_OPENGL_ES2_BIT,
-                    Type = GlDisplayType.OpenGLES2
+                    Type = GlDisplayType.OpenGLES
                 }
             })
             {
