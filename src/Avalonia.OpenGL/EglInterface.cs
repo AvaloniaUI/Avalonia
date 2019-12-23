@@ -136,9 +136,9 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("eglWaitClient")]
         public EglWaitGL WaitClient { get; }
         
-        public delegate bool EglWaitNative();
+        public delegate bool EglWaitNative(int engine);
         [GlEntryPoint("eglWaitNative")]
-        public EglWaitGL WaitNative { get; }
+        public EglWaitNative WaitNative { get; }
         
         public delegate IntPtr EglQueryString(IntPtr display, int i);
         

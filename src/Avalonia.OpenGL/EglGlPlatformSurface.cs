@@ -61,7 +61,7 @@ namespace Avalonia.OpenGL
                     var restoreContext = _context.MakeCurrent(_glSurface);
                     _display.EglInterface.WaitClient();
                     _display.EglInterface.WaitGL();
-                    _display.EglInterface.WaitNative();
+                    _display.EglInterface.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
                     
                     return new Session(_display, _context, _glSurface, _info, l, restoreContext);
                 }
@@ -101,7 +101,7 @@ namespace Avalonia.OpenGL
                     _glSurface.SwapBuffers();
                     _display.EglInterface.WaitClient();
                     _display.EglInterface.WaitGL();
-                    _display.EglInterface.WaitNative();
+                    _display.EglInterface.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
                     _restoreContext.Dispose();
                     _lock.Dispose();
                 }
