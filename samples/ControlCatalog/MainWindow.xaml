@@ -45,10 +45,10 @@
   <DockPanel LastChildFill="True">
     <Menu Name="MainMenu" DockPanel.Dock="Top">
       <MenuItem Header="File">
-        <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
+        <MenuItem Header="Exit" Command="{Binding Exit}" />
       </MenuItem>
       <MenuItem Header="Help">
-        <MenuItem Header="About" Command="{Binding AboutCommand}" />
+        <MenuItem Header="About" Command="{Binding About}" />
       </MenuItem>
     </Menu>
     <local:MainView />

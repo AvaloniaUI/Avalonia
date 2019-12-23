@@ -1,5 +1,7 @@
 using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
+using Avalonia.Dialogs;
 using JetBrains.Annotations;
 using ReactiveUI;
 
@@ -47,6 +49,21 @@ namespace ControlCatalog.ViewModels
                     "Native Notifications are not supported on this platform!",
                     NotificationType.Error));
             }
+        }
+
+        public async void About()
+        {
+            var dialog = new AboutAvaloniaDialog();
+
+            var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
+                ?.MainWindow;
+
+            await dialog.ShowDialog(mainWindow);
+        }
+
+        public void Exit()
+        {
+            (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
         }
 
         [UsedImplicitly]
