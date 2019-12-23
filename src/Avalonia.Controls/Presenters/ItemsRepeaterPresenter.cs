@@ -130,9 +130,14 @@ namespace Avalonia.Controls.Presenters
 
         private bool MoveFocusTo(int index)
         {
-            var container = GetOrCreateElement(index);
-            FocusManager.Instance?.Focus(container, NavigationMethod.Directional);
-            return container != null;
+            if (index >= 0 && index < ItemsSourceView.Count)
+            {
+                var container = GetOrCreateElement(index);
+                FocusManager.Instance?.Focus(container, NavigationMethod.Directional);
+                return container != null;
+            }
+
+            return false;
         }
 
         private bool TryMoveFocusDirection(int index, NavigationDirection direction)
