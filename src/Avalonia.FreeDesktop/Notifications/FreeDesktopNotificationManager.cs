@@ -48,29 +48,6 @@ namespace Avalonia.FreeDesktop.Notifications
 
         public async void Show(INotification notification)
         {
-            throw new NotSupportedException("Use the async version");
-        }
-
-        private async void Connect()
-        {
-            _isConnected = await
-                Connection.Session.IsServiceActiveAsync(NotificationsService);
-        }
-
-        private async void SetupWatcherTasks()
-        {
-            _actionWatcher = await _proxy.WatchActionInvokedAsync(
-                OnNotificationActionInvoked,
-                OnNotificationActionInvokedError
-            );
-            _closeNotificationWatcher = await _proxy.WatchNotificationClosedAsync(
-                OnNotificationClosed,
-                OnNotificationClosedError
-            );
-        }
-
-        private async Task ShowInternalAsync(INotification notification)
-        {
             if (!_isConnected)
             {
                 throw new InvalidOperationException();
@@ -89,6 +66,24 @@ namespace Avalonia.FreeDesktop.Notifications
             ).ConfigureAwait(false);
 
             _notifications[id] = notification;
+        }
+
+        private async void Connect()
+        {
+            _isConnected = await
+                Connection.Session.IsServiceActiveAsync(NotificationsService);
+        }
+
+        private async void SetupWatcherTasks()
+        {
+            _actionWatcher = await _proxy.WatchActionInvokedAsync(
+                OnNotificationActionInvoked,
+                OnNotificationActionInvokedError
+            );
+            _closeNotificationWatcher = await _proxy.WatchNotificationClosedAsync(
+                OnNotificationClosed,
+                OnNotificationClosedError
+            );
         }
 
         private static int GetExpirationInMsFromNotification(INotification notification)

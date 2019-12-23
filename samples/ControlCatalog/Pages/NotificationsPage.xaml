@@ -3,8 +3,8 @@
              x:Class="ControlCatalog.Pages.NotificationsPage">
   <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Left">
         <TextBlock Classes="h1">Notifications</TextBlock>
-        <Button Content="Show Standard Managed Notification" Command="{Binding ShowManagedNotificationCommand}" />
-        <Button Content="Show Custom Managed Notification" Command="{Binding ShowCustomManagedNotificationCommand}" />
-        <Button Content="Show Native Notification" Command="{Binding ShowNativeNotificationCommand}" />
+        <Button Content="Show Standard Managed Notification" Command="{Binding ShowManagedNotification}" />
+        <Button Content="Show Custom Managed Notification" Command="{Binding ShowCustomManagedNotification}" />
+        <Button Content="Show Native Notification" Command="{Binding ShowNativeNotification}" />
     </StackPanel>
 </UserControl>
