@@ -131,11 +131,7 @@ namespace Avalonia.OpenGL
             int texTarget, int texture, int level);
         [GlEntryPoint("glFramebufferTexture2D")]
         public GlFramebufferTexture2D FramebufferTexture2D { get; }
-
-        public delegate void GlDrawBuffers(int n, int[] bufs);
-        [GlEntryPoint("glDrawBuffers")]
-        public GlDrawBuffers DrawBuffers { get; }
-
+        
         public delegate int GlCreateShader(int shaderType);
         [GlEntryPoint("glCreateShader")]
         public GlCreateShader CreateShader { get; }
