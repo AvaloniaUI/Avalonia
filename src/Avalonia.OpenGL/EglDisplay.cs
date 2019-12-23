@@ -121,9 +121,11 @@ namespace Avalonia.OpenGL
                     _contextAttributes = cfg.Attributes;
                     _surfaceType = surfaceType;
                     Type = cfg.Type;
+                    goto Found;
                 }
-            }
 
+            }
+            Found:
             if (_contextAttributes == null)
                 throw new OpenGlException("No suitable EGL config was found");
                
@@ -155,7 +157,6 @@ namespace Avalonia.OpenGL
             if (surf == IntPtr.Zero)
                 throw OpenGlException.GetFormattedException("eglCreatePBufferSurface", _egl);
             var rv = new EglContext(this, _egl, ctx, new EglSurface(this, _egl, surf));
-            rv.MakeCurrent(null);
             return rv;
         }
 
