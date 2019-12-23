@@ -68,7 +68,7 @@ namespace ControlCatalog.Pages
             $"#version {(DisplayType == GlDisplayType.OpenGl ? 120 : 100)}\n" + shader;
 
         private string WithVersionAndPrecision(string shader, string precision) =>
-            WithVersion(DisplayType == GlDisplayType.OpenGLES ? $"precision {precision}\n{shader}" : shader);
+            WithVersion(DisplayType == GlDisplayType.OpenGLES ? $"precision {precision};\n{shader}" : shader);
 
         private string VertexShaderSource => WithVersion(@"
         attribute vec3 aPos;
@@ -98,13 +98,13 @@ namespace ControlCatalog.Pages
         void main()
         {
             float y = (VecPos.y - uMinY) / (uMaxY - uMinY);
-            vec3 objectColor = vec3((1 - y), 0.40 +  y / 4, y * 0.75+0.25);
+            vec3 objectColor = vec3((1.0 - y), 0.40 +  y / 4.0, y * 0.75+0.25);
             //vec3 objectColor = normalize(FragPos);
 
 
             float ambientStrength = 0.3;
             vec3 lightColor = vec3(1.0, 1.0, 1.0);
-            vec3 lightPos = vec3(uMaxY * 2, uMaxY * 2, uMaxY * 2);
+            vec3 lightPos = vec3(uMaxY * 2.0, uMaxY * 2.0, uMaxY * 2.0);
             vec3 ambient = ambientStrength * lightColor;
 
 
@@ -187,6 +187,7 @@ namespace ControlCatalog.Pages
 
         protected unsafe override void OnOpenGlInit(GlInterface GL, int fb)
         {
+            CheckError(GL);
             // Load the source of the vertex shader and compile it.
             _vertexShader = GL.CreateShader(GL_VERTEX_SHADER);
             Console.WriteLine(GL.CompileShaderAndGetError(_vertexShader, VertexShaderSource));
