@@ -172,6 +172,18 @@ enum AvnWindowEdge
     WindowEdgeSouthEast
 };
 
+
+typedef void (*AvnNotificationActionCallback)();
+typedef void (*AvnNotificationCloseCallback)();
+
+struct AvnNotification {
+    const char* TitleUtf8;
+    const char* TextUtf8;
+    int durationMs;
+    AvnNotificationActionCallback ActionCallback;
+    AvnNotificationCloseCallback CloseCallback;
+};
+
 AVNCOM(IAvaloniaNativeFactory, 01) : IUnknown
 {
 public:
@@ -410,6 +422,11 @@ AVNCOM(IAvnAppMenuItem, 19) : IUnknown
     virtual HRESULT SetTitle (void* utf8String) = 0;
     virtual HRESULT SetGesture (void* utf8String, AvnInputModifiers modifiers) = 0;
     virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) = 0;
+};
+
+AVNCOM(IAvnNotificationManager, 20) : IUnknown
+{
+    virtual bool ShowNotification(AvnNotification* notification) = 0;
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();
