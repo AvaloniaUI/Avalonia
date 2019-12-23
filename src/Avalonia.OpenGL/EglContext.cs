@@ -35,21 +35,28 @@ namespace Avalonia.OpenGL
             private readonly IntPtr _display;
             private IntPtr _context, _read, _draw;
 
-            public RestoreContext(EglInterface egl)
+            public RestoreContext(EglInterface egl, IntPtr defDisplay)
             {
                 _egl = egl;
                 _display = _egl.GetCurrentDisplay();
+                if (_display == IntPtr.Zero)
+                    _display = defDisplay;
                 _context = _egl.GetCurrentContext();
                 _read = _egl.GetCurrentSurface(EGL_READ);
                 _draw = _egl.GetCurrentSurface(EGL_DRAW);
             }
 
-            public void Dispose() => _egl.MakeCurrent(_display, _draw, _read, _context);
+            public void Dispose() 
+            {
+                _egl.MakeCurrent(_display, _draw, _read, _context);
+            }
+
         }
         
         public IDisposable MakeCurrent()
         {
-            var old = new RestoreContext(_egl);
+            var old = new RestoreContext(_egl, _disp.Handle);
+            _egl.MakeCurrent(_disp.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
             if (!_egl.MakeCurrent(_disp.Handle, IntPtr.Zero, IntPtr.Zero, Context))
                 throw OpenGlException.GetFormattedException("eglMakeCurrent", _egl);
             return old;
@@ -57,8 +64,9 @@ namespace Avalonia.OpenGL
         
         public IDisposable MakeCurrent(EglSurface surface)
         {
-            var old = new RestoreContext(_egl);
+            var old = new RestoreContext(_egl, _disp.Handle);
             var surf = surface ?? OffscreenSurface;
+            _egl.MakeCurrent(_disp.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
             if (!_egl.MakeCurrent(_disp.Handle, surf.DangerousGetHandle(), surf.DangerousGetHandle(), Context))
                 throw OpenGlException.GetFormattedException("eglMakeCurrent", _egl);
             return old;
