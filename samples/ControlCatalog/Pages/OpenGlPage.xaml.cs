@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -6,6 +7,7 @@ using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.OpenGL;
+using Avalonia.Threading;
 using static Avalonia.OpenGL.GlConsts;
 // ReSharper disable StringLiteralTypo
 
@@ -52,9 +54,22 @@ namespace ControlCatalog.Pages
             set => SetAndRaise(RollProperty, ref _roll, value);
         }
 
+
+        private float _disco;
+
+        public static readonly DirectProperty<OpenGlPageControl, float> DiscoProperty =
+            AvaloniaProperty.RegisterDirect<OpenGlPageControl, float>("Disco", o => o.Disco, (o, v) => o.Disco = v);
+
+        public float Disco
+        {
+            get => _disco;
+            set => SetAndRaise(DiscoProperty, ref _disco, value);
+        }
+
+
         static OpenGlPageControl()
         {
-            AffectsRender<OpenGlPageControl>(YawProperty, PitchProperty, RollProperty);
+            AffectsRender<OpenGlPageControl>(YawProperty, PitchProperty, RollProperty, DiscoProperty);
         }
 
         private int _vertexShader;
@@ -80,9 +95,20 @@ namespace ControlCatalog.Pages
         varying vec3 FragPos;
         varying vec3 VecPos;  
         varying vec3 Normal;
+        uniform float uTime;
+        uniform float uDisco;
         void main()
         {
-            gl_Position = uProjection * uView * uModel * vec4(aPos, 1.0);
+            float discoScale = sin(uTime*10)/10;
+            float distortionX = 1 + uDisco * cos(uTime*20)/10;
+            
+            float scale = 1 + uDisco * discoScale;
+            
+            vec3 scaledPos = aPos;
+            scaledPos.x = scaledPos.x * distortionX;
+            
+            scaledPos *= scale;
+            gl_Position = uProjection * uView * uModel * vec4(scaledPos, 1.0);
             FragPos = vec3(uModel * vec4(aPos, 1.0));
             VecPos = aPos;
             Normal = normalize(vec3(uModel * vec4(aNormal, 1.0)));
@@ -95,12 +121,22 @@ namespace ControlCatalog.Pages
         varying vec3 Normal;
         uniform float uMaxY;
         uniform float uMinY;
+        uniform float uTime;
+        uniform float uDisco;
+
         void main()
         {
             float y = (VecPos.y - uMinY) / (uMaxY - uMinY);
-            vec3 objectColor = vec3((1.0 - y), 0.40 +  y / 4.0, y * 0.75+0.25);
-            //vec3 objectColor = normalize(FragPos);
+            float c = cos(atan(VecPos.x, VecPos.z)*20.0+uTime*40.0+y*50);
+            float s = sin(-atan(VecPos.z, VecPos.x)*20.0-uTime*20.0-y*30);
 
+            vec3 discoColor = vec3(
+                0.5 + abs(0.5-y)*cos(uTime*10),
+                0.25 + (smoothstep(0.3, 0.8, y)*(0.5-c/4)),
+                0.25 + abs((smoothstep(0.1, 0.4, y)*(0.5-s/4))));
+
+            vec3 objectColor = vec3((1.0 - y), 0.40 +  y / 4.0, y * 0.75+0.25);
+            objectColor = objectColor * (1-uDisco) + discoColor * uDisco;
 
             float ambientStrength = 0.3;
             vec3 lightColor = vec3(1.0, 1.0, 1.0);
@@ -251,6 +287,7 @@ namespace ControlCatalog.Pages
             GL.DeleteShader(_vertexShader);
         }
 
+        static Stopwatch St = Stopwatch.StartNew();
         protected override unsafe void OnOpenGlRender(GlInterface gl, int fb)
         {
             gl.ClearColor(0, 0, 0, 0);
@@ -275,14 +312,20 @@ namespace ControlCatalog.Pages
             var projectionLoc = GL.GetUniformLocationString(_shaderProgram, "uProjection");
             var maxYLoc = GL.GetUniformLocationString(_shaderProgram, "uMaxY");
             var minYLoc = GL.GetUniformLocationString(_shaderProgram, "uMinY");
+            var timeLoc = GL.GetUniformLocationString(_shaderProgram, "uTime");
+            var discoLoc = GL.GetUniformLocationString(_shaderProgram, "uDisco");
             GL.UniformMatrix4fv(modelLoc, 1, false, &model);
             GL.UniformMatrix4fv(viewLoc, 1, false, &view);
             GL.UniformMatrix4fv(projectionLoc, 1, false, &projection);
             GL.Uniform1f(maxYLoc, _maxY);
             GL.Uniform1f(minYLoc, _minY);
+            GL.Uniform1f(timeLoc, (float)St.Elapsed.TotalSeconds);
+            GL.Uniform1f(discoLoc, _disco);
             GL.DrawElements(GL_TRIANGLES, _indices.Length, GL_UNSIGNED_SHORT, IntPtr.Zero);
 
             CheckError(GL);
+            if (_disco > 0.01)
+                Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
         }
     }
 }

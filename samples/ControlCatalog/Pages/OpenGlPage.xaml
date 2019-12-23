@@ -12,6 +12,14 @@
         <Slider Value="{Binding Pitch, Mode=TwoWay, ElementName=GL}" Maximum="10"/>
         <TextBlock>Roll</TextBlock>
         <Slider Value="{Binding Roll, Mode=TwoWay, ElementName=GL}" Maximum="10"/>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock FontWeight="Bold" Foreground="#C000C0">D</TextBlock>
+          <TextBlock FontWeight="Bold" Foreground="#00C090">I</TextBlock>
+          <TextBlock FontWeight="Bold" Foreground="#90C000">S</TextBlock>
+          <TextBlock FontWeight="Bold" Foreground="#C09000">C</TextBlock>
+          <TextBlock FontWeight="Bold" Foreground="#00C090">O</TextBlock>
+        </StackPanel>
+        <Slider Value="{Binding Disco, Mode=TwoWay, ElementName=GL}" Maximum="1"/>
       </StackPanel>
     </Grid>
   </Grid>
