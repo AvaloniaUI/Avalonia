@@ -1123,7 +1123,13 @@ namespace Avalonia.Win32.Interop
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
         internal static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, out int finalEffect);
 
+        [DllImport("shell32.dll", SetLastError = true)]
+        internal static extern void SetCurrentProcessExplicitAppUserModelID(
+            [MarshalAs(UnmanagedType.LPWStr)] string AppID);
 
+        [DllImport("shell32.dll")]
+        internal static extern void GetCurrentProcessExplicitAppUserModelID(
+            [Out(), MarshalAs(UnmanagedType.LPWStr)] out string AppID);
 
         public enum MONITOR
         {

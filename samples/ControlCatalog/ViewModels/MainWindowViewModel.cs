@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
@@ -40,7 +41,9 @@ namespace ControlCatalog.ViewModels
                 _nativeNotificationManager.Show(new Notification(
                     "Native",
                     "Native Notifications are finally here!",
-                    NotificationType.Success));
+                    NotificationType.Success,
+                    onClick: NativeNotficationClicked,
+                    onClose: NativeNotificationClosed));
             }
             else
             {
@@ -49,6 +52,16 @@ namespace ControlCatalog.ViewModels
                     "Native Notifications are not supported on this platform!",
                     NotificationType.Error));
             }
+        }
+
+        private static void NativeNotificationClosed()
+        {
+           Console.WriteLine("Native notification closed.");
+        }
+
+        private static void NativeNotficationClicked()
+        {
+            Console.WriteLine("Native notification clicked.");
         }
 
         public async void About()

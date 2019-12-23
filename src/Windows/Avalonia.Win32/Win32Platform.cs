@@ -9,8 +9,8 @@ using System.IO;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -19,19 +19,22 @@ using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using Avalonia.Win32.Notifications;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia
 {
     public static class Win32ApplicationExtensions
     {
-        public static T UseWin32<T>(
-            this T builder) 
-                where T : AppBuilderBase<T>, new()
+        public static T UseWin32<T>(this T builder) 
+            where T : AppBuilderBase<T>, new()
         {
             return builder.UseWindowingSubsystem(
-                () => Win32.Win32Platform.Initialize(
-                    AvaloniaLocator.Current.GetService<Win32PlatformOptions>() ?? new Win32PlatformOptions()),
+                () =>
+                {
+                    Win32.Win32Platform.Initialize(
+                        AvaloniaLocator.Current.GetService<Win32PlatformOptions>() ?? new Win32PlatformOptions());
+                },
                 "Win32");
         }
     }
@@ -47,7 +50,7 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
+    internal class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static Thread _uiThread;
@@ -92,6 +95,13 @@ namespace Avalonia.Win32
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance)
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider());
+
+            if (Environment.OSVersion.Version.Major == 10)
+            {
+                AvaloniaLocator.CurrentMutable
+                    .Bind<INotificationManager>().ToConstant(
+                        new Win10NotificationManager());
+            }
 
             if (options.AllowEglInitialization)
                 Win32GlManager.Initialize();
