@@ -24,6 +24,7 @@ struct IAvnGlSurfaceRenderTarget;
 struct IAvnGlSurfaceRenderingSession;
 struct IAvnAppMenu;
 struct IAvnAppMenuItem;
+struct IAvnNotificationManager;
 
 struct AvnSize
 {
@@ -202,6 +203,7 @@ public:
     virtual HRESULT CreateMenu (IAvnAppMenu** ppv) = 0;
     virtual HRESULT CreateMenuItem (IAvnAppMenuItem** ppv) = 0;
     virtual HRESULT CreateMenuItemSeperator (IAvnAppMenuItem** ppv) = 0;
+    virtual HRESULT CreateNotificationManager(IAvnNotificationManager** ppv) = 0;
 };
 
 AVNCOM(IAvnString, 17) : IUnknown

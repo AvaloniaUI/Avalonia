@@ -48,12 +48,10 @@ namespace Avalonia.Native
                 var lib = loader.LoadLibrary(options.AvaloniaNativeLibraryPath);
                 var proc = loader.GetProcAddress(lib, "CreateAvaloniaNative", false);
                 var d = Marshal.GetDelegateForFunctionPointer<CreateAvaloniaNativeDelegate>(proc);
-
-
+                
                 return Initialize(d(), options);
             }
-            else
-                return Initialize(CreateAvaloniaNative(), options);
+            return Initialize(CreateAvaloniaNative(), options);
         }
 
         public void SetupApplicationMenuExporter ()

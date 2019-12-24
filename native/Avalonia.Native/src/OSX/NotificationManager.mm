@@ -36,3 +36,11 @@ public:
     }
     
 };
+
+extern IAvnNotificationManager* CreateNotificationManager()
+{
+    @autoreleasepool
+    {
+        return new NotificationManager();
+    }
+}

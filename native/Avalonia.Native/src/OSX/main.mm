@@ -266,6 +266,12 @@ public:
         
         return S_OK;
     }
+    
+    virtual HRESULT CreateNotificationManager(IAvnNotificationManager** ppv) override
+    {
+        *ppv = ::CreateNotificationManager();
+        return S_OK;
+    }
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
