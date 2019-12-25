@@ -1,5 +1,33 @@
 #include "common.h"
 #include <Cocoa/Cocoa.h>
+#import <objc/runtime.h>
+
+@implementation NSBundle (FakeBundleIdentifier)
+
+- (NSString *)__bundleIdentifier;
+{
+    if (self == [NSBundle mainBundle]) {
+        return @"com.avalonia.native.osx";
+    } else {
+        return [self __bundleIdentifier];
+    }
+}
+
+@end
+
+//It is required to install a bundle identifier in order to use the notification center.
+//Otherwise [NSUserNotificationCenter defaultUserNotificationCenter] will be nil.
+//https://github.com/munki/munki/blob/master/code/apps/munki-notifier/munki-notifier/AppDelegate.m
+static BOOL InstallFakeBundleIdentifierHook()
+{
+    Class classImpl = objc_getClass("NSBundle");
+    if (classImpl) {
+        method_exchangeImplementations(class_getInstanceMethod(classImpl, @selector(bundleIdentifier)),
+                                       class_getInstanceMethod(classImpl, @selector(__bundleIdentifier)));
+        return YES;
+    }
+    return NO;
+}
 
 @interface AvnAppDelegate : NSObject<NSApplicationDelegate>
 @end
@@ -23,31 +51,9 @@ extern NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationA
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
     [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-}
-
-- (void)userNotificationCenter:(NSUserNotificationCenter *)center
-       didActivateNotification:(NSUserNotification *)notification{
     
-    if (notification.activationType != NSUserNotificationActivationTypeContentsClicked &&
-        notification.activationType != NSUserNotificationActivationTypeActionButtonClicked) {
-        return;
-    }
-    
-    NSValue* actionCallbackValue = (NSValue*) notification.userInfo[@"actionCallback"];
-    
-    if (actionCallbackValue.pointerValue) {
-        AvnNotificationActionCallback actionCallback =
-            (AvnNotificationActionCallback) actionCallbackValue.pointerValue;
-        actionCallback();
-    }
-    
-    //TODO: I can't really find a proper event for closing.
-    NSValue* closeCallbackValue = (NSValue*) notification.userInfo[@"closeCallback"];
-    
-    if (closeCallbackValue.pointerValue) {
-        AvnNotificationActionCallback closeCallback =
-            (AvnNotificationCloseCallback) closeCallbackValue.pointerValue;
-        closeCallback();
+    @autoreleasepool {
+        InstallFakeBundleIdentifierHook();
     }
 }
 

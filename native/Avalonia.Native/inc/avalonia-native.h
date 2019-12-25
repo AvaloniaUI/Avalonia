@@ -174,15 +174,14 @@ enum AvnWindowEdge
 };
 
 
-typedef void (*AvnNotificationActionCallback)();
-typedef void (*AvnNotificationCloseCallback)();
+typedef void (*AvnNotificationActionCallback)(int);
+typedef void (*AvnNotificationCloseCallback)(int);
 
 struct AvnNotification {
+    int identifier;
     const char* TitleUtf8;
     const char* TextUtf8;
     int durationMs;
-    AvnNotificationActionCallback ActionCallback;
-    AvnNotificationCloseCallback CloseCallback;
 };
 
 AVNCOM(IAvaloniaNativeFactory, 01) : IUnknown
@@ -428,6 +427,8 @@ AVNCOM(IAvnAppMenuItem, 19) : IUnknown
 
 AVNCOM(IAvnNotificationManager, 20) : IUnknown
 {
+    virtual void SetCloseCallback(AvnNotificationCloseCallback callback) = 0;
+    virtual void SetActionCallback(AvnNotificationActionCallback callback) = 0;
     virtual bool ShowNotification(AvnNotification* notification) = 0;
 };
 

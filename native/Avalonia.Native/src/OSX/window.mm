@@ -3,7 +3,7 @@
 
 #include "common.h"
 #include "window.h"
-#include "KeyTransform.h"
+#include "key_transform.h"
 #include "cursor.h"
 #include "menu.h"
 #include <OpenGL/gl.h>

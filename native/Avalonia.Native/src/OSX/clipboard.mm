@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 #include "common.h"
-#include "AvnString.h"
+#include "avnstring.h"
 
 class Clipboard : public ComSingleObject<IAvnClipboard, &IID_IAvnClipboard>
 {
