@@ -31,10 +31,10 @@
                                               Grid.Column="1"/>
                         </Grid>
                     </Border>
-                    <ItemsPresenter Name="PART_ItemsPresenter"
+                    <ItemsRepeaterPresenter Name="PART_ItemsPresenter"
                                     IsVisible="{TemplateBinding IsExpanded}"
                                     Items="{TemplateBinding Items}"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}"/>
+                                    Layout="{TemplateBinding Layout}"/>
                 </StackPanel>
             </ControlTemplate>
         </Setter>

@@ -10,6 +10,8 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
@@ -196,6 +198,45 @@ namespace Avalonia.Controls
         public void UnselectAll()
         {
             SelectedItems.Clear();
+        }
+
+        /// <summary>
+        /// Creates a container for a <see cref="TreeView"/> or <see cref="TreeViewItem"/>.
+        /// </summary>
+        /// <param name="owner">The owner TreeView or TreeViewItem.</param>
+        /// <param name="data">The item data.</param>
+        /// <returns>The container control.</returns>
+        internal static TreeViewItem CreateContainer(ItemsControl owner, object data)
+        {
+            if (data is TreeViewItem t)
+            {
+                return t;
+            }
+            else
+            {
+                var dataTemplate = owner.FindDataTemplate(data, owner.ItemTemplate) ?? FuncDataTemplate.Default;
+                var template = dataTemplate as ITreeDataTemplate ?? new TreeDataTemplateAdapter(dataTemplate);
+                var result = new TreeViewItem();
+
+                result.SetValue(
+                    TreeViewItem.HeaderProperty,
+                    template.Build(data),
+                    BindingPriority.Style);
+
+                var itemsSelector = template.ItemsSelector(data);
+
+                if (itemsSelector != null)
+                {
+                    BindingOperations.Apply(result, ItemsProperty, itemsSelector, null);
+                }
+
+                return result;
+            }
+        }
+
+        protected override IControl CreateContainer(object data)
+        {
+            return CreateContainer(this, data);
         }
 
         /// <summary>
@@ -849,6 +890,16 @@ namespace Avalonia.Controls
             {
                 items.Add(i);
             }
+        }
+
+        class TreeDataTemplateAdapter : ITreeDataTemplate
+        {
+            private readonly IDataTemplate _inner;
+            public TreeDataTemplateAdapter(IDataTemplate inner) => _inner = inner;
+            public IControl Build(object param) => _inner.Build(param);
+            public bool SupportsRecycling => _inner.SupportsRecycling;
+            public bool Match(object data) => _inner.Match(data);
+            public InstancedBinding ItemsSelector(object item) => null;
         }
     }
 }

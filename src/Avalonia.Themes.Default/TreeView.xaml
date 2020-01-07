@@ -12,9 +12,9 @@
         <ScrollViewer Background="{TemplateBinding Background}"
                       HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                       VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
-          <ItemsPresenter Name="PART_ItemsPresenter"
+          <ItemsRepeaterPresenter Name="PART_ItemsPresenter"
                           Items="{TemplateBinding Items}"
-                          ItemsPanel="{TemplateBinding ItemsPanel}"
+                          Layout="{TemplateBinding Layout}"
                           Margin="{TemplateBinding Padding}"/>
         </ScrollViewer>
       </Border>
