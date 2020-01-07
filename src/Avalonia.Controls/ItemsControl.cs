@@ -186,6 +186,42 @@ namespace Avalonia.Controls
         /// </remarks>
         public event EventHandler<ElementPreparedEventArgs> ContainerPrepared;
 
+        /// <summary>
+        /// Gets the container control for the specified index in <see cref="Items"/>, if realized.
+        /// </summary>
+        /// <param name="index">The item index.</param>
+        /// <returns>The container control, or null if the item is not realized.</returns>
+        public IControl ContainerFromIndex(int index)
+        {
+            if (Presenter is IItemsRepeaterPresenter presenter)
+            {
+                return presenter.TryGetElement(index);
+            }
+            else
+            {
+                return ItemContainerGenerator?.ContainerFromIndex(index);
+            }
+        }
+
+        /// <summary>
+        /// Gets the index in <see cref="Items"/> of the specified container control.
+        /// </summary>
+        /// <param name="container">The container control.</param>
+        /// <returns>The index of the container control, or -1 if the control is not a container.</returns>
+        public int IndexFromContainer(IControl container)
+        {
+            container = container ?? throw new ArgumentNullException(nameof(container));
+
+            if (Presenter is IItemsRepeaterPresenter presenter)
+            {
+                return presenter.GetElementIndex(container);
+            }
+            else
+            {
+                return ItemContainerGenerator?.IndexFromContainer(container) ?? -1;
+            }
+        }
+
         /// <inheritdoc/>
         IControl IItemsPresenterHost.CreateContainer(object data) => CreateContainer(data);
 

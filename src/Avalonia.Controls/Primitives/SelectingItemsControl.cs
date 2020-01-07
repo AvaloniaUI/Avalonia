@@ -734,26 +734,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private IControl ContainerFromIndex(int index)
-        {
-            if (Presenter is IItemsRepeaterPresenter presenter)
-            {
-                return presenter.TryGetElement(index);
-            }
-
-            return ItemContainerGenerator?.ContainerFromIndex(index);
-        }
-
-        private int IndexFromContainer(IControl container)
-        {
-            if (Presenter is IItemsRepeaterPresenter presenter)
-            {
-                return presenter.GetElementIndex(container);
-            }
-
-            return ItemContainerGenerator?.IndexFromContainer(container) ?? -1;
-        }
-
         /// <summary>
         /// Called when the currently selected item is lost and the selection must be changed
         /// depending on the <see cref="SelectionMode"/> property.
