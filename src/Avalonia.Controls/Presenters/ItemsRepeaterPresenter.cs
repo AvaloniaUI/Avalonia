@@ -194,7 +194,6 @@ namespace Avalonia.Controls.Presenters
 
         public void ItemsChanged(NotifyCollectionChangedEventArgs e)
         {
-            throw new NotImplementedException();
         }
     }
 }
