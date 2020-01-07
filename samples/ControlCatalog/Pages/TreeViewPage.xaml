@@ -10,7 +10,12 @@
                 HorizontalAlignment="Center"
                 Spacing="16">
       <StackPanel Orientation="Vertical" Spacing="8">
-        <TreeView Items="{Binding Items}" SelectedItems="{Binding SelectedItems}" SelectionMode="{Binding SelectionMode}" Width="250" Height="350">
+        <TreeView Name="treeView"
+                  Items="{Binding Items}"
+                  SelectedItems="{Binding SelectedItems}"
+                  SelectionMode="{Binding SelectionMode}"
+                  Width="250"
+                  Height="350">
           <TreeView.ItemTemplate>
             <TreeDataTemplate ItemsSource="{Binding Children}">
               <TextBlock Text="{Binding Header}"/>
@@ -28,6 +33,7 @@
           <ComboBoxItem>Toggle</ComboBoxItem>
           <ComboBoxItem>AlwaysSelected</ComboBoxItem>
         </ComboBox>
+        <TextBlock Text="{Binding ContainerCount, StringFormat=\{0\} Containers Materialized}"/>
       </StackPanel>
     </StackPanel>
   </StackPanel>
