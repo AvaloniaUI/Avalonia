@@ -56,7 +56,7 @@ namespace Avalonia.Media.Text
 
             var firstGlyphRun = new GlyphRun(
                 TextFormat.Typeface.GlyphTypeface,
-                TextFormat.FontSize,
+                TextFormat.FontRenderingEmSize,
                 GlyphRun.GlyphIndices.Take(glyphCount),
                 GlyphRun.GlyphAdvances.Take(glyphCount),
                 GlyphRun.GlyphOffsets.Take(glyphCount),
@@ -67,7 +67,7 @@ namespace Avalonia.Media.Text
 
             var secondGlyphRun = new GlyphRun(
                 TextFormat.Typeface.GlyphTypeface,
-                TextFormat.FontSize,
+                TextFormat.FontRenderingEmSize,
                 GlyphRun.GlyphIndices.Skip(glyphCount),
                 GlyphRun.GlyphAdvances.Skip(glyphCount),
                 GlyphRun.GlyphOffsets.Skip(glyphCount),

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Media.Text;
 
 namespace Avalonia.Media
@@ -161,36 +162,274 @@ namespace Avalonia.Media
                 Constraint, Spans));
 
         /// <summary>
-        /// Hit tests a point in the text.
+        ///     Hit tests the specified point.
         /// </summary>
-        /// <param name="point">The point.</param>
-        /// <returns>
-        /// A <see cref="TextHitTestResult"/> describing the result of the hit test.
-        /// </returns>
+        /// <param name="point">The point to hit test against.</param>
+        /// <returns></returns>
         public TextHitTestResult HitTestPoint(Point point)
         {
-            return TextLayout.HitTestPoint(point);
+            if (_text.Length == 0)
+            {
+                return new TextHitTestResult();
+            }
+
+            if (point == default)
+            {
+                return new TextHitTestResult(new CharacterHit(), point, true, false);
+            }
+
+            GlyphRun currentGlyphRun = null;
+            var currentX = 0.0;
+            var currentY = 0.0;
+            var characterHit = new CharacterHit(_text.Length);
+            var isInside = false;
+            var isTrailing = false;
+
+            foreach (var currentLine in TextLayout.TextLines)
+            {
+                currentX = 0;
+
+                if (point.Y < currentY + currentLine.LineMetrics.Size.Height)
+                {
+                    currentX = currentLine.LineMetrics.BaselineOrigin.X;
+
+                    if (point.X < 0.0)
+                    {
+                        currentGlyphRun = currentLine.TextRuns.FirstOrDefault()?.GlyphRun;
+
+                        if (currentGlyphRun != null)
+                        {
+                            characterHit =
+                                    currentGlyphRun.GetPreviousCaretCharacterHit(
+                                        new CharacterHit(currentGlyphRun.Characters.Start));
+                        }
+                        else
+                        {
+                            characterHit = new CharacterHit(currentLine.Text.Start);
+                        }
+
+                        break;
+                    }
+
+                    if (point.X > currentLine.LineMetrics.Size.Width)
+                    {
+                        currentGlyphRun = currentLine.TextRuns.LastOrDefault()?.GlyphRun;
+
+                        if (currentGlyphRun != null)
+                        {
+                            characterHit =
+                                currentGlyphRun.FindNearestCharacterHit(currentGlyphRun.Characters.End, out var width);
+
+                            isTrailing = width > 0;
+
+                            currentX += currentGlyphRun.Bounds.Width;
+                        }
+                        else
+                        {
+                            characterHit = new CharacterHit(currentLine.Text.End + 1);
+                        }
+
+                        break;
+                    }
+
+                    foreach (var currentRun in currentLine.TextRuns)
+                    {
+                        if (currentX + currentRun.GlyphRun.Bounds.Width < point.X)
+                        {
+                            currentX += currentRun.GlyphRun.Bounds.Width;
+
+                            continue;
+                        }
+
+                        var distance = point.X - currentX;
+
+                        currentGlyphRun = currentRun.GlyphRun;
+
+                        characterHit = currentGlyphRun.GetCharacterHitFromDistance(distance, out isInside);
+
+                        currentGlyphRun.FindNearestCharacterHit(characterHit.FirstCharacterIndex, out var width);
+
+                        isTrailing = width > 0.0 && characterHit.TrailingLength > 0;
+
+                        break;
+                    }
+                }
+
+                currentY += currentLine.LineMetrics.Size.Height;
+            }
+
+            if (currentGlyphRun == null)
+            {
+                currentGlyphRun = TextLayout.TextLines.Last().TextRuns.LastOrDefault()?.GlyphRun;
+
+                var width = 0.0;
+
+                currentGlyphRun?.FindNearestCharacterHit(_text.Length, out width);
+
+                isTrailing = width > 0;
+            }
+
+            return new TextHitTestResult(characterHit, new Point(currentX, currentY), isInside, isTrailing);
         }
 
         /// <summary>
-        /// Gets the bounds rectangle that the specified character occupies.
+        ///     Get the pixel location relative to the top-left of the layout box given the text position.
         /// </summary>
-        /// <param name="index">The index of the character.</param>
-        /// <returns>The character bounds.</returns>
-        public Rect HitTestTextPosition(int index)
+        /// <param name="textPosition">The text position.</param>
+        /// <returns></returns>
+        public Rect HitTestTextPosition(int textPosition)
         {
-            return TextLayout.HitTestTextPosition(index);
+            if (!TextLayout.TextLines.Any())
+            {
+                return new Rect();
+            }
+
+            if (textPosition < 0 || textPosition >= _text.Length)
+            {
+                var lastLine = TextLayout.TextLines.Last();
+
+                var offsetX = lastLine.LineMetrics.BaselineOrigin.X;
+
+                var lineX = offsetX + lastLine.LineMetrics.Size.Width;
+
+                var lineY = Bounds.Height - lastLine.LineMetrics.Size.Height;
+
+                return new Rect(lineX, lineY, 0, lastLine.LineMetrics.Size.Height);
+            }
+
+            var currentY = 0.0;
+
+            foreach (var textLine in TextLayout.TextLines)
+            {
+                if (textLine.Text.End < textPosition)
+                {
+                    currentY += textLine.LineMetrics.Size.Height;
+
+                    continue;
+                }
+
+                var currentX = textLine.LineMetrics.BaselineOrigin.X;
+
+                foreach (var textRun in textLine.TextRuns)
+                {
+                    if (textRun.GlyphRun.Characters.End < textPosition)
+                    {
+                        currentX += textRun.GlyphRun.Bounds.Width;
+
+                        continue;
+                    }
+
+                    var characterHit = textRun.GlyphRun.FindNearestCharacterHit(textPosition, out var width);
+
+                    var distance = textRun.GlyphRun.GetDistanceFromCharacterHit(characterHit);
+
+                    currentX += distance - width;
+
+                    if (characterHit.TrailingLength == 0)
+                    {
+                        width = 0.0;
+                    }
+
+                    return new Rect(currentX, currentY, width, textRun.GlyphRun.Bounds.Height);
+                }
+            }
+
+            return new Rect();
         }
 
         /// <summary>
-        /// Gets the bounds rectangles that the specified text range occupies.
+        ///     Get a set of hit-test rectangles corresponding to a range of text positions.
         /// </summary>
-        /// <param name="index">The index of the first character.</param>
-        /// <param name="length">The number of characters in the text range.</param>
-        /// <returns>The character bounds.</returns>
-        public IEnumerable<Rect> HitTestTextRange(int index, int length)
+        /// <param name="textPosition">The starting text position.</param>
+        /// <param name="textLength">The text length.</param>
+        /// <returns></returns>
+        public IEnumerable<Rect> HitTestTextRange(int textPosition, int textLength)
         {
-            return TextLayout.HitTestTextRange(index, length);
+            var result = new List<Rect>();
+
+            var currentY = 0.0;
+
+            var remainingLength = textLength;
+
+            foreach (var textLine in TextLayout.TextLines)
+            {
+                if (textLine.Text.End < textPosition)
+                {
+                    currentY += textLine.LineMetrics.Size.Height;
+
+                    continue;
+                }
+
+                var lineX = textLine.LineMetrics.BaselineOrigin.X;
+
+                var width = 0.0;
+
+                foreach (var textRun in textLine.TextRuns)
+                {
+                    if (remainingLength == 0)
+                    {
+                        break;
+                    }
+
+                    if (textRun.GlyphRun.Characters.End < textPosition)
+                    {
+                        lineX += textRun.GlyphRun.Bounds.Width;
+
+                        continue;
+                    }
+
+                    if (textRun.GlyphRun.Characters.Start < textPosition)
+                    {
+                        var startHit = textRun.GlyphRun.FindNearestCharacterHit(textPosition, out _);
+
+                        var offset =
+                            textRun.GlyphRun.GetDistanceFromCharacterHit(
+                                new CharacterHit(startHit.FirstCharacterIndex));
+
+                        var length = textPosition - textRun.GlyphRun.Characters.Start;
+
+                        var endHit = textRun.GlyphRun.FindNearestCharacterHit(textPosition + remainingLength, out _);
+
+                        width = textRun.GlyphRun.GetDistanceFromCharacterHit(endHit) - offset;
+
+                        lineX += offset;
+
+                        remainingLength -= length;
+
+                        continue;
+                    }
+
+                    if (remainingLength < textRun.GlyphRun.Characters.Length)
+                    {
+                        var characterHit =
+                            textRun.GlyphRun.FindNearestCharacterHit(
+                                textRun.GlyphRun.Characters.Start + remainingLength - 1, out _);
+
+                        width += textRun.GlyphRun.GetDistanceFromCharacterHit(characterHit);
+
+                        remainingLength = 0;
+
+                        break;
+                    }
+
+                    width += textRun.GlyphRun.Bounds.Width;
+
+                    remainingLength -= textRun.GlyphRun.Characters.Length;
+                }
+
+                var rect = new Rect(lineX, currentY, width, textLine.LineMetrics.Size.Height);
+
+                result.Add(rect);
+
+                if (remainingLength == 0)
+                {
+                    break;
+                }
+
+                currentY += textLine.LineMetrics.Size.Height;
+            }
+
+            return result;
         }
 
         private void Set<T>(ref T field, T value)

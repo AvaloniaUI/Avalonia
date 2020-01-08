@@ -19,7 +19,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
@@ -59,7 +59,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
@@ -107,7 +107,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
@@ -148,7 +148,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
@@ -188,7 +188,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
@@ -223,7 +223,7 @@ namespace Avalonia.Skia.UnitTests
         public void Should_Apply_TextSpan_To_Unicode_String_In_Between()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(
-                renderInterface: new PlatformRenderInterface(null), textFormatter: new TextFormatter())))
+                renderInterface: new PlatformRenderInterface(null), textFormatterImpl: new TextFormatterImpl())))
             {
                 const string text = "😄😄😄😄";
 
@@ -265,7 +265,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var layout = new TextLayout(
                     s_multiLineText,
@@ -285,7 +285,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var layout = new TextLayout(
                     s_multiLineText,
@@ -309,7 +309,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 const string text =
                     "Multiline TextBox with TextWrapping.\r\rLorem ipsum dolor sit amet, consectetur adipiscing elit. " +
@@ -346,7 +346,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
@@ -376,7 +376,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 const string text = "😄😄";
 
@@ -389,15 +389,15 @@ namespace Avalonia.Skia.UnitTests
                     TextTrimming.None,
                     new Size(double.PositiveInfinity, double.PositiveInfinity));
 
-                var lineMetrics = layout.TextLines[0].LineMetrics;
+                var glyphRun = layout.TextLines[0].TextRuns[0].GlyphRun;
 
-                var width = lineMetrics.Size.Width;
+                var width = glyphRun.Bounds.Width;
 
-                var hitTestResult = layout.HitTestPoint(new Point(width, lineMetrics.BaselineOrigin.Y));
+                var characterHit = glyphRun.GetCharacterHitFromDistance(width, out _);
 
-                Assert.Equal(2, hitTestResult.CharacterHit.FirstCharacterIndex);
+                Assert.Equal(2, characterHit.FirstCharacterIndex);
 
-                Assert.Equal(2, hitTestResult.CharacterHit.TrailingLength);
+                Assert.Equal(2, characterHit.TrailingLength);
             }
         }
 
@@ -410,7 +410,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var layout = new TextLayout(
                     text,
@@ -447,7 +447,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var layout = new TextLayout(
                     text,
@@ -475,7 +475,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var layout = new TextLayout(
                     "abcde\r\n",
@@ -501,11 +501,11 @@ namespace Avalonia.Skia.UnitTests
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(
                     renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var buffer = new ReadOnlySlice<char>(text.AsMemory());
 
-                var breaker = TextRunIterator.Create(buffer, Typeface.Default, 12);
+                var breaker = TextRunIterator.Create(buffer, new TextRunStyle(Typeface.Default, 12, null));
 
                 var runs = breaker.ToArray();
 
@@ -518,17 +518,17 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var text = "1234الدولي";
 
                 var buffer = new ReadOnlySlice<char>(text.AsMemory());
 
-                var breaker = TextRunIterator.Create(buffer, Typeface.Default, 12);
+                var breaker = TextRunIterator.Create(buffer, new TextRunStyle(Typeface.Default, 12, null));
 
                 Assert.Equal(2, breaker.Count);
 
-                Assert.Equal(4, breaker[0].Text.Length);
+                Assert.Equal(4, breaker[0].TextPointer.Length);
             }
         }
 
@@ -537,7 +537,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (UnitTestApplication.Start(
                 TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface(null),
-                    textFormatter: new TextFormatter())))
+                    textFormatterImpl: new TextFormatterImpl())))
             {
                 var text = new string(new[] { '\uD802', '\uD802', '\uD802', '\uD802', '\uD802', '\uD802', '\uD802' });
 

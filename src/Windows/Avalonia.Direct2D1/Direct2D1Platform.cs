@@ -107,7 +107,7 @@ namespace Avalonia.Direct2D1
         {
             InitializeDirect2D();
             AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(s_instance);
-            AvaloniaLocator.CurrentMutable.Bind<ITextFormatter>().ToConstant(new TextFormatter());
+            AvaloniaLocator.CurrentMutable.Bind<ITextFormatterImpl>().ToConstant(new TextFormatterImpl());
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
         }
 

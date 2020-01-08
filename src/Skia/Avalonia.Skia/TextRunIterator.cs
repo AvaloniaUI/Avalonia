@@ -16,11 +16,11 @@ namespace Avalonia.Skia
         ///     Creates a list of text runs with unique properties.
         /// </summary>
         /// <param name="text">The text to create text runs from.</param>
-        /// <param name="defaultTypeface">The default typeface to match against.</param>
-        /// <param name="defaultFontSize">The default font size.</param>
+        /// <param name="defaultRunStyle"></param>
         /// <returns>A list of text runs.</returns>
-        public static List<TextRunProperties> Create(ReadOnlySlice<char> text, Typeface defaultTypeface, double defaultFontSize)
+        public static List<TextRunProperties> Create(ReadOnlySlice<char> text, TextRunStyle defaultRunStyle)
         {
+            var defaultTypeface = defaultRunStyle.TextFormat.Typeface;
             var textRuns = new List<TextRunProperties>();
 
             for (; ; )
@@ -56,15 +56,16 @@ namespace Avalonia.Skia
                     }
                 }
 
-                textRuns.Add(new TextRunProperties(text.Take(count), currentTypeface,
-                    defaultFontSize, null));
+                textRuns.Add(new TextRunProperties(text.Take(count).GetTextPointer(),
+                    new TextRunStyle(currentTypeface, defaultRunStyle.TextFormat.FontRenderingEmSize,
+                        defaultRunStyle.Foreground)));
 
                 if (count == text.Length)
                 {
                     break;
                 }
 
-                text = text.AsSlice(count, text.Length - count);
+                text = text.Skip(count);
             }
 
             return textRuns;

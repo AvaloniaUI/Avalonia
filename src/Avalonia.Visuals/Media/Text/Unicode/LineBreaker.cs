@@ -23,18 +23,18 @@ namespace Avalonia.Media.Text.Unicode
     /// <summary>
     /// Implementation of the Unicode Line Break Algorithm
     /// </summary>
-    internal ref struct LineBreaker
+    public ref struct LineBreaker
     {
         // State
-        private readonly ReadOnlySlice<char> _codePoints;
+        private readonly ReadOnlySlice<char> _text;
         private int _pos;
         private int _lastPos;
         private LineBreakClass? _curClass;
         private LineBreakClass? _nextClass;
 
-        public LineBreaker(ReadOnlySlice<char> codePoints)
+        public LineBreaker(ReadOnlySlice<char> text)
         {
-            _codePoints = codePoints;
+            _text = text;
             _pos = 0;
             _lastPos = 0;
             _curClass = null;
@@ -59,7 +59,7 @@ namespace Avalonia.Media.Text.Unicode
                 }
             }
 
-            while (_pos < _codePoints.Length)
+            while (_pos < _text.Length)
             {
                 _lastPos = _pos;
                 var lastClass = _nextClass;
@@ -69,7 +69,7 @@ namespace Avalonia.Media.Text.Unicode
                 if (_curClass.HasValue && (_curClass == LineBreakClass.BK || _curClass == LineBreakClass.CR && _nextClass != LineBreakClass.LF))
                 {
                     _curClass = MapFirst(MapClass(_nextClass.Value));
-                    CurrentBreak = new LineBreak(FindPriorNonWhitespace(_lastPos), _lastPos, true);
+                    SetCurrentBreak(FindPriorNonWhitespace(_lastPos), _lastPos, true);
                     return true;
                 }
 
@@ -102,7 +102,7 @@ namespace Avalonia.Media.Text.Unicode
 
                     if (_nextClass.Value == LineBreakClass.CB)
                     {
-                        CurrentBreak = new LineBreak(FindPriorNonWhitespace(_lastPos), _lastPos);
+                        SetCurrentBreak(FindPriorNonWhitespace(_lastPos), _lastPos);
                         return true;
                     }
 
@@ -141,19 +141,19 @@ namespace Avalonia.Media.Text.Unicode
 
                 if (shouldBreak)
                 {
-                    CurrentBreak = new LineBreak(FindPriorNonWhitespace(_lastPos), _lastPos);
+                    SetCurrentBreak(FindPriorNonWhitespace(_lastPos), _lastPos);
                     return true;
                 }
             }
 
-            if (_pos >= _codePoints.Length)
+            if (_pos >= _text.Length)
             {
-                if (_lastPos < _codePoints.Length)
+                if (_lastPos < _text.Length)
                 {
-                    _lastPos = _codePoints.Length;
-                    var cls = UnicodeClasses.LineBreakClass(CodepointReader.Peek(_codePoints, _codePoints.Length - 1, out _));
+                    _lastPos = _text.Length;
+                    var cls = UnicodeClasses.LineBreakClass(CodepointReader.Peek(_text, _text.Length - 1, out _));
                     bool required = cls == LineBreakClass.BK || cls == LineBreakClass.LF || cls == LineBreakClass.CR;
-                    CurrentBreak = new LineBreak(FindPriorNonWhitespace(_codePoints.Length), _codePoints.Length, required);
+                    SetCurrentBreak(FindPriorNonWhitespace(_text.Length), _text.Length, required);
                     return true;
                 }
             }
@@ -165,7 +165,7 @@ namespace Avalonia.Media.Text.Unicode
         {
             if (from > 0)
             {
-                var cp = CodepointReader.Peek(_codePoints, from - 1, out _);
+                var cp = CodepointReader.Peek(_text, from - 1, out _);
 
                 var cls = UnicodeClasses.LineBreakClass(cp);
 
@@ -177,7 +177,7 @@ namespace Avalonia.Media.Text.Unicode
 
             while (from > 0)
             {
-                var cp = CodepointReader.Peek(_codePoints, from - 1, out _);
+                var cp = CodepointReader.Peek(_text, from - 1, out _);
 
                 var cls = UnicodeClasses.LineBreakClass(cp);
 
@@ -196,12 +196,17 @@ namespace Avalonia.Media.Text.Unicode
         // Get the next character class
         private LineBreakClass ReadCharClass()
         {
-            return MapClass(UnicodeClasses.LineBreakClass(CodepointReader.Read(_codePoints, ref _pos)));
+            return MapClass(UnicodeClasses.LineBreakClass(CodepointReader.Read(_text, ref _pos)));
         }
 
         private LineBreakClass PeekCharClass()
         {
-            return MapClass(UnicodeClasses.LineBreakClass(CodepointReader.Peek(_codePoints, _pos, out _)));
+            return MapClass(UnicodeClasses.LineBreakClass(CodepointReader.Peek(_text, _pos, out _)));
+        }
+
+        private void SetCurrentBreak(int positionMeasure, int positionWrap, bool required = false)
+        {
+            CurrentBreak = new LineBreak(_text.Start + positionMeasure, _text.Start + positionWrap, required);
         }
 
         private static LineBreakClass MapClass(LineBreakClass c)

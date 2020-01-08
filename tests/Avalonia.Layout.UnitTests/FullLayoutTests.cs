@@ -170,7 +170,7 @@ namespace Avalonia.Layout.UnitTests
                 .Bind<IGlobalStyles>().ToConstant(globalStyles.Object)
                 .Bind<IRuntimePlatform>().ToConstant(new AppBuilder().RuntimePlatform)
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface.Object)
-                .Bind<ITextFormatter>().ToConstant(new MockTextFormatter())
+                .Bind<ITextFormatterImpl>().ToConstant(new MockTextFormatterImpl())
                 .Bind<IStyler>().ToConstant(new Styler())
                 .Bind<IWindowingPlatform>().ToConstant(new Avalonia.Controls.UnitTests.WindowingPlatformMock(() => windowImpl.Object));
 

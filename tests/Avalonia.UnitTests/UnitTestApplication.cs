@@ -61,7 +61,7 @@ namespace Avalonia.UnitTests
                 .Bind<IMouseDevice>().ToConstant(Services.MouseDevice?.Invoke())
                 .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
-                .Bind<ITextFormatter>().ToConstant(Services.TextFormatter)
+                .Bind<ITextFormatterImpl>().ToConstant(Services.TextFormatterImpl)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Services.ThreadingInterface)
                 .Bind<IScheduler>().ToConstant(Services.Scheduler)
                 .Bind<IStandardCursorFactory>().ToConstant(Services.StandardCursorFactory)

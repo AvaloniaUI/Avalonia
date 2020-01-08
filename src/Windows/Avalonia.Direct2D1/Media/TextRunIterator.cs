@@ -16,21 +16,20 @@ namespace Avalonia.Direct2D1.Media
         ///     Creates a list of text runs with unique properties.
         /// </summary>
         /// <param name="text">The text to create text runs from.</param>
-        /// <param name="defaultTypeface">The default typeface to match against.</param>
-        /// <param name="defaultFontSize">The default font size.</param>
+        /// <param name="defaultRunStyle"></param>
         /// <returns>A list of text runs.</returns>
-        public static List<TextRunProperties> Create(ReadOnlySlice<char> text, Typeface defaultTypeface, double defaultFontSize)
+        public static List<TextRunProperties> Create(ReadOnlySlice<char> text, TextRunStyle defaultRunStyle)
         {
+            var defaultTypeface = defaultRunStyle.TextFormat.Typeface;
             var textRuns = new List<TextRunProperties>();
 
-            for (;;)
+            for (; ; )
             {
                 var currentTypeface = defaultTypeface;
-                var currentPosition = 0;
 
                 if (!TryGetRunProperties(text, currentTypeface, defaultTypeface, out var count))
                 {
-                    var codepoint = CodepointReader.Peek(text, currentPosition, out _);
+                    var codepoint = CodepointReader.Peek(text, count, out _);
 
                     //ToDo: Fix FontFamily fallback
                     currentTypeface =
@@ -43,27 +42,26 @@ namespace Avalonia.Direct2D1.Media
 
                         var glyphTypeface = (GlyphTypefaceImpl)currentTypeface.GlyphTypeface.PlatformImpl;
 
-                        for (; currentPosition < text.Length;)
+                        for (; count < text.Length;)
                         {
-                            codepoint = CodepointReader.Peek(text, currentPosition, out var charCount);
+                            codepoint = CodepointReader.Peek(text, count, out var charCount);
 
                             if (!UnicodeUtility.IsWhiteSpace(codepoint) && glyphTypeface.Font.TryGetGlyph(codepoint, out _))
                             {
                                 break;
                             }
 
-                            currentPosition += charCount;
+                            count += charCount;
                         }
                     }
                 }
 
-                textRuns.Add(new TextRunProperties(text.Take(count), currentTypeface,
-                    defaultFontSize, null));
+                textRuns.Add(new TextRunProperties(text.Take(count).GetTextPointer(), defaultRunStyle));
 
                 if (count == text.Length)
                 {
                     break;
-                } 
+                }
 
                 text = text.AsSlice(count, text.Length - count);
             }

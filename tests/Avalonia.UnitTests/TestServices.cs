@@ -29,12 +29,12 @@ namespace Avalonia.UnitTests
             styler: new Styler(),
             theme: () => CreateDefaultTheme(),
             threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true),
-            textFormatter: new MockTextFormatter(),
+            textFormatterImpl: new MockTextFormatterImpl(),
             windowingPlatform: new MockWindowingPlatform());
 
         public static readonly TestServices MockPlatformRenderInterface = new TestServices(
             renderInterface: new MockPlatformRenderInterface(),
-            textFormatter: new MockTextFormatter());
+            textFormatterImpl: new MockTextFormatterImpl());
 
         public static readonly TestServices MockPlatformWrapper = new TestServices(
             platform: Mock.Of<IRuntimePlatform>());
@@ -73,7 +73,7 @@ namespace Avalonia.UnitTests
             IStyler styler = null,
             Func<Styles> theme = null,
             IPlatformThreadingInterface threadingInterface = null,
-            ITextFormatter textFormatter = null,
+            ITextFormatterImpl textFormatterImpl = null,
             IWindowImpl windowImpl = null,
             IWindowingPlatform windowingPlatform = null)
         {
@@ -86,7 +86,7 @@ namespace Avalonia.UnitTests
             MouseDevice = mouseDevice;
             Platform = platform;
             RenderInterface = renderInterface;
-            TextFormatter = textFormatter;
+            TextFormatterImpl = textFormatterImpl;
             Scheduler = scheduler;
             StandardCursorFactory = standardCursorFactory;
             Styler = styler;
@@ -105,7 +105,7 @@ namespace Avalonia.UnitTests
         public Func<IMouseDevice> MouseDevice { get; }
         public IRuntimePlatform Platform { get; }
         public IPlatformRenderInterface RenderInterface { get; }
-        public ITextFormatter TextFormatter { get; }
+        public ITextFormatterImpl TextFormatterImpl { get; }
         public IScheduler Scheduler { get; }
         public IStandardCursorFactory StandardCursorFactory { get; }
         public IStyler Styler { get; }
@@ -130,7 +130,7 @@ namespace Avalonia.UnitTests
             IStyler styler = null,
             Func<Styles> theme = null,
             IPlatformThreadingInterface threadingInterface = null,
-            ITextFormatter textFormatter = null,
+            ITextFormatterImpl textFormatterImpl = null,
             IWindowImpl windowImpl = null,
             IWindowingPlatform windowingPlatform = null)
         {
@@ -144,7 +144,7 @@ namespace Avalonia.UnitTests
                 mouseDevice: mouseDevice ?? MouseDevice,
                 platform: platform ?? Platform,
                 renderInterface: renderInterface ?? RenderInterface,
-                textFormatter: textFormatter ?? TextFormatter,
+                textFormatterImpl: textFormatterImpl ?? TextFormatterImpl,
                 scheduler: scheduler ?? Scheduler,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
                 styler: styler ?? Styler,

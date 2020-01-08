@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Media.Text;
 using Avalonia.Utilities;
 
 namespace Avalonia.Utility
@@ -70,6 +71,11 @@ namespace Avalonia.Utility
             return Buffer.Span.Slice(Start, Length);
         }
 
+        public TextPointer GetTextPointer()
+        {
+            return new TextPointer(Start, Length);
+        }
+
         /// <summary>
         ///     Returns a sub slice of elements that start at the specified index and has the specified number of elements.
         /// </summary>
@@ -78,17 +84,17 @@ namespace Avalonia.Utility
         /// <returns>A <see cref="ReadOnlySlice{T}"/> that contains the specified number of elements from the specified start.</returns>
         public ReadOnlySlice<T> AsSlice(int start, int length)
         {
-            if (start < 0 || start >= Length)
+            if (start < Start || start > End)
             {
                 throw new ArgumentOutOfRangeException(nameof(start));
             }
 
-            if (Start + start > End)
+            if (start + length > Start + Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
-            return new ReadOnlySlice<T>(Buffer, Start + start, length);
+            return new ReadOnlySlice<T>(Buffer, start, length);
         }
 
         /// <summary>

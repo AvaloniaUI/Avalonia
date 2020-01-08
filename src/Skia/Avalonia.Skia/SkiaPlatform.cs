@@ -27,10 +27,10 @@ namespace Avalonia.Skia
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface);
 
-            var textFormatter = new TextFormatter();
+            var textFormatter = new TextFormatterImpl();
 
             AvaloniaLocator.CurrentMutable
-                .Bind<ITextFormatter>().ToConstant(textFormatter);
+                .Bind<ITextFormatterImpl>().ToConstant(textFormatter);
         }
 
         /// <summary>

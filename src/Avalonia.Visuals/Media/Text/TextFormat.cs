@@ -7,11 +7,11 @@ namespace Avalonia.Media.Text
 {
     public readonly struct TextFormat : IEquatable<TextFormat>
     {
-        public TextFormat(Typeface typeface, double fontSize)
+        public TextFormat(Typeface typeface, double fontRenderingEmSize)
         {
             Typeface = typeface;
-            FontSize = fontSize;
-            FontMetrics = new FontMetrics(typeface, fontSize);
+            FontRenderingEmSize = fontRenderingEmSize;
+            FontMetrics = new FontMetrics(typeface, fontRenderingEmSize);
         }
 
         /// <summary>
@@ -23,12 +23,12 @@ namespace Avalonia.Media.Text
         public Typeface Typeface { get; }
 
         /// <summary>
-        ///     Gets the font size.
+        ///     Gets the font rendering em size.
         /// </summary>
         /// <value>
-        ///     The size of the font.
+        ///     The em rendering size of the font.
         /// </value>
-        public double FontSize { get; }
+        public double FontRenderingEmSize { get; }
 
         /// <summary>
         /// Gets the font metrics.
@@ -50,7 +50,7 @@ namespace Avalonia.Media.Text
 
         public bool Equals(TextFormat other)
         {
-            return Typeface.Equals(other.Typeface) && FontSize.Equals(other.FontSize);
+            return Typeface.Equals(other.Typeface) && FontRenderingEmSize.Equals(other.FontRenderingEmSize);
         }
 
         public override bool Equals(object obj)
@@ -63,7 +63,7 @@ namespace Avalonia.Media.Text
             unchecked
             {
                 var hashCode = (Typeface != null ? Typeface.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ FontSize.GetHashCode();
+                hashCode = (hashCode * 397) ^ FontRenderingEmSize.GetHashCode();
                 return hashCode;
             }
         }

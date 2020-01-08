@@ -1,6 +1,8 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections.Generic;
+
 namespace Avalonia.Media.Text
 {
     public readonly struct TextLineMetrics
@@ -53,5 +55,49 @@ namespace Avalonia.Media.Text
         ///     The baseline origin.
         /// </value>
         public Point BaselineOrigin { get; } //ToDo: Remove this and instead calculate the baseline on demand when drawing.
+
+        /// <summary>
+        ///     Creates the text line metrics.
+        /// </summary>
+        /// <param name="textRuns">The text runs.</param>
+        /// <param name="paragraphWidth"></param>
+        /// <param name="textAlignment"></param>
+        /// <returns></returns>
+        public static TextLineMetrics Create(IEnumerable<TextRun> textRuns, double paragraphWidth, TextAlignment textAlignment)
+        {
+            var lineWidth = 0.0;
+            var ascent = 0.0;
+            var descent = 0.0;
+            var lineGap = 0.0;
+
+            foreach (var textRun in textRuns)
+            {
+                UpdateTextLineMetrics(textRun, ref lineWidth, ref ascent, ref descent, ref lineGap);
+            }
+
+            var xOrigin = TextLine.GetParagraphOffsetX(lineWidth, paragraphWidth, textAlignment);
+
+            return new TextLineMetrics(lineWidth, xOrigin, ascent, descent, lineGap);
+        }
+
+        private static void UpdateTextLineMetrics(TextRun textRun, ref double width, ref double ascent, ref double descent, ref double lineGap)
+        {
+            width += textRun.GlyphRun.Bounds.Width;
+
+            if (ascent > textRun.TextFormat.FontMetrics.Ascent)
+            {
+                ascent = textRun.TextFormat.FontMetrics.Ascent;
+            }
+
+            if (descent < textRun.TextFormat.FontMetrics.Descent)
+            {
+                descent = textRun.TextFormat.FontMetrics.Descent;
+            }
+
+            if (lineGap < textRun.TextFormat.FontMetrics.LineGap)
+            {
+                lineGap = textRun.TextFormat.FontMetrics.LineGap;
+            }
+        }
     }
 }
