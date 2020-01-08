@@ -39,6 +39,59 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
+        [Fact]
+        public void BindingExtension_Binds_To_TargetNullValue()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <x:String x:Key='text'>foobar</x:String>
+    </Window.Resources>
+
+    <TextBlock Name='textBlock' Text='{Binding Foo, TargetNullValue={StaticResource text}}'/>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                window.DataContext = new FooBar();
+                window.Show();
+
+                Assert.Equal("foobar", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void BindingExtension_TargetNullValue_UnsetByDefault()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <TextBlock Name='textBlock' IsVisible='{Binding Foo, Converter={x:Static ObjectConverters.IsNotNull}}'/>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                window.DataContext = new FooBar();
+                window.Show();
+
+                Assert.Equal(false, textBlock.IsVisible);
+            }
+        }
+
+        private class FooBar
+        {
+            public object Foo { get; } = null;
+        }
+
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(
