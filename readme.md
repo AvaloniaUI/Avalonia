@@ -22,7 +22,7 @@ Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?it
 
 For those without Visual Studio, a starter guide for .NET Core CLI can be found [here](http://avaloniaui.net/docs/quickstart/create-new-project#net-core).
 
-Avalonia is delivered via <b>NuGet</b> package manager. You can find the packages here: ([stable(ish)](https://www.nuget.org/packages/Avalonia/), [nightly](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed))
+Avalonia is delivered via <b>NuGet</b> package manager. You can find the packages here: [stable(ish)](https://www.nuget.org/packages/Avalonia/)
 
 Use these commands in the Package Manager console to install Avalonia manually:
 ```
