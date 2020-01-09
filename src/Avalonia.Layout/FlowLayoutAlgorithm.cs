@@ -116,10 +116,11 @@ namespace Avalonia.Layout
         public Size Arrange(
             Size finalSize,
             VirtualizingLayoutContext context,
+            bool isWrapping,
             LineAlignment lineAlignment,
             string layoutId)
         {
-            ArrangeVirtualizingLayout(finalSize, lineAlignment, layoutId);
+            ArrangeVirtualizingLayout(finalSize, lineAlignment, isWrapping, layoutId);
 
             return new Size(
                 Math.Max(finalSize.Width, _lastExtent.Width),
@@ -546,6 +547,7 @@ namespace Avalonia.Layout
         private void ArrangeVirtualizingLayout(
             Size finalSize,
             LineAlignment lineAlignment,
+            bool isWrapping,
             string layoutId)
         {
             // Walk through the realized elements one line at a time and 
@@ -565,7 +567,7 @@ namespace Avalonia.Layout
                     if (_orientation.MajorStart(currentBounds) != currentLineOffset)
                     {
                         spaceAtLineEnd = _orientation.Minor(finalSize) - _orientation.MinorStart(previousElementBounds) - _orientation.MinorSize(previousElementBounds);
-                        PerformLineAlignment(i - countInLine, countInLine, spaceAtLineStart, spaceAtLineEnd, currentLineSize, lineAlignment, layoutId);
+                        PerformLineAlignment(i - countInLine, countInLine, spaceAtLineStart, spaceAtLineEnd, currentLineSize, lineAlignment, isWrapping, finalSize, layoutId);
                         spaceAtLineStart = _orientation.MinorStart(currentBounds);
                         countInLine = 0;
                         currentLineOffset = _orientation.MajorStart(currentBounds);
@@ -582,7 +584,7 @@ namespace Avalonia.Layout
                 if (countInLine > 0)
                 {
                     var spaceAtEnd = _orientation.Minor(finalSize) - _orientation.MinorStart(previousElementBounds) - _orientation.MinorSize(previousElementBounds);
-                    PerformLineAlignment(realizedElementCount - countInLine, countInLine, spaceAtLineStart, spaceAtEnd, currentLineSize, lineAlignment, layoutId);
+                    PerformLineAlignment(realizedElementCount - countInLine, countInLine, spaceAtLineStart, spaceAtEnd, currentLineSize, lineAlignment, isWrapping, finalSize, layoutId);
                 }
             }
         }
@@ -596,6 +598,8 @@ namespace Avalonia.Layout
             double spaceAtLineEnd,
             double lineSize,
             LineAlignment lineAlignment,
+            bool isWrapping,
+            Size finalSize,
             string layoutId)
         {
             for (int rangeIndex = lineStartIndex; rangeIndex < lineStartIndex + countInLine; ++rangeIndex)
@@ -661,6 +665,14 @@ namespace Avalonia.Layout
                 }
 
                 bounds = bounds.Translate(-_lastExtent.Position);
+
+                if (!isWrapping)
+                {
+                    _orientation.SetMinorSize(
+                        ref bounds,
+                        Math.Max(_orientation.MinorSize(bounds), _orientation.Minor(finalSize)));
+                }
+
                 var element = _elementManager.GetAt(rangeIndex);
                 element.Arrange(bounds);
             }

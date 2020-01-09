@@ -279,6 +279,7 @@ namespace Avalonia.Layout
             var value = GetFlowAlgorithm(context).Arrange(
                finalSize,
                context,
+               false,
                FlowLayoutAlgorithm.LineAlignment.Start,
                LayoutId);
 
