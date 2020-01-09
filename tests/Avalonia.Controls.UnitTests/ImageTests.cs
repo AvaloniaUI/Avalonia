@@ -169,7 +169,7 @@ namespace Avalonia.Controls.UnitTests
 
         private IBitmap CreateBitmap(int width, int height)
         {
-            return Mock.Of<IBitmap>(x => x.PixelSize == new PixelSize(width, height));
+            return Mock.Of<IBitmap>(x => x.Size == new Size(width, height));
         }
     }
 }
