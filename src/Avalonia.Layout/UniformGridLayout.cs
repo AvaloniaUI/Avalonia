@@ -361,9 +361,9 @@ namespace Avalonia.Layout
             {
                 _orientation.SetMinorSize(
                     ref extent,
-                    !double.IsInfinity(availableSizeMinor) ?
+                    !double.IsInfinity(availableSizeMinor) && _itemsStretch == UniformGridLayoutItemsStretch.Fill ?
                     availableSizeMinor :
-                    Math.Max(0.0, itemsCount * GetMinorSizeWithSpacing(context) - (double)MinItemSpacing));
+                    Math.Max(0.0, itemsPerLine * GetMinorSizeWithSpacing(context) - (double)MinItemSpacing));
                 _orientation.SetMajorSize(
                     ref extent,
                     Math.Max(0.0, (itemsCount / itemsPerLine) * lineSize - (double)LineSpacing));
