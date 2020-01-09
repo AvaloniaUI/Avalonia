@@ -110,7 +110,19 @@ namespace Avalonia.Controls
         public void ClearElementToElementFactory(IControl element)
         {
             _owner.OnElementClearing(element);
-            _owner.ItemTemplateShim?.RecycleElement(_owner, element);
+
+            if (_owner.ItemTemplateShim != null)
+            {
+                _owner.ItemTemplateShim.RecycleElement(_owner, element);
+            }
+            else
+            {
+                // No ItemTemplate to recycle to, remove the element from the children collection.
+                if (!_owner.Children.Remove(element))
+                {
+                    throw new InvalidOperationException("ItemsRepeater's child not found in its Children collection.");
+                }
+            }
 
             var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
             virtInfo.MoveOwnershipToElementFactory();
