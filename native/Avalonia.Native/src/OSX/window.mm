@@ -1283,6 +1283,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _closed = false;
     
     _lastScaling = [self backingScaleFactor];
+    [self setOpaque:NO];
+    [self setBackgroundColor: [NSColor clearColor]];
+    [self invalidateShadow];
     return self;
 }
 

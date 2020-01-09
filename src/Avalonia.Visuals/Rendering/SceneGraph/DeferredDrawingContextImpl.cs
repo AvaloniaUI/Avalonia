@@ -115,7 +115,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
             var next = NextDrawAs<ImageNode>();
 
@@ -130,7 +130,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect sourceRect)
+        public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect sourceRect)
         {
             // This method is currently only used to composite layers so shouldn't be called here.
             throw new NotSupportedException();

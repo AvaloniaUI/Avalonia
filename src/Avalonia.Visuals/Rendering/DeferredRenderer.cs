@@ -469,11 +469,11 @@ namespace Avalonia.Rendering
 
                 if (layer.OpacityMask == null)
                 {
-                    context.DrawImage(bitmap, layer.Opacity, sourceRect, clientRect);
+                    context.DrawBitmap(bitmap, layer.Opacity, sourceRect, clientRect);
                 }
                 else
                 {
-                    context.DrawImage(bitmap, layer.OpacityMask, layer.OpacityMaskRect, sourceRect);
+                    context.DrawBitmap(bitmap, layer.OpacityMask, layer.OpacityMaskRect, sourceRect);
                 }
 
                 if (layer.GeometryClip != null)
@@ -485,7 +485,7 @@ namespace Avalonia.Rendering
             if (_overlay != null)
             {
                 var sourceRect = new Rect(0, 0, _overlay.Item.PixelSize.Width, _overlay.Item.PixelSize.Height);
-                context.DrawImage(_overlay, 0.5, sourceRect, clientRect);
+                context.DrawBitmap(_overlay, 0.5, sourceRect, clientRect);
             }
 
             if (DrawFps)
