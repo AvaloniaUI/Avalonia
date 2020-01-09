@@ -307,7 +307,9 @@ namespace Avalonia.Rendering
 
                         if (!child.ClipToBounds || clipRect.Intersects(childBounds))
                         {
-                            var childClipRect = clipRect.Translate(-childBounds.Position);
+                            var childClipRect = child.RenderTransform == null
+                                ? clipRect.Translate(-childBounds.Position)
+                                : clipRect;
                             Render(context, child, childClipRect);
                         }
                         else
