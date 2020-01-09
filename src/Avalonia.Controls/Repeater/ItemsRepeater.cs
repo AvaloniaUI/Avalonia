@@ -588,6 +588,8 @@ namespace Avalonia.Controls
                             ClearElementImpl(element);
                         }
                     }
+
+                    Children.Clear();
                 }
 
                 InvalidateMeasure();
