@@ -562,34 +562,34 @@ namespace Avalonia.Controls
 
             if (Layout != null)
             {
-                if (Layout is VirtualizingLayout virtualLayout)
-                {
-                    var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
 
+                try
+                {
                     _processingItemsSourceChange = args;
 
-                    try
+                    if (Layout is VirtualizingLayout virtualLayout)
                     {
                         virtualLayout.OnItemsChanged(GetLayoutContext(), newValue, args);
                     }
-                    finally
+                    else if (Layout is NonVirtualizingLayout nonVirtualLayout)
                     {
-                        _processingItemsSourceChange = null;
+                        // Walk through all the elements and make sure they are cleared for
+                        // non-virtualizing layouts.
+                        foreach (var element in Children)
+                        {
+                            if (GetVirtualizationInfo(element).IsRealized)
+                            {
+                                ClearElementImpl(element);
+                            }
+                        }
+
+                        Children.Clear();
                     }
                 }
-                else if (Layout is NonVirtualizingLayout nonVirtualLayout)
+                finally
                 {
-                    // Walk through all the elements and make sure they are cleared for
-                    // non-virtualizing layouts.
-                    foreach (var element in Children)
-                    {
-                        if (GetVirtualizationInfo(element).IsRealized)
-                        {
-                            ClearElementImpl(element);
-                        }
-                    }
-
-                    Children.Clear();
+                    _processingItemsSourceChange = null;
                 }
 
                 InvalidateMeasure();
