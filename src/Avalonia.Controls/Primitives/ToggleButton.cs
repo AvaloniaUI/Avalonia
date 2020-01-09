@@ -63,8 +63,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler<RoutedEventArgs> Checked
         {
-            add { AddHandler(CheckedEvent, value); }
-            remove { RemoveHandler(CheckedEvent, value); }
+            add => AddHandler(CheckedEvent, value);
+            remove => RemoveHandler(CheckedEvent, value);
         }
 
         /// <summary>
@@ -72,8 +72,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler<RoutedEventArgs> Unchecked
         {
-            add { AddHandler(UncheckedEvent, value); }
-            remove { RemoveHandler(UncheckedEvent, value); }
+            add => AddHandler(UncheckedEvent, value);
+            remove => RemoveHandler(UncheckedEvent, value);
         }
 
         /// <summary>
@@ -81,8 +81,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler<RoutedEventArgs> Indeterminate
         {
-            add { AddHandler(IndeterminateEvent, value); }
-            remove { RemoveHandler(IndeterminateEvent, value); }
+            add => AddHandler(IndeterminateEvent, value);
+            remove => RemoveHandler(IndeterminateEvent, value);
         }
 
         /// <summary>
@@ -90,8 +90,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool? IsChecked
         {
-            get { return _isChecked; }
-            set { SetAndRaise(IsCheckedProperty, ref _isChecked, value); }
+            get => _isChecked;
+            set => SetAndRaise(IsCheckedProperty, ref _isChecked, value);
         }
 
         /// <summary>
