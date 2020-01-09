@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media.Imaging
 {
@@ -94,9 +95,28 @@ namespace Avalonia.Media.Imaging
             PlatformImpl.Item.Save(fileName);
         }
 
+        /// <summary>
+        /// Saves the bitmap to a stream.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
         public void Save(Stream stream)
         {
             PlatformImpl.Item.Save(stream);
+        }
+
+        /// <inheritdoc/>
+        void IImage.Draw(
+            DrawingContext context,
+            Rect sourceRect,
+            Rect destRect,
+            BitmapInterpolationMode bitmapInterpolationMode)
+        {
+            context.PlatformImpl.DrawBitmap(
+                PlatformImpl,
+                1,
+                sourceRect,
+                destRect,
+                bitmapInterpolationMode);
         }
     }
 }
