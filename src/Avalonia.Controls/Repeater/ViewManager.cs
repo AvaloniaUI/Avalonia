@@ -109,11 +109,10 @@ namespace Avalonia.Controls
 
         public void ClearElementToElementFactory(IControl element)
         {
-            var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
-            var clearedIndex = virtInfo.Index;
             _owner.OnElementClearing(element);
-            _owner.ItemTemplateShim.RecycleElement(_owner, element);
+            _owner.ItemTemplateShim?.RecycleElement(_owner, element);
 
+            var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
             virtInfo.MoveOwnershipToElementFactory();
 
             if (_lastFocusedElement == element)
@@ -121,9 +120,8 @@ namespace Avalonia.Controls
                 // Focused element is going away. Remove the tracked last focused element
                 // and pick a reasonable next focus if we can find one within the layout 
                 // realized elements.
-                MoveFocusFromClearedIndex(clearedIndex);
+                MoveFocusFromClearedIndex(virtInfo.Index);
             }
-
         }
 
         private void MoveFocusFromClearedIndex(int clearedIndex)
@@ -518,18 +516,32 @@ namespace Avalonia.Controls
         private IControl GetElementFromElementFactory(int index)
         {
             // The view generator is the provider of last resort.
-
+            var data = _owner.ItemsSourceView.GetAt(index);
             var itemTemplateFactory = _owner.ItemTemplateShim;
+            IControl element = null;
+            var itemsSourceContainsElements = false;
+
             if (itemTemplateFactory == null)
             {
-                // If no ItemTemplate was provided, use a default 
-                var factory = FuncDataTemplate.Default;
-                _owner.ItemTemplate = factory;
-                itemTemplateFactory = _owner.ItemTemplateShim;
+                element = data as IControl;
+
+                // No item template provided and ItemsSource contains objects derived from UIElement.
+                // In this case, just use the data directly as elements.
+                itemsSourceContainsElements = element != null;
             }
 
-            var data = _owner.ItemsSourceView.GetAt(index);
-            var element = itemTemplateFactory.GetElement(_owner, data);
+            if (element == null)
+            {
+                if (itemTemplateFactory == null)
+                {
+                    // If no ItemTemplate was provided, use a default 
+                    var factory = FuncDataTemplate.Default;
+                    _owner.ItemTemplate = factory;
+                    itemTemplateFactory = _owner.ItemTemplateShim;
+                }
+
+                element = itemTemplateFactory.GetElement(_owner, data);
+            }
 
             var virtInfo = ItemsRepeater.TryGetVirtualizationInfo(element);
             if (virtInfo == null)
@@ -537,8 +549,11 @@ namespace Avalonia.Controls
                 virtInfo = ItemsRepeater.CreateAndInitializeVirtualizationInfo(element);
             }
 
-            // Prepare the element
-            element.DataContext = data;
+            if (!itemsSourceContainsElements)
+            {
+                // Prepare the element
+                element.DataContext = data;
+            }
 
             virtInfo.MoveOwnershipToLayoutFromElementFactory(
                 index,
