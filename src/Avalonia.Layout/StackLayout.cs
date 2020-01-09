@@ -267,6 +267,7 @@ namespace Avalonia.Layout
                 false,
                 0,
                 Spacing,
+                int.MaxValue,
                 _orientation.ScrollOrientation,
                 LayoutId);
 

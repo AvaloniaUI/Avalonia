@@ -72,6 +72,7 @@ namespace Avalonia.Layout
             bool isWrapping,
             double minItemSpacing,
             double lineSpacing,
+            int maxItemsPerLine,
             ScrollOrientation orientation,
             string layoutId)
         {
@@ -94,14 +95,14 @@ namespace Avalonia.Layout
             _elementManager.OnBeginMeasure(orientation);
 
             int anchorIndex = GetAnchorIndex(availableSize, isWrapping, minItemSpacing, layoutId);
-            Generate(GenerateDirection.Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, layoutId);
-            Generate(GenerateDirection.Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, layoutId);
+            Generate(GenerateDirection.Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, layoutId);
+            Generate(GenerateDirection.Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, layoutId);
             if (isWrapping && IsReflowRequired())
             {
                 var firstElementBounds = _elementManager.GetLayoutBoundsForRealizedIndex(0);
                 _orientation.SetMinorStart(ref firstElementBounds, 0);
                 _elementManager.SetLayoutBoundsForRealizedIndex(0, firstElementBounds);
-                Generate(GenerateDirection.Forward, 0 /*anchorIndex*/, availableSize, minItemSpacing, lineSpacing, layoutId);
+                Generate(GenerateDirection.Forward, 0 /*anchorIndex*/, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, layoutId);
             }
 
             RaiseLineArranged();
@@ -270,6 +271,7 @@ namespace Avalonia.Layout
             Size availableSize,
             double minItemSpacing,
             double lineSpacing,
+            int maxItemsPerLine,
             string layoutId)
         {
             if (anchorIndex != -1)
@@ -280,7 +282,7 @@ namespace Avalonia.Layout
                 var anchorBounds = _elementManager.GetLayoutBoundsForDataIndex(anchorIndex);
                 var lineOffset = _orientation.MajorStart(anchorBounds);
                 var lineMajorSize = _orientation.MajorSize(anchorBounds);
-                int countInLine = 1;
+                var countInLine = 1;
                 int count = 0;
                 bool lineNeedsReposition = false;
 
@@ -301,7 +303,7 @@ namespace Avalonia.Layout
                     if (direction == GenerateDirection.Forward)
                     {
                         double remainingSpace = _orientation.Minor(availableSize) - (_orientation.MinorStart(previousElementBounds) + _orientation.MinorSize(previousElementBounds) + minItemSpacing + _orientation.Minor(desiredSize));
-                        if (_algorithmCallbacks.Algorithm_ShouldBreakLine(currentIndex, remainingSpace))
+                        if (countInLine >= maxItemsPerLine || _algorithmCallbacks.Algorithm_ShouldBreakLine(currentIndex, remainingSpace))
                         {
                             // No more space in this row. wrap to next row.
                             _orientation.SetMinorStart(ref currentBounds, 0);
@@ -339,7 +341,7 @@ namespace Avalonia.Layout
                     {
                         // Backward 
                         double remainingSpace = _orientation.MinorStart(previousElementBounds) - (_orientation.Minor(desiredSize) + minItemSpacing);
-                        if (_algorithmCallbacks.Algorithm_ShouldBreakLine(currentIndex, remainingSpace))
+                        if (countInLine >= maxItemsPerLine || _algorithmCallbacks.Algorithm_ShouldBreakLine(currentIndex, remainingSpace))
                         {
                             // Does not fit, wrap to the previous row
                             var availableSizeMinor = _orientation.Minor(availableSize);
