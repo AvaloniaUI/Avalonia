@@ -20,13 +20,13 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         public sealed override void InitializeForContext(LayoutContext context)
         {
-            InitializeForContextCore((VirtualizingLayoutContext)context);
+            InitializeForContextCore((NonVirtualizingLayoutContext)context);
         }
 
         /// <inheritdoc/>
         public sealed override void UninitializeForContext(LayoutContext context)
         {
-            UninitializeForContextCore((VirtualizingLayoutContext)context);
+            UninitializeForContextCore((NonVirtualizingLayoutContext)context);
         }
 
         /// <inheritdoc/>
@@ -38,7 +38,7 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         public sealed override Size Arrange(LayoutContext context, Size finalSize)
         {
-            return ArrangeOverride((VirtualizingLayoutContext)context, finalSize);
+            return ArrangeOverride((NonVirtualizingLayoutContext)context, finalSize);
         }
 
         /// <summary>
@@ -98,6 +98,6 @@ namespace Avalonia.Layout
         /// its children.
         /// </param>
         /// <returns>The actual size that is used after the element is arranged in layout.</returns>
-        protected virtual Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize) => finalSize;
+        protected virtual Size ArrangeOverride(NonVirtualizingLayoutContext context, Size finalSize) => finalSize;
     }
 }
