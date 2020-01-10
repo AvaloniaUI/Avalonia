@@ -5,6 +5,9 @@
 
 namespace Avalonia.Layout
 {
+    /// <summary>
+    /// Represents the base class for layout context types that do not support virtualization.
+    /// </summary>
     public abstract class NonVirtualizingLayoutContext : LayoutContext
     {
     }
