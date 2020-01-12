@@ -670,7 +670,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var context = Mock.Get(target.RenderTarget.CreateDrawingContext(null));
             var borderLayer = target.Layers[border].Bitmap;
 
-            context.Verify(x => x.DrawImage(borderLayer, 0.5, It.IsAny<Rect>(), It.IsAny<Rect>(), BitmapInterpolationMode.Default));
+            context.Verify(x => x.DrawBitmap(borderLayer, 0.5, It.IsAny<Rect>(), It.IsAny<Rect>(), BitmapInterpolationMode.Default));
         }
 
         [Fact]
