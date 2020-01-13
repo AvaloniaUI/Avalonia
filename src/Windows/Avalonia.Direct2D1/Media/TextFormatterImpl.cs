@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using Avalonia.Media.Text;
+using Avalonia.Media.Text.Unicode;
 using Avalonia.Platform;
 using Avalonia.Utility;
 using HarfBuzzSharp;
@@ -10,9 +10,146 @@ namespace Avalonia.Direct2D1.Media
 {
     internal class TextFormatterImpl : ITextFormatterImpl
     {
-        public List<TextRunProperties> CreateTextRuns(ReadOnlySlice<char> text, TextRunStyle defaultStyle)
+        /// <summary>
+        ///     Creates a text style run with unique properties.
+        /// </summary>
+        /// <param name="text">The text to create text runs from.</param>
+        /// <param name="defaultStyle"></param>
+        /// <returns>A list of text runs.</returns>
+        public TextStyleRun CreateShapableTextStyleRun(ReadOnlySlice<char> text, TextStyle defaultStyle)
         {
-            return TextRunIterator.Create(text, defaultStyle);
+            var defaultTypeface = defaultStyle.TextFormat.Typeface;
+
+            var currentTypeface = defaultTypeface;
+
+            if (TryGetRunProperties(text, currentTypeface, defaultTypeface, out var count))
+            {
+                return new TextStyleRun(new TextPointer(text.Start, count), new TextStyle(currentTypeface,
+                    defaultStyle.TextFormat.FontRenderingEmSize,
+                    defaultStyle.Foreground));
+
+            }
+
+            var codepoint = CodepointReader.Peek(text, count, out _);
+
+            //ToDo: Fix FontFamily fallback
+            currentTypeface =
+                FontManager.Current.MatchCharacter(codepoint, defaultTypeface.Weight, defaultTypeface.Style);
+
+            if (currentTypeface != null && TryGetRunProperties(text, currentTypeface, defaultTypeface, out count))
+            {
+                //Fallback found
+                return new TextStyleRun(new TextPointer(text.Start, count), new TextStyle(currentTypeface,
+                    defaultStyle.TextFormat.FontRenderingEmSize,
+                    defaultStyle.Foreground));
+
+            }
+
+            // no fallback found
+            currentTypeface = defaultTypeface;
+
+            var glyphTypeface = (GlyphTypefaceImpl)currentTypeface.GlyphTypeface.PlatformImpl;
+
+            for (; count < text.Length;)
+            {
+                codepoint = CodepointReader.Peek(text, count, out var charCount);
+
+                if (!UnicodeUtility.IsWhiteSpace(codepoint) && glyphTypeface.Font.TryGetGlyph(codepoint, out _))
+                {
+                    break;
+                }
+
+                count += charCount;
+            }
+
+            return new TextStyleRun(new TextPointer(text.Start, count),
+                new TextStyle(currentTypeface, defaultStyle.TextFormat.FontRenderingEmSize,
+                    defaultStyle.Foreground));
+        }
+
+        /// <summary>
+        ///     Tries to get run properties.
+        /// </summary>
+        /// <param name="defaultTypeface"></param>
+        /// <param name="text"></param>
+        /// <param name="typeface">The typeface that is used to find matching characters.</param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        private static bool TryGetRunProperties(ReadOnlySlice<char> text, Typeface typeface, Typeface defaultTypeface,
+            out int count)
+        {
+            if (text.Length == 0)
+            {
+                count = 0;
+                return false;
+            }
+
+            var isFallback = typeface != defaultTypeface;
+
+            count = 0;
+            var script = Script.Common;
+            var direction = Direction.Invalid;
+
+            var font = ((GlyphTypefaceImpl)typeface.GlyphTypeface.PlatformImpl).Font;
+            var defaultFont = ((GlyphTypefaceImpl)defaultTypeface.GlyphTypeface.PlatformImpl).Font;
+
+            for (; count < text.Length;)
+            {
+                var codepoint = CodepointReader.Peek(text, count, out var charCount);
+
+                var currentScript = UnicodeFunctions.Default.GetScript((uint)codepoint);
+
+                // ToDo: Implement BiDi algorithm
+                if (currentScript.HorizontalDirection != direction)
+                {
+                    if (direction == Direction.Invalid)
+                    {
+                        direction = currentScript.HorizontalDirection;
+                    }
+                    else
+                    {
+                        if (!UnicodeUtility.IsWhiteSpace(codepoint))
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                if (currentScript != script)
+                {
+                    if (currentScript != Script.Inherited && currentScript != Script.Common)
+                    {
+                        if (script == Script.Inherited || script == Script.Common)
+                        {
+                            script = currentScript;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                if (isFallback)
+                {
+                    if (defaultFont.TryGetGlyph(codepoint, out _))
+                    {
+                        break;
+                    }
+                }
+
+                if (!font.TryGetGlyph(codepoint, out _))
+                {
+                    if (!UnicodeUtility.IsWhiteSpace(codepoint))
+                    {
+                        break;
+                    }
+                }
+
+                count += charCount;
+            }
+
+            return count > 0;
         }
 
         public GlyphRun CreateShapedGlyphRun(ReadOnlySlice<char> text, TextFormat textFormat)

@@ -52,6 +52,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             return new FormattedText(text,
                 FontManager.Current.GetOrAddTypeface(TestFontFamily, fontWeight, fontStyle),
                 fontSize,
+                Brushes.Black,
                 textAlignment,
                 wrapping,
                 trimming,

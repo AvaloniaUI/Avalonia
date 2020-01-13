@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using Avalonia.Media.Text;
 using Avalonia.Media.Text.Unicode;
 using Avalonia.Platform;
@@ -9,12 +8,9 @@ namespace Avalonia.UnitTests
 {
     public class MockTextFormatterImpl : ITextFormatterImpl
     {
-        public List<TextRunProperties> CreateTextRuns(ReadOnlySlice<char> text, TextRunStyle defaultStyle)
+        public TextStyleRun CreateShapableTextStyleRun(ReadOnlySlice<char> text, TextStyle defaultStyle)
         {
-            return new List<TextRunProperties>
-            {
-                new TextRunProperties(text.GetTextPointer(), defaultStyle)
-            };
+            return new TextStyleRun(new TextPointer(text.Start, text.Length), defaultStyle);
         }
 
         public GlyphRun CreateShapedGlyphRun(ReadOnlySlice<char> text, TextFormat textFormat)

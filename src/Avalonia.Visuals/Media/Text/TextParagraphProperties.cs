@@ -3,18 +3,18 @@
     public readonly struct TextParagraphProperties
     {
         public TextParagraphProperties(
-            TextRunStyle defaultTextRunStyle,
+            TextStyle defaultTextStyle,
             TextAlignment textAlignment = TextAlignment.Left,
             TextWrapping textWrapping = TextWrapping.NoWrap,
             TextTrimming textTrimming = TextTrimming.None)
         {
-            DefaultTextRunStyle = defaultTextRunStyle;
+            DefaultTextStyle = defaultTextStyle;
             TextAlignment = textAlignment;
             TextWrapping = textWrapping;
             TextTrimming = textTrimming;
         }
 
-        public TextRunStyle DefaultTextRunStyle { get; }
+        public TextStyle DefaultTextStyle { get; }
 
         public TextAlignment TextAlignment { get; }
 

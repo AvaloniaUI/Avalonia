@@ -18,6 +18,7 @@ namespace Avalonia.Media
         private Typeface _typeface;
         private double _fontSize;
         private string _text;
+        private IBrush _foreground;
         private TextAlignment _textAlignment;
         private TextWrapping _textWrapping;
         private TextTrimming _textTrimming;
@@ -27,40 +28,28 @@ namespace Avalonia.Media
 
         }
 
-        public FormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment,
-            TextWrapping textWrapping, TextTrimming textTrimming, Size constraint)
-        {
-            _text = text;
-            _typeface = typeface;
-            _fontSize = fontSize;
-            _textAlignment = textAlignment;
-            _textWrapping = textWrapping;
-            _textTrimming = textTrimming;
-            _constraint = constraint;
-        }
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="text"></param>
         /// <param name="typeface"></param>
         /// <param name="fontSize"></param>
+        /// <param name="foreground"></param>
         /// <param name="textAlignment"></param>
         /// <param name="textWrapping"></param>
+        /// <param name="textTrimming"></param>
         /// <param name="constraint"></param>
-        public FormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment,
-            TextWrapping textWrapping, Size constraint)
+        public FormattedText(string text, Typeface typeface, double fontSize, IBrush foreground,
+            TextAlignment textAlignment, TextWrapping textWrapping, TextTrimming textTrimming, 
+            Size constraint)
         {
             _text = text;
-
             _typeface = typeface;
-
             _fontSize = fontSize;
-
+            _foreground = foreground;
             _textAlignment = textAlignment;
-
             _textWrapping = textWrapping;
-
+            _textTrimming = textTrimming;
             _constraint = constraint;
         }
 
@@ -104,6 +93,15 @@ namespace Avalonia.Media
         {
             get => _fontSize;
             set => Set(ref _fontSize, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the foreground.
+        /// </summary>
+        public IBrush Foreground
+        {
+            get => _foreground;
+            set => Set(ref _foreground, value);
         }
 
         /// <summary>
@@ -157,8 +155,8 @@ namespace Avalonia.Media
         /// </summary>
         public TextLayout TextLayout =>
             _textLayout ?? (_textLayout = new TextLayout(
-                Text, Typeface, FontSize, TextAlignment,
-                TextWrapping, TextTrimming,
+                Text, Typeface, FontSize, Foreground, 
+                TextAlignment, TextWrapping, TextTrimming,
                 Constraint, Spans));
 
         /// <summary>

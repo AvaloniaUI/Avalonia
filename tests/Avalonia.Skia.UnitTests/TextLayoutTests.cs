@@ -32,6 +32,7 @@ namespace Avalonia.Skia.UnitTests
                     s_multiLineText,
                     Typeface.Default,
                     12.0f,
+                    Brushes.Black,
                     TextAlignment.Left,
                     TextWrapping.NoWrap,
                     TextTrimming.None,
@@ -63,7 +64,7 @@ namespace Avalonia.Skia.UnitTests
             {
                 var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
-                for (var i = 1; i < s_multiLineText.Length; i++)
+                for (var i = 4; i < s_multiLineText.Length; i++)
                 {
                     var spans = new List<FormattedTextStyleSpan>
                     {
@@ -74,6 +75,7 @@ namespace Avalonia.Skia.UnitTests
                         s_multiLineText,
                         Typeface.Default,
                         12.0f,
+                        Brushes.Black,
                         TextAlignment.Left,
                         TextWrapping.Wrap,
                         TextTrimming.None,
@@ -83,6 +85,7 @@ namespace Avalonia.Skia.UnitTests
                         s_multiLineText,
                         Typeface.Default,
                         12.0f,
+                        Brushes.Black,
                         TextAlignment.Left,
                         TextWrapping.Wrap,
                         TextTrimming.None,
@@ -120,6 +123,7 @@ namespace Avalonia.Skia.UnitTests
                     s_singleLineText,
                     Typeface.Default,
                     12.0f,
+                    Brushes.Black,
                     TextAlignment.Left,
                     TextWrapping.NoWrap,
                     TextTrimming.None,
@@ -161,6 +165,7 @@ namespace Avalonia.Skia.UnitTests
                     s_singleLineText,
                     Typeface.Default,
                     12.0f,
+                    Brushes.Black,
                     TextAlignment.Left,
                     TextWrapping.NoWrap,
                     TextTrimming.None,
@@ -201,6 +206,7 @@ namespace Avalonia.Skia.UnitTests
                     "0",
                     Typeface.Default,
                     12.0f,
+                    Brushes.Black,
                     TextAlignment.Left,
                     TextWrapping.NoWrap,
                     TextTrimming.None,
@@ -238,6 +244,7 @@ namespace Avalonia.Skia.UnitTests
                     text,
                     Typeface.Default,
                     12.0f,
+                    Brushes.Black,
                     TextAlignment.Left,
                     TextWrapping.NoWrap,
                     TextTrimming.None,
@@ -271,6 +278,7 @@ namespace Avalonia.Skia.UnitTests
                     s_multiLineText,
                     Typeface.Default,
                     12.0f,
+                    Brushes.Black,
                     TextAlignment.Left,
                     TextWrapping.NoWrap,
                     TextTrimming.None,
@@ -291,6 +299,7 @@ namespace Avalonia.Skia.UnitTests
                     s_multiLineText,
                     Typeface.Default,
                     12.0f,
+                    Brushes.Black,
                     TextAlignment.Left,
                     TextWrapping.NoWrap,
                     TextTrimming.None,
@@ -327,6 +336,7 @@ namespace Avalonia.Skia.UnitTests
                     text,
                     Typeface.Default,
                     12.0f,
+                    Brushes.Black,
                     TextAlignment.Left,
                     TextWrapping.Wrap,
                     TextTrimming.None,
@@ -359,6 +369,7 @@ namespace Avalonia.Skia.UnitTests
                     s_multiLineText,
                     Typeface.Default,
                     12.0f,
+                    Brushes.Black,
                     TextAlignment.Left,
                     TextWrapping.NoWrap,
                     TextTrimming.None,
@@ -384,6 +395,7 @@ namespace Avalonia.Skia.UnitTests
                     text,
                     Typeface.Default,
                     12.0f,
+                    Brushes.Black,
                     TextAlignment.Left,
                     TextWrapping.NoWrap,
                     TextTrimming.None,
@@ -416,6 +428,7 @@ namespace Avalonia.Skia.UnitTests
                     text,
                     Typeface.Default,
                     12.0f,
+                    Brushes.Black,
                     TextAlignment.Left,
                     TextWrapping.NoWrap,
                     TextTrimming.None,
@@ -453,6 +466,7 @@ namespace Avalonia.Skia.UnitTests
                     text,
                     Typeface.Default,
                     12.0f,
+                    Brushes.Black,
                     TextAlignment.Left,
                     TextWrapping.NoWrap,
                     TextTrimming.None,
@@ -481,6 +495,7 @@ namespace Avalonia.Skia.UnitTests
                     "abcde\r\n",
                     Typeface.Default,
                     12.0f,
+                    Brushes.Black,
                     TextAlignment.Left,
                     TextWrapping.NoWrap,
                     TextTrimming.None,
@@ -505,11 +520,9 @@ namespace Avalonia.Skia.UnitTests
             {
                 var buffer = new ReadOnlySlice<char>(text.AsMemory());
 
-                var breaker = TextRunIterator.Create(buffer, new TextRunStyle(Typeface.Default, 12, null));
+                var textRuns = TextFormatter.FormatTextRuns(buffer, new TextStyle(Typeface.Default, 12, Brushes.Black));
 
-                var runs = breaker.ToArray();
-
-                Assert.Equal(numberOfRuns, runs.Length);
+                Assert.Equal(numberOfRuns, textRuns.Count);
             }
         }
 
@@ -524,11 +537,9 @@ namespace Avalonia.Skia.UnitTests
 
                 var buffer = new ReadOnlySlice<char>(text.AsMemory());
 
-                var breaker = TextRunIterator.Create(buffer, new TextRunStyle(Typeface.Default, 12, null));
+                var textRuns = TextFormatter.FormatTextRuns(buffer, new TextStyle(Typeface.Default, 12, Brushes.Black));
 
-                Assert.Equal(2, breaker.Count);
-
-                Assert.Equal(4, breaker[0].TextPointer.Length);
+                Assert.Equal(4, textRuns[0].GlyphRun.Characters.Length);
             }
         }
 
@@ -543,8 +554,15 @@ namespace Avalonia.Skia.UnitTests
 
                 var typeface = Typeface.Default;
 
-                var layout = new TextLayout(text, typeface, 12, TextAlignment.Left, TextWrapping.NoWrap,
-                    TextTrimming.None, Size.Infinity);
+                var layout = new TextLayout(
+                    text,
+                    typeface, 
+                    12,
+                    Brushes.Black,
+                    TextAlignment.Left,
+                    TextWrapping.NoWrap,
+                    TextTrimming.None,
+                    Size.Infinity);
 
                 var textLine = layout.TextLines[0];
 

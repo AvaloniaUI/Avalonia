@@ -354,7 +354,8 @@ namespace Avalonia.Controls
             }
 
             FormattedText.Constraint = Bounds.Size;
-            context.DrawText(Foreground, new Point(), FormattedText);
+
+            context.DrawText(FormattedText, new Point());
         }
 
         /// <summary>
@@ -370,6 +371,7 @@ namespace Avalonia.Controls
                 Constraint = constraint,
                 Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily, FontWeight, FontStyle),
                 FontSize = FontSize,
+                Foreground = Foreground,
                 Text = text ?? string.Empty,
                 TextAlignment = TextAlignment,
                 TextWrapping = TextWrapping,

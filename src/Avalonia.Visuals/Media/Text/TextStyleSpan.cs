@@ -1,8 +1,8 @@
 ﻿namespace Avalonia.Media.Text
 {
-    public readonly struct TextRunProperties
+    public readonly struct TextStyleRun
     {
-        public TextRunProperties(TextPointer textPointer, TextRunStyle style)
+        public TextStyleRun(TextPointer textPointer, TextStyle style)
         {
             TextPointer = textPointer;
             Style = style;
@@ -14,13 +14,13 @@
         public TextPointer TextPointer { get; }
 
         /// <summary>
-        ///     The text run properties.
+        ///     The text style.
         /// </summary>
-        public TextRunStyle Style { get; }
+        public TextStyle Style { get; }
 
-        private TextRunProperties WithTextPointer(TextPointer textPointer)
+        private TextStyleRun WithTextPointer(TextPointer textPointer)
         {
-            return new TextRunProperties(textPointer, Style);
+            return new TextStyleRun(textPointer, Style);
         }
 
         public SplitResult Split(int length)
@@ -34,15 +34,15 @@
 
         public readonly struct SplitResult
         {
-            public SplitResult(TextRunProperties first, TextRunProperties second)
+            public SplitResult(TextStyleRun first, TextStyleRun second)
             {
                 First = first;
                 Second = second;
             }
 
-            public TextRunProperties First { get; }
+            public TextStyleRun First { get; }
 
-            public TextRunProperties Second { get; }
+            public TextStyleRun Second { get; }
         }
     }
 }

@@ -21,16 +21,19 @@ namespace Avalonia.Skia.UnitTests
 
                 var runPointers = new[] { new TextPointer(0, 3), new TextPointer(3, 3), new TextPointer(6, 4) };
 
-                var runProperties = runPointers.Select(CreateRunProperties).ToList();
+                var textStyleRuns = runPointers.Select(CreateRunProperties).ToArray();
 
-                var textLine = TextFormatter.FormatLine(text, double.PositiveInfinity, new TextParagraphProperties(),
-                    runProperties);
+                var textParagraphProperties =
+                    new TextParagraphProperties(new TextStyle(Typeface.Default, 12, Brushes.Black));
+
+                var textLine = TextFormatter.FormatLine(text, double.PositiveInfinity, textParagraphProperties,
+                    textStyleRuns);
             }
         }
 
-        private static TextRunProperties CreateRunProperties(TextPointer textPointer)
+        private static TextStyleRun CreateRunProperties(TextPointer textPointer)
         {
-            return new TextRunProperties(textPointer, new TextRunStyle(Typeface.Default, 12, null));
+            return new TextStyleRun(textPointer, new TextStyle(Typeface.Default, 12, null));
         }
     }
 }

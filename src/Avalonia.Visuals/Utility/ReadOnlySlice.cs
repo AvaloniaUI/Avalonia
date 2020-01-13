@@ -71,11 +71,6 @@ namespace Avalonia.Utility
             return Buffer.Span.Slice(Start, Length);
         }
 
-        public TextPointer GetTextPointer()
-        {
-            return new TextPointer(Start, Length);
-        }
-
         /// <summary>
         ///     Returns a sub slice of elements that start at the specified index and has the specified number of elements.
         /// </summary>

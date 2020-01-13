@@ -54,6 +54,16 @@ namespace Avalonia.Media.Text
                 glyphCount++;
             }
 
+            if (GlyphRun.Characters.Length == length)
+            {
+                return new SplitTextRunResult(this, null);
+            }
+
+            if (GlyphRun.GlyphIndices.Length == glyphCount)
+            {
+                return new SplitTextRunResult(this, null);
+            }
+
             var firstGlyphRun = new GlyphRun(
                 TextFormat.Typeface.GlyphTypeface,
                 TextFormat.FontRenderingEmSize,

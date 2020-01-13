@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Platform;
 using Avalonia.Utility;
 
 namespace Avalonia.Media.Text
@@ -40,6 +41,34 @@ namespace Avalonia.Media.Text
         ///     The line metrics.
         /// </value>
         public TextLineMetrics LineMetrics { get; }
+
+        public void Draw(IDrawingContextImpl drawingContext, Point origin)
+        {
+            var currentX = origin.X;
+
+            foreach (var textRun in TextRuns)
+            {
+                if (textRun.GlyphRun.GlyphIndices.Length == 0)
+                {
+                    continue;
+                }
+
+                if (textRun.TextFormat.Typeface == null)
+                {
+                    continue;
+                }
+
+                if (textRun.Foreground != null)
+                {
+                    var baselineOrigin = new Point(currentX + LineMetrics.BaselineOrigin.X,
+                        origin.Y + LineMetrics.BaselineOrigin.Y);
+
+                    drawingContext.DrawGlyphRun(textRun.Foreground, textRun.GlyphRun, baselineOrigin);
+                }
+
+                currentX += textRun.GlyphRun.Bounds.Width;
+            }
+        }
 
         /// <summary>
         ///     Get the character hit corresponding to the specified 

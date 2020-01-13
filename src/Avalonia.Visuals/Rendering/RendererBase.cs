@@ -19,7 +19,8 @@ namespace Avalonia.Rendering
             _fpsText = new FormattedText
             {
                 Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily.Default),
-                FontSize = s_fontSize
+                FontSize = s_fontSize,
+                Foreground = Brushes.Black
             };
         }
 
@@ -51,7 +52,7 @@ namespace Avalonia.Rendering
 
             context.Transform = Matrix.Identity;
             context.DrawRectangle(Brushes.Black,null, rect);
-            _fpsText.TextLayout.Draw (context, Brushes.White, rect.TopLeft);
+            _fpsText.TextLayout.Draw(context, rect.TopLeft);
         }
     }
 }

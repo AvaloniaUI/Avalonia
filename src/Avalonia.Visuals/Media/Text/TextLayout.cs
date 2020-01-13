@@ -23,6 +23,7 @@ namespace Avalonia.Media.Text
         /// <param name="text">The text.</param>
         /// <param name="typeface">The typeface.</param>
         /// <param name="fontSize">Size of the font.</param>
+        /// <param name="foreground">The foreground.</param>
         /// <param name="textAlignment">The text alignment.</param>
         /// <param name="textWrapping">The text wrapping.</param>
         /// <param name="textTrimming">The text trimming.</param>
@@ -32,6 +33,7 @@ namespace Avalonia.Media.Text
             string text,
             Typeface typeface,
             double fontSize,
+            IBrush foreground,
             TextAlignment textAlignment,
             TextWrapping textWrapping,
             TextTrimming textTrimming,
@@ -43,7 +45,7 @@ namespace Avalonia.Media.Text
                 new ReadOnlySlice<char>(text.AsMemory());
 
             _paragraphProperties =
-                CreateTextParagraphProperties(_text, typeface, fontSize, textAlignment, textWrapping, textTrimming);
+                CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping, textTrimming);
 
             _constraint = constraint;
 
@@ -74,9 +76,8 @@ namespace Avalonia.Media.Text
         ///     Draws the layout.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        /// <param name="foreground">The default foreground.</param>
         /// <param name="origin">The origin.</param>
-        public void Draw(IDrawingContextImpl context, IBrush foreground, Point origin)
+        public void Draw(IDrawingContextImpl context, Point origin)
         {
             if (!TextLines.Any())
             {
@@ -87,31 +88,16 @@ namespace Avalonia.Media.Text
 
             foreach (var textLine in TextLines)
             {
-                var currentX = origin.X;
-
-                foreach (var textRun in textLine.TextRuns)
-                {
-                    if (textRun.TextFormat.Typeface == null || textRun.GlyphRun.GlyphIndices.Length == 0)
-                    {
-                        continue;
-                    }
-
-                    var baselineOrigin = new Point(currentX + textLine.LineMetrics.BaselineOrigin.X,
-                        currentY + textLine.LineMetrics.BaselineOrigin.Y);
-
-                    context.DrawGlyphRun(textRun.Foreground ?? foreground, textRun.GlyphRun, baselineOrigin);
-
-                    currentX += textRun.GlyphRun.Bounds.Width;
-                }
+                textLine.Draw(context, new Point(origin.X, currentY));
 
                 currentY += textLine.LineMetrics.Size.Height;
             }
         }
 
-        private static TextParagraphProperties CreateTextParagraphProperties(ReadOnlySlice<char> text, Typeface typeface,
-            double fontSize, TextAlignment textAlignment, TextWrapping textWrapping, TextTrimming textTrimming)
+        private static TextParagraphProperties CreateTextParagraphProperties(Typeface typeface, double fontSize,
+            IBrush foreground, TextAlignment textAlignment, TextWrapping textWrapping, TextTrimming textTrimming)
         {
-            var textRunStyle = new TextRunStyle(typeface, fontSize, null);
+            var textRunStyle = new TextStyle(typeface, fontSize, foreground);
 
             return new TextParagraphProperties(textRunStyle, textAlignment, textWrapping, textTrimming);
         }
@@ -121,147 +107,147 @@ namespace Avalonia.Media.Text
         /// </summary>
         /// <param name="textRuns"></param>
         /// <param name="span">The text style span.</param>
-        private static void ApplyTextStyleSpan(IList<TextRunProperties> textRuns, FormattedTextStyleSpan span)
-        {
-            var currentPosition = 0;
-            var appliedLength = 0;
+        //private static void ApplyTextStyleSpan(List<TextStyleRun> textRuns, FormattedTextStyleSpan span)
+        //{
+        //    var currentPosition = 0;
+        //    var appliedLength = 0;
 
-            for (var runIndex = 0; runIndex < textRuns.Count; runIndex++)
-            {
-                var currentTextRun = textRuns[runIndex];
+        //    for (var runIndex = 0; runIndex < textRuns.Count; runIndex++)
+        //    {
+        //        var currentTextRun = textRuns[runIndex];
 
-                if (currentTextRun.TextPointer.Length == 0)
-                {
-                    continue;
-                }
+        //        if (currentTextRun.TextPointer.Length == 0)
+        //        {
+        //            continue;
+        //        }
 
-                if (currentPosition + currentTextRun.TextPointer.Length - 1 < span.StartIndex)
-                {
-                    currentPosition += currentTextRun.TextPointer.Length;
+        //        if (currentPosition + currentTextRun.TextPointer.Length - 1 < span.StartIndex)
+        //        {
+        //            currentPosition += currentTextRun.TextPointer.Length;
 
-                    continue;
-                }
+        //            continue;
+        //        }
 
-                if (currentPosition == span.StartIndex + appliedLength)
-                {
-                    var splitLength = span.Length - appliedLength;
+        //        if (currentPosition == span.StartIndex + appliedLength)
+        //        {
+        //            var splitLength = span.Length - appliedLength;
 
-                    if (splitLength >= currentTextRun.TextPointer.Length)
-                    {
-                        // Apply to the whole run 
-                        textRuns.RemoveAt(runIndex);
+        //            if (splitLength >= currentTextRun.TextPointer.Length)
+        //            {
+        //                // Apply to the whole run 
+        //                textRuns.RemoveAt(runIndex);
 
-                        var updatedTextRun = ApplyTextStyleSpan(span, currentTextRun);
+        //                var updatedTextRun = ApplyTextStyleSpan(span, currentTextRun);
 
-                        appliedLength += updatedTextRun.TextPointer.Length;
+        //                appliedLength += updatedTextRun.TextPointer.Length;
 
-                        textRuns.Insert(runIndex, updatedTextRun);
-                    }
-                    else
-                    {
-                        // Apply at start of the run 
-                        var start = currentTextRun.Split(splitLength);
+        //                textRuns.Insert(runIndex, updatedTextRun);
+        //            }
+        //            else
+        //            {
+        //                // Apply at start of the run 
+        //                var start = currentTextRun.Split(splitLength);
 
-                        textRuns.RemoveAt(runIndex);
+        //                textRuns.RemoveAt(runIndex);
 
-                        var updatedTextRun = ApplyTextStyleSpan(span, start.First);
+        //                var updatedTextRun = ApplyTextStyleSpan(span, start.First);
 
-                        appliedLength += updatedTextRun.TextPointer.Length;
+        //                appliedLength += updatedTextRun.TextPointer.Length;
 
-                        textRuns.Insert(runIndex, updatedTextRun);
+        //                textRuns.Insert(runIndex, updatedTextRun);
 
-                        runIndex++;
+        //                runIndex++;
 
-                        textRuns.Insert(runIndex, start.Second);
-                    }
-                }
-                else
-                {
-                    var splitLength = Math.Min(
-                        span.StartIndex + appliedLength - currentPosition,
-                        currentTextRun.TextPointer.Length);
+        //                textRuns.Insert(runIndex, start.Second);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            var splitLength = Math.Min(
+        //                span.StartIndex + appliedLength - currentPosition,
+        //                currentTextRun.TextPointer.Length);
 
-                    if (splitLength > 0)
-                    {
-                        var start = currentTextRun.Split(splitLength);
+        //            if (splitLength > 0)
+        //            {
+        //                var start = currentTextRun.Split(splitLength);
 
-                        if (splitLength + span.Length - appliedLength >= currentTextRun.TextPointer.Length)
-                        {
-                            // Apply at the end of the run
-                            textRuns.RemoveAt(runIndex);
+        //                if (splitLength + span.Length - appliedLength >= currentTextRun.TextPointer.Length)
+        //                {
+        //                    // Apply at the end of the run
+        //                    textRuns.RemoveAt(runIndex);
 
-                            textRuns.Insert(runIndex, start.First);
+        //                    textRuns.Insert(runIndex, start.First);
 
-                            runIndex++;
+        //                    runIndex++;
 
-                            var updatedTextRun = ApplyTextStyleSpan(span, start.Second);
+        //                    var updatedTextRun = ApplyTextStyleSpan(span, start.Second);
 
-                            appliedLength += updatedTextRun.TextPointer.Length;
+        //                    appliedLength += updatedTextRun.TextPointer.Length;
 
-                            textRuns.Insert(runIndex, updatedTextRun);
-                        }
-                        else
-                        {
-                            splitLength = span.Length;
+        //                    textRuns.Insert(runIndex, updatedTextRun);
+        //                }
+        //                else
+        //                {
+        //                    splitLength = span.Length;
 
-                            // Apply in between the run
-                            var end = start.Second.Split(splitLength);
+        //                    // Apply in between the run
+        //                    var end = start.Second.Split(splitLength);
 
-                            textRuns.RemoveAt(runIndex);
+        //                    textRuns.RemoveAt(runIndex);
 
-                            textRuns.Insert(runIndex, start.First);
+        //                    textRuns.Insert(runIndex, start.First);
 
-                            runIndex++;
+        //                    runIndex++;
 
-                            var updatedTextRun = ApplyTextStyleSpan(span, end.First);
+        //                    var updatedTextRun = ApplyTextStyleSpan(span, end.First);
 
-                            appliedLength += updatedTextRun.TextPointer.Length;
+        //                    appliedLength += updatedTextRun.TextPointer.Length;
 
-                            textRuns.Insert(runIndex, updatedTextRun);
+        //                    textRuns.Insert(runIndex, updatedTextRun);
 
-                            runIndex++;
+        //                    runIndex++;
 
-                            textRuns.Insert(runIndex, end.Second);
-                        }
-                    }
-                    else
-                    {
-                        textRuns.RemoveAt(runIndex);
+        //                    textRuns.Insert(runIndex, end.Second);
+        //                }
+        //            }
+        //            else
+        //            {
+        //                textRuns.RemoveAt(runIndex);
 
-                        var updatedTextRun = ApplyTextStyleSpan(span, currentTextRun);
+        //                var updatedTextRun = ApplyTextStyleSpan(span, currentTextRun);
 
-                        textRuns.Insert(runIndex, updatedTextRun);
-                    }
-                }
+        //                textRuns.Insert(runIndex, updatedTextRun);
+        //            }
+        //        }
 
-                if (appliedLength >= span.Length)
-                {
-                    return;
-                }
+        //        if (appliedLength >= span.Length)
+        //        {
+        //            return;
+        //        }
 
-                currentPosition += currentTextRun.TextPointer.Length;
-            }
-        }
+        //        currentPosition += currentTextRun.TextPointer.Length;
+        //    }
+        //}
 
         /// <summary>
         ///     Applies the text style span to a text run.
         /// </summary>
         /// <param name="span">The text span.</param>
-        /// <param name="textRun">The text run.</param>
+        /// <param name="textStyleRun">The text run.</param>
         /// <returns></returns>
-        private static TextRunProperties ApplyTextStyleSpan(FormattedTextStyleSpan span, TextRunProperties textRun)
-        {
-            var textPointer = textRun.TextPointer;
+        //private static TextStyleRun ApplyTextStyleSpan(FormattedTextStyleSpan span, TextStyleRun textStyleRun)
+        //{
+        //    var textPointer = textStyleRun.TextPointer;
 
-            var runStyle = textRun.Style;
+        //    var runStyle = textStyleRun.Style;
 
-            var drawingEffect = span.Foreground?.ToImmutable() ?? runStyle.Foreground;
+        //    var drawingEffect = span.Foreground?.ToImmutable() ?? runStyle.Foreground;
 
-            var textFormat = new TextFormat(span.Typeface ?? runStyle.TextFormat.Typeface,
-                span.FontSize ?? runStyle.TextFormat.FontRenderingEmSize);
+        //    var textFormat = new TextFormat(span.Typeface ?? runStyle.TextFormat.Typeface,
+        //        span.FontSize ?? runStyle.TextFormat.FontRenderingEmSize);
 
-            return new TextRunProperties(textPointer, new TextRunStyle(textFormat, drawingEffect));
-        }
+        //    return new TextStyleRun(textPointer, new TextStyle(textFormat, drawingEffect));
+        //}
 
         /// <summary>
         /// 
@@ -293,7 +279,7 @@ namespace Avalonia.Media.Text
         {
             var xOrigin = TextLine.GetParagraphOffsetX(0, _paragraphWidth, _paragraphProperties.TextAlignment);
 
-            var textFormat = _paragraphProperties.DefaultTextRunStyle.TextFormat;
+            var textFormat = _paragraphProperties.DefaultTextStyle.TextFormat;
 
             var ascent = textFormat.FontMetrics.Ascent;
 
@@ -324,17 +310,17 @@ namespace Avalonia.Media.Text
             }
             else
             {
-                var runProperties = TextFormatter.CreateTextRuns(_text, _paragraphProperties.DefaultTextRunStyle);
+                var textStyleRuns = CreateTextStyleRuns(spans);
 
                 var textLines = new List<TextLine>();
 
-                if (spans != null)
-                {
-                    foreach (var span in spans)
-                    {
-                        ApplyTextStyleSpan(runProperties, span);
-                    }
-                }
+                //if (spans != null)
+                //{
+                //    foreach (var span in spans)
+                //    {
+                //        ApplyTextStyleSpan(runProperties, span);
+                //    }
+                //}
 
                 double left = 0.0, right = 0.0, bottom = 0.0;
 
@@ -376,8 +362,7 @@ namespace Avalonia.Media.Text
                     {
                         var textSlice = _text.AsSlice(currentPosition, remainingLength);
 
-                        var textLine = TextFormatter.FormatLine(textSlice, _paragraphWidth, _paragraphProperties,
-                            runProperties);
+                        var textLine = TextFormatter.FormatLine(textSlice, _paragraphWidth, _paragraphProperties, textStyleRuns);
 
                         UpdateBounds(textLine, ref left, ref right, ref bottom);
 
@@ -409,6 +394,34 @@ namespace Avalonia.Media.Text
 
                 TextLines = textLines;
             }
+        }
+
+        private ReadOnlySpan<TextStyleRun> CreateTextStyleRuns(IReadOnlyList<FormattedTextStyleSpan> spans)
+        {
+            if (spans == null || spans.Count == 0)
+            {
+                return default;
+            }
+
+            var textStyleRuns = new TextStyleRun[spans.Count];
+
+            for (var i = 0; i < spans.Count; i++)
+            {
+                var span = spans[i];
+
+                var textPointer = new TextPointer(span.StartIndex, span.Length);
+
+                var runStyle = _paragraphProperties.DefaultTextStyle;
+
+                var drawingEffect = span.Foreground?.ToImmutable() ?? runStyle.Foreground;
+
+                var textFormat = new TextFormat(span.Typeface ?? runStyle.TextFormat.Typeface,
+                    span.FontSize ?? runStyle.TextFormat.FontRenderingEmSize);
+
+                textStyleRuns[i] = new TextStyleRun(textPointer, new TextStyle(textFormat, drawingEffect));
+            }
+
+            return textStyleRuns;
         }
     }
 }

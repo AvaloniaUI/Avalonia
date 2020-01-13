@@ -41,7 +41,7 @@ namespace Avalonia.Media
             PlatformImpl = impl;
             _ownsImpl = true;
         }
-        
+
         public DrawingContext(IDrawingContextImpl impl, bool ownsImpl)
         {
             _ownsImpl = ownsImpl;
@@ -174,17 +174,13 @@ namespace Avalonia.Media
         /// <summary>
         /// Draws text.
         /// </summary>
-        /// <param name="foreground">The foreground brush.</param>
-        /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(IBrush foreground, Point origin, FormattedText text)
+        /// <param name="origin">The upper-left corner of the text.</param>
+        public void DrawText(FormattedText text, Point origin)
         {
             Contract.Requires<ArgumentNullException>(text != null);
 
-            if (foreground != null)
-            {
-                text.TextLayout.Draw(PlatformImpl, foreground, origin);
-            }
+            text.TextLayout.Draw(PlatformImpl, origin);
         }
 
         /// <summary>

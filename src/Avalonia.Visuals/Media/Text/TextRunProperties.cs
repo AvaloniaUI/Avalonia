@@ -3,14 +3,14 @@
 
 namespace Avalonia.Media.Text
 {
-    public readonly struct TextRunStyle
+    public readonly struct TextStyle
     {
-        public TextRunStyle(Typeface typeface, double fontRenderingEmSize, IBrush foreground) 
+        public TextStyle(Typeface typeface, double fontRenderingEmSize, IBrush foreground) 
             : this(new TextFormat(typeface, fontRenderingEmSize), foreground)
         {
         }
 
-        public TextRunStyle(TextFormat textFormat, IBrush foreground)
+        public TextStyle(TextFormat textFormat, IBrush foreground)
         {
             TextFormat = textFormat;
             Foreground = foreground;
