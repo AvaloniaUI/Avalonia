@@ -236,14 +236,12 @@ namespace Avalonia.Controls
 
         public void OnElementPrepared(IControl element)
         {
-            // If we have an anchor element, we do not want the
-            // scroll anchor provider to start anchoring some other element.
-            ////element.CanBeScrollAnchor(true);
+            _scroller.RegisterAnchorCandidate(element);
         }
 
-        public void OnElementCleared(ILayoutable element)
+        public void OnElementCleared(IControl element)
         {
-            ////element.CanBeScrollAnchor(false);
+            _scroller.UnregisterAnchorCandidate(element);
         }
 
         public void OnOwnerMeasuring()

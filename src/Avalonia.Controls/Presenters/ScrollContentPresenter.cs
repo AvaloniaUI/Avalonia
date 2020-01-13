@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Presents a scrolling view of content inside a <see cref="ScrollViewer"/>.
     /// </summary>
-    public class ScrollContentPresenter : ContentPresenter, IPresenter, IScrollable
+    public class ScrollContentPresenter : ContentPresenter, IPresenter, IScrollable, IScrollAnchorProvider
     {
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
@@ -65,6 +65,8 @@ namespace Avalonia.Controls.Presenters
         private IDisposable _logicalScrollSubscription;
         private Size _viewport;
         private Dictionary<int, Vector> _activeLogicalGestureScrolls;
+        private List<IControl> _anchorCandidates;
+        private (IControl control, Rect bounds) _anchor;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollContentPresenter"/> class.
@@ -132,6 +134,9 @@ namespace Avalonia.Controls.Presenters
             private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
         }
 
+        /// <inheritdoc/>
+        IControl IScrollAnchorProvider.CurrentAnchor => _anchor.Item1;
+
         /// <summary>
         /// Attempts to bring a portion of the target visual into view by scrolling the content.
         /// </summary>
@@ -197,6 +202,24 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
+        void IScrollAnchorProvider.RegisterAnchorCandidate(IControl element)
+        {
+            _anchorCandidates ??= new List<IControl>();
+            _anchorCandidates.Add(element);
+        }
+
+        /// <inheritdoc/>
+        void IScrollAnchorProvider.UnregisterAnchorCandidate(IControl element)
+        {
+            _anchorCandidates?.Remove(element);
+
+            if (_anchor.Item1 == element)
+            {
+                _anchor = default;
+            }
+        }
+
+        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
             if (_logicalScrollSubscription != null || Child == null)
@@ -223,9 +246,44 @@ namespace Avalonia.Controls.Presenters
             var size = new Size(
                 CanHorizontallyScroll ? Math.Max(Child.DesiredSize.Width, finalSize.Width) : finalSize.Width,
                 CanVerticallyScroll ? Math.Max(Child.DesiredSize.Height, finalSize.Height) : finalSize.Height);
+
+            Vector TrackAnchor()
+            {
+                // If we have an anchor and its position relative to Child has changed during the
+                // arrange then that change wasn't just due to scrolling (as scrolling doesn't adjust
+                // relative positions within Child).
+                if (_anchor.control != null &&
+                    TranslateBounds(_anchor.control, Child, out var updatedBounds) &&
+                    updatedBounds.Position != _anchor.bounds.Position)
+                {
+                    return updatedBounds.Position - _anchor.bounds.Position;
+                }
+
+                return default;
+            }
+
+            // Check whether our previous anchor (if any) has moved relative to Child since the last
+            // arrange, and if so adjust the offset to bring it back into place.
+            Offset += TrackAnchor();
+
+            // Calculate the new anchor element.
+            _anchor = CalculateCurrentAnchor();
+
+            // Do the arrange.
             ArrangeOverrideImpl(size, -Offset);
+
+            // If the anchor moved during the arrange, we need to adjust the offset and do another arrange.
+            var postOffset = TrackAnchor();
+
+            if (postOffset != default)
+            {
+                Offset += postOffset;
+                ArrangeOverrideImpl(size, -Offset);
+            }
+
             Viewport = finalSize;
             Extent = Child.Bounds.Size.Inflate(Child.Margin);
+
             return finalSize;
         }
 
@@ -389,6 +447,71 @@ namespace Avalonia.Controls.Presenters
                 Extent = scrollable.Extent;
                 Offset = scrollable.Offset;
             }
+        }
+
+        (IControl, Rect) CalculateCurrentAnchor()
+        {
+            if (_anchorCandidates == null)
+            {
+                return default;
+            }
+
+            var thisBounds = new Rect(Bounds.Size);
+            var bestCandidate = default(IControl);
+            var bestCandidateDistance = double.MaxValue;
+
+            // Find the anchor candidate that is scrolled closest to the top-left of this
+            // ScrollContentPresenter.
+            foreach (var element in _anchorCandidates)
+            {
+                if (element.IsVisible && 
+                    TranslateBounds(element, this, out var bounds) &&
+                    bounds.Intersects(thisBounds))
+                {
+                    var distance = (Vector)bounds.Position;
+                    var candidateDistance = Math.Abs(distance.Length);
+
+                    if (candidateDistance < bestCandidateDistance)
+                    {
+                        bestCandidate = element;
+                        bestCandidateDistance = candidateDistance;
+                    }
+                }
+            }
+
+            if (bestCandidate != null)
+            {
+                // We have a candidate, calculate its bounds relative to Child. Because these
+                // bounds aren't relative to the ScrollContentPresenter itself, if they change
+                // then we know it wasn't just due to scrolling.
+                var unscrolledBounds = TranslateBounds(bestCandidate, Child);
+                return (bestCandidate, unscrolledBounds);
+            }
+
+            return default;
+        }
+
+        private Rect TranslateBounds(IControl control, IControl to)
+        {
+            if (TranslateBounds(control, to, out var bounds))
+            {
+                return bounds;
+            }
+
+            throw new InvalidOperationException("The control's bounds could not be translated to the requested control.");
+        }
+
+        private bool TranslateBounds(IControl control, IControl to, out Rect bounds)
+        {
+            if (!control.IsVisible)
+            {
+                bounds = default;
+                return false;
+            }
+
+            var p = control.TranslatePoint(default, to);
+            bounds = p.HasValue ? new Rect(p.Value, control.Bounds.Size) : default;
+            return p.HasValue;
         }
     }
 }
