@@ -318,6 +318,9 @@ namespace Avalonia.Controls
             get { return VerticalScrollBarVisibility != ScrollBarVisibility.Disabled; }
         }
 
+        /// <inheritdoc/>
+        public IControl CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;
+
         /// <summary>
         /// Gets the maximum horizontal scrollbar value.
         /// </summary>
@@ -384,9 +387,6 @@ namespace Avalonia.Controls
             get { return _viewport.Height; }
         }
 
-        /// <inheritdoc/>
-        IControl IScrollAnchorProvider.CurrentAnchor => null; // TODO: Implement
-
         /// <summary>
         /// Scrolls to the top-left corner of the content.
         /// </summary>
@@ -443,14 +443,16 @@ namespace Avalonia.Controls
             control.SetValue(VerticalScrollBarVisibilityProperty, value);
         }
 
-        void IScrollAnchorProvider.RegisterAnchorCandidate(IControl element)
+        /// <inheritdoc/>
+        public void RegisterAnchorCandidate(IControl element)
         {
-            // TODO: Implement
+            (Presenter as IScrollAnchorProvider)?.RegisterAnchorCandidate(element);
         }
 
-        void IScrollAnchorProvider.UnregisterAnchorCandidate(IControl element)
+        /// <inheritdoc/>
+        public void UnregisterAnchorCandidate(IControl element)
         {
-            // TODO: Implement
+            (Presenter as IScrollAnchorProvider)?.UnregisterAnchorCandidate(element);
         }
 
         protected override bool RegisterContentPresenter(IContentPresenter presenter)
