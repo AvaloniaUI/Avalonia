@@ -54,23 +54,43 @@ namespace Avalonia.Data
         public bool Equals(Optional<T> other) => this == other;
 
         /// <inheritdoc/>
-        public override int GetHashCode() => HasValue ? Value!.GetHashCode() : 0;
+        public override int GetHashCode() => HasValue ? _value?.GetHashCode() ?? 0 : 0;
 
         /// <summary>
         /// Casts the value (if any) to an <see cref="object"/>.
         /// </summary>
         /// <returns>The cast optional value.</returns>
-        public Optional<object> ToObject() => HasValue ? new Optional<object>(Value) : default;
+        public Optional<object> ToObject() => HasValue ? new Optional<object>(_value) : default;
 
         /// <inheritdoc/>
-        public override string ToString() => HasValue ? Value?.ToString() ?? "(null)" : "(empty)";
+        public override string ToString() => HasValue ? _value?.ToString() ?? "(null)" : "(empty)";
+
+        /// <summary>
+        /// Gets the value if present, otherwise the default value.
+        /// </summary>
+        /// <returns>The value.</returns>
+        public T GetValueOrDefault() => HasValue ? _value : default;
 
         /// <summary>
         /// Gets the value if present, otherwise a default value.
         /// </summary>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>The value.</returns>
-        public T ValueOrDefault(T defaultValue = default) => HasValue ? Value : defaultValue;
+        public T GetValueOrDefault(T defaultValue = default) => HasValue ? _value : defaultValue;
+
+        /// <summary>
+        /// Gets the value if present, otherwise the default value.
+        /// </summary>
+        /// <returns>
+        /// The value if present and of the correct type, `default(TResult)` if the value is
+        /// not present or of an incorrect type.
+        /// </returns>
+        public TResult GetValueOrDefault<TResult>()
+        {
+            return HasValue ?
+                _value is TResult result ? result : default
+                : default;
+        }
 
         /// <summary>
         /// Gets the value if present, otherwise a default value.
@@ -81,10 +101,10 @@ namespace Avalonia.Data
         /// present but not of the correct type or null, or <paramref name="defaultValue"/> if the
         /// value is not present.
         /// </returns>
-        public TResult ValueOrDefault<TResult>(TResult defaultValue = default)
+        public TResult GetValueOrDefault<TResult>(TResult defaultValue = default)
         {
             return HasValue ?
-                Value is TResult result ? result : default
+                _value is TResult result ? result : default
                 : defaultValue;
         }
 

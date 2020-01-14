@@ -21,18 +21,24 @@ namespace Avalonia.Input
         public bool IsLeftButtonPressed { get; }
         public bool IsMiddleButtonPressed { get; }
         public bool IsRightButtonPressed { get; }
+        public bool IsXButton1Pressed { get; }
+        public bool IsXButton2Pressed { get; }
+
         public PointerUpdateKind PointerUpdateKind { get; }
+
         private PointerPointProperties()
-        {
-            
+        {            
         }
         
         public PointerPointProperties(RawInputModifiers modifiers, PointerUpdateKind kind)
         {
             PointerUpdateKind = kind;
+
             IsLeftButtonPressed = modifiers.HasFlagCustom(RawInputModifiers.LeftMouseButton);
             IsMiddleButtonPressed = modifiers.HasFlagCustom(RawInputModifiers.MiddleMouseButton);
             IsRightButtonPressed = modifiers.HasFlagCustom(RawInputModifiers.RightMouseButton);
+            IsXButton1Pressed = modifiers.HasFlagCustom(RawInputModifiers.XButton1MouseButton);
+            IsXButton2Pressed = modifiers.HasFlagCustom(RawInputModifiers.XButton2MouseButton);
 
             // The underlying input source might be reporting the previous state,
             // so make sure that we reflect the current state
@@ -49,6 +55,14 @@ namespace Avalonia.Input
                 IsRightButtonPressed = true;
             if (kind == PointerUpdateKind.RightButtonReleased)
                 IsRightButtonPressed = false;
+            if (kind == PointerUpdateKind.XButton1Pressed)
+                IsXButton1Pressed = true;
+            if (kind == PointerUpdateKind.XButton1Released)
+                IsXButton1Pressed = false;
+            if (kind == PointerUpdateKind.XButton2Pressed)
+                IsXButton2Pressed = true;
+            if (kind == PointerUpdateKind.XButton2Released)
+                IsXButton2Pressed = false;
         }
 
         public static PointerPointProperties None { get; } = new PointerPointProperties();
@@ -59,9 +73,13 @@ namespace Avalonia.Input
         LeftButtonPressed,
         MiddleButtonPressed,
         RightButtonPressed,
+        XButton1Pressed,
+        XButton2Pressed,
         LeftButtonReleased,
         MiddleButtonReleased,
         RightButtonReleased,
+        XButton1Released,
+        XButton2Released,
         Other
     }
 

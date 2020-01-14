@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using SharpDX.DirectWrite;
 using FontFamily = Avalonia.Media.FontFamily;
@@ -14,13 +15,11 @@ namespace Avalonia.Direct2D1.Media
 {
     internal class FontManagerImpl : IFontManagerImpl
     {
-        public FontManagerImpl()
+        public string GetDefaultFontFamilyName()
         {
             //ToDo: Implement a real lookup of the system's default font.
-            DefaultFontFamilyName = "segoe ui";
+            return "Segoe UI";
         }
-
-        public string DefaultFontFamilyName { get; }
 
         public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
         {
@@ -36,17 +35,9 @@ namespace Avalonia.Direct2D1.Media
             return fontFamilies;
         }
 
-        public Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle)
+        public bool TryMatchCharacter(int codepoint, FontWeight fontWeight, FontStyle fontStyle,
+            FontFamily fontFamily, CultureInfo culture, out FontKey fontKey)
         {
-            //ToDo: Implement caching.
-            return new Typeface(fontFamily, fontWeight, fontStyle);
-        }
-
-        public Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default, FontStyle fontStyle = default,
-            FontFamily fontFamily = null, CultureInfo culture = null)
-        {
-            var fontFamilyName = FontFamily.Default.Name;
-
             var familyCount = Direct2D1FontCollectionCache.InstalledFontCollection.FontFamilyCount;
 
             for (var i = 0; i < familyCount; i++)
@@ -60,12 +51,21 @@ namespace Avalonia.Direct2D1.Media
                     continue;
                 }
 
-                fontFamilyName = font.FontFamily.FamilyNames.GetString(0);
+                var fontFamilyName = font.FontFamily.FamilyNames.GetString(0);
 
-                break;
+                fontKey = new FontKey(new FontFamily(fontFamilyName), fontWeight, fontStyle);
+
+                return true;
             }
 
-            return GetTypeface(new FontFamily(fontFamilyName), fontWeight, fontStyle);
+            fontKey = default;
+
+            return false;
+        }
+
+        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        {
+            return new GlyphTypefaceImpl(typeface);
         }
     }
 }

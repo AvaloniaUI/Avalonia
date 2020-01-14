@@ -17,7 +17,7 @@ namespace Avalonia.Direct2D1.Media
         {
             DWFont = Direct2D1FontCollectionCache.GetFont(typeface);
 
-            FontFace = new FontFace(DWFont);
+            FontFace = new FontFace(DWFont).QueryInterface<FontFace1>();
 
             Face = new Face(GetTable);
 
@@ -59,6 +59,8 @@ namespace Avalonia.Direct2D1.Media
             {
                 StrikethroughThickness = strikethroughThickness;
             }
+
+            IsFixedPitch = FontFace.IsMonospacedFont;
         }
 
         private Blob GetTable(Face face, Tag tag)
@@ -82,7 +84,7 @@ namespace Avalonia.Direct2D1.Media
 
         public SharpDX.DirectWrite.Font DWFont { get; }
 
-        public FontFace FontFace { get; }
+        public FontFace1 FontFace { get; }
 
         public Face Face { get; }
 
@@ -112,6 +114,9 @@ namespace Avalonia.Direct2D1.Media
 
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public int StrikethroughThickness { get; }
+
+        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        public bool IsFixedPitch { get; }
 
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public ushort GetGlyph(uint codepoint)

@@ -74,18 +74,29 @@ namespace Avalonia.Media
         public Matrix CurrentContainerTransform => _currentContainerTransform;
 
         /// <summary>
-        /// Draws a bitmap image.
+        /// Draws an image.
         /// </summary>
-        /// <param name="source">The bitmap image.</param>
-        /// <param name="opacity">The opacity to draw with.</param>
-        /// <param name="sourceRect">The rect in the image to draw.</param>
-        /// <param name="destRect">The rect in the output to draw to.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = default)
+        /// <param name="source">The image.</param>
+        /// <param name="rect">The rect in the output to draw to.</param>
+        public void DrawImage(IImage source, Rect rect)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect, bitmapInterpolationMode);
+            DrawImage(source, new Rect(source.Size), rect);
+        }
+
+        /// <summary>
+        /// Draws an image.
+        /// </summary>
+        /// <param name="source">The image.</param>
+        /// <param name="sourceRect">The rect in the image to draw.</param>
+        /// <param name="destRect">The rect in the output to draw to.</param>
+        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
+        public void DrawImage(IImage source, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = default)
+        {
+            Contract.Requires<ArgumentNullException>(source != null);
+
+            source.Draw(this, sourceRect, destRect, bitmapInterpolationMode);
         }
 
         /// <summary>
@@ -119,6 +130,42 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Draws a rectangle with the specified Brush and Pen.
+        /// </summary>
+        /// <param name="brush">The brush used to fill the rectangle, or <c>null</c> for no fill.</param>
+        /// <param name="pen">The pen used to stroke the rectangle, or <c>null</c> for no stroke.</param>
+        /// <param name="rect">The rectangle bounds.</param>
+        /// <param name="radiusX">The radius in the X dimension of the rounded corners.
+        ///     This value will be clamped to the range of 0 to Width/2
+        /// </param>
+        /// <param name="radiusY">The radius in the Y dimension of the rounded corners.
+        ///     This value will be clamped to the range of 0 to Height/2
+        /// </param>
+        /// <remarks>
+        /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
+        /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
+        /// </remarks>
+        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0, double radiusY = 0)
+        {
+            if (brush == null && !PenIsVisible(pen))
+            {
+                return;
+            }
+
+            if (Math.Abs(radiusX) > double.Epsilon)
+            {
+                radiusX = Math.Min(radiusX, rect.Width / 2);
+            }
+
+            if (Math.Abs(radiusY) > double.Epsilon)
+            {
+                radiusY = Math.Min(radiusY, rect.Height / 2);
+            }
+
+            PlatformImpl.DrawRectangle(brush, pen, rect, radiusX, radiusY);
+        }
+
+        /// <summary>
         /// Draws the outline of a rectangle.
         /// </summary>
         /// <param name="pen">The pen.</param>
@@ -126,10 +173,7 @@ namespace Avalonia.Media
         /// <param name="cornerRadius">The corner radius.</param>
         public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0.0f)
         {
-            if (PenIsVisible(pen))
-            {
-                PlatformImpl.DrawRectangle(pen, rect, cornerRadius);
-            }
+            DrawRectangle(null, pen, rect, cornerRadius, cornerRadius);
         }
 
         /// <summary>
@@ -155,6 +199,22 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Draws a glyph run.
+        /// </summary>
+        /// <param name="foreground">The foreground brush.</param>
+        /// <param name="glyphRun">The glyph run.</param>
+        /// <param name="baselineOrigin">The baseline origin of the glyph run.</param>
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        {
+            Contract.Requires<ArgumentNullException>(glyphRun != null);
+
+            if (foreground != null)
+            {
+                PlatformImpl.DrawGlyphRun(foreground, glyphRun, baselineOrigin);
+            }
+        }
+
+        /// <summary>
         /// Draws a filled rectangle.
         /// </summary>
         /// <param name="brush">The brush.</param>
@@ -162,10 +222,7 @@ namespace Avalonia.Media
         /// <param name="cornerRadius">The corner radius.</param>
         public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f)
         {
-            if (brush != null && rect != Rect.Empty)
-            {
-                PlatformImpl.FillRectangle(brush, rect, cornerRadius);
-            }
+            DrawRectangle(brush, null, rect, cornerRadius, cornerRadius);
         }
 
         public readonly struct PushedState : IDisposable

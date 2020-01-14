@@ -78,9 +78,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             {
                 ctx.Clear(Colors.Transparent);
                 ctx.PushOpacity(0.8);
-                ctx.FillRectangle(Brushes.Chartreuse, new Rect(0, 0, 20, 100));
-                ctx.FillRectangle(Brushes.Crimson, new Rect(20, 0, 20, 100));
-                ctx.FillRectangle(Brushes.Gold, new Rect(40, 0, 20, 100));
+                ctx.DrawRectangle(Brushes.Chartreuse, null, new Rect(0, 0, 20, 100));
+                ctx.DrawRectangle(Brushes.Crimson, null, new Rect(20, 0, 20, 100));
+                ctx.DrawRectangle(Brushes.Gold,null, new Rect(40, 0, 20, 100));
                 ctx.PopOpacity();
             }
 
@@ -90,11 +90,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             {
                 using (var ctx = rtb.CreateDrawingContext(null))
                 {
-                    ctx.FillRectangle(Brushes.Blue, new Rect(0, 0, 100, 100));
-                    ctx.FillRectangle(Brushes.Pink, new Rect(0, 20, 100, 10));
+                    ctx.DrawRectangle(Brushes.Blue, null, new Rect(0, 0, 100, 100));
+                    ctx.DrawRectangle(Brushes.Pink, null, new Rect(0, 20, 100, 10));
 
                     var rc = new Rect(0, 0, 60, 60);
-                    ctx.DrawImage(bmp.PlatformImpl, 1, rc, rc);
+                    ctx.DrawBitmap(bmp.PlatformImpl, 1, rc, rc);
                 }
                 rtb.Save(System.IO.Path.Combine(OutputPath, testName + ".out.png"));
             }

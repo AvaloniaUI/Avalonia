@@ -21,7 +21,7 @@ namespace Avalonia.Data.Core
         /// An ordered collection of property accessor plugins that can be used to customize
         /// the reading and subscription of property values on a type.
         /// </summary>
-        public static readonly IList<IPropertyAccessorPlugin> PropertyAccessors =
+        public static readonly List<IPropertyAccessorPlugin> PropertyAccessors =
             new List<IPropertyAccessorPlugin>
             {
                 new AvaloniaPropertyAccessorPlugin(),
@@ -33,7 +33,7 @@ namespace Avalonia.Data.Core
         /// An ordered collection of validation checker plugins that can be used to customize
         /// the validation of view model and model data.
         /// </summary>
-        public static readonly IList<IDataValidationPlugin> DataValidators =
+        public static readonly List<IDataValidationPlugin> DataValidators =
             new List<IDataValidationPlugin>
             {
                 new DataAnnotationsValidationPlugin(),
@@ -45,7 +45,7 @@ namespace Avalonia.Data.Core
         /// An ordered collection of stream plugins that can be used to customize the behavior
         /// of the '^' stream binding operator.
         /// </summary>
-        public static readonly IList<IStreamPlugin> StreamHandlers =
+        public static readonly List<IStreamPlugin> StreamHandlers =
             new List<IStreamPlugin>
             {
                 new TaskStreamPlugin(),

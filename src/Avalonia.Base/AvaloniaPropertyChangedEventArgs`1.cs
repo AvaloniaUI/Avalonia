@@ -60,8 +60,8 @@ namespace Avalonia
 
         protected override AvaloniaProperty GetProperty() => Property;
 
-        protected override object? GetOldValue() => OldValue.ValueOrDefault(AvaloniaProperty.UnsetValue);
+        protected override object? GetOldValue() => OldValue.GetValueOrDefault(AvaloniaProperty.UnsetValue);
 
-        protected override object? GetNewValue() => NewValue.ValueOrDefault(AvaloniaProperty.UnsetValue);
+        protected override object? GetNewValue() => NewValue.GetValueOrDefault(AvaloniaProperty.UnsetValue);
     }
 }

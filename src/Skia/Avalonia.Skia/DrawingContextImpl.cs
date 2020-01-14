@@ -110,7 +110,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
             var drawableImage = (IDrawableBitmapImpl)source.Item;
             var s = sourceRect.ToSKRect();
@@ -146,10 +146,10 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect, BitmapInterpolationMode.Default);
+            DrawBitmap(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect, BitmapInterpolationMode.Default);
             PopOpacityMask();
         }
 
@@ -184,37 +184,40 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0)
+        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX, double radiusY)
         {
-            using (var paint = CreatePaint(pen, rect.Size))
-            {
-                var rc = rect.ToSKRect();
+            var rc = rect.ToSKRect();
+            var isRounded = Math.Abs(radiusX) > double.Epsilon || Math.Abs(radiusY) > double.Epsilon;
 
-                if (Math.Abs(cornerRadius) < float.Epsilon)
+            if (brush != null)
+            {
+                using (var paint = CreatePaint(brush, rect.Size))
                 {
-                    Canvas.DrawRect(rc, paint.Paint);
-                }
-                else
-                {
-                    Canvas.DrawRoundRect(rc, cornerRadius, cornerRadius, paint.Paint);
+                    if (isRounded)
+                    {
+                        Canvas.DrawRoundRect(rc, (float)radiusX, (float)radiusY, paint.Paint);
+                    }
+                    else
+                    {
+                        Canvas.DrawRect(rc, paint.Paint);
+                    }
+                  
                 }
             }
-        }
 
-        /// <inheritdoc />
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0)
-        {
-            using (var paint = CreatePaint(brush, rect.Size))
+            if (pen?.Brush != null)
             {
-                var rc = rect.ToSKRect();
-
-                if (Math.Abs(cornerRadius) < float.Epsilon)
+                using (var paint = CreatePaint(pen, rect.Size))
                 {
-                    Canvas.DrawRect(rc, paint.Paint);
-                }
-                else
-                {
-                    Canvas.DrawRoundRect(rc, cornerRadius, cornerRadius, paint.Paint);
+                    if (isRounded)
+                    {
+                        Canvas.DrawRoundRect(rc, (float)radiusX, (float)radiusY, paint.Paint);
+                    }
+                    else
+                    {
+                        Canvas.DrawRect(rc, paint.Paint);
+                    }
+                   
                 }
             }
         }
@@ -226,6 +229,20 @@ namespace Avalonia.Skia
             {
                 var textImpl = (FormattedTextImpl) text;
                 textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint, _canTextUseLcdRendering);
+            }
+        }
+
+        /// <inheritdoc />
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        {
+            using (var paint = CreatePaint(foreground, glyphRun.Bounds.Size))
+            {
+                var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
+
+                paint.ApplyTo(glyphRunImpl.Paint);
+
+                Canvas.DrawText(glyphRunImpl.TextBlob, (float)baselineOrigin.X,
+                    (float)baselineOrigin.Y, glyphRunImpl.Paint);
             }
         }
 
@@ -420,7 +437,7 @@ namespace Avalonia.Skia
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
                 context.Transform = calc.IntermediateTransform;
-                context.DrawImage(
+                context.DrawBitmap(
                     RefCountable.CreateUnownedNotClonable(tileBrushImage),
                     1,
                     sourceRect,

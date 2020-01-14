@@ -22,7 +22,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="HorizontalCacheLength"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<double> HorizontalCacheLengthProperty =
+        public static readonly StyledProperty<double> HorizontalCacheLengthProperty =
             AvaloniaProperty.Register<ItemsRepeater, double>(nameof(HorizontalCacheLength), 2.0);
 
         /// <summary>
@@ -40,16 +40,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Layout"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<AttachedLayout> LayoutProperty =
+        public static readonly StyledProperty<AttachedLayout> LayoutProperty =
             AvaloniaProperty.Register<ItemsRepeater, AttachedLayout>(nameof(Layout), new StackLayout());
 
         /// <summary>
         /// Defines the <see cref="VerticalCacheLength"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<double> VerticalCacheLengthProperty =
+        public static readonly StyledProperty<double> VerticalCacheLengthProperty =
             AvaloniaProperty.Register<ItemsRepeater, double>(nameof(VerticalCacheLength), 2.0);
 
-        private static readonly AttachedProperty<VirtualizationInfo> VirtualizationInfoProperty =
+        private static readonly StyledProperty<VirtualizationInfo> VirtualizationInfoProperty =
             AvaloniaProperty.RegisterAttached<ItemsRepeater, IControl, VirtualizationInfo>("VirtualizationInfo");
 
         internal static readonly Rect InvalidRect = new Rect(-1, -1, -1, -1);
@@ -379,7 +379,7 @@ namespace Avalonia.Controls
         {
             if (property == ItemsProperty)
             {
-                var newEnumerable = newValue.ValueOrDefault<IEnumerable>();
+                var newEnumerable = newValue.GetValueOrDefault<IEnumerable>();
                 var newDataSource = newEnumerable as ItemsSourceView;
                 if (newEnumerable != null && newDataSource == null)
                 {
@@ -390,19 +390,19 @@ namespace Avalonia.Controls
             }
             else if (property == ItemTemplateProperty)
             {
-                OnItemTemplateChanged(oldValue.ValueOrDefault<IDataTemplate>(), newValue.ValueOrDefault<IDataTemplate>());
+                OnItemTemplateChanged(oldValue.GetValueOrDefault<IDataTemplate>(), newValue.GetValueOrDefault<IDataTemplate>());
             }
             else if (property == LayoutProperty)
             {
-                OnLayoutChanged(oldValue.ValueOrDefault<AttachedLayout>(), newValue.ValueOrDefault<AttachedLayout>());
+                OnLayoutChanged(oldValue.GetValueOrDefault<AttachedLayout>(), newValue.GetValueOrDefault<AttachedLayout>());
             }
             else if (property == HorizontalCacheLengthProperty)
             {
-                _viewportManager.HorizontalCacheLength = newValue.ValueOrDefault<double>();
+                _viewportManager.HorizontalCacheLength = newValue.GetValueOrDefault<double>();
             }
             else if (property == VerticalCacheLengthProperty)
             {
-                _viewportManager.VerticalCacheLength = newValue.ValueOrDefault<double>();
+                _viewportManager.VerticalCacheLength = newValue.GetValueOrDefault<double>();
             }
 
             base.OnPropertyChanged(property, oldValue, newValue, priority);
@@ -559,32 +559,34 @@ namespace Avalonia.Controls
 
             if (Layout != null)
             {
-                if (Layout is VirtualizingLayout virtualLayout)
-                {
-                    var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
 
+                try
+                {
                     _processingItemsSourceChange = args;
 
-                    try
+                    if (Layout is VirtualizingLayout virtualLayout)
                     {
                         virtualLayout.OnItemsChanged(GetLayoutContext(), newValue, args);
                     }
-                    finally
+                    else if (Layout is NonVirtualizingLayout nonVirtualLayout)
                     {
-                        _processingItemsSourceChange = null;
+                        // Walk through all the elements and make sure they are cleared for
+                        // non-virtualizing layouts.
+                        foreach (var element in Children)
+                        {
+                            if (GetVirtualizationInfo(element).IsRealized)
+                            {
+                                ClearElementImpl(element);
+                            }
+                        }
+
+                        Children.Clear();
                     }
                 }
-                else if (Layout is NonVirtualizingLayout nonVirtualLayout)
+                finally
                 {
-                    // Walk through all the elements and make sure they are cleared for
-                    // non-virtualizing layouts.
-                    foreach (var element in Children)
-                    {
-                        if (GetVirtualizationInfo(element).IsRealized)
-                        {
-                            ClearElementImpl(element);
-                        }
-                    }
+                    _processingItemsSourceChange = null;
                 }
 
                 InvalidateMeasure();

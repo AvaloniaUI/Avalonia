@@ -58,7 +58,7 @@ namespace Avalonia.ReactiveUI
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="Router"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<RoutingState> RouterProperty =
+        public static readonly StyledProperty<RoutingState> RouterProperty =
             AvaloniaProperty.Register<RoutedViewHost, RoutingState>(nameof(Router));
     
         /// <summary>

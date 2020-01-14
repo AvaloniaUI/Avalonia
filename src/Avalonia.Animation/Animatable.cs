@@ -85,8 +85,8 @@ namespace Avalonia.Animation
                     var instance = transition.Apply(
                         this,
                         Clock ?? Avalonia.Animation.Clock.GlobalClock,
-                        oldValue.ValueOrDefault(),
-                        newValue.ValueOrDefault());
+                        oldValue.GetValueOrDefault(),
+                        newValue.GetValueOrDefault());
 
                     _previousTransitions[property] = instance;
                     return;
