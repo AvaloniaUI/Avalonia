@@ -490,7 +490,6 @@ namespace Avalonia.Layout
             else if (property == ItemsStretchProperty)
             {
                 _itemsStretch = newValue.GetValueOrDefault<UniformGridLayoutItemsStretch>();
-                ;
             }
             else if (property == MinItemWidthProperty)
             {
@@ -500,9 +499,9 @@ namespace Avalonia.Layout
             {
                 _minItemHeight = newValue.GetValueOrDefault<double>();
             }
-            else if (args.Property == MaximumRowsOrColumnsProperty)
+            else if (property == MaximumRowsOrColumnsProperty)
             {
-                _maximumRowsOrColumns = (int)args.NewValue;
+                _maximumRowsOrColumns = newValue.GetValueOrDefault<int>();
             }
 
             InvalidateLayout();

@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Data;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Visuals.Media.Imaging;
@@ -62,11 +63,15 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc/>
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
         {
-            base.OnPropertyChanged(e);
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
 
-            if (e.Property == DrawingProperty)
+            if (property == DrawingProperty)
             {
                 RaiseInvalidated(EventArgs.Empty);
             }
