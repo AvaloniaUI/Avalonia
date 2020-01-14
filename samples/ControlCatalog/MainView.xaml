@@ -32,7 +32,11 @@
       <TabItem Header="DatePicker"><pages:DatePickerPage/></TabItem>
       <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
       <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
-      <TabItem Header="Image"><pages:ImagePage/></TabItem>
+      <TabItem Header="Image"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <pages:ImagePage/>
+      </TabItem>
       <TabItem Header="ItemsRepeater"
                ScrollViewer.VerticalScrollBarVisibility="Disabled"
                ScrollViewer.HorizontalScrollBarVisibility="Disabled">

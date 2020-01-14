@@ -178,5 +178,141 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
             Assert.Equal(1, rendered);
         }
+
+        [Fact]
+        public void Should_Not_Clip_Children_With_RenderTransform_When_In_Bounds()
+        {
+            const int RootWidth = 300;
+            const int RootHeight = 300;
+
+            var rootGrid = new Grid
+            {
+                Width = RootWidth,
+                Height = RootHeight,
+                ClipToBounds = true
+            };
+
+            var stackPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 10, 0, 0),
+                RenderTransformOrigin = new RelativePoint(new Point(0, 0), RelativeUnit.Relative),
+                RenderTransform = new TransformGroup
+                {
+                    Children =
+                    {
+                        new RotateTransform { Angle = 90 },
+                        new TranslateTransform { X = 240 }
+                    }
+                }
+            };
+
+            rootGrid.Children.Add(stackPanel);
+
+            TestControl CreateControl()
+                => new TestControl
+                {
+                    Width = 80,
+                    Height = 40,
+                    Margin = new Thickness(0, 0, 5, 0),
+                    ClipToBounds = true
+                };
+
+            var control1 = CreateControl();
+            var control2 = CreateControl();
+            var control3 = CreateControl();
+
+            stackPanel.Children.Add(control1);
+            stackPanel.Children.Add(control2);
+            stackPanel.Children.Add(control3);
+
+            var root = new TestRoot(rootGrid);
+            root.Renderer = new ImmediateRenderer(root);
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
+
+            var rootSize = new Size(RootWidth, RootHeight);
+            root.Measure(rootSize);
+            root.Arrange(new Rect(rootSize));
+
+            root.Renderer.Paint(root.Bounds);
+
+            Assert.True(control1.Rendered);
+            Assert.True(control2.Rendered);
+            Assert.True(control3.Rendered);
+        }
+
+        [Fact]
+        public void Should_Not_Render_Clipped_Child_With_RenderTransform_When_Not_In_Bounds()
+        {
+            const int RootWidth = 300;
+            const int RootHeight = 300;
+
+            var rootGrid = new Grid
+            {
+                Width = RootWidth,
+                Height = RootHeight,
+                ClipToBounds = true
+            };
+
+            var stackPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 10, 0, 0),
+                RenderTransformOrigin = new RelativePoint(new Point(0, 0), RelativeUnit.Relative),
+                RenderTransform = new TransformGroup
+                {
+                    Children =
+                    {
+                        new RotateTransform { Angle = 90 },
+                        new TranslateTransform { X = 280 }
+                    }
+                }
+            };
+
+            rootGrid.Children.Add(stackPanel);
+
+            TestControl CreateControl()
+                => new TestControl
+                {
+                    Width = 160,
+                    Height = 40,
+                    Margin = new Thickness(0, 0, 5, 0),
+                    ClipToBounds = true
+                };
+
+            var control1 = CreateControl();
+            var control2 = CreateControl();
+            var control3 = CreateControl();
+
+            stackPanel.Children.Add(control1);
+            stackPanel.Children.Add(control2);
+            stackPanel.Children.Add(control3);
+
+            var root = new TestRoot(rootGrid);
+            root.Renderer = new ImmediateRenderer(root);
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
+
+            var rootSize = new Size(RootWidth, RootHeight);
+            root.Measure(rootSize);
+            root.Arrange(new Rect(rootSize));
+
+            root.Renderer.Paint(root.Bounds);
+
+            Assert.True(control1.Rendered);
+            Assert.True(control2.Rendered);
+            Assert.False(control3.Rendered);
+        }
+
+        private class TestControl : Control
+        {
+            public bool Rendered { get; private set; }
+
+            public override void Render(DrawingContext context)
+                => Rendered = true;
+        }
     }
 }

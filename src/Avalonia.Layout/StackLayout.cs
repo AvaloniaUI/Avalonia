@@ -268,6 +268,7 @@ namespace Avalonia.Layout
                 false,
                 0,
                 Spacing,
+                int.MaxValue,
                 _orientation.ScrollOrientation,
                 LayoutId);
 
@@ -279,6 +280,7 @@ namespace Avalonia.Layout
             var value = GetFlowAlgorithm(context).Arrange(
                finalSize,
                context,
+               false,
                FlowLayoutAlgorithm.LineAlignment.Start,
                LayoutId);
 
