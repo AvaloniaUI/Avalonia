@@ -26,21 +26,22 @@ namespace Avalonia.Media.Text
         }
 
         /// <summary>
-        /// 
+        ///     Formats the text to a line.
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="paragraphWidth"></param>
-        /// <param name="paragraphProperties"></param>
-        /// <param name="textStyleRuns"></param>
+        /// <param name="text">The text to be formatted.</param>
+        /// <param name="paragraphWidth">A <see cref="double"/> value that specifies the width of the paragraph that the line fills.</param>
+        /// <param name="paragraphProperties">A <see cref="TextParagraphProperties"/> value that represents paragraph properties,
+        /// such as TextWrapping, TextAlignment, or TextStyle.</param>
+        /// <param name="textStyleOverrides">The text style overrides.</param>
         /// <returns></returns>
         public static TextLine FormatLine(in ReadOnlySlice<char> text, double paragraphWidth,
-            TextParagraphProperties paragraphProperties, ReadOnlySpan<TextStyleRun> textStyleRuns = default)
+            TextParagraphProperties paragraphProperties, ReadOnlySpan<TextStyleRun> textStyleOverrides = default)
         {
             var textTrimming = paragraphProperties.TextTrimming;
             var textWrapping = paragraphProperties.TextWrapping;
             TextLine textLine;
 
-            var textRuns = FormatTextRuns(text, paragraphProperties.DefaultTextStyle, textStyleRuns);
+            var textRuns = FormatTextRuns(text, paragraphProperties.DefaultTextStyle, textStyleOverrides);
 
             if (textTrimming != TextTrimming.None)
             {
@@ -65,12 +66,18 @@ namespace Avalonia.Media.Text
         }
 
         /// <summary>
-        /// 
+        ///     Formats text runs with optional text style overrides.
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="defaultTextStyle"></param>
-        /// <param name="textStyleOverrides"></param>
-        /// <returns></returns>
+        /// <param name="text">The text that is being formatted.</param>
+        /// <param name="defaultTextStyle">The default text style that gets applied.</param>
+        /// <param name="textStyleOverrides">The text style overrides that are used to format the runs.</param>
+        /// <returns>
+        ///     The formatted text runs.
+        /// </returns>
+        /// <remarks>
+        ///     If no override is supplied the default style is used.
+        ///     This performs font fallback in case a character can't be mapped by supplied font.
+        /// </remarks>
         public static List<TextRun> FormatTextRuns(ReadOnlySlice<char> text, TextStyle defaultTextStyle, ReadOnlySpan<TextStyleRun> textStyleOverrides = default)
         {
             var formatterImpl = AvaloniaLocator.Current.GetService<ITextFormatterImpl>();
@@ -122,6 +129,17 @@ namespace Avalonia.Media.Text
             return textRuns;
         }
 
+        /// <summary>
+        ///     Creates a text style run that has overrides applied. Only overrides with equal TextStyle.
+        /// If optimizeForShaping is <c>true</c> Foreground is ignored.
+        /// </summary>
+        /// <param name="text">The text to create the run for.</param>
+        /// <param name="defaultTextStyle">The default text style for segments that don't have an override.</param>
+        /// <param name="textStyleOverrides">The text style overrides.</param>
+        /// <param name="optimizeForShaping">Indicates whether the result is optimized for shaping or not.</param>
+        /// <returns>
+        ///     The created text style run.
+        /// </returns>
         public static TextStyleRun CreateTextStyleRunWithOverride(ReadOnlySlice<char> text, TextStyle defaultTextStyle,
             ref ReadOnlySpan<TextStyleRun> textStyleOverrides, bool optimizeForShaping = false)
         {
@@ -198,10 +216,11 @@ namespace Avalonia.Media.Text
         /// <summary>
         ///     Performs text trimming and returns a trimmed line.
         /// </summary>
-        /// <param name="paragraphWidth"></param>
-        /// <param name="paragraphProperties"></param>
-        /// <param name="textRuns"></param>
-        /// <param name="text"></param>
+        /// <param name="paragraphWidth">A <see cref="double"/> value that specifies the width of the paragraph that the line fills.</param>
+        /// <param name="paragraphProperties">A <see cref="TextParagraphProperties"/> value that represents paragraph properties,
+        /// such as TextWrapping, TextAlignment, or TextStyle.</param>
+        /// <param name="textRuns">The text runs to perform the trimming on.</param>
+        /// <param name="text">The text that was used to construct the text runs.</param>
         /// <returns></returns>
         public static TextLine PerformTextTrimming(in ReadOnlySlice<char> text, double paragraphWidth,
             TextParagraphProperties paragraphProperties, IReadOnlyList<TextRun> textRuns)
@@ -484,73 +503,6 @@ namespace Avalonia.Media.Text
 
             return new SplitTextRunsResult(textRuns, null);
         }
-
-        //public readonly struct SplitTextRunPropertiesResult
-        //{
-        //    public SplitTextRunPropertiesResult(List<TextStyleRun> first,
-        //        List<TextStyleRun> second)
-        //    {
-        //        First = first;
-        //        Second = second;
-        //    }
-
-        //    public List<TextStyleRun> First { get; }
-
-        //    public List<TextStyleRun> Second { get; }
-        //}
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="textRunProperties"></param>
-        /// <param name="length"></param>
-        /// <returns></returns>
-        //public static SplitTextRunPropertiesResult SplitTextRunProperties(List<TextStyleRun> textRunProperties, int length)
-        //{
-        //    var currentLength = 0;
-        //    var runIndex = 0;
-
-        //    while (runIndex < textRunProperties.Count)
-        //    {
-        //        var run = textRunProperties[runIndex];
-
-        //        var textLength = run.TextPointer.Length;
-
-        //        if (currentLength + textLength > length)
-        //        {
-        //            break;
-        //        }
-
-        //        currentLength += textLength;
-
-        //        runIndex++;
-        //    }
-
-        //    if (currentLength == length && runIndex == textRunProperties.Count)
-        //    {
-        //        return new SplitTextRunPropertiesResult(textRunProperties, null);
-        //    }
-
-        //    var first = new List<TextStyleRun>(runIndex);
-
-        //    for (var i = 0; i < runIndex; i++)
-        //    {
-        //        first.Add(textRunProperties[i]);
-        //    }
-
-        //    var split = textRunProperties[runIndex].Split(length - currentLength);
-
-        //    first.Add(split.First);
-
-        //    var second = new List<TextStyleRun>(textRunProperties.Count - runIndex) { split.Second };
-
-        //    for (var i = 1; i < textRunProperties.Count - runIndex; i++)
-        //    {
-        //        second.Add(textRunProperties[i + runIndex]);
-        //    }
-
-        //    return new SplitTextRunPropertiesResult(first, second);
-        //}
 
         private readonly struct SplitGlyphRunResult
         {
