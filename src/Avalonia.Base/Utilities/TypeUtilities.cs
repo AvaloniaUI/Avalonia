@@ -133,6 +133,21 @@ namespace Avalonia.Utilities
                 result = Convert.ToString(value);
                 return true;
             }
+            
+            if (from == typeof(string) && IsNumeric(to) &&
+                to.GetTypeInfo().IsGenericType && to.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                try
+                {
+                    result = Convert.ChangeType(value, Nullable.GetUnderlyingType(to), CultureInfo.InvariantCulture);
+                    return true;
+                }
+                catch
+                {
+                   result = null;
+                   return false;
+                }
+            }
 
             if (toTypeInfo.IsEnum && from == typeof(string))
             {
