@@ -698,7 +698,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             SelectionChangedEventArgs receivedArgs = null;
 
-            target.SelectionChanged += (_, args) => receivedArgs = null;
+            target.SelectionChanged += (_, args) => receivedArgs = args;
 
             void VerifyAdded(string selection)
             {
@@ -863,7 +863,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             SelectionChangedEventArgs receivedArgs = null;
 
-            target.SelectionChanged += (_, args) => receivedArgs = null;
+            target.SelectionChanged += (_, args) => receivedArgs = args;
 
             void VerifyAdded(params string[] selection)
             {
@@ -957,7 +957,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             SelectionChangedEventArgs receivedArgs = null;
 
-            target.SelectionChanged += (_, e) => receivedArgs = e;
+            target.SelectionChanged += (_, args) => receivedArgs = args;
 
             target.SelectAll();
 
