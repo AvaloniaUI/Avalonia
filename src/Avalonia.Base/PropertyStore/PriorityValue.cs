@@ -77,7 +77,7 @@ namespace Avalonia.PropertyStore
 
         public BindingEntry<T> AddBinding(IObservable<BindingValue<T>> source, BindingPriority priority)
         {
-            var binding = new BindingEntry<T>(_owner, Property, source, priority, this);
+            var binding = new BindingEntry<T>(Property, source, priority, this);
             var insert = FindInsertPoint(binding.Priority);
             _entries.Insert(insert, binding);
             return binding;

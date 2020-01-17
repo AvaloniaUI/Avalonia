@@ -94,7 +94,7 @@ namespace Avalonia
             }
             else
             {
-                var entry = new BindingEntry<T>(_owner, property, source, priority, this);
+                var entry = new BindingEntry<T>(property, source, priority, this);
                 _values.AddValue(property, entry);
                 entry.Start();
                 return entry;
