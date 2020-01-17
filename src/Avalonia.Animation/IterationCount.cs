@@ -63,7 +63,7 @@ namespace Avalonia.Animation
         public IterationType RepeatType => _type;
 
         /// <summary>
-        /// Gets a value that indicates whether the <see cref="IterationCount"/> is set to loop.
+        /// Gets a value that indicates whether the <see cref="IterationCount"/> is set to Infinite.
         /// </summary>
         public bool IsInfinite => _type == IterationType.Infinite;
 

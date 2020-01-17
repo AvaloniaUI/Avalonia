@@ -100,7 +100,7 @@ namespace Avalonia.Rendering.SceneGraph
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-            context.DrawImage(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode);
+            context.DrawBitmap(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode);
         }
 
         /// <inheritdoc/>

@@ -11,7 +11,7 @@ namespace Avalonia.Media.Imaging
     /// <summary>
     /// Represents a bitmap image.
     /// </summary>
-    public interface IBitmap : IDisposable
+    public interface IBitmap : IImage, IDisposable
     {
         /// <summary>
         /// Gets the dots per inch (DPI) of the image.
@@ -31,15 +31,6 @@ namespace Avalonia.Media.Imaging
         /// Gets the platform-specific bitmap implementation.
         /// </summary>
         IRef<IBitmapImpl> PlatformImpl { get; }
-
-        /// <summary>
-        /// Gets the size of the image, in device independent pixels.
-        /// </summary>
-        /// <remarks>
-        /// Note that Skia does not currently support reading the DPI of an image so this value
-        /// will equal <see cref="PixelSize"/> on Skia.
-        /// </remarks>
-        Size Size { get; }
 
         /// <summary>
         /// Saves the bitmap to a file.

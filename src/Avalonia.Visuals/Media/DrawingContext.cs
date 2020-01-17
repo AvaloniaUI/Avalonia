@@ -74,18 +74,29 @@ namespace Avalonia.Media
         public Matrix CurrentContainerTransform => _currentContainerTransform;
 
         /// <summary>
-        /// Draws a bitmap image.
+        /// Draws an image.
         /// </summary>
-        /// <param name="source">The bitmap image.</param>
-        /// <param name="opacity">The opacity to draw with.</param>
-        /// <param name="sourceRect">The rect in the image to draw.</param>
-        /// <param name="destRect">The rect in the output to draw to.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = default)
+        /// <param name="source">The image.</param>
+        /// <param name="rect">The rect in the output to draw to.</param>
+        public void DrawImage(IImage source, Rect rect)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect, bitmapInterpolationMode);
+            DrawImage(source, new Rect(source.Size), rect);
+        }
+
+        /// <summary>
+        /// Draws an image.
+        /// </summary>
+        /// <param name="source">The image.</param>
+        /// <param name="sourceRect">The rect in the image to draw.</param>
+        /// <param name="destRect">The rect in the output to draw to.</param>
+        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
+        public void DrawImage(IImage source, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = default)
+        {
+            Contract.Requires<ArgumentNullException>(source != null);
+
+            source.Draw(this, sourceRect, destRect, bitmapInterpolationMode);
         }
 
         /// <summary>
