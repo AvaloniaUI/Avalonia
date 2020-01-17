@@ -140,7 +140,7 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.LeftAlt)
+            if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
             {
                 _altIsDown = true;
 
@@ -218,6 +218,7 @@ namespace Avalonia.Input
             switch (e.Key)
             {
                 case Key.LeftAlt:
+                case Key.RightAlt:
                     _altIsDown = false;
 
                     if (_ignoreAltUp)
