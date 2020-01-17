@@ -1,40 +1,41 @@
-using System.IO;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
+using Avalonia.Media;
 
 namespace ControlCatalog.Pages
 {
     public class ImagePage : UserControl
     {
-        private Image iconImage;
+        private readonly Image _bitmapImage;
+        private readonly Image _drawingImage;
+
         public ImagePage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
+            _bitmapImage = this.FindControl<Image>("bitmapImage");
+            _drawingImage = this.FindControl<Image>("drawingImage");
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            iconImage = this.Get<Image>("Icon");
         }
 
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        public void BitmapStretchChanged(object sender, SelectionChangedEventArgs e)
         {
-            base.OnAttachedToVisualTree(e);
-            if (iconImage.Source == null)
+            if (_bitmapImage != null)
             {
-                var windowRoot = e.Root as Window;
-                if (windowRoot != null)
-                {
-                    using (var stream = new MemoryStream())
-                    {
-                        windowRoot.Icon.Save(stream);
-                        stream.Seek(0, SeekOrigin.Begin);
-                        iconImage.Source = new Bitmap(stream);
-                    }
-                }
+                var comboxBox = (ComboBox)sender;
+                _bitmapImage.Stretch = (Stretch)comboxBox.SelectedIndex;
+            }
+        }
+
+        public void DrawingStretchChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_drawingImage != null)
+            {
+                var comboxBox = (ComboBox)sender;
+                _drawingImage.Stretch = (Stretch)comboxBox.SelectedIndex;
             }
         }
     }
