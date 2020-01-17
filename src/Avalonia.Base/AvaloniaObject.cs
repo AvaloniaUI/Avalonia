@@ -331,7 +331,7 @@ namespace Avalonia
                 else
                 {
                     throw new NotSupportedException(
-                        "Canot set property to Unset at non-local value priority.");
+                        "Cannot set property to Unset at non-local value priority.");
                 }
             }
             else if (!(value is DoNothingType))

@@ -161,7 +161,7 @@ namespace Avalonia.Data
                     new BindingNotification(Error, BindingErrorType.DataValidationError),
                 BindingValueType.DataValidationErrorWithFallback =>
                     new BindingNotification(Error, BindingErrorType.DataValidationError, Value),
-                _ => throw new NotSupportedException("Invalida BindingValueType."),
+                _ => throw new NotSupportedException("Invalid BindingValueType."),
             };
         }
 
