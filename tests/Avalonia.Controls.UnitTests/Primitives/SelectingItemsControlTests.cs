@@ -130,6 +130,23 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void SelectedIndex_Should_Be_Minus_1_Without_Initialize()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new ListBox();
+            target.Items = items;
+            target.Template = Template();
+            target.DataContext = new object();
+
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
         public void SelectedIndex_Should_Be_0_After_Initialize_With_AlwaysSelected()
         {
             var items = new[]
