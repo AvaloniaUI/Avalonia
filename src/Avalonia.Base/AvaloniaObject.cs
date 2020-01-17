@@ -431,7 +431,7 @@ namespace Avalonia
             Optional<T> oldValue,
             Optional<T> newValue)
         {
-            if (property.Inherits && !IsSet(property))
+            if (property.Inherits && (_values == null || !_values.IsSet(property)))
             {
                 RaisePropertyChanged(property, oldValue, newValue, BindingPriority.LocalValue);
             }
