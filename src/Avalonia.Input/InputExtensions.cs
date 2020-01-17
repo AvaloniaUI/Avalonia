@@ -38,7 +38,9 @@ namespace Avalonia.Input
         /// <returns>The topmost <see cref="IInputElement"/> at the specified position.</returns>
         public static IInputElement InputHitTest(this IInputElement element, Point p)
         {
-            return element.GetInputElementsAt(p).FirstOrDefault();
+            Contract.Requires<ArgumentNullException>(element != null);
+
+            return element.GetVisualAt(p, s_hitTestDelegate) as IInputElement;
         }
 
         private static bool IsHitTestVisible(IVisual visual)

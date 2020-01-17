@@ -795,9 +795,9 @@ namespace Avalonia.Win32
                 modifiers |= RawInputModifiers.RightMouseButton;
             if (keys.HasFlagCustom(UnmanagedMethods.ModifierKeys.MK_MBUTTON))
                 modifiers |= RawInputModifiers.MiddleMouseButton;
-            if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_XBUTTON1))
+            if (keys.HasFlagCustom(UnmanagedMethods.ModifierKeys.MK_XBUTTON1))
                 modifiers |= RawInputModifiers.XButton1MouseButton;
-            if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_XBUTTON2))
+            if (keys.HasFlagCustom(UnmanagedMethods.ModifierKeys.MK_XBUTTON2))
                 modifiers |= RawInputModifiers.XButton2MouseButton;
             return modifiers;
         }
