@@ -516,7 +516,7 @@ namespace Avalonia.Win32
                             timestamp,
                             _owner,
                             RawKeyEventType.KeyDown,
-                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam)), WindowsKeyboardDevice.Instance.Modifiers);
+                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MENUCHAR:
@@ -530,7 +530,7 @@ namespace Avalonia.Win32
                             timestamp,
                             _owner,
                             RawKeyEventType.KeyUp,
-                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam)), WindowsKeyboardDevice.Instance.Modifiers);
+                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
                 case UnmanagedMethods.WindowsMessage.WM_CHAR:
                     // Ignore control chars
