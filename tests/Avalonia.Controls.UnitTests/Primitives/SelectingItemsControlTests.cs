@@ -524,7 +524,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             SelectionChangedEventArgs receivedArgs = null;
 
-            target.SelectionChanged += (_, args) => receivedArgs = null;
+            target.SelectionChanged += (_, args) => receivedArgs = args;
 
             var removed = items[1];
 
