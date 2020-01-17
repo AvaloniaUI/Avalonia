@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
@@ -241,17 +242,14 @@ namespace Avalonia.Controls.Primitives
         public override void BeginInit()
         {
             base.BeginInit();
-            ++_updateCount;
-            _updateSelectedIndex = int.MinValue;
+
+            InternalBeginInit();
         }
 
         /// <inheritdoc/>
         public override void EndInit()
         {
-            if (--_updateCount == 0)
-            {
-                UpdateFinished();
-            }
+            InternalEndInit();
 
             base.EndInit();
         }
@@ -429,7 +427,8 @@ namespace Avalonia.Controls.Primitives
         protected override void OnDataContextBeginUpdate()
         {
             base.OnDataContextBeginUpdate();
-            ++_updateCount;
+
+            InternalBeginInit();
         }
 
         /// <inheritdoc/>
@@ -437,10 +436,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDataContextEndUpdate();
 
-            if (--_updateCount == 0)
-            {
-                UpdateFinished();
-            }
+            InternalEndInit();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -1107,6 +1103,26 @@ namespace Avalonia.Controls.Primitives
                         SelectedIndex = 0;
                     }
                 }
+            }
+        }
+
+        private void InternalBeginInit()
+        {
+            if (_updateCount == 0)
+            {
+                _updateSelectedIndex = int.MinValue;
+            }
+
+            ++_updateCount;
+        }
+
+        private void InternalEndInit()
+        {
+            Debug.Assert(_updateCount > 0);
+
+            if (--_updateCount == 0)
+            {
+                UpdateFinished();
             }
         }
 
