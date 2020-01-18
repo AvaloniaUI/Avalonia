@@ -19,22 +19,22 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets or sets the Alpha component of the color.
+        /// Gets the Alpha component of the color.
         /// </summary>
         public byte A { get; }
 
         /// <summary>
-        /// Gets or sets the Red component of the color.
+        /// Gets the Red component of the color.
         /// </summary>
         public byte R { get; }
 
         /// <summary>
-        /// Gets or sets the Green component of the color.
+        /// Gets the Green component of the color.
         /// </summary>
         public byte G { get; }
 
         /// <summary>
-        /// Gets or sets the Blue component of the color.
+        /// Gets the Blue component of the color.
         /// </summary>
         public byte B { get; }
 

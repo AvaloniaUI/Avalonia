@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Collections.Pooled;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -128,7 +130,20 @@ namespace Avalonia.Rendering.SceneGraph
         public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter)
         {
             var node = FindNode(root);
-            return (node != null) ? HitTest(node, p, null, filter) : Enumerable.Empty<IVisual>();
+            return (node != null) ? new HitTestEnumerable(node, filter, p, Root) : Enumerable.Empty<IVisual>();
+        }
+
+        /// <summary>
+        /// Gets the visual at a point in the scene.
+        /// </summary>
+        /// <param name="p">The point.</param>
+        /// <param name="root">The root of the subtree to search.</param>
+        /// <param name="filter">A filter. May be null.</param>
+        /// <returns>The visual at the specified point.</returns>
+        public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter)
+        {
+            var node = FindNode(root);
+            return (node != null) ? HitTestFirst(node, p, filter) : null;
         }
 
         /// <summary>
@@ -158,38 +173,157 @@ namespace Avalonia.Rendering.SceneGraph
             return result;
         }
 
-        private IEnumerable<IVisual> HitTest(IVisualNode node, Point p, Rect? clip, Func<IVisual, bool> filter)
+        private IVisual HitTestFirst(IVisualNode root, Point p, Func<IVisual, bool> filter)
         {
-            if (filter?.Invoke(node.Visual) != false && node.Visual.IsAttachedToVisualTree)
+            using var enumerator = new HitTestEnumerator(root, filter, p, Root);
+
+            enumerator.MoveNext();
+
+            return enumerator.Current;
+        }
+
+        private class HitTestEnumerable : IEnumerable<IVisual>
+        {
+            private readonly IVisualNode _root;
+            private readonly Func<IVisual, bool> _filter;
+            private readonly IVisualNode _sceneRoot;
+            private readonly Point _point;
+            
+            public HitTestEnumerable(IVisualNode root, Func<IVisual, bool> filter, Point point, IVisualNode sceneRoot)
             {
-                var clipped = false;
+                _root = root;
+                _filter = filter;
+                _point = point;
+                _sceneRoot = sceneRoot;
+            }
 
-                if (node.ClipToBounds)
-                {
-                    clip = clip == null ? node.ClipBounds : clip.Value.Intersect(node.ClipBounds);
-                    clipped = !clip.Value.Contains(p);
-                }
+            public IEnumerator<IVisual> GetEnumerator()
+            {
+                return new HitTestEnumerator(_root, _filter, _point, _sceneRoot);
+            }
 
-                if (node.GeometryClip != null)
-                {
-                    var controlPoint = Root.Visual.TranslatePoint(p, node.Visual);
-                    clipped = !node.GeometryClip.FillContains(controlPoint.Value);
-                }
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+        }
 
-                if (!clipped)
+        private struct HitTestEnumerator : IEnumerator<IVisual>
+        {
+            private readonly PooledStack<Entry> _nodeStack;
+            private readonly Func<IVisual, bool> _filter;
+            private readonly IVisualNode _sceneRoot;
+            private IVisual _current;
+            private readonly Point _point;
+
+            public HitTestEnumerator(IVisualNode root, Func<IVisual, bool> filter, Point point, IVisualNode sceneRoot)
+            {
+                _nodeStack = new PooledStack<Entry>();
+                _nodeStack.Push(new Entry(root, false, null, true));
+
+                _filter = filter;
+                _point = point;
+                _sceneRoot = sceneRoot;
+
+                _current = null;
+            }
+
+            public bool MoveNext()
+            {
+                while (_nodeStack.Count > 0)
                 {
-                    for (var i = node.Children.Count - 1; i >= 0; --i)
+                    (var wasVisited, var isRoot, IVisualNode node, Rect? clip) = _nodeStack.Pop();
+
+                    if (wasVisited && isRoot)
                     {
-                        foreach (var h in HitTest(node.Children[i], p, clip, filter))
+                        break;
+                    }
+
+                    var children = node.Children;
+                    int childCount = children.Count;
+
+                    if (childCount == 0 || wasVisited)
+                    {
+                        if ((wasVisited || FilterAndClip(node, ref clip)) && node.HitTest(_point))
                         {
-                            yield return h;
+                            _current = node.Visual;
+
+                            return true;
                         }
                     }
-
-                    if (node.HitTest(p))
+                    else if (FilterAndClip(node, ref clip))
                     {
-                        yield return node.Visual;
+                        _nodeStack.Push(new Entry(node, true, null));
+
+                        for (var i = 0; i < childCount; i++)
+                        {
+                            _nodeStack.Push(new Entry(children[i], false, clip));
+                        }
                     }
+                }
+
+                return false;
+            }
+
+            public void Reset()
+            {
+                throw new NotSupportedException();
+            }
+
+            public IVisual Current => _current;
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+                _nodeStack.Dispose();
+            }
+
+            private bool FilterAndClip(IVisualNode node, ref Rect? clip)
+            {
+                if (_filter?.Invoke(node.Visual) != false && node.Visual.IsAttachedToVisualTree)
+                {
+                    var clipped = false;
+
+                    if (node.ClipToBounds)
+                    {
+                        clip = clip == null ? node.ClipBounds : clip.Value.Intersect(node.ClipBounds);
+                        clipped = !clip.Value.Contains(_point);
+                    }
+
+                    if (node.GeometryClip != null)
+                    {
+                        var controlPoint = _sceneRoot.Visual.TranslatePoint(_point, node.Visual);
+                        clipped = !node.GeometryClip.FillContains(controlPoint.Value);
+                    }
+
+                    return !clipped;
+                }
+
+                return false;
+            }
+
+            private readonly struct Entry
+            {
+                public readonly bool WasVisited;
+                public readonly bool IsRoot;
+                public readonly IVisualNode Node;
+                public readonly Rect? Clip;
+
+                public Entry(IVisualNode node, bool wasVisited, Rect? clip, bool isRoot = false)
+                {
+                    Node = node;
+                    WasVisited = wasVisited;
+                    IsRoot = isRoot;
+                    Clip = clip;
+                }
+
+                public void Deconstruct(out bool wasVisited, out bool isRoot, out IVisualNode node, out Rect? clip)
+                {
+                    wasVisited = WasVisited;
+                    isRoot = IsRoot;
+                    node = Node;
+                    clip = Clip;
                 }
             }
         }

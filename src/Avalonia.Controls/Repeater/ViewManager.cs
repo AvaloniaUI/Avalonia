@@ -109,11 +109,22 @@ namespace Avalonia.Controls
 
         public void ClearElementToElementFactory(IControl element)
         {
-            var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
-            var clearedIndex = virtInfo.Index;
             _owner.OnElementClearing(element);
-            _owner.ItemTemplateShim.RecycleElement(_owner, element);
 
+            if (_owner.ItemTemplateShim != null)
+            {
+                _owner.ItemTemplateShim.RecycleElement(_owner, element);
+            }
+            else
+            {
+                // No ItemTemplate to recycle to, remove the element from the children collection.
+                if (!_owner.Children.Remove(element))
+                {
+                    throw new InvalidOperationException("ItemsRepeater's child not found in its Children collection.");
+                }
+            }
+
+            var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
             virtInfo.MoveOwnershipToElementFactory();
 
             if (_lastFocusedElement == element)
@@ -121,9 +132,8 @@ namespace Avalonia.Controls
                 // Focused element is going away. Remove the tracked last focused element
                 // and pick a reasonable next focus if we can find one within the layout 
                 // realized elements.
-                MoveFocusFromClearedIndex(clearedIndex);
+                MoveFocusFromClearedIndex(virtInfo.Index);
             }
-
         }
 
         private void MoveFocusFromClearedIndex(int clearedIndex)
@@ -190,7 +200,8 @@ namespace Avalonia.Controls
         {
             if (virtInfo == null)
             {
-                throw new ArgumentException("Element is not a child of this ItemsRepeater.");
+                //Element is not a child of this ItemsRepeater.
+                return -1;
             }
 
             return virtInfo.IsRealized || virtInfo.IsInUniqueIdResetPool ? virtInfo.Index : -1;
@@ -515,21 +526,52 @@ namespace Avalonia.Controls
             return element;
         }
 
+        // There are several cases handled here with respect to which element gets returned and when DataContext is modified.
+        //
+        // 1. If there is no ItemTemplate:
+        //    1.1 If data is an IControl -> the data is returned
+        //    1.2 If data is not an IControl -> a default DataTemplate is used to fetch element and DataContext is set to data
+        //
+        // 2. If there is an ItemTemplate:
+        //    2.1 If data is not an IControl -> Element is fetched from ElementFactory and DataContext is set to the data
+        //    2.2 If data is an IControl:
+        //        2.2.1 If Element returned by the ElementFactory is the same as the data -> Element (a.k.a. data) is returned as is
+        //        2.2.2 If Element returned by the ElementFactory is not the same as the data
+        //                 -> Element that is fetched from the ElementFactory is returned and
+        //                    DataContext is set to the data's DataContext (if it exists), otherwise it is set to the data itself
         private IControl GetElementFromElementFactory(int index)
         {
             // The view generator is the provider of last resort.
+            var data = _owner.ItemsSourceView.GetAt(index);
+            var providedElementFactory = _owner.ItemTemplateShim;
 
-            var itemTemplateFactory = _owner.ItemTemplateShim;
-            if (itemTemplateFactory == null)
+            ItemTemplateWrapper GetElementFactory()
             {
-                // If no ItemTemplate was provided, use a default 
-                var factory = FuncDataTemplate.Default;
-                _owner.ItemTemplate = factory;
-                itemTemplateFactory = _owner.ItemTemplateShim;
+                if (providedElementFactory == null)
+                {
+                    var factory = FuncDataTemplate.Default;
+                    _owner.ItemTemplate = factory;
+                    return _owner.ItemTemplateShim;
+                }
+
+                return providedElementFactory;
             }
 
-            var data = _owner.ItemsSourceView.GetAt(index);
-            var element = itemTemplateFactory.GetElement(_owner, data);
+            IControl GetElement()
+            {
+                if (providedElementFactory == null)
+                {
+                    if (data is IControl dataAsElement)
+                    {
+                        return dataAsElement;
+                    }
+                }
+
+                var elementFactory = GetElementFactory();
+                return elementFactory.GetElement(_owner, data);
+            }
+
+            var element = GetElement();
 
             var virtInfo = ItemsRepeater.TryGetVirtualizationInfo(element);
             if (virtInfo == null)
@@ -537,8 +579,11 @@ namespace Avalonia.Controls
                 virtInfo = ItemsRepeater.CreateAndInitializeVirtualizationInfo(element);
             }
 
-            // Prepare the element
-            element.DataContext = data;
+            if (data != element)
+            {
+                // Prepare the element
+                element.DataContext = data;
+            }
 
             virtInfo.MoveOwnershipToLayoutFromElementFactory(
                 index,
