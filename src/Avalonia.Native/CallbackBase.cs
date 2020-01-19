@@ -80,9 +80,11 @@ namespace Avalonia.Native
 
         public void RaiseException(Exception e)
         {
-            var exceptionInfo = ExceptionDispatchInfo.Capture(e);
+            var threadingInterface = AvaloniaLocator.Current.GetService<PlatformThreadingInterface>();
 
-            PlatformThreadingInterface.s_exceptionDispatchInfo = exceptionInfo;
+            threadingInterface.TerminateNativeApp();
+
+            threadingInterface.DispatchException(ExceptionDispatchInfo.Capture(e));
         }
     }
 }

@@ -13,8 +13,6 @@ namespace Avalonia.Native
 {
     public class PlatformThreadingInterface : IPlatformThreadingInterface
     {
-        public static ExceptionDispatchInfo s_exceptionDispatchInfo;
-
         class TimerCallback : CallbackBase, IAvnActionCallback
         {
             readonly Action _tick;
@@ -46,6 +44,7 @@ namespace Avalonia.Native
         }
 
         readonly IAvnPlatformThreadingInterface _native;
+        private ExceptionDispatchInfo _exceptionDispatchInfo;
 
         public PlatformThreadingInterface(IAvnPlatformThreadingInterface native)
         {
@@ -86,13 +85,21 @@ namespace Avalonia.Native
                     }
                 }
 
-                if(s_exceptionDispatchInfo != null)
+                if(_exceptionDispatchInfo != null)
                 {
-                    // TODO terminate NSApp.
-
-                    s_exceptionDispatchInfo.Throw();
+                    _exceptionDispatchInfo.Throw();
                 }
             }
+        }
+
+        public void DispatchException (ExceptionDispatchInfo exceptionInfo)
+        {
+            _exceptionDispatchInfo = exceptionInfo;
+        }
+
+        public void TerminateNativeApp()
+        {
+            
         }
 
         public void Signal(DispatcherPriority priority)
