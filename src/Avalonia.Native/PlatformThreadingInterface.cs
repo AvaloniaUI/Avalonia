@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
@@ -12,6 +13,8 @@ namespace Avalonia.Native
 {
     public class PlatformThreadingInterface : IPlatformThreadingInterface
     {
+        public static ExceptionDispatchInfo s_exceptionDispatchInfo;
+
         class TimerCallback : CallbackBase, IAvnActionCallback
         {
             readonly Action _tick;
@@ -81,6 +84,13 @@ namespace Avalonia.Native
                         cancellation?.Dispose();
                         cancellation = null;
                     }
+                }
+
+                if(s_exceptionDispatchInfo != null)
+                {
+                    // TODO terminate NSApp.
+
+                    s_exceptionDispatchInfo.Throw();
                 }
             }
         }
