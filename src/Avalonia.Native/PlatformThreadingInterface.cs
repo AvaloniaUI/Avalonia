@@ -99,7 +99,7 @@ namespace Avalonia.Native
 
         public void TerminateNativeApp()
         {
-            
+            _native.TerminateApp();
         }
 
         public void Signal(DispatcherPriority priority)

@@ -4,6 +4,7 @@
 using System;
 using System.Runtime.ExceptionServices;
 using SharpGen.Runtime;
+using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
@@ -80,11 +81,12 @@ namespace Avalonia.Native
 
         public void RaiseException(Exception e)
         {
-            var threadingInterface = AvaloniaLocator.Current.GetService<PlatformThreadingInterface>();
+            if (AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>() is PlatformThreadingInterface threadingInterface)
+            {
+                threadingInterface.TerminateNativeApp();
 
-            threadingInterface.TerminateNativeApp();
-
-            threadingInterface.DispatchException(ExceptionDispatchInfo.Capture(e));
+                threadingInterface.DispatchException(ExceptionDispatchInfo.Capture(e));
+            }
         }
     }
 }
