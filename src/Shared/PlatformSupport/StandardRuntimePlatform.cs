@@ -52,11 +52,13 @@ namespace Avalonia.Shared.PlatformSupport
             
             public UnmanagedBlob(StandardRuntimePlatform plat, int size)
             {
-                if (size <= 0)
-                    throw new ArgumentException("Positive number required", nameof(size));
-                _plat = plat;
-                _address = plat.Alloc(size);
-                GC.AddMemoryPressure(size);
+                if (size > 0)
+                {
+                    _plat = plat;
+                    _address = plat.Alloc(size);
+                    GC.AddMemoryPressure(size);
+                }
+
                 Size = size;
 #if DEBUG
                 _backtrace = Environment.StackTrace;
@@ -75,7 +77,7 @@ namespace Avalonia.Shared.PlatformSupport
                         lock (_btlock)
                             Backtraces.Remove(_backtrace);
 #endif
-                        _plat.Free(_address, Size);
+                        _plat?.Free(_address, Size);
                         GC.RemoveMemoryPressure(Size);
                         IsDisposed = true;
                         _address = IntPtr.Zero;
