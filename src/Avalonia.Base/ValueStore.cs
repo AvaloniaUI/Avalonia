@@ -174,7 +174,7 @@ namespace Avalonia
         {
             if (slot is IPriorityValueEntry<T> e)
             {
-                var priorityValue = new PriorityValue<T>(_owner, property, this, e);
+                var priorityValue = new PriorityValue<T>(property, this, e);
                 _values.SetValue(property, priorityValue);
                 priorityValue.SetValue(value, priority);
             }
@@ -192,7 +192,7 @@ namespace Avalonia
                 }
                 else
                 {
-                    var priorityValue = new PriorityValue<T>(_owner, property, this, l);
+                    var priorityValue = new PriorityValue<T>(property, this, l);
                     _values.SetValue(property, priorityValue);
                 }
             }
@@ -212,7 +212,7 @@ namespace Avalonia
 
             if (slot is IPriorityValueEntry<T> e)
             {
-                priorityValue = new PriorityValue<T>(_owner, property, this, e);
+                priorityValue = new PriorityValue<T>(property, this, e);
             }
             else if (slot is PriorityValue<T> p)
             {
@@ -220,7 +220,7 @@ namespace Avalonia
             }
             else if (slot is LocalValueEntry<T> l)
             {
-                priorityValue = new PriorityValue<T>(_owner, property, this, l);
+                priorityValue = new PriorityValue<T>(property, this, l);
             }
             else
             {

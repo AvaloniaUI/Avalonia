@@ -8,27 +8,23 @@ namespace Avalonia.PropertyStore
 {
     internal class PriorityValue<T> : IValue<T>, IValueSink
     {
-        private readonly IAvaloniaObject _owner;
         private readonly IValueSink _sink;
         private readonly List<IPriorityValueEntry<T>> _entries = new List<IPriorityValueEntry<T>>();
         private Optional<T> _localValue;
 
         public PriorityValue(
-            IAvaloniaObject owner,
             StyledPropertyBase<T> property,
             IValueSink sink)
         {
-            _owner = owner;
             Property = property;
             _sink = sink;
         }
 
         public PriorityValue(
-            IAvaloniaObject owner,
             StyledPropertyBase<T> property,
             IValueSink sink,
             IPriorityValueEntry<T> existing)
-            : this(owner, property, sink)
+            : this(property, sink)
         {
             existing.Reparent(this);
             _entries.Add(existing);
@@ -41,11 +37,10 @@ namespace Avalonia.PropertyStore
         }
 
         public PriorityValue(
-            IAvaloniaObject owner,
             StyledPropertyBase<T> property,
             IValueSink sink,
             LocalValueEntry<T> existing)
-            : this(owner, property, sink)
+            : this(property, sink)
         {
             _localValue = existing.Value;
             Value = _localValue;
