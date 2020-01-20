@@ -20,13 +20,13 @@ namespace Avalonia.Reactive
             return new BindingValueSubjectAdapter<T>(source);
         }
 
-        public static IObservable<object> ToUntyped<T>(this IObservable<BindingValue<T>> source)
+        public static IObservable<object?> ToUntyped<T>(this IObservable<BindingValue<T>> source)
         {
             source = source ?? throw new ArgumentNullException(nameof(source));
             return new UntypedBindingAdapter<T>(source);
         }
 
-        public static ISubject<object> ToUntyped<T>(this ISubject<BindingValue<T>> source)
+        public static ISubject<object?> ToUntyped<T>(this ISubject<BindingValue<T>> source)
         {
             source = source ?? throw new ArgumentNullException(nameof(source));
             return new UntypedBindingSubjectAdapter<T>(source);
