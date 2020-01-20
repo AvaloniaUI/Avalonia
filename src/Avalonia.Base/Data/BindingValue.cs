@@ -8,6 +8,7 @@ namespace Avalonia.Data
     /// <summary>
     /// Describes the type of a <see cref="BindingValue{T}"/>.
     /// </summary>
+    [Flags]
     public enum BindingValueType
     {
         /// <summary>
