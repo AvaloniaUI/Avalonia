@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
+using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Notifications
@@ -14,7 +15,7 @@ namespace Avalonia.Controls.Notifications
     /// <summary>
     /// An <see cref="INotificationManager"/> that displays notifications in a <see cref="Window"/>.
     /// </summary>
-    public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
+    public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager, ICustomSimpleHitTest
     {
         private IList _items;
 
@@ -153,5 +154,7 @@ namespace Avalonia.Controls.Notifications
 
             adornerLayer?.Children.Add(this);
         }
+
+        public bool HitTest(Point point) => VisualChildren.HitTestCustom(point);
     }
 }

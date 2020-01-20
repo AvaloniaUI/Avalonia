@@ -516,7 +516,7 @@ namespace Avalonia.Win32
                             timestamp,
                             _owner,
                             RawKeyEventType.KeyDown,
-                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam)), WindowsKeyboardDevice.Instance.Modifiers);
+                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MENUCHAR:
@@ -530,7 +530,7 @@ namespace Avalonia.Win32
                             timestamp,
                             _owner,
                             RawKeyEventType.KeyUp,
-                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam)), WindowsKeyboardDevice.Instance.Modifiers);
+                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
                 case UnmanagedMethods.WindowsMessage.WM_CHAR:
                     // Ignore control chars
@@ -795,9 +795,9 @@ namespace Avalonia.Win32
                 modifiers |= RawInputModifiers.RightMouseButton;
             if (keys.HasFlagCustom(UnmanagedMethods.ModifierKeys.MK_MBUTTON))
                 modifiers |= RawInputModifiers.MiddleMouseButton;
-            if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_XBUTTON1))
+            if (keys.HasFlagCustom(UnmanagedMethods.ModifierKeys.MK_XBUTTON1))
                 modifiers |= RawInputModifiers.XButton1MouseButton;
-            if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_XBUTTON2))
+            if (keys.HasFlagCustom(UnmanagedMethods.ModifierKeys.MK_XBUTTON2))
                 modifiers |= RawInputModifiers.XButton2MouseButton;
             return modifiers;
         }
