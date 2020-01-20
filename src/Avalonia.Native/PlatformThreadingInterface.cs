@@ -45,7 +45,7 @@ namespace Avalonia.Native
 
         readonly IAvnPlatformThreadingInterface _native;
         private ExceptionDispatchInfo _exceptionDispatchInfo;
-        private IAvnLoopCancellation _loopCancellation;
+        private CancellationTokenSource _exceptionCancellationSource;
 
         public PlatformThreadingInterface(IAvnPlatformThreadingInterface native)
         {
@@ -61,24 +61,30 @@ namespace Avalonia.Native
         public void RunLoop(CancellationToken cancellationToken)
         {
             var l = new object();
-            _loopCancellation = _native.CreateLoopCancellation();
-            cancellationToken.Register(() =>
+            _exceptionCancellationSource = new CancellationTokenSource();
+
+            var compositeCancellation = CancellationTokenSource
+                .CreateLinkedTokenSource(cancellationToken, _exceptionCancellationSource.Token).Token;
+
+            var cancellation = _native.CreateLoopCancellation();
+            compositeCancellation.Register(() =>
             {
                 lock (l)
                 {
-                    _loopCancellation?.Cancel();
+                    cancellation?.Cancel();
                 }
             });
+
             try
             {
-                _native.RunLoop(_loopCancellation);
+                _native.RunLoop(cancellation);
             }
             finally
             {
                 lock (l)
                 {
-                    _loopCancellation?.Dispose();
-                    _loopCancellation = null;
+                    cancellation?.Dispose();
+                    cancellation = null;
                 }
             }
 
@@ -95,7 +101,7 @@ namespace Avalonia.Native
 
         public void TerminateNativeApp()
         {
-            _loopCancellation?.Cancel();
+            _exceptionCancellationSource?.Cancel();
         }
 
         public void Signal(DispatcherPriority priority)
