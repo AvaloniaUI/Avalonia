@@ -45,18 +45,5 @@ namespace Avalonia
                 }
             }
         }
-
-        [DebuggerHidden]
-        private static Func<IAvaloniaObject, object, object> Cast(Func<IAvaloniaObject, TValue, TValue> f)
-        {
-            if (f == null)
-            {
-                return null;
-            }
-            else
-            {
-                return (o, v) => f(o, (TValue)v);
-            }
-        }
     }
 }
