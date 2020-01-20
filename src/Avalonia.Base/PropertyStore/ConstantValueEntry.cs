@@ -19,7 +19,7 @@ namespace Avalonia.PropertyStore
 
         public StyledPropertyBase<T> Property { get; }
         public BindingPriority Priority { get; }
-        public Optional<T> Value { get; private set; }
+        public Optional<T> Value { get; }
         Optional<object> IValue.Value => Value.ToObject();
         BindingPriority IValue.ValuePriority => Priority;
 
