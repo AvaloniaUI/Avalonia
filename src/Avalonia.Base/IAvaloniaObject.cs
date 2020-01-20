@@ -111,7 +111,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="child">The inheritance child.</param>
         /// <remarks>
-        /// Inheritance children will recieve a call to
+        /// Inheritance children will receive a call to
         /// <see cref="InheritedPropertyChanged{T}(AvaloniaProperty{T}, Optional{T}, Optional{T})"/>
         /// when an inheritable property value changes on the parent.
         /// </remarks>
