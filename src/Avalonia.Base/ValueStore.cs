@@ -12,22 +12,19 @@ namespace Avalonia
     {
         private readonly AvaloniaObject _owner;
         private readonly IValueSink _sink;
-        private readonly AvaloniaPropertyValueStore<object> _values;
+        private readonly AvaloniaPropertyValueStore<IValue> _values;
 
         public ValueStore(AvaloniaObject owner)
         {
             _sink = _owner = owner;
-            _values = new AvaloniaPropertyValueStore<object>();
+            _values = new AvaloniaPropertyValueStore<IValue>();
         }
 
         public bool IsAnimating(AvaloniaProperty property)
         {
             if (_values.TryGetValue(property, out var slot))
             {
-                if (slot is IValue v)
-                {
-                    return v.ValuePriority < BindingPriority.LocalValue;
-                }
+                return slot.ValuePriority < BindingPriority.LocalValue;
             }
 
             return false;
@@ -37,10 +34,7 @@ namespace Avalonia
         {
             if (_values.TryGetValue(property, out var slot))
             {
-                if (slot is IValue v)
-                {
-                    return v.Value.HasValue;
-                }
+                return slot.Value.HasValue;
             }
 
             return false;
@@ -50,13 +44,12 @@ namespace Avalonia
         {
             if (_values.TryGetValue(property, out var slot))
             {
-                if (slot is IValue<T> v)
+                var v = (IValue<T>)slot;
+
+                if (v.Value.HasValue)
                 {
-                    if (v.Value.HasValue)
-                    {
-                        value = v.Value.Value;
-                        return true;
-                    }
+                    value = v.Value.Value;
+                    return true;
                 }
             }
 
@@ -133,14 +126,11 @@ namespace Avalonia
         {
             if (_values.TryGetValue(property, out var slot))
             {
-                if (slot is IValue value)
-                {
-                    return new Diagnostics.AvaloniaPropertyValue(
-                        property,
-                        value.Value.HasValue ? (object)value.Value : AvaloniaProperty.UnsetValue,
-                        value.ValuePriority,
-                        null);
-                }
+                return new Diagnostics.AvaloniaPropertyValue(
+                    property,
+                    slot.Value.HasValue ? (object)slot.Value : AvaloniaProperty.UnsetValue,
+                    slot.ValuePriority,
+                    null);
             }
 
             return null;
