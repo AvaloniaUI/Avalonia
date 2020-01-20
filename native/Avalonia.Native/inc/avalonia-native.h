@@ -308,7 +308,6 @@ AVNCOM(IAvnPlatformThreadingInterface, 0b) : IUnknown
     // Can't pass int* to sharpgentools for some reason
     virtual void Signal(int priority) = 0;
     virtual IUnknown* StartTimer(int priority, int ms, IAvnActionCallback* callback) = 0;
-    virtual HRESULT TerminateApp () = 0;
 };
 
 AVNCOM(IAvnSystemDialogEvents, 0c) : IUnknown

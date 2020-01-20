@@ -138,12 +138,6 @@ public:
             return new TimerWrapper(callback, ms);
         }
     }
-    
-    virtual HRESULT TerminateApp () override
-    {
-        [NSApp stop:0];
-        return S_OK;
-    }
 };
 
 @implementation Signaler

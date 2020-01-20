@@ -45,6 +45,7 @@ namespace Avalonia.Native
 
         readonly IAvnPlatformThreadingInterface _native;
         private ExceptionDispatchInfo _exceptionDispatchInfo;
+        private IAvnLoopCancellation _loopCancellation;
 
         public PlatformThreadingInterface(IAvnPlatformThreadingInterface native)
         {
@@ -59,36 +60,31 @@ namespace Avalonia.Native
 
         public void RunLoop(CancellationToken cancellationToken)
         {
-            if (cancellationToken.CanBeCanceled == false)
-                _native.RunLoop(null);
-            else
+            var l = new object();
+            _loopCancellation = _native.CreateLoopCancellation();
+            cancellationToken.Register(() =>
             {
-                var l = new object();
-                var cancellation = _native.CreateLoopCancellation();
-                cancellationToken.Register(() =>
+                lock (l)
                 {
-                    lock (l)
-                    {
-                        cancellation?.Cancel();
-                    }
-                });
-                try
-                {
-                    _native.RunLoop(cancellation);
+                    _loopCancellation?.Cancel();
                 }
-                finally
+            });
+            try
+            {
+                _native.RunLoop(_loopCancellation);
+            }
+            finally
+            {
+                lock (l)
                 {
-                    lock(l)
-                    {
-                        cancellation?.Dispose();
-                        cancellation = null;
-                    }
+                    _loopCancellation?.Dispose();
+                    _loopCancellation = null;
                 }
+            }
 
-                if(_exceptionDispatchInfo != null)
-                {
-                    _exceptionDispatchInfo.Throw();
-                }
+            if (_exceptionDispatchInfo != null)
+            {
+                _exceptionDispatchInfo.Throw();
             }
         }
 
@@ -99,7 +95,7 @@ namespace Avalonia.Native
 
         public void TerminateNativeApp()
         {
-            _native.TerminateApp();
+            _loopCancellation?.Cancel();
         }
 
         public void Signal(DispatcherPriority priority)
