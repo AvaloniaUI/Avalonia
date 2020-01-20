@@ -21,6 +21,8 @@ namespace Avalonia.Benchmarks
 
         public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter) => null;
 
+        public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter) => null;
+
         public void Paint(Rect rect)
         {
         }
