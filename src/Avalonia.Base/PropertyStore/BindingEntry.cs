@@ -6,10 +6,17 @@ using Avalonia.Threading;
 
 namespace Avalonia.PropertyStore
 {
+    /// <summary>
+    /// Represents an untyped interface to <see cref="BindingEntry{T}"/>.
+    /// </summary>
     internal interface IBindingEntry : IPriorityValueEntry, IDisposable
     {
     }
 
+    /// <summary>
+    /// Stores a binding in a <see cref="ValueStore"/> or <see cref="PriorityValue{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">The property type.</typeparam>
     internal class BindingEntry<T> : IBindingEntry, IPriorityValueEntry<T>, IObserver<BindingValue<T>>
     {
         private IValueSink _sink;

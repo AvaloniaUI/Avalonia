@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Utilities;
@@ -8,6 +7,20 @@ using Avalonia.Utilities;
 
 namespace Avalonia
 {
+    /// <summary>
+    /// Stores styled property values for an <see cref="AvaloniaObject"/>.
+    /// </summary>
+    /// <remarks>
+    /// At its core this class consists of an <see cref="AvaloniaProperty"/> to 
+    /// <see cref="IValue"/> mapping which holds the current values for each set property. This
+    /// <see cref="IValue"/> can be in one of 4 states:
+    /// 
+    /// - For a single local value it will be an instance of <see cref="LocalValueEntry{T}"/>.
+    /// - For a single value of a priority other than LocalValue it will be an instance of
+    ///   <see cref="ConstantValueEntry{T}"/>`
+    /// - For a single binding it will be an instance of <see cref="BindingEntry{T}"/>
+    /// - For all other cases it will be an instance of <see cref="PriorityValue{T}"/>
+    /// </remarks>
     internal class ValueStore : IValueSink
     {
         private readonly AvaloniaObject _owner;

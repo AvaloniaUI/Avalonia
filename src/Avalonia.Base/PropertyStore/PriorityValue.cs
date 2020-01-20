@@ -6,6 +6,17 @@ using Avalonia.Data;
 
 namespace Avalonia.PropertyStore
 {
+    /// <summary>
+    /// Stores a set of prioritized values and bindings in a <see cref="ValueStore"/>.
+    /// </summary>
+    /// <typeparam name="T">The property type.</typeparam>
+    /// <remarks>
+    /// When more than a single value or binding is applied to a property in an
+    /// <see cref="AvaloniaObject"/>, the entry in the <see cref="ValueStore"/> is converted into
+    /// a <see cref="PriorityValue{T}"/>. This class holds any number of
+    /// <see cref="IPriorityValueEntry{T}"/> entries (sorted first by priority and then in the order
+    /// they were added) plus a local value.
+    /// </remarks>
     internal class PriorityValue<T> : IValue<T>, IValueSink
     {
         private readonly IValueSink _sink;
