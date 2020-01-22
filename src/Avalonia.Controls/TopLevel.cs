@@ -266,7 +266,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
-            var logicalArgs = new LogicalTreeAttachmentEventArgs(this);
+            var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
             var visualArgs = new VisualTreeAttachmentEventArgs(this, this);
