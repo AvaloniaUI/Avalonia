@@ -107,6 +107,7 @@ namespace Avalonia.Native
             if (_options.UseGpu)
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>()
                     .ToConstant(_glFeature = new GlPlatformFeature(_factory.ObtainGlDisplay()));
+                    .ToConstant(new GlPlatformFeature(_factory.ObtainGlFeature()));
         }
 
         public IWindowImpl CreateWindow()
