@@ -160,14 +160,21 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter)
         {
-            if (_renderLoop == null && (_dirty == null || _dirty.Count > 0))
-            {
-                // When unit testing the renderLoop may be null, so update the scene manually.
-                UpdateScene();
-            }
+            EnsureCanHitTest();
+
             //It's safe to access _scene here without a lock since
             //it's only changed from UI thread which we are currently on
             return _scene?.Item.HitTest(p, root, filter) ?? Enumerable.Empty<IVisual>();
+        }
+
+        /// <inheritdoc/>
+        public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter)
+        {
+            EnsureCanHitTest();
+
+            //It's safe to access _scene here without a lock since
+            //it's only changed from UI thread which we are currently on
+            return _scene?.Item.HitTestFirst(p, root, filter);
         }
 
         /// <inheritdoc/>
@@ -234,6 +241,15 @@ namespace Avalonia.Rendering
         internal void UnitTestRender() => Render(false);
 
         internal Scene UnitTestScene() => _scene.Item;
+
+        private void EnsureCanHitTest()
+        {
+            if (_renderLoop == null && (_dirty == null || _dirty.Count > 0))
+            {
+                // When unit testing the renderLoop may be null, so update the scene manually.
+                UpdateScene();
+            }
+        }
 
         private void Render(bool forceComposite)
         {
@@ -469,11 +485,11 @@ namespace Avalonia.Rendering
 
                 if (layer.OpacityMask == null)
                 {
-                    context.DrawImage(bitmap, layer.Opacity, sourceRect, clientRect);
+                    context.DrawBitmap(bitmap, layer.Opacity, sourceRect, clientRect);
                 }
                 else
                 {
-                    context.DrawImage(bitmap, layer.OpacityMask, layer.OpacityMaskRect, sourceRect);
+                    context.DrawBitmap(bitmap, layer.OpacityMask, layer.OpacityMaskRect, sourceRect);
                 }
 
                 if (layer.GeometryClip != null)
@@ -485,7 +501,7 @@ namespace Avalonia.Rendering
             if (_overlay != null)
             {
                 var sourceRect = new Rect(0, 0, _overlay.Item.PixelSize.Width, _overlay.Item.PixelSize.Height);
-                context.DrawImage(_overlay, 0.5, sourceRect, clientRect);
+                context.DrawBitmap(_overlay, 0.5, sourceRect, clientRect);
             }
 
             if (DrawFps)

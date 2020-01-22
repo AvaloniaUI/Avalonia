@@ -280,8 +280,13 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public bool HitTest(Point p)
         {
-            foreach (var operation in DrawOperations)
+            var drawOperations = DrawOperations;
+            var drawOperationsCount = drawOperations.Count;
+
+            for (var i = 0; i < drawOperationsCount; i++)
             {
+                var operation = drawOperations[i];
+
                 if (operation?.Item?.HitTest(p) == true)
                 {
                     return true;

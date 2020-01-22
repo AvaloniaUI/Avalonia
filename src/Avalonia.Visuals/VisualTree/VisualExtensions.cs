@@ -213,12 +213,37 @@ namespace Avalonia.VisualTree
         /// </summary>
         /// <param name="visual">The root visual to test.</param>
         /// <param name="p">The point.</param>
-        /// <returns>The visuals at the requested point.</returns>
+        /// <returns>The visual at the requested point.</returns>
         public static IVisual GetVisualAt(this IVisual visual, Point p)
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            return visual.GetVisualsAt(p).FirstOrDefault();
+            return visual.GetVisualAt(p, x => x.IsVisible);
+        }
+
+        /// <summary>
+        /// Gets the first visual in the visual tree whose bounds contain a point.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="p">The point.</param>
+        /// <param name="filter">
+        /// A filter predicate. If the predicate returns false then the visual and all its
+        /// children will be excluded from the results.
+        /// </param>
+        /// <returns>The visual at the requested point.</returns>
+        public static IVisual GetVisualAt(this IVisual visual, Point p, Func<IVisual, bool> filter)
+        {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
+            var root = visual.GetVisualRoot();
+            var rootPoint = visual.TranslatePoint(p, root);
+
+            if (rootPoint.HasValue)
+            {
+                return root.Renderer.HitTestFirst(rootPoint.Value, visual, filter);
+            }
+
+            return null;
         }
 
         /// <summary>

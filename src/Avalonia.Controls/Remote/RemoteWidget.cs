@@ -83,7 +83,7 @@ namespace Avalonia.Controls.Remote
                         Marshal.Copy(_lastFrame.Data, y * _lastFrame.Stride,
                             new IntPtr(l.Address.ToInt64() + l.RowBytes * y), lineLen);
                 }
-                context.DrawImage(_bitmap, 1, new Rect(0, 0, _bitmap.PixelSize.Width, _bitmap.PixelSize.Height),
+                context.DrawImage(_bitmap, new Rect(0, 0, _bitmap.PixelSize.Width, _bitmap.PixelSize.Height),
                     new Rect(Bounds.Size));
             }
             base.Render(context);

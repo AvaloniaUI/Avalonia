@@ -107,7 +107,7 @@ namespace Avalonia.Direct2D1.Media
                 context.PushClip(calc.IntermediateClip);
                 context.Transform = calc.IntermediateTransform;
                 
-                context.DrawImage(RefCountable.CreateUnownedNotClonable(bitmap), 1, rect, rect, _bitmapInterpolationMode);
+                context.DrawBitmap(RefCountable.CreateUnownedNotClonable(bitmap), 1, rect, rect, _bitmapInterpolationMode);
                 context.PopClip();
             }
 

@@ -12,8 +12,12 @@ namespace Avalonia.Controls
     /// <summary>
     /// An indexed dictionary of resources.
     /// </summary>
-    public class ResourceDictionary : AvaloniaDictionary<object, object>, IResourceDictionary
+    public class ResourceDictionary : AvaloniaDictionary<object, object>,
+        IResourceDictionary,
+        IResourceNode,
+        ISetResourceParent
     {
+        private IResourceNode _parent;
         private AvaloniaList<IResourceProvider> _mergedDictionaries;
 
         /// <summary>
@@ -39,6 +43,12 @@ namespace Avalonia.Controls
                     _mergedDictionaries.ForEachItem(
                         x =>
                         {
+                            if (x is ISetResourceParent setParent)
+                            {
+                                setParent.SetParent(this);
+                                setParent.ParentResourcesChanged(new ResourcesChangedEventArgs());
+                            }
+
                             if (x.HasResources)
                             {
                                 OnResourcesChanged();
@@ -48,11 +58,18 @@ namespace Avalonia.Controls
                         },
                         x =>
                         {
+                            if (x is ISetResourceParent setParent)
+                            {
+                                setParent.SetParent(null);
+                                setParent.ParentResourcesChanged(new ResourcesChangedEventArgs());
+                            }
+
                             if (x.HasResources)
                             {
                                 OnResourcesChanged();
                             }
 
+                            (x as ISetResourceParent)?.SetParent(null);
                             x.ResourcesChanged -= MergedDictionaryResourcesChanged;
                         },
                         () => { });
@@ -66,6 +83,27 @@ namespace Avalonia.Controls
         bool IResourceProvider.HasResources
         {
             get => Count > 0 || (_mergedDictionaries?.Any(x => x.HasResources) ?? false);
+        }
+
+        /// <inheritdoc/>
+        IResourceNode IResourceNode.ResourceParent => _parent;
+
+        /// <inheritdoc/>
+        void ISetResourceParent.ParentResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            NotifyMergedDictionariesResourcesChanged(e);
+            ResourcesChanged?.Invoke(this, e);
+        }
+
+        /// <inheritdoc/>
+        void ISetResourceParent.SetParent(IResourceNode parent)
+        {
+            if (_parent != null && parent != null)
+            {
+                throw new InvalidOperationException("The ResourceDictionary already has a parent.");
+            }
+            
+            _parent = parent;
         }
 
         /// <inheritdoc/>
@@ -95,7 +133,27 @@ namespace Avalonia.Controls
             ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
         }
 
-        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) => OnResourcesChanged();
+        private void NotifyMergedDictionariesResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            if (_mergedDictionaries != null)
+            {
+                for (var i = _mergedDictionaries.Count - 1; i >= 0; --i)
+                {
+                    if (_mergedDictionaries[i] is ISetResourceParent merged)
+                    {
+                        merged.ParentResourcesChanged(e);
+                    }
+                }
+            }
+        }
+
+        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            var ev = new ResourcesChangedEventArgs();
+            NotifyMergedDictionariesResourcesChanged(ev);
+            OnResourcesChanged();
+        }
+
         private void MergedDictionaryResourcesChanged(object sender, ResourcesChangedEventArgs e) => OnResourcesChanged();
     }
 }

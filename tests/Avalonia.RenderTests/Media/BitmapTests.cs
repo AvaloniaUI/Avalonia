@@ -94,7 +94,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     ctx.DrawRectangle(Brushes.Pink, null, new Rect(0, 20, 100, 10));
 
                     var rc = new Rect(0, 0, 60, 60);
-                    ctx.DrawImage(bmp.PlatformImpl, 1, rc, rc);
+                    ctx.DrawBitmap(bmp.PlatformImpl, 1, rc, rc);
                 }
                 rtb.Save(System.IO.Path.Combine(OutputPath, testName + ".out.png"));
             }
