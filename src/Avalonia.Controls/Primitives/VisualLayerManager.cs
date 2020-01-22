@@ -8,7 +8,7 @@ namespace Avalonia.Controls.Primitives
     {
         private const int AdornerZIndex = int.MaxValue - 100;
         private const int OverlayZIndex = int.MaxValue - 99;
-        private IStyleHost _styleRoot;
+        private IStyleRoot _styleRoot;
         private readonly List<Control> _layers = new List<Control>();
         
 
@@ -53,7 +53,7 @@ namespace Avalonia.Controls.Primitives
             layer.ZIndex = zindex;
             VisualChildren.Add(layer);
             if (((ILogical)this).IsAttachedToLogicalTree)
-                ((ILogical)layer).NotifyAttachedToLogicalTree(new LogicalTreeAttachmentEventArgs(_styleRoot));
+                ((ILogical)layer).NotifyAttachedToLogicalTree(new LogicalTreeAttachmentEventArgs(_styleRoot, layer, this));
             InvalidateArrange();
         }
         
