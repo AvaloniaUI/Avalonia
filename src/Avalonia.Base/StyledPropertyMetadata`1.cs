@@ -33,7 +33,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the default value for the property.
         /// </summary>
-        public TValue DefaultValue => _defaultValue.ValueOrDefault();
+        public TValue DefaultValue => _defaultValue.GetValueOrDefault();
 
         /// <summary>
         /// Gets the value coercion callback, if any.
