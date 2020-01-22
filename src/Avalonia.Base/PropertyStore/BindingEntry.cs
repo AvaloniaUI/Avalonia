@@ -81,6 +81,11 @@ namespace Avalonia.PropertyStore
         
         private void UpdateValue(BindingValue<T> value)
         {
+            if (value.HasValue && Property.ValidateValue?.Invoke(value.Value) == false)
+            {
+                value = Property.GetDefaultValue(_owner.GetType());
+            }
+
             if (value.Type == BindingValueType.DoNothing)
             {
                 return;

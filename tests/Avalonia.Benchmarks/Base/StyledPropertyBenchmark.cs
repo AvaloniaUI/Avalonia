@@ -84,17 +84,63 @@ namespace Avalonia.Benchmarks.Base
             }
         }
 
+        [Benchmark]
+        public void Set_Validated_Int_Property_LocalValue()
+        {
+            var obj = new StyledClass();
+
+            for (var i = 0; i < 100; ++i)
+            {
+                obj.ValidatedIntValue += 1;
+            }
+        }
+
+        [Benchmark]
+        public void Set_Coerced_Int_Property_LocalValue()
+        {
+            var obj = new StyledClass();
+
+            for (var i = 0; i < 100; ++i)
+            {
+                obj.CoercedIntValue += 1;
+            }
+        }
+
         class StyledClass : AvaloniaObject
         {
-            private int _intValue;
-
             public static readonly StyledProperty<int> IntValueProperty =
                 AvaloniaProperty.Register<StyledClass, int>(nameof(IntValue));
+            public static readonly StyledProperty<int> ValidatedIntValueProperty =
+                AvaloniaProperty.Register<StyledClass, int>(nameof(ValidatedIntValue), validate: ValidateIntValue);
+            public static readonly StyledProperty<int> CoercedIntValueProperty =
+                AvaloniaProperty.Register<StyledClass, int>(nameof(CoercedIntValue), coerce: CoerceIntValue);
 
             public int IntValue
             {
                 get => GetValue(IntValueProperty);
                 set => SetValue(IntValueProperty, value);
+            }
+
+            public int ValidatedIntValue
+            {
+                get => GetValue(ValidatedIntValueProperty);
+                set => SetValue(ValidatedIntValueProperty, value);
+            }
+
+            public int CoercedIntValue
+            {
+                get => GetValue(CoercedIntValueProperty);
+                set => SetValue(CoercedIntValueProperty, value);
+            }
+
+            private static bool ValidateIntValue(int arg)
+            {
+                return arg < 1000;
+            }
+
+            private static int CoerceIntValue(IAvaloniaObject arg1, int arg2)
+            {
+                return Math.Min(1000, arg2);
             }
         }
     }

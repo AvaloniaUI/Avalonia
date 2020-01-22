@@ -12,25 +12,35 @@ namespace Avalonia
     /// </summary>
     public class StyledPropertyMetadata<TValue> : PropertyMetadata, IStyledPropertyMetadata
     {
+        private Optional<TValue> _defaultValue;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="StyledPropertyMetadata{TValue}"/> class.
         /// </summary>
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="defaultBindingMode">The default binding mode.</param>
+        /// <param name="coerce">A value coercion callback.</param>
         public StyledPropertyMetadata(
-            TValue defaultValue = default,
-            BindingMode defaultBindingMode = BindingMode.Default)
+            Optional<TValue> defaultValue = default,
+            BindingMode defaultBindingMode = BindingMode.Default,
+            Func<IAvaloniaObject, TValue, TValue> coerce = null)
                 : base(defaultBindingMode)
         {
-            DefaultValue = new BoxedValue<TValue>(defaultValue);
+            _defaultValue = defaultValue;
+            CoerceValue = coerce;
         }
 
         /// <summary>
         /// Gets the default value for the property.
         /// </summary>
-        internal BoxedValue<TValue> DefaultValue { get; private set; }
+        public TValue DefaultValue => _defaultValue.GetValueOrDefault();
 
-        object IStyledPropertyMetadata.DefaultValue => DefaultValue.Boxed;
+        /// <summary>
+        /// Gets the value coercion callback, if any.
+        /// </summary>
+        public Func<IAvaloniaObject, TValue, TValue>? CoerceValue { get; private set; }
+
+        object IStyledPropertyMetadata.DefaultValue => DefaultValue;
 
         /// <inheritdoc/>
         public override void Merge(PropertyMetadata baseMetadata, AvaloniaProperty property)
@@ -39,9 +49,14 @@ namespace Avalonia
 
             if (baseMetadata is StyledPropertyMetadata<TValue> src)
             {
-                if (DefaultValue.Boxed == null)
+                if (!_defaultValue.HasValue)
                 {
-                    DefaultValue = src.DefaultValue;
+                    _defaultValue = src.DefaultValue;
+                }
+
+                if (CoerceValue == null)
+                {
+                    CoerceValue = src.CoerceValue;
                 }
             }
         }

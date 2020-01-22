@@ -356,9 +356,13 @@ namespace Avalonia.Controls
         /// b) contains only letters, digits and underscore ('_').
         /// c) does not start with a digit.
         /// </remarks>
-        private static string SharedSizeGroupPropertyValueValid(Control _, string value)
+        private static bool SharedSizeGroupPropertyValueValid(string value)
         {
-            Contract.Requires<ArgumentNullException>(value != null);
+            //  null is default value
+            if (value == null)
+            {
+                return true;
+            }
 
             string id = (string)value;
 
@@ -380,11 +384,11 @@ namespace Avalonia.Controls
 
                 if (i == id.Length)
                 {
-                    return value;
+                    return true;
                 }
             }
 
-            throw new ArgumentException("Invalid SharedSizeGroup string.");
+            return false;
         }
 
         /// <remark>
@@ -750,8 +754,8 @@ namespace Avalonia.Controls
         /// </remarks> 
         public static readonly AttachedProperty<string> SharedSizeGroupProperty =
             AvaloniaProperty.RegisterAttached<DefinitionBase, Control, string>(
-                "SharedSizeGroup"/*,
-                validate: SharedSizeGroupPropertyValueValid*/);
+                "SharedSizeGroup",
+                validate: SharedSizeGroupPropertyValueValid);
 
         /// <summary>
         /// Static ctor. Used for static registration of properties.

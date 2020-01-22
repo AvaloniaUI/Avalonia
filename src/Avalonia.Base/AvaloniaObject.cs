@@ -413,6 +413,16 @@ namespace Avalonia
             return new DirectBindingSubscription<T>(this, property, source);
         }
 
+        /// <summary>
+        /// Coerces the specified <see cref="AvaloniaProperty"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        public void CoerceValue<T>(StyledPropertyBase<T> property)
+        {
+            _values?.CoerceValue(property);
+        }
+
         /// <inheritdoc/>
         void IAvaloniaObject.AddInheritanceChild(IAvaloniaObject child)
         {
