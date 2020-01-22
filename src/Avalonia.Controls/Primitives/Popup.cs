@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -13,6 +14,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -249,6 +251,8 @@ namespace Avalonia.Controls.Primitives
             if (window != null)
             {
                 window.Deactivated += WindowDeactivated;
+                if (window.PlatformImpl is IEmbeddableWindowImpl reportsFocus)
+                    reportsFocus.LostFocus += WindowLostFocus;
             }
             else
             {
@@ -300,7 +304,11 @@ namespace Avalonia.Controls.Primitives
                 _topLevel.RemoveHandler(PointerPressedEvent, PointerPressedOutside);
                 var window = _topLevel as Window;
                 if (window != null)
+                {
                     window.Deactivated -= WindowDeactivated;
+                    if (window.PlatformImpl is IEmbeddableWindowImpl reportsFocus)
+                        reportsFocus.LostFocus -= WindowLostFocus;
+                }
                 else
                 {
                     var parentPopuproot = _topLevel as PopupRoot;
@@ -481,6 +489,12 @@ namespace Avalonia.Controls.Primitives
             {
                 Close();
             }
+        }
+
+        private void WindowLostFocus()
+        {
+            if(!StaysOpen)
+                Close();
         }
 
         private IgnoreIsOpenScope BeginIgnoringIsOpen()
