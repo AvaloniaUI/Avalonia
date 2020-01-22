@@ -3,6 +3,7 @@
 
 using System;
 using System.Reactive.Subjects;
+using Avalonia.Controls;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -32,6 +33,14 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
 
             Assert.Throws<ArgumentException>(() => target.SetValue(Class1.FooProperty, 101));
+        }
+
+        [Fact]
+        public void SetValue_Throws_If_Fails_Validation_Attached()
+        {
+            var target = new Class1();
+
+            Assert.Throws<ArgumentException>(() => target.SetValue(Class1.AttachedProperty, 101));
         }
 
         [Fact]
@@ -66,6 +75,12 @@ namespace Avalonia.Base.UnitTests
             public static readonly StyledProperty<int> FooProperty =
                 AvaloniaProperty.Register<Class1, int>(
                     "Qux",
+                    defaultValue: 11,
+                    validate: ValidateFoo);
+
+            public static readonly AttachedProperty<int> AttachedProperty =
+                AvaloniaProperty.RegisterAttached<Class1, AvaloniaObject, int>(
+                    "Attached",
                     defaultValue: 11,
                     validate: ValidateFoo);
 

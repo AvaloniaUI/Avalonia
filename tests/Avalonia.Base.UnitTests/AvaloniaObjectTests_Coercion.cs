@@ -21,6 +21,16 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Coerces_Set_Value_Attached()
+        {
+            var target = new Class1();
+
+            target.SetValue(Class1.AttachedProperty, 150);
+
+            Assert.Equal(100, target.GetValue(Class1.AttachedProperty));
+        }
+
+        [Fact]
         public void Coerces_Bound_Value()
         {
             var target = new Class1();
@@ -95,6 +105,12 @@ namespace Avalonia.Base.UnitTests
             public static readonly StyledProperty<int> FooProperty =
                 AvaloniaProperty.Register<Class1, int>(
                     "Qux",
+                    defaultValue: 11,
+                    coerce: CoerceFoo);
+
+            public static readonly AttachedProperty<int> AttachedProperty =
+                AvaloniaProperty.RegisterAttached<Class1, AvaloniaObject, int>(
+                    "Attached",
                     defaultValue: 11,
                     coerce: CoerceFoo);
 

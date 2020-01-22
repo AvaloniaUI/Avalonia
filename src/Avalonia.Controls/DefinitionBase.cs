@@ -358,7 +358,11 @@ namespace Avalonia.Controls
         /// </remarks>
         private static bool SharedSizeGroupPropertyValueValid(string value)
         {
-            Contract.Requires<ArgumentNullException>(value != null);
+            //  null is default value
+            if (value == null)
+            {
+                return true;
+            }
 
             string id = (string)value;
 
