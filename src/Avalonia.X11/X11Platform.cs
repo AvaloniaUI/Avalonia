@@ -26,12 +26,15 @@ namespace Avalonia.X11
         public IX11Screens X11Screens { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
+        public IntPtr OrphanedWindow { get; private set; }
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
             DeferredDisplay = XOpenDisplay(IntPtr.Zero);
+            OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
+                IntPtr.Zero);
             if (Display == IntPtr.Zero)
                 throw new Exception("XOpenDisplay failed");
             XError.Init();
