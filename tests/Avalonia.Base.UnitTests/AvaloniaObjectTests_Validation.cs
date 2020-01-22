@@ -79,7 +79,7 @@ namespace Avalonia.Base.UnitTests
                     validate: ValidateFoo);
 
             public static readonly AttachedProperty<int> AttachedProperty =
-                AvaloniaProperty.RegisterAttached<Class1, AvaloniaObject, int>(
+                AvaloniaProperty.RegisterAttached<Class1, Class1, int>(
                     "Attached",
                     defaultValue: 11,
                     validate: ValidateFoo);
