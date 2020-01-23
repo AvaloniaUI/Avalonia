@@ -19,15 +19,18 @@ namespace Avalonia.PropertyStore
     /// <typeparam name="T">The property type.</typeparam>
     internal class BindingEntry<T> : IBindingEntry, IPriorityValueEntry<T>, IObserver<BindingValue<T>>
     {
+        private readonly IAvaloniaObject _owner;
         private IValueSink _sink;
         private IDisposable? _subscription;
 
         public BindingEntry(
+            IAvaloniaObject owner,
             StyledPropertyBase<T> property,
             IObservable<BindingValue<T>> source,
             BindingPriority priority,
             IValueSink sink)
         {
+            _owner = owner;
             Property = property;
             Source = source;
             Priority = priority;
