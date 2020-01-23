@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using Avalonia.Animation;
 using Avalonia.Animation.Animators;
 
 namespace Avalonia.Media
@@ -11,7 +10,7 @@ namespace Avalonia.Media
     /// <summary>
     /// An ARGB color.
     /// </summary>
-    public readonly struct Color
+    public readonly struct Color : IEquatable<Color>
     {
         static Color()
         {
@@ -143,6 +142,41 @@ namespace Avalonia.Media
         public uint ToUint32()
         {
             return ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
+        }
+
+        /// <summary>
+        /// Check if two colors are equal.
+        /// </summary>
+        public bool Equals(Color other)
+        {
+            return A == other.A && R == other.R && G == other.G && B == other.B;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Color other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hashCode = A.GetHashCode();
+                hashCode = (hashCode * 397) ^ R.GetHashCode();
+                hashCode = (hashCode * 397) ^ G.GetHashCode();
+                hashCode = (hashCode * 397) ^ B.GetHashCode();
+                return hashCode;
+            }
+        }
+
+        public static bool operator ==(Color left, Color right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Color left, Color right)
+        {
+            return !left.Equals(right);
         }
     }
 }
