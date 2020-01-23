@@ -17,14 +17,6 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void AddOwnered_Property_Retains_Validation()
-        {
-            var target = new Class2();
-
-            Assert.Throws<IndexOutOfRangeException>(() => target.SetValue(Class2.FooProperty, "throw"));
-        }
-
-        [Fact]
         public void AvaloniaProperty_Initialized_Is_Called_For_Attached_Property()
         {
             bool raised = false;
@@ -46,18 +38,7 @@ namespace Avalonia.Base.UnitTests
             public static readonly AttachedProperty<string> FooProperty =
                 AvaloniaProperty.RegisterAttached<Class1, Base, string>(
                     "Foo",
-                    "foodefault",
-                    validate: ValidateFoo);
-
-            private static string ValidateFoo(AvaloniaObject arg1, string arg2)
-            {
-                if (arg2 == "throw")
-                {
-                    throw new IndexOutOfRangeException();
-                }
-
-                return arg2;
-            }
+                    "foodefault");
         }
 
         private class Class2 : Base

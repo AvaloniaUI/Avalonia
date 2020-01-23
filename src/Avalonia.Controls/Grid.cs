@@ -2741,11 +2741,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "Column",
                 defaultValue: 0,
-                validate: (_, v) =>
-                {
-                    if (v >= 0) return v;
-                    else throw new ArgumentException("Invalid Grid.Column value.");
-                });
+                validate: v => v >= 0);
 
         /// <summary>
         /// Row property. This is an attached property.
@@ -2762,11 +2758,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "Row",
                 defaultValue: 0,
-                validate: (_, v) =>
-                {
-                    if (v >= 0) return v;
-                    else throw new ArgumentException("Invalid Grid.Row value.");
-                });
+                validate: v => v >= 0);
 
         /// <summary>
         /// ColumnSpan property. This is an attached property.
@@ -2782,11 +2774,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "ColumnSpan",
                 defaultValue: 1,
-                validate: (_, v) =>
-                {
-                    if (v >= 1) return v;
-                    else throw new ArgumentException("Invalid Grid.ColumnSpan value.");
-                });
+                validate: v => v >= 0);
 
         /// <summary>
         /// RowSpan property. This is an attached property.
@@ -2802,11 +2790,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "RowSpan",
                 defaultValue: 1,
-                validate: (_, v) =>
-                {
-                    if (v >= 1) return v;
-                    else throw new ArgumentException("Invalid Grid.RowSpan value.");
-                });
+                validate: v => v >= 0);
 
         /// <summary>
         /// IsSharedSizeScope property marks scoping element for shared size.

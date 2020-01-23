@@ -11,7 +11,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Children"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<Transforms> ChildrenProperty =
+        public static readonly StyledProperty<Transforms> ChildrenProperty =
             AvaloniaProperty.Register<TransformGroup, Transforms>(nameof(Children));
 
         public TransformGroup()
