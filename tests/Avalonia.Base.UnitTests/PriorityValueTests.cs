@@ -21,6 +21,7 @@ namespace Avalonia.Base.UnitTests
         public void Constructor_Should_Set_Value_Based_On_Initial_Entry()
         {
             var target = new PriorityValue<string>(
+                Owner,
                 TestProperty,
                 NullSink,
                 new ConstantValueEntry<string>(TestProperty, "1", BindingPriority.StyleTrigger));
@@ -33,6 +34,7 @@ namespace Avalonia.Base.UnitTests
         public void SetValue_LocalValue_Should_Not_Add_Entries()
         {
             var target = new PriorityValue<string>(
+                Owner,
                 TestProperty,
                 NullSink);
 
@@ -46,6 +48,7 @@ namespace Avalonia.Base.UnitTests
         public void SetValue_Non_LocalValue_Should_Add_Entries()
         {
             var target = new PriorityValue<string>(
+                Owner,
                 TestProperty,
                 NullSink);
 
@@ -63,7 +66,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Binding_With_Same_Priority_Should_Be_Appended()
         {
-            var target = new PriorityValue<string>(TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
             var source1 = new Source("1");
             var source2 = new Source("2");
 
@@ -83,7 +86,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Binding_With_Higher_Priority_Should_Be_Appended()
         {
-            var target = new PriorityValue<string>(TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
             var source1 = new Source("1");
             var source2 = new Source("2");
 
@@ -103,7 +106,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Binding_With_Lower_Priority_Should_Be_Prepended()
         {
-            var target = new PriorityValue<string>(TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
             var source1 = new Source("1");
             var source2 = new Source("2");
 
@@ -123,7 +126,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Second_Binding_With_Lower_Priority_Should_Be_Inserted_In_Middle()
         {
-            var target = new PriorityValue<string>(TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
             var source1 = new Source("1");
             var source2 = new Source("2");
             var source3 = new Source("3");
@@ -145,7 +148,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Competed_Binding_Should_Be_Removed()
         {
-            var target = new PriorityValue<string>(TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
             var source1 = new Source("1");
             var source2 = new Source("2");
             var source3 = new Source("3");
@@ -168,7 +171,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Value_Should_Come_From_Last_Entry()
         {
-            var target = new PriorityValue<string>(TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
             var source1 = new Source("1");
             var source2 = new Source("2");
             var source3 = new Source("3");
@@ -183,7 +186,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void LocalValue_Should_Override_LocalValue_Binding()
         {
-            var target = new PriorityValue<string>(TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
             var source1 = new Source("1");
 
             target.AddBinding(source1, BindingPriority.LocalValue).Start();
@@ -195,7 +198,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void LocalValue_Should_Override_Style_Binding()
         {
-            var target = new PriorityValue<string>(TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
             var source1 = new Source("1");
 
             target.AddBinding(source1, BindingPriority.Style).Start();
@@ -207,7 +210,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void LocalValue_Should_Not_Override_Animation_Binding()
         {
-            var target = new PriorityValue<string>(TestProperty, NullSink);
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
             var source1 = new Source("1");
 
             target.AddBinding(source1, BindingPriority.Animation).Start();
