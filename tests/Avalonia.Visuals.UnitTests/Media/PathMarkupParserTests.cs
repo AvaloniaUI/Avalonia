@@ -161,13 +161,6 @@ namespace Avalonia.Visuals.UnitTests.Media
             }
         }
 
-        [Fact]
-        public void Geometry_Parse_Should_Create_PathGeometry()
-        {
-            var target = Geometry.Parse("M0 0L10 10z");
-            Assert.IsType<PathGeometry>(target);
-        }
-
         [Theory]
         [InlineData("M5.5.5 5.5.5 5.5.5")]
         [InlineData("F1M9.0771,11C9.1161,10.701,9.1801,10.352,9.3031,10L9.0001,10 9.0001,6.166 3.0001,9.767 3.0001,10 "
