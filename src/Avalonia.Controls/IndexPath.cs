@@ -5,42 +5,68 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
-    public sealed class IndexPath : IComparable<IndexPath>
+    public readonly struct IndexPath : IComparable<IndexPath>, IEquatable<IndexPath>
     {
-        private readonly List<int> _path = new List<int>();
+        public static readonly IndexPath Unselected = default;
 
-        internal IndexPath(int index)
+        private readonly int _index;
+        private readonly int[]? _path;
+
+        public IndexPath(int index)
         {
-            _path.Add(index);
+            _index = index + 1;
+            _path = null;
         }
 
-        internal IndexPath(int groupIndex, int itemIndex)
+        public IndexPath(int groupIndex, int itemIndex)
         {
-            _path.Add(groupIndex);
-            _path.Add(itemIndex);
+            _index = 0;
+            _path = new[] { groupIndex, itemIndex };
         }
 
-        internal IndexPath(IEnumerable<int> indices)
+        public IndexPath(IEnumerable<int>? indices)
         {
             if (indices != null)
             {
-                _path.AddRange(indices);
+                _index = 0;
+                _path = indices.ToArray();
+            }
+            else
+            {
+                _index = 0;
+                _path = null;
             }
         }
 
-        public int GetSize() => _path.Count;
-        public int GetAt(int index) => _path[index];
+        private IndexPath(int[] basePath, int index)
+        {
+            basePath = basePath ?? throw new ArgumentNullException(nameof(basePath));
+            
+            _index = 0;
+            _path = new int[basePath.Length + 1];
+            Array.Copy(basePath, _path, basePath.Length);
+            _path[basePath.Length] = index;
+        }
+
+        public int GetSize() => _path?.Length ?? (_index == 0 ? 0 : 1);
+
+        public int GetAt(int index)
+        {
+            return _path?[index] ?? (_index - 1);
+        }
 
         public int CompareTo(IndexPath other)
         {
             var rhsPath = other;
             int compareResult = 0;
-            int lhsCount = _path.Count;
-            int rhsCount = rhsPath._path.Count;
+            int lhsCount = GetSize();
+            int rhsCount = rhsPath.GetSize();
 
             if (lhsCount == 0 || rhsCount == 0)
             {
@@ -52,12 +78,12 @@ namespace Avalonia.Controls
                 // both paths are non-empty, but can be of different size
                 for (int i = 0; i < Math.Min(lhsCount, rhsCount); i++)
                 {
-                    if (_path[i] < rhsPath._path[i])
+                    if (GetAt(i) < rhsPath.GetAt(i))
                     {
                         compareResult = -1;
                         break;
                     }
-                    else if (_path[i] > rhsPath._path[i])
+                    else if (GetAt(i) > rhsPath.GetAt(i))
                     {
                         compareResult = 1;
                         break;
@@ -78,14 +104,34 @@ namespace Avalonia.Controls
 
         public IndexPath CloneWithChildIndex(int childIndex)
         {
-            var newPath = new List<int>(_path);
-            newPath.Add(childIndex);
-            return new IndexPath(newPath);
+            if (_path != null)
+            {
+                return new IndexPath(_path, childIndex);
+            }
+            else if (_index != 0)
+            {
+                return new IndexPath(_index - 1, childIndex);
+            }
+            else
+            {
+                return new IndexPath(childIndex);
+            }
         }
 
         public override string ToString()
         {
-            return "R." + string.Join(".", _path);
+            if (_path != null)
+            {
+                return "R" + string.Join(".", _path);
+            }
+            else if (_index != 0)
+            {
+                return "R" + (_index - 1);
+            }
+            else
+            {
+                return "R";
+            }
         }
 
         public static IndexPath CreateFrom(int index) => new IndexPath(index);
@@ -94,5 +140,34 @@ namespace Avalonia.Controls
 
         public static IndexPath CreateFromIndices(IList<int> indices) => new IndexPath(indices);
 
+        public override bool Equals(object obj) => obj is IndexPath other && Equals(other);
+
+        public bool Equals(IndexPath other) => CompareTo(other) == 0;
+
+        public override int GetHashCode()
+        {
+            var hashCode = -504981047;
+
+            if (_path != null)
+            {
+                foreach (var i in _path)
+                {
+                    hashCode = hashCode * -1521134295 + i.GetHashCode();
+                }
+            }
+            else
+            {
+                hashCode = hashCode * -1521134295 + _index.GetHashCode();
+            }
+
+            return hashCode;
+        }
+
+        public static bool operator <(IndexPath x, IndexPath y) { return x.CompareTo(y) < 0; }
+        public static bool operator >(IndexPath x, IndexPath y) { return x.CompareTo(y) > 0; }
+        public static bool operator <=(IndexPath x, IndexPath y) { return x.CompareTo(y) <= 0; }
+        public static bool operator >=(IndexPath x, IndexPath y) { return x.CompareTo(y) >= 0; }
+        public static bool operator ==(IndexPath x, IndexPath y) { return x.CompareTo(y) == 0; }
+        public static bool operator !=(IndexPath x, IndexPath y) { return x.CompareTo(y) != 0; }
     }
 }

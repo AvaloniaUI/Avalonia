@@ -72,7 +72,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                IndexPath anchor = null;
+                IndexPath anchor = default;
 
                 if (_rootNode.AnchorIndex >= 0)
                 {
@@ -113,7 +113,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                IndexPath selectedIndex = null;
+                IndexPath selectedIndex = default;
                 var selectedIndices = SelectedIndices;
 
                 if (selectedIndices?.Count > 0)
@@ -248,7 +248,7 @@ namespace Avalonia.Controls
                         (infos, index) => // callback for GetAt(index)
                         {
                             var currentIndex = 0;
-                            IndexPath path = null;
+                            IndexPath path = default;
 
                             foreach (var info in infos)
                             {
@@ -505,7 +505,7 @@ namespace Avalonia.Controls
 
             if (resetAnchor)
             {
-                AnchorIndex = null;
+                AnchorIndex = default;
             }
 
             if (raiseSelectionChanged)

@@ -157,7 +157,6 @@ namespace Avalonia.Controls.Utils
             public TreeWalkNodeInfo(SelectionNode node, IndexPath indexPath, SelectionNode parent)
             {
                 node = node ?? throw new ArgumentNullException(nameof(node));
-                indexPath = indexPath ?? throw new ArgumentNullException(nameof(indexPath));
 
                 Node = node;
                 Path = indexPath;
@@ -167,7 +166,6 @@ namespace Avalonia.Controls.Utils
             public TreeWalkNodeInfo(SelectionNode node, IndexPath indexPath)
             {
                 node = node ?? throw new ArgumentNullException(nameof(node));
-                indexPath = indexPath ?? throw new ArgumentNullException(nameof(indexPath));
 
                 Node = node;
                 Path = indexPath;
