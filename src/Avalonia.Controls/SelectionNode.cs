@@ -8,6 +8,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
+#nullable enable
+
 namespace Avalonia.Controls
 {
     /// <summary>
@@ -22,17 +24,14 @@ namespace Avalonia.Controls
     internal class SelectionNode : IDisposable
     {
         private readonly SelectionModel _manager;
-        private readonly List<SelectionNode> _childrenNodes = new List<SelectionNode>();
-        private readonly SelectionNode _parent;
+        private readonly List<SelectionNode?> _childrenNodes = new List<SelectionNode?>();
+        private readonly SelectionNode? _parent;
         private readonly List<IndexRange> _selected = new List<IndexRange>();
-        private object _source;
-        private ItemsSourceView _dataSource;
-        private int _selectedCount;
-        private List<int> _selectedIndicesCached = new List<int>();
+        private readonly List<int> _selectedIndicesCached = new List<int>();
+        private object? _source;
         private bool _selectedIndicesCacheIsValid;
-        private int _realizedChildrenNodeCount;
 
-        public SelectionNode(SelectionModel manager, SelectionNode parent)
+        public SelectionNode(SelectionModel manager, SelectionNode? parent)
         {
             _manager = manager;
             _parent = parent;
@@ -40,7 +39,7 @@ namespace Avalonia.Controls
 
         public int AnchorIndex { get; set; } = -1;
 
-        public object Source
+        public object? Source
         {
             get => _source;
             set
@@ -60,7 +59,7 @@ namespace Avalonia.Controls
                         newDataSource = new ItemsSourceView((IEnumerable)value);
                     }
 
-                    _dataSource = newDataSource;
+                    ItemsSourceView = newDataSource;
 
                     HookupCollectionChangedHandler();
                     OnSelectionChanged();
@@ -68,10 +67,10 @@ namespace Avalonia.Controls
             }
         }
 
-        public ItemsSourceView ItemsSourceView => _dataSource;
-        public int DataCount => _dataSource?.Count ?? 0;
+        public ItemsSourceView? ItemsSourceView { get; private set; }
+        public int DataCount => ItemsSourceView?.Count ?? 0;
         public int ChildrenNodeCount => _childrenNodes.Count;
-        public int RealizedChildrenNodeCount => _realizedChildrenNodeCount;
+        public int RealizedChildrenNodeCount { get; private set; }
 
         public IndexPath IndexPath
         {
@@ -101,17 +100,22 @@ namespace Avalonia.Controls
         // create a bunch of leaf node instances - instead i use the same instance m_leafNode to avoid 
         // an explosion of node objects. However, I'm still creating the m_childrenNodes 
         // collection unfortunately.
-        public SelectionNode GetAt(int index, bool realizeChild)
+        public SelectionNode? GetAt(int index, bool realizeChild)
         {
-            SelectionNode child = null;
+            SelectionNode? child = null;
             
             if (realizeChild)
             {
+                if (ItemsSourceView == null || index < 0 || index >= ItemsSourceView.Count)
+                {
+                    throw new IndexOutOfRangeException();
+                }
+
                 if (_childrenNodes.Count == 0)
                 {
-                    if (_dataSource != null)
+                    if (ItemsSourceView != null)
                     {
-                        for (int i = 0; i < _dataSource.Count; i++)
+                        for (int i = 0; i < ItemsSourceView.Count; i++)
                         {
                             _childrenNodes.Add(null);
                         }
@@ -120,7 +124,7 @@ namespace Avalonia.Controls
 
                 if (_childrenNodes[index] == null)
                 {
-                    var childData = _dataSource.GetAt(index);
+                    var childData = ItemsSourceView!.GetAt(index);
                     
                     if (childData != null)
                     {
@@ -142,7 +146,7 @@ namespace Avalonia.Controls
                     }
 
                     _childrenNodes[index] = child;
-                    _realizedChildrenNodeCount++;
+                    RealizedChildrenNodeCount++;
                 }
                 else
                 {
@@ -160,7 +164,7 @@ namespace Avalonia.Controls
             return child;
         }
 
-        public int SelectedCount => _selectedCount;
+        public int SelectedCount { get; private set; }
 
         public bool IsSelected(int index)
         {
@@ -205,7 +209,7 @@ namespace Avalonia.Controls
         // Null  -> Some descendents are selected and some are not
         public bool? IsSelectedWithPartial(int index)
         {
-            var selectionState = SelectionState.NotSelected;
+            SelectionState selectionState;
 
             if (_childrenNodes.Count == 0 || // no nodes realized
                 _childrenNodes.Count <= index || // target node is not realized 
@@ -221,7 +225,7 @@ namespace Avalonia.Controls
                 // targetNode is a non-leaf node, containing one or many children nodes. Evaluate 
                 // based on children of targetNode.
                 var targetNode = _childrenNodes[index];
-                selectionState = targetNode.EvaluateIsSelectedBasedOnChildrenNodes();
+                selectionState = targetNode!.EvaluateIsSelectedBasedOnChildrenNodes();
             }
 
             return ConvertToNullableBool(selectionState);
@@ -274,7 +278,7 @@ namespace Avalonia.Controls
 
         public void Dispose()
         {
-            _dataSource?.Dispose();
+            ItemsSourceView?.Dispose();
             UnhookCollectionChangedHandler();
         }
 
@@ -290,9 +294,9 @@ namespace Avalonia.Controls
 
         public void SelectAll()
         {
-            if (_dataSource != null)
+            if (ItemsSourceView != null)
             {
-                var size = _dataSource.Count;
+                var size = ItemsSourceView.Count;
                 
                 if (size > 0)
                 {
@@ -324,17 +328,17 @@ namespace Avalonia.Controls
 
         private void HookupCollectionChangedHandler()
         {
-            if (_dataSource != null)
+            if (ItemsSourceView != null)
             {
-                _dataSource.CollectionChanged += OnSourceListChanged;
+                ItemsSourceView.CollectionChanged += OnSourceListChanged;
             }
         }
 
         private void UnhookCollectionChangedHandler()
         {
-            if (_dataSource != null)
+            if (ItemsSourceView != null)
             {
-                _dataSource.CollectionChanged -= OnSourceListChanged;
+                ItemsSourceView.CollectionChanged -= OnSourceListChanged;
             }
         }
 
@@ -353,11 +357,11 @@ namespace Avalonia.Controls
             {
                 if (!IsSelected(i))
                 {
-                    _selectedCount++;
+                    SelectedCount++;
                 }
             }
 
-            if (oldCount != _selectedCount)
+            if (oldCount != SelectedCount)
             {
                 _selected.Add(addRange);
 
@@ -370,18 +374,18 @@ namespace Avalonia.Controls
 
         private void RemoveRange(IndexRange removeRange, bool raiseOnSelectionChanged)
         {
-            int oldCount = _selectedCount;
+            int oldCount = SelectedCount;
 
             // TODO: Prevent overlap of Ranges in _selected (Task 14107720)
             for (int i = removeRange.Begin; i <= removeRange.End; i++)
             {
                 if (IsSelected(i))
                 {
-                    _selectedCount--;
+                    SelectedCount--;
                 }
             }
 
-            if (oldCount != _selectedCount)
+            if (oldCount != SelectedCount)
             {
                 // Build up a both a list of Ranges to remove and ranges to add
                 var toRemove = new List<IndexRange>();
@@ -448,7 +452,7 @@ namespace Avalonia.Controls
                 OnSelectionChanged();
             }
 
-            _selectedCount = 0;
+            SelectedCount = 0;
             AnchorIndex = -1;
 
             // This will throw away all the children SelectionNodes
@@ -576,7 +580,7 @@ namespace Avalonia.Controls
             // Adjust the anchor
             if (AnchorIndex >= index)
             {
-                AnchorIndex = AnchorIndex + count;
+                AnchorIndex += count;
             }
 
             // Check if adding a node invalidated an ancestors
@@ -610,7 +614,7 @@ namespace Avalonia.Controls
             bool selectionInvalidated = false;
             
             // Remove the items from the selection for leaf
-            if (ItemsSourceView.Count > 0)
+            if (ItemsSourceView!.Count > 0)
             {
                 bool isSelected = false;
 
@@ -650,7 +654,7 @@ namespace Avalonia.Controls
                     {
                         if (_childrenNodes[index] != null)
                         {
-                            _realizedChildrenNodeCount--;
+                            RealizedChildrenNodeCount--;
                         }
                         _childrenNodes.RemoveAt(index);
                     }
@@ -659,14 +663,14 @@ namespace Avalonia.Controls
                 //Adjust the anchor
                 if (AnchorIndex >= index)
                 {
-                    AnchorIndex = AnchorIndex - count;
+                    AnchorIndex -= count;
                 }
             }
             else
             {
                 // No more items in the list, clear
                 ClearSelection();
-                _realizedChildrenNodeCount = 0;
+                RealizedChildrenNodeCount = 0;
                 selectionInvalidated = true;
             }
 
@@ -719,7 +723,7 @@ namespace Avalonia.Controls
 
         public SelectionState EvaluateIsSelectedBasedOnChildrenNodes()
         {
-            SelectionState selectionState = SelectionState.NotSelected;
+            var selectionState = SelectionState.NotSelected;
             int realizedChildrenNodeCount = RealizedChildrenNodeCount;
             int selectedCount = SelectedCount;
 
@@ -739,7 +743,6 @@ namespace Avalonia.Controls
                 {
                     // There are child nodes, walk them individually and evaluate based on each child
                     // being selected/not selected or partially selected.
-                    bool isSelected = false;
                     selectedCount = 0;
                     int notSelectedCount = 0;
                     for (int i = 0; i < ChildrenNodeCount; i++)

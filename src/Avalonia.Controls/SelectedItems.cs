@@ -8,13 +8,14 @@ using System.Collections;
 using System.Collections.Generic;
 using SelectedItemInfo = Avalonia.Controls.SelectionModel.SelectedItemInfo;
 
+#nullable enable
+
 namespace Avalonia.Controls
 {
     internal class SelectedItems<T> : IReadOnlyList<T>
     {
         private readonly List<SelectedItemInfo> _infos;
         private readonly Func<List<SelectedItemInfo>, int, T> _getAtImpl;
-        private int _totalCount;
 
         public SelectedItems(
             List<SelectedItemInfo> infos,
@@ -29,7 +30,7 @@ namespace Avalonia.Controls
 
                 if (node != null)
                 {
-                    _totalCount += node.SelectedCount;
+                    Count += node.SelectedCount;
                 }
                 else
                 {
@@ -40,11 +41,11 @@ namespace Avalonia.Controls
 
         public T this[int index] => _getAtImpl(_infos, index);
 
-        public int Count => _totalCount;
+        public int Count { get; }
 
         public IEnumerator<T> GetEnumerator()
         {
-            for (var i = 0; i < _totalCount; ++i)
+            for (var i = 0; i < Count; ++i)
             {
                 yield return this[i];
             }

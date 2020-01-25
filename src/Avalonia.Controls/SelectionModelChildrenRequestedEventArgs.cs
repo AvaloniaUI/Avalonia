@@ -4,27 +4,53 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
     public class SelectionModelChildrenRequestedEventArgs : EventArgs
     {
-        private SelectionNode _sourceNode;
+        private object? _source;
+        private SelectionNode? _sourceNode;
 
         internal SelectionModelChildrenRequestedEventArgs(object source, SelectionNode sourceNode)
         {
-            Initialize(source, sourceNode);
+            _source = source;
+            _sourceNode = sourceNode;
         }
 
-        public object Children { get; set; }
-        public object Source { get; private set; }
-        public IndexPath SourceIndex => _sourceNode.IndexPath;
-
-        internal void Initialize(object source, SelectionNode sourceNode)
+        public object? Children { get; set; }
+        
+        public object Source
         {
-            Source = source;
+            get
+            {
+                if (_source == null)
+                {
+                    throw new ObjectDisposedException(nameof(SelectionModelChildrenRequestedEventArgs));
+                }
+
+                return _source;
+            }
+        }
+
+        public IndexPath SourceIndex
+        {
+            get
+            {
+                if (_sourceNode == null)
+                {
+                    throw new ObjectDisposedException(nameof(SelectionModelChildrenRequestedEventArgs));
+                }
+
+                return _sourceNode.IndexPath;
+            }
+        }
+
+        internal void Initialize(object? source, SelectionNode? sourceNode)
+        {
+            _source = source;
             _sourceNode = sourceNode;
         }
     }

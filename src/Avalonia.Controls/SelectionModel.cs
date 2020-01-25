@@ -8,20 +8,22 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Controls.Utils;
 
+#nullable enable
+
 namespace Avalonia.Controls
 {
     public class SelectionModel : INotifyPropertyChanged, IDisposable
     {
-        private SelectionNode _rootNode;
+        private readonly SelectionNode _rootNode;
         private bool _singleSelect;
-        private IReadOnlyList<IndexPath> _selectedIndicesCached;
-        private IReadOnlyList<object> _selectedItemsCached;
-        private SelectionModelChildrenRequestedEventArgs _childrenRequestedEventArgs;
-        private SelectionModelSelectionChangedEventArgs _selectionChangedEventArgs;
+        private IReadOnlyList<IndexPath>? _selectedIndicesCached;
+        private IReadOnlyList<object?>? _selectedItemsCached;
+        private SelectionModelChildrenRequestedEventArgs? _childrenRequestedEventArgs;
+        private SelectionModelSelectionChangedEventArgs? _selectionChangedEventArgs;
 
-        public event EventHandler<SelectionModelChildrenRequestedEventArgs> ChildrenRequested;
-        public event PropertyChangedEventHandler PropertyChanged;
-        public event EventHandler<SelectionModelSelectionChangedEventArgs> SelectionChanged;
+        public event EventHandler<SelectionModelChildrenRequestedEventArgs>? ChildrenRequested;
+        public event PropertyChangedEventHandler? PropertyChanged;
+        public event EventHandler<SelectionModelSelectionChangedEventArgs>? SelectionChanged;
 
         public SelectionModel()
         {
@@ -29,9 +31,9 @@ namespace Avalonia.Controls
             SharedLeafNode = new SelectionNode(this, null);
         }
 
-        public object Source
+        public object? Source
         {
-            get => _rootNode.Source;
+            get => _rootNode?.Source;
             set
             {
                 ClearSelection(resetAnchor: true, raiseSelectionChanged: false);
@@ -74,10 +76,10 @@ namespace Avalonia.Controls
             {
                 IndexPath anchor = default;
 
-                if (_rootNode.AnchorIndex >= 0)
+                if (_rootNode?.AnchorIndex >= 0)
                 {
                     var path = new List<int>();
-                    var current = _rootNode;
+                    SelectionNode? current = _rootNode;
 
                     while (current?.AnchorIndex >= 0)
                     {
@@ -136,11 +138,11 @@ namespace Avalonia.Controls
             }
         }
 
-        public object SelectedItem
+        public object? SelectedItem
         {
             get
             {
-                object item = null;
+                object? item = null;
                 var selectedItems = SelectedItems;
 
                 if (selectedItems?.Count > 0)
@@ -152,7 +154,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public IReadOnlyList<object> SelectedItems
+        public IReadOnlyList<object?> SelectedItems
         {
             get
             {
@@ -179,12 +181,12 @@ namespace Avalonia.Controls
                     // the selected item at a particular index. This avoid having to create the storage and copying
                     // needed in a dumb vector. This also allows us to expose a tree of selected nodes into an 
                     // easier to consume flat vector view of objects.
-                    var selectedItems = new SelectedItems<object> (
+                    var selectedItems = new SelectedItems<object?> (
                         selectedInfos,
                         (infos, index) =>
                         {
                             var currentIndex = 0;
-                            object item = null;
+                            object? item = null;
 
                             foreach (var info in infos)
                             {
@@ -197,7 +199,7 @@ namespace Avalonia.Controls
                                     if (index >= currentIndex && index < currentIndex + currentCount)
                                     {
                                         var targetIndex = node.SelectedIndices[index - currentIndex];
-                                        item = node.ItemsSourceView.GetAt(targetIndex);
+                                        item = node.ItemsSourceView!.GetAt(targetIndex);
                                         break;
                                     }
 
@@ -289,8 +291,6 @@ namespace Avalonia.Controls
         {
             ClearSelection(resetAnchor: false, raiseSelectionChanged: false);
             _rootNode?.Dispose();
-            _rootNode = null;
-            SharedLeafNode = null;
             _selectedIndicesCached = null;
             _selectedItemsCached = null;
         }
@@ -349,7 +349,7 @@ namespace Avalonia.Controls
         {
             var path = index;
             var isRealized = true;
-            var node = _rootNode;
+            SelectionNode? node = _rootNode;
 
             for (int i = 0; i < path.GetSize() - 1; i++)
             {
@@ -370,11 +370,11 @@ namespace Avalonia.Controls
                 var size = path.GetSize();
                 if (size == 0)
                 {
-                    isSelected = SelectionNode.ConvertToNullableBool(node.EvaluateIsSelectedBasedOnChildrenNodes());
+                    isSelected = SelectionNode.ConvertToNullableBool(node!.EvaluateIsSelectedBasedOnChildrenNodes());
                 }
                 else
                 {
-                    isSelected = node.IsSelectedWithPartial(path.GetAt(size - 1));
+                    isSelected = node!.IsSelectedWithPartial(path.GetAt(size - 1));
                 }
             }
 
@@ -457,9 +457,9 @@ namespace Avalonia.Controls
             OnSelectionChanged();
         }
 
-        internal object ResolvePath(object data, SelectionNode sourceNode)
+        internal object? ResolvePath(object data, SelectionNode sourceNode)
         {
-            object resolved = null;
+            object? resolved = null;
 
             // Raise ChildrenRequested event if there is a handler
             if (ChildrenRequested != null)
@@ -565,7 +565,7 @@ namespace Avalonia.Controls
             }
 
             var childNode = _rootNode.GetAt(groupIndex, realizeChild: true);
-            var selected = childNode.Select(itemIndex, select);
+            var selected = childNode!.Select(itemIndex, select);
             
             if (selected)
             {
@@ -653,7 +653,7 @@ namespace Avalonia.Controls
             var selected = false;
             for (int groupIdx = startGroupIndex; groupIdx <= endGroupIndex; groupIdx++)
             {
-                var groupNode = _rootNode.GetAt(groupIdx, realizeChild: true);
+                var groupNode = _rootNode.GetAt(groupIdx, realizeChild: true)!;
                 int startIndex = groupIdx == startGroupIndex ? startItemIndex : 0;
                 int endIndex = groupIdx == endGroupIndex ? endItemIndex : groupNode.DataCount - 1;
                 selected |= groupNode.SelectRange(new IndexRange(startIndex, endIndex), select);
@@ -688,7 +688,7 @@ namespace Avalonia.Controls
                     if (info.Node.DataCount == 0)
                     {
                         // Select only leaf nodes
-                        info.ParentNode.Select(info.Path.GetAt(info.Path.GetSize() - 1), select);
+                        info.ParentNode!.Select(info.Path.GetAt(info.Path.GetSize() - 1), select);
                     }
                 });
 

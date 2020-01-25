@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+#nullable enable
+
 namespace Avalonia.Controls.Utils
 {
     internal static class SelectionTreeHelper
@@ -26,7 +28,7 @@ namespace Avalonia.Controls.Utils
 
                 if (depth < path.GetSize() - 1)
                 {
-                    node = node.GetAt(childIndex, realizeChildren);
+                    node = node.GetAt(childIndex, realizeChildren)!;
                 }
             }
         }
@@ -48,7 +50,7 @@ namespace Avalonia.Controls.Utils
                 int count = realizeChildren ? nextNode.Node.DataCount : nextNode.Node.ChildrenNodeCount;
                 for (int i = count - 1; i >= 0; i--)
                 {
-                    SelectionNode child = nextNode.Node.GetAt(i, realizeChildren);
+                    var child = nextNode.Node.GetAt(i, realizeChildren);
                     var childPath = nextNode.Path.CloneWithChildIndex(i);
                     if (child != null)
                     {
@@ -154,7 +156,7 @@ namespace Avalonia.Controls.Utils
 
         public struct TreeWalkNodeInfo
         {
-            public TreeWalkNodeInfo(SelectionNode node, IndexPath indexPath, SelectionNode parent)
+            public TreeWalkNodeInfo(SelectionNode node, IndexPath indexPath, SelectionNode? parent)
             {
                 node = node ?? throw new ArgumentNullException(nameof(node));
 
@@ -174,7 +176,7 @@ namespace Avalonia.Controls.Utils
 
             public SelectionNode Node { get; }
             public IndexPath Path { get; }
-            public SelectionNode ParentNode { get; }
+            public SelectionNode? ParentNode { get; }
         };
 
     }
