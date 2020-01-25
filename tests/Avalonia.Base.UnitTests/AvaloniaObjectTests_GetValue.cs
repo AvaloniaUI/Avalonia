@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Subjects;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -27,11 +28,23 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void GetValue_Returns_Set_Value()
         {
-            Class1 target = new Class1();
+            var target = new Class1();
+            var property = Class1.FooProperty;
 
-            target.SetValue(Class1.FooProperty, "newvalue");
+            target.SetValue(property, "newvalue");
 
-            Assert.Equal("newvalue", target.GetValue(Class1.FooProperty));
+            Assert.Equal("newvalue", target.GetValue(property));
+        }
+
+        [Fact]
+        public void GetValue_Returns_Bound_Value()
+        {
+            var target = new Class1();
+            var property = Class1.FooProperty;
+
+            target.Bind(property, new BehaviorSubject<string>("newvalue"));
+
+            Assert.Equal("newvalue", target.GetValue(property));
         }
 
         [Fact]

@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Specialized;
+using Avalonia.Data;
 
 namespace Avalonia.Layout
 {
@@ -462,44 +463,45 @@ namespace Avalonia.Layout
             gridState.ClearElementOnDataSourceChange(context, args);
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs args)
+        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
         {
-            if (args.Property == OrientationProperty)
+            if (property == OrientationProperty)
             {
-                var orientation = (Orientation)args.NewValue;
+                var orientation = newValue.GetValueOrDefault<Orientation>();
 
                 //Note: For UniformGridLayout Vertical Orientation means we have a Horizontal ScrollOrientation. Horizontal Orientation means we have a Vertical ScrollOrientation.
                 //i.e. the properties are the inverse of each other.
                 var scrollOrientation = (orientation == Orientation.Horizontal) ? ScrollOrientation.Vertical : ScrollOrientation.Horizontal;
                 _orientation.ScrollOrientation = scrollOrientation;
             }
-            else if (args.Property == MinColumnSpacingProperty)
+            else if (property == MinColumnSpacingProperty)
             {
-                _minColumnSpacing = (double)args.NewValue;
+                _minColumnSpacing = newValue.GetValueOrDefault<double>();
             }
-            else if (args.Property == MinRowSpacingProperty)
+            else if (property == MinRowSpacingProperty)
             {
-                _minRowSpacing = (double)args.NewValue;
+                _minRowSpacing = newValue.GetValueOrDefault<double>();
             }
-            else if (args.Property == ItemsJustificationProperty)
+            else if (property == ItemsJustificationProperty)
             {
-                _itemsJustification = (UniformGridLayoutItemsJustification)args.NewValue;
+                _itemsJustification = newValue.GetValueOrDefault<UniformGridLayoutItemsJustification>();
+                ;
             }
-            else if (args.Property == ItemsStretchProperty)
+            else if (property == ItemsStretchProperty)
             {
-                _itemsStretch = (UniformGridLayoutItemsStretch)args.NewValue;
+                _itemsStretch = newValue.GetValueOrDefault<UniformGridLayoutItemsStretch>();
             }
-            else if (args.Property == MinItemWidthProperty)
+            else if (property == MinItemWidthProperty)
             {
-                _minItemWidth = (double)args.NewValue;
+                _minItemWidth = newValue.GetValueOrDefault<double>();
             }
-            else if (args.Property == MinItemHeightProperty)
+            else if (property == MinItemHeightProperty)
             {
-                _minItemHeight = (double)args.NewValue;
+                _minItemHeight = newValue.GetValueOrDefault<double>();
             }
-            else if (args.Property == MaximumRowsOrColumnsProperty)
+            else if (property == MaximumRowsOrColumnsProperty)
             {
-                _maximumRowsOrColumns = (int)args.NewValue;
+                _maximumRowsOrColumns = newValue.GetValueOrDefault<int>();
             }
 
             InvalidateLayout();

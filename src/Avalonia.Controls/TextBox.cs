@@ -63,7 +63,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, int>(nameof(MaxLength), defaultValue: 0);
 
         public static readonly DirectProperty<TextBox, string> TextProperty =
-            TextBlock.TextProperty.AddOwner<TextBox>(
+            TextBlock.TextProperty.AddOwnerWithDataValidation<TextBox>(
                 o => o.Text,
                 (o, v) => o.Text = v,
                 defaultBindingMode: BindingMode.TwoWay,
@@ -133,7 +133,7 @@ namespace Avalonia.Controls
                         return ScrollBarVisibility.Hidden;
                     }
                 });
-            Bind(
+            this.Bind(
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
@@ -702,11 +702,11 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
             if (property == TextProperty)
             {
-                DataValidationErrors.SetError(this, status.Error);
+                DataValidationErrors.SetError(this, value.Error);
             }
         }
 
