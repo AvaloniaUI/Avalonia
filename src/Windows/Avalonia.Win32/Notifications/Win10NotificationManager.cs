@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reactive.Disposables;
 using System.Reflection;
 using Windows.Data.Xml.Dom;
 using Windows.UI.Notifications;
@@ -9,38 +10,13 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.Notifications
 {
-    public class Win10NotificationManager : INotificationManager
+    internal class Win10NotificationManager : INotificationManager
     {
-        private readonly string _appUserModelId;
         private readonly Dictionary<ToastNotification, INotification> _associatedNotifications;
 
         public Win10NotificationManager()
         {
-            //TODO: When to install and configure the appUserModelId and shortcut?
-            const string appName = "TEST";
-
             _associatedNotifications = new Dictionary<ToastNotification, INotification>();
-            _appUserModelId = $"{appName}.App";
-
-            UnmanagedMethods.SetCurrentProcessExplicitAppUserModelID(_appUserModelId);
-            InstallStartMenuShortcut(appName, _appUserModelId);
-        }
-
-        private static void InstallStartMenuShortcut(string shortcutName, string appUserModelId)
-        {
-            var path = Assembly.GetExecutingAssembly().Location;
-            using var shortcut = new ShellLink
-            {
-                TargetPath = path,
-                Arguments = string.Empty,
-                AppUserModelID = appUserModelId
-            };
-
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var startMenuPath = Path.Combine(appData, @"Microsoft\Windows\Start Menu\Programs");
-            var shortcutFile = Path.Combine(startMenuPath, $"{shortcutName}.lnk");
-
-            shortcut.Save(shortcutFile);
         }
 
         public void Show(INotification notification)
@@ -65,7 +41,7 @@ namespace Avalonia.Win32.Notifications
             toastNotification.Dismissed += ToastNotificationOnDismissed;
             toastNotification.Failed += ToastNotificationOnFailed;
 
-            var toastNotifier = ToastNotificationManager.CreateToastNotifier(_appUserModelId);
+            var toastNotifier = ToastNotificationManager.CreateToastNotifier(Win32Platform.AppUserModelId);
             toastNotifier.Show(toastNotification);
 
             _associatedNotifications[toastNotification] = notification;

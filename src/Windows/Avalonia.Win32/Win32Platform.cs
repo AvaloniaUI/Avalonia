@@ -7,8 +7,10 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reactive.Disposables;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Avalonia.Build.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Platform;
@@ -26,16 +28,17 @@ namespace Avalonia
 {
     public static class Win32ApplicationExtensions
     {
-        public static T UseWin32<T>(this T builder) 
+        public static T UseWin32<T>(this T builder)
             where T : AppBuilderBase<T>, new()
         {
-            return builder.UseWindowingSubsystem(
-                () =>
+            var settings = AvaloniaLocator.Current.GetService<Win32PlatformOptions>() ?? new Win32PlatformOptions();
+            return builder
+                .UseWindowingSubsystem(() => Win32.Win32Platform.Initialize(settings), "Win32")
+                .AfterSetup(b =>
                 {
-                    Win32.Win32Platform.Initialize(
-                        AvaloniaLocator.Current.GetService<Win32PlatformOptions>() ?? new Win32PlatformOptions());
-                },
-                "Win32");
+                    Win32.Win32Platform.SetupAppUserModelId(settings.AppUserModelId ?? b.Instance.Name);
+                    Win32.Win32Platform.InstallAppShortcut(b.ApplicationType.Assembly, b.Instance.Name);
+                });
         }
     }
 
@@ -45,6 +48,7 @@ namespace Avalonia
         public bool AllowEglInitialization { get; set; }
         public bool? EnableMultitouch { get; set; }
         public bool OverlayPopups { get; set; }
+        public string AppUserModelId { get; set; }
     }
 }
 
@@ -64,6 +68,7 @@ namespace Avalonia.Win32
             CreateMessageWindow();
         }
 
+        public static string AppUserModelId { get; private set; }
         public static bool UseDeferredRendering => Options.UseDeferredRendering;
         internal static bool UseOverlayPopups => Options.OverlayPopups;
         public static Win32PlatformOptions Options { get; private set; }
@@ -105,11 +110,36 @@ namespace Avalonia.Win32
 
             if (options.AllowEglInitialization)
                 Win32GlManager.Initialize();
-            
+
             _uiThread = Thread.CurrentThread;
 
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
+        }
+
+        public static void InstallAppShortcut(Assembly exeAssembly, string name)
+        {
+            //TODO: Should probably also install an icon
+            using var shortcut = new ShellLink
+            {
+                TargetPath = exeAssembly.Location,
+                Arguments = string.Empty,
+                AppUserModelID = AppUserModelId
+            };
+
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var startMenuPath = Path.Combine(appData, @"Microsoft\Windows\Start Menu\Programs");
+            var shortcutFile = Path.Combine(startMenuPath, $"{name}.lnk");
+
+            shortcut.Save(shortcutFile);
+
+            //TODO: Remove shortcut when platform shuts down?
+        }
+
+        public static void SetupAppUserModelId(string id)
+        {
+            AppUserModelId = id;
+            UnmanagedMethods.SetCurrentProcessExplicitAppUserModelID(AppUserModelId);
         }
 
         public bool HasMessages()
@@ -158,14 +188,14 @@ namespace Avalonia.Win32
             });
         }
 
-        private static readonly int SignalW = unchecked((int) 0xdeadbeaf);
+        private static readonly int SignalW = unchecked((int)0xdeadbeaf);
         private static readonly int SignalL = unchecked((int)0x12345678);
 
         public void Signal(DispatcherPriority prio)
         {
             UnmanagedMethods.PostMessage(
                 _hwnd,
-                (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
+                (int)UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
                 new IntPtr(SignalW),
                 new IntPtr(SignalL));
         }
@@ -177,7 +207,7 @@ namespace Avalonia.Win32
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            if (msg == (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
+            if (msg == (int)UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
             {
                 Signaled?.Invoke(null);
             }
