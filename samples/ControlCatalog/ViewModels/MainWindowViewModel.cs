@@ -1,14 +1,15 @@
 using System;
+using System.Reactive;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
-using JetBrains.Annotations;
 using ReactiveUI;
+using Notification = Avalonia.Controls.Notifications.Notification;
 
 namespace ControlCatalog.ViewModels
 {
-    public class MainWindowViewModel : ReactiveObject
+    class MainWindowViewModel : ReactiveObject
     {
         private readonly INotificationManager _nativeNotificationManager;
         private IManagedNotificationManager _notificationManager;
@@ -17,6 +18,60 @@ namespace ControlCatalog.ViewModels
         {
             _notificationManager = notificationManager;
             _nativeNotificationManager = AvaloniaLocator.Current.GetService<INotificationManager>();
+
+            ShowCustomManagedNotificationCommand = ReactiveCommand.Create(() =>
+            {
+                NotificationManager.Show(new NotificationViewModel(NotificationManager) { Title = "Hey There!", Message = "Did you know that Avalonia now supports Custom In-Window Notifications?" });
+            });
+
+            ShowManagedNotificationCommand = ReactiveCommand.Create(() =>
+            {
+                NotificationManager.Show(new Notification("Welcome", "Avalonia now supports Notifications.", NotificationType.Information));
+            });
+
+            ShowNativeNotificationCommand = ReactiveCommand.Create(() =>
+            {
+                if (_nativeNotificationManager != null)
+                {
+                    _nativeNotificationManager.Show(new Notification(
+                        "Native",
+                        "Native Notifications are finally here!",
+                        NotificationType.Success,
+                        onClick: NativeNotficationClicked,
+                        onClose: NativeNotificationClosed));
+                }
+                else
+                {
+                    NotificationManager.Show(new Notification(
+                        "Native",
+                        "Native Notifications are not supported on this platform!",
+                        NotificationType.Error));
+                }
+            });
+
+            AboutCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var dialog = new AboutAvaloniaDialog();
+
+                var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+
+                await dialog.ShowDialog(mainWindow);
+            });
+
+            ExitCommand = ReactiveCommand.Create(() =>
+            {
+                (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).Shutdown();
+            });
+        }
+
+        private static void NativeNotificationClosed()
+        {
+            Console.WriteLine("Native notification closed.");
+        }
+
+        private static void NativeNotficationClicked()
+        {
+            Console.WriteLine("Native notification clicked.");
         }
 
         public IManagedNotificationManager NotificationManager
@@ -25,69 +80,14 @@ namespace ControlCatalog.ViewModels
             set { this.RaiseAndSetIfChanged(ref _notificationManager, value); }
         }
 
-        [UsedImplicitly]
-        public void ShowManagedNotification()
-        {
-            NotificationManager.Show(new Notification(
-                "Welcome",
-                "Avalonia now supports Notifications."));
-        }
+        public ReactiveCommand<Unit, Unit> ShowCustomManagedNotificationCommand { get; }
 
-        [UsedImplicitly]
-        public void ShowNativeNotification()
-        {
-            if (_nativeNotificationManager != null)
-            {
-                _nativeNotificationManager.Show(new Notification(
-                    "Native",
-                    "Native Notifications are finally here!",
-                    NotificationType.Success,
-                    onClick: NativeNotficationClicked,
-                    onClose: NativeNotificationClosed));
-            }
-            else
-            {
-                NotificationManager.Show(new Notification(
-                    "Native",
-                    "Native Notifications are not supported on this platform!",
-                    NotificationType.Error));
-            }
-        }
+        public ReactiveCommand<Unit, Unit> ShowManagedNotificationCommand { get; }
 
-        private static void NativeNotificationClosed()
-        {
-           Console.WriteLine("Native notification closed.");
-        }
+        public ReactiveCommand<Unit, Unit> ShowNativeNotificationCommand { get; }
 
-        private static void NativeNotficationClicked()
-        {
-            Console.WriteLine("Native notification clicked.");
-        }
+        public ReactiveCommand<Unit, Unit> AboutCommand { get; }
 
-        public async void About()
-        {
-            var dialog = new AboutAvaloniaDialog();
-
-            var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
-                ?.MainWindow;
-
-            await dialog.ShowDialog(mainWindow);
-        }
-
-        public void Exit()
-        {
-            (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
-        }
-
-        [UsedImplicitly]
-        public void ShowCustomManagedNotification()
-        {
-            NotificationManager.Show(
-                new NotificationViewModel(NotificationManager)
-                {
-                    Title = "Hey There!",
-                    Message = "Did you know that Avalonia now supports Custom In-Window Notifications?"
-                });
-        }
+        public ReactiveCommand<Unit, Unit> ExitCommand { get; }
     }
 }
