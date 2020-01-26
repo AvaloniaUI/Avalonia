@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Avalonia.Styling
 {
@@ -68,6 +69,8 @@ namespace Avalonia.Styling
                 }
                 else if (match.Result == SelectorMatchResult.Sometimes)
                 {
+                    Debug.Assert(match.Activator != null);
+
                     if (inputs != null)
                     {
                         inputs.Add(match.Activator);
