@@ -17,7 +17,7 @@ namespace Avalonia.X11
             Window = window;
         }
 
-        public INativeControlHostDestroyableControlHandle CreateDefaultChild()
+        public INativeControlHostDestroyableControlHandle CreateDefaultChild(IPlatformHandle parent)
         {
             var ch = new DumbWindow(_platform.Info);
             XSync(_platform.Display, false);
@@ -26,11 +26,13 @@ namespace Avalonia.X11
 
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(Func<IPlatformHandle, IPlatformHandle> create)
         {
-            var holder = new DumbWindow(_platform.Info);
+            var holder = new DumbWindow(_platform.Info, Window.Handle.Handle);
             Attachment attachment = null;
             try
             {
                 var child = create(holder);
+                // ReSharper disable once UseObjectOrCollectionInitializer
+                // It has to be assigned to the variable before property setter is called so we dispose it on exception
                 attachment = new Attachment(_platform.Display, holder, _platform.OrphanedWindow, child);
                 attachment.AttachedTo = this;
                 return attachment;
@@ -48,7 +50,7 @@ namespace Avalonia.X11
             if (!IsCompatibleWith(handle))
                 throw new ArgumentException(handle.HandleDescriptor + " is not compatible with the current window",
                     nameof(handle));
-            var attachment = new Attachment(_platform.Display, new DumbWindow(_platform.Info),
+            var attachment = new Attachment(_platform.Display, new DumbWindow(_platform.Info, Window.Handle.Handle),
                 _platform.OrphanedWindow, handle) { AttachedTo = this };
             return attachment;
         }
@@ -59,7 +61,7 @@ namespace Avalonia.X11
         {
             private readonly IntPtr _display;
 
-            public DumbWindow(X11Info x11)
+            public DumbWindow(X11Info x11, IntPtr? parent = null)
             {
                 _display = x11.Display;
                 /*Handle = XCreateSimpleWindow(x11.Display, XLib.XDefaultRootWindow(_display),
@@ -72,8 +74,9 @@ namespace Avalonia.X11
                     
                 };
 
+                parent ??= XDefaultRootWindow(x11.Display);
 
-                Handle = XCreateWindow(_display, XDefaultRootWindow(_display), 0, 0, 
+                Handle = XCreateWindow(_display, parent.Value, 0, 0,
                     1,1, 0, 0,
                     (int)CreateWindowArgs.InputOutput,
                     IntPtr.Zero, 

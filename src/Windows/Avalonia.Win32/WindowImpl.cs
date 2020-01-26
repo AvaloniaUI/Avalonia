@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
@@ -18,13 +19,15 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
-    public class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
+    public class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
+        ITopLevelImplWithNativeControlHost
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
         private static readonly IntPtr DefaultCursor = UnmanagedMethods.LoadCursor(
             IntPtr.Zero, new IntPtr((int)UnmanagedMethods.Cursor.IDC_ARROW));
 
+        private Win32NativeControlHost _nativeControlHost;
         private UnmanagedMethods.WndProc _wndProcDelegate;
         private string _className;
         private IntPtr _hwnd;
@@ -71,6 +74,7 @@ namespace Avalonia.Win32
                     Win32GlManager.EglFeature.DeferredContext, this);
 
             s_instances.Add(this);
+            _nativeControlHost = new Win32NativeControlHost(this);
         }
 
         public Action Activated { get; set; }
@@ -414,7 +418,7 @@ namespace Avalonia.Win32
                 0,
                 atom,
                 null,
-                (int)UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW,
+                (int)(WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPCHILDREN),
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
@@ -1061,5 +1065,6 @@ namespace Avalonia.Win32
             }
         }
         IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
+        public INativeControlHostImpl NativeControlHost => _nativeControlHost;
     }
 }

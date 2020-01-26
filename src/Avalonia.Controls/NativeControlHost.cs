@@ -104,7 +104,7 @@ namespace Avalonia.Controls
         
         protected virtual IPlatformHandle CreateNativeControlCore(IPlatformHandle parent)
         {
-            return _currentHost.CreateDefaultChild();
+            return _currentHost.CreateDefaultChild(parent);
         }
 
         void DestroyNativeControl()

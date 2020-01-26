@@ -6,7 +6,7 @@ namespace Avalonia.Controls.Platform
 {
     public interface INativeControlHostImpl
     {
-        INativeControlHostDestroyableControlHandle CreateDefaultChild();
+        INativeControlHostDestroyableControlHandle CreateDefaultChild(IPlatformHandle parent);
         INativeControlHostControlTopLevelAttachment CreateNewAttachment(Func<IPlatformHandle, IPlatformHandle> create);
         INativeControlHostControlTopLevelAttachment CreateNewAttachment(IPlatformHandle handle);
         bool IsCompatibleWith(IPlatformHandle handle);
