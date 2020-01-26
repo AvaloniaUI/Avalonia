@@ -41,7 +41,9 @@ namespace Avalonia.Styling
         /// <returns>A <see cref="SelectorMatch"/>.</returns>
         public SelectorMatch Match(IStyleable control, bool subscribe = true)
         {
-            var inputs = new List<IObservable<bool>>();
+            List<IObservable<bool>> inputs = null;
+            IObservable<bool> singleInput = null;
+
             var selector = this;
             var alwaysThisType = true;
             var hitCombinator = false;
@@ -66,15 +68,36 @@ namespace Avalonia.Styling
                 }
                 else if (match.Result == SelectorMatchResult.Sometimes)
                 {
-                    inputs.Add(match.Activator);
+                    if (inputs != null)
+                    {
+                        inputs.Add(match.Activator);
+                    }
+                    else
+                    {
+                        if (singleInput == null)
+                        {
+                            singleInput = match.Activator;
+                        }
+                        else
+                        {
+                            inputs = new List<IObservable<bool>>();
+
+                            inputs.Add(singleInput);
+                            inputs.Add(match.Activator);
+                        }
+                    }
                 }
 
                 selector = selector.MovePrevious();
             }
 
-            if (inputs.Count > 0)
+            if (inputs != null)
             {
                 return new SelectorMatch(StyleActivator.And(inputs));
+            }
+            else if (singleInput != null)
+            {
+                return new SelectorMatch(singleInput);
             }
             else
             {
