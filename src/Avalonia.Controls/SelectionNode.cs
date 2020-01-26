@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 
 #nullable enable
 
@@ -28,6 +29,7 @@ namespace Avalonia.Controls
         private readonly SelectionNode? _parent;
         private readonly List<IndexRange> _selected = new List<IndexRange>();
         private readonly List<int> _selectedIndicesCached = new List<int>();
+        private SelectionModelChangeSet? _changes;
         private object? _source;
         private bool _selectedIndicesCacheIsValid;
 
@@ -134,6 +136,11 @@ namespace Avalonia.Controls
                         {
                             child = new SelectionNode(_manager, parent: this);
                             child.Source = resolvedChild;
+
+                            if (_changes?.IsTracking == true)
+                            {
+                                child.BeginOperation();
+                            }
                         }
                         else
                         {
@@ -276,10 +283,48 @@ namespace Avalonia.Controls
             }
         }
 
+        public IEnumerable<object> SelectedItems
+        {
+            get => SelectedIndices.Select(x => ItemsSourceView!.GetAt(x));
+        }
+
         public void Dispose()
         {
             ItemsSourceView?.Dispose();
             UnhookCollectionChangedHandler();
+        }
+
+        public void BeginOperation()
+        {
+            _changes ??= new SelectionModelChangeSet(this);
+            _changes.BeginOperation();
+
+            for (var i = 0; i < _childrenNodes.Count; ++i)
+            {
+                _childrenNodes[i]?.BeginOperation();
+            }
+        }
+
+        public IEnumerable<SelectionModelChangeSet> EndOperation()
+        {
+            if (_changes != null)
+            {
+                _changes.EndOperation();
+                yield return _changes;
+
+                for (var i = 0; i < _childrenNodes.Count; ++i)
+                {
+                    var child = _childrenNodes[i];
+
+                    if (child != null)
+                    {
+                        foreach (var changes in child.EndOperation())
+                        {
+                            yield return changes;
+                        }
+                    }
+                }
+            }
         }
 
         public bool Select(int index, bool select)
@@ -349,21 +394,13 @@ namespace Avalonia.Controls
 
         private void AddRange(IndexRange addRange, bool raiseOnSelectionChanged)
         {
-            // TODO: Check for duplicates (Task 14107720)
-            // TODO: Optimize by merging adjacent ranges (Task 14107720)
-            var oldCount = SelectedCount;
+            var selected = new List<IndexRange>();
 
-            for (int i = addRange.Begin; i <= addRange.End; i++)
-            {
-                if (!IsSelected(i))
-                {
-                    SelectedCount++;
-                }
-            }
+            SelectedCount += IndexRange.Add(_selected, addRange, selected);
 
-            if (oldCount != SelectedCount)
+            if (selected.Count > 0)
             {
-                _selected.Add(addRange);
+                _changes?.Selected(selected);
 
                 if (raiseOnSelectionChanged)
                 {
@@ -374,71 +411,17 @@ namespace Avalonia.Controls
 
         private void RemoveRange(IndexRange removeRange, bool raiseOnSelectionChanged)
         {
-            int oldCount = SelectedCount;
+            var removed = new List<IndexRange>();
 
-            // TODO: Prevent overlap of Ranges in _selected (Task 14107720)
-            for (int i = removeRange.Begin; i <= removeRange.End; i++)
+            SelectedCount -= IndexRange.Remove(_selected, removeRange, removed);
+
+            if (removed.Count > 0)
             {
-                if (IsSelected(i))
+                _changes?.Deselected(removed);
+
+                if (raiseOnSelectionChanged)
                 {
-                    SelectedCount--;
-                }
-            }
-
-            if (oldCount != SelectedCount)
-            {
-                // Build up a both a list of Ranges to remove and ranges to add
-                var toRemove = new List<IndexRange>();
-                var toAdd = new List<IndexRange>();
-
-                foreach (var range in _selected)
-                {
-                    // If this range intersects the remove range, we have to do something
-                    if (removeRange.Intersects(range))
-                    {
-                        // Intersection with the beginning of the range
-                        //  Anything to the left of the point (exclusive) stays
-                        //  Anything to the right of the point (inclusive) gets clipped
-                        if (range.Contains(removeRange.Begin - 1))
-                        {
-                            range.Split(removeRange.Begin - 1, out var before, out _);
-                            toAdd.Add(before);
-                        }
-
-                        // Intersection with the end of the range
-                        //  Anything to the left of the point (inclusive) gets clipped
-                        //  Anything to the right of the point (exclusive) stays
-                        if (range.Contains(removeRange.End))
-                        {
-                            if (range.Split(removeRange.End, out _, out var after))
-                            {
-                                toAdd.Add(after);
-                            }
-                        }
-
-                        // Remove this Range from the collection
-                        // New ranges will be added for any remaining subsections
-                        toRemove.Add(range);
-                    }
-                }
-
-                bool change = ((toRemove.Count > 0) || (toAdd.Count > 0));
-
-                if (change)
-                {
-                    // Remove tagged ranges
-                    foreach (var remove in toRemove)
-                    {
-                        _selected.Remove(remove);
-                    }
-
-                    // Add new ranges
-                    _selected.AddRange(toAdd);
-
-                    if (raiseOnSelectionChanged)
-                    {
-                        OnSelectionChanged();
-                    }
+                    OnSelectionChanged();
                 }
             }
         }
@@ -448,6 +431,7 @@ namespace Avalonia.Controls
             // Deselect all items
             if (_selected.Count > 0)
             {
+                _changes?.Deselected(_selected);
                 _selected.Clear();
                 OnSelectionChanged();
             }
@@ -496,6 +480,7 @@ namespace Avalonia.Controls
         private void OnSourceListChanged(object dataSource, NotifyCollectionChangedEventArgs args)
         {
             bool selectionInvalidated = false;
+            IList<object>? removed = null;
 
             switch (args.Action)
             {
@@ -507,7 +492,7 @@ namespace Avalonia.Controls
 
                 case NotifyCollectionChangedAction.Remove:
                 {
-                    selectionInvalidated = OnItemsRemoved(args.OldStartingIndex, args.OldItems.Count);
+                    (selectionInvalidated, removed) = OnItemsRemoved(args.OldStartingIndex, args.OldItems);
                     break;
                 }
 
@@ -520,7 +505,7 @@ namespace Avalonia.Controls
 
                 case NotifyCollectionChangedAction.Replace:
                 {
-                    selectionInvalidated = OnItemsRemoved(args.OldStartingIndex, args.OldItems.Count);
+                    (selectionInvalidated, removed) = OnItemsRemoved(args.OldStartingIndex, args.OldItems);
                     selectionInvalidated |= OnItemsAdded(args.NewStartingIndex, args.NewItems.Count);
                     break;
                 }
@@ -529,7 +514,7 @@ namespace Avalonia.Controls
             if (selectionInvalidated)
             {
                 OnSelectionChanged();
-                _manager.OnSelectionInvalidatedDueToCollectionChange();
+                _manager.OnSelectionInvalidatedDueToCollectionChange(removed);
             }
         }
 
@@ -609,21 +594,23 @@ namespace Avalonia.Controls
             return selectionInvalidated;
         }
 
-        private bool OnItemsRemoved(int index, int count)
+        private (bool, IList<object>) OnItemsRemoved(int index, IList items)
         {
-            bool selectionInvalidated = false;
+            var selectionInvalidated = false;
+            var removed = new List<object>();
+            var count = items.Count;
             
             // Remove the items from the selection for leaf
             if (ItemsSourceView!.Count > 0)
             {
                 bool isSelected = false;
 
-                for (int i = index; i <= index + count - 1; i++)
+                for (int i = 0; i <= count - 1; i++)
                 {
-                    if (IsSelected(i))
+                    if (IsSelected(index + i))
                     {
                         isSelected = true;
-                        break;
+                        removed.Add(items[i]);
                     }
                 }
 
@@ -654,6 +641,7 @@ namespace Avalonia.Controls
                     {
                         if (_childrenNodes[index] != null)
                         {
+                            removed.AddRange(_childrenNodes[index]!.SelectedItems);
                             RealizedChildrenNodeCount--;
                         }
                         _childrenNodes.RemoveAt(index);
@@ -696,7 +684,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            return selectionInvalidated;
+            return (selectionInvalidated, removed);
         }
 
         private void OnSelectionChanged()
