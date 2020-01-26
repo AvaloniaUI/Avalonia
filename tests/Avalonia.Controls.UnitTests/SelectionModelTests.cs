@@ -931,6 +931,423 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Selecting_Item_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = Enumerable.Range(0, 10).ToList();
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(4) }, e.SelectedIndices);
+                Assert.Equal(new object[] { 4 }, e.SelectedItems);
+                ++raised;
+            };
+
+            target.Select(4);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Selecting_Already_Selected_Item_Doesnt_Raise_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = Enumerable.Range(0, 10).ToList();
+            target.Select(4);
+            target.SelectionChanged += (s, e) => ++raised;
+            target.Select(4);
+
+            Assert.Equal(0, raised);
+        }
+
+        [Fact]
+        public void SingleSelecting_Item_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel { SingleSelect = true };
+            var raised = 0;
+
+            target.Source = Enumerable.Range(0, 10).ToList();
+            target.Select(3);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { new IndexPath(3) }, e.DeselectedIndices);
+                Assert.Equal(new object[] { 3 }, e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(4) }, e.SelectedIndices);
+                Assert.Equal(new object[] { 4 }, e.SelectedItems);
+                ++raised;
+            };
+
+            target.Select(4);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void SingleSelecting_Already_Selected_Item_Doesnt_Raise_SelectionChanged()
+        {
+            var target = new SelectionModel { SingleSelect = true };
+            var raised = 0;
+
+            target.Source = Enumerable.Range(0, 10).ToList();
+            target.Select(4);
+            target.SelectionChanged += (s, e) => ++raised;
+            target.Select(4);
+
+            Assert.Equal(0, raised);
+        }
+
+        [Fact]
+        public void Selecting_Item_With_Group_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = CreateNestedData(1, 2, 3);
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(1, 1) }, e.SelectedIndices);
+                Assert.Equal(new object[] { 4 }, e.SelectedItems);
+                ++raised;
+            };
+
+            target.Select(1, 1);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void SelectAt_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = CreateNestedData(1, 2, 3);
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(1, 1) }, e.SelectedIndices);
+                Assert.Equal(new object[] { 4 }, e.SelectedItems);
+                ++raised;
+            };
+
+            target.SelectAt(new IndexPath(1, 1));
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void SelectAll_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel { SingleSelect = true };
+            var raised = 0;
+
+            target.Source = Enumerable.Range(0, 10).ToList();
+            target.SelectionChanged += (s, e) =>
+            {
+                var expected = Enumerable.Range(0, 10);
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(expected.Select(x => new IndexPath(x)), e.SelectedIndices);
+                Assert.Equal(expected, e.SelectedItems.Cast<int>());
+                ++raised;
+            };
+
+            target.SelectAll();
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void SelectAll_With_Already_Selected_Items_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel { SingleSelect = true };
+            var raised = 0;
+
+            target.Source = Enumerable.Range(0, 10).ToList();
+            target.Select(4);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                var expected = Enumerable.Range(0, 10).Except(new[] { 4 });
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(expected.Select(x => new IndexPath(x)), e.SelectedIndices);
+                Assert.Equal(expected, e.SelectedItems.Cast<int>());
+                ++raised;
+            };
+
+            target.SelectAll();
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void SelectRangeFromAnchor_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = Enumerable.Range(0, 10).ToList();
+            target.SelectionChanged += (s, e) =>
+            {
+                var expected = Enumerable.Range(4, 3);
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(expected.Select(x => new IndexPath(x)), e.SelectedIndices);
+                Assert.Equal(expected, e.SelectedItems.Cast<int>());
+                ++raised;
+            };
+
+            target.AnchorIndex = new IndexPath(4);
+            target.SelectRangeFromAnchor(6);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void SelectRangeFromAnchor_With_Group_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = CreateNestedData(1, 2, 10);
+            target.SelectionChanged += (s, e) =>
+            {
+                var expected = Enumerable.Range(11, 6);
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(expected.Select(x => new IndexPath(x / 10, x % 10)), e.SelectedIndices);
+                Assert.Equal(expected, e.SelectedItems.Cast<int>());
+                ++raised;
+            };
+
+            target.AnchorIndex = new IndexPath(1, 1);
+            target.SelectRangeFromAnchor(1, 6);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void SelectRangeFromAnchorTo_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = CreateNestedData(1, 2, 10);
+            target.SelectionChanged += (s, e) =>
+            {
+                var expected = Enumerable.Range(11, 6);
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(expected.Select(x => new IndexPath(x / 10, x % 10)), e.SelectedIndices);
+                Assert.Equal(expected, e.SelectedItems.Cast<int>());
+                ++raised;
+            };
+
+            target.AnchorIndex = new IndexPath(1, 1);
+            target.SelectRangeFromAnchorTo(new IndexPath(1, 6));
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void ClearSelection_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = Enumerable.Range(0, 10).ToList();
+            target.Select(4);
+            target.Select(5);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                var expected = Enumerable.Range(4, 2);
+                Assert.Equal(expected.Select(x => new IndexPath(x)), e.DeselectedIndices);
+                Assert.Equal(expected, e.DeselectedItems.Cast<int>());
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            target.ClearSelection();
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Changing_Source_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = Enumerable.Range(0, 10).ToList();
+            target.Select(4);
+            target.Select(5);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                var expected = Enumerable.Range(4, 2);
+                Assert.Equal(expected.Select(x => new IndexPath(x)), e.DeselectedIndices);
+                Assert.Equal(expected, e.DeselectedItems.Cast<int>());
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            target.Source = Enumerable.Range(20, 10).ToList();
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = Enumerable.Range(0, 10).ToList();
+            target.Select(4);
+            target.Select(5);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { new IndexPath(4), new IndexPath(5) }, e.DeselectedIndices);
+                Assert.Equal(new object[] { 4, 5 }, e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(6) }, e.SelectedIndices);
+                Assert.Equal(new object[] { 6 }, e.SelectedItems);
+                ++raised;
+            };
+
+            target.SelectedIndex = new IndexPath(6);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Removing_Selected_Item_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var data = new ObservableCollection<int>(Enumerable.Range(0, 10));
+            var raised = 0;
+
+            target.Source = data;
+            target.Select(4);
+            target.Select(5);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Equal(new object[] { 4 }, e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            data.Remove(4);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Removing_Selected_Child_Item_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var data = CreateNestedData(1, 2, 3);
+            var raised = 0;
+
+            target.Source = data;
+            target.SelectRange(new IndexPath(0), new IndexPath(1, 1));
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Equal(new object[] { 1}, e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            ((AvaloniaList<object>)data[0]).RemoveAt(1);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Removing_Selected_Item_With_Children_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var data = CreateNestedData(1, 2, 3);
+            var raised = 0;
+
+            target.Source = data;
+            target.SelectRange(new IndexPath(0), new IndexPath(1, 1));
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Equal(new object[] { 0, 1, 2 }, e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            data.RemoveAt(0);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Removing_Unselected_Item_Before_Selected_Item_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var data = new ObservableCollection<int>(Enumerable.Range(0, 10));
+            var raised = 0;
+
+            target.Source = data;
+            target.Select(8);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            data.Remove(6);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Removing_Unselected_Item_After_Selected_Item_Doesnt_Raise_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var data = new ObservableCollection<int>(Enumerable.Range(0, 10));
+            var raised = 0;
+
+            target.Source = data;
+            target.Select(4);
+
+            target.SelectionChanged += (s, e) => ++raised;
+
+            data.Remove(6);
+
+            Assert.Equal(0, raised); 
+        }
+
+        [Fact]
         public void Disposing_Unhooks_CollectionChanged_Handlers()
         {
             var data = CreateNestedData(2, 2, 2);
