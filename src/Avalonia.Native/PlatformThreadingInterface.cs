@@ -60,6 +60,7 @@ namespace Avalonia.Native
 
         public void RunLoop(CancellationToken cancellationToken)
         {
+            _exceptionDispatchInfo?.Throw();
             var l = new object();
             _exceptionCancellationSource = new CancellationTokenSource();
 
