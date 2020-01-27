@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Utilities;
 
 namespace Avalonia.Styling
 {
@@ -42,8 +43,7 @@ namespace Avalonia.Styling
         /// <returns>A <see cref="SelectorMatch"/>.</returns>
         public SelectorMatch Match(IStyleable control, bool subscribe = true)
         {
-            List<IObservable<bool>> inputs = null;
-            IObservable<bool> singleInput = null;
+            ValueSingleOrList<IObservable<bool>> inputs = default;
 
             var selector = this;
             var alwaysThisType = true;
@@ -71,40 +71,23 @@ namespace Avalonia.Styling
                 {
                     Debug.Assert(match.Activator != null);
 
-                    if (inputs != null)
-                    {
-                        inputs.Add(match.Activator);
-                    }
-                    else
-                    {
-                        if (singleInput == null)
-                        {
-                            singleInput = match.Activator;
-                        }
-                        else
-                        {
-                            inputs = new List<IObservable<bool>>();
-
-                            inputs.Add(singleInput);
-                            inputs.Add(match.Activator);
-                        }
-                    }
+                    inputs.Add(match.Activator);
                 }
 
                 selector = selector.MovePrevious();
             }
 
-            if (inputs != null)
+            if (inputs.HasList)
             {
-                return new SelectorMatch(StyleActivator.And(inputs));
+                return new SelectorMatch(StyleActivator.And(inputs.List));
             }
-            else if (singleInput != null)
+            else if (inputs.IsSingle)
             {
-                return new SelectorMatch(singleInput);
+                return new SelectorMatch(inputs.Single);
             }
             else
             {
-                return alwaysThisType && !hitCombinator ? 
+                return alwaysThisType && !hitCombinator ?
                     SelectorMatch.AlwaysThisType :
                     SelectorMatch.AlwaysThisInstance;
             }
