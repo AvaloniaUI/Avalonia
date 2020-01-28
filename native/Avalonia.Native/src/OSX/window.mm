@@ -454,6 +454,14 @@ public:
         *ppv = ::CreateGlRenderTarget(Window, View);
         return S_OK;
     }
+    
+    virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut) override
+    {
+        if(View == NULL)
+            return E_FAIL;
+        *retOut = ::CreateNativeControlHost(View);
+        return S_OK;
+    }
 
 protected:
     virtual NSWindowStyleMask GetStyle()
@@ -775,6 +783,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return self;
 }
 
+- (BOOL)isFlipped
+{
+    return YES;
+}
+
 - (BOOL)isOpaque
 {
     return YES;
@@ -846,6 +859,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)drawRect:(NSRect)dirtyRect
 {
+    AvnInsidePotentialDeadlock deadlock;
     if (_parent == nullptr)
     {
         return;

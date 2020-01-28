@@ -22,6 +22,7 @@ extern IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(NSWindow* window, NSView*
 extern IAvnAppMenu* CreateAppMenu();
 extern IAvnAppMenuItem* CreateAppMenuItem();
 extern IAvnAppMenuItem* CreateAppMenuItemSeperator();
+extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);
 extern void SetAppMenu (NSString* appName, IAvnAppMenu* appMenu);
 extern IAvnAppMenu* GetAppMenu ();
 extern NSMenuItem* GetAppMenuItem ();
@@ -51,5 +52,13 @@ template<typename T> inline T* objc_cast(id from) {
 - (ActionCallback*) initWithCallback: (IAvnActionCallback*) callback;
 - (void) action;
 @end
+
+class AvnInsidePotentialDeadlock
+{
+public:
+    static bool IsInside();
+    AvnInsidePotentialDeadlock();
+    ~AvnInsidePotentialDeadlock();
+};
 
 #endif

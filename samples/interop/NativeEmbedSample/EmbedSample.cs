@@ -5,6 +5,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Platform;
+using Avalonia.Threading;
+using MonoMac.AppKit;
+using MonoMac.Foundation;
+using MonoMac.WebKit;
 using Encoding = SharpDX.Text.Encoding;
 
 namespace NativeEmbedSample
@@ -70,12 +74,35 @@ namespace NativeEmbedSample
             WinApi.DestroyWindow(handle.Handle);
         }
 
+        IPlatformHandle CreateOSX(IPlatformHandle parent)
+        {
+            // Note: We are using MonoMac for example purposes
+            // It shouldn't be used in production apps
+            MacHelper.EnsureInitialized();
+
+            var webView = new WebView();
+            Dispatcher.UIThread.Post(() =>
+            {
+                webView.MainFrame.LoadRequest(new NSUrlRequest(new NSUrl(
+                    IsSecond ? "https://bing.com": "https://google.com/")));
+            });
+            return new MacOSViewHandle(webView);
+
+        }
+
+        void DestroyOSX(IPlatformHandle handle)
+        {
+            ((MacOSViewHandle)handle).Dispose();
+        }
+        
         protected override IPlatformHandle CreateNativeControlCore(IPlatformHandle parent)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 return CreateLinux(parent);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 return CreateWin32(parent);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return CreateOSX(parent);
             return base.CreateNativeControlCore(parent);
         }
 
@@ -83,8 +110,10 @@ namespace NativeEmbedSample
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 DestroyLinux(control);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 DestroyWin32(control);
+            else if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                DestroyOSX(control);
             else
                 base.DestroyNativeControlCore(control);
         }

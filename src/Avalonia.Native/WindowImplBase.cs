@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -45,7 +46,7 @@ namespace Avalonia.Native
     }
 
     public abstract class WindowBaseImpl : IWindowBaseImpl,
-        IFramebufferPlatformSurface
+        IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost
     {
         IInputRoot _inputRoot;
         IAvnWindowBase _native;
@@ -59,6 +60,7 @@ namespace Avalonia.Native
         private Size _lastRenderedLogicalSize;
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
+        private NativeControlHostImpl _nativeControlHost;
 
         public WindowBaseImpl(AvaloniaNativePlatformOptions opts)
         {
@@ -80,6 +82,7 @@ namespace Avalonia.Native
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
             _savedScaling = Scaling;
+            _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
 
             var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
                     .FirstOrDefault(m => m.Bounds.Contains(Position));
@@ -100,6 +103,8 @@ namespace Avalonia.Native
             (_gpu ? _glSurface : (object)null),
             this 
         };
+
+        public INativeControlHostImpl NativeControlHost => _nativeControlHost;
 
         public ILockedFramebuffer Lock()
         {
@@ -290,6 +295,9 @@ namespace Avalonia.Native
             _native?.Dispose();
             _native = null;
 
+            _nativeControlHost?.Dispose();
+            _nativeControlHost = null;
+            
             (Screen as ScreenImpl)?.Dispose();
         }
 
