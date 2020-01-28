@@ -79,7 +79,7 @@ namespace Avalonia.Input
                 {
                     s_lastPress = new WeakReference<IInteractive>(e.Source);
                 }
-                else if (s_lastPress != null && e.ClickCount == 2 && e.MouseButton != MouseButton.Right)
+                else if (s_lastPress != null && e.ClickCount == 2 && e.MouseButton == MouseButton.Left)
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {
