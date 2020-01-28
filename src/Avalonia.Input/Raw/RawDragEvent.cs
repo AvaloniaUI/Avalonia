@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Input.Raw
+﻿using System;
+
+namespace Avalonia.Input.Raw
 {
     public class RawDragEvent : RawInputEventArgs
     {
@@ -6,7 +8,9 @@
         public IDataObject Data { get; }
         public DragDropEffects Effects { get; set; }
         public RawDragEventType Type { get; }
+        [Obsolete("Use KeyModifiers")]
         public InputModifiers Modifiers { get; }
+        public KeyModifiers KeyModifiers { get; }
 
         public RawDragEvent(IDragDropDevice inputDevice, RawDragEventType type, 
             IInputRoot root, Point location, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
@@ -17,6 +21,7 @@
             Data = data;
             Effects = effects;
             Modifiers = (InputModifiers)modifiers;
+            KeyModifiers = KeyModifiersUtils.ConvertToKey(modifiers);
         }
     }
 }

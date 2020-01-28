@@ -118,7 +118,7 @@ namespace Avalonia.Controls.Notifications
         /// Defines the CloseOnClick property.
         /// </summary>
         public static readonly AvaloniaProperty CloseOnClickProperty =
-          AvaloniaProperty.RegisterAttached<Button, bool>("CloseOnClick", typeof(NotificationCard), validate: CloseOnClickChanged);
+          AvaloniaProperty.RegisterAttached<Button, bool>("CloseOnClick", typeof(NotificationCard)/*, validate: CloseOnClickChanged*/);
 
         private static bool CloseOnClickChanged(Button button, bool value)
         {

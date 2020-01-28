@@ -4,32 +4,20 @@
 using System;
 using Avalonia.Data;
 
+#nullable enable
+
 namespace Avalonia
 {
     /// <summary>
     /// Provides information for a avalonia property change.
     /// </summary>
-    public class AvaloniaPropertyChangedEventArgs : EventArgs
+    public abstract class AvaloniaPropertyChangedEventArgs : EventArgs
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AvaloniaPropertyChangedEventArgs"/> class.
-        /// </summary>
-        /// <param name="sender">The object that the property changed on.</param>
-        /// <param name="property">The property that changed.</param>
-        /// <param name="oldValue">The old value of the property.</param>
-        /// <param name="newValue">The new value of the property.</param>
-        /// <param name="priority">The priority of the binding that produced the value.</param>
         public AvaloniaPropertyChangedEventArgs(
-            AvaloniaObject sender,
-            AvaloniaProperty property,
-            object oldValue,
-            object newValue,
+            IAvaloniaObject sender,
             BindingPriority priority)
         {
             Sender = sender;
-            Property = property;
-            OldValue = oldValue;
-            NewValue = newValue;
             Priority = priority;
         }
 
@@ -37,7 +25,7 @@ namespace Avalonia
         /// Gets the <see cref="AvaloniaObject"/> that the property changed on.
         /// </summary>
         /// <value>The sender object.</value>
-        public AvaloniaObject Sender { get; private set; }
+        public IAvaloniaObject Sender { get; }
 
         /// <summary>
         /// Gets the property that changed.
@@ -45,30 +33,36 @@ namespace Avalonia
         /// <value>
         /// The property that changed.
         /// </value>
-        public AvaloniaProperty Property { get; private set; }
+        public AvaloniaProperty Property => GetProperty();
 
         /// <summary>
         /// Gets the old value of the property.
         /// </summary>
         /// <value>
-        /// The old value of the property.
+        /// The old value of the property or <see cref="AvaloniaProperty.UnsetValue"/> if the
+        /// property previously had no value.
         /// </value>
-        public object OldValue { get; private set; }
+        public object? OldValue => GetOldValue();
 
         /// <summary>
         /// Gets the new value of the property.
         /// </summary>
         /// <value>
-        /// The new value of the property.
+        /// The new value of the property or <see cref="AvaloniaProperty.UnsetValue"/> if the
+        /// property previously had no value.
         /// </value>
-        public object NewValue { get; private set; }
+        public object? NewValue => GetNewValue();
 
         /// <summary>
         /// Gets the priority of the binding that produced the value.
         /// </summary>
         /// <value>
-        /// The priority of the binding that produced the value.
+        /// The priority of the new value.
         /// </value>
         public BindingPriority Priority { get; private set; }
+
+        protected abstract AvaloniaProperty GetProperty();
+        protected abstract object? GetOldValue();
+        protected abstract object? GetNewValue();
     }
 }

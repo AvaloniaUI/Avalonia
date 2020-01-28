@@ -35,8 +35,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Verify(x => x.Bind(
                 TextBox.TextProperty, 
-                It.IsAny<IObservable<object>>(), 
-                BindingPriority.TemplatedParent));
+                It.IsAny<IObservable<BindingValue<string>>>()));
         }
 
         [Fact]
@@ -55,8 +54,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Verify(x => x.Bind(
                 TextBox.TextProperty,
-                It.IsAny<ISubject<object>>(),
-                BindingPriority.TemplatedParent));
+                It.IsAny<IObservable<BindingValue<string>>>()));
         }
 
         private Mock<IControl> CreateTarget(
@@ -66,9 +64,9 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = new Mock<IControl>();
 
             result.Setup(x => x.GetValue(Control.TemplatedParentProperty)).Returns(templatedParent);
-            result.Setup(x => x.GetValue((AvaloniaProperty)Control.TemplatedParentProperty)).Returns(templatedParent);
-            result.Setup(x => x.GetValue((AvaloniaProperty)TextBox.TextProperty)).Returns(text);
-            result.Setup(x => x.Bind(It.IsAny<AvaloniaProperty>(), It.IsAny<IObservable<object>>(), It.IsAny<BindingPriority>()))
+            result.Setup(x => x.GetValue(Control.TemplatedParentProperty)).Returns(templatedParent);
+            result.Setup(x => x.GetValue(TextBox.TextProperty)).Returns(text);
+            result.Setup(x => x.Bind(It.IsAny<DirectPropertyBase<string>>(), It.IsAny<IObservable<BindingValue<string>>>()))
                 .Returns(Disposable.Empty);
             return result;
         }

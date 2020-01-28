@@ -73,7 +73,7 @@ namespace Avalonia.Controls.Primitives
                 this.GetObservable(ViewportSizeProperty).Select(_ => Unit.Default),
                 this.GetObservable(VisibilityProperty).Select(_ => Unit.Default))
                 .Select(_ => CalculateIsVisible());
-            Bind(IsVisibleProperty, isVisible, BindingPriority.Style);
+            this.Bind(IsVisibleProperty, isVisible, BindingPriority.Style);
         }
 
         /// <summary>

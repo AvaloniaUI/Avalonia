@@ -127,7 +127,7 @@ namespace Avalonia.Controls.Generators
                 Index = new TreeContainerIndex();
                 _treeView = treeViewOwner;
             }
-            else if (Owner.IsAttachedToLogicalTree)
+            else
             {
                 var treeView = Owner.GetSelfAndLogicalAncestors().OfType<TreeView>().FirstOrDefault();
                 
@@ -137,12 +137,6 @@ namespace Avalonia.Controls.Generators
                     Index = treeView?.ItemContainerGenerator?.Index;
                     _treeView = treeView;
                 }
-            }
-            else
-            {
-                Clear();
-                Index = null;
-                _treeView = null;
             }
         }
 

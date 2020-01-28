@@ -167,6 +167,31 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Impl_Close_Should_Raise_DetachedFromLogicalTree_Event()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                impl.SetupAllProperties();
+
+                var target = new TestTopLevel(impl.Object);
+                var raised = 0;
+
+                target.DetachedFromLogicalTree += (s, e) =>
+                {
+                    Assert.Same(target, e.Root);
+                    Assert.Same(target, e.Source);
+                    Assert.Null(e.Parent);
+                    ++raised;
+                };
+
+                impl.Object.Closed();
+
+                Assert.Equal(1, raised);
+            }
+        }
+
+        [Fact]
         public void Impl_Input_Should_Pass_Input_To_InputManager()
         {
             var inputManagerMock = new Mock<IInputManager>();
