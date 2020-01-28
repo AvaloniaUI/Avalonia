@@ -218,7 +218,7 @@ namespace Avalonia.Controls.Platform
                                 e.Handled = true;
                             }
                         }
-                        else if (item.Parent?.MoveSelection(direction.Value, true) == true)
+                        else if (item?.Parent?.MoveSelection(direction.Value, true) == true)
                         {
                             // If the the parent is an IMenu which successfully moved its selection,
                             // and the current menu is open then close the current menu and open the
