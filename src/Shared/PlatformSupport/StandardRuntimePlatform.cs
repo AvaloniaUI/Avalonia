@@ -75,7 +75,7 @@ namespace Avalonia.Shared.PlatformSupport
                         lock (_btlock)
                             Backtraces.Remove(_backtrace);
 #endif
-                        _plat.Free(_address, Size);
+                        _plat?.Free(_address, Size);
                         GC.RemoveMemoryPressure(Size);
                         IsDisposed = true;
                         _address = IntPtr.Zero;

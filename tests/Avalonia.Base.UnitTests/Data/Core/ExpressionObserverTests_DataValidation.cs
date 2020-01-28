@@ -16,39 +16,39 @@ namespace Avalonia.Base.UnitTests.Data.Core
 {
     public class ExpressionObserverTests_DataValidation : IClassFixture<InvariantCultureFixture>
     {
-        [Fact]
-        public void Doesnt_Send_DataValidationError_When_DataValidatation_Not_Enabled()
-        {
-            var data = new ExceptionTest { MustBePositive = 5 };
-            var observer = ExpressionObserver.Create(data, o => o.MustBePositive, false);
-            var validationMessageFound = false;
+        ////[Fact]
+        ////public void Doesnt_Send_DataValidationError_When_DataValidatation_Not_Enabled()
+        ////{
+        ////    var data = new ExceptionTest { MustBePositive = 5 };
+        ////    var observer = ExpressionObserver.Create(data, o => o.MustBePositive, false);
+        ////    var validationMessageFound = false;
 
-            observer.OfType<BindingNotification>()
-                .Where(x => x.ErrorType == BindingErrorType.DataValidationError)
-                .Subscribe(_ => validationMessageFound = true);
-            observer.SetValue(-5);
+        ////    observer.OfType<BindingNotification>()
+        ////        .Where(x => x.ErrorType == BindingErrorType.DataValidationError)
+        ////        .Subscribe(_ => validationMessageFound = true);
+        ////    observer.SetValue(-5);
 
-            Assert.False(validationMessageFound);
+        ////    Assert.False(validationMessageFound);
 
-            GC.KeepAlive(data);
-        }
+        ////    GC.KeepAlive(data);
+        ////}
 
-        [Fact]
-        public void Exception_Validation_Sends_DataValidationError()
-        {
-            var data = new ExceptionTest { MustBePositive = 5 };
-            var observer = ExpressionObserver.Create(data, o => o.MustBePositive, true);
-            var validationMessageFound = false;
+        ////[Fact]
+        ////public void Exception_Validation_Sends_DataValidationError()
+        ////{
+        ////    var data = new ExceptionTest { MustBePositive = 5 };
+        ////    var observer = ExpressionObserver.Create(data, o => o.MustBePositive, true);
+        ////    var validationMessageFound = false;
 
-            observer.OfType<BindingNotification>()
-                .Where(x => x.ErrorType == BindingErrorType.DataValidationError)
-                .Subscribe(_ => validationMessageFound = true);
-            observer.SetValue(-5);
+        ////    observer.OfType<BindingNotification>()
+        ////        .Where(x => x.ErrorType == BindingErrorType.DataValidationError)
+        ////        .Subscribe(_ => validationMessageFound = true);
+        ////    observer.SetValue(-5);
 
-            Assert.True(validationMessageFound);
+        ////    Assert.True(validationMessageFound);
 
-            GC.KeepAlive(data);
-        }
+        ////    GC.KeepAlive(data);
+        ////}
 
         [Fact]
         public void Indei_Validation_Does_Not_Subscribe_When_DataValidatation_Not_Enabled()

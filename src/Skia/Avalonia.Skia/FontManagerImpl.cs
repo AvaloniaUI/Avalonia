@@ -89,12 +89,15 @@ namespace Avalonia.Skia
 
             if (typeface.FontFamily.Key == null)
             {
+                var defaultName = SKTypeface.Default.FamilyName;
+
                 foreach (var familyName in typeface.FontFamily.FamilyNames)
                 {
                     skTypeface = SKTypeface.FromFamilyName(familyName, (SKFontStyleWeight)typeface.Weight,
                         SKFontStyleWidth.Normal, (SKFontStyleSlant)typeface.Style);
 
-                    if (skTypeface == SKTypeface.Default)
+                    if (!skTypeface.FamilyName.Equals(familyName, StringComparison.Ordinal) &&
+                        defaultName.Equals(skTypeface.FamilyName, StringComparison.Ordinal))
                     {
                         continue;
                     }

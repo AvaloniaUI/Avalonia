@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Specialized;
+using Avalonia.Data;
 
 namespace Avalonia.Layout
 {
@@ -267,6 +268,7 @@ namespace Avalonia.Layout
                 false,
                 0,
                 Spacing,
+                int.MaxValue,
                 _orientation.ScrollOrientation,
                 LayoutId);
 
@@ -278,6 +280,7 @@ namespace Avalonia.Layout
             var value = GetFlowAlgorithm(context).Arrange(
                finalSize,
                context,
+               false,
                FlowLayoutAlgorithm.LineAlignment.Start,
                LayoutId);
 
@@ -293,11 +296,11 @@ namespace Avalonia.Layout
             InvalidateLayout();
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
         {
-            if (e.Property == OrientationProperty)
+            if (property == OrientationProperty)
             {
-                var orientation = (Orientation)e.NewValue;
+                var orientation = newValue.GetValueOrDefault<Orientation>();
 
                 //Note: For StackLayout Vertical Orientation means we have a Vertical ScrollOrientation.
                 //Horizontal Orientation means we have a Horizontal ScrollOrientation.

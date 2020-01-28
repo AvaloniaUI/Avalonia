@@ -14,7 +14,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// Defines a style.
     /// </summary>
-    public class Style : AvaloniaObject, IStyle, ISetStyleParent
+    public class Style : AvaloniaObject, IStyle, ISetResourceParent
     {
         private static Dictionary<IStyleable, CompositeDisposable> _applied =
             new Dictionary<IStyleable, CompositeDisposable>();
@@ -59,16 +59,16 @@ namespace Avalonia.Styling
 
                 if (_resources != null)
                 {
-                    hadResources = _resources.Count > 0;
+                    hadResources = _resources.HasResources;
                     _resources.ResourcesChanged -= ResourceDictionaryChanged;
                 }
 
                 _resources = value;
                 _resources.ResourcesChanged += ResourceDictionaryChanged;
 
-                if (hadResources || _resources.Count > 0)
+                if (hadResources || _resources.HasResources)
                 {
-                    ((ISetStyleParent)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                    ((ISetResourceParent)this).ParentResourcesChanged(new ResourcesChangedEventArgs());
                 }
             }
         }
@@ -194,13 +194,13 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        void ISetStyleParent.NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        void ISetResourceParent.ParentResourcesChanged(ResourcesChangedEventArgs e)
         {
             ResourcesChanged?.Invoke(this, e);
         }
 
         /// <inheritdoc/>
-        void ISetStyleParent.SetParent(IResourceNode parent)
+        void ISetResourceParent.SetParent(IResourceNode parent)
         {
             if (_parent != null && parent != null)
             {

@@ -1,10 +1,13 @@
-﻿namespace Avalonia.Media
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Media
 {
     public class GeometryDrawing : Drawing
     {
         public static readonly StyledProperty<Geometry> GeometryProperty =
             AvaloniaProperty.Register<GeometryDrawing, Geometry>(nameof(Geometry));
 
+        [Content]
         public Geometry Geometry
         {
             get => GetValue(GeometryProperty);

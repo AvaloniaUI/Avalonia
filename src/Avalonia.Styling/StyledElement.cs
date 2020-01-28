@@ -223,13 +223,13 @@ namespace Avalonia
                 {
                     if (_styles != null)
                     {
-                        (_styles as ISetStyleParent)?.SetParent(null);
+                        (_styles as ISetResourceParent)?.SetParent(null);
                         _styles.ResourcesChanged -= ThisResourcesChanged;
                     }
 
                     _styles = value;
 
-                    if (value is ISetStyleParent setParent && setParent.ResourceParent == null)
+                    if (value is ISetResourceParent setParent && setParent.ResourceParent == null)
                     {
                         setParent.SetParent(this);
                     }
@@ -471,7 +471,11 @@ namespace Avalonia
                     OnAttachedToLogicalTreeCore(e);
                 }
 
-                RaisePropertyChanged(ParentProperty, old, Parent, BindingPriority.LocalValue);
+                RaisePropertyChanged(
+                    ParentProperty,
+                    new Optional<IStyledElement>(old),
+                    new BindingValue<IStyledElement>(Parent),
+                    BindingPriority.LocalValue);
             }
         }
 
