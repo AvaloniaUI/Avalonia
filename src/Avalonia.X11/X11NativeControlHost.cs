@@ -74,7 +74,7 @@ namespace Avalonia.X11
                     
                 };
 
-                parent ??= XDefaultRootWindow(x11.Display);
+                parent = parent ?? XDefaultRootWindow(x11.Display);
 
                 Handle = XCreateWindow(_display, parent.Value, 0, 0,
                     1,1, 0, 0,
