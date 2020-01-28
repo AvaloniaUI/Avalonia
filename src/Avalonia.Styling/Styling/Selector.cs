@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Avalonia.Utilities;
 
 namespace Avalonia.Styling
 {
@@ -41,7 +43,8 @@ namespace Avalonia.Styling
         /// <returns>A <see cref="SelectorMatch"/>.</returns>
         public SelectorMatch Match(IStyleable control, bool subscribe = true)
         {
-            var inputs = new List<IObservable<bool>>();
+            ValueSingleOrList<IObservable<bool>> inputs = default;
+
             var selector = this;
             var alwaysThisType = true;
             var hitCombinator = false;
@@ -66,19 +69,25 @@ namespace Avalonia.Styling
                 }
                 else if (match.Result == SelectorMatchResult.Sometimes)
                 {
+                    Debug.Assert(match.Activator != null);
+
                     inputs.Add(match.Activator);
                 }
 
                 selector = selector.MovePrevious();
             }
 
-            if (inputs.Count > 0)
+            if (inputs.HasList)
             {
-                return new SelectorMatch(StyleActivator.And(inputs));
+                return new SelectorMatch(StyleActivator.And(inputs.List));
+            }
+            else if (inputs.IsSingle)
+            {
+                return new SelectorMatch(inputs.Single);
             }
             else
             {
-                return alwaysThisType && !hitCombinator ? 
+                return alwaysThisType && !hitCombinator ?
                     SelectorMatch.AlwaysThisType :
                     SelectorMatch.AlwaysThisInstance;
             }
