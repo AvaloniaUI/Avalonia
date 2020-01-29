@@ -4,21 +4,24 @@
         xmlns:local="clr-namespace:NativeEmbedSample"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="NativeEmbedSample.MainWindow">
-  <Grid ColumnDefinitions="*,5,*">
-    <DockPanel>
-      <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-        <CheckBox x:Name="firstVisible" IsChecked="True"/>
-        <TextBlock>Visible</TextBlock>
-      </StackPanel>
-      <local:EmbedSample IsVisible="{Binding #firstVisible.IsChecked}"/>
-    </DockPanel>
-    <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
-    <DockPanel Grid.Column="2">
-      <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-        <CheckBox x:Name="secondVisible" IsChecked="True"/>
-        <TextBlock>Visible</TextBlock>
-      </StackPanel>
-      <local:EmbedSample IsSecond="True" IsVisible="{Binding #secondVisible.IsChecked}"/>
-    </DockPanel>
-  </Grid>
+  <DockPanel>
+    <TextBox DockPanel.Dock="Top" Text="Lorem ipsum dolor sit amet"/>
+    <Grid ColumnDefinitions="*,5,*">
+      <DockPanel>
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+          <CheckBox x:Name="firstVisible" IsChecked="True"/>
+          <TextBlock>Visible</TextBlock>
+        </StackPanel>
+        <local:EmbedSample IsVisible="{Binding #firstVisible.IsChecked}"/>
+      </DockPanel>
+      <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
+      <DockPanel Grid.Column="2">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+          <CheckBox x:Name="secondVisible" IsChecked="True"/>
+          <TextBlock>Visible</TextBlock>
+        </StackPanel>
+        <local:EmbedSample IsSecond="True" IsVisible="{Binding #secondVisible.IsChecked}"/>
+      </DockPanel>
+    </Grid>
+  </DockPanel>
 </Window>

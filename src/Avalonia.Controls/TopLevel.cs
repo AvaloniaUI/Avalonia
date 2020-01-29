@@ -130,6 +130,9 @@ namespace Avalonia.Controls
                     nameof(IResourceProvider.ResourcesChanged),
                     this);
             }
+
+            if (impl is IEmbeddableWindowImpl embeddableWindowImpl)
+                embeddableWindowImpl.LostFocus += PlatformImpl_LostFocus;
         }
 
         /// <summary>
@@ -364,6 +367,18 @@ namespace Avalonia.Controls
         private void SceneInvalidated(object sender, SceneInvalidatedEventArgs e)
         {
             (this as IInputRoot).MouseDevice.SceneInvalidated(this, e.DirtyRect);
+        }
+
+        void PlatformImpl_LostFocus()
+        {
+            var focused = (IVisual)FocusManager.Instance.Current;
+            if (focused == null)
+                return;
+            while (focused.VisualParent != null)
+                focused = focused.VisualParent;
+
+            if (focused == this)
+                KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, InputModifiers.None);
         }
     }
 }

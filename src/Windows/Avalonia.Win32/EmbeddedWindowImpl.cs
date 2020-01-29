@@ -9,7 +9,7 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    class EmbeddedWindowImpl : WindowImpl, IEmbeddableWindowImpl
+    class EmbeddedWindowImpl : WindowImpl
     {
         protected override IntPtr CreateWindowOverride(ushort atom)
         {
@@ -29,13 +29,5 @@ namespace Avalonia.Win32
             return hWnd;
         }
 
-        protected override IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
-        {
-            if (msg == (uint)UnmanagedMethods.WindowsMessage.WM_KILLFOCUS)
-                LostFocus?.Invoke();
-            return base.WndProc(hWnd, msg, wParam, lParam);
-        }
-
-        public event Action LostFocus;
     }
 }

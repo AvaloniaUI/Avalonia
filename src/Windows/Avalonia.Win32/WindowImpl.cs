@@ -20,7 +20,8 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 namespace Avalonia.Win32
 {
     public class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
-        ITopLevelImplWithNativeControlHost
+        ITopLevelImplWithNativeControlHost,
+        IEmbeddableWindowImpl
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -96,6 +97,8 @@ namespace Avalonia.Win32
         public Action<PixelPoint> PositionChanged { get; set; }
 
         public Action<WindowState> WindowStateChanged { get; set; }
+
+        public event Action LostFocus;
 
         public Thickness BorderThickness
         {
@@ -441,12 +444,11 @@ namespace Avalonia.Win32
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         protected virtual unsafe IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            bool unicode = UnmanagedMethods.IsWindowUnicode(hWnd);
-
             const double wheelDelta = 120.0;
             uint timestamp = unchecked((uint)UnmanagedMethods.GetMessageTime());
 
             RawInputEventArgs e = null;
+            var shouldTakeFocus = false;
             
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
@@ -581,6 +583,7 @@ namespace Avalonia.Win32
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
+                    shouldTakeFocus = true;
                     if(ShouldIgnoreTouchEmulatedMessage())
                         break;
                     if (!_trackingMouse)
@@ -755,6 +758,10 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_DISPLAYCHANGE:
                     (Screen as ScreenImpl)?.InvalidateScreensCache();
                     return IntPtr.Zero;
+
+                case UnmanagedMethods.WindowsMessage.WM_KILLFOCUS:
+                    LostFocus?.Invoke();
+                    break;
             }
 
 #if USE_MANAGED_DRAG
@@ -762,6 +769,8 @@ namespace Avalonia.Win32
             if (_managedDrag.PreprocessInputEvent(ref e))
                 return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
 #endif
+            if (shouldTakeFocus)
+                SetFocus(_hwnd);
 
             if (e != null && Input != null)
             {
