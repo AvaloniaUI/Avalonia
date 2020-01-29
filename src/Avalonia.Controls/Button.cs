@@ -306,18 +306,18 @@ namespace Avalonia.Controls
                 }
             }
         }
-
+        
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
             IsPressed = false;
         }
 
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
-            base.UpdateDataValidation(property, status);
+            base.UpdateDataValidation(property, value);
             if (property == CommandProperty)
             {
-                if (status?.ErrorType == BindingErrorType.Error)
+                if (value.Type == BindingValueType.BindingError)
                 {
                     if (_commandCanExecute)
                     {

@@ -51,6 +51,18 @@ namespace Avalonia.Rendering
         IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter);
 
         /// <summary>
+        /// Hit tests a location to find first visual at the specified point.
+        /// </summary>
+        /// <param name="p">The point, in client coordinates.</param>
+        /// <param name="root">The root of the subtree to search.</param>
+        /// <param name="filter">
+        /// A filter predicate. If the predicate returns false then the visual and all its
+        /// children will be excluded from the results.
+        /// </param>
+        /// <returns>The visual at the specified point, topmost first.</returns>
+        IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter);
+
+        /// <summary>
         /// Informs the renderer that the z-ordering of a visual's children has changed.
         /// </summary>
         /// <param name="visual">The visual.</param>

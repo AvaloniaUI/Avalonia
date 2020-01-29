@@ -393,8 +393,7 @@ namespace Avalonia.Controls
                 TreeViewItem.HeaderProperty,
                 TreeViewItem.ItemTemplateProperty,
                 TreeViewItem.ItemsProperty,
-                TreeViewItem.IsExpandedProperty,
-                new TreeContainerIndex());
+                TreeViewItem.IsExpandedProperty);
             result.Index.Materialized += ContainerMaterialized;
             return result;
         }
@@ -407,7 +406,7 @@ namespace Avalonia.Controls
                 e.Handled = UpdateSelectionFromEventSource(
                     e.Source,
                     true,
-                    (e.InputModifiers & InputModifiers.Shift) != 0);
+                    (e.KeyModifiers & KeyModifiers.Shift) != 0);
             }
         }
 

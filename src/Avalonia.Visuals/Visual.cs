@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Logging;
@@ -121,7 +120,7 @@ namespace Avalonia
         {
             var visualChildren = new AvaloniaList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
-            visualChildren.Validate = ValidateVisualChild;
+            visualChildren.Validate = visual => ValidateVisualChild(visual);
             visualChildren.CollectionChanged += VisualChildrenChanged;
             VisualChildren = visualChildren;
         }
@@ -173,7 +172,22 @@ namespace Avalonia
         /// </summary>
         public bool IsEffectivelyVisible
         {
-            get { return this.GetSelfAndVisualAncestors().All(x => x.IsVisible); }
+            get
+            {
+                IVisual node = this;
+
+                while (node != null)
+                {
+                    if (!node.IsVisible)
+                    {
+                        return false;
+                    }
+
+                    node = node.VisualParent;
+                }
+
+                return true;
+            }
         }
 
         /// <summary>
@@ -433,7 +447,11 @@ namespace Avalonia
         /// <param name="newParent">The new visual parent.</param>
         protected virtual void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            RaisePropertyChanged(VisualParentProperty, oldParent, newParent, BindingPriority.LocalValue);
+            RaisePropertyChanged(
+                VisualParentProperty,
+                new Optional<IVisual>(oldParent),
+                new BindingValue<IVisual>(newParent),
+                BindingPriority.LocalValue);
         }
 
         protected override sealed void LogBindingError(AvaloniaProperty property, Exception e)
@@ -552,7 +570,7 @@ namespace Avalonia
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
             {
-                var root = this.GetVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
+                var root = this.FindAncestorOfType<IRenderRoot>();
                 var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
                 OnAttachedToVisualTreeCore(e);
             }

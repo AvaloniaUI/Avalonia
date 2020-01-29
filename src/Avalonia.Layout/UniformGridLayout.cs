@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Specialized;
+using Avalonia.Data;
 
 namespace Avalonia.Layout
 {
@@ -111,6 +112,12 @@ namespace Avalonia.Layout
             AvaloniaProperty.Register<UniformGridLayout, double>(nameof(MinRowSpacing));
 
         /// <summary>
+        /// Defines the <see cref="MaximumRowsOrColumnsProperty"/> property.
+        /// </summary>
+        public static readonly StyledProperty<int> MaximumRowsOrColumnsProperty =
+            AvaloniaProperty.Register<UniformGridLayout, int>(nameof(MinItemWidth));
+
+        /// <summary>
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
@@ -123,6 +130,7 @@ namespace Avalonia.Layout
         private double _minColumnSpacing;
         private UniformGridLayoutItemsJustification _itemsJustification;
         private UniformGridLayoutItemsStretch _itemsStretch;
+        private int _maximumRowsOrColumns = int.MaxValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UniformGridLayout"/> class.
@@ -220,6 +228,15 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
+        /// Gets or sets the maximum row or column count.
+        /// </summary>
+        public int MaximumRowsOrColumns
+        {
+            get => GetValue(MaximumRowsOrColumnsProperty);
+            set => SetValue(MaximumRowsOrColumnsProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the axis along which items are laid out.
         /// </summary>
         /// <value>
@@ -269,15 +286,17 @@ namespace Avalonia.Layout
             {
                 var gridState = (UniformGridLayoutState)context.LayoutState;
                 var lastExtent = gridState.FlowAlgorithm.LastExtent;
-                int itemsPerLine = Math.Max(1, (int)(_orientation.Minor(availableSize) / GetMinorSizeWithSpacing(context)));
-                double majorSize = (itemsCount / itemsPerLine) * GetMajorSizeWithSpacing(context);
-                double realizationWindowStartWithinExtent = _orientation.MajorStart(realizationRect) - _orientation.MajorStart(lastExtent);
+                var itemsPerLine = Math.Min( // note use of unsigned ints
+                    Math.Max(1u, (uint)(_orientation.Minor(availableSize) / GetMinorSizeWithSpacing(context))),
+                    Math.Max(1u, (uint)_maximumRowsOrColumns));
+                var majorSize = (itemsCount / itemsPerLine) * GetMajorSizeWithSpacing(context);
+                var realizationWindowStartWithinExtent = _orientation.MajorStart(realizationRect) - _orientation.MajorStart(lastExtent);
                 if ((realizationWindowStartWithinExtent + _orientation.MajorSize(realizationRect)) >= 0 && realizationWindowStartWithinExtent <= majorSize)
                 {
                     double offset = Math.Max(0.0, _orientation.MajorStart(realizationRect) - _orientation.MajorStart(lastExtent));
                     int anchorRowIndex = (int)(offset / GetMajorSizeWithSpacing(context));
 
-                    anchorIndex = Math.Max(0, Math.Min(itemsCount - 1, anchorRowIndex * itemsPerLine));
+                    anchorIndex = (int)Math.Max(0, Math.Min(itemsCount - 1, anchorRowIndex * itemsPerLine));
                     bounds = GetLayoutRectForDataIndex(availableSize, anchorIndex, lastExtent, context);
                 }
             }
@@ -299,7 +318,9 @@ namespace Avalonia.Layout
             int count = context.ItemCount;
             if (targetIndex >= 0 && targetIndex < count)
             {
-                int itemsPerLine = Math.Max(1, (int)(_orientation.Minor(availableSize) / GetMinorSizeWithSpacing(context)));
+                int itemsPerLine = (int)Math.Min( // note use of unsigned ints
+                    Math.Max(1u, (uint)(_orientation.Minor(availableSize) / GetMinorSizeWithSpacing(context))),
+                    Math.Max(1u, _maximumRowsOrColumns));
                 int indexOfFirstInLine = (targetIndex / itemsPerLine) * itemsPerLine;
                 index = indexOfFirstInLine;
                 var state = context.LayoutState as UniformGridLayoutState;
@@ -329,17 +350,21 @@ namespace Avalonia.Layout
             // Constants
             int itemsCount = context.ItemCount;
             double availableSizeMinor = _orientation.Minor(availableSize);
-            int itemsPerLine = Math.Max(1, !double.IsInfinity(availableSizeMinor) ?
-                (int)(availableSizeMinor / GetMinorSizeWithSpacing(context)) : itemsCount);
+            int itemsPerLine =
+                (int)Math.Min( // note use of unsigned ints
+                    Math.Max(1u, !double.IsInfinity(availableSizeMinor)
+                        ? (uint)(availableSizeMinor / GetMinorSizeWithSpacing(context))
+                        : (uint)itemsCount),
+                Math.Max(1u, _maximumRowsOrColumns));
             double lineSize = GetMajorSizeWithSpacing(context);
 
             if (itemsCount > 0)
             {
                 _orientation.SetMinorSize(
                     ref extent,
-                    !double.IsInfinity(availableSizeMinor) ?
+                    !double.IsInfinity(availableSizeMinor) && _itemsStretch == UniformGridLayoutItemsStretch.Fill ?
                     availableSizeMinor :
-                    Math.Max(0.0, itemsCount * GetMinorSizeWithSpacing(context) - (double)MinItemSpacing));
+                    Math.Max(0.0, itemsPerLine * GetMinorSizeWithSpacing(context) - (double)MinItemSpacing));
                 _orientation.SetMajorSize(
                     ref extent,
                     Math.Max(0.0, (itemsCount / itemsPerLine) * lineSize - (double)LineSpacing));
@@ -398,7 +423,7 @@ namespace Avalonia.Layout
             // Set the width and height on the grid state. If the user already set them then use the preset. 
             // If not, we have to measure the first element and get back a size which we're going to be using for the rest of the items.
             var gridState = (UniformGridLayoutState)context.LayoutState;
-            gridState.EnsureElementSize(availableSize, context, _minItemWidth, _minItemHeight, _itemsStretch, Orientation, MinRowSpacing, MinColumnSpacing);
+            gridState.EnsureElementSize(availableSize, context, _minItemWidth, _minItemHeight, _itemsStretch, Orientation, MinRowSpacing, MinColumnSpacing, _maximumRowsOrColumns);
 
             var desiredSize = GetFlowAlgorithm(context).Measure(
                 availableSize,
@@ -406,6 +431,7 @@ namespace Avalonia.Layout
                 true,
                 MinItemSpacing,
                 LineSpacing,
+                _maximumRowsOrColumns,
                 _orientation.ScrollOrientation,
                 LayoutId);
 
@@ -421,6 +447,7 @@ namespace Avalonia.Layout
             var value = GetFlowAlgorithm(context).Arrange(
                finalSize,
                context,
+               true,
                (FlowLayoutAlgorithm.LineAlignment)_itemsJustification,
                LayoutId);
             return new Size(value.Width, value.Height);
@@ -436,40 +463,45 @@ namespace Avalonia.Layout
             gridState.ClearElementOnDataSourceChange(context, args);
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs args)
+        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
         {
-            if (args.Property == OrientationProperty)
+            if (property == OrientationProperty)
             {
-                var orientation = (Orientation)args.NewValue;
+                var orientation = newValue.GetValueOrDefault<Orientation>();
 
                 //Note: For UniformGridLayout Vertical Orientation means we have a Horizontal ScrollOrientation. Horizontal Orientation means we have a Vertical ScrollOrientation.
                 //i.e. the properties are the inverse of each other.
                 var scrollOrientation = (orientation == Orientation.Horizontal) ? ScrollOrientation.Vertical : ScrollOrientation.Horizontal;
                 _orientation.ScrollOrientation = scrollOrientation;
             }
-            else if (args.Property == MinColumnSpacingProperty)
+            else if (property == MinColumnSpacingProperty)
             {
-                _minColumnSpacing = (double)args.NewValue;
+                _minColumnSpacing = newValue.GetValueOrDefault<double>();
             }
-            else if (args.Property == MinRowSpacingProperty)
+            else if (property == MinRowSpacingProperty)
             {
-                _minRowSpacing = (double)args.NewValue;
+                _minRowSpacing = newValue.GetValueOrDefault<double>();
             }
-            else if (args.Property == ItemsJustificationProperty)
+            else if (property == ItemsJustificationProperty)
             {
-                _itemsJustification = (UniformGridLayoutItemsJustification)args.NewValue;
+                _itemsJustification = newValue.GetValueOrDefault<UniformGridLayoutItemsJustification>();
+                ;
             }
-            else if (args.Property == ItemsStretchProperty)
+            else if (property == ItemsStretchProperty)
             {
-                _itemsStretch = (UniformGridLayoutItemsStretch)args.NewValue;
+                _itemsStretch = newValue.GetValueOrDefault<UniformGridLayoutItemsStretch>();
             }
-            else if (args.Property == MinItemWidthProperty)
+            else if (property == MinItemWidthProperty)
             {
-                _minItemWidth = (double)args.NewValue;
+                _minItemWidth = newValue.GetValueOrDefault<double>();
             }
-            else if (args.Property == MinItemHeightProperty)
+            else if (property == MinItemHeightProperty)
             {
-                _minItemHeight = (double)args.NewValue;
+                _minItemHeight = newValue.GetValueOrDefault<double>();
+            }
+            else if (property == MaximumRowsOrColumnsProperty)
+            {
+                _maximumRowsOrColumns = newValue.GetValueOrDefault<int>();
             }
 
             InvalidateLayout();
@@ -499,7 +531,9 @@ namespace Avalonia.Layout
             Rect lastExtent,
             VirtualizingLayoutContext context)
         {
-            int itemsPerLine = Math.Max(1, (int)(_orientation.Minor(availableSize) / GetMinorSizeWithSpacing(context)));
+            int itemsPerLine = (int)Math.Min( //note use of unsigned ints
+                Math.Max(1u, (uint)(_orientation.Minor(availableSize) / GetMinorSizeWithSpacing(context))),
+                Math.Max(1u, _maximumRowsOrColumns));
             int rowIndex = (int)(index / itemsPerLine);
             int indexInRow = index - (rowIndex * itemsPerLine);
 

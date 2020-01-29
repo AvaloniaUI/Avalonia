@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -20,10 +21,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             base.OnAttachedToLogicalTree(e);
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
         {
-            Order.Add($"Property {e.Property.Name} Changed");
-            base.OnPropertyChanged(e);
+            Order.Add($"Property {property.Name} Changed");
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
         }
 
         void ISupportInitialize.BeginInit()

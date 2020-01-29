@@ -34,8 +34,9 @@ namespace Avalonia.Base.UnitTests
             var target = new DirectProperty<Class1, string>(
                 "test", 
                 o => null, 
-                null, 
-                new DirectPropertyMetadata<string>());
+                null,
+                new DirectPropertyMetadata<string>(),
+                false);
 
             Assert.True(target.IsDirect);
         }
@@ -69,17 +70,6 @@ namespace Avalonia.Base.UnitTests
 
             Assert.Same(p1.Changed, p2.Changed);
             Assert.Same(p1.Initialized, p2.Initialized);
-        }
-
-        [Fact]
-        public void IsAnimating_On_DirectProperty_With_Binding_Returns_False()
-        {
-            var target = new Class1();
-            var source = new BehaviorSubject<string>("foo");
-
-            target.Bind(Class1.FooProperty, source, BindingPriority.Animation);
-
-            Assert.False(target.IsAnimating(Class1.FooProperty));
         }
 
         private class Class1 : AvaloniaObject

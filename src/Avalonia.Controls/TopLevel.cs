@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Reactive.Linq;
-using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -15,7 +13,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
-using Avalonia.VisualTree;
 using JetBrains.Annotations;
 
 namespace Avalonia.Controls
@@ -33,7 +30,8 @@ namespace Avalonia.Controls
         ILayoutRoot,
         IRenderRoot,
         ICloseable,
-        IStyleRoot,
+        IStyleHost,
+        ILogicalRoot,
         IWeakSubscriber<ResourcesChangedEventArgs>
     {
         /// <summary>
@@ -269,6 +267,12 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
+            var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
+            ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
+
+            var visualArgs = new VisualTreeAttachmentEventArgs(this, this);
+            OnDetachedFromVisualTreeCore(visualArgs);
+
             (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
             PlatformImpl = null;
             OnClosed(EventArgs.Empty);
@@ -296,10 +300,7 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         protected virtual void HandleScalingChanged(double scaling)
         {
-            foreach (ILayoutable control in this.GetSelfAndVisualDescendants())
-            {
-                control.InvalidateMeasure();
-            }
+            LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
         }
 
         /// <inheritdoc/>

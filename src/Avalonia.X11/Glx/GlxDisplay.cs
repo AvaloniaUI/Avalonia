@@ -87,7 +87,7 @@ namespace Avalonia.X11.Glx
             ImmediateContext.MakeCurrent();
             var err = Glx.GetError();
             
-            GlInterface = new GlInterface(GlxInterface.GlxGetProcAddress);
+            GlInterface = new GlInterface(GlxInterface.SafeGetProcAddress);
             if (GlInterface.Version == null)
                 throw new OpenGlException("GL version string is null, aborting");
             if (GlInterface.Renderer == null)

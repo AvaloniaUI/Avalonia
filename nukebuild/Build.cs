@@ -205,6 +205,7 @@ partial class Build : NukeBuild
             RunCoreTest("./tests/Avalonia.Animation.UnitTests");
             RunCoreTest("./tests/Avalonia.Base.UnitTests");
             RunCoreTest("./tests/Avalonia.Controls.UnitTests");
+            RunCoreTest("./tests/Avalonia.Controls.DataGrid.UnitTests");
             RunCoreTest("./tests/Avalonia.Input.UnitTests");
             RunCoreTest("./tests/Avalonia.Interactivity.UnitTests");
             RunCoreTest("./tests/Avalonia.Layout.UnitTests");

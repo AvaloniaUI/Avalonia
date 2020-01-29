@@ -14,13 +14,13 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Dashes"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<IReadOnlyList<double>> DashesProperty =
+        public static readonly StyledProperty<IReadOnlyList<double>> DashesProperty =
             AvaloniaProperty.Register<DashStyle, IReadOnlyList<double>>(nameof(Dashes));
 
         /// <summary>
         /// Defines the <see cref="Offset"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<double> OffsetProperty =
+        public static readonly StyledProperty<double> OffsetProperty =
             AvaloniaProperty.Register<DashStyle, double>(nameof(Offset));
 
         private static ImmutableDashStyle s_dash;

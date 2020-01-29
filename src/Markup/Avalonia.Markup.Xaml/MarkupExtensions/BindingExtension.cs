@@ -41,6 +41,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 StringFormat = StringFormat,
                 RelativeSource = RelativeSource,
                 DefaultAnchor = new WeakReference(GetDefaultAnchor(descriptorContext)),
+                TargetNullValue = TargetNullValue,
                 NameScope = new WeakReference<INameScope>(serviceProvider.GetService<INameScope>())
             };
         }
@@ -51,6 +52,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             // up named controls and style resources. First look for the closest IControl in
             // the context.
             object anchor = context.GetFirstParent<IControl>();
+
+            if(anchor is null)
+            {
+                // Try to find IDataContextProvider, this was added to allow us to find
+                // a datacontext for Application class when using NativeMenuItems.
+                anchor = context.GetFirstParent<IDataContextProvider>();
+            }
 
             // If a control was not found, then try to find the highest-level style as the XAML
             // file could be a XAML file containing only styles.
@@ -79,5 +87,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public string StringFormat { get; set; }
 
         public RelativeSource RelativeSource { get; set; }
+
+        public object TargetNullValue { get; set; } = AvaloniaProperty.UnsetValue;
     }
 }

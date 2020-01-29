@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts
 {
@@ -54,25 +55,19 @@ namespace Avalonia.Media.Fonts
         /// </value>
         internal IReadOnlyList<string> Names { get; }
 
-        /// <inheritdoc />
         /// <summary>
-        /// Returns an enumerator that iterates through the collection.
+        /// Returns an enumerator for the name collection.
         /// </summary>
-        /// <returns>
-        /// An enumerator that can be used to iterate through the collection.
-        /// </returns>
-        public IEnumerator<string> GetEnumerator()
+        public ImmutableReadOnlyListStructEnumerator<string> GetEnumerator()
         {
-            return Names.GetEnumerator();
+            return new ImmutableReadOnlyListStructEnumerator<string>(this);
         }
 
-        /// <inheritdoc />
-        /// <summary>
-        /// Returns an enumerator that iterates through a collection.
-        /// </summary>
-        /// <returns>
-        /// An <see cref="T:System.Collections.IEnumerator"></see> object that can be used to iterate through the collection.
-        /// </returns>
+        IEnumerator<string> IEnumerable<string>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
@@ -129,6 +124,21 @@ namespace Avalonia.Media.Fonts
 
                 return hash;
             }
+        }
+
+        public static bool operator !=(FamilyNameCollection a, FamilyNameCollection b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator ==(FamilyNameCollection a, FamilyNameCollection b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+
+            return !(a is null) && a.Equals(b);
         }
 
         /// <summary>

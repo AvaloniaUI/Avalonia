@@ -14,10 +14,5 @@ namespace Avalonia
         /// Gets the default value for the property.
         /// </summary>
         object DefaultValue { get; }
-
-        /// <summary>
-        /// Gets the property's validation function.
-        /// </summary>
-        Func<IAvaloniaObject, object, object> Validate { get; }
     }
 }

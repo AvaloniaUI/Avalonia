@@ -120,6 +120,10 @@ namespace Avalonia.Input
                 rv++;
             if (props.IsRightButtonPressed)
                 rv++;
+            if (props.IsXButton1Pressed)
+                rv++;
+            if (props.IsXButton2Pressed)
+                rv++;
             return rv;
         }
         
@@ -142,6 +146,8 @@ namespace Avalonia.Input
                 case RawPointerEventType.LeftButtonDown:
                 case RawPointerEventType.RightButtonDown:
                 case RawPointerEventType.MiddleButtonDown:
+                case RawPointerEventType.XButton1Down:
+                case RawPointerEventType.XButton2Down:
                     if (ButtonCount(props) > 1)
                         e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
                     else
@@ -151,6 +157,8 @@ namespace Avalonia.Input
                 case RawPointerEventType.LeftButtonUp:
                 case RawPointerEventType.RightButtonUp:
                 case RawPointerEventType.MiddleButtonUp:
+                case RawPointerEventType.XButton1Up:
+                case RawPointerEventType.XButton2Up:
                     if (ButtonCount(props) != 0)
                         e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
                     else
@@ -186,12 +194,20 @@ namespace Avalonia.Input
                 kind = PointerUpdateKind.MiddleButtonPressed;
             if (args.Type == RawPointerEventType.RightButtonDown)
                 kind = PointerUpdateKind.RightButtonPressed;
+            if (args.Type == RawPointerEventType.XButton1Down)
+                kind = PointerUpdateKind.XButton1Pressed;
+            if (args.Type == RawPointerEventType.XButton2Down)
+                kind = PointerUpdateKind.XButton2Pressed;
             if (args.Type == RawPointerEventType.LeftButtonUp)
                 kind = PointerUpdateKind.LeftButtonReleased;
             if (args.Type == RawPointerEventType.MiddleButtonUp)
                 kind = PointerUpdateKind.MiddleButtonReleased;
             if (args.Type == RawPointerEventType.RightButtonUp)
                 kind = PointerUpdateKind.RightButtonReleased;
+            if (args.Type == RawPointerEventType.XButton1Up)
+                kind = PointerUpdateKind.XButton1Released;
+            if (args.Type == RawPointerEventType.XButton2Up)
+                kind = PointerUpdateKind.XButton2Released;
             
             return new PointerPointProperties(args.InputModifiers, kind);
         }

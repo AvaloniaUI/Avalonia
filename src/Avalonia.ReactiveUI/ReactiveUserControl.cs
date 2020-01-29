@@ -15,7 +15,7 @@ namespace Avalonia.ReactiveUI
     /// <typeparam name="TViewModel">ViewModel type.</typeparam>
     public class ReactiveUserControl<TViewModel> : UserControl, IViewFor<TViewModel> where TViewModel : class
     {
-        public static readonly AvaloniaProperty<TViewModel> ViewModelProperty = AvaloniaProperty
+        public static readonly StyledProperty<TViewModel> ViewModelProperty = AvaloniaProperty
             .Register<ReactiveUserControl<TViewModel>, TViewModel>(nameof(ViewModel));
 
         /// <summary>

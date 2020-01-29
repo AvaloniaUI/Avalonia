@@ -306,7 +306,7 @@ namespace Avalonia
         /// <summary>
         /// Parses a <see cref="Matrix"/> string.
         /// </summary>
-        /// <param name="s">The string.</param>
+        /// <param name="s">Six comma-delimited double values (m11, m12, m21, m22, offsetX, offsetY) that describe the new <see cref="Matrix"/></param>
         /// <returns>The <see cref="Matrix"/>.</returns>
         public static Matrix Parse(string s)
         {

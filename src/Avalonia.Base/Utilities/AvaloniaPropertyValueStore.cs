@@ -129,6 +129,27 @@ namespace Avalonia.Utilities
             _entries[TryFindEntry(property.Id).Item1].Value = value;
         }
 
+        public void Remove(AvaloniaProperty property)
+        {
+            var (index, found) = TryFindEntry(property.Id);
+
+            if (found)
+            {
+                Entry[] entries = new Entry[_entries.Length - 1];
+                int ix = 0;
+
+                for (int i = 0; i < _entries.Length; ++i)
+                {
+                    if (i != index)
+                    {
+                        entries[ix++] = _entries[i];
+                    }
+                }
+
+                _entries = entries;
+            }
+        }
+
         public Dictionary<AvaloniaProperty, TValue> ToDictionary()
         {
             var dict = new Dictionary<AvaloniaProperty, TValue>(_entries.Length - 1);
