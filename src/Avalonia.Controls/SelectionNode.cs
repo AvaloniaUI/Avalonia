@@ -29,7 +29,7 @@ namespace Avalonia.Controls
         private readonly SelectionNode? _parent;
         private readonly List<IndexRange> _selected = new List<IndexRange>();
         private readonly List<int> _selectedIndicesCached = new List<int>();
-        private SelectionModelChangeSet? _changes;
+        private SelectionNodeOperation? _operation;
         private object? _source;
         private bool _selectedIndicesCacheIsValid;
 
@@ -137,7 +137,7 @@ namespace Avalonia.Controls
                             child = new SelectionNode(_manager, parent: this);
                             child.Source = resolvedChild;
 
-                            if (_changes?.IsTracking == true)
+                            if (_operation != null)
                             {
                                 child.BeginOperation();
                             }
@@ -296,33 +296,45 @@ namespace Avalonia.Controls
 
         public void BeginOperation()
         {
-            _changes ??= new SelectionModelChangeSet(this);
-            _changes.BeginOperation();
+            if (_operation != null)
+            {
+                throw new AvaloniaInternalException("Selection operation already in progress.");
+            }
+
+            _operation = new SelectionNodeOperation(this);
 
             for (var i = 0; i < _childrenNodes.Count; ++i)
             {
-                _childrenNodes[i]?.BeginOperation();
+                var child = _childrenNodes[i];
+
+                if (child != null && child != _manager.SharedLeafNode)
+                {
+                    child.BeginOperation();
+                }
             }
         }
 
-        public IEnumerable<SelectionModelChangeSet> EndOperation()
+        public void EndOperation(List<SelectionNodeOperation> changes)
         {
-            if (_changes != null)
+            if (_operation == null)
             {
-                _changes.EndOperation();
-                yield return _changes;
+                throw new AvaloniaInternalException("No selection operation in progress.");
+            }
 
-                for (var i = 0; i < _childrenNodes.Count; ++i)
+            if (_operation.HasChanges)
+            {
+                changes.Add(_operation);
+            }
+
+            _operation = null;
+
+            for (var i = 0; i < _childrenNodes.Count; ++i)
+            {
+                var child = _childrenNodes[i];
+
+                if (child != null && child != _manager.SharedLeafNode)
                 {
-                    var child = _childrenNodes[i];
-
-                    if (child != null)
-                    {
-                        foreach (var changes in child.EndOperation())
-                        {
-                            yield return changes;
-                        }
-                    }
+                    child.EndOperation(changes);
                 }
             }
         }
@@ -400,7 +412,7 @@ namespace Avalonia.Controls
 
             if (selected.Count > 0)
             {
-                _changes?.Selected(selected);
+                _operation?.Selected(selected);
 
                 if (raiseOnSelectionChanged)
                 {
@@ -417,7 +429,7 @@ namespace Avalonia.Controls
 
             if (removed.Count > 0)
             {
-                _changes?.Deselected(removed);
+                _operation?.Deselected(removed);
 
                 if (raiseOnSelectionChanged)
                 {
@@ -431,7 +443,7 @@ namespace Avalonia.Controls
             // Deselect all items
             if (_selected.Count > 0)
             {
-                _changes?.Deselected(_selected);
+                _operation?.Deselected(_selected);
                 _selected.Clear();
                 OnSelectionChanged();
             }
@@ -480,7 +492,7 @@ namespace Avalonia.Controls
         private void OnSourceListChanged(object dataSource, NotifyCollectionChangedEventArgs args)
         {
             bool selectionInvalidated = false;
-            IList<object>? removed = null;
+            List<object>? removed = null;
 
             switch (args.Action)
             {
@@ -594,7 +606,7 @@ namespace Avalonia.Controls
             return selectionInvalidated;
         }
 
-        private (bool, IList<object>) OnItemsRemoved(int index, IList items)
+        private (bool, List<object>) OnItemsRemoved(int index, IList items)
         {
             var selectionInvalidated = false;
             var removed = new List<object>();

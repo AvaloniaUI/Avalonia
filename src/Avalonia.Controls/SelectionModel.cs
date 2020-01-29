@@ -490,13 +490,9 @@ namespace Avalonia.Controls
         }
 
         public void OnSelectionInvalidatedDueToCollectionChange(
-            IEnumerable<object>? removedItems)
+            IReadOnlyList<object>? removedItems)
         {
-            var e = new SelectionModelSelectionChangedEventArgs(
-                Enumerable.Empty<IndexPath>(),
-                Enumerable.Empty<IndexPath>(),
-                removedItems ?? Enumerable.Empty<object>(),
-                Enumerable.Empty<object>());
+            var e = new SelectionModelSelectionChangedEventArgs(null, null, removedItems, null);
             OnSelectionChanged(e);
         }
 
@@ -706,50 +702,19 @@ namespace Avalonia.Controls
                 });
         }
 
-        private void BeginOperation()
-        {
-            if (SelectionChanged != null)
-            {
-                _rootNode.BeginOperation();
-            }
-        }
+        private void BeginOperation() => _rootNode.BeginOperation();
 
         private void EndOperation()
         {
-            static IEnumerable<T>? Concat<T>(IEnumerable<T>? a, IEnumerable<T> b)
-            {
-                return a == null ? b : a.Concat(b);
-            }
+            var changes = new List<SelectionNodeOperation>();
+            _rootNode.EndOperation(changes);
 
             SelectionModelSelectionChangedEventArgs? e = null;
-
-            if (SelectionChanged != null)
+            
+            if (changes.Count > 0)
             {
-                IEnumerable<IndexPath>? selectedIndices = null;
-                IEnumerable<IndexPath>? deselectedIndices = null;
-                IEnumerable<object>? selectedItems = null;
-                IEnumerable<object>? deselectedItems = null;
-
-                foreach (var changes in _rootNode.EndOperation())
-                {
-                    if (changes.HasChanges)
-                    {
-                        selectedIndices = Concat(selectedIndices, changes.SelectedIndices);
-                        deselectedIndices = Concat(deselectedIndices, changes.DeselectedIndices);
-                        selectedItems = Concat(selectedItems, changes.SelectedItems);
-                        deselectedItems = Concat(deselectedItems, changes.DeselectedItems);
-                    }
-                }
-
-                if (selectedIndices != null || deselectedIndices != null ||
-                    selectedItems != null || deselectedItems != null)
-                {
-                    e = new SelectionModelSelectionChangedEventArgs(
-                        deselectedIndices ?? Enumerable.Empty<IndexPath>(),
-                        selectedIndices ?? Enumerable.Empty<IndexPath>(),
-                        deselectedItems ?? Enumerable.Empty<object>(),
-                        selectedItems ?? Enumerable.Empty<object>());
-                }
+                var changeSet = new SelectionModelChangeSet(changes);
+                e = changeSet.CreateEventArgs();
             }
 
             OnSelectionChanged(e);

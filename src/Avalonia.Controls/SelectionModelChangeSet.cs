@@ -1,144 +1,80 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-
-#nullable enable
 
 namespace Avalonia.Controls
 {
     internal class SelectionModelChangeSet
     {
-        private SelectionNode _owner;
-        private List<IndexRange>? _selected;
-        private List<IndexRange>? _deselected;
+        private List<SelectionNodeOperation> _changes;
 
-        public SelectionModelChangeSet(SelectionNode owner) => _owner = owner;
-
-        public bool IsTracking { get; private set; }
-        public bool HasChanges => _selected?.Count > 0 || _deselected?.Count > 0;
-        public IEnumerable<IndexPath> SelectedIndices => EnumerateIndices(_selected);
-        public IEnumerable<IndexPath> DeselectedIndices => EnumerateIndices(_deselected);
-        public IEnumerable<object> SelectedItems => EnumerateItems(_selected);
-        public IEnumerable<object> DeselectedItems => EnumerateItems(_deselected);
-
-        public void BeginOperation()
+        public SelectionModelChangeSet(List<SelectionNodeOperation> changes)
         {
-            if (IsTracking)
-            {
-                throw new AvaloniaInternalException("SelectionModel change operation already in progress.");
-            }
-
-            IsTracking = true;
-            _selected?.Clear();
-            _deselected?.Clear();
+            _changes = changes;
         }
 
-        public void EndOperation() => IsTracking = false;
-
-        public void Selected(IndexRange range)
+        public SelectionModelSelectionChangedEventArgs CreateEventArgs()
         {
-            if (!IsTracking)
-            {
-                return;
-            }
-
-            Add(range, ref _selected, _deselected);
+            return new SelectionModelSelectionChangedEventArgs(
+                CreateIndices(x => x.DeselectedRanges),
+                CreateIndices(x => x.SelectedRanges),
+                CreateItems(x => x.DeselectedRanges),
+                CreateItems(x => x.SelectedRanges));
         }
 
-        public void Selected(IEnumerable<IndexRange> ranges)
+        private IReadOnlyList<IndexPath> CreateIndices(Func<SelectionNodeOperation, List<IndexRange>?> selector)
         {
-            if (!IsTracking)
+            if (_changes == null)
             {
-                return;
+                return Array.Empty<IndexPath>();
             }
 
-            foreach (var range in ranges)
+            var result = new List<IndexPath>();
+
+            foreach (var i in _changes)
             {
-                Selected(range);
-            }
-        }
+                var ranges = selector(i);
 
-        public void Deselected(IndexRange range)
-        {
-            if (!IsTracking)
-            {
-                return;
-            }
-
-            Add(range, ref _deselected, _selected);
-        }
-
-        public void Deselected(IEnumerable<IndexRange> ranges)
-        {
-            if (!IsTracking)
-            {
-                return;
-            }
-
-            foreach (var range in ranges)
-            {
-                Deselected(range);
-            }
-        }
-
-        private static void Add(
-            IndexRange range,
-            ref List<IndexRange>? add,
-            List<IndexRange>? remove)
-        {
-            if (remove != null)
-            {
-                var removed = new List<IndexRange>();
-                IndexRange.Remove(remove, range, removed);
-                var selected = IndexRange.Subtract(range, removed);
-
-                if (selected.Any())
+                if (ranges != null)
                 {
-                    add ??= new List<IndexRange>();
-
-                    foreach (var r in selected)
+                    foreach (var j in ranges)
                     {
-                        IndexRange.Add(add, r);
+                        for (var k = j.Begin; k <= j.End; ++k)
+                        {
+                            result.Add(i.Path.CloneWithChildIndex(k));
+                        }
                     }
                 }
             }
-            else
-            {
-                add ??= new List<IndexRange>();
-                IndexRange.Add(add, range);
-            }
+
+            return result;
         }
 
-        private IEnumerable<IndexPath> EnumerateIndices(IEnumerable<IndexRange>? ranges)
+        private IReadOnlyList<object> CreateItems(Func<SelectionNodeOperation, List<IndexRange>?> selector)
         {
-            var path = _owner.IndexPath;
-
-            if (ranges != null)
+            if (_changes == null)
             {
-                foreach (var range in ranges)
+                return Array.Empty<object>();
+            }
+
+            var result = new List<object>();
+
+            foreach (var i in _changes)
+            {
+                var ranges = selector(i);
+
+                if (ranges != null && i.Items != null)
                 {
-                    for (var i = range.Begin; i <= range.End; ++i)
+                    foreach (var j in ranges)
                     {
-                        yield return path.CloneWithChildIndex(i);
+                        for (var k = j.Begin; k <= j.End; ++k)
+                        {
+                            result.Add(i.Items.GetAt(k));
+                        }
                     }
                 }
             }
-        }
 
-        private IEnumerable<object> EnumerateItems(IEnumerable<IndexRange>? ranges)
-        {
-            var items = _owner.ItemsSourceView;
-
-            if (ranges != null && items != null)
-            {
-                foreach (var range in ranges)
-                {
-                    for (var i = range.Begin; i <= range.End; ++i)
-                    {
-                        yield return items.GetAt(i);
-                    }
-                }
-            }
+            return result;
         }
     }
 }
