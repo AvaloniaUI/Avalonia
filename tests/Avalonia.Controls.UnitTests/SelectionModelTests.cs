@@ -1360,6 +1360,38 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(3, target.SelectedItems.Count);
         }
 
+        [Fact]
+        public void Not_Enumerating_Changes_Does_Not_Prevent_Further_Operations()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { Source = data };
+
+            target.SelectionChanged += (s, e) => { };
+
+            target.SelectAll();
+            target.ClearSelection();
+        }
+
+        [Fact]
+        public void Can_Change_Selection_From_SelectionChanged()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { Source = data };
+            var raised = 0;
+
+            target.SelectionChanged += (s, e) => 
+            {
+                if (raised++ == 0)
+                {
+                    target.ClearSelection();
+                }
+            };
+
+            target.SelectAll();
+
+            Assert.Equal(2, raised);
+        }
+
         private int GetSubscriberCount(AvaloniaList<object> list)
         {
             return ((INotifyCollectionChangedDebug)list).GetCollectionChangedSubscribers()?.Length ?? 0;
