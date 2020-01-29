@@ -114,7 +114,7 @@ namespace Avalonia.Styling
                 }
                 else
                 {
-                    if (!TargetType.GetTypeInfo().IsAssignableFrom(controlType.GetTypeInfo()))
+                    if (!TargetType.IsAssignableFrom(controlType))
                     {
                         return SelectorMatch.NeverThisType;
                     }
