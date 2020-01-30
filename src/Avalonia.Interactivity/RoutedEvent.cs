@@ -3,7 +3,6 @@
 
 using System;
 using System.Reactive.Subjects;
-using System.Reflection;
 
 namespace Avalonia.Interactivity
 {
@@ -29,7 +28,7 @@ namespace Avalonia.Interactivity
             Contract.Requires<ArgumentNullException>(name != null);
             Contract.Requires<ArgumentNullException>(eventArgsType != null);
             Contract.Requires<ArgumentNullException>(ownerType != null);
-            Contract.Requires<InvalidCastException>(typeof(RoutedEventArgs).GetTypeInfo().IsAssignableFrom(eventArgsType.GetTypeInfo()));
+            Contract.Requires<InvalidCastException>(typeof(RoutedEventArgs).IsAssignableFrom(eventArgsType));
 
             EventArgsType = eventArgsType;
             Name = name;
