@@ -551,6 +551,7 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_MBUTTONDOWN:
+                    shouldTakeFocus = true;
                     if(ShouldIgnoreTouchEmulatedMessage())
                         break;
                     e = new RawPointerEventArgs(
@@ -583,7 +584,6 @@ namespace Avalonia.Win32
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
-                    shouldTakeFocus = true;
                     if(ShouldIgnoreTouchEmulatedMessage())
                         break;
                     if (!_trackingMouse)
@@ -639,6 +639,7 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_NCMBUTTONDOWN:
+                    shouldTakeFocus = true;
                     e = new RawPointerEventArgs(
                         _mouseDevice,
                         timestamp,
