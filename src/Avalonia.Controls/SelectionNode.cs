@@ -587,8 +587,9 @@ namespace Avalonia.Controls
             if (selectionInvalidated)
             {
                 OnSelectionChanged();
-                _manager.OnSelectionInvalidatedDueToCollectionChange(removed);
             }
+
+            _manager.OnSelectionInvalidatedDueToCollectionChange(selectionInvalidated, removed);
         }
 
         private bool OnItemsAdded(int index, int count)

@@ -17,6 +17,8 @@ namespace Avalonia.Controls
     {
         private readonly SelectionNode _rootNode;
         private bool _singleSelect;
+        private bool _autoSelect;
+        private int _operationCount;
         private IReadOnlyList<IndexPath>? _selectedIndicesCached;
         private IReadOnlyList<object?>? _selectedItemsCached;
         private SelectionModelChildrenRequestedEventArgs? _childrenRequestedEventArgs;
@@ -38,21 +40,25 @@ namespace Avalonia.Controls
             {
                 if (_rootNode.Source != value)
                 {
-                    var wasNull = _rootNode.Source == null;
+                    var raiseChanged = _rootNode.Source == null && SelectedIndices.Count > 0;
 
                     if (_rootNode.Source != null)
                     {
-                        using (var operation = new Operation(this))
+                        if (_rootNode.Source != null)
                         {
-                            ClearSelection(resetAnchor: true);
+                            using (var operation = new Operation(this))
+                            {
+                                ClearSelection(resetAnchor: true);
+                            }
                         }
                     }
 
                     _rootNode.Source = value;
+                    ApplyAutoSelect();
 
                     RaisePropertyChanged("Source");
 
-                    if (wasNull)
+                    if (raiseChanged)
                     {
                         var e = new SelectionModelSelectionChangedEventArgs(
                             null,
@@ -92,10 +98,23 @@ namespace Avalonia.Controls
             }
         }
 
-        public bool RetainSelectionOnReset 
+        public bool RetainSelectionOnReset
         {
             get => _rootNode.RetainSelectionOnReset;
             set => _rootNode.RetainSelectionOnReset = value;
+        }
+
+        public bool AutoSelect 
+        {
+            get => _autoSelect;
+            set
+            {
+                if (_autoSelect != value)
+                {
+                    _autoSelect = value;
+                    ApplyAutoSelect();
+                }
+            }
         }
 
         public IndexPath AnchorIndex
@@ -356,18 +375,21 @@ namespace Avalonia.Controls
         {
             using var operation = new Operation(this);
             SelectImpl(index, select: false);
+            ApplyAutoSelect();
         }
 
         public void Deselect(int groupIndex, int itemIndex)
         {
             using var operation = new Operation(this);
             SelectWithGroupImpl(groupIndex, itemIndex, select: false);
+            ApplyAutoSelect();
         }
 
         public void DeselectAt(IndexPath index)
         {
             using var operation = new Operation(this);
             SelectWithPathImpl(index, select: false);
+            ApplyAutoSelect();
         }
 
         public bool? IsSelected(int index)
@@ -508,6 +530,7 @@ namespace Avalonia.Controls
         {
             using var operation = new Operation(this);
             ClearSelection(resetAnchor: true);
+            ApplyAutoSelect();
         }
 
         protected void OnPropertyChanged(string propertyName)
@@ -521,10 +544,18 @@ namespace Avalonia.Controls
         }
 
         public void OnSelectionInvalidatedDueToCollectionChange(
-            IReadOnlyList<object?>? removedItems)
+            bool selectionInvalidated,
+            IReadOnlyList<object>? removedItems)
         {
-            var e = new SelectionModelSelectionChangedEventArgs(null, null, removedItems, null);
+            SelectionModelSelectionChangedEventArgs? e = null;
+
+            if (selectionInvalidated)
+            {
+                e = new SelectionModelSelectionChangedEventArgs(null, null, removedItems, null);
+            }
+
             OnSelectionChanged(e);
+            ApplyAutoSelect();
         }
 
         internal object? ResolvePath(object data, SelectionNode sourceNode)
@@ -733,22 +764,50 @@ namespace Avalonia.Controls
                 });
         }
 
-        private void BeginOperation() => _rootNode.BeginOperation();
+        private void BeginOperation()
+        {
+            if (_operationCount++ == 0)
+            {
+                _rootNode.BeginOperation();
+            }
+        }
 
         private void EndOperation()
         {
-            var changes = new List<SelectionNodeOperation>();
-            _rootNode.EndOperation(changes);
+            if (_operationCount == 0)
+            {
+                throw new AvaloniaInternalException("No selection operation in progress.");
+            }
 
             SelectionModelSelectionChangedEventArgs? e = null;
-            
-            if (changes.Count > 0)
+
+            if (--_operationCount == 0)
             {
-                var changeSet = new SelectionModelChangeSet(changes);
-                e = changeSet.CreateEventArgs();
+                var changes = new List<SelectionNodeOperation>();
+                _rootNode.EndOperation(changes);
+
+                if (changes.Count > 0)
+                {
+                    var changeSet = new SelectionModelChangeSet(changes);
+                    e = changeSet.CreateEventArgs();
+                }
             }
 
             OnSelectionChanged(e);
+        }
+
+        private void ApplyAutoSelect()
+        {
+            if (AutoSelect)
+            {
+                _selectedIndicesCached = null;
+
+                if (SelectedIndex == default && _rootNode.ItemsSourceView?.Count > 0)
+                {
+                    using var operation = new Operation(this);
+                    SelectImpl(0, true);
+                }
+            }
         }
 
         internal class SelectedItemInfo : ISelectedItemInfo

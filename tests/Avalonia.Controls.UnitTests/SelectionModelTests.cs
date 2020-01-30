@@ -1569,8 +1569,6 @@ namespace Avalonia.Controls.UnitTests
             };
 
             data.Reset();
-
-            Assert.Equal(1, raised);
         }
 
         [Fact]
@@ -1640,6 +1638,207 @@ namespace Avalonia.Controls.UnitTests
             data.Reset(new[] { "qux", "foo", "bar", "baz" });
             Assert.Equal(3, raised);
             Assert.Equal(new[] { new IndexPath(2) }, target.SelectedIndices);
+        }
+
+        [Fact]
+        public void AutoSelect_Selects_When_Enabled()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { Source = data };
+            var raised = 0;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(0) }, e.SelectedIndices);
+                Assert.Equal(new[] { "foo" }, e.SelectedItems);
+                ++raised;
+            };
+
+            target.AutoSelect = true;
+
+            Assert.Equal(new IndexPath(0), target.SelectedIndex);
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void AutoSelect_Selects_When_Source_Assigned()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { AutoSelect = true };
+            var raised = 0;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(0) }, e.SelectedIndices);
+                Assert.Equal(new[] { "foo" }, e.SelectedItems);
+                ++raised;
+            };
+
+            target.Source = data;
+            
+            Assert.Equal(new IndexPath(0), target.SelectedIndex);
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void AutoSelect_Selects_When_New_Source_Assigned_And_Old_Source_Has_Selection()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { AutoSelect = true, Source = data };
+            var raised = 0;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                if (raised == 0)
+                {
+                    Assert.Equal(new[] { new IndexPath(0) }, e.DeselectedIndices);
+                    Assert.Equal(new[] { "foo" }, e.DeselectedItems);
+                    Assert.Empty(e.SelectedIndices);
+                    Assert.Empty(e.SelectedItems);
+                }
+                else
+                {
+                    Assert.Empty(e.DeselectedIndices);
+                    Assert.Empty(e.DeselectedItems);
+                    Assert.Equal(new[] { new IndexPath(0) }, e.SelectedIndices);
+                    Assert.Equal(new[] { "newfoo" }, e.SelectedItems);
+                }
+                ++raised;
+            };
+
+            target.Source = new[] { "newfoo" };
+
+            Assert.Equal(new IndexPath(0), target.SelectedIndex);
+            Assert.Equal(2, raised);
+        }
+
+        [Fact]
+        public void AutoSelect_Selects_When_First_Item_Added()
+        {
+            var data = new ObservableCollection<string>();
+            var target = new SelectionModel { AutoSelect = true , Source = data };
+            var raised = 0;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(0) }, e.SelectedIndices);
+                Assert.Equal(new[] { "foo" }, e.SelectedItems);
+                ++raised;
+            };
+
+            data.Add("foo");
+
+            Assert.Equal(new IndexPath(0), target.SelectedIndex);
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void AutoSelect_Selects_When_Selected_Item_Removed()
+        {
+            var data = new ObservableCollection<string> { "foo", "bar", "baz" };
+            var target = new SelectionModel { AutoSelect = true, Source = data };
+            var raised = 0;
+
+            target.SelectedIndex = new IndexPath(2);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                if (raised == 0)
+                {
+                    Assert.Empty(e.DeselectedIndices);
+                    Assert.Equal(new[] { "baz" }, e.DeselectedItems);
+                    Assert.Empty(e.SelectedIndices);
+                    Assert.Empty(e.SelectedItems);
+                }
+                else
+                {
+                    Assert.Empty(e.DeselectedIndices);
+                    Assert.Empty(e.DeselectedItems);
+                    Assert.Equal(new[] { new IndexPath(0) }, e.SelectedIndices);
+                    Assert.Equal(new[] { "foo" }, e.SelectedItems);
+                }
+
+                ++raised;
+            };
+
+            data.RemoveAt(2);
+
+            Assert.Equal(new IndexPath(0), target.SelectedIndex);
+            Assert.Equal(2, raised);
+        }
+
+        [Fact]
+        public void AutoSelect_Selects_On_Deselection()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { AutoSelect = true, Source = data };
+            var raised = 0;
+
+            target.SelectedIndex = new IndexPath(2);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { new IndexPath(2) }, e.DeselectedIndices);
+                Assert.Equal(new[] { "baz" }, e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(0) }, e.SelectedIndices);
+                Assert.Equal(new[] { "foo" }, e.SelectedItems);
+                ++raised;
+            };
+
+            target.Deselect(2);
+
+            Assert.Equal(new IndexPath(0), target.SelectedIndex);
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void AutoSelect_Selects_On_ClearSelection()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { AutoSelect = true, Source = data };
+            var raised = 0;
+
+            target.SelectedIndex = new IndexPath(2);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { new IndexPath(2) }, e.DeselectedIndices);
+                Assert.Equal(new[] { "baz" }, e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(0) }, e.SelectedIndices);
+                Assert.Equal(new[] { "foo" }, e.SelectedItems);
+                ++raised;
+            };
+
+            target.ClearSelection();
+
+            Assert.Equal(new IndexPath(0), target.SelectedIndex);
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void AutoSelect_Overrides_Deselecting_First_Item()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { AutoSelect = true, Source = data };
+            var raised = 0;
+
+            target.Select(0);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                ++raised;
+            };
+
+            target.Deselect(0);
+
+            Assert.Equal(new IndexPath(0), target.SelectedIndex);
+            Assert.Equal(0, raised);
         }
 
         private int GetSubscriberCount(AvaloniaList<object> list)
