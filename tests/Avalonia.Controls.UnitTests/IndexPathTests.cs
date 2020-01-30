@@ -77,5 +77,19 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(0, a.CompareTo(b));
             Assert.Equal(a.GetHashCode(), b.GetHashCode());
         }
+
+        [Fact]
+        public void Null_Equality()
+        {
+            var a = new IndexPath(null);
+            var b = new IndexPath(1);
+
+            // Implementing operator == on a struct automatically implements an operator which
+            // accepts null, so make sure this does something useful.
+            Assert.True(a == null);
+            Assert.False(a != null);
+            Assert.False(b == null);
+            Assert.True(b != null);
+        }
     }
 }

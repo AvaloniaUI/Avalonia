@@ -58,6 +58,11 @@ namespace Avalonia.Controls
 
         public int GetAt(int index)
         {
+            if (index >= GetSize())
+            {
+                throw new IndexOutOfRangeException();
+            }
+
             return _path?[index] ?? (_index - 1);
         }
 
@@ -169,5 +174,7 @@ namespace Avalonia.Controls
         public static bool operator >=(IndexPath x, IndexPath y) { return x.CompareTo(y) >= 0; }
         public static bool operator ==(IndexPath x, IndexPath y) { return x.CompareTo(y) == 0; }
         public static bool operator !=(IndexPath x, IndexPath y) { return x.CompareTo(y) != 0; }
+        public static bool operator ==(IndexPath? x, IndexPath? y) { return (x ?? default).CompareTo(y ?? default) == 0; }
+        public static bool operator !=(IndexPath? x, IndexPath? y) { return (x ?? default).CompareTo(y ?? default) != 0; }
     }
 }
