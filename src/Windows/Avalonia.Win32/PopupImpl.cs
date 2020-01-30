@@ -19,6 +19,18 @@ namespace Avalonia.Win32
         public override void Show()
         {
             UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
+            var parent = UnmanagedMethods.GetParent(Handle.Handle);
+            if (parent != IntPtr.Zero)
+            {
+                IntPtr nextParent = parent;
+                while (nextParent != IntPtr.Zero)
+                {
+                    parent = nextParent;
+                    nextParent = UnmanagedMethods.GetParent(parent);
+                }
+
+                UnmanagedMethods.SetFocus(parent);
+            }
         }
 
         protected override IntPtr CreateWindowOverride(ushort atom)
@@ -44,6 +56,7 @@ namespace Avalonia.Win32
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
+            s_parentHandle = IntPtr.Zero;
 
             var classes = (int)UnmanagedMethods.GetClassLongPtr(result, (int)UnmanagedMethods.ClassLongIndex.GCL_STYLE);
 

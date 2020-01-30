@@ -5,7 +5,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="NativeEmbedSample.MainWindow">
   <DockPanel>
-    <TextBox DockPanel.Dock="Top" Text="Lorem ipsum dolor sit amet"/>
+    <DockPanel DockPanel.Dock="Top">
+      <Button DockPanel.Dock="Right" Click="ShowPopupDelay">Show popup (delay)</Button>
+      <Button DockPanel.Dock="Right" Click="ShowPopup">Show popup</Button>
+      <TextBox Text="Lorem ipsum dolor sit amet"/>
+    </DockPanel>
     <Grid ColumnDefinitions="*,5,*">
       <DockPanel>
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
