@@ -551,7 +551,7 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_MBUTTONDOWN:
-                    shouldTakeFocus = true;
+                    shouldTakeFocus = ShouldTakeFocusOnClick;
                     if(ShouldIgnoreTouchEmulatedMessage())
                         break;
                     e = new RawPointerEventArgs(
@@ -639,7 +639,7 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_NCMBUTTONDOWN:
-                    shouldTakeFocus = true;
+                    shouldTakeFocus = ShouldTakeFocusOnClick;
                     e = new RawPointerEventArgs(
                         _mouseDevice,
                         timestamp,
@@ -1076,5 +1076,7 @@ namespace Avalonia.Win32
         }
         IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
         public INativeControlHostImpl NativeControlHost => _nativeControlHost;
+
+        protected virtual bool ShouldTakeFocusOnClick => true;
     }
 }

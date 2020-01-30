@@ -33,6 +33,8 @@ namespace Avalonia.Win32
             }
         }
 
+        protected override bool ShouldTakeFocusOnClick => false;
+
         protected override IntPtr CreateWindowOverride(ushort atom)
         {
             UnmanagedMethods.WindowStyles style =
