@@ -2,12 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Data.Core;
-using Avalonia.Markup.Data;
 using Avalonia.Markup.Parsers;
 using Avalonia.Metadata;
 
@@ -34,7 +31,7 @@ namespace Avalonia.Markup.Xaml.Templates
             }
             else
             {
-                return DataType.GetTypeInfo().IsAssignableFrom(data.GetType().GetTypeInfo());
+                return DataType.IsInstanceOfType(data);
             }
         }
 
