@@ -277,6 +277,11 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public void Close()
         {
+            if (_topLevel is null)
+            {
+                return;
+            }
+
             if (_popupHost != null)
             {
                 _popupHost.TemplateApplied -= RootTemplateApplied;
