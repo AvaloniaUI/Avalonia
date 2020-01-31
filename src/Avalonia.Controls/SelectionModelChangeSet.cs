@@ -21,14 +21,12 @@ namespace Avalonia.Controls
                 CreateItems(x => x.SelectedRanges));
         }
 
-        private IReadOnlyList<IndexPath> CreateIndices(Func<SelectionNodeOperation, List<IndexRange>?> selector)
+        private IEnumerable<IndexPath> CreateIndices(Func<SelectionNodeOperation, List<IndexRange>?> selector)
         {
             if (_changes == null)
             {
-                return Array.Empty<IndexPath>();
+                yield break;
             }
-
-            var result = new List<IndexPath>();
 
             foreach (var i in _changes)
             {
@@ -40,20 +38,18 @@ namespace Avalonia.Controls
                     {
                         for (var k = j.Begin; k <= j.End; ++k)
                         {
-                            result.Add(i.Path.CloneWithChildIndex(k));
+                            yield return i.Path.CloneWithChildIndex(k);
                         }
                     }
                 }
             }
-
-            return result;
         }
 
-        private IReadOnlyList<object> CreateItems(Func<SelectionNodeOperation, List<IndexRange>?> selector)
+        private IEnumerable<object> CreateItems(Func<SelectionNodeOperation, List<IndexRange>?> selector)
         {
             if (_changes == null)
             {
-                return Array.Empty<object>();
+                yield break;
             }
 
             var result = new List<object>();
@@ -68,13 +64,11 @@ namespace Avalonia.Controls
                     {
                         for (var k = j.Begin; k <= j.End; ++k)
                         {
-                            result.Add(i.Items.GetAt(k));
+                            yield return i.Items.GetAt(k);
                         }
                     }
                 }
             }
-
-            return result;
         }
     }
 }
