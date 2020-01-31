@@ -6,44 +6,37 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using SelectedItemInfo = Avalonia.Controls.SelectionModel.SelectedItemInfo;
 
 #nullable enable
 
 namespace Avalonia.Controls
 {
-    internal class SelectedItems<T> : IReadOnlyList<T>
+    public interface ISelectedItemInfo
     {
-        private readonly List<SelectedItemInfo> _infos;
-        private readonly Func<List<SelectedItemInfo>, int, T> _getAtImpl;
+        public IndexPath Path { get; }
+    }
+
+    internal class SelectedItems<TValue, Tinfo> : IReadOnlyList<TValue>
+        where Tinfo : ISelectedItemInfo
+    {
+        private readonly List<Tinfo> _infos;
+        private readonly Func<List<Tinfo>, int, TValue> _getAtImpl;
 
         public SelectedItems(
-            List<SelectedItemInfo> infos,
-            Func<List<SelectedItemInfo>, int, T> getAtImpl)
+            List<Tinfo> infos,
+            int count,
+            Func<List<Tinfo>, int, TValue> getAtImpl)
         {
             _infos = infos;
             _getAtImpl = getAtImpl;
-
-            foreach (var info in infos)
-            {
-                var node = info.Node;
-
-                if (node != null)
-                {
-                    Count += node.SelectedCount;
-                }
-                else
-                {
-                    throw new InvalidOperationException("Selection changed after the SelectedIndices/Items property was read.");
-                }
-            }
+            Count = count;
         }
 
-        public T this[int index] => _getAtImpl(_infos, index);
+        public TValue this[int index] => _getAtImpl(_infos, index);
 
         public int Count { get; }
 
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator<TValue> GetEnumerator()
         {
             for (var i = 0; i < Count; ++i)
             {

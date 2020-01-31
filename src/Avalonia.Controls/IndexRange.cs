@@ -202,6 +202,18 @@ namespace Avalonia.Controls
             }
         }
 
+        public static int GetCount(IEnumerable<IndexRange> ranges)
+        {
+            var result = 0;
+
+            foreach (var range in ranges)
+            {
+                result += (range.End - range.Begin) + 1;
+            }
+
+            return result;
+        }
+
         private static void MergeRanges(IList<IndexRange> ranges)
         {
             for (var i = ranges.Count - 2; i >= 0; --i)
