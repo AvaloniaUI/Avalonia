@@ -165,6 +165,7 @@ namespace Avalonia.Controls
                 if (_selectedItemsCached == null)
                 {
                     var selectedInfos = new List<SelectedItemInfo>();
+                    var count = 0;
 
                     if (_rootNode.Source != null)
                     {
@@ -176,6 +177,7 @@ namespace Avalonia.Controls
                                 if (currentInfo.Node.SelectedCount > 0)
                                 {
                                     selectedInfos.Add(new SelectedItemInfo(currentInfo.Node, currentInfo.Path));
+                                    count += currentInfo.Node.SelectedCount;
                                 }
                             });
                     }
@@ -185,8 +187,9 @@ namespace Avalonia.Controls
                     // the selected item at a particular index. This avoid having to create the storage and copying
                     // needed in a dumb vector. This also allows us to expose a tree of selected nodes into an 
                     // easier to consume flat vector view of objects.
-                    var selectedItems = new SelectedItems<object?> (
+                    var selectedItems = new SelectedItems<object?, SelectedItemInfo> (
                         selectedInfos,
+                        count,
                         (infos, index) =>
                         {
                             var currentIndex = 0;
@@ -233,6 +236,8 @@ namespace Avalonia.Controls
                 if (_selectedIndicesCached == null)
                 {
                     var selectedInfos = new List<SelectedItemInfo>();
+                    var count = 0;
+
                     SelectionTreeHelper.Traverse(
                         _rootNode,
                         false,
@@ -241,6 +246,7 @@ namespace Avalonia.Controls
                             if (currentInfo.Node.SelectedCount > 0)
                             {
                                 selectedInfos.Add(new SelectedItemInfo(currentInfo.Node, currentInfo.Path));
+                                count += currentInfo.Node.SelectedCount;
                             }
                         });
 
@@ -249,8 +255,9 @@ namespace Avalonia.Controls
                     // the IndexPath at a particular index. This avoid having to create the storage and copying
                     // needed in a dumb vector. This also allows us to expose a tree of selected nodes into an 
                     // easier to consume flat vector view of IndexPaths.
-                    var indices = new SelectedItems<IndexPath>(
+                    var indices = new SelectedItems<IndexPath, SelectedItemInfo>(
                         selectedInfos,
+                        count,
                         (infos, index) => // callback for GetAt(index)
                         {
                             var currentIndex = 0;
@@ -720,7 +727,7 @@ namespace Avalonia.Controls
             OnSelectionChanged(e);
         }
 
-        internal class SelectedItemInfo
+        internal class SelectedItemInfo : ISelectedItemInfo
         {
             public SelectedItemInfo(SelectionNode node, IndexPath path)
             {
@@ -730,6 +737,7 @@ namespace Avalonia.Controls
 
             public SelectionNode Node { get; }
             public IndexPath Path { get; }
+            public int Count => Node.SelectedCount;
         }
 
         private struct Operation : IDisposable
