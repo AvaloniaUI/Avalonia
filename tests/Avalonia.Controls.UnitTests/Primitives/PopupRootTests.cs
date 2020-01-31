@@ -194,7 +194,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class TemplatedControlWithPopup : TemplatedControl
         {
-            public static readonly AvaloniaProperty<Control> PopupContentProperty =
+            public static readonly StyledProperty<Control> PopupContentProperty =
                 AvaloniaProperty.Register<TemplatedControlWithPopup, Control>(nameof(PopupContent));
 
             public TemplatedControlWithPopup()

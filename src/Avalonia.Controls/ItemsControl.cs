@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
@@ -324,20 +323,24 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                var current = focus.Current
-                    .GetSelfAndVisualAncestors()
-                    .OfType<IInputElement>()
-                    .FirstOrDefault(x => x.VisualParent == container);
+                IVisual current = focus.Current;
 
-                if (current != null)
+                while (current != null)
                 {
-                    var next = GetNextControl(container, direction.Value, current, false);
-
-                    if (next != null)
+                    if (current.VisualParent == container && current is IInputElement inputElement)
                     {
-                        focus.Focus(next, NavigationMethod.Directional);
-                        e.Handled = true;
+                        IInputElement next = GetNextControl(container, direction.Value, inputElement, false);
+
+                        if (next != null)
+                        {
+                            focus.Focus(next, NavigationMethod.Directional);
+                            e.Handled = true;
+                        }
+
+                        break;
                     }
+
+                    current = current.VisualParent;
                 }
             }
 

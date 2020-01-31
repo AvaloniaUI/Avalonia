@@ -33,7 +33,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the default value for the property.
         /// </summary>
-        public TValue DefaultValue => _defaultValue.ValueOrDefault();
+        public TValue DefaultValue => _defaultValue.GetValueOrDefault();
 
         /// <summary>
         /// Gets the value coercion callback, if any.
@@ -58,19 +58,6 @@ namespace Avalonia
                 {
                     CoerceValue = src.CoerceValue;
                 }
-            }
-        }
-
-        [DebuggerHidden]
-        private static Func<IAvaloniaObject, object, object> Cast(Func<IAvaloniaObject, TValue, TValue> f)
-        {
-            if (f == null)
-            {
-                return null;
-            }
-            else
-            {
-                return (o, v) => f(o, (TValue)v);
             }
         }
     }

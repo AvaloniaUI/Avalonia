@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reactive.Subjects;
-using System.Reflection;
 using Avalonia.Data;
 using Avalonia.Utilities;
 
@@ -285,22 +283,25 @@ namespace Avalonia
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="validate">A value validation callback.</param>
+        /// <param name="coerce">A value coercion callback.</param>
         /// <returns>A <see cref="AvaloniaProperty{TValue}"/></returns>
         public static AttachedProperty<TValue> RegisterAttached<TOwner, THost, TValue>(
             string name,
             TValue defaultValue = default(TValue),
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
-            Func<TValue, bool> validate = null)
+            Func<TValue, bool> validate = null,
+            Func<IAvaloniaObject, TValue, TValue> coerce = null)
                 where THost : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
-                defaultBindingMode: defaultBindingMode);
+                defaultBindingMode: defaultBindingMode,
+                coerce: coerce);
 
-            var result = new AttachedProperty<TValue>(name, typeof(TOwner), metadata, inherits);
+            var result = new AttachedProperty<TValue>(name, typeof(TOwner), metadata, inherits, validate);
             var registry = AvaloniaPropertyRegistry.Instance;
             registry.Register(typeof(TOwner), result);
             registry.RegisterAttached(typeof(THost), result);
@@ -317,22 +318,27 @@ namespace Avalonia
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <param name="validate">A value validation callback.</param>
+        /// <param name="coerce">A value coercion callback.</param>
         /// <returns>A <see cref="AvaloniaProperty{TValue}"/></returns>
         public static AttachedProperty<TValue> RegisterAttached<THost, TValue>(
             string name,
             Type ownerType,
             TValue defaultValue = default(TValue),
             bool inherits = false,
-            BindingMode defaultBindingMode = BindingMode.OneWay)
+            BindingMode defaultBindingMode = BindingMode.OneWay,
+            Func<TValue, bool> validate = null,
+            Func<IAvaloniaObject, TValue, TValue> coerce = null)
                 where THost : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
-                defaultBindingMode: defaultBindingMode);
+                defaultBindingMode: defaultBindingMode,
+                coerce: coerce);
 
-            var result = new AttachedProperty<TValue>(name, ownerType, metadata, inherits);
+            var result = new AttachedProperty<TValue>(name, ownerType, metadata, inherits, validate);
             var registry = AvaloniaPropertyRegistry.Instance;
             registry.Register(ownerType, result);
             registry.RegisterAttached(typeof(THost), result);
@@ -555,7 +561,7 @@ namespace Avalonia
                     return result;
                 }
 
-                currentType = currentType.GetTypeInfo().BaseType;
+                currentType = currentType.BaseType;
             }
 
             _metadataCache[type] = _defaultMetadata;

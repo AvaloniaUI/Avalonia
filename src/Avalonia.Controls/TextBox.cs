@@ -390,8 +390,10 @@ namespace Avalonia.Controls
             {
                 return;
             }
+
             _undoRedoHelper.Snapshot();
             HandleTextInput(text);
+            _undoRedoHelper.Snapshot();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -401,12 +403,12 @@ namespace Avalonia.Controls
             bool movement = false;
             bool selection = false;
             bool handled = false;
-            var modifiers = e.Modifiers;
+            var modifiers = e.KeyModifiers;
 
             var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
-            bool DetectSelection() => e.Modifiers.HasFlag(keymap.SelectionModifiers);
+            bool DetectSelection() => e.KeyModifiers.HasFlag(keymap.SelectionModifiers);
 
             if (Match(keymap.SelectAll))
             {

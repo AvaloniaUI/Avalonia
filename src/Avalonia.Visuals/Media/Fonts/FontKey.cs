@@ -2,24 +2,26 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Media;
 
-namespace Avalonia.Skia
+namespace Avalonia.Media.Fonts
 {
-    internal readonly struct FontKey : IEquatable<FontKey>
+    public readonly struct FontKey : IEquatable<FontKey>
     {
+        public readonly FontFamily FontFamily;
         public readonly FontStyle Style;
         public readonly FontWeight Weight;
 
-        public FontKey(FontWeight weight, FontStyle style)
+        public FontKey(FontFamily fontFamily, FontWeight weight, FontStyle style)
         {
+            FontFamily = fontFamily;
             Style = style;
             Weight = weight;
         }
 
         public override int GetHashCode()
         {
-            var hash = 17;
+            var hash = FontFamily.GetHashCode();
+
             hash = hash * 31 + (int)Style;
             hash = hash * 31 + (int)Weight;
 
@@ -33,7 +35,8 @@ namespace Avalonia.Skia
 
         public bool Equals(FontKey other)
         {
-            return Style == other.Style &&
+            return FontFamily == other.FontFamily &&
+                Style == other.Style &&
                    Weight == other.Weight;
         }
     }

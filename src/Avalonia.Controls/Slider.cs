@@ -147,7 +147,7 @@ namespace Avalonia.Controls
 
             if (property == OrientationProperty)
             {
-                UpdatePseudoClasses(newValue.ValueOrDefault<Orientation>());
+                UpdatePseudoClasses(newValue.GetValueOrDefault<Orientation>());
             }
         }
 

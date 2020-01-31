@@ -235,24 +235,6 @@ namespace Avalonia
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
-        public T GetValue<T>(AvaloniaProperty<T> property)
-        {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-
-            return property switch
-            {
-                StyledPropertyBase<T> styled => GetValue(styled),
-                DirectPropertyBase<T> direct => GetValue(direct),
-                _ => throw new NotSupportedException("Unsupported AvaloniaProperty type.")
-            };
-        }
-
-        /// <summary>
-        /// Gets a <see cref="AvaloniaProperty"/> value.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <returns>The value.</returns>
         public T GetValue<T>(StyledPropertyBase<T> property)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
@@ -330,33 +312,6 @@ namespace Avalonia
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
         public void SetValue<T>(
-            AvaloniaProperty<T> property,
-            T value,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-
-            switch (property)
-            {
-                case StyledPropertyBase<T> styled:
-                    SetValue(styled, value, priority);
-                    break;
-                case DirectPropertyBase<T> direct:
-                    SetValue(direct, value);
-                    break;
-                default:
-                    throw new NotSupportedException("Unsupported AvaloniaProperty type.");
-            }
-        }
-
-        /// <summary>
-        /// Sets a <see cref="AvaloniaProperty"/> value.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="priority">The priority of the value.</param>
-        public void SetValue<T>(
             StyledPropertyBase<T> property,
             T value,
             BindingPriority priority = BindingPriority.LocalValue)
@@ -375,7 +330,7 @@ namespace Avalonia
                 else
                 {
                     throw new NotSupportedException(
-                        "Canot set property to Unset at non-local value priority.");
+                        "Cannot set property to Unset at non-local value priority.");
                 }
             }
             else if (!(value is DoNothingType))
@@ -397,52 +352,6 @@ namespace Avalonia
 
             LogPropertySet(property, value, BindingPriority.LocalValue);
             SetDirectValueUnchecked(property, value);
-        }
-
-        /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="source">The observable.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        public IDisposable Bind(
-            AvaloniaProperty property,
-            IObservable<BindingValue<object>> source,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            source = source ?? throw new ArgumentNullException(nameof(source));
-
-            return property.RouteBind(this, source, priority);
-        }
-
-        /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="source">The observable.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        public IDisposable Bind<T>(
-            AvaloniaProperty<T> property,
-            IObservable<BindingValue<T>> source,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            source = source ?? throw new ArgumentNullException(nameof(source));
-
-            return property switch
-            {
-                StyledPropertyBase<T> styled => Bind(styled, source, priority),
-                DirectPropertyBase<T> direct => Bind(direct, source),
-                _ => throw new NotSupportedException("Unsupported AvaloniaProperty type."),
-            };
         }
 
         /// <summary>
@@ -531,7 +440,7 @@ namespace Avalonia
             Optional<T> oldValue,
             Optional<T> newValue)
         {
-            if (property.Inherits && !IsSet(property))
+            if (property.Inherits && (_values == null || !_values.IsSet(property)))
             {
                 RaisePropertyChanged(property, oldValue, newValue, BindingPriority.LocalValue);
             }

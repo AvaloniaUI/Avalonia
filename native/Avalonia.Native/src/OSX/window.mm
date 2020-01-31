@@ -83,6 +83,54 @@ public:
         [Window setContentView: View];
     }
     
+    virtual HRESULT ObtainNSWindowHandle(void** ret) override
+    {
+        if (ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret =  (__bridge void*)Window;
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT ObtainNSWindowHandleRetained(void** ret) override
+    {
+        if (ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret =  (__bridge_retained void*)Window;
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT ObtainNSViewHandle(void** ret) override
+    {
+        if (ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret =  (__bridge void*)View;
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT ObtainNSViewHandleRetained(void** ret) override
+    {
+        if (ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        *ret =  (__bridge_retained void*)View;
+        
+        return S_OK;
+    }
+    
     virtual AvnWindow* GetNSWindow() override
     {
         return Window;
@@ -147,7 +195,11 @@ public:
     {
         @autoreleasepool
         {
-            [Window close];
+            if (Window != nullptr)
+            {
+                [Window close];
+            }
+            
             return S_OK;
         }
     }
@@ -243,7 +295,14 @@ public:
     {
         @autoreleasepool
         {
-            return [View lockFocusIfCanDraw] == YES;
+            @try
+            {
+                return [View lockFocusIfCanDraw] == YES;
+            }
+            @catch (NSException*)
+            {
+                return NO;
+            }
         }
     }
     
@@ -668,18 +727,36 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     AvnFramebuffer _swRenderedFrameBuffer;
     bool _queuedDisplayFromThread;
     NSTrackingArea* _area;
-    bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isMouseOver;
+    bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed, _isMouseOver;
     NSEvent* _lastMouseDownEvent;
     bool _lastKeyHandled;
-}
-
-- (void)dealloc
-{
+    AvnPixelSize _lastPixelSize;
 }
 
 - (void)onClosed
 {
-    _parent = NULL;
+    @synchronized (self)
+    {
+        _parent = nullptr;
+    }
+}
+
+- (BOOL)lockFocusIfCanDraw
+{
+    @synchronized (self)
+    {
+        if(_parent == nullptr)
+        {
+            return NO;
+        }
+    }
+    
+    return [super lockFocusIfCanDraw];
+}
+
+-(AvnPixelSize) getPixelSize
+{
+    return _lastPixelSize;
 }
 
 - (NSEvent*) lastMouseDownEvent
@@ -691,8 +768,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     self = [super init];
     [self setWantsBestResolutionOpenGLSurface:true];
+    [self setWantsLayer:YES];
     _parent = parent;
     _area = nullptr;
+    _lastPixelSize.Height = 100;
+    _lastPixelSize.Width = 100;
     return self;
 }
 
@@ -734,6 +814,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [self addTrackingArea:_area];
     
     _parent->UpdateCursor();
+    
+    auto fsize = [self convertSizeToBacking: [self frame].size];
+    _lastPixelSize.Width = (int)fsize.width;
+    _lastPixelSize.Height = (int)fsize.height;
 
     _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height});
 }
@@ -763,7 +847,13 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)drawRect:(NSRect)dirtyRect
 {
+    if (_parent == nullptr)
+    {
+        return;
+    }
+        
     _parent->BaseEvents->RunRenderPriorityJobs();
+    
     @synchronized (self) {
         if(_swRenderedFrame != NULL)
         {
@@ -830,7 +920,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void) viewDidChangeBackingProperties
 {
+    auto fsize = [self convertSizeToBacking: [self frame].size];
+    _lastPixelSize.Width = (int)fsize.width;
+    _lastPixelSize.Height = (int)fsize.height;
+    
     _parent->BaseEvents->ScalingChanged([_parent->Window backingScaleFactor]);
+    
     [super viewDidChangeBackingProperties];
 }
 
@@ -893,9 +988,23 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)otherMouseDown:(NSEvent *)event
 {
-    _isMiddlePressed = true;
     _lastMouseDownEvent = event;
-    [self mouseEvent:event withType:MiddleButtonDown];
+
+    switch(event.buttonNumber)
+    {
+        case 3:
+            _isMiddlePressed = true;
+            [self mouseEvent:event withType:MiddleButtonDown];
+            break;
+        case 4:
+            _isXButton1Pressed = true;
+            [self mouseEvent:event withType:XButton1Down];
+            break;
+        case 5:
+            _isXButton2Pressed = true;
+            [self mouseEvent:event withType:XButton2Down];
+            break;
+    }
 }
 
 - (void)rightMouseDown:(NSEvent *)event
@@ -913,8 +1022,21 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)otherMouseUp:(NSEvent *)event
 {
-    _isMiddlePressed = false;
-    [self mouseEvent:event withType:MiddleButtonUp];
+    switch(event.buttonNumber)
+    {
+        case 3:
+            _isMiddlePressed = false;
+            [self mouseEvent:event withType:MiddleButtonUp];
+            break;
+        case 4:
+            _isXButton1Pressed = false;
+            [self mouseEvent:event withType:XButton1Up];
+            break;
+        case 5:
+            _isXButton2Pressed = false;
+            [self mouseEvent:event withType:XButton2Up];
+            break;
+    }
 }
 
 - (void)rightMouseUp:(NSEvent *)event
@@ -1013,6 +1135,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         rv |= MiddleMouseButton;
     if (_isRightPressed)
         rv |= RightMouseButton;
+    if (_isXButton1Pressed)
+        rv |= XButton1MouseButton;
+    if (_isXButton2Pressed)
+        rv |= XButton2MouseButton;
     
     return (AvnInputModifiers)rv;
 }
@@ -1081,6 +1207,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _closed;
     NSMenu* _menu;
     bool _isAppMenuApplied;
+    double _lastScaling;
+}
+
+-(double) getScaling
+{
+    return _lastScaling;
 }
 
 +(void)closeAll
@@ -1092,10 +1224,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         [[windows objectAtIndex:i] performClose:nil];
     }
-}
-
-- (void)dealloc
-{
 }
 
 - (void)pollModalSession:(nonnull NSModalSession)session
@@ -1152,6 +1280,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [self setReleasedWhenClosed:false];
     _parent = parent;
     [self setDelegate:self];
+    _closed = false;
+    
+    _lastScaling = [self backingScaleFactor];
+    [self setOpaque:NO];
+    [self setBackgroundColor: [NSColor clearColor]];
+    [self invalidateShadow];
     return self;
 }
 
@@ -1167,6 +1301,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return true;
 }
 
+- (void)windowDidChangeBackingProperties:(NSNotification *)notification
+{
+    _lastScaling = [self backingScaleFactor];
+}
+
 - (void)windowWillClose:(NSNotification *)notification
 {
     _closed = true;
@@ -1177,9 +1316,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         [self restoreParentWindow];
         parent->BaseEvents->Closed();
         [parent->View onClosed];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self setContentView: nil];
-        });
     }
 }
 
@@ -1326,18 +1462,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _parent->GetPosition(&position);
     _parent->BaseEvents->PositionChanged(position);
 }
-
-// TODO this breaks resizing.
-/*- (void)windowDidResize:(NSNotification *)notification
-{
-    
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
-    
-    if(parent != nullptr)
-    {
-        parent->WindowStateChanged();
-    }
-}*/
 @end
 
 class PopupImpl : public virtual WindowBaseImpl, public IAvnPopup

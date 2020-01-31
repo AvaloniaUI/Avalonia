@@ -1,10 +1,12 @@
-﻿using System;
-using Avalonia.Data;
+﻿using Avalonia.Data;
 
 #nullable enable
 
 namespace Avalonia.PropertyStore
 {
+    /// <summary>
+    /// Represents an entity that can receive change notifications in a <see cref="ValueStore"/>.
+    /// </summary>
     internal interface IValueSink
     {
         void ValueChanged<T>(

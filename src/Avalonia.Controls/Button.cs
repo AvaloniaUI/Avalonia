@@ -326,7 +326,7 @@ namespace Avalonia.Controls
 
             if (property == IsPressedProperty)
             {
-                UpdatePseudoClasses(newValue.ValueOrDefault<bool>());
+                UpdatePseudoClasses(newValue.GetValueOrDefault<bool>());
             }
         }
 

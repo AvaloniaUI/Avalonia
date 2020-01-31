@@ -290,7 +290,7 @@ namespace Avalonia.Controls.Primitives
 
             if (property == OrientationProperty)
             {
-                UpdatePseudoClasses(newValue.ValueOrDefault<Orientation>());
+                UpdatePseudoClasses(newValue.GetValueOrDefault<Orientation>());
             }
         }
 

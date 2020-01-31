@@ -5,6 +5,11 @@ using Avalonia.Data;
 
 namespace Avalonia.PropertyStore
 {
+    /// <summary>
+    /// Stores a value with a priority in a <see cref="ValueStore"/> or
+    /// <see cref="PriorityValue{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">The property type.</typeparam>
     internal class ConstantValueEntry<T> : IPriorityValueEntry<T>
     {
         public ConstantValueEntry(
@@ -19,7 +24,7 @@ namespace Avalonia.PropertyStore
 
         public StyledPropertyBase<T> Property { get; }
         public BindingPriority Priority { get; }
-        public Optional<T> Value { get; private set; }
+        public Optional<T> Value { get; }
         Optional<object> IValue.Value => Value.ToObject();
         BindingPriority IValue.ValuePriority => Priority;
 

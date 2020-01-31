@@ -345,7 +345,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the control is focused.
+        /// Gets a value indicating whether the control is focused.
         /// </summary>
         public bool IsFocused
         {
@@ -363,7 +363,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the pointer is currently over the control.
+        /// Gets a value indicating whether the pointer is currently over the control.
         /// </summary>
         public bool IsPointerOver
         {
@@ -535,11 +535,11 @@ namespace Avalonia.Input
 
             if (property == IsFocusedProperty)
             {
-                UpdatePseudoClasses(newValue.ValueOrDefault<bool>(), null);
+                UpdatePseudoClasses(newValue.GetValueOrDefault<bool>(), null);
             }
             else if (property == IsPointerOverProperty)
             {
-                UpdatePseudoClasses(null, newValue.ValueOrDefault<bool>());
+                UpdatePseudoClasses(null, newValue.GetValueOrDefault<bool>());
             }
         }
 

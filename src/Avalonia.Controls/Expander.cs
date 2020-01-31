@@ -88,7 +88,7 @@ namespace Avalonia.Controls
 
             if (property == ExpandDirectionProperty)
             {
-                UpdatePseudoClasses(newValue.ValueOrDefault<ExpandDirection>());
+                UpdatePseudoClasses(newValue.GetValueOrDefault<ExpandDirection>());
             }
         }
 

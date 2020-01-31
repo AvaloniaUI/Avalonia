@@ -215,7 +215,7 @@ namespace Avalonia.Controls
 
             if (property == ButtonSpinnerLocationProperty)
             {
-                UpdatePseudoClasses(newValue.ValueOrDefault<Location>());
+                UpdatePseudoClasses(newValue.GetValueOrDefault<Location>());
             }
         }
 

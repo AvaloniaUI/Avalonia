@@ -87,11 +87,11 @@ namespace Avalonia.Controls
 
             if (property == IsIndeterminateProperty)
             {
-                UpdatePseudoClasses(newValue.ValueOrDefault<bool>(), null);
+                UpdatePseudoClasses(newValue.GetValueOrDefault<bool>(), null);
             }
             else if (property == OrientationProperty)
             {
-                UpdatePseudoClasses(null, newValue.ValueOrDefault<Orientation>());
+                UpdatePseudoClasses(null, newValue.GetValueOrDefault<Orientation>());
             }
         }
 

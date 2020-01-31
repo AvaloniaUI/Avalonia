@@ -45,13 +45,11 @@ namespace Avalonia.Skia
             {
                 var assetStream = assetLoader.Open(asset);
 
-                var skTypeface = SKTypeface.FromStream(assetStream);
+                var typeface = SKTypeface.FromStream(assetStream);
 
-                var typeface = new Typeface(fontFamily, (FontWeight)skTypeface.FontWeight, (FontStyle)skTypeface.FontSlant);
+                var key = new FontKey(fontFamily, (FontWeight)typeface.FontWeight, (FontStyle)typeface.FontSlant);
 
-                var entry = new TypefaceCollectionEntry(typeface, skTypeface);
-
-                typeFaceCollection.AddEntry(skTypeface.FamilyName, new FontKey(typeface.Weight, typeface.Style), entry);
+                typeFaceCollection.AddTypeface(key, typeface);
             }
 
             return typeFaceCollection;

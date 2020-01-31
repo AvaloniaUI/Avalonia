@@ -24,7 +24,7 @@ namespace Avalonia
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// - A collection of class strings for custom styling.
     /// </summary>
-    public class StyledElement : Animatable, IStyledElement, ISetLogicalParent, ISetInheritanceParent
+    public class StyledElement : Animatable, IDataContextProvider, IStyledElement, ISetLogicalParent, ISetInheritanceParent
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -59,7 +59,7 @@ namespace Avalonia
         private int _initCount;
         private string _name;
         private readonly Classes _classes = new Classes();
-        private bool _isAttachedToLogicalTree;
+        private ILogicalRoot _logicalRoot;
         private IAvaloniaList<ILogical> _logicalChildren;
         private IResourceDictionary _resources;
         private Styles _styles;
@@ -81,7 +81,7 @@ namespace Avalonia
         /// </summary>
         public StyledElement()
         {
-            _isAttachedToLogicalTree = this is IStyleRoot;
+            _logicalRoot = this as ILogicalRoot;
         }
 
         /// <summary>
@@ -223,13 +223,13 @@ namespace Avalonia
                 {
                     if (_styles != null)
                     {
-                        (_styles as ISetStyleParent)?.SetParent(null);
+                        (_styles as ISetResourceParent)?.SetParent(null);
                         _styles.ResourcesChanged -= ThisResourcesChanged;
                     }
 
                     _styles = value;
 
-                    if (value is ISetStyleParent setParent && setParent.ResourceParent == null)
+                    if (value is ISetResourceParent setParent && setParent.ResourceParent == null)
                     {
                         setParent.SetParent(this);
                     }
@@ -288,7 +288,7 @@ namespace Avalonia
                     var list = new AvaloniaList<ILogical>
                     {
                         ResetBehavior = ResetBehavior.Remove,
-                        Validate = ValidateLogicalChild
+                        Validate = logical => ValidateLogicalChild(logical)
                     };
                     list.CollectionChanged += LogicalChildrenCollectionChanged;
                     _logicalChildren = list;
@@ -307,7 +307,7 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether the element is attached to a rooted logical tree.
         /// </summary>
-        bool ILogical.IsAttachedToLogicalTree => _isAttachedToLogicalTree;
+        bool ILogical.IsAttachedToLogicalTree => _logicalRoot != null;
 
         /// <summary>
         /// Gets the styled element's logical parent.
@@ -367,7 +367,7 @@ namespace Avalonia
                 throw new InvalidOperationException("BeginInit was not called.");
             }
 
-            if (--_initCount == 0 && _isAttachedToLogicalTree)
+            if (--_initCount == 0 && _logicalRoot != null)
             {
                 InitializeStylesIfNeeded();
 
@@ -435,25 +435,18 @@ namespace Avalonia
                     throw new InvalidOperationException("The Control already has a parent.");
                 }
 
-                if (_isAttachedToLogicalTree)
-                {
-                    var oldRoot = FindStyleRoot(old) ?? this as IStyleRoot;
-
-                    if (oldRoot == null)
-                    {
-                        throw new AvaloniaInternalException("Was attached to logical tree but cannot find root.");
-                    }
-
-                    var e = new LogicalTreeAttachmentEventArgs(oldRoot);
-                    OnDetachedFromLogicalTreeCore(e);
-                }
-
                 if (InheritanceParent == null || parent == null)
                 {
                     InheritanceParent = parent as AvaloniaObject;
                 }
 
                 Parent = (IStyledElement)parent;
+
+                if (_logicalRoot != null)
+                {
+                    var e = new LogicalTreeAttachmentEventArgs(_logicalRoot, this, old);
+                    OnDetachedFromLogicalTreeCore(e);
+                }
 
                 if (old != null)
                 {
@@ -465,16 +458,16 @@ namespace Avalonia
                 }
                 ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
 
-                if (Parent is IStyleRoot || Parent?.IsAttachedToLogicalTree == true || this is IStyleRoot)
+                if (Parent is ILogicalRoot || Parent?.IsAttachedToLogicalTree == true || this is ILogicalRoot)
                 {
-                    var newRoot = FindStyleRoot(this);
+                    var newRoot = FindLogicalRoot(this);
 
                     if (newRoot == null)
                     {
                         throw new AvaloniaInternalException("Parent is attached to logical tree but cannot find root.");
                     }
 
-                    var e = new LogicalTreeAttachmentEventArgs(newRoot);
+                    var e = new LogicalTreeAttachmentEventArgs(newRoot, this, parent);
                     OnAttachedToLogicalTreeCore(e);
                 }
 
@@ -601,11 +594,11 @@ namespace Avalonia
             }
         }
 
-        private static IStyleRoot FindStyleRoot(IStyleHost e)
+        private static ILogicalRoot FindLogicalRoot(IStyleHost e)
         {
             while (e != null)
             {
-                if (e is IStyleRoot root)
+                if (e is ILogicalRoot root)
                 {
                     return root;
                 }
@@ -631,15 +624,21 @@ namespace Avalonia
 
         private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
         {
+            if (this.GetLogicalParent() == null && !(this is ILogicalRoot))
+            {
+                throw new InvalidOperationException(
+                    $"AttachedToLogicalTreeCore called for '{GetType().Name}' but control has no logical parent.");
+            }
+
             // This method can be called when a control is already attached to the logical tree
             // in the following scenario:
             // - ListBox gets assigned Items containing ListBoxItem
             // - ListBox makes ListBoxItem a logical child
             // - ListBox template gets applied; making its Panel get attached to logical tree
             // - That AttachedToLogicalTree signal travels down to the ListBoxItem
-            if (!_isAttachedToLogicalTree)
+            if (_logicalRoot == null)
             {
-                _isAttachedToLogicalTree = true;
+                _logicalRoot = e.Root;
 
                 InitializeStylesIfNeeded(true);
 
@@ -655,9 +654,9 @@ namespace Avalonia
 
         private void OnDetachedFromLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
         {
-            if (_isAttachedToLogicalTree)
+            if (_logicalRoot != null)
             {
-                _isAttachedToLogicalTree = false;
+                _logicalRoot = null;
                 _styleDetach.OnNext(this);
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);

@@ -224,12 +224,20 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(type != null);
             Contract.Requires<ArgumentNullException>(name != null);
 
-            if (name.Contains('.'))
+            if (name.Contains("."))
             {
                 throw new InvalidOperationException("Attached properties not supported.");
             }
 
-            return GetRegistered(type).FirstOrDefault(x => x.Name == name);
+            foreach (AvaloniaProperty x in GetRegistered(type))
+            {
+                if (x.Name == name)
+                {
+                    return x;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

@@ -12,6 +12,7 @@ namespace Avalonia.Reactive
         private readonly AvaloniaProperty _property;
         private T _value;
 
+#nullable disable
         public AvaloniaPropertyBindingObservable(
             IAvaloniaObject target,
             AvaloniaProperty property)
@@ -19,6 +20,7 @@ namespace Avalonia.Reactive
             _target = new WeakReference<IAvaloniaObject>(target);
             _property = property;
         }
+#nullable enable
 
         public string Description => $"{_target.GetType().Name}.{_property.Name}";
 

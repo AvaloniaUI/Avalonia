@@ -268,6 +268,7 @@ namespace Avalonia.Layout
                 false,
                 0,
                 Spacing,
+                int.MaxValue,
                 _orientation.ScrollOrientation,
                 LayoutId);
 
@@ -279,6 +280,7 @@ namespace Avalonia.Layout
             var value = GetFlowAlgorithm(context).Arrange(
                finalSize,
                context,
+               false,
                FlowLayoutAlgorithm.LineAlignment.Start,
                LayoutId);
 
@@ -298,7 +300,7 @@ namespace Avalonia.Layout
         {
             if (property == OrientationProperty)
             {
-                var orientation = newValue.ValueOrDefault<Orientation>();
+                var orientation = newValue.GetValueOrDefault<Orientation>();
 
                 //Note: For StackLayout Vertical Orientation means we have a Vertical ScrollOrientation.
                 //Horizontal Orientation means we have a Horizontal ScrollOrientation.

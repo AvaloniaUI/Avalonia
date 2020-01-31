@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
+using Avalonia.Rendering;
 using Avalonia.Data;
 using Avalonia.VisualTree;
 
@@ -15,7 +16,7 @@ namespace Avalonia.Controls.Notifications
     /// <summary>
     /// An <see cref="INotificationManager"/> that displays notifications in a <see cref="Window"/>.
     /// </summary>
-    public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
+    public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager, ICustomSimpleHitTest
     {
         private IList _items;
 
@@ -150,7 +151,7 @@ namespace Avalonia.Controls.Notifications
 
             if (property == PositionProperty)
             {
-                UpdatePseudoClasses(newValue.ValueOrDefault<NotificationPosition>());
+                UpdatePseudoClasses(newValue.GetValueOrDefault<NotificationPosition>());
             }
         }
 
@@ -161,15 +162,9 @@ namespace Avalonia.Controls.Notifications
         /// <param name="host">The <see cref="Window"/> that will be the host.</param>
         private void Install(Window host)
         {
-            var adornerLayer = host.GetVisualDescendants()
-                .OfType<VisualLayerManager>()
-                .FirstOrDefault()
-                ?.AdornerLayer;
+            var adornerLayer = host.FindDescendantOfType<VisualLayerManager>()?.AdornerLayer;
 
-            if (adornerLayer != null)
-            {
-                adornerLayer.Children.Add(this);
-            }
+            adornerLayer?.Children.Add(this);
         }
 
         private void UpdatePseudoClasses(NotificationPosition position)
@@ -179,5 +174,7 @@ namespace Avalonia.Controls.Notifications
             PseudoClasses.Set(":bottomleft", position == NotificationPosition.BottomLeft);
             PseudoClasses.Set(":bottomright", position == NotificationPosition.BottomRight);
         }
+
+        public bool HitTest(Point point) => VisualChildren.HitTestCustom(point);
     }
 }

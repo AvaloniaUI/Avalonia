@@ -308,6 +308,23 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void ControlTemplate_With_TargetType_Is_Operational()
+        {
+            var xaml = @"
+<ControlTemplate xmlns='https://github.com/avaloniaui' 
+                 xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                 TargetType='{x:Type ContentControl}'>
+    <ContentPresenter Content='{TemplateBinding Content}' />
+</ControlTemplate>
+";
+            var template = AvaloniaXamlLoader.Parse<ControlTemplate>(xaml);
+
+            Assert.Equal(typeof(ContentControl), template.TargetType);
+
+            Assert.IsType(typeof(ContentPresenter), template.Build(new ContentControl()).Control);
+        }
+
+        [Fact]
         public void ControlTemplate_With_Panel_Children_Are_Added()
         {
             var xaml = @"
@@ -704,11 +721,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
-
-        [Fact(Skip =
-@"Doesn't work with Portable.xaml, it's working in different creation order -
-Handled in test 'Control_Is_Added_To_Parent_Before_Final_EndInit'
-do we need it?")]
+        [Fact]
         public void Control_Is_Added_To_Parent_Before_Properties_Are_Set()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

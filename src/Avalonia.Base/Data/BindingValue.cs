@@ -8,6 +8,7 @@ namespace Avalonia.Data
     /// <summary>
     /// Describes the type of a <see cref="BindingValue{T}"/>.
     /// </summary>
+    [Flags]
     public enum BindingValueType
     {
         /// <summary>
@@ -135,10 +136,10 @@ namespace Avalonia.Data
         /// Converts the binding value to an <see cref="Optional{T}"/>.
         /// </summary>
         /// <returns></returns>
-        public Optional<T> ToOptional() => HasValue ? new Optional<T>(Value) : default;
+        public Optional<T> ToOptional() => HasValue ? new Optional<T>(_value) : default;
 
         /// <inheritdoc/>
-        public override string ToString() => HasError ? $"Error: {Error!.Message}" : Value?.ToString() ?? "(null)";
+        public override string ToString() => HasError ? $"Error: {Error!.Message}" : _value?.ToString() ?? "(null)";
 
         /// <summary>
         /// Converts the value to untyped representation, using <see cref="AvaloniaProperty.UnsetValue"/>,
@@ -152,7 +153,7 @@ namespace Avalonia.Data
             {
                 BindingValueType.UnsetValue => AvaloniaProperty.UnsetValue,
                 BindingValueType.DoNothing => BindingOperations.DoNothing,
-                BindingValueType.Value => Value,
+                BindingValueType.Value => _value,
                 BindingValueType.BindingError => 
                     new BindingNotification(Error, BindingErrorType.Error),
                 BindingValueType.BindingErrorWithFallback =>
@@ -161,7 +162,7 @@ namespace Avalonia.Data
                     new BindingNotification(Error, BindingErrorType.DataValidationError),
                 BindingValueType.DataValidationErrorWithFallback =>
                     new BindingNotification(Error, BindingErrorType.DataValidationError, Value),
-                _ => throw new NotSupportedException("Invalida BindingValueType."),
+                _ => throw new NotSupportedException("Invalid BindingValueType."),
             };
         }
 
@@ -186,11 +187,31 @@ namespace Avalonia.Data
         }
 
         /// <summary>
+        /// Gets the value of the binding value if present, otherwise the default value.
+        /// </summary>
+        /// <returns>The value.</returns>
+        public T GetValueOrDefault() => HasValue ? _value : default;
+
+        /// <summary>
         /// Gets the value of the binding value if present, otherwise a default value.
         /// </summary>
         /// <param name="defaultValue">The default value.</param>
         /// <returns>The value.</returns>
-        public T ValueOrDefault(T defaultValue = default) => HasValue ? Value : defaultValue;
+        public T GetValueOrDefault(T defaultValue) => HasValue ? _value : defaultValue;
+
+        /// <summary>
+        /// Gets the value if present, otherwise the default value.
+        /// </summary>
+        /// <returns>
+        /// The value if present and of the correct type, `default(TResult)` if the value is
+        /// not present or of an incorrect type.
+        /// </returns>
+        public TResult GetValueOrDefault<TResult>()
+        {
+            return HasValue ?
+                _value is TResult result ? result : default
+                : default;
+        }
 
         /// <summary>
         /// Gets the value of the binding value if present, otherwise a default value.
@@ -201,10 +222,10 @@ namespace Avalonia.Data
         /// present but not of the correct type or null, or <paramref name="defaultValue"/> if the
         /// value is not present.
         /// </returns>
-        public TResult ValueOrDefault<TResult>(TResult defaultValue = default)
+        public TResult GetValueOrDefault<TResult>(TResult defaultValue)
         {
             return HasValue ?
-                Value is TResult result ? result : default
+                _value is TResult result ? result : default
                 : defaultValue;
         }
 

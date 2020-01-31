@@ -102,7 +102,7 @@ namespace Avalonia.X11
                 valueMask |= SetWindowValuemask.ColorMap;   
             }
 
-            int defaultWidth = 300, defaultHeight = 200;
+            int defaultWidth = 0, defaultHeight = 0;
 
             if (!_popup && Screen != null)
             {
@@ -116,6 +116,10 @@ namespace Avalonia.X11
                     defaultHeight = (int)(monitor.WorkingArea.Height * 0.7d);
                 }
             }
+
+            // check if the calculated size is zero then compensate to hardcoded resolution
+            defaultWidth = Math.Max(defaultWidth, 300);
+            defaultHeight = Math.Max(defaultHeight, 200);
 
             _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, defaultWidth, defaultHeight, 0,
                 depth,
@@ -133,7 +137,7 @@ namespace Avalonia.X11
                 _renderHandle = _handle;
                 
             Handle = new PlatformHandle(_handle, "XID");
-            _realSize = new PixelSize(300, 200);
+            _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = OnEvent;
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
                                      | XEventMask.ResizeRedirectMask
@@ -351,10 +355,17 @@ namespace Avalonia.X11
             {
                 if (ActivateTransientChildIfNeeded())
                     return;
-                if (ev.ButtonEvent.button < 4)
-                    MouseEvent(ev.ButtonEvent.button == 1 ? RawPointerEventType.LeftButtonDown
-                        : ev.ButtonEvent.button == 2 ? RawPointerEventType.MiddleButtonDown
-                        : RawPointerEventType.RightButtonDown, ref ev, ev.ButtonEvent.state);
+                if (ev.ButtonEvent.button < 4 || ev.ButtonEvent.button == 8 || ev.ButtonEvent.button == 9)
+                    MouseEvent(
+                        ev.ButtonEvent.button switch
+                        {
+                            1 => RawPointerEventType.LeftButtonDown,
+                            2 => RawPointerEventType.MiddleButtonDown,
+                            3 => RawPointerEventType.RightButtonDown,
+                            8 => RawPointerEventType.XButton1Down,
+                            9 => RawPointerEventType.XButton2Down
+                        },
+                        ref ev, ev.ButtonEvent.state);
                 else
                 {
                     var delta = ev.ButtonEvent.button == 4
@@ -372,10 +383,17 @@ namespace Avalonia.X11
             }
             else if (ev.type == XEventName.ButtonRelease)
             {
-                if (ev.ButtonEvent.button < 4)
-                    MouseEvent(ev.ButtonEvent.button == 1 ? RawPointerEventType.LeftButtonUp
-                        : ev.ButtonEvent.button == 2 ? RawPointerEventType.MiddleButtonUp
-                        : RawPointerEventType.RightButtonUp, ref ev, ev.ButtonEvent.state);
+                if (ev.ButtonEvent.button < 4 || ev.ButtonEvent.button == 8 || ev.ButtonEvent.button == 9)
+                    MouseEvent(
+                        ev.ButtonEvent.button switch
+                        {
+                            1 => RawPointerEventType.LeftButtonUp,
+                            2 => RawPointerEventType.MiddleButtonUp,
+                            3 => RawPointerEventType.RightButtonUp,
+                            8 => RawPointerEventType.XButton1Up,
+                            9 => RawPointerEventType.XButton2Up
+                        },
+                        ref ev, ev.ButtonEvent.state);
             }
             else if (ev.type == XEventName.ConfigureNotify)
             {
@@ -586,8 +604,12 @@ namespace Avalonia.X11
                 rv |= RawInputModifiers.LeftMouseButton;
             if (state.HasFlag(XModifierMask.Button2Mask))
                 rv |= RawInputModifiers.RightMouseButton;
-            if (state.HasFlag(XModifierMask.Button2Mask))
+            if (state.HasFlag(XModifierMask.Button3Mask))
                 rv |= RawInputModifiers.MiddleMouseButton;
+            if (state.HasFlag(XModifierMask.Button4Mask))
+                rv |= RawInputModifiers.XButton1MouseButton;
+            if (state.HasFlag(XModifierMask.Button5Mask))
+                rv |= RawInputModifiers.XButton2MouseButton;
             if (state.HasFlag(XModifierMask.ShiftMask))
                 rv |= RawInputModifiers.Shift;
             if (state.HasFlag(XModifierMask.ControlMask))
