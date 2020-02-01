@@ -1,6 +1,8 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Threading.Tasks;
+
 namespace Avalonia.Controls.Notifications
 {
     /// <summary>
@@ -18,6 +20,6 @@ namespace Avalonia.Controls.Notifications
         /// Shows a notification.
         /// </summary>
         /// <param name="content">The content to be displayed.</param>
-        void Show(object content);
+        Task ShowAsync(object content);
     }
 }

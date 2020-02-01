@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Avalonia.Controls.Notifications;
 using Avalonia.Native.Interop;
-using SharpGen.Runtime;
 
 namespace Avalonia.Native
 {
@@ -48,7 +48,7 @@ namespace Avalonia.Native
             }
         }
     
-        public void Show(INotification notification)
+        public Task ShowAsync(INotification notification)
         {
             var nativeNotification = new AvnNotification
             { 
@@ -60,6 +60,8 @@ namespace Avalonia.Native
 
             _notifications[nativeNotification.Identifier] = notification;
             _native.ShowNotification(ref nativeNotification);
+
+            return Task.CompletedTask;
         }
     }
 }

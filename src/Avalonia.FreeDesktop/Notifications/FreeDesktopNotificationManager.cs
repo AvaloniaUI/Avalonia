@@ -35,9 +35,6 @@ namespace Avalonia.FreeDesktop.Notifications
                 NotificationsService,
                 NotificationsPath
             );
-
-            Connect();
-            SetupWatcherTasks();
         }
 
         public void Dispose()
@@ -46,11 +43,11 @@ namespace Avalonia.FreeDesktop.Notifications
             _closeNotificationWatcher?.Dispose();
         }
 
-        public async void Show(INotification notification)
+        public async Task ShowAsync(INotification notification)
         {
             if (!_isConnected)
             {
-                throw new InvalidOperationException();
+                await Connect();
             }
 
             var id = await _proxy.NotifyAsync(
@@ -68,14 +65,16 @@ namespace Avalonia.FreeDesktop.Notifications
             _notifications[id] = notification;
         }
 
-        private async void Connect()
+        private async Task Connect()
         {
             _isConnected = await
                 Connection.Session.IsServiceActiveAsync(NotificationsService);
-        }
 
-        private async void SetupWatcherTasks()
-        {
+            if (!_isConnected)
+            {
+                throw new InvalidOperationException($"Unable to connect to {NotificationsService}");
+            }
+
             _actionWatcher = await _proxy.WatchActionInvokedAsync(
                 OnNotificationActionInvoked,
                 OnNotificationActionInvokedError

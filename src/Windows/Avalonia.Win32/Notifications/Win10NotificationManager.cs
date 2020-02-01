@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Reactive.Disposables;
-using System.Reflection;
+using System.Threading.Tasks;
 using Windows.Data.Xml.Dom;
 using Windows.UI.Notifications;
 using Avalonia.Controls.Notifications;
-using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.Notifications
 {
@@ -19,7 +16,7 @@ namespace Avalonia.Win32.Notifications
             _associatedNotifications = new Dictionary<ToastNotification, INotification>();
         }
 
-        public void Show(INotification notification)
+        public Task ShowAsync(INotification notification)
         {
             var toastXml =
                 $@"<toast><visual>
@@ -45,6 +42,8 @@ namespace Avalonia.Win32.Notifications
             toastNotifier.Show(toastNotification);
 
             _associatedNotifications[toastNotification] = notification;
+
+            return Task.CompletedTask;
         }
 
         private static void ToastNotificationOnFailed(ToastNotification sender, ToastFailedEventArgs args)

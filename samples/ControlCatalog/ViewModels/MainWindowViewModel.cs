@@ -19,21 +19,30 @@ namespace ControlCatalog.ViewModels
             _notificationManager = notificationManager;
             _nativeNotificationManager = AvaloniaLocator.Current.GetService<INotificationManager>();
 
-            ShowCustomManagedNotificationCommand = ReactiveCommand.Create(() =>
+            ShowCustomManagedNotificationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                NotificationManager.Show(new NotificationViewModel(NotificationManager) { Title = "Hey There!", Message = "Did you know that Avalonia now supports Custom In-Window Notifications?" });
+                await NotificationManager.ShowAsync(
+                    new NotificationViewModel(NotificationManager)
+                    {
+                        Title = "Hey There!",
+                        Message = "Did you know that Avalonia now supports Custom In-Window Notifications?"
+                    });
             });
 
-            ShowManagedNotificationCommand = ReactiveCommand.Create(() =>
+            ShowManagedNotificationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                NotificationManager.Show(new Notification("Welcome", "Avalonia now supports Notifications.", NotificationType.Information));
+                await NotificationManager.ShowAsync(
+                    new Notification(
+                    "Welcome",
+                    "Avalonia now supports Notifications."));
             });
 
-            ShowNativeNotificationCommand = ReactiveCommand.Create(() =>
+            ShowNativeNotificationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if (_nativeNotificationManager != null)
                 {
-                    _nativeNotificationManager.Show(new Notification(
+                    await _nativeNotificationManager.ShowAsync(
+                        new Notification(
                         "Native",
                         "Native Notifications are finally here!",
                         NotificationType.Success,
@@ -42,7 +51,8 @@ namespace ControlCatalog.ViewModels
                 }
                 else
                 {
-                    NotificationManager.Show(new Notification(
+                    await NotificationManager.ShowAsync(
+                        new Notification(
                         "Native",
                         "Native Notifications are not supported on this platform!",
                         NotificationType.Error));

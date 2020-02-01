@@ -8,14 +8,14 @@ namespace ControlCatalog.ViewModels
     {
         public NotificationViewModel(INotificationManager manager)
         {
-            YesCommand = ReactiveCommand.Create(() =>
+            YesCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                manager.Show(new Avalonia.Controls.Notifications.Notification("Avalonia Notifications", "Start adding notifications to your app today."));
+                await manager.ShowAsync(new Avalonia.Controls.Notifications.Notification("Avalonia Notifications", "Start adding notifications to your app today."));
             });
 
-            NoCommand = ReactiveCommand.Create(() =>
+            NoCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                manager.Show(new Avalonia.Controls.Notifications.Notification("Avalonia Notifications", "Start adding notifications to your app today. To find out more visit..."));
+                await manager.ShowAsync(new Avalonia.Controls.Notifications.Notification("Avalonia Notifications", "Start adding notifications to your app today. To find out more visit..."));
             });
         }
 
