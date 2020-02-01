@@ -16,7 +16,9 @@ namespace Avalonia.Win32.Notifications
             _associatedNotifications = new Dictionary<ToastNotification, INotification>();
         }
 
-        public Task ShowAsync(INotification notification)
+#pragma warning disable 1998
+        public async ValueTask ShowAsync(INotification notification)
+#pragma warning restore 1998
         {
             var toastXml =
                 $@"<toast><visual>
@@ -42,8 +44,6 @@ namespace Avalonia.Win32.Notifications
             toastNotifier.Show(toastNotification);
 
             _associatedNotifications[toastNotification] = notification;
-
-            return Task.CompletedTask;
         }
 
         private static void ToastNotificationOnFailed(ToastNotification sender, ToastFailedEventArgs args)

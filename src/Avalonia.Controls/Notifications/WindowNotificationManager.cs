@@ -91,13 +91,13 @@ namespace Avalonia.Controls.Notifications
         }
 
         /// <inheritdoc/>
-        public async Task ShowAsync(INotification content)
+        public async ValueTask ShowAsync(INotification content)
         {
             await ShowAsync(content as object);
         }
 
         /// <inheritdoc/>
-        public async Task ShowAsync(object content)
+        public async ValueTask ShowAsync(object content)
         {
             var notification = content as INotification;
 

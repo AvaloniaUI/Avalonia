@@ -20,6 +20,6 @@ namespace Avalonia.Controls.Notifications
         /// Shows a notification.
         /// </summary>
         /// <param name="content">The content to be displayed.</param>
-        Task ShowAsync(object content);
+        ValueTask ShowAsync(object content);
     }
 }

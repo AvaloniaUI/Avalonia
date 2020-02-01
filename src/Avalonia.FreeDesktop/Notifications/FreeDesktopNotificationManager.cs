@@ -43,7 +43,7 @@ namespace Avalonia.FreeDesktop.Notifications
             _closeNotificationWatcher?.Dispose();
         }
 
-        public async Task ShowAsync(INotification notification)
+        public async ValueTask ShowAsync(INotification notification)
         {
             if (!_isConnected)
             {
@@ -65,7 +65,7 @@ namespace Avalonia.FreeDesktop.Notifications
             _notifications[id] = notification;
         }
 
-        private async Task Connect()
+        private async ValueTask Connect()
         {
             _isConnected = await
                 Connection.Session.IsServiceActiveAsync(NotificationsService);

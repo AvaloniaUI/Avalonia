@@ -48,7 +48,9 @@ namespace Avalonia.Native
             }
         }
     
-        public Task ShowAsync(INotification notification)
+#pragma warning disable 1998
+        public async ValueTask ShowAsync(INotification notification)
+#pragma warning restore 1998
         {
             var nativeNotification = new AvnNotification
             { 
@@ -60,8 +62,6 @@ namespace Avalonia.Native
 
             _notifications[nativeNotification.Identifier] = notification;
             _native.ShowNotification(ref nativeNotification);
-
-            return Task.CompletedTask;
         }
     }
 }

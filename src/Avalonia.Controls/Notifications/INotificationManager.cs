@@ -15,6 +15,6 @@ namespace Avalonia.Controls.Notifications
         /// Show a notification.
         /// </summary>
         /// <param name="notification">The notification to be displayed.</param>
-        Task ShowAsync(INotification notification);
+        ValueTask ShowAsync(INotification notification);
     }
 }
