@@ -33,12 +33,7 @@ namespace Avalonia
         {
             var settings = AvaloniaLocator.Current.GetService<Win32PlatformOptions>() ?? new Win32PlatformOptions();
             return builder
-                .UseWindowingSubsystem(() => Win32.Win32Platform.Initialize(settings), "Win32")
-                .AfterSetup(b =>
-                {
-                    Win32.Win32Platform.SetupAppUserModelId(settings.AppUserModelId ?? b.Instance.Name);
-                    Win32.Win32Platform.InstallAppShortcut(b.ApplicationType.Assembly, b.Instance.Name);
-                });
+                .UseWindowingSubsystem(() => Win32.Win32Platform.Initialize(builder, settings), "Win32");
         }
     }
 
@@ -79,12 +74,8 @@ namespace Avalonia.Win32
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
 
-        public static void Initialize()
-        {
-            Initialize(new Win32PlatformOptions());
-        }
-
-        public static void Initialize(Win32PlatformOptions options)
+        public static void Initialize<T>(AppBuilderBase<T> builder, Win32PlatformOptions options)
+            where T : AppBuilderBase<T>, new()
         {
             Options = options;
             AvaloniaLocator.CurrentMutable
@@ -103,9 +94,15 @@ namespace Avalonia.Win32
 
             if (Environment.OSVersion.Version.Major == 10)
             {
-                AvaloniaLocator.CurrentMutable
-                    .Bind<INotificationManager>().ToConstant(
-                        new Win10NotificationManager());
+                builder.AfterSetup(b =>
+                {
+                    SetupAppUserModelId(options.AppUserModelId ?? b.Instance.Name);
+                    InstallAppShortcut(b.ApplicationType.Assembly, b.Instance.Name);
+
+                    AvaloniaLocator.CurrentMutable
+                        .Bind<INotificationManager>().ToConstant(
+                            new Win10NotificationManager());
+                });
             }
 
             if (options.AllowEglInitialization)
@@ -117,7 +114,7 @@ namespace Avalonia.Win32
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
         }
 
-        public static void InstallAppShortcut(Assembly exeAssembly, string name)
+        private static void InstallAppShortcut(Assembly exeAssembly, string name)
         {
             //TODO: Should probably also install an icon
             using var shortcut = new ShellLink
@@ -136,7 +133,7 @@ namespace Avalonia.Win32
             //TODO: Remove shortcut when platform shuts down?
         }
 
-        public static void SetupAppUserModelId(string id)
+        private static void SetupAppUserModelId(string id)
         {
             AppUserModelId = id;
             UnmanagedMethods.SetCurrentProcessExplicitAppUserModelID(AppUserModelId);
