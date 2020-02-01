@@ -10,6 +10,7 @@ namespace Avalonia.Win32.Notifications
     internal class Win10NotificationManager : INotificationManager
     {
         private readonly Dictionary<ToastNotification, INotification> _associatedNotifications;
+        private ToastNotifier _toastNotifier;
 
         public Win10NotificationManager()
         {
@@ -40,8 +41,8 @@ namespace Avalonia.Win32.Notifications
             toastNotification.Dismissed += ToastNotificationOnDismissed;
             toastNotification.Failed += ToastNotificationOnFailed;
 
-            var toastNotifier = ToastNotificationManager.CreateToastNotifier(Win32Platform.AppUserModelId);
-            toastNotifier.Show(toastNotification);
+            _toastNotifier ??= ToastNotificationManager.CreateToastNotifier(Win32Platform.AppUserModelId);
+            _toastNotifier.Show(toastNotification);
 
             _associatedNotifications[toastNotification] = notification;
         }
