@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Diagnostics;
@@ -1392,6 +1393,107 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(2, raised);
         }
 
+        [Fact]
+        public void RetainSelectionOnReset_Retains_Selection_On_Reset()
+        {
+            var data = new ResettingList<string> { "foo", "bar", "baz" };
+            var target = new SelectionModel { Source = data, RetainSelectionOnReset = true };
+
+            target.SelectRange(new IndexPath(1), new IndexPath(2));
+            data.Reset();
+
+            Assert.Equal(new[] { new IndexPath(1), new IndexPath(2) }, target.SelectedIndices);
+            Assert.Equal(new[] { "bar", "baz" }, target.SelectedItems);
+        }
+
+        [Fact]
+        public void RetainSelectionOnReset_Retains_Correct_Selection_After_Remove()
+        {
+            var data = new ResettingList<string> { "foo", "bar", "baz" };
+            var target = new SelectionModel { Source = data, RetainSelectionOnReset = true };
+
+            target.SelectRange(new IndexPath(1), new IndexPath(2));
+            target.Deselect(2);
+            data.Reset();
+
+            Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndices);
+            Assert.Equal(new[] { "bar", }, target.SelectedItems);
+        }
+
+        [Fact]
+        public void RetainSelectionOnReset_Retains_No_Selection_After_Clear()
+        {
+            var data = new ResettingList<string> { "foo", "bar", "baz" };
+            var target = new SelectionModel { Source = data, RetainSelectionOnReset = true };
+
+            target.SelectRange(new IndexPath(1), new IndexPath(2));
+            target.ClearSelection();
+            data.Reset();
+
+            Assert.Empty(target.SelectedIndices);
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void RetainSelectionOnReset_Retains_Correct_Selection_After_Two_Resets()
+        {
+            var data = new ResettingList<string> { "foo", "bar", "baz" };
+            var target = new SelectionModel { Source = data, RetainSelectionOnReset = true };
+
+            target.SelectRange(new IndexPath(1), new IndexPath(2));
+            data.Reset(new[] { "foo", "bar" });
+            data.Reset(new[] { "foo", "bar", "baz" });
+
+            Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndices);
+            Assert.Equal(new[] { "bar", }, target.SelectedItems);
+        }
+
+        [Fact]
+        public void RetainSelectionOnReset_Raises_Empty_SelectionChanged_On_Reset_With_No_Changes()
+        {
+            var data = new ResettingList<string> { "foo", "bar", "baz" };
+            var target = new SelectionModel { Source = data, RetainSelectionOnReset = true };
+            var raised = 0;
+
+            target.SelectRange(new IndexPath(1), new IndexPath(2));
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            data.Reset();
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void RetainSelectionOnReset_Raises_SelectionChanged_On_Reset_With_Removed_Items()
+        {
+            var data = new ResettingList<string> { "foo", "bar", "baz" };
+            var target = new SelectionModel { Source = data, RetainSelectionOnReset = true };
+            var raised = 0;
+
+            target.SelectRange(new IndexPath(1), new IndexPath(2));
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Equal(new[] { "bar" }, e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            data.Reset(new[] { "foo", "baz" });
+
+            Assert.Equal(1, raised);
+        }
+
         private int GetSubscriberCount(AvaloniaList<object> list)
         {
             return ((INotifyCollectionChangedDebug)list).GetCollectionChangedSubscribers()?.Length ?? 0;
@@ -1742,6 +1844,24 @@ namespace Avalonia.Controls.UnitTests
             private readonly ITestOutputHelper _output;
             public LogWrapper(ITestOutputHelper output) => _output = output;
             public void Comment(string s) => _output.WriteLine(s);
+        }
+
+        private class ResettingList<T> : List<object>, INotifyCollectionChanged
+        {
+            public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+            public void Reset(IEnumerable<object> items = null)
+            {
+                if (items != null)
+                {
+                    Clear();
+                    AddRange(items);
+                }
+
+                CollectionChanged?.Invoke(
+                    this, 
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
         }
     }
 

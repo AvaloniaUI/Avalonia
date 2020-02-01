@@ -32,6 +32,8 @@ namespace Avalonia.Controls
         private SelectionNodeOperation? _operation;
         private object? _source;
         private bool _selectedIndicesCacheIsValid;
+        private bool _retainSelectionOnReset;
+        private List<object?>? _selectedItems;
 
         public SelectionNode(SelectionModel manager, SelectionNode? parent)
         {
@@ -40,6 +42,40 @@ namespace Avalonia.Controls
         }
 
         public int AnchorIndex { get; set; } = -1;
+
+        public bool RetainSelectionOnReset 
+        {
+            get => _retainSelectionOnReset;
+            set
+            {
+                if (_retainSelectionOnReset != value)
+                {
+                    _retainSelectionOnReset = value;
+
+                    if (_retainSelectionOnReset)
+                    {
+                        _selectedItems = new List<object?>();
+
+                        foreach (var i in SelectedIndices)
+                        {
+                            _selectedItems.Add(ItemsSourceView!.GetAt(i));
+                        }
+                    }
+                    else
+                    {
+                        _selectedItems = null;
+                    }
+
+                    foreach (var child in _childrenNodes)
+                    {
+                        if (child != null)
+                        {
+                            child.RetainSelectionOnReset = value;
+                        }
+                    }
+                }
+            }
+        }
 
         public object? Source
         {
@@ -414,6 +450,14 @@ namespace Avalonia.Controls
             {
                 _operation?.Selected(selected);
 
+                if (_selectedItems != null)
+                {
+                    for (var i = addRange.Begin; i <= addRange.End; ++i)
+                    {
+                        _selectedItems.Add(ItemsSourceView!.GetAt(i));
+                    }
+                }
+
                 if (raiseOnSelectionChanged)
                 {
                     OnSelectionChanged();
@@ -430,6 +474,14 @@ namespace Avalonia.Controls
             if (removed.Count > 0)
             {
                 _operation?.Deselected(removed);
+
+                if (_selectedItems != null)
+                {
+                    for (var i = removeRange.Begin; i <= removeRange.End; ++i)
+                    {
+                        _selectedItems.Remove(ItemsSourceView!.GetAt(i));
+                    }
+                }
 
                 if (raiseOnSelectionChanged)
                 {
@@ -448,6 +500,7 @@ namespace Avalonia.Controls
                 OnSelectionChanged();
             }
 
+            _selectedItems?.Clear();
             SelectedCount = 0;
             AnchorIndex = -1;
 
@@ -492,7 +545,7 @@ namespace Avalonia.Controls
         private void OnSourceListChanged(object dataSource, NotifyCollectionChangedEventArgs args)
         {
             bool selectionInvalidated = false;
-            List<object>? removed = null;
+            List<object?>? removed = null;
 
             switch (args.Action)
             {
@@ -509,11 +562,19 @@ namespace Avalonia.Controls
                 }
 
                 case NotifyCollectionChangedAction.Reset:
-                {
-                    ClearSelection();
-                    selectionInvalidated = true;
-                    break;
-                }
+                    {
+                        if (_selectedItems == null)
+                        {
+                            ClearSelection();
+                        }
+                        else
+                        {
+                            removed = RecreateSelectionFromSelectedItems();
+                        }
+
+                        selectionInvalidated = true;
+                        break;
+                    }
 
                 case NotifyCollectionChangedAction.Replace:
                 {
@@ -606,10 +667,10 @@ namespace Avalonia.Controls
             return selectionInvalidated;
         }
 
-        private (bool, List<object>) OnItemsRemoved(int index, IList items)
+        private (bool, List<object?>) OnItemsRemoved(int index, IList items)
         {
             var selectionInvalidated = false;
-            var removed = new List<object>();
+            var removed = new List<object?>();
             var count = items.Count;
             
             // Remove the items from the selection for leaf
@@ -802,6 +863,33 @@ namespace Avalonia.Controls
             }
 
             return selectionState;
+        }
+
+        private List<object?> RecreateSelectionFromSelectedItems()
+        {
+            var removed = new List<object?>();
+
+            _selected.Clear();
+            SelectedCount = 0;
+
+            for (var i = 0; i < _selectedItems!.Count; ++i)
+            {
+                var item = _selectedItems[i];
+                var index = ItemsSourceView!.IndexOf(item);
+
+                if (index != -1)
+                {
+                    IndexRange.Add(_selected, new IndexRange(index, index));
+                    ++SelectedCount;
+                }
+                else
+                {
+                    removed.Add(item);
+                    _selectedItems.RemoveAt(i--);
+                }
+            }
+
+            return removed;
         }
 
         public enum SelectionState

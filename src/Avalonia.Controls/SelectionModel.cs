@@ -73,6 +73,11 @@ namespace Avalonia.Controls
             }
         }
 
+        public bool RetainSelectionOnReset 
+        {
+            get => _rootNode.RetainSelectionOnReset;
+            set => _rootNode.RetainSelectionOnReset = value;
+        }
 
         public IndexPath AnchorIndex
         {
@@ -497,7 +502,7 @@ namespace Avalonia.Controls
         }
 
         public void OnSelectionInvalidatedDueToCollectionChange(
-            IReadOnlyList<object>? removedItems)
+            IReadOnlyList<object?>? removedItems)
         {
             var e = new SelectionModelSelectionChangedEventArgs(null, null, removedItems, null);
             OnSelectionChanged(e);
