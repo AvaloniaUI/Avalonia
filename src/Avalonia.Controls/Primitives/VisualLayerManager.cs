@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Avalonia.LogicalTree;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -8,7 +7,7 @@ namespace Avalonia.Controls.Primitives
     {
         private const int AdornerZIndex = int.MaxValue - 100;
         private const int OverlayZIndex = int.MaxValue - 99;
-        private IStyleRoot _styleRoot;
+        private ILogicalRoot _logicalRoot;
         private readonly List<Control> _layers = new List<Control>();
         
 
@@ -53,7 +52,7 @@ namespace Avalonia.Controls.Primitives
             layer.ZIndex = zindex;
             VisualChildren.Add(layer);
             if (((ILogical)this).IsAttachedToLogicalTree)
-                ((ILogical)layer).NotifyAttachedToLogicalTree(new LogicalTreeAttachmentEventArgs(_styleRoot, layer, this));
+                ((ILogical)layer).NotifyAttachedToLogicalTree(new LogicalTreeAttachmentEventArgs(_logicalRoot, layer, this));
             InvalidateArrange();
         }
         
@@ -61,7 +60,7 @@ namespace Avalonia.Controls.Primitives
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
-            _styleRoot = e.Root;
+            _logicalRoot = e.Root;
 
             foreach (var l in _layers)
                 ((ILogical)l).NotifyAttachedToLogicalTree(e);
@@ -69,7 +68,7 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            _styleRoot = null;
+            _logicalRoot = null;
             base.OnDetachedFromLogicalTree(e);
             foreach (var l in _layers)
                 ((ILogical)l).NotifyDetachedFromLogicalTree(e);

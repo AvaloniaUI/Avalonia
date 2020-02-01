@@ -59,7 +59,7 @@ namespace Avalonia
         private int _initCount;
         private string _name;
         private readonly Classes _classes = new Classes();
-        private IStyleRoot _styleRoot;
+        private ILogicalRoot _logicalRoot;
         private IAvaloniaList<ILogical> _logicalChildren;
         private IResourceDictionary _resources;
         private Styles _styles;
@@ -81,7 +81,7 @@ namespace Avalonia
         /// </summary>
         public StyledElement()
         {
-            _styleRoot = this as IStyleRoot;
+            _logicalRoot = this as ILogicalRoot;
         }
 
         /// <summary>
@@ -307,7 +307,7 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether the element is attached to a rooted logical tree.
         /// </summary>
-        bool ILogical.IsAttachedToLogicalTree => _styleRoot != null;
+        bool ILogical.IsAttachedToLogicalTree => _logicalRoot != null;
 
         /// <summary>
         /// Gets the styled element's logical parent.
@@ -367,7 +367,7 @@ namespace Avalonia
                 throw new InvalidOperationException("BeginInit was not called.");
             }
 
-            if (--_initCount == 0 && _styleRoot != null)
+            if (--_initCount == 0 && _logicalRoot != null)
             {
                 InitializeStylesIfNeeded();
 
@@ -442,9 +442,9 @@ namespace Avalonia
 
                 Parent = (IStyledElement)parent;
 
-                if (_styleRoot != null)
+                if (_logicalRoot != null)
                 {
-                    var e = new LogicalTreeAttachmentEventArgs(_styleRoot, this, old);
+                    var e = new LogicalTreeAttachmentEventArgs(_logicalRoot, this, old);
                     OnDetachedFromLogicalTreeCore(e);
                 }
 
@@ -458,9 +458,9 @@ namespace Avalonia
                 }
                 ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
 
-                if (Parent is IStyleRoot || Parent?.IsAttachedToLogicalTree == true || this is IStyleRoot)
+                if (Parent is ILogicalRoot || Parent?.IsAttachedToLogicalTree == true || this is ILogicalRoot)
                 {
-                    var newRoot = FindStyleRoot(this);
+                    var newRoot = FindLogicalRoot(this);
 
                     if (newRoot == null)
                     {
@@ -671,11 +671,11 @@ namespace Avalonia
             }
         }
 
-        private static IStyleRoot FindStyleRoot(IStyleHost e)
+        private static ILogicalRoot FindLogicalRoot(IStyleHost e)
         {
             while (e != null)
             {
-                if (e is IStyleRoot root)
+                if (e is ILogicalRoot root)
                 {
                     return root;
                 }
@@ -701,7 +701,7 @@ namespace Avalonia
 
         private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
         {
-            if (this.GetLogicalParent() == null && !(this is IStyleRoot))
+            if (this.GetLogicalParent() == null && !(this is ILogicalRoot))
             {
                 throw new InvalidOperationException(
                     $"AttachedToLogicalTreeCore called for '{GetType().Name}' but control has no logical parent.");
@@ -713,9 +713,9 @@ namespace Avalonia
             // - ListBox makes ListBoxItem a logical child
             // - ListBox template gets applied; making its Panel get attached to logical tree
             // - That AttachedToLogicalTree signal travels down to the ListBoxItem
-            if (_styleRoot == null)
+            if (_logicalRoot == null)
             {
-                _styleRoot = e.Root;
+                _logicalRoot = e.Root;
 
                 InitializeStylesIfNeeded(true);
 
@@ -731,9 +731,9 @@ namespace Avalonia
 
         private void OnDetachedFromLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
         {
-            if (_styleRoot != null)
+            if (_logicalRoot != null)
             {
-                _styleRoot = null;
+                _logicalRoot = null;
                 _styleDetach.OnNext(this);
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);

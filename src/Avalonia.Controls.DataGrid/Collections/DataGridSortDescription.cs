@@ -238,7 +238,7 @@ namespace Avalonia.Collections
                 }
                 else
                 {
-                    return seq.ThenByDescending(o => GetValue(o), InternalComparer);
+                    return seq.ThenBy(o => GetValue(o), InternalComparer);
                 }
             }
 

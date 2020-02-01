@@ -199,6 +199,18 @@ namespace Avalonia.Controls.UnitTests.Platform
                 menu.VerifySet(x => x.SelectedItem = null, Times.Never);
                 Assert.False(e.Handled);
             }
+
+            [Fact]
+            public void Doesnt_Throw_On_Menu_Keypress()
+            {
+                // Issue #3459
+                var target = new DefaultMenuInteractionHandler(false);
+                var menu = Mock.Of<IMenu>();
+                var item = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.Parent == menu);
+                var e = new KeyEventArgs { Key = Key.Tab, Source = menu };
+
+                target.KeyDown(menu, e);
+            }
         }
 
         public class NonTopLevel

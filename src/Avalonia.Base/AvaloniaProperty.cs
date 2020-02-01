@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reactive.Subjects;
-using System.Reflection;
 using Avalonia.Data;
 using Avalonia.Utilities;
 
@@ -602,7 +600,7 @@ namespace Avalonia
                     return result;
                 }
 
-                currentType = currentType.GetTypeInfo().BaseType;
+                currentType = currentType.BaseType;
             }
 
             _metadataCache[type] = _defaultMetadata;
