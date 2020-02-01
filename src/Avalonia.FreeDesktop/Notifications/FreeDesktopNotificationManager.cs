@@ -26,15 +26,34 @@ namespace Avalonia.FreeDesktop.Notifications
         private readonly IFreeDesktopNotificationsProxy _proxy;
         private IDisposable _actionWatcher;
         private IDisposable _closeNotificationWatcher;
-        private volatile bool _isConnected;
 
-        public FreeDesktopNotificationManager()
+        public static FreeDesktopNotificationManager TryCreate()
+        {
+            if (DBusHelper.Connection == null)
+            {
+                return null;
+            }
+
+            IFreeDesktopNotificationsProxy proxy;
+            try
+            {
+                proxy = Connection.Session.CreateProxy<IFreeDesktopNotificationsProxy>(
+                    NotificationsService,
+                    NotificationsPath
+                );
+            }
+            catch
+            {
+                return null;
+            }
+
+            return new FreeDesktopNotificationManager(proxy);
+        }
+
+        private FreeDesktopNotificationManager(IFreeDesktopNotificationsProxy proxy)
         {
             _notifications = new Dictionary<uint, INotification>();
-            _proxy = Connection.Session.CreateProxy<IFreeDesktopNotificationsProxy>(
-                NotificationsService,
-                NotificationsPath
-            );
+            _proxy = proxy;
         }
 
         public void Dispose()
@@ -45,10 +64,7 @@ namespace Avalonia.FreeDesktop.Notifications
 
         public async ValueTask ShowAsync(INotification notification)
         {
-            if (!_isConnected)
-            {
-                await Connect();
-            }
+            await EnsureConnection();
 
             var id = await _proxy.NotifyAsync(
                 Application.Current.Name,
@@ -65,21 +81,21 @@ namespace Avalonia.FreeDesktop.Notifications
             _notifications[id] = notification;
         }
 
-        private async ValueTask Connect()
+        private async ValueTask EnsureConnection()
         {
-            _isConnected = await
+            var isConnected = await 
                 Connection.Session.IsServiceActiveAsync(NotificationsService);
 
-            if (!_isConnected)
+            if (!isConnected)
             {
                 throw new InvalidOperationException($"Unable to connect to {NotificationsService}");
             }
 
-            _actionWatcher = await _proxy.WatchActionInvokedAsync(
+            _actionWatcher ??= await _proxy.WatchActionInvokedAsync(
                 OnNotificationActionInvoked,
                 OnNotificationActionInvokedError
             );
-            _closeNotificationWatcher = await _proxy.WatchNotificationClosedAsync(
+            _closeNotificationWatcher ??= await _proxy.WatchNotificationClosedAsync(
                 OnNotificationClosed,
                 OnNotificationClosedError
             );

@@ -39,8 +39,9 @@ namespace Avalonia.X11
             XError.Init();
             Info = new X11Info(Display, DeferredDisplay);
             //TODO: log
-            if (options.UseDBusMenu)
-                DBusHelper.TryInitialize();
+            DBusHelper.TryInitialize();
+            var notificationManager = FreeDesktopNotificationManager.TryCreate();
+
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new X11PlatformThreading(this))
@@ -54,7 +55,7 @@ namespace Avalonia.X11
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
                 .Bind<ISystemDialogImpl>().ToConstant(new GtkSystemDialog())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
-                .Bind<INotificationManager>().ToConstant(new FreeDesktopNotificationManager());
+                .Bind<INotificationManager>().ToConstant(notificationManager);
 
             X11Screens = Avalonia.X11.X11Screens.Init(this);
             Screens = new X11Screens(X11Screens);
