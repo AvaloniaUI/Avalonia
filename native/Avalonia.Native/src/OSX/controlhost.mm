@@ -20,7 +20,7 @@ public:
         [view setWantsLayer: true];
         
         *retOut = (__bridge_retained void*)view;
-        return E_FAIL;
+        return S_OK;
     };
     
     virtual IAvnNativeControlHostTopLevelAttachment* CreateAttachment() override

@@ -28,8 +28,8 @@ namespace Avalonia.Native
 
             public DestroyableNSView(IAvnNativeControlHost impl)
             {
-                // Copy the impl
-                _impl = impl.QueryInterface<IAvnNativeControlHost>();
+                _impl = new IAvnNativeControlHost(impl.NativePointer);
+                _impl.AddRef();
                 _nsView = _impl.CreateDefaultChild(IntPtr.Zero);
             }
 
