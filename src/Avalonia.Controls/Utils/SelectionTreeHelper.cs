@@ -132,15 +132,21 @@ namespace Avalonia.Controls.Utils
 
         private static bool IsSubSet(IndexPath path, IndexPath subset)
         {
-            bool isSubset = true;
-            for (int i = 0; i < subset.GetSize(); i++)
+            var subsetSize = subset.GetSize();
+            if (path.GetSize() < subsetSize)
             {
-                isSubset = path.GetAt(i) == subset.GetAt(i);
-                if (!isSubset)
-                    break;
+                return false;
             }
 
-            return isSubset;
+            for (int i = 0; i < subsetSize; i++)
+            {
+                if (path.GetAt(i) != subset.GetAt(i))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static IndexPath StartPath(IndexPath path, int length)
