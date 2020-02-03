@@ -1424,6 +1424,48 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(2, raised);
         }
 
+        [Fact]
+        public void Raises_SelectionChanged_With_No_Source()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(1) }, e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            target.Select(1);
+
+            Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndices);
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void Raises_SelectionChanged_With_Items_After_Source_Is_Set()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Select(1);
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(1) }, e.SelectedIndices);
+                Assert.Equal(new[] { "bar" }, e.SelectedItems);
+                ++raised;
+            };
+
+            target.Source = new[] { "foo", "bar", "baz" };
+
+            Assert.Equal(1, raised);
+        }
+
         private int GetSubscriberCount(AvaloniaList<object> list)
         {
             return ((INotifyCollectionChangedDebug)list).GetCollectionChangedSubscribers()?.Length ?? 0;

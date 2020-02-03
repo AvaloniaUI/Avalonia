@@ -48,8 +48,11 @@ namespace Avalonia.Controls
             {
                 if (_source != value)
                 {
-                    ClearSelection();
-                    UnhookCollectionChangedHandler();
+                    if (_source != null)
+                    {
+                        ClearSelection();
+                        UnhookCollectionChangedHandler();
+                    }
 
                     _source = value;
 

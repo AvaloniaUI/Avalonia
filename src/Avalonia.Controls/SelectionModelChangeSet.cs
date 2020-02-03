@@ -16,30 +16,38 @@ namespace Avalonia.Controls
 
         public SelectionModelSelectionChangedEventArgs CreateEventArgs()
         {
-            var deselectedCount = 0;
-            var selectedCount = 0;
+            var deselectedIndexCount = 0;
+            var selectedIndexCount = 0;
+            var deselectedItemCount = 0;
+            var selectedItemCount = 0;
 
             foreach (var change in _changes)
             {
-                deselectedCount += change.DeselectedCount;
-                selectedCount += change.SelectedCount;
+                deselectedIndexCount += change.DeselectedCount;
+                selectedIndexCount += change.SelectedCount;
+
+                if (change.Items != null)
+                {
+                    deselectedItemCount += change.DeselectedCount;
+                    selectedItemCount += change.SelectedCount;
+                }
             }
 
             var deselectedIndices = new SelectedItems<IndexPath, SelectionNodeOperation>(
                 _changes,
-                deselectedCount,
+                deselectedIndexCount,
                 GetDeselectedIndexAt);
             var selectedIndices = new SelectedItems<IndexPath, SelectionNodeOperation>(
                 _changes,
-                selectedCount,
+                selectedIndexCount,
                 GetSelectedIndexAt);
             var deselectedItems = new SelectedItems<object?, SelectionNodeOperation>(
                 _changes,
-                deselectedCount,
+                deselectedItemCount,
                 GetDeselectedItemAt);
             var selectedItems = new SelectedItems<object?, SelectionNodeOperation>(
                 _changes,
-                selectedCount,
+                selectedItemCount,
                 GetSelectedItemAt);
 
             return new SelectionModelSelectionChangedEventArgs(
@@ -71,7 +79,7 @@ namespace Avalonia.Controls
             List<SelectionNodeOperation> infos,
             int index)
         {
-            static int GetCount(SelectionNodeOperation info) => info.DeselectedCount;
+            static int GetCount(SelectionNodeOperation info) => info.Items != null ? info.DeselectedCount : 0;
             static List<IndexRange>? GetRanges(SelectionNodeOperation info) => info.DeselectedRanges;
             return GetItemAt(infos, index, GetCount, GetRanges);
         }
@@ -80,7 +88,7 @@ namespace Avalonia.Controls
             List<SelectionNodeOperation> infos,
             int index)
         {
-            static int GetCount(SelectionNodeOperation info) => info.SelectedCount;
+            static int GetCount(SelectionNodeOperation info) => info.Items != null ? info.SelectedCount : 0;
             static List<IndexRange>? GetRanges(SelectionNodeOperation info) => info.SelectedRanges;
             return GetItemAt(infos, index, GetCount, GetRanges);
         }
