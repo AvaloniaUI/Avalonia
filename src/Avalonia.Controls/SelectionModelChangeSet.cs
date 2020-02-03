@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace Avalonia.Controls
 {
     internal class SelectionModelChangeSet
@@ -14,30 +16,38 @@ namespace Avalonia.Controls
 
         public SelectionModelSelectionChangedEventArgs CreateEventArgs()
         {
-            var deselectedCount = 0;
-            var selectedCount = 0;
+            var deselectedIndexCount = 0;
+            var selectedIndexCount = 0;
+            var deselectedItemCount = 0;
+            var selectedItemCount = 0;
 
             foreach (var change in _changes)
             {
-                deselectedCount += change.DeselectedCount;
-                selectedCount += change.SelectedCount;
+                deselectedIndexCount += change.DeselectedCount;
+                selectedIndexCount += change.SelectedCount;
+
+                if (change.Items != null)
+                {
+                    deselectedItemCount += change.DeselectedCount;
+                    selectedItemCount += change.SelectedCount;
+                }
             }
 
             var deselectedIndices = new SelectedItems<IndexPath, SelectionNodeOperation>(
                 _changes,
-                deselectedCount,
+                deselectedIndexCount,
                 GetDeselectedIndexAt);
             var selectedIndices = new SelectedItems<IndexPath, SelectionNodeOperation>(
                 _changes,
-                selectedCount,
+                selectedIndexCount,
                 GetSelectedIndexAt);
-            var deselectedItems = new SelectedItems<object, SelectionNodeOperation>(
+            var deselectedItems = new SelectedItems<object?, SelectionNodeOperation>(
                 _changes,
-                deselectedCount,
+                deselectedItemCount,
                 GetDeselectedItemAt);
-            var selectedItems = new SelectedItems<object, SelectionNodeOperation>(
+            var selectedItems = new SelectedItems<object?, SelectionNodeOperation>(
                 _changes,
-                selectedCount,
+                selectedItemCount,
                 GetSelectedItemAt);
 
             return new SelectionModelSelectionChangedEventArgs(
@@ -52,7 +62,7 @@ namespace Avalonia.Controls
             int index)
         {
             static int GetCount(SelectionNodeOperation info) => info.DeselectedCount;
-            static List<IndexRange> GetRanges(SelectionNodeOperation info) => info.DeselectedRanges;
+            static List<IndexRange>? GetRanges(SelectionNodeOperation info) => info.DeselectedRanges;
             return GetIndexAt(infos, index, GetCount, GetRanges);
         }
 
@@ -61,25 +71,25 @@ namespace Avalonia.Controls
             int index)
         {
             static int GetCount(SelectionNodeOperation info) => info.SelectedCount;
-            static List<IndexRange> GetRanges(SelectionNodeOperation info) => info.SelectedRanges;
+            static List<IndexRange>? GetRanges(SelectionNodeOperation info) => info.SelectedRanges;
             return GetIndexAt(infos, index, GetCount, GetRanges);
         }
 
-        private object GetDeselectedItemAt(
+        private object? GetDeselectedItemAt(
             List<SelectionNodeOperation> infos,
             int index)
         {
-            static int GetCount(SelectionNodeOperation info) => info.DeselectedCount;
-            static List<IndexRange> GetRanges(SelectionNodeOperation info) => info.DeselectedRanges;
+            static int GetCount(SelectionNodeOperation info) => info.Items != null ? info.DeselectedCount : 0;
+            static List<IndexRange>? GetRanges(SelectionNodeOperation info) => info.DeselectedRanges;
             return GetItemAt(infos, index, GetCount, GetRanges);
         }
 
-        private object GetSelectedItemAt(
+        private object? GetSelectedItemAt(
             List<SelectionNodeOperation> infos,
             int index)
         {
-            static int GetCount(SelectionNodeOperation info) => info.SelectedCount;
-            static List<IndexRange> GetRanges(SelectionNodeOperation info) => info.SelectedRanges;
+            static int GetCount(SelectionNodeOperation info) => info.Items != null ? info.SelectedCount : 0;
+            static List<IndexRange>? GetRanges(SelectionNodeOperation info) => info.SelectedRanges;
             return GetItemAt(infos, index, GetCount, GetRanges);
         }
 
@@ -87,7 +97,7 @@ namespace Avalonia.Controls
             List<SelectionNodeOperation> infos,
             int index,
             Func<SelectionNodeOperation, int> getCount,
-            Func<SelectionNodeOperation, List<IndexRange>> getRanges)
+            Func<SelectionNodeOperation, List<IndexRange>?> getRanges)
         {
             var currentIndex = 0;
             IndexPath path = default;
@@ -109,14 +119,14 @@ namespace Avalonia.Controls
             return path;
         }
 
-        private object GetItemAt(
+        private object? GetItemAt(
             List<SelectionNodeOperation> infos,
             int index,
             Func<SelectionNodeOperation, int> getCount,
-            Func<SelectionNodeOperation, List<IndexRange>> getRanges)
+            Func<SelectionNodeOperation, List<IndexRange>?> getRanges)
         {
             var currentIndex = 0;
-            object item = null;
+            object? item = null;
 
             foreach (var info in infos)
             {
@@ -125,7 +135,7 @@ namespace Avalonia.Controls
                 if (index >= currentIndex && index < currentIndex + currentCount)
                 {
                     int targetIndex = GetIndexAt(getRanges(info), index - currentIndex);
-                    item = info.Items.GetAt(targetIndex);
+                    item = info.Items?.GetAt(targetIndex);
                     break;
                 }
 
@@ -135,20 +145,23 @@ namespace Avalonia.Controls
             return item;
         }
 
-        private int GetIndexAt(List<IndexRange> ranges, int index)
+        private int GetIndexAt(List<IndexRange>? ranges, int index)
         {
             var currentIndex = 0;
 
-            foreach (var range in ranges)
+            if (ranges != null)
             {
-                var currentCount = (range.End - range.Begin) + 1;
-
-                if (index >= currentIndex && index < currentIndex + currentCount)
+                foreach (var range in ranges)
                 {
-                    return range.Begin + (index - currentIndex);
-                }
+                    var currentCount = (range.End - range.Begin) + 1;
 
-                currentIndex += currentCount;
+                    if (index >= currentIndex && index < currentIndex + currentCount)
+                    {
+                        return range.Begin + (index - currentIndex);
+                    }
+
+                    currentIndex += currentCount;
+                }
             }
 
             throw new IndexOutOfRangeException();

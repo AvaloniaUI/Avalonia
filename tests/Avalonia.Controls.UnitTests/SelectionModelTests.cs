@@ -900,6 +900,38 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void SelectRangeRegressionTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionModel = new SelectionModel()
+                {
+                    Source = CreateNestedData(1, 2, 3)
+                };
+
+                // length of start smaller than end used to cause an out of range error.
+                selectionModel.SelectRange(IndexPath.CreateFrom(0), IndexPath.CreateFrom(1, 1));
+
+                ValidateSelection(selectionModel,
+                   new List<IndexPath>()
+                   {
+                       Path(0, 0),
+                       Path(0, 1),
+                       Path(0, 2),
+                       Path(0),
+                       Path(1, 0),
+                       Path(1, 1)
+                   },
+                   new List<IndexPath>()
+                   {
+                       Path(),
+                       Path(1)
+                   },
+                   1 /* selectedInnerNodes */);
+            });
+        }
+
+        [Fact]
         public void Selecting_Item_Raises_SelectionChanged()
         {
             var target = new SelectionModel();
@@ -1394,6 +1426,48 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Raises_SelectionChanged_With_No_Source()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(1) }, e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            target.Select(1);
+
+            Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndices);
+            Assert.Empty(target.SelectedItems);
+        }
+
+        [Fact]
+        public void Raises_SelectionChanged_With_Items_After_Source_Is_Set()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Select(1);
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Empty(e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(1) }, e.SelectedIndices);
+                Assert.Equal(new[] { "bar" }, e.SelectedItems);
+                ++raised;
+            };
+
+            target.Source = new[] { "foo", "bar", "baz" };
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
         public void RetainSelectionOnReset_Retains_Selection_On_Reset()
         {
             var data = new ResettingList<string> { "foo", "bar", "baz" };
@@ -1493,6 +1567,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(1, raised);
         }
+
 
         private int GetSubscriberCount(AvaloniaList<object> list)
         {

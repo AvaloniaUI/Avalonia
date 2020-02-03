@@ -36,13 +36,29 @@ namespace Avalonia.Controls
             get => _rootNode?.Source;
             set
             {
-                using (var operation = new Operation(this))
+                var wasNull = _rootNode.Source == null;
+
+                if (_rootNode.Source != null)
                 {
-                    ClearSelection(resetAnchor: true);
+                    using (var operation = new Operation(this))
+                    {
+                        ClearSelection(resetAnchor: true);
+                    }
                 }
 
                 _rootNode.Source = value;
+
                 RaisePropertyChanged("Source");
+
+                if (wasNull)
+                {
+                    var e = new SelectionModelSelectionChangedEventArgs(
+                        null,
+                        SelectedIndices,
+                        null,
+                        SelectedItems);
+                    OnSelectionChanged(e);
+                }
             }
         }
 
