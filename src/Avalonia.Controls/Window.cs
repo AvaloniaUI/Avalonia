@@ -563,15 +563,23 @@ namespace Avalonia.Controls
             base.HandleClosed();
         }
 
+        private bool resizing = false;
         /// <inheritdoc/>
         protected sealed override void HandleResized(Size clientSize)
         {
-            if (!AutoSizing)
+            //try prevent a infinity resizing cycle
+            //causing problem on macos when app in bundle and show a new window
+            if (!resizing)
             {
-                SizeToContent = SizeToContent.Manual;
-            }
+                resizing = true;
+                if (!AutoSizing)
+                {
+                    SizeToContent = SizeToContent.Manual;
+                }
 
-            base.HandleResized(clientSize);
+                base.HandleResized(clientSize);
+                resizing = false;
+            }
         }
 
         /// <summary>
