@@ -805,7 +805,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         [self removeTrackingArea:_area];
         _area = nullptr;
     }
-    
+
+    if (_parent == nullptr)
+    {
+        return;
+    }
+
     NSRect rect = NSZeroRect;
     rect.size = newSize;
     
