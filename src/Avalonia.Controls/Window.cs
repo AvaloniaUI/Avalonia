@@ -902,9 +902,15 @@ namespace Avalonia.Controls
             Owner = null;
         }
 
+        private bool resizing = false;
         /// <inheritdoc/>
         protected sealed override void HandleResized(Size clientSize)
         {
+            //try prevent a infinity resizing cycle
+            //causing problem on macos when app in bundle and show a new window
+            if (resizing) return;
+            
+            resizing = true;
             if (!AutoSizing)
             {
                 SizeToContent = SizeToContent.Manual;
@@ -914,6 +920,7 @@ namespace Avalonia.Controls
             Height = clientSize.Height;
 
             base.HandleResized(clientSize);
+            resizing = false;
         }
 
         /// <summary>
