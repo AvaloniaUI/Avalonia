@@ -49,10 +49,14 @@ namespace Avalonia.Controls.Primitives
 
         private bool? _isChecked = false;
 
+        static ToggleButton()
+        {
+            IsCheckedProperty.Changed.AddClassHandler<ToggleButton>((x, e) => x.OnIsCheckedChanged(e));
+        }
+
         public ToggleButton()
         {
             UpdatePseudoClasses(IsChecked);
-            IsCheckedProperty.Changed.AddClassHandler<ToggleButton>((x, e) => x.OnIsCheckedChanged(e));
         }
 
         /// <summary>
