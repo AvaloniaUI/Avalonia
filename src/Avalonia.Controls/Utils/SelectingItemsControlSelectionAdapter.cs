@@ -261,7 +261,7 @@ namespace Avalonia.Controls.Utils
                     break;
 
                 case Key.Down:
-                    if ((e.Modifiers & InputModifiers.Alt) == InputModifiers.None)
+                    if ((e.KeyModifiers & KeyModifiers.Alt) == KeyModifiers.None)
                     {
                         SelectedIndexIncrement();
                         e.Handled = true;
