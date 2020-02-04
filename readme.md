@@ -16,6 +16,8 @@
 |---|---|---|
 | <a href='https://youtu.be/wHcB3sGLVYg'><img width='300' src='http://avaloniaui.net/images/screen.png'></a> | <a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0' target='_blank'><img width='300' src='http://avaloniaui.net/images/avalonia-video.png'></a> | <a href='https://www.youtube.com/watch?v=NJ9-hnmUbBM' target='_blank'><img width='300' src='https://i.ytimg.com/vi/NJ9-hnmUbBM/hqdefault.jpg'></a> |
 
+[Awesome Avalonia](https://github.com/AvaloniaCommunity/awesome-avalonia) is curated list of awesome Avalonia UI tools, libraries, projects and resources.
+
 ## Getting Started
 
 Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started. After installing it, open "New Project" dialog in Visual Studio, choose "Avalonia" in "Visual C#" section, select "Avalonia .NET Core Application" and press OK (<a href="http://avaloniaui.net/docs/quickstart/images/new-project-dialog.png">screenshot</a>). Now you can write code and markup that will work on multiple platforms!
