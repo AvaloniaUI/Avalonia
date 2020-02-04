@@ -7,7 +7,7 @@
   <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
   <Setter Property="Template">
     <ControlTemplate>
-      <Border BorderBrush="{TemplateBinding BorderBrush}"
+      <Border Name="border" BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}">
         <ScrollViewer Name="PART_ScrollViewer"
                       Background="{TemplateBinding Background}"
@@ -23,4 +23,7 @@
       </Border>
     </ControlTemplate>
   </Setter>
+    <Style Selector="ComboBox:disabled /template/ Border#border">
+        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
 </Style>
