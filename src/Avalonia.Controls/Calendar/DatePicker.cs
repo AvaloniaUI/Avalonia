@@ -1008,7 +1008,7 @@ namespace Avalonia.Controls
                     }
                 case Key.Down:
                     { 
-                        if ((e.Modifiers & InputModifiers.Control) == InputModifiers.Control)
+                        if ((e.KeyModifiers & KeyModifiers.Control) == KeyModifiers.Control)
                         {
                             HandlePopUp();
                             return true;
