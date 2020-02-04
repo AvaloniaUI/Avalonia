@@ -33,13 +33,16 @@ namespace Avalonia.Controls
 
         public object? Source
         {
-            get => _rootNode?.Source;
+            get => _rootNode.Source;
             set
             {
-                ClearSelection(resetAnchor: true, raiseSelectionChanged: false);
-                _rootNode.Source = value;
-                OnSelectionChanged();
-                RaisePropertyChanged("Source");
+                if (_rootNode.Source != value)
+                {
+                    ClearSelection(resetAnchor: true, raiseSelectionChanged: false);
+                    _rootNode.Source = value;
+                    OnSelectionChanged();
+                    RaisePropertyChanged("Source");
+                }
             }
         }
 
@@ -76,7 +79,7 @@ namespace Avalonia.Controls
             {
                 IndexPath anchor = default;
 
-                if (_rootNode?.AnchorIndex >= 0)
+                if (_rootNode.AnchorIndex >= 0)
                 {
                     var path = new List<int>();
                     SelectionNode? current = _rootNode;
@@ -290,7 +293,7 @@ namespace Avalonia.Controls
         public void Dispose()
         {
             ClearSelection(resetAnchor: false, raiseSelectionChanged: false);
-            _rootNode?.Dispose();
+            _rootNode.Dispose();
             _selectedIndicesCached = null;
             _selectedItemsCached = null;
         }
