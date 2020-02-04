@@ -70,4 +70,7 @@
   <Style Selector="TextBox">
     <Setter Property="Cursor" Value="IBeam" />
   </Style>
+    <Style Selector="TextBox:disabled /template/ Border#border">
+        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
 </Styles>
