@@ -958,7 +958,7 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 bool ctrl, shift;
-                CalendarExtensions.GetMetaKeyState(e.InputModifiers, out ctrl, out shift);
+                CalendarExtensions.GetMetaKeyState(e.KeyModifiers, out ctrl, out shift);
                 CalendarDayButton b = sender as CalendarDayButton;
 
                 if (b != null)
