@@ -692,8 +692,17 @@ namespace Avalonia.Controls
 
                 if (isSelected)
                 {
-                    RemoveRange(new IndexRange(index, index + count - 1), raiseOnSelectionChanged: false);
+                    var removeRange = new IndexRange(index, index + count - 1);
+                    SelectedCount -= IndexRange.Remove(_selected, removeRange);
                     selectionInvalidated = true;
+
+                    if (_selectedItems != null)
+                    {
+                        foreach (var i in items)
+                        {
+                            _selectedItems.Remove(i);
+                        }
+                    }
                 }
 
                 for (int i = 0; i < _selected.Count; i++)

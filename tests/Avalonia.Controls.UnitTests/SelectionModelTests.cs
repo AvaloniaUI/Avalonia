@@ -1481,7 +1481,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void RetainSelectionOnReset_Retains_Correct_Selection_After_Remove()
+        public void RetainSelectionOnReset_Retains_Correct_Selection_After_Deselect()
         {
             var data = new ResettingList<string> { "foo", "bar", "baz" };
             var target = new SelectionModel { Source = data, RetainSelectionOnReset = true };
@@ -1491,7 +1491,35 @@ namespace Avalonia.Controls.UnitTests
             data.Reset();
 
             Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndices);
-            Assert.Equal(new[] { "bar", }, target.SelectedItems);
+            Assert.Equal(new[] { "bar" }, target.SelectedItems);
+        }
+
+        [Fact]
+        public void RetainSelectionOnReset_Retains_Correct_Selection_After_Remove_1()
+        {
+            var data = new ResettingList<string> { "foo", "bar", "baz" };
+            var target = new SelectionModel { Source = data, RetainSelectionOnReset = true };
+
+            target.SelectRange(new IndexPath(1), new IndexPath(2));
+            data.RemoveAt(2);
+            data.Reset(new[] { "foo", "bar", "baz" });
+
+            Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndices);
+            Assert.Equal(new[] { "bar" }, target.SelectedItems);
+        }
+
+        [Fact]
+        public void RetainSelectionOnReset_Retains_Correct_Selection_After_Remove_2()
+        {
+            var data = new ResettingList<string> { "foo", "bar", "baz" };
+            var target = new SelectionModel { Source = data, RetainSelectionOnReset = true };
+
+            target.SelectRange(new IndexPath(1), new IndexPath(2));
+            data.RemoveAt(0);
+            data.Reset(new[] { "foo", "bar", "baz" });
+
+            Assert.Equal(new[] { new IndexPath(1), new IndexPath(2) }, target.SelectedIndices);
+            Assert.Equal(new[] { "bar", "baz" }, target.SelectedItems);
         }
 
         [Fact]
@@ -1924,6 +1952,15 @@ namespace Avalonia.Controls.UnitTests
         private class ResettingList<T> : List<object>, INotifyCollectionChanged
         {
             public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+            public new void RemoveAt(int index)
+            {
+                var item = this[index];
+                base.RemoveAt(index);
+                CollectionChanged?.Invoke(
+                    this,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, new[] { item }, index));
+            }
 
             public void Reset(IEnumerable<object> items = null)
             {
