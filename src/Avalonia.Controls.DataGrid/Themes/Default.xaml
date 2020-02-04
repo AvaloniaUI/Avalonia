@@ -112,19 +112,22 @@
   </Style>
 
   <Style Selector="DataGridRow /template/ Rectangle#BackgroundRectangle">
-    <Setter Property="IsVisible" Value="False"/>
-    <Setter Property="Fill" Value="#FFBADDE9" />
-  </Style>
+        <Setter Property="IsVisible" Value="False" />
+        <Setter Property="Fill" Value="{DynamicResource HighlightBrush}" />
+    </Style>
 
-  <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
-    <Setter Property="IsVisible" Value="True"/>
-    <Setter Property="Opacity" Value="0.5"/>
-  </Style>
+    <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="IsVisible" Value="True" />
+        <Setter Property="Opacity" Value="0.5" />
+    </Style>
 
-  <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
-    <Setter Property="IsVisible" Value="True"/>
-    <Setter Property="Opacity" Value="1"/>
-  </Style>
+    <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="IsVisible" Value="True" />
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="DataGridRow:selected">
+        <Setter Property="Foreground" Value="{DynamicResource HighlightForegroundBrush}" />
+    </Style>
 
   <Style Selector="DataGridRowHeader">
     <Setter Property="Template">
