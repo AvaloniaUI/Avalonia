@@ -46,7 +46,8 @@ namespace Avalonia.Native
     }
 
     public abstract class WindowBaseImpl : IWindowBaseImpl,
-        IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost
+        IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost,
+        IEmbeddableWindowImpl
     {
         IInputRoot _inputRoot;
         IAvnWindowBase _native;
@@ -129,6 +130,8 @@ namespace Avalonia.Native
             return new FramebufferWrapper(_native.GetSoftwareFramebuffer());
         }
 
+        public event Action LostFocus;
+        
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action Closed { get; set; }
@@ -229,6 +232,11 @@ namespace Avalonia.Native
             void IAvnWindowBaseEvents.RunRenderPriorityJobs()
             {
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
+            }
+            
+            void IAvnWindowBaseEvents.LostFocus()
+            {
+                _parent.LostFocus?.Invoke();
             }
         }
 

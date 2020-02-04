@@ -5,6 +5,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="NativeEmbedSample.MainWindow">
   <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="Test">
+        <MenuItem Header="SubMenu">
+          <MenuItem Header="Item 1"/>
+          <MenuItem Header="Item 2"/>
+          <MenuItem Header="Item 3"/>  
+        </MenuItem>
+        <MenuItem Header="Item 1"/>
+        <MenuItem Header="Item 2"/>
+        <MenuItem Header="Item 3"/>  
+      </MenuItem>
+    </Menu>
     <DockPanel DockPanel.Dock="Top">
       <Button DockPanel.Dock="Right" Click="ShowPopupDelay">Show popup (delay)</Button>
       <Button DockPanel.Dock="Right" Click="ShowPopup">Show popup</Button>

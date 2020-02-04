@@ -256,6 +256,7 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
     virtual bool RawTextInputEvent (unsigned int timeStamp, const char* text) = 0;
     virtual void ScalingChanged(double scaling) = 0;
     virtual void RunRenderPriorityJobs() = 0;
+    virtual void LostFocus() = 0;
 };
 
 

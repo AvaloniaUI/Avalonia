@@ -847,6 +847,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     [ctx saveGraphicsState];
     auto cgc = [ctx CGContext];
+    CGAffineTransform flip = CGAffineTransformMake(1, 0, 0, -1, 0, self.frame.size.height);
+    CGContextConcatCTM(cgc, flip);
     
     CGContextDrawImage(cgc, CGRect{0,0, fb->Width/(fb->Dpi.X/96), fb->Height/(fb->Dpi.Y/96)}, image);
     CGImageRelease(image);
@@ -955,7 +957,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     if([self ignoreUserInput])
         return;
     
-    [self becomeFirstResponder];
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
     auto avnPoint = [self toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
@@ -982,9 +983,25 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     auto timestamp = [event timestamp] * 1000;
     auto modifiers = [self getModifiers:[event modifierFlags]];
     
-    [self becomeFirstResponder];
+    if(type != AvnRawMouseEventType::Move ||
+       (
+           [self window] != nil &&
+           (
+                [[self window] firstResponder] == nil
+                || ![[[self window] firstResponder] isKindOfClass: [NSView class]]
+           )
+       )
+    )
+        [self becomeFirstResponder];
+    
     _parent->BaseEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
     [super mouseMoved:event];
+}
+
+- (BOOL) resignFirstResponder
+{
+    _parent->BaseEvents->LostFocus();
+    return YES;
 }
 
 - (void)mouseMoved:(NSEvent *)event

@@ -100,9 +100,12 @@ namespace Avalonia.Native
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
-                .Bind<IWindowingPlatformGlFeature>().ToConstant(new GlPlatformFeature(_factory.ObtainGlFeature()))
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(InputModifiers.Windows))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider());
+
+            if (_options.UseGpu)
+                AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>()
+                    .ToConstant(new GlPlatformFeature(_factory.ObtainGlFeature()));
         }
 
         public IWindowImpl CreateWindow()
