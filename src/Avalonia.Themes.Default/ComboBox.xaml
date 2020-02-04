@@ -58,4 +58,7 @@
   <Style Selector="ComboBox:pointerover /template/ Border#border">
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
   </Style>
+    <Style Selector="ComboBox:disabled /template/ Border#border">
+        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
 </Styles>
