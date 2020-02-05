@@ -1466,6 +1466,33 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, raised);
         }
 
+        [Fact]
+        public void Can_Batch_Update()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = Enumerable.Range(0, 10).ToList();
+            target.Select(1);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { new IndexPath(1) }, e.DeselectedIndices);
+                Assert.Equal(new object[] { 1 }, e.DeselectedItems);
+                Assert.Equal(new[] { new IndexPath(4) }, e.SelectedIndices);
+                Assert.Equal(new object[] { 4 }, e.SelectedItems);
+                ++raised;
+            };
+
+            using (target.Update())
+            {
+                target.Deselect(1);
+                target.Select(4);
+            }
+
+            Assert.Equal(1, raised);
+        }
+
         private int GetSubscriberCount(AvaloniaList<object> list)
         {
             return ((INotifyCollectionChangedDebug)list).GetCollectionChangedSubscribers()?.Length ?? 0;
