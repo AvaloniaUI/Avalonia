@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 using System;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -88,6 +89,8 @@ namespace Avalonia.Native
                 _factory.MacOptions.ShowInDock = macOpts?.ShowInDock != false ? 1 : 0;
             }
 
+            _options.UseGpu = false;
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>()
                 .ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()))
@@ -100,9 +103,11 @@ namespace Avalonia.Native
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
-                .Bind<IWindowingPlatformGlFeature>().ToConstant(new GlPlatformFeature(_factory.ObtainGlFeature()))
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider());
+            if (_options.UseGpu)
+                AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>()
+                    .ToConstant(new GlPlatformFeature(_factory.ObtainGlFeature()));
         }
 
         public IWindowImpl CreateWindow()

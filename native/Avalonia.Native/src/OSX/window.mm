@@ -7,44 +7,9 @@
 #include "cursor.h"
 #include "menu.h"
 #include <OpenGL/gl.h>
+#include "rendertarget.h"
 
-class SoftwareDrawingOperation
-{
-public:
-    void* Data = 0;
-    AvnFramebuffer Desc;
-    void Alloc(NSView* view)
-    {
-        auto logicalSize = [view frame].size;
-        auto pixelSize = [view convertSizeToBacking:logicalSize];
-        int w = pixelSize.width;
-        int h = pixelSize.height;
-        int stride = w * 4;
-        Data = malloc(h * stride);
-        Desc = {
-            .Data = Data,
-            .Stride = stride,
-            .Width = w,
-            .Height = h,
-            .PixelFormat = kAvnRgba8888,
-            .Dpi = AvnVector { .X = w / logicalSize.width * 96, .Y = h / logicalSize.height * 96}
-        };
-    }
-    
-    void Dealloc()
-    {
-        if(Data != NULL)
-        {
-            free(Data);
-            Data = NULL;
-        }
-    }
-    
-    ~SoftwareDrawingOperation()
-    {
-        Dealloc();
-    }
-};
+
 
 class WindowBaseImpl : public virtual ComSingleObject<IAvnWindowBase, &IID_IAvnWindowBase>, public INSWindowHolder
 {
@@ -61,7 +26,7 @@ public:
     AvnView* View;
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
-    SoftwareDrawingOperation CurrentSwDrawingOperation;
+    NSObject<IRenderTarget>* renderTarget;
     AvnPoint lastPositionSet;
     NSString* _lastTitle;
     IAvnAppMenu* _mainMenu;
@@ -70,6 +35,7 @@ public:
     {
         _mainMenu = nullptr;
         BaseEvents = events;
+        renderTarget = [IOSurfaceRenderTarget new];
         View = [[AvnView alloc] initWithParent:this];
 
         Window = [[AvnWindow alloc] initWithParent:this];
@@ -291,29 +257,6 @@ public:
         return S_OK;
     }
     
-    virtual bool TryLock() override
-    {
-        @autoreleasepool
-        {
-            @try
-            {
-                return [View lockFocusIfCanDraw] == YES;
-            }
-            @catch (NSException*)
-            {
-                return NO;
-            }
-        }
-    }
-    
-    virtual void Unlock() override
-    {
-        @autoreleasepool
-        {
-            [View unlockFocus];
-        }
-    }
-    
     virtual HRESULT BeginMoveDrag () override
     {
         @autoreleasepool
@@ -405,16 +348,6 @@ public:
     virtual HRESULT ThreadSafeSetSwRenderedFrame(AvnFramebuffer* fb, IUnknown* dispose) override
     {
         [View setSwRenderedFrame: fb dispose: dispose];
-        return S_OK;
-    }
-    
-    virtual HRESULT GetSoftwareFramebuffer(AvnFramebuffer*ret) override
-    {
-        if(![[NSThread currentThread] isMainThread])
-            return E_FAIL;
-        if(CurrentSwDrawingOperation.Data == NULL)
-            CurrentSwDrawingOperation.Alloc(View);
-        *ret = CurrentSwDrawingOperation.Desc;
         return S_OK;
     }
     
@@ -731,6 +664,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     NSEvent* _lastMouseDownEvent;
     bool _lastKeyHandled;
     AvnPixelSize _lastPixelSize;
+    NSObject<IRenderTarget>* _renderTarget;
 }
 
 - (void)onClosed
@@ -741,6 +675,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
 }
 
+/*
 - (BOOL)lockFocusIfCanDraw
 {
     @synchronized (self)
@@ -752,7 +687,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
     
     return [super lockFocusIfCanDraw];
-}
+}*/
 
 -(AvnPixelSize) getPixelSize
 {
@@ -764,16 +699,45 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return _lastMouseDownEvent;
 }
 
+- (void) updateRenderTarget
+{
+    [_renderTarget resize:_lastPixelSize withScale: [[self window] backingScaleFactor]];
+    [self setNeedsDisplayInRect:[self frame]];
+}
+
 -(AvnView*)  initWithParent: (WindowBaseImpl*) parent
 {
     self = [super init];
-    [self setWantsBestResolutionOpenGLSurface:true];
+    _renderTarget = parent->renderTarget;
     [self setWantsLayer:YES];
+    [self setLayerContentsRedrawPolicy: NSViewLayerContentsRedrawDuringViewResize];
+    
     _parent = parent;
     _area = nullptr;
     _lastPixelSize.Height = 100;
     _lastPixelSize.Width = 100;
+/* uncomment to verify that embedding isn't broken
+    NSTextField* txt = [NSTextField new];
+    [self addSubview:txt];
+    [txt  setFrame:{0,0, 100,100}];
+ */
     return self;
+}
+
+- (BOOL)isFlipped
+{
+    return YES;
+}
+
+- (BOOL)wantsUpdateLayer
+{
+    return YES;
+}
+
+- (void)setLayer:(CALayer *)layer
+{
+    [_renderTarget setNewLayer: layer];
+    [super setLayer: layer];
 }
 
 - (BOOL)isOpaque
@@ -823,56 +787,24 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     auto fsize = [self convertSizeToBacking: [self frame].size];
     _lastPixelSize.Width = (int)fsize.width;
     _lastPixelSize.Height = (int)fsize.height;
-
+    [self updateRenderTarget];
     _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height});
 }
 
-- (void) drawFb: (AvnFramebuffer*) fb
-{
-    auto colorSpace = CGColorSpaceCreateDeviceRGB();
-    auto dataProvider = CGDataProviderCreateWithData(NULL, fb->Data, fb->Height*fb->Stride, NULL);
 
-    
-    auto image = CGImageCreate(fb->Width, fb->Height, 8, 32, fb->Stride, colorSpace, kCGBitmapByteOrderDefault | kCGImageAlphaPremultipliedLast,
-                               dataProvider, nullptr, false, kCGRenderingIntentDefault);
-    
-    auto ctx = [NSGraphicsContext currentContext];
-    
-    [ctx saveGraphicsState];
-    auto cgc = [ctx CGContext];
-    
-    CGContextDrawImage(cgc, CGRect{0,0, fb->Width/(fb->Dpi.X/96), fb->Height/(fb->Dpi.Y/96)}, image);
-    CGImageRelease(image);
-    CGColorSpaceRelease(colorSpace);
-    CGDataProviderRelease(dataProvider);
-    
-    [ctx restoreGraphicsState];
-
-}
-
-- (void)drawRect:(NSRect)dirtyRect
+- (void)updateLayer
 {
     if (_parent == nullptr)
     {
         return;
     }
-        
+    
     _parent->BaseEvents->RunRenderPriorityJobs();
-    
-    @synchronized (self) {
-        if(_swRenderedFrame != NULL)
-        {
-            [self drawFb: &_swRenderedFrameBuffer];
-            return;
-        }
-    }
-    
-    auto swOp = &_parent->CurrentSwDrawingOperation;
     _parent->BaseEvents->Paint();
-    if(swOp->Data != NULL)
-        [self drawFb: &swOp->Desc];
-    
-    swOp->Dealloc();
+}
+
+- (void)drawRect:(NSRect)dirtyRect
+{
     return;
 }
 
@@ -886,24 +818,16 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
                 return;
             _queuedDisplayFromThread = false;
         }
-        [self setNeedsDisplayInRect:[self frame]];
+        [self setNeedsDisplayInRect: [self frame]];
         [self display];
-        
     }
 }
 
 -(void) setSwRenderedFrame: (AvnFramebuffer*) fb dispose: (IUnknown*) dispose
 {
     @autoreleasepool {
-        @synchronized (self) {
-            _swRenderedFrame = dispose;
-            _swRenderedFrameBuffer = *fb;
-            if(!_queuedDisplayFromThread)
-            {
-                _queuedDisplayFromThread = true;
-                [self performSelector:@selector(redrawSelf) onThread:[NSThread mainThread] withObject:NULL waitUntilDone:false modes: AllLoopModes];
-            }
-        }
+        [_renderTarget setSwFrame:fb];
+        dispose->Release();
     }
 }
 
@@ -928,7 +852,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     auto fsize = [self convertSizeToBacking: [self frame].size];
     _lastPixelSize.Width = (int)fsize.width;
     _lastPixelSize.Height = (int)fsize.height;
-    
+    [self updateRenderTarget];
     _parent->BaseEvents->ScalingChanged([_parent->Window backingScaleFactor]);
     
     [super viewDidChangeBackingProperties];

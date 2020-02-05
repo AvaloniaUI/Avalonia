@@ -219,15 +219,12 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT SetTopMost (bool value) = 0;
     virtual HRESULT SetCursor(IAvnCursor* cursor) = 0;
     virtual HRESULT CreateGlRenderTarget(IAvnGlSurfaceRenderTarget** ret) = 0;
-    virtual HRESULT GetSoftwareFramebuffer(AvnFramebuffer*ret) = 0;
     virtual HRESULT SetMainMenu(IAvnAppMenu* menu) = 0;
     virtual HRESULT ObtainMainMenu(IAvnAppMenu** retOut) = 0;
     virtual HRESULT ObtainNSWindowHandle(void** retOut) = 0;
     virtual HRESULT ObtainNSWindowHandleRetained(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandle(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandleRetained(void** retOut) = 0;
-    virtual bool TryLock() = 0;
-    virtual void Unlock() = 0;
 };
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase

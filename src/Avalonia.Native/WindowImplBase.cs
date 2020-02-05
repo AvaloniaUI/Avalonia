@@ -103,25 +103,20 @@ namespace Avalonia.Native
 
         public ILockedFramebuffer Lock()
         {
-            if(_deferredRendering)
+            var w = _savedLogicalSize.Width * _savedScaling;
+            var h = _savedLogicalSize.Height * _savedScaling;
+            var dpi = _savedScaling * 96;
+            return new DeferredFramebuffer(cb =>
             {
-                var w = _savedLogicalSize.Width * _savedScaling;
-                var h = _savedLogicalSize.Height * _savedScaling;
-                var dpi = _savedScaling * 96;
-                return new DeferredFramebuffer(cb =>
+                lock (_syncRoot)
                 {
-                    lock (_syncRoot)
-                    {
-                        if (_native == null)
-                            return false;
-                        cb(_native);
-                        _lastRenderedLogicalSize = _savedLogicalSize;
-                        return true;
-                    }
-                }, (int)w, (int)h, new Vector(dpi, dpi));
-           }
-
-            return new FramebufferWrapper(_native.GetSoftwareFramebuffer());
+                    if (_native == null)
+                        return false;
+                    cb(_native);
+                    _lastRenderedLogicalSize = _savedLogicalSize;
+                    return true;
+                }
+            }, (int)w, (int)h, new Vector(dpi, dpi));
         }
 
         public Action<Rect> Paint { get; set; }
@@ -129,28 +124,6 @@ namespace Avalonia.Native
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice => _mouse;
         public abstract IPopupImpl CreatePopup();
-
-
-        class FramebufferWrapper : ILockedFramebuffer
-        {
-            public FramebufferWrapper(AvnFramebuffer fb)
-            {
-                Address = fb.Data;
-                Size = new PixelSize(fb.Width, fb.Height);
-                RowBytes = fb.Stride;
-                Dpi = new Vector(fb.Dpi.X, fb.Dpi.Y);
-                Format = (PixelFormat)fb.PixelFormat;
-            }
-            public IntPtr Address { get; set; }
-            public PixelSize Size { get; set; }
-            public int RowBytes {get;set;}
-            public Vector Dpi { get; set; }
-            public PixelFormat Format { get; }
-            public void Dispose()
-            {
-                // Do nothing
-            }
-        }
 
         protected class WindowBaseEvents : CallbackBase, IAvnWindowBaseEvents
         {
@@ -278,9 +251,7 @@ namespace Avalonia.Native
         public IRenderer CreateRenderer(IRenderRoot root)
         {
             if (_deferredRendering)
-                return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>(),
-                    rendererLock:
-                    _gpu ? new AvaloniaNativeDeferredRendererLock(_native) : null);
+                return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
             return new ImmediateRenderer(root);
         }
 
