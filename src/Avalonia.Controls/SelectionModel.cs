@@ -60,10 +60,6 @@ namespace Avalonia.Controls
                             null,
                             SelectedItems);
                         OnSelectionChanged(e);
-                        ClearSelection(resetAnchor: true);
-                        _rootNode.Source = value;
-                        OnSelectionChanged();
-                        RaisePropertyChanged("Source");
                     }
                 }
             }
