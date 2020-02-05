@@ -119,6 +119,14 @@ namespace Avalonia.Controls
         private object _dialogResult;
         private readonly Size _maxPlatformClientSize;
         private WindowStartupLocation _windowStartupLocation;
+        /// <summary>
+        /// We need to ignore PositionProperty.Change events when updating the dependency property for
+        /// Position. If we don't, on Windows, once we move the window position via
+        /// PlatformImpl?.Move(), it will call PositionChanged again _but_ with different #'s,
+        /// which we detect as a new change, and thus the effect keeps going and we move things again.
+        /// See case WndPrc -> UnmanagedMethods.WindowsMessage.WM_MOVE: in Avalonia.WIn32\WindowImpl.cs.
+        /// </summary>
+        private bool _shouldIgnoreMovements = false;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -174,15 +182,6 @@ namespace Avalonia.Controls
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
         }
-
-        /// <summary>
-        /// We need to ignore PositionProperty.Change events when updating the dependency property for
-        /// Position. If we don't, on Windows, once we move the window position via
-        /// PlatformImpl?.Move(), it will call PositionChanged again _but_ with different #'s,
-        /// which we detect as a new change, and thus the effect keeps going and we move things again.
-        /// See case WndPrc -> UnmanagedMethods.WindowsMessage.WM_MOVE: in Avalonia.WIn32\WindowImpl.cs.
-        /// </summary>
-        private bool _shouldIgnoreMovements = false;
 
         /// <summary>
         /// Monitor position changes for the window so that we can update any
