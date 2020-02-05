@@ -25,8 +25,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
-        public static readonly StyledProperty<Control> ChildProperty =
-            AvaloniaProperty.Register<Popup, Control>(nameof(Child));
+        public static readonly StyledProperty<Control?> ChildProperty =
+            AvaloniaProperty.Register<Popup, Control?>(nameof(Child));
 
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property.
@@ -66,8 +66,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="PlacementTarget"/> property.
         /// </summary>
-        public static readonly StyledProperty<Control> PlacementTargetProperty =
-            AvaloniaProperty.Register<Popup, Control>(nameof(PlacementTarget));
+        public static readonly StyledProperty<Control?> PlacementTargetProperty =
+            AvaloniaProperty.Register<Popup, Control?>(nameof(PlacementTarget));
 
         /// <summary>
         /// Defines the <see cref="StaysOpen"/> property.
@@ -92,7 +92,7 @@ namespace Avalonia.Controls.Primitives
         {
             IsHitTestVisibleProperty.OverrideDefaultValue<Popup>(false);
             ChildProperty.Changed.AddClassHandler<Popup>((x, e) => x.ChildChanged(e));
-            IsOpenProperty.Changed.AddClassHandler<Popup>((x, e) => x.IsOpenChanged(e));
+            IsOpenProperty.Changed.AddClassHandler<Popup>((x, e) => x.IsOpenChanged((AvaloniaPropertyChangedEventArgs<bool>)e));
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Avalonia.Controls.Primitives
         /// Gets or sets the control to display in the popup.
         /// </summary>
         [Content]
-        public Control Child
+        public Control? Child
         {
             get { return GetValue(ChildProperty); }
             set { SetValue(ChildProperty, value); }
@@ -176,7 +176,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the control that is used to determine the popup's position.
         /// </summary>
-        public Control PlacementTarget
+        public Control? PlacementTarget
         {
             get { return GetValue(PlacementTargetProperty); }
             set { SetValue(PlacementTargetProperty, value); }
@@ -360,11 +360,11 @@ namespace Avalonia.Controls.Primitives
         /// Called when the <see cref="IsOpen"/> property changes.
         /// </summary>
         /// <param name="e">The event args.</param>
-        private void IsOpenChanged(AvaloniaPropertyChangedEventArgs e)
+        private void IsOpenChanged(AvaloniaPropertyChangedEventArgs<bool> e)
         {
             if (!_ignoreIsOpenChanged)
             {
-                if ((bool)e.NewValue)
+                if (e.NewValue.Value)
                 {
                     Open();
                 }
@@ -404,13 +404,10 @@ namespace Avalonia.Controls.Primitives
 
         private void PointerPressedOutside(object sender, PointerPressedEventArgs e)
         {
-            if (!StaysOpen)
+            if (!StaysOpen && !IsChildOrThis((IVisual)e.Source))
             {
-                if (!IsChildOrThis((IVisual)e.Source))
-                {
-                    Close();
-                    e.Handled = true;
-                }
+                Close();
+                e.Handled = true;
             }
         }
 
@@ -425,7 +422,7 @@ namespace Avalonia.Controls.Primitives
 
             popupHost.TemplateApplied -= RootTemplateApplied;
 
-            _openState.CleanupPresenterSubscription();
+            _openState.SetPresenterSubscription(null);
 
             // If the Popup appears in a control template, then the child controls
             // that appear in the popup host need to have their TemplatedParent
@@ -437,7 +434,7 @@ namespace Avalonia.Controls.Primitives
                 var presenterSubscription = popupHost.Presenter.GetObservable(ContentPresenter.ChildProperty)
                     .Subscribe(SetTemplatedParentAndApplyChildTemplates);
 
-                _openState.DeferCleanupPresenterSubscription(presenterSubscription);
+                _openState.SetPresenterSubscription(presenterSubscription);
             }
         }
 
@@ -555,21 +552,9 @@ namespace Avalonia.Controls.Primitives
 
             public IPopupHost PopupHost { get; }
 
-            public void CleanupPresenterSubscription()
+            public void SetPresenterSubscription(IDisposable? presenterCleanup)
             {
                 _presenterCleanup?.Dispose();
-                _presenterCleanup = null;
-            }
-
-            public void DeferCleanupPresenterSubscription(IDisposable presenterCleanup)
-            {
-                if (_presenterCleanup != null)
-                {
-                    // Shouldn't really happen since we always cleanup before calling this.
-                    Debug.Assert(false);
-
-                    _presenterCleanup.Dispose();
-                }
 
                 _presenterCleanup = presenterCleanup;
             }
