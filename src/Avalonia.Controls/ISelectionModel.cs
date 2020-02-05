@@ -16,6 +16,7 @@ namespace Avalonia.Controls
         object SelectedItem { get; }
         IReadOnlyList<object> SelectedItems { get; }
         bool SingleSelect { get; set; }
+        bool AutoSelect { get; set; }
         object Source { get; set; }
 
         event EventHandler<SelectionModelChildrenRequestedEventArgs> ChildrenRequested;
