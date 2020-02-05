@@ -12,7 +12,7 @@ using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
 {
-    public class SelectionModel : INotifyPropertyChanged, IDisposable
+    public class SelectionModel : ISelectionModel, INotifyPropertyChanged, IDisposable
     {
         private readonly SelectionNode _rootNode;
         private bool _singleSelect;
@@ -71,7 +71,6 @@ namespace Avalonia.Controls
                 }
             }
         }
-
 
         public IndexPath AnchorIndex
         {
@@ -184,7 +183,7 @@ namespace Avalonia.Controls
                     // the selected item at a particular index. This avoid having to create the storage and copying
                     // needed in a dumb vector. This also allows us to expose a tree of selected nodes into an 
                     // easier to consume flat vector view of objects.
-                    var selectedItems = new SelectedItems<object?> (
+                    var selectedItems = new SelectedItems<object?>(
                         selectedInfos,
                         (infos, index) =>
                         {
@@ -284,7 +283,7 @@ namespace Avalonia.Controls
                     _selectedIndicesCached = indices;
                 }
 
-                return _selectedIndicesCached; 
+                return _selectedIndicesCached;
             }
         }
 
@@ -455,7 +454,7 @@ namespace Avalonia.Controls
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public void OnSelectionInvalidatedDueToCollectionChange()
+        internal void OnSelectionInvalidatedDueToCollectionChange()
         {
             OnSelectionChanged();
         }
@@ -535,7 +534,7 @@ namespace Avalonia.Controls
 
             RaisePropertyChanged(nameof(SelectedIndex));
             RaisePropertyChanged(nameof(SelectedIndices));
-            
+
             if (_rootNode.Source != null)
             {
                 RaisePropertyChanged(nameof(SelectedItem));
@@ -551,7 +550,7 @@ namespace Avalonia.Controls
             }
 
             var selected = _rootNode.Select(index, select);
-            
+
             if (selected)
             {
                 AnchorIndex = new IndexPath(index);
@@ -569,7 +568,7 @@ namespace Avalonia.Controls
 
             var childNode = _rootNode.GetAt(groupIndex, realizeChild: true);
             var selected = childNode!.Select(itemIndex, select);
-            
+
             if (selected)
             {
                 AnchorIndex = new IndexPath(groupIndex, itemIndex);
@@ -581,7 +580,7 @@ namespace Avalonia.Controls
         private void SelectWithPathImpl(IndexPath index, bool select, bool raiseSelectionChanged)
         {
             bool selected = false;
-            
+
             if (_singleSelect)
             {
                 ClearSelection(resetAnchor: true, raiseSelectionChanged: false);
@@ -615,7 +614,7 @@ namespace Avalonia.Controls
         {
             int anchorIndex = 0;
             var anchor = AnchorIndex;
-            
+
             if (anchor != null)
             {
                 anchorIndex = anchor.GetAt(0);
@@ -634,7 +633,7 @@ namespace Avalonia.Controls
             var startGroupIndex = 0;
             var startItemIndex = 0;
             var anchorIndex = AnchorIndex;
-            
+
             if (anchorIndex != null)
             {
                 startGroupIndex = anchorIndex.GetAt(0);
