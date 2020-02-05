@@ -95,6 +95,9 @@ namespace Avalonia.Controls
                 o => o.WindowStartupLocation,
                 (o, v) => o.WindowStartupLocation = v);
 
+        public static readonly StyledProperty<PixelPoint> PositionProperty =
+            AvaloniaProperty.Register<Window, PixelPoint>(nameof(Position), defaultBindingMode: Data.BindingMode.TwoWay);
+
         public static readonly StyledProperty<bool> CanResizeProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(CanResize), true);
 
@@ -131,6 +134,13 @@ namespace Avalonia.Controls
 
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
 
+            PositionProperty.Changed.AddClassHandler<Window>((s, e) => {
+                if (!s._shouldIgnoreMovements)
+                {
+                    s.PlatformImpl?.Move((PixelPoint)e.NewValue);
+                }
+            });
+
             CanResizeProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.CanResize((bool)e.NewValue));
 
             WindowStateProperty.Changed.AddClassHandler<Window>(
@@ -160,8 +170,25 @@ namespace Avalonia.Controls
         {
             impl.Closing = HandleClosing;
             impl.WindowStateChanged = HandleWindowStateChanged;
+            PositionChanged += Window_PositionChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
+        }
+
+        /// <summary>
+        /// We need to ignore PositionProperty.Change events when updating the dependency property for
+        /// Position. If we don't, on Windows, once we move the window position via
+        /// PlatformImpl?.Move(), it will call PositionChanged again _but_ with different #'s,
+        /// which we detect as a new change, and thus the effect keeps going and we move things again.
+        /// See case WndPrc -> UnmanagedMethods.WindowsMessage.WM_MOVE: in Avalonia.WIn32\WindowImpl.cs.
+        /// </summary>
+        private bool _shouldIgnoreMovements = false;
+
+        private void Window_PositionChanged(object sender, PixelPointEventArgs e)
+        {
+            _shouldIgnoreMovements = true;
+            SetValue(PositionProperty, e.Point);
+            _shouldIgnoreMovements = false;
         }
 
         /// <summary>
@@ -335,6 +362,7 @@ namespace Avalonia.Controls
             {
                 if (close)
                 {
+                    PositionChanged -= Window_PositionChanged;
                     PlatformImpl?.Dispose();
                 }
             }
