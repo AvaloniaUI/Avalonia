@@ -184,6 +184,12 @@ namespace Avalonia.Controls
         /// </summary>
         private bool _shouldIgnoreMovements = false;
 
+        /// <summary>
+        /// Monitor position changes for the window so that we can update any
+        /// properties as necessary
+        /// </summary>
+        /// <param name="sender">Window that sent this event</param>
+        /// <param name="e">Args that have the new PixelPoint for the window position</param>
         private void Window_PositionChanged(object sender, PixelPointEventArgs e)
         {
             _shouldIgnoreMovements = true;
