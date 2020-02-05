@@ -55,11 +55,7 @@ namespace Avalonia.Controls
                     if (_retainSelectionOnReset)
                     {
                         _selectedItems = new List<object?>();
-
-                        foreach (var i in SelectedIndices)
-                        {
-                            _selectedItems.Add(ItemsSourceView!.GetAt(i));
-                        }
+                        PopulateSelectedItemsFromSelectedIndices();
                     }
                     else
                     {
@@ -94,7 +90,7 @@ namespace Avalonia.Controls
 
                     // Setup ItemsSourceView
                     var newDataSource = value as ItemsSourceView;
-                    
+
                     if (value != null && newDataSource == null)
                     {
                         newDataSource = new ItemsSourceView((IEnumerable)value);
@@ -102,6 +98,7 @@ namespace Avalonia.Controls
 
                     ItemsSourceView = newDataSource;
 
+                    PopulateSelectedItemsFromSelectedIndices();
                     HookupCollectionChangedHandler();
                     OnSelectionChanged();
                 }
@@ -453,7 +450,7 @@ namespace Avalonia.Controls
             {
                 _operation?.Selected(selected);
 
-                if (_selectedItems != null)
+                if (_selectedItems != null && ItemsSourceView != null)
                 {
                     for (var i = addRange.Begin; i <= addRange.End; ++i)
                     {
@@ -875,6 +872,19 @@ namespace Avalonia.Controls
             }
 
             return selectionState;
+        }
+
+        private void PopulateSelectedItemsFromSelectedIndices()
+        {
+            if (_selectedItems != null)
+            {
+                _selectedItems.Clear();
+
+                foreach (var i in SelectedIndices)
+                {
+                    _selectedItems.Add(ItemsSourceView!.GetAt(i));
+                }
+            }
         }
 
         private List<object?> RecreateSelectionFromSelectedItems()

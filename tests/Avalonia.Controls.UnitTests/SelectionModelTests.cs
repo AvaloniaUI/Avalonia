@@ -1596,6 +1596,51 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, raised);
         }
 
+        [Fact]
+        public void RetainSelectionOnReset_Handles_Null_Source()
+        {
+            var data = new ResettingList<string> { "foo", "bar", "baz" };
+            var target = new SelectionModel { RetainSelectionOnReset = true };
+            var raised = 0;
+
+            target.SelectionChanged += (s, e) =>
+            {
+                if (raised == 0)
+                {
+                    Assert.Empty(e.DeselectedIndices);
+                    Assert.Empty(e.DeselectedItems);
+                    Assert.Equal(new[] { new IndexPath(1) }, e.SelectedIndices);
+                    Assert.Empty(e.SelectedItems);
+                }
+                else if (raised == 1)
+                {
+                    Assert.Empty(e.DeselectedIndices);
+                    Assert.Empty(e.DeselectedItems);
+                    Assert.Equal(new[] { new IndexPath(1) }, e.SelectedIndices);
+                    Assert.Equal(new[] { "bar" }, e.SelectedItems);
+                }
+                else if (raised == 3)
+                {
+                    Assert.Empty(e.DeselectedIndices);
+                    Assert.Empty(e.DeselectedItems);
+                    Assert.Empty(e.SelectedIndices);
+                    Assert.Empty(e.SelectedItems);
+                }
+
+                ++raised;
+            };
+
+            target.Select(1);
+            Assert.Equal(1, raised);
+
+            target.Source = data;
+            Assert.Equal(2, raised);
+            Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndices);
+
+            data.Reset(new[] { "qux", "foo", "bar", "baz" });
+            Assert.Equal(3, raised);
+            Assert.Equal(new[] { new IndexPath(2) }, target.SelectedIndices);
+        }
 
         private int GetSubscriberCount(AvaloniaList<object> list)
         {
