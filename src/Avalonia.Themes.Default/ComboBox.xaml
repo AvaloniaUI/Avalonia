@@ -4,7 +4,6 @@
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
     <Setter Property="Padding" Value="4"/>
-    <Setter Property="MinHeight" Value="26"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="border"
@@ -17,6 +16,13 @@
                             Margin="{TemplateBinding Padding}"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"/>
+            <TextBlock
+                            Name="emptyPlaceholder"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Opacity="0"
+                            Text=" " />
             <ToggleButton Name="toggle"
                           BorderThickness="0"
                           Background="Transparent"
@@ -60,6 +66,9 @@
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
   </Style>
     <Style Selector="ComboBox:disabled /template/ Border#border">
-        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
-    </Style>
+    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+  </Style>
+  <Style Selector="ComboBox[SelectedIndex=-1] /template/ TextBlock#emptyPlaceholder">
+    <Setter Property="Opacity" Value="1" />
+  </Style>
 </Styles>
