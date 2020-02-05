@@ -16,13 +16,6 @@
                             Margin="{TemplateBinding Padding}"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"/>
-            <TextBlock
-                            Name="emptyPlaceholder"
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            Opacity="0"
-                            Text=" " />
             <ToggleButton Name="toggle"
                           BorderThickness="0"
                           Background="Transparent"
@@ -68,7 +61,13 @@
     <Style Selector="ComboBox:disabled /template/ Border#border">
     <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
   </Style>
-  <Style Selector="ComboBox[SelectedIndex=-1] /template/ TextBlock#emptyPlaceholder">
-    <Setter Property="Opacity" Value="1" />
+  <Style Selector="ComboBox[SelectedIndex=-1] /template/ ContentControl">
+    <Setter Property="Content">
+      <Setter.Value>
+        <Template>
+          <TextBlock Text=" " />
+        </Template>
+      </Setter.Value>
+    </Setter>
   </Style>
 </Styles>
