@@ -13,7 +13,7 @@ using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
 {
-    public class SelectionModel : INotifyPropertyChanged, IDisposable
+    public class SelectionModel : ISelectionModel, INotifyPropertyChanged, IDisposable
     {
         private readonly SelectionNode _rootNode;
         private bool _singleSelect;
@@ -96,7 +96,6 @@ namespace Avalonia.Controls
                 }
             }
         }
-
 
         public IndexPath AnchorIndex
         {
@@ -316,7 +315,7 @@ namespace Avalonia.Controls
                     _selectedIndicesCached = indices;
                 }
 
-                return _selectedIndicesCached; 
+                return _selectedIndicesCached;
             }
         }
 
@@ -594,7 +593,7 @@ namespace Avalonia.Controls
 
             RaisePropertyChanged(nameof(SelectedIndex));
             RaisePropertyChanged(nameof(SelectedIndices));
-            
+
             if (_rootNode.Source != null)
             {
                 RaisePropertyChanged(nameof(SelectedItem));
@@ -610,7 +609,7 @@ namespace Avalonia.Controls
             }
 
             var selected = _rootNode.Select(index, select);
-            
+
             if (selected)
             {
                 AnchorIndex = new IndexPath(index);
@@ -626,7 +625,7 @@ namespace Avalonia.Controls
 
             var childNode = _rootNode.GetAt(groupIndex, realizeChild: true);
             var selected = childNode!.Select(itemIndex, select);
-            
+
             if (selected)
             {
                 AnchorIndex = new IndexPath(groupIndex, itemIndex);
@@ -636,7 +635,7 @@ namespace Avalonia.Controls
         private void SelectWithPathImpl(IndexPath index, bool select)
         {
             bool selected = false;
-            
+
             if (_singleSelect)
             {
                 ClearSelection(resetAnchor: true);
@@ -665,7 +664,7 @@ namespace Avalonia.Controls
         {
             int anchorIndex = 0;
             var anchor = AnchorIndex;
-            
+
             if (anchor != null)
             {
                 anchorIndex = anchor.GetAt(0);
@@ -679,7 +678,7 @@ namespace Avalonia.Controls
             var startGroupIndex = 0;
             var startItemIndex = 0;
             var anchorIndex = AnchorIndex;
-            
+
             if (anchorIndex != null)
             {
                 startGroupIndex = anchorIndex.GetAt(0);
