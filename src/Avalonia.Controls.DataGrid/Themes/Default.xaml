@@ -217,12 +217,12 @@
             <DataGridRowsPresenter Name="PART_RowsPresenter" Grid.ColumnSpan="2" Grid.Row="1" />
             <Rectangle Name="BottomRightCorner" Fill="#FFE9EEF4" Grid.Column="2" Grid.Row="2" />
             <Rectangle Name="BottomLeftCorner" Fill="#FFE9EEF4" Grid.Row="2" Grid.ColumnSpan="2" />
-            <ScrollBar Name="PART_VerticalScrollbar" Orientation="Vertical" Grid.Column="2" Grid.Row="1" Width="{DynamicResource ScrollBarThickness}" Margin="0,-1,-1,-1"/>
+            <ScrollBar Name="PART_VerticalScrollbar" Orientation="Vertical" Grid.Column="2" Grid.Row="1" Width="{DynamicResource ScrollBarThickness}"/>
 
             <Grid Grid.Column="1" Grid.Row="2"
                   ColumnDefinitions="Auto,*">
               <Rectangle Name="PART_FrozenColumnScrollBarSpacer" />
-              <ScrollBar Name="PART_HorizontalScrollbar" Grid.Column="1" Orientation="Horizontal" Height="{DynamicResource ScrollBarThickness}" Margin="-1,0,-1,-1"/>
+              <ScrollBar Name="PART_HorizontalScrollbar" Grid.Column="1" Orientation="Horizontal" Height="{DynamicResource ScrollBarThickness}"/>
             </Grid>
           </Grid>
         </Border>
