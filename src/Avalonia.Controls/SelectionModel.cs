@@ -533,6 +533,8 @@ namespace Avalonia.Controls
             ApplyAutoSelect();
         }
 
+        public IDisposable Update() => new Operation(this);
+
         protected void OnPropertyChanged(string propertyName)
         {
             RaisePropertyChanged(propertyName);
