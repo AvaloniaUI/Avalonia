@@ -17,6 +17,7 @@ namespace Avalonia.Controls
     {
         private readonly SelectionNode _rootNode;
         private bool _singleSelect;
+        private int _operationCount;
         private IReadOnlyList<IndexPath>? _selectedIndicesCached;
         private IReadOnlyList<object?>? _selectedItemsCached;
         private SelectionModelChildrenRequestedEventArgs? _childrenRequestedEventArgs;
@@ -510,6 +511,8 @@ namespace Avalonia.Controls
             ClearSelection(resetAnchor: true);
         }
 
+        public IDisposable Update() => new Operation(this);
+
         protected void OnPropertyChanged(string propertyName)
         {
             RaisePropertyChanged(propertyName);
@@ -733,19 +736,33 @@ namespace Avalonia.Controls
                 });
         }
 
-        private void BeginOperation() => _rootNode.BeginOperation();
+        private void BeginOperation()
+        {
+            if (_operationCount++ == 0)
+            {
+                _rootNode.BeginOperation();
+            }
+        }
 
         private void EndOperation()
         {
-            var changes = new List<SelectionNodeOperation>();
-            _rootNode.EndOperation(changes);
+            if (_operationCount == 0)
+            {
+                throw new AvaloniaInternalException("No selection operation in progress.");
+            }
 
             SelectionModelSelectionChangedEventArgs? e = null;
-            
-            if (changes.Count > 0)
+
+            if (--_operationCount == 0)
             {
-                var changeSet = new SelectionModelChangeSet(changes);
-                e = changeSet.CreateEventArgs();
+                var changes = new List<SelectionNodeOperation>();
+                _rootNode.EndOperation(changes);
+
+                if (changes.Count > 0)
+                {
+                    var changeSet = new SelectionModelChangeSet(changes);
+                    e = changeSet.CreateEventArgs();
+                }
             }
 
             OnSelectionChanged(e);
