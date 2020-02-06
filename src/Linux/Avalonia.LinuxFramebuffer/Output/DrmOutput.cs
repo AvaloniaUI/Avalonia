@@ -234,6 +234,8 @@ namespace Avalonia.LinuxFramebuffer.Output
                 public PixelSize Size => _parent._mode.Resolution;
 
                 public double Scaling => _parent.Scaling;
+
+                public bool IsYFlipped { get; }
             }
 
             public IGlPlatformSurfaceRenderingSession BeginDraw()
