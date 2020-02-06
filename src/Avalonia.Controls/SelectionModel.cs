@@ -324,6 +324,7 @@ namespace Avalonia.Controls
         public void Dispose()
         {
             ClearSelection(resetAnchor: false);
+            _rootNode.Cleanup();
             _rootNode.Dispose();
             _selectedIndicesCached = null;
             _selectedItemsCached = null;
@@ -764,6 +765,7 @@ namespace Avalonia.Controls
             }
 
             OnSelectionChanged(e);
+            _rootNode.Cleanup();
         }
 
         internal class SelectedItemInfo : ISelectedItemInfo
