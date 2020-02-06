@@ -45,6 +45,7 @@ namespace Avalonia.Skia
                 {
                     GrContext = GRContext.Create(GRBackend.OpenGL, iface);
                 }
+                display.ClearContext();
             }
         }
 
