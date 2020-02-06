@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Avalonia.Controls.Utils;
 
 #nullable enable
@@ -116,6 +115,8 @@ namespace Avalonia.Controls
                 }
             }
         }
+
+        public bool SelectOnlyLeafNodes { get; set; }
 
         public IndexPath AnchorIndex
         {
@@ -667,9 +668,16 @@ namespace Avalonia.Controls
                 winrtEnd,
                 info =>
                 {
-                    if (info.Node.DataCount == 0)
+                    if (SelectOnlyLeafNodes)
                     {
-                        // Select only leaf nodes
+                        if (info.Node.DataCount == 0)
+                        {
+                            // Select only leaf nodes
+                            info.ParentNode!.Select(info.Path.GetAt(info.Path.GetSize() - 1), select);
+                        }
+                    }
+                    else
+                    {
                         info.ParentNode!.Select(info.Path.GetAt(info.Path.GetSize() - 1), select);
                     }
                 });

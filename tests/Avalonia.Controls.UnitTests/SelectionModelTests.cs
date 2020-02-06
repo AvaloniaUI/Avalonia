@@ -155,7 +155,7 @@ namespace Avalonia.Controls.UnitTests
         {
             RunOnUIThread.Execute(() =>
             {
-                SelectionModel selectionModel = new SelectionModel();
+                SelectionModel selectionModel = new SelectionModel { SelectOnlyLeafNodes = true };
                 Log.Comment("Setting the source");
                 selectionModel.Source = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
 
@@ -269,7 +269,7 @@ namespace Avalonia.Controls.UnitTests
         {
             RunOnUIThread.Execute(() =>
             {
-                SelectionModel selectionModel = new SelectionModel();
+                SelectionModel selectionModel = new SelectionModel { SelectOnlyLeafNodes = true };
                 List<IndexPath> sourcePaths = new List<IndexPath>();
 
                 Log.Comment("Setting the source");
@@ -906,6 +906,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var selectionModel = new SelectionModel()
                 {
+                    SelectOnlyLeafNodes = true,
                     Source = CreateNestedData(1, 2, 3)
                 };
 
@@ -1324,7 +1325,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Removing_Selected_Item_With_Children_Raises_SelectionChanged()
         {
-            var target = new SelectionModel();
+            var target = new SelectionModel { SelectOnlyLeafNodes = true };
             var data = CreateNestedData(1, 2, 3);
             var raised = 0;
 
