@@ -836,31 +836,31 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal((object)NonControl.StringProperty, txt.Tag);
         }
 
-        [Fact]
-        public void Binding_To_List_AvaloniaProperty_Is_Operational()
-        {
-            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
-            {
-                var xaml = @"
-<Window xmlns='https://github.com/avaloniaui'>
-    <ListBox Items='{Binding Items}' SelectedItems='{Binding SelectedItems}'/>
-</Window>";
+////        [Fact]
+////        public void Binding_To_List_AvaloniaProperty_Is_Operational()
+////        {
+////            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+////            {
+////                var xaml = @"
+////<Window xmlns='https://github.com/avaloniaui'>
+////    <ListBox Items='{Binding Items}' SelectedItems='{Binding SelectedItems}'/>
+////</Window>";
 
-                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
-                var listBox = (ListBox)window.Content;
+////                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+////                var listBox = (ListBox)window.Content;
 
-                var vm = new SelectedItemsViewModel()
-                {
-                    Items = new string[] { "foo", "bar", "baz" }
-                };
+////                var vm = new SelectedItemsViewModel()
+////                {
+////                    Items = new string[] { "foo", "bar", "baz" }
+////                };
 
-                window.DataContext = vm;
+////                window.DataContext = vm;
 
-                Assert.Equal(vm.Items, listBox.Items);
+////                Assert.Equal(vm.Items, listBox.Items);
 
-                Assert.Equal(vm.SelectedItems, listBox.SelectedItems);
-            }
-        }
+////                Assert.Equal(vm.SelectedItems, listBox.SelectedItems);
+////            }
+////        }
 
         [Fact]
         public void Element_Whitespace_Should_Be_Trimmed()

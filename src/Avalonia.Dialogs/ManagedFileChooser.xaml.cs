@@ -61,7 +61,7 @@ namespace Avalonia.Dialogs
                 return;
             }
 
-            var preselected = model.SelectedItems.FirstOrDefault();
+            var preselected = (ManagedFileChooserItemViewModel)model.Selection.SelectedItem;
 
             if (preselected == null)
             {
@@ -71,7 +71,7 @@ namespace Avalonia.Dialogs
             //Let everything to settle down and scroll to selected item
             await Task.Delay(100);
 
-            if (preselected != model.SelectedItems.FirstOrDefault())
+            if (preselected != model.Selection.SelectedItem)
             {
                 return;
             }

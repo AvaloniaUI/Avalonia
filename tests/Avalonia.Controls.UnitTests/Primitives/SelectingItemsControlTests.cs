@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -15,7 +14,6 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Data;
-using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -245,7 +243,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
 
         [Fact]
-        public void Setting_SelectedItems_Before_Initialize_Should_Retain()
+        public void Setting_Selection_Before_Initialize_Should_Retain_Selection()
         {
             var listBox = new ListBox
             {
@@ -254,21 +252,18 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             var selected = new[] { "foo", "bar" };
-
-            foreach (var v in selected)
-            {
-                listBox.SelectedItems.Add(v);
-            }
+            
+            listBox.Selection.SelectRange(new IndexPath(0), new IndexPath(1));
 
             listBox.BeginInit();
 
             listBox.EndInit();
 
-            Assert.Equal(selected, listBox.SelectedItems);
+            Assert.Equal(selected, listBox.Selection.SelectedItems);
         }
 
         [Fact]
-        public void Setting_SelectedItems_During_Initialize_Should_Take_Priority_Over_Previous_Value()
+        public void Setting_Selection_During_Initialize_Should_Take_Priority_Over_Previous_Value()
         {
             var listBox = new ListBox
             {
@@ -278,18 +273,17 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var selected = new[] { "foo", "bar" };
 
-            foreach (var v in new[] { "bar", "baz" })
-            {
-                listBox.SelectedItems.Add(v);
-            }
+            listBox.Selection.SelectRange(new IndexPath(1), new IndexPath(2));
 
             listBox.BeginInit();
 
-            listBox.SelectedItems = new AvaloniaList<object>(selected);
+            var selection = new SelectionModel { Source = listBox.Items };
+            selection.SelectRange(new IndexPath(0), new IndexPath(1));
+            listBox.Selection = selection;
 
             listBox.EndInit();
 
-            Assert.Equal(selected, listBox.SelectedItems);
+            Assert.Equal(selected, listBox.Selection.SelectedItems);
         }
 
         [Fact]
@@ -552,33 +546,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.NotNull(receivedArgs);
             Assert.Empty(receivedArgs.AddedItems);
             Assert.Equal(new[] { removed }, receivedArgs.RemovedItems);
-        }
-
-        [Fact]
-        public void Moving_Selected_Item_Should_Update_Selection()
-        {
-            var items = new AvaloniaList<Item>
-            {
-                new Item(),
-                new Item(),
-            };
-
-            var target = new SelectingItemsControl
-            {
-                Items = items,
-                Template = Template(),
-            };
-
-            target.ApplyTemplate();
-            target.SelectedIndex = 0;
-
-            Assert.Equal(items[0], target.SelectedItem);
-            Assert.Equal(0, target.SelectedIndex);
-
-            items.Move(0, 1);
-
-            Assert.Equal(items[1], target.SelectedItem);
-            Assert.Equal(1, target.SelectedIndex);
         }
 
         [Fact]
@@ -1101,8 +1068,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             items[1] = "Qux";
 
-            Assert.Equal(1, target.SelectedIndex);
-            Assert.Equal("Qux", target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Null(target.SelectedItem);
         }
 
         [Fact]
@@ -1172,23 +1139,23 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Can_Set_Both_SelectedItem_And_SelectedItems_During_Initialization()
+        public void Can_Set_Both_SelectedItem_And_Selection_During_Initialization()
         {
             // Issue #2969.
             var target = new ListBox();
-            var selectedItems = new List<object>();
+            var selection = new SelectionModel();
 
             target.BeginInit();
             target.Template = Template();
             target.Items = new[] { "Foo", "Bar", "Baz" };
-            target.SelectedItems = selectedItems;
+            target.Selection = selection;
             target.SelectedItem = "Bar";
             target.EndInit();
 
             Assert.Equal("Bar", target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
-            Assert.Same(selectedItems, target.SelectedItems);
-            Assert.Equal(new[] { "Bar" }, selectedItems);
+            Assert.Same(selection, target.Selection);
+            Assert.Equal(new[] { "Bar" }, selection.SelectedItems);
         }
 
         [Fact]

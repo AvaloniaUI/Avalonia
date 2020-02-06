@@ -51,8 +51,7 @@ namespace VirtualizationDemo.ViewModels
             set { this.RaiseAndSetIfChanged(ref _itemCount, value); }
         }
 
-        public AvaloniaList<ItemViewModel> SelectedItems { get; } 
-            = new AvaloniaList<ItemViewModel>();
+        public SelectionModel Selection { get; } = new SelectionModel();
 
         public AvaloniaList<ItemViewModel> Items
         {
@@ -141,9 +140,9 @@ namespace VirtualizationDemo.ViewModels
         {
             var index = Items.Count;
 
-            if (SelectedItems.Count > 0)
+            if (Selection.SelectedIndices.Count > 0)
             {
-                index = Items.IndexOf(SelectedItems[0]);
+                index = Selection.SelectedIndex.GetAt(0);
             }
 
             Items.Insert(index, new ItemViewModel(_newItemIndex++, NewItemString));
@@ -151,9 +150,9 @@ namespace VirtualizationDemo.ViewModels
 
         private void Remove()
         {
-            if (SelectedItems.Count > 0)
+            if (Selection.SelectedItems.Count > 0)
             {
-                Items.RemoveAll(SelectedItems);
+                Items.RemoveAll(Selection.SelectedItems.Cast<ItemViewModel>().ToList());
             }
         }
 
@@ -167,8 +166,7 @@ namespace VirtualizationDemo.ViewModels
 
         private void SelectItem(int index)
         {
-            SelectedItems.Clear();
-            SelectedItems.Add(Items[index]);
+            Selection.SelectedIndex = new IndexPath(index);
         }
     }
 }

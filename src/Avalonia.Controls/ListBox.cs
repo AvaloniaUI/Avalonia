@@ -29,10 +29,10 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<ListBox, IScrollable>(nameof(Scroll), o => o.Scroll);
 
         /// <summary>
-        /// Defines the <see cref="SelectedItems"/> property.
+        /// Defines the <see cref="Selection"/> property.
         /// </summary>
-        public static readonly new DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
-            SelectingItemsControl.SelectedItemsProperty;
+        public static readonly new DirectProperty<SelectingItemsControl, ISelectionModel> SelectionProperty =
+            SelectingItemsControl.SelectionProperty;
 
         /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
@@ -66,11 +66,13 @@ namespace Avalonia.Controls
             private set { SetAndRaise(ScrollProperty, ref _scroll, value); }
         }
 
-        /// <inheritdoc/>
-        public new IList SelectedItems
+        /// <summary>
+        /// Gets or sets a model holding the current selection.
+        /// </summary>
+        public new ISelectionModel Selection
         {
-            get => base.SelectedItems;
-            set => base.SelectedItems = value;
+            get => base.Selection;
+            set => base.Selection = value;
         }
 
         /// <summary>
@@ -98,12 +100,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Selects all items in the <see cref="ListBox"/>.
         /// </summary>
-        public new void SelectAll() => base.SelectAll();
+        public void SelectAll() => Selection.SelectAll();
 
         /// <summary>
         /// Deselects all items in the <see cref="ListBox"/>.
         /// </summary>
-        public new void UnselectAll() => base.UnselectAll();
+        public void UnselectAll() => Selection.ClearSelection();
 
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()

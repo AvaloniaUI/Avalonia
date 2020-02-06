@@ -41,7 +41,8 @@ namespace Avalonia.Controls
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
         public static readonly DirectProperty<TreeView, IList> SelectedItemsProperty =
-            ListBox.SelectedItemsProperty.AddOwner<TreeView>(
+            AvaloniaProperty.RegisterDirect<TreeView, IList>(
+                nameof(SelectedItems),
                 o => o.SelectedItems,
                 (o, v) => o.SelectedItems = v);
 

@@ -26,8 +26,7 @@ namespace Avalonia.Dialogs
         public AvaloniaList<ManagedFileChooserFilterViewModel> Filters { get; } =
             new AvaloniaList<ManagedFileChooserFilterViewModel>();
 
-        public AvaloniaList<ManagedFileChooserItemViewModel> SelectedItems { get; } =
-            new AvaloniaList<ManagedFileChooserItemViewModel>();
+        public SelectionModel Selection { get; } = new SelectionModel();
 
         string _location;
         string _fileName;
@@ -169,7 +168,7 @@ namespace Avalonia.Dialogs
             }
 
             Navigate(directory, (dialog as FileDialog)?.InitialFileName);
-            SelectedItems.CollectionChanged += OnSelectionChangedAsync;
+            Selection.SelectionChanged += OnSelectionChangedAsync;
         }
 
         public void EnterPressed()
@@ -184,7 +183,7 @@ namespace Avalonia.Dialogs
             }
         }
 
-        private async void OnSelectionChangedAsync(object sender, NotifyCollectionChangedEventArgs e)
+        private async void OnSelectionChangedAsync(object sender, SelectionModelSelectionChangedEventArgs e)
         {
             if (_scheduledSelectionValidation)
             {
@@ -198,19 +197,24 @@ namespace Avalonia.Dialogs
                 {
                     if (_selectingDirectory)
                     {
-                        SelectedItems.Clear();
+                        Selection.ClearSelection();
                     }
                     else
                     {
-                        var invalidItems = SelectedItems.Where(i => i.ItemType == ManagedFileChooserItemType.Folder).ToList();
+                        var invalidItems = e.SelectedItems
+                            .Cast<ManagedFileChooserItemViewModel>()
+                            .Where(i => i.ItemType == ManagedFileChooserItemType.Folder)
+                            .ToList();
+
                         foreach (var item in invalidItems)
                         {
-                            SelectedItems.Remove(item);
+                            var index = Items.IndexOf(item);
+                            Selection.Deselect(index);
                         }
 
                         if (!_selectingDirectory)
                         {
-                            var selectedItem = SelectedItems.FirstOrDefault();
+                            var selectedItem = (ManagedFileChooserItemViewModel)Selection.SelectedItem;
                             
 						    if (selectedItem != null)
 						    {
@@ -250,7 +254,7 @@ namespace Avalonia.Dialogs
             {
                 Location = path;
                 Items.Clear();
-                SelectedItems.Clear();
+                Selection.ClearSelection();
 
                 try
                 {
@@ -301,11 +305,23 @@ namespace Avalonia.Dialogs
 
                     if (initialSelectionName != null)
                     {
-                        var sel = Items.FirstOrDefault(i => i.ItemType == ManagedFileChooserItemType.File && i.DisplayName == initialSelectionName);
+                        var index = -1;
 
-                        if (sel != null)
+                        for (var i = 0; i < Items.Count; ++i)
                         {
-                            SelectedItems.Add(sel);
+                            var item = Items[i];
+
+                            if (item.ItemType == ManagedFileChooserItemType.File &&
+                                item.DisplayName == initialSelectionName)
+                            {
+                                index = i;
+                                break;
+                            }
+                        }
+
+                        if (index != -1)
+                        {
+                            Selection.Select(index);
                         }
                     }
 
@@ -361,7 +377,11 @@ namespace Avalonia.Dialogs
             }
             else
             {
-                CompleteRequested?.Invoke(SelectedItems.Select(i => i.Path).ToArray());
+                CompleteRequested?.Invoke(
+                    Selection.SelectedItems
+                        .Cast<ManagedFileChooserItemViewModel>()
+                        .Select(i => i.Path)
+                        .ToArray());
             }
         }
 
