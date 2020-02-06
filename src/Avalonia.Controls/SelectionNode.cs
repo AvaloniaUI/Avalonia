@@ -655,6 +655,7 @@ namespace Avalonia.Controls
                         if (_childrenNodes[index] != null)
                         {
                             RealizedChildrenNodeCount--;
+                            _childrenNodes[index]!.Dispose();
                         }
                         _childrenNodes.RemoveAt(index);
                     }
