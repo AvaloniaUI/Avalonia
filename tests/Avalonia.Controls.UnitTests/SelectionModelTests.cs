@@ -1405,6 +1405,20 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Removing_Item_Unhooks_CollectionChanged_Handlers()
+        {
+            var data = CreateNestedData(2, 2, 2);
+            var target = new SelectionModel { Source = data };
+
+            target.SelectAll();
+
+            var toRemove = (AvaloniaList<object>)data[1];
+            data.Remove(toRemove);
+
+            Assert.Equal(0, GetSubscriberCount(toRemove));
+        }
+
+        [Fact]
         public void Should_Not_Treat_Strings_As_Nested_Selections()
         {
             var data = new[] { "foo", "bar", "baz" };

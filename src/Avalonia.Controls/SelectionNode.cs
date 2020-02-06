@@ -661,6 +661,7 @@ namespace Avalonia.Controls
                         {
                             removed.AddRange(_childrenNodes[index]!.SelectedItems);
                             RealizedChildrenNodeCount--;
+                            _childrenNodes[index]!.Dispose();
                         }
                         _childrenNodes.RemoveAt(index);
                     }
