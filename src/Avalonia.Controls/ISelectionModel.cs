@@ -43,5 +43,6 @@ namespace Avalonia.Controls
         void SelectRangeFromAnchorTo(IndexPath index);
         void SetAnchorIndex(int index);
         void SetAnchorIndex(int groupIndex, int index);
+        IDisposable Update();
     }
 }
