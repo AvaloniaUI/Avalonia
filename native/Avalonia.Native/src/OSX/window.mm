@@ -792,21 +792,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return;
 }
 
--(void) redrawSelf
-{
-    @autoreleasepool
-    {
-        @synchronized(self)
-        {
-            if(!_queuedDisplayFromThread)
-                return;
-            _queuedDisplayFromThread = false;
-        }
-        [self setNeedsDisplayInRect: [self frame]];
-        [self display];
-    }
-}
-
 -(void) setSwRenderedFrame: (AvnFramebuffer*) fb dispose: (IUnknown*) dispose
 {
     @autoreleasepool {
