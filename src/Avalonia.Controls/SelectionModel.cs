@@ -174,9 +174,7 @@ namespace Avalonia.Controls
             }
             set
             {
-                var isSelected = IsSelectedAt(value);
-
-                if (isSelected != true || SelectedItems.Count > 1)
+                if (!IsSelected(value) || SelectedItems.Count > 1)
                 {
                     using var operation = new Operation(this);
                     ClearSelection(resetAnchor: true);
@@ -351,23 +349,13 @@ namespace Avalonia.Controls
             _selectedItemsCached = null;
         }
 
-        public void SetAnchorIndex(int index) => AnchorIndex = new IndexPath(index);
-
-        public void SetAnchorIndex(int groupIndex, int index) => AnchorIndex = new IndexPath(groupIndex, index);
-
         public void Select(int index)
         {
             using var operation = new Operation(this);
             SelectImpl(index, select: true);
         }
 
-        public void Select(int groupIndex, int itemIndex)
-        {
-            using var operation = new Operation(this);
-            SelectWithGroupImpl(groupIndex, itemIndex, select: true);
-        }
-
-        public void SelectAt(IndexPath index)
+        public void Select(IndexPath index)
         {
             using var operation = new Operation(this);
             SelectWithPathImpl(index, select: true);
@@ -380,55 +368,35 @@ namespace Avalonia.Controls
             ApplyAutoSelect();
         }
 
-        public void Deselect(int groupIndex, int itemIndex)
-        {
-            using var operation = new Operation(this);
-            SelectWithGroupImpl(groupIndex, itemIndex, select: false);
-            ApplyAutoSelect();
-        }
-
-        public void DeselectAt(IndexPath index)
+        public void Deselect(IndexPath index)
         {
             using var operation = new Operation(this);
             SelectWithPathImpl(index, select: false);
             ApplyAutoSelect();
         }
 
-        public bool? IsSelected(int index)
+        public bool IsSelected(int index) => _rootNode.IsSelected(index);
+
+        public bool IsSelected(IndexPath index)
         {
-            if (index < 0)
+            var path = index;
+            SelectionNode? node = _rootNode;
+
+            for (int i = 0; i < path.GetSize() - 1; i++)
             {
-                throw new ArgumentException("Index must be >= 0", nameof(index));
+                var childIndex = path.GetAt(i);
+                node = node.GetAt(childIndex, realizeChild: false);
+
+                if (node == null)
+                {
+                    return false;
+                }
             }
 
-            var isSelected = _rootNode.IsSelectedWithPartial(index);
-            return isSelected;
+            return node.IsSelected(index.GetAt(index.GetSize() - 1));
         }
 
-        public bool? IsSelected(int groupIndex, int itemIndex)
-        {
-            if (groupIndex < 0)
-            {
-                throw new ArgumentException("Group index must be >= 0", nameof(groupIndex));
-            }
-
-            if (itemIndex < 0)
-            {
-                throw new ArgumentException("Item index must be >= 0", nameof(itemIndex));
-            }
-
-            var isSelected = (bool?)false;
-            var childNode = _rootNode.GetAt(groupIndex, realizeChild: false);
-
-            if (childNode != null)
-            {
-                isSelected = childNode.IsSelectedWithPartial(itemIndex);
-            }
-
-            return isSelected;
-        }
-
-        public bool? IsSelectedAt(IndexPath index)
+        public bool? IsTreeSelected(IndexPath index)
         {
             var path = index;
             var isRealized = true;
@@ -470,13 +438,7 @@ namespace Avalonia.Controls
             SelectRangeFromAnchorImpl(index, select: true);
         }
 
-        public void SelectRangeFromAnchor(int endGroupIndex, int endItemIndex)
-        {
-            using var operation = new Operation(this);
-            SelectRangeFromAnchorWithGroupImpl(endGroupIndex, endItemIndex, select: true);
-        }
-
-        public void SelectRangeFromAnchorTo(IndexPath index)
+        public void SelectRangeFromAnchor(IndexPath index)
         {
             using var operation = new Operation(this);
             SelectRangeImpl(AnchorIndex, index, select: true);
@@ -487,14 +449,8 @@ namespace Avalonia.Controls
             using var operation = new Operation(this);
             SelectRangeFromAnchorImpl(index, select: false);
         }
-
-        public void DeselectRangeFromAnchor(int endGroupIndex, int endItemIndex)
-        {
-            using var operation = new Operation(this);
-            SelectRangeFromAnchorWithGroupImpl(endGroupIndex, endItemIndex, false /* select */);
-        }
-
-        public void DeselectRangeFromAnchorTo(IndexPath index)
+        
+        public void DeselectRangeFromAnchor(IndexPath index)
         {
             using var operation = new Operation(this);
             SelectRangeImpl(AnchorIndex, index, select: false);
@@ -650,22 +606,6 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SelectWithGroupImpl(int groupIndex, int itemIndex, bool select)
-        {
-            if (_singleSelect)
-            {
-                ClearSelection(resetAnchor: true);
-            }
-
-            var childNode = _rootNode.GetAt(groupIndex, realizeChild: true);
-            var selected = childNode!.Select(itemIndex, select);
-
-            if (selected)
-            {
-                AnchorIndex = new IndexPath(groupIndex, itemIndex);
-            }
-        }
-
         private void SelectWithPathImpl(IndexPath index, bool select)
         {
             bool selected = false;
@@ -705,39 +645,6 @@ namespace Avalonia.Controls
             }
 
             _rootNode.SelectRange(new IndexRange(anchorIndex, index), select);
-        }
-
-        private void SelectRangeFromAnchorWithGroupImpl(int endGroupIndex, int endItemIndex, bool select)
-        {
-            var startGroupIndex = 0;
-            var startItemIndex = 0;
-            var anchorIndex = AnchorIndex;
-
-            if (anchorIndex != null)
-            {
-                startGroupIndex = anchorIndex.GetAt(0);
-                startItemIndex = anchorIndex.GetAt(1);
-            }
-
-            // Make sure start > end
-            if (startGroupIndex > endGroupIndex ||
-                (startGroupIndex == endGroupIndex && startItemIndex > endItemIndex))
-            {
-                int temp = startGroupIndex;
-                startGroupIndex = endGroupIndex;
-                endGroupIndex = temp;
-                temp = startItemIndex;
-                startItemIndex = endItemIndex;
-                endItemIndex = temp;
-            }
-
-            for (int groupIdx = startGroupIndex; groupIdx <= endGroupIndex; groupIdx++)
-            {
-                var groupNode = _rootNode.GetAt(groupIdx, realizeChild: true)!;
-                int startIndex = groupIdx == startGroupIndex ? startItemIndex : 0;
-                int endIndex = groupIdx == endGroupIndex ? endItemIndex : groupNode.DataCount - 1;
-                groupNode.SelectRange(new IndexRange(startIndex, endIndex), select);
-            }
         }
 
         private void SelectRangeImpl(IndexPath start, IndexPath end, bool select)

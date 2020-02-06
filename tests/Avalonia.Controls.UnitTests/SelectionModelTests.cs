@@ -476,7 +476,7 @@ namespace Avalonia.Controls.UnitTests
                 var selectionModel = new SelectionModel();
                 selectionModel.Source = data;
 
-                selectionModel.Select(1, 1);
+                selectionModel.Select(new IndexPath(1, 1));
                 ValidateSelection(selectionModel,
                     new List<IndexPath>()
                     {
@@ -593,8 +593,8 @@ namespace Avalonia.Controls.UnitTests
                 var selectionModel = new SelectionModel();
                 selectionModel.Source = data;
 
-                selectionModel.Select(1, 1);
-                selectionModel.Select(1, 2);
+                selectionModel.Select(new IndexPath(1, 1));
+                selectionModel.Select(new IndexPath(1, 2));
                 ValidateSelection(selectionModel,
                     new List<IndexPath>()
                     {
@@ -688,7 +688,7 @@ namespace Avalonia.Controls.UnitTests
                 var selectionModel = new SelectionModel();
                 selectionModel.Source = data;
 
-                selectionModel.Select(1, 1);
+                selectionModel.Select(new IndexPath(1, 1));
                 ValidateSelection(selectionModel,
                     new List<IndexPath>()
                     {
@@ -743,7 +743,7 @@ namespace Avalonia.Controls.UnitTests
                 var selectionModel = new SelectionModel();
                 selectionModel.Source = data;
 
-                selectionModel.Select(1, 1);
+                selectionModel.Select(new IndexPath(1, 1));
                 ValidateSelection(selectionModel,
                     new List<IndexPath>()
                     {
@@ -776,9 +776,9 @@ namespace Avalonia.Controls.UnitTests
                 selectionModel.Source = data;
                 selectionModel.SelectionChanged += (sender, args) => { selectionChangedRaised = true; };
 
-                selectionModel.Select(1, 0);
-                selectionModel.Select(1, 1);
-                selectionModel.Select(1, 2);
+                selectionModel.Select(new IndexPath(1, 0));
+                selectionModel.Select(new IndexPath(1, 1));
+                selectionModel.Select(new IndexPath(1, 2));
                 ValidateSelection(selectionModel,
                     new List<IndexPath>()
                     {
@@ -1034,13 +1034,13 @@ namespace Avalonia.Controls.UnitTests
                 ++raised;
             };
 
-            target.Select(1, 1);
+            target.Select(new IndexPath(1, 1));
 
             Assert.Equal(1, raised);
         }
 
         [Fact]
-        public void SelectAt_Raises_SelectionChanged()
+        public void Select_Path_Raises_SelectionChanged()
         {
             var target = new SelectionModel();
             var raised = 0;
@@ -1055,7 +1055,7 @@ namespace Avalonia.Controls.UnitTests
                 ++raised;
             };
 
-            target.SelectAt(new IndexPath(1, 1));
+            target.Select(new IndexPath(1, 1));
 
             Assert.Equal(1, raised);
         }
@@ -1147,7 +1147,7 @@ namespace Avalonia.Controls.UnitTests
             };
 
             target.AnchorIndex = new IndexPath(1, 1);
-            target.SelectRangeFromAnchor(1, 6);
+            target.SelectRangeFromAnchor(new IndexPath(1, 6));
 
             Assert.Equal(1, raised);
         }
@@ -1170,7 +1170,7 @@ namespace Avalonia.Controls.UnitTests
             };
 
             target.AnchorIndex = new IndexPath(1, 1);
-            target.SelectRangeFromAnchorTo(new IndexPath(1, 6));
+            target.SelectRangeFromAnchor(new IndexPath(1, 6));
 
             Assert.Equal(1, raised);
         }
@@ -1207,7 +1207,7 @@ namespace Avalonia.Controls.UnitTests
             var raised = 0;
 
             target.Source = CreateNestedData(1, 2, 3);
-            target.Select(1, 1);
+            target.Select(new IndexPath(1, 1));
 
             target.SelectionChanged += (s, e) =>
             {
@@ -1958,11 +1958,11 @@ namespace Avalonia.Controls.UnitTests
             Log.Comment((select ? "Selecting " : "DeSelecting ") + groupIndex + "." + itemIndex);
             if (select)
             {
-                manager.Select(groupIndex, itemIndex);
+                manager.Select(new IndexPath(groupIndex, itemIndex));
             }
             else
             {
-                manager.Deselect(groupIndex, itemIndex);
+                manager.Deselect(new IndexPath(groupIndex, itemIndex));
             }
         }
 
@@ -1971,11 +1971,11 @@ namespace Avalonia.Controls.UnitTests
             Log.Comment((select ? "Selecting " : "DeSelecting ") + index);
             if (select)
             {
-                manager.SelectAt(index);
+                manager.Select(index);
             }
             else
             {
-                manager.DeselectAt(index);
+                manager.Deselect(index);
             }
         }
 
@@ -1997,11 +1997,11 @@ namespace Avalonia.Controls.UnitTests
             Log.Comment("SelectRangeFromAnchor " + groupIndex + "." + itemIndex + " select:" + select.ToString());
             if (select)
             {
-                manager.SelectRangeFromAnchor(groupIndex, itemIndex);
+                manager.SelectRangeFromAnchor(new IndexPath(groupIndex, itemIndex));
             }
             else
             {
-                manager.DeselectRangeFromAnchor(groupIndex, itemIndex);
+                manager.DeselectRangeFromAnchor(new IndexPath(groupIndex, itemIndex));
             }
         }
 
@@ -2010,11 +2010,11 @@ namespace Avalonia.Controls.UnitTests
             Log.Comment("SelectRangeFromAnchor " + index + " select: " + select.ToString());
             if (select)
             {
-                manager.SelectRangeFromAnchorTo(index);
+                manager.SelectRangeFromAnchor(index);
             }
             else
             {
-                manager.DeselectRangeFromAnchorTo(index);
+                manager.DeselectRangeFromAnchor(index);
             }
         }
 
@@ -2027,13 +2027,13 @@ namespace Avalonia.Controls.UnitTests
         private void SetAnchorIndex(SelectionModel manager, int index)
         {
             Log.Comment("SetAnchorIndex " + index);
-            manager.SetAnchorIndex(index);
+            manager.AnchorIndex = new IndexPath(index);
         }
 
         private void SetAnchorIndex(SelectionModel manager, int groupIndex, int itemIndex)
         {
             Log.Comment("SetAnchor " + groupIndex + "." + itemIndex);
-            manager.SetAnchorIndex(groupIndex, itemIndex);
+            manager.AnchorIndex = new IndexPath(groupIndex, itemIndex);
         }
 
         private void SetAnchorIndex(SelectionModel manager, IndexPath index)
@@ -2067,7 +2067,7 @@ namespace Avalonia.Controls.UnitTests
                 List<IndexPath> allIndices = GetIndexPathsInSource(selectionModel.Source);
                 foreach (var index in allIndices)
                 {
-                    bool? isSelected = selectionModel.IsSelectedAt(index);
+                    bool? isSelected = selectionModel.IsTreeSelected(index);
                     if (Contains(expectedSelected, index))
                     {
                         Assert.True(isSelected.Value, index + " is Selected");
@@ -2094,7 +2094,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 foreach (var index in expectedSelected)
                 {
-                    Assert.True(selectionModel.IsSelectedAt(index).Value, index + " is Selected");
+                    Assert.True(selectionModel.IsTreeSelected(index).Value, index + " is Selected");
                 }
             }
             if (expectedSelected.Count > 0)

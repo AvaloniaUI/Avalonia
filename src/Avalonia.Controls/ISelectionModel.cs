@@ -25,26 +25,20 @@ namespace Avalonia.Controls
 
         void ClearSelection();
         void Deselect(int index);
-        void Deselect(int groupIndex, int itemIndex);
-        void DeselectAt(IndexPath index);
+        void Deselect(IndexPath index);
         void DeselectRange(IndexPath start, IndexPath end);
         void DeselectRangeFromAnchor(int index);
-        void DeselectRangeFromAnchor(int endGroupIndex, int endItemIndex);
-        void DeselectRangeFromAnchorTo(IndexPath index);
+        void DeselectRangeFromAnchor(IndexPath index);
         void Dispose();
-        bool? IsSelected(int index);
-        bool? IsSelected(int groupIndex, int itemIndex);
-        bool? IsSelectedAt(IndexPath index);
+        bool IsSelected(int index);
+        bool IsSelected(IndexPath index);
+        bool? IsTreeSelected(IndexPath index);
         void Select(int index);
-        void Select(int groupIndex, int itemIndex);
+        void Select(IndexPath index);
         void SelectAll();
-        void SelectAt(IndexPath index);
         void SelectRange(IndexPath start, IndexPath end);
         void SelectRangeFromAnchor(int index);
-        void SelectRangeFromAnchor(int endGroupIndex, int endItemIndex);
-        void SelectRangeFromAnchorTo(IndexPath index);
-        void SetAnchorIndex(int index);
-        void SetAnchorIndex(int groupIndex, int index);
+        void SelectRangeFromAnchor(IndexPath index);
         IDisposable Update();
     }
 }
