@@ -1185,6 +1185,29 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Clearing_Nested_Selection_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = CreateNestedData(1, 2, 3);
+            target.Select(1, 1);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { new IndexPath(1, 1) }, e.DeselectedIndices);
+                Assert.Equal(new object[] { 4 }, e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            target.ClearSelection();
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
         public void Changing_Source_Raises_SelectionChanged()
         {
             var target = new SelectionModel();
