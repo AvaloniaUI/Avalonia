@@ -375,6 +375,19 @@ namespace Avalonia.Controls
             }
         }
 
+        public void Cleanup()
+        {
+            foreach (var child in _childrenNodes)
+            {
+                child?.Cleanup();
+
+                if (child?.SelectedCount == 0)
+                {
+                    child.Dispose();
+                }
+            }
+        }
+
         public bool Select(int index, bool select)
         {
             return Select(index, select, raiseOnSelectionChanged: true);
@@ -503,16 +516,6 @@ namespace Avalonia.Controls
             _selectedItems?.Clear();
             SelectedCount = 0;
             AnchorIndex = -1;
-
-            // This will throw away all the children SelectionNodes
-            // causing them to be unhooked from their data source. This
-            // essentially cleans up the tree.
-            foreach (var child in _childrenNodes)
-            {
-                child?.Dispose();
-            }
-
-            _childrenNodes.Clear();
         }
 
         private bool Select(int index, bool select, bool raiseOnSelectionChanged)
