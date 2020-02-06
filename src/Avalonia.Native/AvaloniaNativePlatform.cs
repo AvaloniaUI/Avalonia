@@ -18,6 +18,7 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions _options;
+        private GlPlatformFeature _glFeature;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
@@ -88,9 +89,7 @@ namespace Avalonia.Native
 
                 _factory.MacOptions.ShowInDock = macOpts?.ShowInDock != false ? 1 : 0;
             }
-
-            _options.UseGpu = false;
-
+            
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>()
                 .ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()))
@@ -107,12 +106,12 @@ namespace Avalonia.Native
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider());
             if (_options.UseGpu)
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>()
-                    .ToConstant(new GlPlatformFeature(_factory.ObtainGlFeature()));
+                    .ToConstant(_glFeature = new GlPlatformFeature(_factory.ObtainGlDisplay()));
         }
 
         public IWindowImpl CreateWindow()
         {
-            return new WindowImpl(_factory, _options);
+            return new WindowImpl(_factory, _options, _glFeature);
         }
 
         public IEmbeddableWindowImpl CreateEmbeddableWindow()

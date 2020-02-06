@@ -60,9 +60,9 @@ namespace Avalonia.Native
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
 
-        public WindowBaseImpl(AvaloniaNativePlatformOptions opts)
+        internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, GlPlatformFeature glFeature)
         {
-            _gpu = opts.UseGpu;
+            _gpu = opts.UseGpu && glFeature != null;
             _deferredRendering = opts.UseDeferredRendering;
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
@@ -75,8 +75,8 @@ namespace Avalonia.Native
             _native = window;
 
             Handle = new MacOSTopLevelWindowHandle(window);
-            
-            _glSurface = new GlPlatformSurface(window);
+            if (_gpu)
+                _glSurface = new GlPlatformSurface(window);
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
             _savedScaling = Scaling;

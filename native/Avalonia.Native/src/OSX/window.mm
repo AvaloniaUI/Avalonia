@@ -26,16 +26,18 @@ public:
     AvnView* View;
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
+    ComPtr<IAvnGlContext> _glContext;
     NSObject<IRenderTarget>* renderTarget;
     AvnPoint lastPositionSet;
     NSString* _lastTitle;
     IAvnAppMenu* _mainMenu;
     
-    WindowBaseImpl(IAvnWindowBaseEvents* events)
+    WindowBaseImpl(IAvnWindowBaseEvents* events, IAvnGlContext* gl)
     {
         _mainMenu = nullptr;
         BaseEvents = events;
-        renderTarget = [IOSurfaceRenderTarget new];
+        _glContext = gl;
+        renderTarget = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext: gl];
         View = [[AvnView alloc] initWithParent:this];
 
         Window = [[AvnWindow alloc] initWithParent:this];
@@ -384,8 +386,8 @@ public:
     {
         if(View == NULL)
             return E_FAIL;
-        *ppv = ::CreateGlRenderTarget(Window, View);
-        return S_OK;
+        *ppv = [renderTarget createSurfaceRenderTarget];
+        return *ppv == nil ? E_FAIL : S_OK;
     }
 
 protected:
@@ -423,7 +425,7 @@ private:
     }
     
     ComPtr<IAvnWindowEvents> WindowEvents;
-    WindowImpl(IAvnWindowEvents* events) : WindowBaseImpl(events)
+    WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
@@ -716,11 +718,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _area = nullptr;
     _lastPixelSize.Height = 100;
     _lastPixelSize.Width = 100;
-/* uncomment to verify that embedding isn't broken
-    NSTextField* txt = [NSTextField new];
-    [self addSubview:txt];
-    [txt  setFrame:{0,0, 100,100}];
- */
+
     return self;
 }
 
@@ -1402,7 +1400,7 @@ private:
     END_INTERFACE_MAP()
     virtual ~PopupImpl(){}
     ComPtr<IAvnWindowEvents> WindowEvents;
-    PopupImpl(IAvnWindowEvents* events) : WindowBaseImpl(events)
+    PopupImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
         WindowEvents = events;
         [Window setLevel:NSPopUpMenuWindowLevel];
@@ -1426,20 +1424,20 @@ protected:
     }
 };
 
-extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events)
+extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events, IAvnGlContext* gl)
 {
     @autoreleasepool
     {
-        IAvnPopup* ptr = dynamic_cast<IAvnPopup*>(new PopupImpl(events));
+        IAvnPopup* ptr = dynamic_cast<IAvnPopup*>(new PopupImpl(events, gl));
         return ptr;
     }
 }
 
-extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)
+extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl)
 {
     @autoreleasepool
     {
-        IAvnWindow* ptr = (IAvnWindow*)new WindowImpl(events);
+        IAvnWindow* ptr = (IAvnWindow*)new WindowImpl(events, gl);
         return ptr;
     }
 }

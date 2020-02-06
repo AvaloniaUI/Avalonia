@@ -7,5 +7,6 @@ namespace Avalonia.OpenGL
         IGlDisplay Display { get; }
         PixelSize Size { get; }
         double Scaling { get; }
+        bool IsYFlipped { get; }
     }
 }
