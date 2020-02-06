@@ -677,20 +677,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
 }
 
-/*
-- (BOOL)lockFocusIfCanDraw
-{
-    @synchronized (self)
-    {
-        if(_parent == nullptr)
-        {
-            return NO;
-        }
-    }
-    
-    return [super lockFocusIfCanDraw];
-}*/
-
 -(AvnPixelSize) getPixelSize
 {
     return _lastPixelSize;
