@@ -9,6 +9,7 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class AvaloniaPropertyViewModel : PropertyViewModel
     {
         private readonly AvaloniaObject _target;
+        private string _type;
         private object _value;
         private string _priority;
         private TypeConverter _converter;
@@ -43,6 +44,8 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _priority;
             private set => RaiseAndSetIfChanged(ref _priority, value);
         }
+
+        public override string Type => _type;
 
         public override string Value
         {
@@ -93,12 +96,14 @@ namespace Avalonia.Diagnostics.ViewModels
             if (Property.IsDirect)
             {
                 RaiseAndSetIfChanged(ref _value, _target.GetValue(Property), nameof(Value));
+                RaiseAndSetIfChanged(ref _type, _value?.GetType().Name, nameof(Type));
             }
             else
             {
                 var val = _target.GetDiagnostic(Property);
 
                 RaiseAndSetIfChanged(ref _value, val?.Value, nameof(Value));
+                RaiseAndSetIfChanged(ref _type, _value?.GetType().Name, nameof(Type));
 
                 if (val != null)
                 {

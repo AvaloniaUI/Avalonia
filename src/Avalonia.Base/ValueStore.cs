@@ -173,7 +173,7 @@ namespace Avalonia
             {
                 return new Diagnostics.AvaloniaPropertyValue(
                     property,
-                    slot.Value.HasValue ? (object)slot.Value : AvaloniaProperty.UnsetValue,
+                    slot.Value.HasValue ? slot.Value.Value : AvaloniaProperty.UnsetValue,
                     slot.ValuePriority,
                     null);
             }
