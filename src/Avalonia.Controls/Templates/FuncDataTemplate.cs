@@ -3,7 +3,6 @@
 
 using System;
 using System.Reactive.Linq;
-using System.Reflection;
 
 namespace Avalonia.Controls.Templates
 {
@@ -102,7 +101,7 @@ namespace Avalonia.Controls.Templates
         /// </returns>
         private static bool IsInstance(object o, Type t)
         {
-            return (o != null) && t.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo());
+            return t.IsInstanceOfType(o);
         }
     }
 }
