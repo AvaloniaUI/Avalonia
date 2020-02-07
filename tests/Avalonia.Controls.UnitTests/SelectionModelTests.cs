@@ -939,9 +939,9 @@ namespace Avalonia.Controls.UnitTests
             var data = CreateNestedData(1, 2, 3);
 
             target.Source = data;
-            target.Select(1, 0);
-            target.Deselect(1, 0);
-            target.Select(1, 0);
+            target.Select(new IndexPath(1, 0));
+            target.Deselect(new IndexPath(1, 0));
+            target.Select(new IndexPath(1, 0));
             ((AvaloniaList<object>)data[1]).Insert(0, "foo");
 
             Assert.Equal(new IndexPath(1, 1), target.SelectedIndex);
