@@ -375,17 +375,29 @@ namespace Avalonia.Controls
             }
         }
 
-        public void Cleanup()
+        public bool Cleanup()
         {
-            foreach (var child in _childrenNodes)
-            {
-                child?.Cleanup();
+            var result = SelectedCount == 0;
 
-                if (child?.SelectedCount == 0)
+            for (var i = 0; i < _childrenNodes.Count; ++i)
+            {
+                var child = _childrenNodes[i];
+
+                if (child != null)
                 {
-                    child.Dispose();
+                    if (child.Cleanup())
+                    {
+                        child.Dispose();
+                        _childrenNodes[i] = null;
+                    }
+                    else
+                    {
+                        result = false;
+                    }
                 }
             }
+
+            return result;
         }
 
         public bool Select(int index, bool select)
@@ -729,6 +741,7 @@ namespace Avalonia.Controls
                         {
                             removed.AddRange(_childrenNodes[index]!.SelectedItems);
                             RealizedChildrenNodeCount--;
+                            _childrenNodes[index]!.Dispose();
                         }
                         _childrenNodes.RemoveAt(index);
                     }

@@ -932,6 +932,21 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Should_Listen_For_Changes_After_Deselect()
+        {
+            var target = new SelectionModel();
+            var data = CreateNestedData(1, 2, 3);
+
+            target.Source = data;
+            target.Select(1, 0);
+            target.Deselect(1, 0);
+            target.Select(1, 0);
+            ((AvaloniaList<object>)data[1]).Insert(0, "foo");
+
+            Assert.Equal(new IndexPath(1, 1), target.SelectedIndex);
+        }
+
+        [Fact]
         public void Selecting_Item_Raises_SelectionChanged()
         {
             var target = new SelectionModel();
@@ -1403,6 +1418,20 @@ namespace Avalonia.Controls.UnitTests
             {
                 VerifyCollectionChangedHandlers(0, i);
             }
+        }
+
+        [Fact]
+        public void Removing_Item_Unhooks_CollectionChanged_Handlers()
+        {
+            var data = CreateNestedData(2, 2, 2);
+            var target = new SelectionModel { Source = data };
+
+            target.SelectAll();
+
+            var toRemove = (AvaloniaList<object>)data[1];
+            data.Remove(toRemove);
+
+            Assert.Equal(0, GetSubscriberCount(toRemove));
         }
 
         [Fact]
