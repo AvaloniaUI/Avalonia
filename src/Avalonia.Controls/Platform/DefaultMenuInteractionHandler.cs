@@ -6,8 +6,6 @@ using Avalonia.LogicalTree;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
-#nullable enable
-
 namespace Avalonia.Controls.Platform
 {
     /// <summary>
