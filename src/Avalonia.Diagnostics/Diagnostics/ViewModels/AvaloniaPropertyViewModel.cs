@@ -1,8 +1,5 @@
 using System.ComponentModel;
-using System.Globalization;
-using System.Linq;
 using Avalonia.Collections;
-using Avalonia.Data.Converters;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -49,24 +46,12 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public override string Value
         {
-            get
-            {
-                if (_value == null)
-                {
-                    return "(null)";
-                }
-
-                return Converter?.CanConvertTo(typeof(string)) == true ?
-                    Converter.ConvertToString(_value) :
-                    _value.ToString();
-            }
+            get => ConvertToString(_value);
             set
             {
                 try
                 {
-                    var convertedValue = Converter?.CanConvertFrom(typeof(string)) == true ?
-                        Converter.ConvertFromString(value) :
-                        DefaultValueConverter.Instance.ConvertBack(value, Property.PropertyType, null, CultureInfo.CurrentCulture);
+                    var convertedValue = ConvertFromString(value, Property.PropertyType);
                     _target.SetValue(Property, convertedValue);
                 }
                 catch { }
@@ -78,19 +63,6 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _group;
         }
 
-        private TypeConverter Converter
-        {
-            get
-            {
-                if (_converter == null)
-                {
-                    _converter = TypeDescriptor.GetConverter(_value.GetType());
-                }
-
-                return _converter;
-            }
-        }
-        
         public override void Update()
         {
             if (Property.IsDirect)
