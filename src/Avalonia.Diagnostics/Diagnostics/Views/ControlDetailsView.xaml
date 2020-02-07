@@ -12,7 +12,7 @@
                 BorderThickness="0"
                 RowBackground="Transparent"
                 SelectedItem="{Binding SelectedProperty, Mode=TwoWay}"
-                HeadersVisibility="None">
+                CanUserResizeColumns="true">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True"/>
           <DataGridTextColumn Header="Value" Binding="{Binding Value}"/>
