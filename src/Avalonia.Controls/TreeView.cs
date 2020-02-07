@@ -323,13 +323,8 @@ namespace Avalonia.Controls
         {
             if (e.PropertyName == nameof(SelectionModel.AnchorIndex))
             {
-                var index = Selection.AnchorIndex.GetSize() > 0 ? Selection.AnchorIndex.GetAt(0) : -1;
-                var item = index != -1 ? ElementAt(Items, index) : null;
-
-                if (item != null)
-                {
-                    //ScrollIntoView(item);
-                }
+                var container = ContainerFromIndex(Selection.AnchorIndex);
+                container?.BringIntoView();
             }
         }
 
