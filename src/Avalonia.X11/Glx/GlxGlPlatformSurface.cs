@@ -80,6 +80,7 @@ namespace Avalonia.X11.Glx
                 public IGlDisplay Display => _context.Display;
                 public PixelSize Size => _info.Size;
                 public double Scaling => _info.Scaling;
+                public bool IsYFlipped { get; }
             }
         }
     }
