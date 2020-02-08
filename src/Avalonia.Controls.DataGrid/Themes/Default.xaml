@@ -45,7 +45,7 @@
 
             <Path Name="SortIcon"
                   Grid.Column="1"
-                  Fill="#FF444444"
+                  Fill="{TemplateBinding Foreground}"
                   HorizontalAlignment="Left"
                   VerticalAlignment="Center"
                   Stretch="Uniform"
