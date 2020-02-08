@@ -11,6 +11,7 @@
             <Border Name="PART_Indicator" Background="{TemplateBinding Foreground}"/>
           </Border>
           <TextBlock
+              Name="PART_txtProgress"
               HorizontalAlignment="Center"
               VerticalAlignment="Center"
               Foreground="{DynamicResource ThemeForegroundBrush}"
@@ -35,6 +36,13 @@
   <Style Selector="ProgressBar:vertical">
     <Setter Property="MinWidth" Value="14"/>
     <Setter Property="MinHeight" Value="200"/>
+  </Style>
+  <Style Selector="ProgressBar[Orientation=Vertical] /template/ TextBlock#PART_txtProgress">
+    <Setter Property="RenderTransform">
+      <Setter.Value>
+        <RotateTransform Angle="90"/>
+      </Setter.Value>
+    </Setter>
   </Style>
   <Style Selector="ProgressBar:horizontal:indeterminate /template/ Border#PART_Indicator">
     <Style.Animations>
