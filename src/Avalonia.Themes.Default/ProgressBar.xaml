@@ -31,10 +31,10 @@
   </Style>
   <Style Selector="ProgressBar:horizontal">
     <Setter Property="MinWidth" Value="200"/>
-    <Setter Property="MinHeight" Value="14"/>
+    <Setter Property="MinHeight" Value="16"/>
   </Style>
   <Style Selector="ProgressBar:vertical">
-    <Setter Property="MinWidth" Value="14"/>
+    <Setter Property="MinWidth" Value="24"/>
     <Setter Property="MinHeight" Value="200"/>
   </Style>
   <Style Selector="ProgressBar[Orientation=Vertical] /template/ TextBlock#PART_txtProgress">
