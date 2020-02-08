@@ -40,14 +40,14 @@
                    StaysOpen="False">
               <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="1">
-                  <ScrollViewer>
-                      <ItemsPresenter Name="PART_ItemsPresenter"
-                                      Items="{TemplateBinding Items}"
-                                      ItemsPanel="{TemplateBinding ItemsPanel}"
-                                      ItemTemplate="{TemplateBinding ItemTemplate}"
-                                      VirtualizationMode="{TemplateBinding VirtualizationMode}"
+                <ScrollViewer>
+                  <ItemsPresenter Name="PART_ItemsPresenter"
+                                  Items="{TemplateBinding Items}"
+                                  ItemsPanel="{TemplateBinding ItemsPanel}"
+                                  ItemTemplate="{TemplateBinding ItemTemplate}"
+                                  VirtualizationMode="{TemplateBinding VirtualizationMode}"
                               />
-                  </ScrollViewer>
+                </ScrollViewer>
               </Border>
             </Popup>
           </Grid>
@@ -58,7 +58,16 @@
   <Style Selector="ComboBox:pointerover /template/ Border#border">
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
   </Style>
-    <Style Selector="ComboBox:disabled /template/ Border#border">
-        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
-    </Style>
+  <Style Selector="ComboBox:disabled /template/ Border#border">
+    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+  </Style>
+  <Style Selector="ComboBox[SelectedIndex=-1] /template/ ContentControl">
+    <Setter Property="Content">
+      <Setter.Value>
+        <Template>
+          <TextBlock Text=" " />
+        </Template>
+      </Setter.Value>
+    </Setter>
+  </Style>
 </Styles>
