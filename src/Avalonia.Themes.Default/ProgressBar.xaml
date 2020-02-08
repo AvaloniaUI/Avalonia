@@ -10,13 +10,15 @@
                   BorderThickness="{TemplateBinding BorderThickness}">
             <Border Name="PART_Indicator" Background="{TemplateBinding Foreground}"/>
           </Border>
-          <TextBlock
-              Name="PART_txtProgress"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center"
-              Foreground="{DynamicResource ThemeForegroundBrush}"
-              IsVisible="{Binding ShowProgressText, RelativeSource={RelativeSource TemplatedParent}}"
-              Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:0}%}" />
+          <LayoutTransformControl
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Name="PART_LayoutTransformControl">
+            <TextBlock
+                Foreground="{DynamicResource ThemeForegroundBrush}"
+                IsVisible="{Binding ShowProgressText, RelativeSource={RelativeSource TemplatedParent}}"
+                Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:0}%}" />
+          </LayoutTransformControl>
         </Grid>
       </ControlTemplate>
     </Setter>
@@ -34,11 +36,11 @@
     <Setter Property="MinHeight" Value="16"/>
   </Style>
   <Style Selector="ProgressBar:vertical">
-    <Setter Property="MinWidth" Value="24"/>
+    <Setter Property="MinWidth" Value="16"/>
     <Setter Property="MinHeight" Value="200"/>
   </Style>
-  <Style Selector="ProgressBar[Orientation=Vertical] /template/ TextBlock#PART_txtProgress">
-    <Setter Property="RenderTransform">
+  <Style Selector="ProgressBar[Orientation=Vertical] /template/ LayoutTransformControl#PART_LayoutTransformControl">
+    <Setter Property="LayoutTransform">
       <Setter.Value>
         <RotateTransform Angle="90"/>
       </Setter.Value>
