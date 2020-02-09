@@ -943,8 +943,8 @@ namespace Avalonia.Controls.Primitives
             {
                 CalendarDayButton b = (CalendarDayButton)sender;
                 // The button is in Pressed state. Change the state to normal.
-                if (e.Device.Captured == b)
-                    e.Device.Capture(null);
+                if (e.Pointer.Captured == b)
+                    e.Pointer.Capture(null);
                 _lastCalendarDayButton = b;
             }
         }
@@ -1213,8 +1213,8 @@ namespace Avalonia.Controls.Primitives
             {
                 CalendarButton b = (CalendarButton)sender;
                 // The button is in Pressed state. Change the state to normal.
-                if (e.Device.Captured == b)
-                    e.Device.Capture(null);
+                if (e.Pointer.Captured == b)
+                    e.Pointer.Capture(null);
                 //b.ReleaseMouseCapture();
 
                 _lastCalendarButton = b;
@@ -1224,7 +1224,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_lastCalendarDayButton != null)
             {
-                e.Device.Capture(_lastCalendarDayButton);
+                e.Pointer.Capture(_lastCalendarDayButton);
             }
         }
 
@@ -1232,7 +1232,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_lastCalendarButton != null)
             {
-                e.Device.Capture(_lastCalendarButton);
+                e.Pointer.Capture(_lastCalendarButton);
             }
         }
         
