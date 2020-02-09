@@ -208,9 +208,9 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}">
-          <Grid
-          RowDefinitions="Auto,*,Auto,Auto"
-          ColumnDefinitions="Auto,*,Auto">
+          <Grid Background="{TemplateBinding Background}"
+                RowDefinitions="Auto,*,Auto,Auto"
+                ColumnDefinitions="Auto,*,Auto">
 
             <DataGridColumnHeader Name="PART_TopLeftCornerHeader" Width="22" />
             <DataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter" Grid.Column="1"/>
