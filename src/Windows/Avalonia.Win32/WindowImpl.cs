@@ -34,7 +34,7 @@ namespace Avalonia.Win32
         private IInputRoot _owner;
         private ManagedDeferredRendererLock _rendererLock = new ManagedDeferredRendererLock();
         private bool _trackingMouse;
-        private bool _decorated = true;
+        private SystemDecorations _decorated = SystemDecorations.Full;
         private bool _resizable = true;
         private bool _topmost = false;
         private bool _taskbarIcon = true;
@@ -97,7 +97,7 @@ namespace Avalonia.Win32
         {
             get
             {
-                if (_decorated)
+                if (_decorated == SystemDecorations.Full)
                 {
                     var style = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
                     var exStyle = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
@@ -281,7 +281,7 @@ namespace Avalonia.Win32
             UnmanagedMethods.ShowWindow(_hwnd, UnmanagedMethods.ShowWindowCommand.Hide);
         }
 
-        public void SetSystemDecorations(bool value)
+        public void SetSystemDecorations(SystemDecorations value)
         {
             if (value == _decorated)
             {
@@ -464,7 +464,7 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
 
                 case WindowsMessage.WM_NCCALCSIZE:
-                    if (ToInt32(wParam) == 1 && !_decorated)
+                    if (ToInt32(wParam) == 1 && _decorated != SystemDecorations.Full)
                     {
                         return IntPtr.Zero;
                     }
@@ -682,14 +682,14 @@ namespace Avalonia.Win32
                     
                     break;
                 case WindowsMessage.WM_NCPAINT:
-                    if (!_decorated)
+                    if (_decorated != SystemDecorations.Full)
                     {
                         return IntPtr.Zero;
                     }
                     break;
 
                 case WindowsMessage.WM_NCACTIVATE:
-                    if (!_decorated)
+                    if (_decorated != SystemDecorations.Full)
                     {
                         return new IntPtr(1);
                     }
@@ -1001,7 +1001,7 @@ namespace Avalonia.Win32
 
             style |= WindowStyles.WS_OVERLAPPEDWINDOW;
 
-            if (!_decorated)
+            if (_decorated != SystemDecorations.Full)
             {
                 style ^= (WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU);
             }
@@ -1010,6 +1010,10 @@ namespace Avalonia.Win32
             {
                 style ^= (WindowStyles.WS_SIZEFRAME);
             }
+
+            MARGINS margins = new MARGINS();
+            margins.cyBottomHeight = _decorated == SystemDecorations.BorderOnly ? 1 : 0;
+            UnmanagedMethods.DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
             GetClientRect(_hwnd, out var oldClientRect);
             var oldClientRectOrigin = new UnmanagedMethods.POINT();
@@ -1024,7 +1028,7 @@ namespace Avalonia.Win32
             if (oldDecorated != _decorated)
             {
                 var newRect = oldClientRect;
-                if (_decorated)
+                if (_decorated == SystemDecorations.Full)
                     AdjustWindowRectEx(ref newRect, (uint)style, false,
                         GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE));
                 SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,

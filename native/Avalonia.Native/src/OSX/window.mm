@@ -115,7 +115,6 @@ public:
             [NSApp activateIgnoringOtherApps:YES];
             
             [Window setTitle:_lastTitle];
-            [Window setTitleVisibility:NSWindowTitleVisible];
         
             return S_OK;
         }
@@ -411,7 +410,7 @@ class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, pub
 {
 private:
     bool _canResize = true;
-    bool _hasDecorations = true;
+    int _hasDecorations = 2;
     CGRect _lastUndecoratedFrame;
     AvnWindowState _lastWindowState;
     
@@ -476,12 +475,12 @@ private:
     
     bool IsZoomed ()
     {
-        return _hasDecorations ? [Window isZoomed] : UndecoratedIsMaximized();
+        return _hasDecorations > 0 ? [Window isZoomed] : UndecoratedIsMaximized();
     }
     
     void DoZoom()
     {
-        if (_hasDecorations)
+        if (_hasDecorations > 0)
         {
             [Window performZoom:Window];
         }
@@ -506,12 +505,35 @@ private:
         }
     }
     
-    virtual HRESULT SetHasDecorations(bool value) override
+    virtual HRESULT SetHasDecorations(int value) override
     {
         @autoreleasepool
         {
             _hasDecorations = value;
             UpdateStyle();
+            
+            // full
+            if (_hasDecorations == 2)
+            {
+                [Window setHasShadow:YES];
+                [Window setTitleVisibility:NSWindowTitleVisible];
+                [Window setTitlebarAppearsTransparent:NO];
+                [Window setTitle:_lastTitle];
+            }
+            // border only
+            else if (_hasDecorations == 1)
+            {
+                [Window setHasShadow:YES];
+                [Window setTitleVisibility:NSWindowTitleHidden];
+                [Window setTitlebarAppearsTransparent:YES];
+            }
+            // none
+            else
+            {
+                [Window setHasShadow:NO];
+                [Window setTitleVisibility:NSWindowTitleHidden];
+                [Window setTitlebarAppearsTransparent:YES];
+            }
             
             return S_OK;
         }
@@ -523,7 +545,6 @@ private:
         {
             _lastTitle = [NSString stringWithUTF8String:(const char*)utf8title];
             [Window setTitle:_lastTitle];
-            [Window setTitleVisibility:NSWindowTitleVisible];
             
             return S_OK;
         }
@@ -645,9 +666,11 @@ protected:
     virtual NSWindowStyleMask GetStyle() override
     {
         unsigned long s = NSWindowStyleMaskBorderless;
-        if(_hasDecorations)
-            s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
-        if(_canResize)
+        if(_hasDecorations == 1)
+            s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView;
+        if(_hasDecorations == 2)
+            s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskBorderless;
+        if(_hasDecorations == 2 && _canResize)
             s = s | NSWindowStyleMaskResizable;
         return s;
     }

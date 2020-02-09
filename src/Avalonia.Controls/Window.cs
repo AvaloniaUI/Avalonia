@@ -46,6 +46,27 @@ namespace Avalonia.Controls
     }
 
     /// <summary>
+    /// Determines system decorations (title bar, border, etc) for a <see cref="Window"/>
+    /// </summary>
+    public enum SystemDecorations
+    {
+        /// <summary>
+        /// No decorations
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Window border without titlebar
+        /// </summary>
+        BorderOnly = 1,
+
+        /// <summary>
+        /// Fully decorated (default)
+        /// </summary>
+        Full = 2
+    }
+
+    /// <summary>
     /// A top-level window.
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
@@ -59,8 +80,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
+        [Obsolete("Use SystemDecorationsProperty instead")]
         public static readonly StyledProperty<bool> HasSystemDecorationsProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(HasSystemDecorations), true);
+
+        /// <summary>
+        /// Defines the <see cref="SystemDecorations"/> property.
+        /// </summary>
+        public static readonly StyledProperty<SystemDecorations> SystemDecorationsProperty =
+            AvaloniaProperty.Register<Window, SystemDecorations>(nameof(SystemDecorations), SystemDecorations.Full);
 
         /// <summary>
         /// Enables or disables the taskbar icon
@@ -125,7 +153,9 @@ namespace Avalonia.Controls
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetTitle((string)e.NewValue));
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
-                (s, e) => s.PlatformImpl?.SetSystemDecorations((bool)e.NewValue));
+                (s, e) => s.PlatformImpl?.SetSystemDecorations(((bool)e.NewValue) ? SystemDecorations.Full : SystemDecorations.None));
+            SystemDecorationsProperty.Changed.AddClassHandler<Window>(
+                (s, e) => s.PlatformImpl?.SetSystemDecorations((SystemDecorations)e.NewValue));
 
             ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue));
 
@@ -140,7 +170,6 @@ namespace Avalonia.Controls
             MinHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue), new Size(w.MaxWidth, w.MaxHeight)));
             MaxWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size((double)e.NewValue, w.MaxHeight)));
             MaxHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size(w.MaxWidth, (double)e.NewValue)));
-
         }
 
         /// <summary>
@@ -192,10 +221,21 @@ namespace Avalonia.Controls
         /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
         /// 
+        [Obsolete("Use SystemDecorations instead")]
         public bool HasSystemDecorations
         {
             get { return GetValue(HasSystemDecorationsProperty); }
             set { SetValue(HasSystemDecorationsProperty, value); }
+        }
+
+        /// <summary>
+        /// Sets the system decorations (title bar, border, etc)
+        /// </summary>
+        /// 
+        public SystemDecorations SystemDecorations
+        {
+            get { return GetValue(SystemDecorationsProperty); }
+            set { SetValue(SystemDecorationsProperty, value); }
         }
 
         /// <summary>
