@@ -8,19 +8,23 @@ using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
-    public class PopupImpl : WindowBaseImpl, IPopupImpl
+    class PopupImpl : WindowBaseImpl, IPopupImpl
     {
         private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
+        private readonly GlPlatformFeature _glFeature;
+
         public PopupImpl(IAvaloniaNativeFactory factory,
             AvaloniaNativePlatformOptions opts,
-            IWindowBaseImpl parent) : base(opts)
+            GlPlatformFeature glFeature,
+            IWindowBaseImpl parent) : base(opts, glFeature)
         {
             _factory = factory;
             _opts = opts;
+            _glFeature = glFeature;
             using (var e = new PopupEvents(this))
             {
-                Init(factory.CreatePopup(e), factory.CreateScreens());
+                Init(factory.CreatePopup(e, _opts.UseGpu ? glFeature?.DeferredContext.Context : null), factory.CreateScreens());
             }
             PopupPositioner = new ManagedPopupPositioner(new OsxManagedPopupPositionerPopupImplHelper(parent, MoveResize));
         }
@@ -51,7 +55,7 @@ namespace Avalonia.Native
             }
         }
 
-        public override IPopupImpl CreatePopup() => new PopupImpl(_factory, _opts, this);
+        public override IPopupImpl CreatePopup() => new PopupImpl(_factory, _opts, _glFeature, this);
         public IPopupPositioner PopupPositioner { get; }
     }
 }

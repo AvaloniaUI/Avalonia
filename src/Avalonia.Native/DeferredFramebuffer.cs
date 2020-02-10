@@ -21,7 +21,7 @@ namespace Avalonia.Native
             Size = new PixelSize(width, height);
             RowBytes = width * 4;
             Dpi = dpi;
-            Format = PixelFormat.Rgba8888;
+            Format = PixelFormat.Bgra8888;
         }
 
         public IntPtr Address { get; set; }
