@@ -36,4 +36,10 @@ struct IWindowStateChanged
     virtual void WindowStateChanged () = 0;
 };
 
+typedef NS_ENUM(NSInteger, SystemDecorations) {
+    SystemDecorationsNone = 0,
+    SystemDecorationsBorderOnly = 1,
+    SystemDecorationsFull = 2,
+};
+
 #endif /* window_h */
