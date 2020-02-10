@@ -13,7 +13,7 @@ namespace ControlCatalog.Pages
     public class MessageBoxPage : UserControl
     {
         public string Caption { get; set; } = "Hello";
-        public string Message { get; set; } = "Welome to Avalonia!";
+        public string Message { get; set; } = "Welcome to Avalonia!";
         public bool ShowIcon { get; set; } = true;
         public ReactiveCommand<Unit, Unit> ShowOkCommand { get; }
         public ReactiveCommand<Unit, Unit> ShowOkCancelCommand { get; }
@@ -28,8 +28,8 @@ namespace ControlCatalog.Pages
 
             ShowOkCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-               var result = await MessageBoxManager.Show(Message, Caption, MessageBoxButton.OK, ShowIcon ? ExampleIcon : null);
-               ShowResult(result);
+                var result = await MessageBoxManager.Show(Message, Caption, MessageBoxButton.OK, ShowIcon ? ExampleIcon : null);
+                ShowResult(result);
             });
             ShowOkCancelCommand = ReactiveCommand.CreateFromTask(async () =>
             {
