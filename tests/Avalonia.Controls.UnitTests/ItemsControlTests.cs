@@ -575,6 +575,30 @@ namespace Avalonia.Controls.UnitTests
             };
         }
 
+        [Fact]
+        public void Detaching_Then_Reattaching_To_Logical_Tree_Twice_Does_Not_Throw()
+        {
+            // # Issue 3487
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = new[] { "foo", "bar" },
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
+            };
+
+            var root = new TestRoot(target);
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            root.Child = null;
+            root.Child = target;
+
+            target.Measure(Size.Infinity);
+
+            root.Child = null;
+            root.Child = target;
+        }
+
         private class Item
         {
             public Item(string value)
