@@ -250,6 +250,22 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Scrolls to the top-left corner of the content.
+        /// </summary>
+        public void ScrollToHome()
+        {
+            Offset = new Vector(double.NegativeInfinity, double.NegativeInfinity);
+        }
+
+        /// <summary>
+        /// Scrolls to the bottom-left corner of the content.
+        /// </summary>
+        public void ScrollToEnd()
+        {
+            Offset = new Vector(double.NegativeInfinity, double.PositiveInfinity);
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the viewer can scroll horizontally.
         /// </summary>
         protected bool CanHorizontallyScroll
