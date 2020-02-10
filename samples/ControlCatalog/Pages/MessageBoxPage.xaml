@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.MessageBoxPage">
+  <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Left">
+        <TextBlock Classes="h1">MessageBox</TextBlock>
+        <TextBox Text="{Binding Caption}"/>
+        <TextBox Text="{Binding Message}"/>
+        <CheckBox IsChecked="{Binding ShowIcon}" Content="Show Example MessageBox Icon"/>
+        <Button Content="Show Standard MessageBox" Command="{Binding ShowOkCommand}" />
+        <Button Content="Show Ok / Cancel MessageBox" Command="{Binding ShowOkCancelCommand}" />
+        <Button Content="Show Yes / No MessageBox" Command="{Binding ShowYesNoCommand}" />
+        <Button Content="Show Yes / No / Cancel MessageBox" Command="{Binding ShowYesNoCancelCommand}" />
+    </StackPanel>
+</UserControl>

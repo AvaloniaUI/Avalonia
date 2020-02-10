@@ -1,0 +1,65 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        MinWidth="400"
+        MaxWidth="1000"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner"
+        Title="{Binding Caption}"
+        x:Class="Avalonia.MessageBox.MessageBoxDialog">
+  <Window.Styles>
+    <Style Selector="Button">
+      <Setter Property="Margin" Value="5,0,0,0" />
+      <Setter Property="Padding" Value="10,1,10,1" />
+      <Setter Property="MinWidth" Value="75"/>
+      <Setter Property="MinHeight" Value="23" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </Window.Styles>
+  <Grid RowDefinitions="Auto,Auto">
+    <Grid Margin="10,20,10,20" Grid.Row="0" ColumnDefinitions="Auto,*">
+      <Image Grid.Column="0"
+             Margin="0,0,10,0"
+             Height="32"
+             Width="32"
+             IsVisible="{Binding HasIcon}"
+             Source="{Binding MessageIcon}"/>
+      <TextBlock Grid.Column="1"
+                 VerticalAlignment="Center"
+                 Text="{Binding Message}"
+                 TextWrapping="Wrap" />
+    </Grid>
+    <Grid Grid.Row="1" Margin="5,0,5,5">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Button
+          Grid.Column="1"
+          Click="OnOkClick"
+          Content="Ok"
+          IsDefault="True"
+          IsVisible="{Binding HasOkButton}" />
+      <Button
+          Grid.Column="2"
+          Click="OnYesClick"
+          Content="Yes"
+          IsDefault="True"
+          IsVisible="{Binding HasYesButton}" />
+      <Button
+          Grid.Column="3"
+          Click="OnNoClick"
+          Content="No"
+          IsVisible="{Binding HasNoButton}" />
+      <Button
+          Grid.Column="4"
+          Click="OnCancelClick"
+          Content="Cancel"
+          IsCancel="True"
+          IsVisible="{Binding HasCancelButton}" />
+    </Grid>
+  </Grid>
+</Window>

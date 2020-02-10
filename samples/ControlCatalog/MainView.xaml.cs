@@ -26,6 +26,11 @@ namespace ControlCatalog
                 });
                 tabItems.Add(new TabItem()
                 {
+                    Header = "MessageBox",
+                    Content = new MessageBoxPage()
+                });
+                tabItems.Add(new TabItem()
+                {
                     Header = "Screens",
                     Content = new ScreenPage()
                 });
