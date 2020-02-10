@@ -7,7 +7,7 @@
 
     <StackPanel>
       <CheckBox
-          x:Name="cbShowProgress"
+          x:Name="showProgress"
           Margin="10,16,0,0"
           Content="Show Progress Text" />
       <StackPanel Orientation="Horizontal"
@@ -15,10 +15,10 @@
                   HorizontalAlignment="Center"
                   Spacing="16">
         <StackPanel Spacing="16">
-          <ProgressBar ShowProgressText="{Binding ElementName=cbShowProgress, Path=IsChecked}" Value="{Binding #hprogress.Value}" />
+          <ProgressBar ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #hprogress.Value}" />
           <ProgressBar IsIndeterminate="True"/>
         </StackPanel>
-        <ProgressBar ShowProgressText="{Binding ElementName=cbShowProgress, Path=IsChecked}" Value="{Binding #vprogress.Value}" Orientation="Vertical" />
+        <ProgressBar ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #vprogress.Value}" Orientation="Vertical" />
         <ProgressBar Orientation="Vertical" IsIndeterminate="True" />
       </StackPanel>
       <StackPanel Margin="16">
