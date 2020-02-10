@@ -788,7 +788,7 @@ namespace Avalonia.Controls
                     removedItems.Add(removedDate.Value);
                 }
 
-                handler(this, new SelectionChangedEventArgs(SelectingItemsControl.SelectionChangedEvent, addedItems, removedItems));
+                handler(this, new SelectionChangedEventArgs(SelectingItemsControl.SelectionChangedEvent, removedItems, addedItems));
             }
         }
         private void OnCalendarClosed(EventArgs e)
