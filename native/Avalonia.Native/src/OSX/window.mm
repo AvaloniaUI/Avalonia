@@ -508,11 +508,11 @@ private:
         }
     }
     
-    virtual HRESULT SetHasDecorations(int value) override
+    virtual HRESULT SetHasDecorations(SystemDecorations value) override
     {
         @autoreleasepool
         {
-            _hasDecorations = (SystemDecorations)value;
+            _hasDecorations = value;
             UpdateStyle();
 
             switch (_hasDecorations)

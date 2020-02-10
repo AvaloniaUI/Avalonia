@@ -25,6 +25,12 @@ struct IAvnGlSurfaceRenderingSession;
 struct IAvnAppMenu;
 struct IAvnAppMenuItem;
 
+enum SystemDecorations {
+    SystemDecorationsNone = 0,
+    SystemDecorationsBorderOnly = 1,
+    SystemDecorationsFull = 2,
+};
+
 struct AvnSize
 {
     double Width, Height;
@@ -236,7 +242,7 @@ AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
 {
     virtual HRESULT ShowDialog (IAvnWindow* parent) = 0;
     virtual HRESULT SetCanResize(bool value) = 0;
-    virtual HRESULT SetHasDecorations(int value) = 0;
+    virtual HRESULT SetHasDecorations(SystemDecorations value) = 0;
     virtual HRESULT SetTitle (void* utf8Title) = 0;
     virtual HRESULT SetTitleBarColor (AvnColor color) = 0;
     virtual HRESULT SetWindowState(AvnWindowState state) = 0;

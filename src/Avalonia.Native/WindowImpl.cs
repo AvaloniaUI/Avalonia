@@ -68,9 +68,9 @@ namespace Avalonia.Native
             _native.CanResize = value;
         }
 
-        public void SetSystemDecorations(SystemDecorations enabled)
+        public void SetSystemDecorations(Controls.SystemDecorations enabled)
         {
-            _native.HasDecorations = (int)enabled;
+            _native.HasDecorations = (Interop.SystemDecorations)enabled;
         }
 
         public void SetTitleBarColor (Avalonia.Media.Color color)
