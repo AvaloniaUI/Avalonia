@@ -6,19 +6,22 @@ using BenchmarkDotNet.Attributes;
 
 namespace Avalonia.Benchmarks.Layout
 {
-    [MemoryDiagnoser, InProcess, IterationCount(16)]
+    [MemoryDiagnoser]
     public class CalendarBenchmark : IDisposable
     {
         private readonly IDisposable _app;
         private readonly TestRoot _root;
-        
+
         public CalendarBenchmark()
         {
-            _app = UnitTestApplication.Start(TestServices.StyledWindow.With(renderInterface: new NullRenderingPlatform(), threadingInterface: new NullThreadingPlatform()));
+            _app = UnitTestApplication.Start(
+                TestServices.StyledWindow.With(
+                    renderInterface: new NullRenderingPlatform(),
+                    threadingInterface: new NullThreadingPlatform()));
 
             _root = new TestRoot(true, null)
             {
-                Renderer = new NullRenderer(),
+                Renderer = new NullRenderer()
             };
 
             _root.LayoutManager.ExecuteInitialLayoutPass(_root);
