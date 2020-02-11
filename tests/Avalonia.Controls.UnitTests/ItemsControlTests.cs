@@ -66,7 +66,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Container_Child_Should_Have_LogicalParent_Set_To_Container()
+        public void Container_Should_Have_LogicalParent_Set_To_ItemsControl()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -87,7 +87,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var container = (ContentPresenter)target.Presenter.Panel.Children[0];
 
-                Assert.Equal(container, container.Child.Parent);
+                Assert.Equal(target, container.Parent);
             }
         }
 
@@ -190,7 +190,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Adding_String_Item_Should_Make_TextBlock_Appear_In_LogicalChildren()
+        public void Adding_String_Item_Should_Make_ContentPresenter_Appear_In_LogicalChildren()
         {
             var target = new ItemsControl();
             var child = new Control();
@@ -202,7 +202,7 @@ namespace Avalonia.Controls.UnitTests
 
             var logical = (ILogical)target;
             Assert.Equal(1, logical.LogicalChildren.Count);
-            Assert.IsType<TextBlock>(logical.LogicalChildren[0]);
+            Assert.IsType<ContentPresenter>(logical.LogicalChildren[0]);
         }
 
         [Fact]
