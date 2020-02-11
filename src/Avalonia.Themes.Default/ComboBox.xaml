@@ -4,6 +4,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
     <Setter Property="Padding" Value="4"/>
+    <Setter Property="MinHeight" Value="20"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="border"
@@ -60,14 +61,5 @@
   </Style>
   <Style Selector="ComboBox:disabled /template/ Border#border">
     <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
-  </Style>
-  <Style Selector="ComboBox[SelectedIndex=-1] /template/ ContentControl">
-    <Setter Property="Content">
-      <Setter.Value>
-        <Template>
-          <TextBlock Text=" " />
-        </Template>
-      </Setter.Value>
-    </Setter>
   </Style>
 </Styles>
