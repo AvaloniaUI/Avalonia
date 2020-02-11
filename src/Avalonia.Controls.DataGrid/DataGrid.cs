@@ -149,6 +149,9 @@ namespace Avalonia.Controls
 
         private IEnumerable _items;
 
+        public event EventHandler<ScrollEventArgs> HorizontalScroll;
+        public event EventHandler<ScrollEventArgs> VerticalScroll;
+
         /// <summary>
         /// Identifies the CanUserReorderColumns dependency property.
         /// </summary>
@@ -717,6 +720,9 @@ namespace Avalonia.Controls
             _editingColumnIndex = -1;
             _mouseOverRowIndex = null;
             CurrentCellCoordinates = new DataGridCellCoordinates(-1, -1);
+
+            HorizontalScrollBar.Scroll += HorizontalScroll;
+            VerticalScrollBar.Scroll += VerticalScroll;
 
             RowGroupHeaderHeightEstimate = DATAGRID_defaultRowHeight;
         }
