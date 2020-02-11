@@ -33,7 +33,7 @@ namespace Avalonia.Controls
             RowProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
             RowSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
 
-            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
+            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, ColumnDefinitionsProperty, RowProperty, RowSpanProperty, RowDefinitionsProperty);
         }
 
         /// <summary>
@@ -162,6 +162,12 @@ namespace Avalonia.Controls
             set { SetValue(ShowGridLinesProperty, value); }
         }
 
+        public static readonly DirectProperty<Grid, ColumnDefinitions> ColumnDefinitionsProperty =
+            AvaloniaProperty.RegisterDirect<Grid, ColumnDefinitions>(
+                nameof(ColumnDefinitions),
+                o => o.ColumnDefinitions,
+                (o, v) => o.ColumnDefinitions = v);
+
         /// <summary>
         /// Returns a ColumnDefinitions of column definitions.
         /// </summary>
@@ -176,12 +182,24 @@ namespace Avalonia.Controls
             }
             set
             {
-                if (_data == null) { _data = new ExtendedData(); }
+                if (value is null) return;
+
+                _data = new ExtendedData();
                 _data.ColumnDefinitions = value;
                 _data.ColumnDefinitions.Parent = this;
+                _data.ColumnDefinitions.IsDirty = true;
+                InvalidateArrange();
                 InvalidateMeasure();
+
+                SetAndRaise(ColumnDefinitionsProperty, ref _data.ColumnDefinitions, value);
             }
         }
+
+        public static readonly DirectProperty<Grid, RowDefinitions> RowDefinitionsProperty =
+            AvaloniaProperty.RegisterDirect<Grid, RowDefinitions>(
+                nameof(RowDefinitions),
+                o => o.RowDefinitions,
+                (o, v) => o.RowDefinitions = v);
 
         /// <summary>
         /// Returns a RowDefinitions of row definitions.
@@ -197,10 +215,16 @@ namespace Avalonia.Controls
             }
             set
             {
-                if (_data == null) { _data = new ExtendedData(); }
+                if (value is null) return;
+
+                _data = new ExtendedData();
                 _data.RowDefinitions = value;
                 _data.RowDefinitions.Parent = this;
+                _data.RowDefinitions.IsDirty = true;
+                InvalidateArrange();
                 InvalidateMeasure();
+
+                SetAndRaise(RowDefinitionsProperty, ref _data.RowDefinitions, value);
             }
         }
 
@@ -2316,7 +2340,7 @@ namespace Avalonia.Controls
                 }
             }
         }
- 
+
         /// <summary>
         /// Synchronized ShowGridLines property with the state of the grid's visual collection
         /// by adding / removing GridLinesRenderer visual.

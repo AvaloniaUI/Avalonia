@@ -1,7 +1,16 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.AutoCompleteBoxPage">
+  <UserControl.Styles>
+    <Style Selector="Grid.Test">
+      <Setter Property="ColumnDefinitions" Value="150,150"/> 
+    </Style>
+  </UserControl.Styles>
   <StackPanel Orientation="Vertical" Spacing="4">
+    <Grid Classes="Test">
+      <Border BorderBrush="Green" Grid.Column="0" Grid.ColumnSpan="0" />
+      <Border BorderBrush="Red" Grid.Column="1"/>
+    </Grid>
     <TextBlock Classes="h1">AutoCompleteBox</TextBlock>
     <TextBlock Classes="h2">A control into which the user can input text</TextBlock>
 
