@@ -236,25 +236,7 @@ namespace Avalonia.Controls
                 // it was added to the Items collection.
                 if (container.ContainerControl != null && container.ContainerControl != container.Item)
                 {
-                    if (ItemContainerGenerator.ContainerType == null)
-                    {
-                        var containerControl = container.ContainerControl as ContentPresenter;
-
-                        if (containerControl != null)
-                        {
-                            ((ISetLogicalParent)containerControl).SetParent(this);
-                            containerControl.UpdateChild();
-
-                            if (containerControl.Child != null)
-                            {
-                                LogicalChildren.Add(containerControl.Child);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        LogicalChildren.Add(container.ContainerControl);
-                    }
+                    LogicalChildren.Add(container.ContainerControl);
                 }
             }
         }
@@ -272,24 +254,7 @@ namespace Avalonia.Controls
                 // when it is removed from the Items collection.
                 if (container?.ContainerControl != container?.Item)
                 {
-                    if (ItemContainerGenerator.ContainerType == null)
-                    {
-                        var containerControl = container.ContainerControl as ContentPresenter;
-
-                        if (containerControl != null)
-                        {
-                            ((ISetLogicalParent)containerControl).SetParent(null);
-
-                            if (containerControl.Child != null)
-                            {
-                                LogicalChildren.Remove(containerControl.Child);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        LogicalChildren.Remove(container.ContainerControl);
-                    }
+                    LogicalChildren.Remove(container.ContainerControl);
                 }
             }
         }
