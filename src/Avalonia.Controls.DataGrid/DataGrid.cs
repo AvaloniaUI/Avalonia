@@ -721,9 +721,6 @@ namespace Avalonia.Controls
             _mouseOverRowIndex = null;
             CurrentCellCoordinates = new DataGridCellCoordinates(-1, -1);
 
-            HorizontalScrollBar.Scroll += HorizontalScroll;
-            VerticalScrollBar.Scroll += VerticalScroll;
-
             RowGroupHeaderHeightEstimate = DATAGRID_defaultRowHeight;
         }
 
@@ -4229,6 +4226,7 @@ namespace Avalonia.Controls
         private void HorizontalScrollBar_Scroll(object sender, ScrollEventArgs e)
         {
             ProcessHorizontalScroll(e.ScrollEventType);
+            HorizontalScroll?.Invoke(sender, e);
         }
 
         private bool IsColumnOutOfBounds(int columnIndex)
@@ -5561,6 +5559,7 @@ namespace Avalonia.Controls
         private void VerticalScrollBar_Scroll(object sender, ScrollEventArgs e)
         {
             ProcessVerticalScroll(e.ScrollEventType);
+            VerticalScroll?.Invoke(sender, e);
         }
 
         //TODO: Ensure left button is checked for
