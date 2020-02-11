@@ -116,13 +116,21 @@ namespace Avalonia.Styling
                 if (match.IsMatch)
                 {
                     var controlSubscriptions = GetSubscriptions(control);
-                    
-                    var subs = new CompositeDisposable(Setters.Count + Animations.Count);
 
-                    if (control is Animatable animatable)
+                    var animatable = control as Animatable;
+
+                    var setters = Setters;
+                    var settersCount = setters.Count;
+                    var animations = Animations;
+                    var animationsCount = animations.Count;
+
+                    var subs = new CompositeDisposable(settersCount + (animatable != null ? animationsCount : 0) + 1);
+
+                    if (animatable != null)
                     {
-                        foreach (var animation in Animations)
+                        for (var i = 0; i < animationsCount; i++)
                         {
+                            var animation = animations[i];
                             var obsMatch = match.Activator;
 
                             if (match.Result == SelectorMatchResult.AlwaysThisType ||
@@ -133,17 +141,19 @@ namespace Avalonia.Styling
 
                             var sub = animation.Apply(animatable, null, obsMatch);
                             subs.Add(sub);
-                        } 
+                        }
                     }
 
-                    foreach (var setter in Setters)
+                    for (var i = 0; i < settersCount; i++)
                     {
+                        var setter = setters[i];
                         var sub = setter.Apply(this, control, match.Activator);
                         subs.Add(sub);
                     }
 
+                    subs.Add(Disposable.Create((subs, Subscriptions) , state =>  state.Subscriptions.Remove(state.subs)));
+
                     controlSubscriptions.Add(subs);
-                    controlSubscriptions.Add(Disposable.Create(() => Subscriptions.Remove(subs)));
                     Subscriptions.Add(subs);
                 }
 
@@ -151,18 +161,23 @@ namespace Avalonia.Styling
             }
             else if (control == container)
             {
+                var setters = Setters;
+                var settersCount = setters.Count;
+
                 var controlSubscriptions = GetSubscriptions(control);
 
-                var subs = new CompositeDisposable(Setters.Count);
+                var subs = new CompositeDisposable(settersCount + 1);
 
-                foreach (var setter in Setters)
+                for (var i = 0; i < settersCount; i++)
                 {
+                    var setter = setters[i];
                     var sub = setter.Apply(this, control, null);
                     subs.Add(sub);
                 }
 
+                subs.Add(Disposable.Create((subs, Subscriptions), state => state.Subscriptions.Remove(state.subs)));
+
                 controlSubscriptions.Add(subs);
-                controlSubscriptions.Add(Disposable.Create(() => Subscriptions.Remove(subs)));
                 Subscriptions.Add(subs);
                 return true;
             }
