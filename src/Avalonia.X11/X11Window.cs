@@ -995,11 +995,18 @@ namespace Avalonia.X11
 
         public void SetIcon(IWindowIconImpl icon)
         {
-            var data = ((X11IconData)icon)?.Data;
-            fixed (void* pdata = data)
-                XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_ICON,
-                    new IntPtr((int)Atom.XA_CARDINAL), 32, PropertyMode.Replace,
-                    pdata, data?.Length ?? 0);
+            if (icon != null)
+            {
+                var data = ((X11IconData)icon).Data;
+                fixed (void* pdata = data)
+                    XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_ICON,
+                        new IntPtr((int)Atom.XA_CARDINAL), 32, PropertyMode.Replace,
+                        pdata, data.Length);
+            }
+            else
+            {
+                XDeleteProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_ICON);
+            }
         }
 
         public void ShowTaskbarIcon(bool value)
