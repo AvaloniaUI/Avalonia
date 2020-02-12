@@ -148,7 +148,7 @@ namespace Avalonia
                         _values.Remove(property);
                         _sink.ValueChanged(
                             property,
-                            BindingPriority.LocalValue,
+                            BindingPriority.Unset,
                             old,
                             BindingValue<T>.Unset);
                     }
