@@ -425,22 +425,6 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Property_Notifies_Initialized()
-        {
-            bool raised = false;
-
-            Class1.FooProperty.Initialized.Subscribe(e =>
-                raised = e.Property == Class1.FooProperty &&
-                         e.OldValue == AvaloniaProperty.UnsetValue &&
-                         (string)e.NewValue == "initial" &&
-                         e.Priority == BindingPriority.Unset);
-
-            var target = new Class1();
-
-            Assert.True(raised);
-        }
-
-        [Fact]
         public void Binding_Error_Reverts_To_Default_Value()
         {
             var target = new Class1();
