@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
@@ -33,6 +34,11 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<Location> ButtonSpinnerLocationProperty =
             AvaloniaProperty.Register<ButtonSpinner, Location>(nameof(ButtonSpinnerLocation), Location.Right);
+
+        public ButtonSpinner()
+        {
+            UpdatePseudoClasses(ButtonSpinnerLocation);
+        }
 
         private Button _decreaseButton;
         /// <summary>
@@ -85,8 +91,6 @@ namespace Avalonia.Controls
         static ButtonSpinner()
         {
             AllowSpinProperty.Changed.Subscribe(AllowSpinChanged);
-            PseudoClass<ButtonSpinner, Location>(ButtonSpinnerLocationProperty, location => location == Location.Left, ":left");
-            PseudoClass<ButtonSpinner, Location>(ButtonSpinnerLocationProperty, location => location == Location.Right, ":right");
         }
 
         /// <summary>
@@ -201,6 +205,20 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
+        {
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
+
+            if (property == ButtonSpinnerLocationProperty)
+            {
+                UpdatePseudoClasses(newValue.GetValueOrDefault<Location>());
+            }
+        }
+
         protected override void OnValidSpinDirectionChanged(ValidSpinDirections oldValue, ValidSpinDirections newValue)
         {
             SetButtonUsage();
@@ -258,6 +276,12 @@ namespace Avalonia.Controls
                 var direction = sender == IncreaseButton ? SpinDirection.Increase : SpinDirection.Decrease;
                 OnSpin(new SpinEventArgs(SpinEvent, direction));
             }
+        }
+
+        private void UpdatePseudoClasses(Location location)
+        {
+            PseudoClasses.Set(":left", location == Location.Left);
+            PseudoClasses.Set(":right", location == Location.Right);
         }
     }
 }
