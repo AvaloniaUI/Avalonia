@@ -182,21 +182,6 @@ namespace Avalonia
         object IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
 
         /// <inheritdoc/>
-        internal override void NotifyInitialized(IAvaloniaObject o)
-        {
-            if (HasNotifyInitializedObservers)
-            {
-                var e = new AvaloniaPropertyChangedEventArgs<TValue>(
-                    o,
-                    this,
-                    default,
-                    o.GetValue(this),
-                    BindingPriority.Unset);
-                NotifyInitialized(e);
-            }
-        }
-
-        /// <inheritdoc/>
         internal override void RouteClearValue(IAvaloniaObject o)
         {
             o.ClearValue<TValue>(this);
