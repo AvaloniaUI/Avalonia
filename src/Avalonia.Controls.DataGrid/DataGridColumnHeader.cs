@@ -326,7 +326,7 @@ namespace Avalonia.Controls
 
             if (OwningGrid != null && OwningGrid.ColumnHeaders != null)
             {
-                args.Device.Capture(this);
+                args.Pointer.Capture(this);
 
                 _dragMode = DragMode.MouseDown;
                 _frozenColumnsWidth = OwningGrid.ColumnsInternal.GetVisibleFrozenEdgedColumnsWidth();
@@ -391,7 +391,7 @@ namespace Avalonia.Controls
                 SetDragCursor(mousePosition);
 
                 // Variables that track drag mode states get reset in DataGridColumnHeader_LostMouseCapture
-                args.Device.Capture(null);
+                args.Pointer.Capture(null);
                 OnLostMouseCapture();
                 _dragMode = DragMode.None;
                 handled = true;
