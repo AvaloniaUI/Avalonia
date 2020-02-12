@@ -41,7 +41,9 @@ namespace Avalonia.Controls
         {
             if (_currentRoot != null)
                 _currentHost = (_currentRoot.PlatformImpl as ITopLevelImplWithNativeControlHost)?.NativeControlHost;
-            var needsAttachment = _currentHost != null && IsVisible && TransformedBounds.HasValue;
+            var needsAttachment = _currentHost != null;
+            var needsShow = needsAttachment && IsEffectivelyVisible && TransformedBounds.HasValue;
+            
             if (needsAttachment)
             {
                 // If there is an existing attachment, ensure that we are attached to the proper host or destroy the attachment
@@ -77,8 +79,6 @@ namespace Avalonia.Controls
                     _attachment = _currentHost.CreateNewAttachment(parent =>
                         _nativeControlHandle = CreateNativeControlCore(parent));
                 }
-                
-                _attachment.Update(TransformedBounds.Value);
             }
             else
             {
@@ -93,6 +93,11 @@ namespace Avalonia.Controls
                     Dispatcher.UIThread.Post(CheckDestruction, DispatcherPriority.Background);
                 }
             }
+
+            if (needsShow)
+                _attachment?.ShowInBounds(TransformedBounds.Value);
+            else if (needsAttachment)
+                _attachment?.Hide();
         }
 
         void CheckDestruction()
