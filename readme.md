@@ -24,6 +24,8 @@ Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?it
 
 For those without Visual Studio, a starter guide for .NET Core CLI can be found [here](http://avaloniaui.net/docs/quickstart/create-new-project#net-core).
 
+If you need to develop Avalonia app with JetBrains Rider, go and *vote* on [this issue](https://youtrack.jetbrains.com/issue/RIDER-39247) in their tracker. JetBrains won't do things without their users telling them that they want the feature,  so only **YOU** can make it happen.
+
 Avalonia is delivered via <b>NuGet</b> package manager. You can find the packages here: [stable(ish)](https://www.nuget.org/packages/Avalonia/)
 
 Use these commands in the Package Manager console to install Avalonia manually:
