@@ -34,7 +34,6 @@ namespace Avalonia
         public AvaloniaObject()
         {
             VerifyAccess();
-            AvaloniaPropertyRegistry.Instance.NotifyInitialized(this);
         }
 
         /// <summary>
