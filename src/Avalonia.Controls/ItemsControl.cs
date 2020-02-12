@@ -472,7 +472,10 @@ namespace Avalonia.Controls
                 result = container.GetControl(direction, c, wrap);
                 from = from ?? result;
 
-                if (result?.Focusable == true)
+                if (result != null &&
+                    result.Focusable &&
+                    result.IsEffectivelyEnabled &&
+                    result.IsEffectivelyVisible)
                 {
                     return result;
                 }
