@@ -24,9 +24,38 @@ extern NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationA
 
 @end
 
+@interface AvnApplication : NSApplication
+
+
+@end
+
+@implementation AvnApplication
+{
+    BOOL _isHandlingSendEvent;
+}
+
+- (void)sendEvent:(NSEvent *)event
+{
+    bool oldHandling = _isHandlingSendEvent;
+    _isHandlingSendEvent = true;
+    @try {
+        [super sendEvent: event];
+    } @finally {
+        _isHandlingSendEvent = oldHandling;
+    }
+}
+
+// This is needed for certain embedded controls
+- (BOOL) isHandlingSendEvent
+{
+    return _isHandlingSendEvent;
+}
+
+@end
+
 extern void InitializeAvnApp()
 {
-    NSApplication* app = [NSApplication sharedApplication];
+    NSApplication* app = [AvnApplication sharedApplication];
     id delegate = [AvnAppDelegate new];
     [app setDelegate:delegate];
 }
