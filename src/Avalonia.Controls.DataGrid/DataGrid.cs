@@ -149,6 +149,9 @@ namespace Avalonia.Controls
 
         private IEnumerable _items;
 
+        public event EventHandler<ScrollEventArgs> HorizontalScroll;
+        public event EventHandler<ScrollEventArgs> VerticalScroll;
+
         /// <summary>
         /// Identifies the CanUserReorderColumns dependency property.
         /// </summary>
@@ -4225,6 +4228,7 @@ namespace Avalonia.Controls
         private void HorizontalScrollBar_Scroll(object sender, ScrollEventArgs e)
         {
             ProcessHorizontalScroll(e.ScrollEventType);
+            HorizontalScroll?.Invoke(sender, e);
         }
 
         private bool IsColumnOutOfBounds(int columnIndex)
@@ -5557,6 +5561,7 @@ namespace Avalonia.Controls
         private void VerticalScrollBar_Scroll(object sender, ScrollEventArgs e)
         {
             ProcessVerticalScroll(e.ScrollEventType);
+            VerticalScroll?.Invoke(sender, e);
         }
 
         //TODO: Ensure left button is checked for

@@ -17,6 +17,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsIndeterminateProperty =
             AvaloniaProperty.Register<ProgressBar, bool>(nameof(IsIndeterminate));
 
+        public static readonly StyledProperty<bool> ShowProgressTextProperty =
+            AvaloniaProperty.Register<ProgressBar, bool>(nameof(ShowProgressText));
+
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
 
@@ -49,6 +52,12 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsIndeterminateProperty);
             set => SetValue(IsIndeterminateProperty, value);
+        }
+
+        public bool ShowProgressText
+        {
+            get => GetValue(ShowProgressTextProperty);
+            set => SetValue(ShowProgressTextProperty, value);
         }
 
         public Orientation Orientation
