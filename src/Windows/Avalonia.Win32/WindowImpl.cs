@@ -942,7 +942,7 @@ namespace Avalonia.Win32
         public void SetIcon(IWindowIconImpl icon)
         {
             var impl = (IconImpl)icon;
-            var hIcon = impl.HIcon;
+            var hIcon = impl?.HIcon ?? IntPtr.Zero;
             UnmanagedMethods.PostMessage(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_SETICON,
                 new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), hIcon);
         }
