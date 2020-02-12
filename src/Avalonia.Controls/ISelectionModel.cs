@@ -5,10 +5,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Avalonia.Controls
 {
-    public interface ISelectionModel
+    public interface ISelectionModel : INotifyPropertyChanged
     {
         IndexPath AnchorIndex { get; set; }
         IndexPath SelectedIndex { get; set; }

@@ -12,7 +12,7 @@ using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
 {
-    public class SelectionModel : ISelectionModel, INotifyPropertyChanged, IDisposable
+    public class SelectionModel : ISelectionModel, IDisposable
     {
         private readonly SelectionNode _rootNode;
         private bool _singleSelect;
