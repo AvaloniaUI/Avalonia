@@ -114,7 +114,12 @@ namespace Avalonia.Native
 
             public bool IsCompatibleWith(INativeControlHostImpl host) => host is NativeControlHostImpl;
 
-            public void Update(TransformedBounds transformedBounds)
+            public void Hide()
+            {
+                _native?.Hide();
+            }
+            
+            public void ShowInBounds(TransformedBounds transformedBounds)
             {
                 if (_attachedTo == null)
                     throw new InvalidOperationException("Native control isn't attached to a toplevel");

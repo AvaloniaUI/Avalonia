@@ -157,7 +157,15 @@ namespace Avalonia.X11
 
             public bool IsCompatibleWith(INativeControlHostImpl host) => host is X11NativeControlHost;
 
-            public void Update(TransformedBounds transformedBounds)
+            public void Hide()
+            {
+                if(_attachedTo == null || _child == null)
+                    return;
+                _mapped = false;
+                XUnmapWindow(_display, _holder.Handle);
+            }
+            
+            public void ShowInBounds(TransformedBounds transformedBounds)
             {
                 CheckDisposed();
                 if (_attachedTo == null)

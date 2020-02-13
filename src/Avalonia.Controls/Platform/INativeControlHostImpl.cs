@@ -21,7 +21,8 @@ namespace Avalonia.Controls.Platform
     {
         INativeControlHostImpl AttachedTo { get; set; }
         bool IsCompatibleWith(INativeControlHostImpl host);
-        void Update(TransformedBounds transformedBounds);
+        void Hide();
+        void ShowInBounds(TransformedBounds transformedBounds);
     }
 
     public interface ITopLevelImplWithNativeControlHost

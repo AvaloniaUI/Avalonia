@@ -168,7 +168,15 @@ namespace Avalonia.Win32
 
             public bool IsCompatibleWith(INativeControlHostImpl host) => host is Win32NativeControlHost;
 
-            public unsafe void Update(TransformedBounds transformedBounds)
+            public void Hide()
+            {
+                UnmanagedMethods.SetWindowPos(_holder.Handle, IntPtr.Zero,
+                    -100, -100, 1, 1,
+                    UnmanagedMethods.SetWindowPosFlags.SWP_HIDEWINDOW |
+                    UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
+            }
+            
+            public unsafe void ShowInBounds(TransformedBounds transformedBounds)
             {
                 CheckDisposed();
                 if (_attachedTo == null)
@@ -177,10 +185,14 @@ namespace Avalonia.Win32
                              new Vector(_attachedTo.Window.Scaling, _attachedTo.Window.Scaling);
                 var pixelRect = new PixelRect((int)bounds.X, (int)bounds.Y, Math.Max(1, (int)bounds.Width),
                     Math.Max(1, (int)bounds.Height));
-                UnmanagedMethods.MoveWindow(_holder.Handle, pixelRect.X, pixelRect.Y, pixelRect.Width,
-                    pixelRect.Height, true);
+                
                 UnmanagedMethods.MoveWindow(_child.Handle, 0, 0, pixelRect.Width, pixelRect.Height, true);
-                UnmanagedMethods.ShowWindow(_holder.Handle, UnmanagedMethods.ShowWindowCommand.Show);
+                UnmanagedMethods.SetWindowPos(_holder.Handle, IntPtr.Zero, pixelRect.X, pixelRect.Y, pixelRect.Width,
+                    pixelRect.Height,
+                    UnmanagedMethods.SetWindowPosFlags.SWP_SHOWWINDOW
+                    | UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER
+                    | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
+                
                 UnmanagedMethods.InvalidateRect(_attachedTo.Window.Handle.Handle, null, false);
             }
         }
