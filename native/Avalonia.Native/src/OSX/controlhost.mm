@@ -122,6 +122,11 @@ public:
             [[_holder superview] setNeedsDisplay:true];
     }
     
+    virtual void Hide() override
+    {
+        [_holder setHidden: true];
+    }
+    
     virtual void ReleaseChild() override
     {
         [_child removeFromSuperview];
