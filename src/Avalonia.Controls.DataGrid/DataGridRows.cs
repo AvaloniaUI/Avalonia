@@ -13,6 +13,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Controls
 {
@@ -1889,6 +1890,8 @@ namespace Avalonia.Controls
                 SetVerticalOffset(_verticalOffset);
 
                 DisplayData.FullyRecycleElements();
+                
+                VerticalScroll?.Invoke(_vScrollBar, new ScrollEventArgs(ScrollEventType.Wheel, _vScrollBar.Value));
 
                 Debug.Assert(DoubleUtil.GreaterThanOrClose(NegVerticalOffset, 0));
                 Debug.Assert(DoubleUtil.GreaterThanOrClose(_verticalOffset, NegVerticalOffset));

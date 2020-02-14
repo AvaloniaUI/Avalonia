@@ -48,6 +48,11 @@ namespace Avalonia.Controls.Primitives
         /// Specifies that the Avalonia.Controls.Primitives.Thumb was dragged to a
         /// new position and is now no longer being dragged by the user.
         /// </summary>
-        EndScroll = 5
+        EndScroll = 5,
+        /// <summary>    
+        /// Specifies that the Avalonia.Controls.Primitives.Thumb was moved using the wheel to a
+        /// new position.
+        /// </summary>
+        Wheel = 6
     }
 }
