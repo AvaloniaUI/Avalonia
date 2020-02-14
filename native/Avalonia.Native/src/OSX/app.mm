@@ -51,6 +51,11 @@ extern NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationA
     return _isHandlingSendEvent;
 }
 
+- (void)setHandlingSendEvent:(BOOL)handlingSendEvent
+{
+    _isHandlingSendEvent = handlingSendEvent;
+}
+
 @end
 
 extern void InitializeAvnApp()
