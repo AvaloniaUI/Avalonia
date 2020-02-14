@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Interactivity;
 using Avalonia.Data;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -51,11 +51,12 @@ namespace Avalonia.Controls.Primitives
 
         static ToggleButton()
         {
-            PseudoClass<ToggleButton, bool?>(IsCheckedProperty, c => c == true, ":checked");
-            PseudoClass<ToggleButton, bool?>(IsCheckedProperty, c => c == false, ":unchecked");
-            PseudoClass<ToggleButton, bool?>(IsCheckedProperty, c => c == null, ":indeterminate");
-
             IsCheckedProperty.Changed.AddClassHandler<ToggleButton>((x, e) => x.OnIsCheckedChanged(e));
+        }
+
+        public ToggleButton()
+        {
+            UpdatePseudoClasses(IsChecked);
         }
 
         /// <summary>
@@ -91,7 +92,11 @@ namespace Avalonia.Controls.Primitives
         public bool? IsChecked
         {
             get => _isChecked;
-            set => SetAndRaise(IsCheckedProperty, ref _isChecked, value);
+            set 
+            { 
+                SetAndRaise(IsCheckedProperty, ref _isChecked, value);
+                UpdatePseudoClasses(value);
+            }
         }
 
         /// <summary>
@@ -181,6 +186,13 @@ namespace Avalonia.Controls.Primitives
                     OnIndeterminate(new RoutedEventArgs(IndeterminateEvent));
                     break;
             }
+        }
+
+        private void UpdatePseudoClasses(bool? isChecked)
+        {
+            PseudoClasses.Set(":checked", isChecked == true);
+            PseudoClasses.Set(":unchecked", isChecked == false);
+            PseudoClasses.Set(":indeterminate", isChecked == null);
         }
     }
 }

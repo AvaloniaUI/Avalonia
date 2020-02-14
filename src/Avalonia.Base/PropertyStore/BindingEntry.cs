@@ -48,10 +48,10 @@ namespace Avalonia.PropertyStore
         {
             _subscription?.Dispose();
             _subscription = null;
-            _sink.Completed(Property, this);
+            _sink.Completed(Property, this, Value);
         }
 
-        public void OnCompleted() => _sink.Completed(Property, this);
+        public void OnCompleted() => _sink.Completed(Property, this, Value);
 
         public void OnError(Exception error)
         {
