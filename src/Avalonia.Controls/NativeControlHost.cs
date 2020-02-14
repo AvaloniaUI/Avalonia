@@ -100,6 +100,15 @@ namespace Avalonia.Controls
                 _attachment?.Hide();
         }
 
+        public bool TryUpdateNativeControlPosition()
+        {
+            var needsShow = _currentHost != null && IsEffectivelyVisible && TransformedBounds.HasValue;
+
+            if(needsShow)
+                _attachment?.ShowInBounds(TransformedBounds.Value);
+            return needsShow;
+        }
+
         void CheckDestruction()
         {
             _queuedForDestruction = false;
