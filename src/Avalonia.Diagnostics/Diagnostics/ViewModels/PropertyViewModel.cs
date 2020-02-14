@@ -33,11 +33,9 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             var converter = TypeDescriptor.GetConverter(targetType);
             
-            if (converter != null &&
-                converter.CanConvertFrom(typeof(string)) &&
-                converter.CanConvertTo(targetType))
+            if (converter != null && converter.CanConvertFrom(typeof(string)))
             {
-                return converter.ConvertTo(null, CultureInfo.InvariantCulture, s, targetType);
+                return converter.ConvertFrom(null, CultureInfo.InvariantCulture, s);
             }
             else
             {
