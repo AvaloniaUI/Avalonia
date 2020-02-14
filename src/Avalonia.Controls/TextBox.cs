@@ -275,11 +275,17 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the horizontal alignment of the content within the control.
+        /// </summary>
         public HorizontalAlignment HorizontalContentAlignment
         {
             get { return GetValue(HorizontalContentAlignmentProperty); }
             set { SetValue(HorizontalContentAlignmentProperty, value); }
         }
+        /// <summary>
+        /// Gets or sets the vertical alignment of the content within the control.
+        /// </summary>
         public VerticalAlignment VerticalContentAlignment
         {
             get { return GetValue(VerticalContentAlignmentProperty); }
