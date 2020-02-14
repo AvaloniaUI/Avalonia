@@ -113,7 +113,7 @@
 
   <Style Selector="DataGridRow /template/ Rectangle#BackgroundRectangle">
     <Setter Property="IsVisible" Value="False"/>
-    <Setter Property="Fill" Value="{DynamicResource HighlightBrush}" />
+    <Setter Property="Fill" Value="{DynamicResource ThemeAccentBrush2}" />
   </Style>
 
   <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
