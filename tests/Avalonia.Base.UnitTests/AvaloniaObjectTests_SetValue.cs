@@ -241,6 +241,17 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void SetValue_Animation_Overrides_LocalValue()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "one", BindingPriority.LocalValue);
+            Assert.Equal("one", target.GetValue(Class1.FooProperty));
+            target.SetValue(Class1.FooProperty, "two", BindingPriority.Animation);
+            Assert.Equal("two", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
         public void Setting_UnsetValue_Reverts_To_Default_Value()
         {
             Class1 target = new Class1();
