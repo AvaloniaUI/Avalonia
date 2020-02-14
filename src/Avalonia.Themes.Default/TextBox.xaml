@@ -12,10 +12,11 @@
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
-          <DockPanel Margin="{TemplateBinding Padding}">
+          <DockPanel Margin="{TemplateBinding Padding}"
+                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
 
             <TextBlock Name="floatingWatermark"
-                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                        Foreground="{DynamicResource ThemeAccentBrush}"
                        FontSize="{DynamicResource FontSizeSmall}"
                        Text="{TemplateBinding Watermark}"
@@ -38,13 +39,9 @@
                 <Panel>
                   <TextBlock Name="watermark"
                              Opacity="0.5"
-                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                              Text="{TemplateBinding Watermark}"
                              IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
                   <TextPresenter Name="PART_TextPresenter"
-                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                  Text="{TemplateBinding Text, Mode=TwoWay}"
                                  CaretIndex="{TemplateBinding CaretIndex}"
                                  SelectionStart="{TemplateBinding SelectionStart}"
