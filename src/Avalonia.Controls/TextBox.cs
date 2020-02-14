@@ -77,13 +77,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="HorizontalAlignment"/> property.
         /// </summary>
         public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
-            AvaloniaProperty.Register<TextBox, HorizontalAlignment>(nameof(HorizontalContentAlignment));
+            ContentControl.HorizontalContentAlignmentProperty.AddOwner<TextBox>();
 
         /// <summary>
         /// Defines the <see cref="VerticalAlignment"/> property.
         /// </summary>
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
-            AvaloniaProperty.Register<TextBox, VerticalAlignment>(nameof(VerticalContentAlignment));
+            ContentControl.VerticalContentAlignmentProperty.AddOwner<TextBox>();
 
         public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
