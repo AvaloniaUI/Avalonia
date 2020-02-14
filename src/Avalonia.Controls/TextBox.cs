@@ -14,6 +14,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Data;
+using Avalonia.Layout;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -71,6 +72,18 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<TextBox>();
+
+        /// <summary>
+        /// Defines the <see cref="HorizontalAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
+            AvaloniaProperty.Register<TextBox, HorizontalAlignment>(nameof(HorizontalContentAlignment));
+
+        /// <summary>
+        /// Defines the <see cref="VerticalAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
+            AvaloniaProperty.Register<TextBox, VerticalAlignment>(nameof(VerticalContentAlignment));
 
         public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
@@ -260,6 +273,17 @@ namespace Avalonia.Controls
                     }
                 }
             }
+        }
+
+        public HorizontalAlignment HorizontalContentAlignment
+        {
+            get { return GetValue(HorizontalContentAlignmentProperty); }
+            set { SetValue(HorizontalContentAlignmentProperty, value); }
+        }
+        public VerticalAlignment VerticalContentAlignment
+        {
+            get { return GetValue(VerticalContentAlignmentProperty); }
+            set { SetValue(VerticalContentAlignmentProperty, value); }
         }
 
         public TextAlignment TextAlignment
