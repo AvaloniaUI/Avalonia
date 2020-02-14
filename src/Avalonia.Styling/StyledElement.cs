@@ -573,9 +573,12 @@ namespace Avalonia
                     element._dataContextUpdating = true;
                     element.OnDataContextBeginUpdate();
 
-                    foreach (var child in element.LogicalChildren)
+                    var logicalChildren = element.LogicalChildren;
+                    var logicalChildrenCount = logicalChildren.Count;
+
+                    for (var i = 0; i < logicalChildrenCount; i++)
                     {
-                        if (child is StyledElement s &&
+                        if (element.LogicalChildren[i] is StyledElement s &&
                             s.InheritanceParent == element &&
                             !s.IsSet(DataContextProperty))
                         {
@@ -646,9 +649,15 @@ namespace Avalonia
                 AttachedToLogicalTree?.Invoke(this, e);
             }
 
-            foreach (var child in LogicalChildren.OfType<StyledElement>())
+            var logicalChildren = LogicalChildren;
+            var logicalChildrenCount = logicalChildren.Count;
+
+            for (var i = 0; i < logicalChildrenCount; i++)
             {
-                child.OnAttachedToLogicalTreeCore(e);
+                if (logicalChildren[i] is StyledElement child)
+                {
+                    child.OnAttachedToLogicalTreeCore(e);
+                }
             }
         }
 
@@ -661,9 +670,15 @@ namespace Avalonia
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
 
-                foreach (var child in LogicalChildren.OfType<StyledElement>())
+                var logicalChildren = LogicalChildren;
+                var logicalChildrenCount = logicalChildren.Count;
+
+                for (var i = 0; i < logicalChildrenCount; i++)
                 {
-                    child.OnDetachedFromLogicalTreeCore(e);
+                    if (logicalChildren[i] is StyledElement child)
+                    {
+                        child.OnDetachedFromLogicalTreeCore(e);
+                    }
                 }
 
 #if DEBUG

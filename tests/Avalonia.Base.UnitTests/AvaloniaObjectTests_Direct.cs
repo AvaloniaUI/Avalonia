@@ -188,6 +188,7 @@ namespace Avalonia.Base.UnitTests
             target.PropertyChanged += (s, e) =>
             {
                 Assert.Same(target, s);
+                Assert.Equal(BindingPriority.LocalValue, e.Priority);
                 Assert.Equal(Class1.FooProperty, e.Property);
                 Assert.Equal("newvalue", (string)e.OldValue);
                 Assert.Equal("unset", (string)e.NewValue);

@@ -347,8 +347,7 @@ namespace Avalonia.Controls
                 !AcceptsReturn &&
                 Text?.Length > 0)
             {
-                SelectionStart = 0;
-                SelectionEnd = Text.Length;
+                SelectAll();
             }
             else
             {
@@ -704,8 +703,7 @@ namespace Avalonia.Controls
                         SelectionEnd = StringUtils.NextWord(text, index);
                         break;
                     case 3:
-                        SelectionStart = 0;
-                        SelectionEnd = text.Length;
+                        SelectAll();
                         break;
                 }
             }
@@ -927,7 +925,10 @@ namespace Avalonia.Controls
             CaretIndex = caretIndex;
         }
 
-        private void SelectAll()
+        /// <summary>
+        /// Select all text in the TextBox
+        /// </summary>
+        public void SelectAll()
         {
             SelectionStart = 0;
             SelectionEnd = Text?.Length ?? 0;
