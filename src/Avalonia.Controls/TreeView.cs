@@ -215,8 +215,7 @@ namespace Avalonia.Controls
 
         private void SelectSingleItem(object item)
         {
-            SelectedItems.Clear();
-            SelectedItems.Add(item);
+            SelectedItems = new AvaloniaList<object>(item);
         }
 
         /// <summary>
