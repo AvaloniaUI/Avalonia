@@ -18,248 +18,224 @@ namespace Avalonia.Controls.UnitTests
 {
     public class SelectionModelTests
     {
-        private LogWrapper Log { get; }
+        private readonly ITestOutputHelper _output;
 
         public SelectionModelTests(ITestOutputHelper output)
         {
-            Log = new LogWrapper(output);
+            _output = output;
         }
 
         [Fact]
         public void ValidateOneLevelSingleSelectionNoSource()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                SelectionModel selectionModel = new SelectionModel() { SingleSelect = true };
-                Log.Comment("No source set.");
-                Select(selectionModel, 4, true);
-                ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) });
-                Select(selectionModel, 4, false);
-                ValidateSelection(selectionModel, new List<IndexPath>() { });
-            });
+            SelectionModel selectionModel = new SelectionModel() { SingleSelect = true };
+            _output.WriteLine("No source set.");
+            Select(selectionModel, 4, true);
+            ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) });
+            Select(selectionModel, 4, false);
+            ValidateSelection(selectionModel, new List<IndexPath>() { });
         }
 
         [Fact]
         public void ValidateOneLevelSingleSelection()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                SelectionModel selectionModel = new SelectionModel() { SingleSelect = true };
-                Log.Comment("Set the source to 10 items");
-                selectionModel.Source = Enumerable.Range(0, 10).ToList();
-                Select(selectionModel, 3, true);
-                ValidateSelection(selectionModel, new List<IndexPath>() { Path(3) }, new List<IndexPath>() { Path() });
-                Select(selectionModel, 3, false);
-                ValidateSelection(selectionModel, new List<IndexPath>() { });
-            });
+            SelectionModel selectionModel = new SelectionModel() { SingleSelect = true };
+            _output.WriteLine("Set the source to 10 items");
+            selectionModel.Source = Enumerable.Range(0, 10).ToList();
+            Select(selectionModel, 3, true);
+            ValidateSelection(selectionModel, new List<IndexPath>() { Path(3) }, new List<IndexPath>() { Path() });
+            Select(selectionModel, 3, false);
+            ValidateSelection(selectionModel, new List<IndexPath>() { });
         }
 
         [Fact]
         public void ValidateSelectionChangedEvent()
         {
-            RunOnUIThread.Execute(() =>
+            SelectionModel selectionModel = new SelectionModel();
+            selectionModel.Source = Enumerable.Range(0, 10).ToList();
+
+            int selectionChangedFiredCount = 0;
+            selectionModel.SelectionChanged += delegate (object sender, SelectionModelSelectionChangedEventArgs args)
             {
-                SelectionModel selectionModel = new SelectionModel();
-                selectionModel.Source = Enumerable.Range(0, 10).ToList();
-
-                int selectionChangedFiredCount = 0;
-                selectionModel.SelectionChanged += delegate (object sender, SelectionModelSelectionChangedEventArgs args)
-                {
-                    selectionChangedFiredCount++;
-                    ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
-                };
-
-                Select(selectionModel, 4, true);
+                selectionChangedFiredCount++;
                 ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
-                Assert.Equal(1, selectionChangedFiredCount);
-            });
+            };
+
+            Select(selectionModel, 4, true);
+            ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
+            Assert.Equal(1, selectionChangedFiredCount);
         }
 
         [Fact]
         public void ValidateCanSetSelectedIndex()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                var model = new SelectionModel();
-                var ip = IndexPath.CreateFrom(34);
-                model.SelectedIndex = ip;
-                Assert.Equal(0, ip.CompareTo(model.SelectedIndex));
-            });
+            var model = new SelectionModel();
+            var ip = IndexPath.CreateFrom(34);
+            model.SelectedIndex = ip;
+            Assert.Equal(0, ip.CompareTo(model.SelectedIndex));
         }
 
         [Fact]
         public void ValidateOneLevelMultipleSelection()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                SelectionModel selectionModel = new SelectionModel();
-                selectionModel.Source = Enumerable.Range(0, 10).ToList();
+            SelectionModel selectionModel = new SelectionModel();
+            selectionModel.Source = Enumerable.Range(0, 10).ToList();
 
-                Select(selectionModel, 4, true);
-                ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
-                SelectRangeFromAnchor(selectionModel, 8, true /* select */);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(4),
-                        Path(5),
-                        Path(6),
-                        Path(7),
-                        Path(8)
-                    },
-                    new List<IndexPath>() { Path() });
+            Select(selectionModel, 4, true);
+            ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
+            SelectRangeFromAnchor(selectionModel, 8, true /* select */);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(4),
+                    Path(5),
+                    Path(6),
+                    Path(7),
+                    Path(8)
+                },
+                new List<IndexPath>() { Path() });
 
-                ClearSelection(selectionModel);
-                SetAnchorIndex(selectionModel, 6);
-                SelectRangeFromAnchor(selectionModel, 3, true /* select */);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(3),
-                        Path(4),
-                        Path(5),
-                        Path(6)
-                    },
-                    new List<IndexPath>() { Path() });
+            ClearSelection(selectionModel);
+            SetAnchorIndex(selectionModel, 6);
+            SelectRangeFromAnchor(selectionModel, 3, true /* select */);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(3),
+                    Path(4),
+                    Path(5),
+                    Path(6)
+                },
+                new List<IndexPath>() { Path() });
 
-                SetAnchorIndex(selectionModel, 4);
-                SelectRangeFromAnchor(selectionModel, 5, false /* select */);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(3),
-                        Path(6)
-                    },
-                    new List<IndexPath>() { Path() });
-            });
+            SetAnchorIndex(selectionModel, 4);
+            SelectRangeFromAnchor(selectionModel, 5, false /* select */);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(3),
+                    Path(6)
+                },
+                new List<IndexPath>() { Path() });
         }
 
         [Fact]
         public void ValidateTwoLevelSingleSelection()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                SelectionModel selectionModel = new SelectionModel();
-                Log.Comment("Setting the source");
-                selectionModel.Source = CreateNestedData(1 /* levels */ , 2 /* groupsAtLevel */, 2 /* countAtLeaf */);
-                Select(selectionModel, 1, 1, true);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>() { Path(1, 1) }, new List<IndexPath>() { Path(), Path(1) });
-                Select(selectionModel, 1, 1, false);
-                ValidateSelection(selectionModel, new List<IndexPath>() { });
-            });
+            SelectionModel selectionModel = new SelectionModel();
+            _output.WriteLine("Setting the source");
+            selectionModel.Source = CreateNestedData(1 /* levels */ , 2 /* groupsAtLevel */, 2 /* countAtLeaf */);
+            Select(selectionModel, 1, 1, true);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>() { Path(1, 1) }, new List<IndexPath>() { Path(), Path(1) });
+            Select(selectionModel, 1, 1, false);
+            ValidateSelection(selectionModel, new List<IndexPath>() { });
         }
 
         [Fact]
         public void ValidateTwoLevelMultipleSelection()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                SelectionModel selectionModel = new SelectionModel();
-                Log.Comment("Setting the source");
-                selectionModel.Source = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
+            SelectionModel selectionModel = new SelectionModel();
+            _output.WriteLine("Setting the source");
+            selectionModel.Source = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
 
-                Select(selectionModel, 1, 2, true);
-                ValidateSelection(selectionModel, new List<IndexPath>() { Path(1, 2) }, new List<IndexPath>() { Path(), Path(1) });
-                SelectRangeFromAnchor(selectionModel, 2, 2, true /* select */);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(1, 2),
-                        Path(2), // Inner node should be selected since everything 2.* is selected
-                        Path(2, 0),
-                        Path(2, 1),
-                        Path(2, 2)
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(1)
-                    },
-                    1 /* selectedInnerNodes */);
+            Select(selectionModel, 1, 2, true);
+            ValidateSelection(selectionModel, new List<IndexPath>() { Path(1, 2) }, new List<IndexPath>() { Path(), Path(1) });
+            SelectRangeFromAnchor(selectionModel, 2, 2, true /* select */);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(1, 2),
+                    Path(2), // Inner node should be selected since everything 2.* is selected
+                    Path(2, 0),
+                    Path(2, 1),
+                    Path(2, 2)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(1)
+                },
+                1 /* selectedInnerNodes */);
 
-                ClearSelection(selectionModel);
-                SetAnchorIndex(selectionModel, 2, 1);
-                SelectRangeFromAnchor(selectionModel, 0, 1, true /* select */);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(0, 1),
-                        Path(0, 2),
-                        Path(1, 0),
-                        Path(1, 1),
-                        Path(1, 2),
-                        Path(1),
-                        Path(2, 0),
-                        Path(2, 1)
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(0),
-                        Path(2),
-                    },
-                    1 /* selectedInnerNodes */);
+            ClearSelection(selectionModel);
+            SetAnchorIndex(selectionModel, 2, 1);
+            SelectRangeFromAnchor(selectionModel, 0, 1, true /* select */);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(0, 1),
+                    Path(0, 2),
+                    Path(1, 0),
+                    Path(1, 1),
+                    Path(1, 2),
+                    Path(1),
+                    Path(2, 0),
+                    Path(2, 1)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(0),
+                    Path(2),
+                },
+                1 /* selectedInnerNodes */);
 
-                SetAnchorIndex(selectionModel, 1, 1);
-                SelectRangeFromAnchor(selectionModel, 2, 0, false /* select */);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(0, 1),
-                        Path(0, 2),
-                        Path(1, 0),
-                        Path(2, 1)
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(1),
-                        Path(0),
-                        Path(2),
-                    },
-                    0 /* selectedInnerNodes */);
+            SetAnchorIndex(selectionModel, 1, 1);
+            SelectRangeFromAnchor(selectionModel, 2, 0, false /* select */);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(0, 1),
+                    Path(0, 2),
+                    Path(1, 0),
+                    Path(2, 1)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(1),
+                    Path(0),
+                    Path(2),
+                },
+                0 /* selectedInnerNodes */);
 
-                ClearSelection(selectionModel);
-                ValidateSelection(selectionModel, new List<IndexPath>() { });
-            });
+            ClearSelection(selectionModel);
+            ValidateSelection(selectionModel, new List<IndexPath>() { });
         }
 
         [Fact]
         public void ValidateNestedSingleSelection()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                SelectionModel selectionModel = new SelectionModel() { SingleSelect = true };
-                Log.Comment("Setting the source");
-                selectionModel.Source = CreateNestedData(3 /* levels */ , 2 /* groupsAtLevel */, 2 /* countAtLeaf */);
-                var path = Path(1, 0, 1, 1);
-                Select(selectionModel, path, true);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>() { path },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(1),
-                        Path(1, 0),
-                        Path(1, 0, 1),
-                    });
-                Select(selectionModel, Path(0, 0, 1, 0), true);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(0, 0, 1, 0)
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(0),
-                        Path(0, 0),
-                        Path(0, 0, 1)
-                    });
-                Select(selectionModel, Path(0, 0, 1, 0), false);
-                ValidateSelection(selectionModel, new List<IndexPath>() { });
-            });
+            SelectionModel selectionModel = new SelectionModel() { SingleSelect = true };
+            _output.WriteLine("Setting the source");
+            selectionModel.Source = CreateNestedData(3 /* levels */ , 2 /* groupsAtLevel */, 2 /* countAtLeaf */);
+            var path = Path(1, 0, 1, 1);
+            Select(selectionModel, path, true);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>() { path },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(1),
+                    Path(1, 0),
+                    Path(1, 0, 1),
+                });
+            Select(selectionModel, Path(0, 0, 1, 0), true);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(0, 0, 1, 0)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(0),
+                    Path(0, 0),
+                    Path(0, 0, 1)
+                });
+            Select(selectionModel, Path(0, 0, 1, 0), false);
+            ValidateSelection(selectionModel, new List<IndexPath>() { });
         }
 
         [Theory]
@@ -267,497 +243,470 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(false)]
         public void ValidateNestedMultipleSelection(bool handleChildrenRequested)
         {
-            RunOnUIThread.Execute(() =>
+            SelectionModel selectionModel = new SelectionModel();
+            List<IndexPath> sourcePaths = new List<IndexPath>();
+
+            _output.WriteLine("Setting the source");
+            selectionModel.Source = CreateNestedData(3 /* levels */ , 2 /* groupsAtLevel */, 4 /* countAtLeaf */);
+            if (handleChildrenRequested)
             {
-                SelectionModel selectionModel = new SelectionModel();
-                List<IndexPath> sourcePaths = new List<IndexPath>();
-
-                Log.Comment("Setting the source");
-                selectionModel.Source = CreateNestedData(3 /* levels */ , 2 /* groupsAtLevel */, 4 /* countAtLeaf */);
-                if (handleChildrenRequested)
+                selectionModel.ChildrenRequested += (object sender, SelectionModelChildrenRequestedEventArgs args) =>
                 {
-                    selectionModel.ChildrenRequested += (object sender, SelectionModelChildrenRequestedEventArgs args) =>
-                    {
-                        Log.Comment("ChildrenRequestedIndexPath:" + args.SourceIndex);
-                        sourcePaths.Add(args.SourceIndex);
-                        args.Children = args.Source is IEnumerable ? args.Source : null;
-                    };
-                }
+                    _output.WriteLine("ChildrenRequestedIndexPath:" + args.SourceIndex);
+                    sourcePaths.Add(args.SourceIndex);
+                    args.Children = args.Source is IEnumerable ? args.Source : null;
+                };
+            }
 
-                var startPath = Path(1, 0, 1, 0);
-                Select(selectionModel, startPath, true);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>() { startPath },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(1),
-                        Path(1, 0),
-                        Path(1, 0, 1)
-                    });
-
-                var endPath = Path(1, 1, 1, 0);
-                SelectRangeFromAnchor(selectionModel, endPath, true /* select */);
-
-                if (handleChildrenRequested)
+            var startPath = Path(1, 0, 1, 0);
+            Select(selectionModel, startPath, true);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>() { startPath },
+                new List<IndexPath>()
                 {
-                    // Validate SourceIndices.
-                    var expectedSourceIndices = new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(1),
-                        Path(1, 0),
-                        Path(1),
-                        Path(1, 0, 1),
-                        Path(1, 0, 1),
-                        Path(1, 0, 1),
-                        Path(1, 0, 1),
-                        Path(1, 1),
-                        Path(1, 1),
-                        Path(1, 1, 0),
-                        Path(1, 1, 0),
-                        Path(1, 1, 0),
-                        Path(1, 1, 0),
-                        Path(1, 1, 1)
-                    };
+                    Path(),
+                    Path(1),
+                    Path(1, 0),
+                    Path(1, 0, 1)
+                });
 
-                    Assert.Equal(expectedSourceIndices.Count, sourcePaths.Count);
-                    for (int i = 0; i < expectedSourceIndices.Count; i++)
-                    {
-                        Assert.True(AreEqual(expectedSourceIndices[i], sourcePaths[i]));
-                    }
+            var endPath = Path(1, 1, 1, 0);
+            SelectRangeFromAnchor(selectionModel, endPath, true /* select */);
+
+            if (handleChildrenRequested)
+            {
+                // Validate SourceIndices.
+                var expectedSourceIndices = new List<IndexPath>()
+                {
+                    Path(),
+                    Path(1),
+                    Path(1, 0),
+                    Path(1),
+                    Path(1, 0, 1),
+                    Path(1, 0, 1),
+                    Path(1, 0, 1),
+                    Path(1, 0, 1),
+                    Path(1, 1),
+                    Path(1, 1),
+                    Path(1, 1, 0),
+                    Path(1, 1, 0),
+                    Path(1, 1, 0),
+                    Path(1, 1, 0),
+                    Path(1, 1, 1)
+                };
+
+                Assert.Equal(expectedSourceIndices.Count, sourcePaths.Count);
+                for (int i = 0; i < expectedSourceIndices.Count; i++)
+                {
+                    Assert.True(AreEqual(expectedSourceIndices[i], sourcePaths[i]));
                 }
+            }
 
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(1, 0, 1, 0),
-                        Path(1, 0, 1, 1),
-                        Path(1, 0, 1, 2),
-                        Path(1, 0, 1, 3),
-                        Path(1, 0, 1),
-                        Path(1, 1, 0, 0),
-                        Path(1, 1, 0, 1),
-                        Path(1, 1, 0, 2),
-                        Path(1, 1, 0, 3),
-                        Path(1, 1, 0),
-                        Path(1, 1, 1, 0),
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(1),
-                        Path(1, 0),
-                        Path(1, 1),
-                        Path(1, 1, 1),
-                    },
-                    2 /* selectedInnerNodes */);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(1, 0, 1, 0),
+                    Path(1, 0, 1, 1),
+                    Path(1, 0, 1, 2),
+                    Path(1, 0, 1, 3),
+                    Path(1, 0, 1),
+                    Path(1, 1, 0, 0),
+                    Path(1, 1, 0, 1),
+                    Path(1, 1, 0, 2),
+                    Path(1, 1, 0, 3),
+                    Path(1, 1, 0),
+                    Path(1, 1, 1, 0),
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(1),
+                    Path(1, 0),
+                    Path(1, 1),
+                    Path(1, 1, 1),
+                },
+                2 /* selectedInnerNodes */);
 
-                ClearSelection(selectionModel);
-                ValidateSelection(selectionModel, new List<IndexPath>() { });
+            ClearSelection(selectionModel);
+            ValidateSelection(selectionModel, new List<IndexPath>() { });
 
-                startPath = Path(0, 1, 0, 2);
-                SetAnchorIndex(selectionModel, startPath);
-                endPath = Path(0, 0, 0, 2);
-                SelectRangeFromAnchor(selectionModel, endPath, true /* select */);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                         Path(0, 0, 0, 2),
-                         Path(0, 0, 0, 3),
-                         Path(0, 0, 1, 0),
-                         Path(0, 0, 1, 1),
-                         Path(0, 0, 1, 2),
-                         Path(0, 0, 1, 3),
-                         Path(0, 0, 1),
-                         Path(0, 1, 0, 0),
-                         Path(0, 1, 0, 1),
-                         Path(0, 1, 0, 2),
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(0),
-                        Path(0, 0),
-                        Path(0, 0, 0),
-                        Path(0, 1),
-                        Path(0, 1, 0),
-                    },
-                    1 /* selectedInnerNodes */);
+            startPath = Path(0, 1, 0, 2);
+            SetAnchorIndex(selectionModel, startPath);
+            endPath = Path(0, 0, 0, 2);
+            SelectRangeFromAnchor(selectionModel, endPath, true /* select */);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                        Path(0, 0, 0, 2),
+                        Path(0, 0, 0, 3),
+                        Path(0, 0, 1, 0),
+                        Path(0, 0, 1, 1),
+                        Path(0, 0, 1, 2),
+                        Path(0, 0, 1, 3),
+                        Path(0, 0, 1),
+                        Path(0, 1, 0, 0),
+                        Path(0, 1, 0, 1),
+                        Path(0, 1, 0, 2),
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(0),
+                    Path(0, 0),
+                    Path(0, 0, 0),
+                    Path(0, 1),
+                    Path(0, 1, 0),
+                },
+                1 /* selectedInnerNodes */);
 
-                startPath = Path(0, 1, 0, 2);
-                SetAnchorIndex(selectionModel, startPath);
-                endPath = Path(0, 0, 0, 2);
-                SelectRangeFromAnchor(selectionModel, endPath, false /* select */);
-                ValidateSelection(selectionModel, new List<IndexPath>() { });
-            });
+            startPath = Path(0, 1, 0, 2);
+            SetAnchorIndex(selectionModel, startPath);
+            endPath = Path(0, 0, 0, 2);
+            SelectRangeFromAnchor(selectionModel, endPath, false /* select */);
+            ValidateSelection(selectionModel, new List<IndexPath>() { });
         }
 
         [Fact]
         public void ValidateInserts()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                var data = new ObservableCollection<int>(Enumerable.Range(0, 10));
-                var selectionModel = new SelectionModel();
-                selectionModel.Source = data;
+            var data = new ObservableCollection<int>(Enumerable.Range(0, 10));
+            var selectionModel = new SelectionModel();
+            selectionModel.Source = data;
 
-                selectionModel.Select(3);
-                selectionModel.Select(4);
-                selectionModel.Select(5);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(3),
-                        Path(4),
-                        Path(5),
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path()
-                    });
+            selectionModel.Select(3);
+            selectionModel.Select(4);
+            selectionModel.Select(5);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(3),
+                    Path(4),
+                    Path(5),
+                },
+                new List<IndexPath>()
+                {
+                    Path()
+                });
 
-                Log.Comment("Insert in selected range: Inserting 3 items at index 4");
-                data.Insert(4, 41);
-                data.Insert(4, 42);
-                data.Insert(4, 43);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(3),
-                        Path(7),
-                        Path(8),
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path()
-                    });
+            _output.WriteLine("Insert in selected range: Inserting 3 items at index 4");
+            data.Insert(4, 41);
+            data.Insert(4, 42);
+            data.Insert(4, 43);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(3),
+                    Path(7),
+                    Path(8),
+                },
+                new List<IndexPath>()
+                {
+                    Path()
+                });
 
-                Log.Comment("Insert before selected range: Inserting 3 items at index 0");
-                data.Insert(0, 100);
-                data.Insert(0, 101);
-                data.Insert(0, 102);
-                ValidateSelection(selectionModel,
-                   new List<IndexPath>()
-                   {
-                        Path(6),
-                        Path(10),
-                        Path(11),
-                   },
-                   new List<IndexPath>()
-                   {
-                       Path()
-                   });
+            _output.WriteLine("Insert before selected range: Inserting 3 items at index 0");
+            data.Insert(0, 100);
+            data.Insert(0, 101);
+            data.Insert(0, 102);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(6),
+                    Path(10),
+                    Path(11),
+                },
+                new List<IndexPath>()
+                {
+                    Path()
+                });
 
-                Log.Comment("Insert after selected range: Inserting 3 items at index 12");
-                data.Insert(12, 1000);
-                data.Insert(12, 1001);
-                data.Insert(12, 1002);
-                ValidateSelection(selectionModel,
-                  new List<IndexPath>()
-                  {
-                        Path(6),
-                        Path(10),
-                        Path(11),
-                  },
-                    new List<IndexPath>()
-                    {
-                        Path()
-                    });
-            });
+            _output.WriteLine("Insert after selected range: Inserting 3 items at index 12");
+            data.Insert(12, 1000);
+            data.Insert(12, 1001);
+            data.Insert(12, 1002);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(6),
+                    Path(10),
+                    Path(11),
+                },
+                new List<IndexPath>()
+                {
+                    Path()
+                });
         }
 
         [Fact]
         public void ValidateGroupInserts()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                var data = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
-                var selectionModel = new SelectionModel();
-                selectionModel.Source = data;
+            var data = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
+            var selectionModel = new SelectionModel();
+            selectionModel.Source = data;
 
-                selectionModel.Select(1, 1);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(1, 1),
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(1),
-                    });
+            selectionModel.Select(1, 1);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(1, 1),
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(1),
+                });
 
-                Log.Comment("Insert before selected range: Inserting item at group index 0");
-                data.Insert(0, 100);
-                ValidateSelection(selectionModel,
-                   new List<IndexPath>()
-                   {
-                        Path(2, 1)
-                   },
-                   new List<IndexPath>()
-                   {
-                       Path(),
-                       Path(2),
-                   });
+            _output.WriteLine("Insert before selected range: Inserting item at group index 0");
+            data.Insert(0, 100);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(2, 1)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(2),
+                });
 
-                Log.Comment("Insert after selected range: Inserting item at group index 3");
-                data.Insert(3, 1000);
-                ValidateSelection(selectionModel,
-                  new List<IndexPath>()
-                  {
-                      Path(2, 1)
-                  },
-                  new List<IndexPath>()
-                  {
-                      Path(),
-                      Path(2),
-                  });
-            });
+            _output.WriteLine("Insert after selected range: Inserting item at group index 3");
+            data.Insert(3, 1000);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(2, 1)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(2),
+                });
         }
 
         [Fact]
         public void ValidateRemoves()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                var data = new ObservableCollection<int>(Enumerable.Range(0, 10));
-                var selectionModel = new SelectionModel();
-                selectionModel.Source = data;
+            var data = new ObservableCollection<int>(Enumerable.Range(0, 10));
+            var selectionModel = new SelectionModel();
+            selectionModel.Source = data;
 
-                selectionModel.Select(6);
-                selectionModel.Select(7);
-                selectionModel.Select(8);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(6),
-                        Path(7),
-                        Path(8)
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path()
-                    });
+            selectionModel.Select(6);
+            selectionModel.Select(7);
+            selectionModel.Select(8);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(6),
+                    Path(7),
+                    Path(8)
+                },
+                new List<IndexPath>()
+                {
+                    Path()
+                });
 
-                Log.Comment("Remove before selected range: Removing item at index 0");
-                data.RemoveAt(0);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(5),
-                        Path(6),
-                        Path(7)
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path()
-                    });
+            _output.WriteLine("Remove before selected range: Removing item at index 0");
+            data.RemoveAt(0);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(5),
+                    Path(6),
+                    Path(7)
+                },
+                new List<IndexPath>()
+                {
+                    Path()
+                });
 
-                Log.Comment("Remove from before to middle of selected range: Removing items at index 3, 4, 5");
-                data.RemoveAt(3);
-                data.RemoveAt(3);
-                data.RemoveAt(3);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(3),
-                        Path(4)
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path()
-                    });
+            _output.WriteLine("Remove from before to middle of selected range: Removing items at index 3, 4, 5");
+            data.RemoveAt(3);
+            data.RemoveAt(3);
+            data.RemoveAt(3);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(3),
+                    Path(4)
+                },
+                new List<IndexPath>()
+                {
+                    Path()
+                });
 
-                Log.Comment("Remove after selected range: Removing item at index 5");
-                data.RemoveAt(5);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(3),
-                        Path(4)
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path()
-                    });
-            });
+            _output.WriteLine("Remove after selected range: Removing item at index 5");
+            data.RemoveAt(5);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(3),
+                    Path(4)
+                },
+                new List<IndexPath>()
+                {
+                    Path()
+                });
         }
 
         [Fact]
         public void ValidateGroupRemoves()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                var data = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
-                var selectionModel = new SelectionModel();
-                selectionModel.Source = data;
+            var data = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
+            var selectionModel = new SelectionModel();
+            selectionModel.Source = data;
 
-                selectionModel.Select(1, 1);
-                selectionModel.Select(1, 2);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(1, 1),
-                        Path(1, 2)
-                    },
-                    new List<IndexPath>()
-                    {
-                       Path(),
-                       Path(1),
-                    });
+            selectionModel.Select(1, 1);
+            selectionModel.Select(1, 2);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(1, 1),
+                    Path(1, 2)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(1),
+                });
 
-                Log.Comment("Remove before selected range: Removing item at group index 0");
-                data.RemoveAt(0);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(0, 1),
-                        Path(0, 2)
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(0),
-                    });
+            _output.WriteLine("Remove before selected range: Removing item at group index 0");
+            data.RemoveAt(0);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(0, 1),
+                    Path(0, 2)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(0),
+                });
 
-                Log.Comment("Remove after selected range: Removing item at group index 1");
-                data.RemoveAt(1);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(0, 1),
-                        Path(0, 2)
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(0),
-                    });
+            _output.WriteLine("Remove after selected range: Removing item at group index 1");
+            data.RemoveAt(1);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(0, 1),
+                    Path(0, 2)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(0),
+                });
 
-                Log.Comment("Remove group containing selected items");
-                data.RemoveAt(0);
-                ValidateSelection(selectionModel, new List<IndexPath>());
-            });
+            _output.WriteLine("Remove group containing selected items");
+            data.RemoveAt(0);
+            ValidateSelection(selectionModel, new List<IndexPath>());
         }
 
         [Fact]
         public void CanReplaceItem()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                var data = new ObservableCollection<int>(Enumerable.Range(0, 10));
-                var selectionModel = new SelectionModel();
-                selectionModel.Source = data;
+            var data = new ObservableCollection<int>(Enumerable.Range(0, 10));
+            var selectionModel = new SelectionModel();
+            selectionModel.Source = data;
 
-                selectionModel.Select(3);
-                selectionModel.Select(4);
-                selectionModel.Select(5);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(3),
-                        Path(4),
-                        Path(5),
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path()
-                    });
+            selectionModel.Select(3);
+            selectionModel.Select(4);
+            selectionModel.Select(5);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(3),
+                    Path(4),
+                    Path(5),
+                },
+                new List<IndexPath>()
+                {
+                    Path()
+                });
 
-                data[3] = 300;
-                data[4] = 400;
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(5),
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path()
-                    });
-            });
+            data[3] = 300;
+            data[4] = 400;
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(5),
+                },
+                new List<IndexPath>()
+                {
+                    Path()
+                });
         }
 
         [Fact]
         public void ValidateGroupReplaceLosesSelection()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                var data = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
-                var selectionModel = new SelectionModel();
-                selectionModel.Source = data;
+            var data = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
+            var selectionModel = new SelectionModel();
+            selectionModel.Source = data;
 
-                selectionModel.Select(1, 1);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(1, 1)
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(1)
-                    });
+            selectionModel.Select(1, 1);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(1, 1)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(1)
+                });
 
-                data[1] = new ObservableCollection<int>(Enumerable.Range(0, 5));
-                ValidateSelection(selectionModel, new List<IndexPath>());
-            });
+            data[1] = new ObservableCollection<int>(Enumerable.Range(0, 5));
+            ValidateSelection(selectionModel, new List<IndexPath>());
         }
 
         [Fact]
         public void ValidateClear()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                var data = new ObservableCollection<int>(Enumerable.Range(0, 10));
-                var selectionModel = new SelectionModel();
-                selectionModel.Source = data;
+            var data = new ObservableCollection<int>(Enumerable.Range(0, 10));
+            var selectionModel = new SelectionModel();
+            selectionModel.Source = data;
 
-                selectionModel.Select(3);
-                selectionModel.Select(4);
-                selectionModel.Select(5);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(3),
-                        Path(4),
-                        Path(5),
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path()
-                    });
+            selectionModel.Select(3);
+            selectionModel.Select(4);
+            selectionModel.Select(5);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(3),
+                    Path(4),
+                    Path(5),
+                },
+                new List<IndexPath>()
+                {
+                    Path()
+                });
 
-                data.Clear();
-                ValidateSelection(selectionModel, new List<IndexPath>());
-            });
+            data.Clear();
+            ValidateSelection(selectionModel, new List<IndexPath>());
         }
 
         [Fact]
         public void ValidateGroupClear()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                var data = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
-                var selectionModel = new SelectionModel();
-                selectionModel.Source = data;
+            var data = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
+            var selectionModel = new SelectionModel();
+            selectionModel.Source = data;
 
-                selectionModel.Select(1, 1);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(1, 1)
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                        Path(1)
-                    });
+            selectionModel.Select(1, 1);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(1, 1)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(1)
+                });
 
-                (data[1] as IList).Clear();
-                ValidateSelection(selectionModel, new List<IndexPath>());
-            });
+            (data[1] as IList).Clear();
+            ValidateSelection(selectionModel, new List<IndexPath>());
         }
 
         // In some cases the leaf node might get a collection change that affects an ancestors selection
@@ -768,167 +717,155 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void ValidateEventWhenInnerNodeChangesSelectionState()
         {
-            RunOnUIThread.Execute(() =>
-            {
-                bool selectionChangedRaised = false;
-                var data = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
-                var selectionModel = new SelectionModel();
-                selectionModel.Source = data;
-                selectionModel.SelectionChanged += (sender, args) => { selectionChangedRaised = true; };
+            bool selectionChangedRaised = false;
+            var data = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
+            var selectionModel = new SelectionModel();
+            selectionModel.Source = data;
+            selectionModel.SelectionChanged += (sender, args) => { selectionChangedRaised = true; };
 
-                selectionModel.Select(1, 0);
-                selectionModel.Select(1, 1);
-                selectionModel.Select(1, 2);
-                ValidateSelection(selectionModel,
-                    new List<IndexPath>()
-                    {
-                        Path(1, 0),
-                        Path(1, 1),
-                        Path(1, 2),
-                        Path(1)
-                    },
-                    new List<IndexPath>()
-                    {
-                        Path(),
-                    },
-                    1 /* selectedInnerNodes */);
+            selectionModel.Select(1, 0);
+            selectionModel.Select(1, 1);
+            selectionModel.Select(1, 2);
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(1, 0),
+                    Path(1, 1),
+                    Path(1, 2),
+                    Path(1)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                },
+                1 /* selectedInnerNodes */);
 
-                Log.Comment("Inserting 1.0");
-                selectionChangedRaised = false;
-                (data[1] as AvaloniaList<object>).Insert(0, 100);
-                Assert.True(selectionChangedRaised, "SelectionChanged event was not raised");
-                ValidateSelection(selectionModel,
-                   new List<IndexPath>()
-                   {
-                        Path(1, 1),
-                        Path(1, 2),
-                        Path(1, 3),
-                   },
-                   new List<IndexPath>()
-                   {
-                       Path(),
-                       Path(1),
-                   });
+            _output.WriteLine("Inserting 1.0");
+            selectionChangedRaised = false;
+            (data[1] as AvaloniaList<object>).Insert(0, 100);
+            Assert.True(selectionChangedRaised, "SelectionChanged event was not raised");
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(1, 1),
+                    Path(1, 2),
+                    Path(1, 3),
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(1),
+                });
 
-                Log.Comment("Removing 1.0");
-                selectionChangedRaised = false;
-                (data[1] as AvaloniaList<object>).RemoveAt(0);
-                Assert.True(selectionChangedRaised, "SelectionChanged event was not raised");
-                ValidateSelection(selectionModel,
-                   new List<IndexPath>()
-                   {
-                       Path(1, 0),
-                       Path(1, 1),
-                       Path(1, 2),
-                       Path(1)
-                   },
-                   new List<IndexPath>()
-                   {
-                        Path(),
-                   },
-                   1 /* selectedInnerNodes */);
-            });
+            _output.WriteLine("Removing 1.0");
+            selectionChangedRaised = false;
+            (data[1] as AvaloniaList<object>).RemoveAt(0);
+            Assert.True(selectionChangedRaised, "SelectionChanged event was not raised");
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
+                {
+                    Path(1, 0),
+                    Path(1, 1),
+                    Path(1, 2),
+                    Path(1)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                },
+                1 /* selectedInnerNodes */);
         }
 
         [Fact]
         public void ValidatePropertyChangedEventIsRaised()
         {
-            RunOnUIThread.Execute(() =>
+            var selectionModel = new SelectionModel();
+            _output.WriteLine("Set the source to 10 items");
+            selectionModel.Source = Enumerable.Range(0, 10).ToList();
+
+            bool selectedIndexChanged = false;
+            bool selectedIndicesChanged = false;
+            bool SelectedItemChanged = false;
+            bool SelectedItemsChanged = false;
+            bool AnchorIndexChanged = false;
+            selectionModel.PropertyChanged += (sender, args) =>
             {
-                var selectionModel = new SelectionModel();
-                Log.Comment("Set the source to 10 items");
-                selectionModel.Source = Enumerable.Range(0, 10).ToList();
-
-                bool selectedIndexChanged = false;
-                bool selectedIndicesChanged = false;
-                bool SelectedItemChanged = false;
-                bool SelectedItemsChanged = false;
-                bool AnchorIndexChanged = false;
-                selectionModel.PropertyChanged += (sender, args) =>
+                switch (args.PropertyName)
                 {
-                    switch (args.PropertyName)
-                    {
-                        case "SelectedIndex":
-                            selectedIndexChanged = true;
-                            break;
-                        case "SelectedIndices":
-                            selectedIndicesChanged = true;
-                            break;
-                        case "SelectedItem":
-                            SelectedItemChanged = true;
-                            break;
-                        case "SelectedItems":
-                            SelectedItemsChanged = true;
-                            break;
-                        case "AnchorIndex":
-                            AnchorIndexChanged = true;
-                            break;
+                    case "SelectedIndex":
+                        selectedIndexChanged = true;
+                        break;
+                    case "SelectedIndices":
+                        selectedIndicesChanged = true;
+                        break;
+                    case "SelectedItem":
+                        SelectedItemChanged = true;
+                        break;
+                    case "SelectedItems":
+                        SelectedItemsChanged = true;
+                        break;
+                    case "AnchorIndex":
+                        AnchorIndexChanged = true;
+                        break;
 
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                };
+                    default:
+                        throw new InvalidOperationException();
+                }
+            };
 
-                Select(selectionModel, 3, true);
+            Select(selectionModel, 3, true);
 
-                Assert.True(selectedIndexChanged);
-                Assert.True(selectedIndicesChanged);
-                Assert.True(SelectedItemChanged);
-                Assert.True(SelectedItemsChanged);
-                Assert.True(AnchorIndexChanged);
-            });
+            Assert.True(selectedIndexChanged);
+            Assert.True(selectedIndicesChanged);
+            Assert.True(SelectedItemChanged);
+            Assert.True(SelectedItemsChanged);
+            Assert.True(AnchorIndexChanged);
         }
 
         [Fact]
         public void CanExtendSelectionModelINPC()
         {
-            RunOnUIThread.Execute(() =>
+            var selectionModel = new CustomSelectionModel();
+            bool intPropertyChanged = false;
+            selectionModel.PropertyChanged += (sender, args) =>
             {
-                var selectionModel = new CustomSelectionModel();
-                bool intPropertyChanged = false;
-                selectionModel.PropertyChanged += (sender, args) =>
+                if (args.PropertyName == "IntProperty")
                 {
-                    if (args.PropertyName == "IntProperty")
-                    {
-                        intPropertyChanged = true;
-                    }
-                };
+                    intPropertyChanged = true;
+                }
+            };
 
-                selectionModel.IntProperty = 5;
-                Assert.True(intPropertyChanged);
-            });
+            selectionModel.IntProperty = 5;
+            Assert.True(intPropertyChanged);
         }
 
         [Fact]
         public void SelectRangeRegressionTest()
         {
-            RunOnUIThread.Execute(() =>
+            var selectionModel = new SelectionModel()
             {
-                var selectionModel = new SelectionModel()
+                Source = CreateNestedData(1, 2, 3)
+            };
+
+            // length of start smaller than end used to cause an out of range error.
+            selectionModel.SelectRange(IndexPath.CreateFrom(0), IndexPath.CreateFrom(1, 1));
+
+            ValidateSelection(selectionModel,
+                new List<IndexPath>()
                 {
-                    Source = CreateNestedData(1, 2, 3)
-                };
-
-                // length of start smaller than end used to cause an out of range error.
-                selectionModel.SelectRange(IndexPath.CreateFrom(0), IndexPath.CreateFrom(1, 1));
-
-                ValidateSelection(selectionModel,
-                   new List<IndexPath>()
-                   {
-                       Path(0, 0),
-                       Path(0, 1),
-                       Path(0, 2),
-                       Path(0),
-                       Path(1, 0),
-                       Path(1, 1)
-                   },
-                   new List<IndexPath>()
-                   {
-                       Path(),
-                       Path(1)
-                   },
-                   1 /* selectedInnerNodes */);
-            });
+                    Path(0, 0),
+                    Path(0, 1),
+                    Path(0, 2),
+                    Path(0),
+                    Path(1, 0),
+                    Path(1, 1)
+                },
+                new List<IndexPath>()
+                {
+                    Path(),
+                    Path(1)
+                },
+                1 /* selectedInnerNodes */);
         }
 
         [Fact]
@@ -1942,7 +1879,7 @@ namespace Avalonia.Controls.UnitTests
 
         private void Select(SelectionModel manager, int index, bool select)
         {
-            Log.Comment((select ? "Selecting " : "DeSelecting ") + index);
+            _output.WriteLine((select ? "Selecting " : "DeSelecting ") + index);
             if (select)
             {
                 manager.Select(index);
@@ -1955,7 +1892,7 @@ namespace Avalonia.Controls.UnitTests
 
         private void Select(SelectionModel manager, int groupIndex, int itemIndex, bool select)
         {
-            Log.Comment((select ? "Selecting " : "DeSelecting ") + groupIndex + "." + itemIndex);
+            _output.WriteLine((select ? "Selecting " : "DeSelecting ") + groupIndex + "." + itemIndex);
             if (select)
             {
                 manager.Select(groupIndex, itemIndex);
@@ -1968,7 +1905,7 @@ namespace Avalonia.Controls.UnitTests
 
         private void Select(SelectionModel manager, IndexPath index, bool select)
         {
-            Log.Comment((select ? "Selecting " : "DeSelecting ") + index);
+            _output.WriteLine((select ? "Selecting " : "DeSelecting ") + index);
             if (select)
             {
                 manager.SelectAt(index);
@@ -1981,7 +1918,7 @@ namespace Avalonia.Controls.UnitTests
 
         private void SelectRangeFromAnchor(SelectionModel manager, int index, bool select)
         {
-            Log.Comment("SelectRangeFromAnchor " + index + " select: " + select.ToString());
+            _output.WriteLine("SelectRangeFromAnchor " + index + " select: " + select.ToString());
             if (select)
             {
                 manager.SelectRangeFromAnchor(index);
@@ -1994,7 +1931,7 @@ namespace Avalonia.Controls.UnitTests
 
         private void SelectRangeFromAnchor(SelectionModel manager, int groupIndex, int itemIndex, bool select)
         {
-            Log.Comment("SelectRangeFromAnchor " + groupIndex + "." + itemIndex + " select:" + select.ToString());
+            _output.WriteLine("SelectRangeFromAnchor " + groupIndex + "." + itemIndex + " select:" + select.ToString());
             if (select)
             {
                 manager.SelectRangeFromAnchor(groupIndex, itemIndex);
@@ -2007,7 +1944,7 @@ namespace Avalonia.Controls.UnitTests
 
         private void SelectRangeFromAnchor(SelectionModel manager, IndexPath index, bool select)
         {
-            Log.Comment("SelectRangeFromAnchor " + index + " select: " + select.ToString());
+            _output.WriteLine("SelectRangeFromAnchor " + index + " select: " + select.ToString());
             if (select)
             {
                 manager.SelectRangeFromAnchorTo(index);
@@ -2020,25 +1957,25 @@ namespace Avalonia.Controls.UnitTests
 
         private void ClearSelection(SelectionModel manager)
         {
-            Log.Comment("ClearSelection");
+            _output.WriteLine("ClearSelection");
             manager.ClearSelection();
         }
 
         private void SetAnchorIndex(SelectionModel manager, int index)
         {
-            Log.Comment("SetAnchorIndex " + index);
+            _output.WriteLine("SetAnchorIndex " + index);
             manager.SetAnchorIndex(index);
         }
 
         private void SetAnchorIndex(SelectionModel manager, int groupIndex, int itemIndex)
         {
-            Log.Comment("SetAnchor " + groupIndex + "." + itemIndex);
+            _output.WriteLine("SetAnchor " + groupIndex + "." + itemIndex);
             manager.SetAnchorIndex(groupIndex, itemIndex);
         }
 
         private void SetAnchorIndex(SelectionModel manager, IndexPath index)
         {
-            Log.Comment("SetAnchor " + index);
+            _output.WriteLine("SetAnchor " + index);
             manager.AnchorIndex = index;
         }
 
@@ -2048,18 +1985,18 @@ namespace Avalonia.Controls.UnitTests
             List<IndexPath> expectedPartialSelected = null,
             int selectedInnerNodes = 0)
         {
-            Log.Comment("Validating Selection...");
+            _output.WriteLine("Validating Selection...");
 
-            Log.Comment("Selection contains indices:");
+            _output.WriteLine("Selection contains indices:");
             foreach (var index in selectionModel.SelectedIndices)
             {
-                Log.Comment(" " + index.ToString());
+                _output.WriteLine(" " + index.ToString());
             }
 
-            Log.Comment("Selection contains items:");
+            _output.WriteLine("Selection contains items:");
             foreach (var item in selectionModel.SelectedItems)
             {
-                Log.Comment(" " + item.ToString());
+                _output.WriteLine(" " + item.ToString());
             }
 
             if (selectionModel.Source != null)
@@ -2080,7 +2017,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         if (isSelected == null)
                         {
-                            Log.Comment("*************" + index + " is null");
+                            _output.WriteLine("*************" + index + " is null");
                             Assert.True(false, "Expected false but got null");;
                         }
                         else
@@ -2099,7 +2036,7 @@ namespace Avalonia.Controls.UnitTests
             }
             if (expectedSelected.Count > 0)
             {
-                Log.Comment("SelectedIndex is " + selectionModel.SelectedIndex);
+                _output.WriteLine("SelectedIndex is " + selectionModel.SelectedIndex);
                 Assert.Equal(0, selectionModel.SelectedIndex.CompareTo(expectedSelected[0]));
                 if (selectionModel.Source != null)
                 {
@@ -2112,7 +2049,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(expectedSelected.Count - selectedInnerNodes, indicesCount);
             }
 
-            Log.Comment("Validating Selection... done");
+            _output.WriteLine("Validating Selection... done");
         }
 
         private object GetData(SelectionModel selectionModel, IndexPath indexPath)
@@ -2156,12 +2093,12 @@ namespace Avalonia.Controls.UnitTests
                 }
             });
 
-            Log.Comment("All Paths in source..");
+            _output.WriteLine("All Paths in source..");
             foreach (var path in paths)
             {
-                Log.Comment(path.ToString());
+                _output.WriteLine(path.ToString());
             }
-            Log.Comment("done.");
+            _output.WriteLine("done.");
 
             return paths;
         }
@@ -2258,18 +2195,6 @@ namespace Avalonia.Controls.UnitTests
             public object Current { get; set; }
 
             public IndexPath Path { get; set; }
-        }
-
-        private static class RunOnUIThread
-        {
-            public static void Execute(Action a) => a();
-        }
-
-        private class LogWrapper
-        {
-            private readonly ITestOutputHelper _output;
-            public LogWrapper(ITestOutputHelper output) => _output = output;
-            public void Comment(string s) => _output.WriteLine(s);
         }
 
         private class ResettingList<T> : List<object>, INotifyCollectionChanged
