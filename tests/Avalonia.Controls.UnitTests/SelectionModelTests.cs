@@ -2041,7 +2041,7 @@ namespace Avalonia.Controls.UnitTests
                 List<IndexPath> allIndices = GetIndexPathsInSource(selectionModel.Source);
                 foreach (var index in allIndices)
                 {
-                    bool? isSelected = selectionModel.IsSelectedAt(index);
+                    bool? isSelected = selectionModel.IsSelectedWithPartialAt(index);
                     if (Contains(expectedSelected, index) && !Contains(expectedPartialSelected, index))
                     {
                         Assert.True(isSelected.Value, index + " is Selected");
@@ -2068,7 +2068,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 foreach (var index in expectedSelected)
                 {
-                    Assert.True(selectionModel.IsSelectedAt(index).Value, index + " is Selected");
+                    Assert.True(selectionModel.IsSelectedWithPartialAt(index), index + " is Selected");
                 }
             }
             if (expectedSelected.Count > 0)

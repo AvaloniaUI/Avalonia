@@ -32,9 +32,12 @@ namespace Avalonia.Controls
         void DeselectRangeFromAnchor(int endGroupIndex, int endItemIndex);
         void DeselectRangeFromAnchorTo(IndexPath index);
         void Dispose();
-        bool? IsSelected(int index);
-        bool? IsSelected(int groupIndex, int itemIndex);
-        bool? IsSelectedAt(IndexPath index);
+        bool IsSelected(int index);
+        bool IsSelected(int grouIndex, int itemIndex);
+        public bool IsSelectedAt(IndexPath index);
+        bool? IsSelectedWithPartial(int index);
+        bool? IsSelectedWithPartial(int groupIndex, int itemIndex);
+        bool? IsSelectedWithPartialAt(IndexPath index);
         void Select(int index);
         void Select(int groupIndex, int itemIndex);
         void SelectAll();

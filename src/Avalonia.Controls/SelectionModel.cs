@@ -174,7 +174,7 @@ namespace Avalonia.Controls
             }
             set
             {
-                var isSelected = IsSelectedAt(value);
+                var isSelected = IsSelectedWithPartialAt(value);
 
                 if (!isSelected.HasValue || !isSelected.Value)
                 {
@@ -393,7 +393,33 @@ namespace Avalonia.Controls
             ApplyAutoSelect();
         }
 
-        public bool? IsSelected(int index)
+        public bool IsSelected(int index) => _rootNode.IsSelected(index);
+
+        public bool IsSelected(int grouIndex, int itemIndex)
+        {
+            return IsSelectedAt(new IndexPath(grouIndex, itemIndex));
+        }
+
+        public bool IsSelectedAt(IndexPath index)
+        {
+            var path = index;
+            SelectionNode? node = _rootNode;
+
+            for (int i = 0; i < path.GetSize() - 1; i++)
+            {
+                var childIndex = path.GetAt(i);
+                node = node.GetAt(childIndex, realizeChild: false);
+
+                if (node == null)
+                {
+                    return false;
+                }
+            }
+
+            return node.IsSelected(index.GetAt(index.GetSize() - 1));
+        }
+
+        public bool? IsSelectedWithPartial(int index)
         {
             if (index < 0)
             {
@@ -404,7 +430,7 @@ namespace Avalonia.Controls
             return isSelected;
         }
 
-        public bool? IsSelected(int groupIndex, int itemIndex)
+        public bool? IsSelectedWithPartial(int groupIndex, int itemIndex)
         {
             if (groupIndex < 0)
             {
@@ -427,7 +453,7 @@ namespace Avalonia.Controls
             return isSelected;
         }
 
-        public bool? IsSelectedAt(IndexPath index)
+        public bool? IsSelectedWithPartialAt(IndexPath index)
         {
             var path = index;
             var isRealized = true;
