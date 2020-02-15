@@ -232,6 +232,7 @@ namespace Avalonia
                 else
                 {
                     var priorityValue = new PriorityValue<T>(_owner, property, this, l);
+                    priorityValue.SetValue(value, priority);
                     _values.SetValue(property, priorityValue);
                 }
             }
