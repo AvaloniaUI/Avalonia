@@ -12,12 +12,16 @@ namespace Avalonia.Controls
     public class SelectionModelChildrenRequestedEventArgs : EventArgs
     {
         private object? _source;
-        private SelectionNode? _sourceNode;
-
-        internal SelectionModelChildrenRequestedEventArgs(object source, SelectionNode sourceNode)
+        private IndexPath _sourceIndexPath;
+        private bool _throwOnAccess;
+        
+        internal SelectionModelChildrenRequestedEventArgs(
+            object source,
+            IndexPath sourceIndexPath,
+            bool throwOnAccess)
         {
-            _source = source;
-            _sourceNode = sourceNode;
+            source = source ?? throw new ArgumentNullException(nameof(source));
+            Initialize(source, sourceIndexPath, throwOnAccess);
         }
 
         public object? Children { get; set; }
@@ -26,12 +30,12 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (_source == null)
+                if (_throwOnAccess)
                 {
                     throw new ObjectDisposedException(nameof(SelectionModelChildrenRequestedEventArgs));
                 }
 
-                return _source;
+                return _source!;
             }
         }
 
@@ -39,19 +43,28 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (_sourceNode == null)
+                if (_throwOnAccess)
                 {
                     throw new ObjectDisposedException(nameof(SelectionModelChildrenRequestedEventArgs));
                 }
 
-                return _sourceNode.IndexPath;
+                return _sourceIndexPath;
             }
         }
 
-        internal void Initialize(object? source, SelectionNode? sourceNode)
+        internal void Initialize(
+            object? source,
+            IndexPath sourceIndexPath,
+            bool throwOnAccess)
         {
+            if (!throwOnAccess && source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             _source = source;
-            _sourceNode = sourceNode;
+            _sourceIndexPath = sourceIndexPath;
+            _throwOnAccess = throwOnAccess;
         }
     }
 }

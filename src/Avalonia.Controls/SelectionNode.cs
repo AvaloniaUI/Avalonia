@@ -133,7 +133,8 @@ namespace Avalonia.Controls
                     
                     if (childData != null)
                     {
-                        var resolvedChild = _manager.ResolvePath(childData, this);
+                        var childDataIndexPath = IndexPath.CloneWithChildIndex(index);
+                        var resolvedChild = _manager.ResolvePath(childData, childDataIndexPath);
                         
                         if (resolvedChild != null)
                         {
