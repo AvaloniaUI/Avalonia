@@ -759,11 +759,7 @@ namespace Avalonia.Controls
                 winrtEnd,
                 info =>
                 {
-                    if (info.Node.DataCount == 0)
-                    {
-                        // Select only leaf nodes
-                        info.ParentNode!.Select(info.Path.GetAt(info.Path.GetSize() - 1), select);
-                    }
+                    info.ParentNode!.Select(info.Path.GetAt(info.Path.GetSize() - 1), select);
                 });
         }
 

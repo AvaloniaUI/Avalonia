@@ -305,16 +305,19 @@ namespace Avalonia.Controls.UnitTests
             ValidateSelection(selectionModel,
                 new List<IndexPath>()
                 {
+                    Path(1, 0),
+                    Path(1, 1),
+                    Path(1, 0, 1),
                     Path(1, 0, 1, 0),
                     Path(1, 0, 1, 1),
                     Path(1, 0, 1, 2),
                     Path(1, 0, 1, 3),
-                    Path(1, 0, 1),
+                    Path(1, 1, 0),
+                    Path(1, 1, 1),
                     Path(1, 1, 0, 0),
                     Path(1, 1, 0, 1),
                     Path(1, 1, 0, 2),
                     Path(1, 1, 0, 3),
-                    Path(1, 1, 0),
                     Path(1, 1, 1, 0),
                 },
                 new List<IndexPath>()
@@ -324,8 +327,7 @@ namespace Avalonia.Controls.UnitTests
                     Path(1, 0),
                     Path(1, 1),
                     Path(1, 1, 1),
-                },
-                2 /* selectedInnerNodes */);
+                });
 
             ClearSelection(selectionModel);
             ValidateSelection(selectionModel, new List<IndexPath>() { });
@@ -337,16 +339,20 @@ namespace Avalonia.Controls.UnitTests
             ValidateSelection(selectionModel,
                 new List<IndexPath>()
                 {
-                        Path(0, 0, 0, 2),
-                        Path(0, 0, 0, 3),
-                        Path(0, 0, 1, 0),
-                        Path(0, 0, 1, 1),
-                        Path(0, 0, 1, 2),
-                        Path(0, 0, 1, 3),
-                        Path(0, 0, 1),
-                        Path(0, 1, 0, 0),
-                        Path(0, 1, 0, 1),
-                        Path(0, 1, 0, 2),
+                    Path(0, 0),
+                    Path(0, 1),
+                    Path(0, 0, 0),
+                    Path(0, 0, 1),
+                    Path(0, 0, 0, 2),
+                    Path(0, 0, 0, 3),
+                    Path(0, 0, 1, 0),
+                    Path(0, 0, 1, 1),
+                    Path(0, 0, 1, 2),
+                    Path(0, 0, 1, 3),
+                    Path(0, 1, 0),
+                    Path(0, 1, 0, 0),
+                    Path(0, 1, 0, 1),
+                    Path(0, 1, 0, 2),
                 },
                 new List<IndexPath>()
                 {
@@ -356,8 +362,7 @@ namespace Avalonia.Controls.UnitTests
                     Path(0, 0, 0),
                     Path(0, 1),
                     Path(0, 1, 0),
-                },
-                1 /* selectedInnerNodes */);
+                });
 
             startPath = Path(0, 1, 0, 2);
             SetAnchorIndex(selectionModel, startPath);
@@ -853,10 +858,11 @@ namespace Avalonia.Controls.UnitTests
             ValidateSelection(selectionModel,
                 new List<IndexPath>()
                 {
+                    Path(0),
+                    Path(1),
                     Path(0, 0),
                     Path(0, 1),
                     Path(0, 2),
-                    Path(0),
                     Path(1, 0),
                     Path(1, 1)
                 },
@@ -864,8 +870,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Path(),
                     Path(1)
-                },
-                1 /* selectedInnerNodes */);
+                });
         }
 
         [Fact]
@@ -1271,7 +1276,7 @@ namespace Avalonia.Controls.UnitTests
             target.SelectionChanged += (s, e) =>
             {
                 Assert.Empty(e.DeselectedIndices);
-                Assert.Equal(new object[] { 0, 1, 2 }, e.DeselectedItems);
+                Assert.Equal(new object[] { new AvaloniaList<int> { 0, 1, 2 }, 0, 1, 2 }, e.DeselectedItems);
                 Assert.Empty(e.SelectedIndices);
                 Assert.Empty(e.SelectedItems);
                 ++raised;
@@ -1369,6 +1374,38 @@ namespace Avalonia.Controls.UnitTests
             data.Remove(toRemove);
 
             Assert.Equal(0, GetSubscriberCount(toRemove));
+        }
+
+        [Fact]
+        public void SelectRange_Behaves_The_Same_As_Multiple_Selects()
+        {
+            var data = new[] { 1, 2, 3 };
+            var target = new SelectionModel { Source = data };
+
+            target.Select(1);
+
+            Assert.Equal(new[] { IndexPath.CreateFrom(1) }, target.SelectedIndices);
+
+            target.ClearSelection();
+            target.SelectRange(new IndexPath(1), new IndexPath(1));
+
+            Assert.Equal(new[] { IndexPath.CreateFrom(1) }, target.SelectedIndices);
+        }
+
+        [Fact]
+        public void SelectRange_Behaves_The_Same_As_Multiple_Selects_Nested()
+        {
+            var data = CreateNestedData(3, 2, 2);
+            var target = new SelectionModel { Source = data };
+
+            target.Select(1);
+
+            Assert.Equal(new[] { IndexPath.CreateFrom(1) }, target.SelectedIndices);
+
+            target.ClearSelection();
+            target.SelectRange(new IndexPath(1), new IndexPath(1));
+
+            Assert.Equal(new[] { IndexPath.CreateFrom(1) }, target.SelectedIndices);
         }
 
         [Fact]
@@ -2005,7 +2042,7 @@ namespace Avalonia.Controls.UnitTests
                 foreach (var index in allIndices)
                 {
                     bool? isSelected = selectionModel.IsSelectedAt(index);
-                    if (Contains(expectedSelected, index))
+                    if (Contains(expectedSelected, index) && !Contains(expectedPartialSelected, index))
                     {
                         Assert.True(isSelected.Value, index + " is Selected");
                     }
@@ -2037,7 +2074,7 @@ namespace Avalonia.Controls.UnitTests
             if (expectedSelected.Count > 0)
             {
                 _output.WriteLine("SelectedIndex is " + selectionModel.SelectedIndex);
-                Assert.Equal(0, selectionModel.SelectedIndex.CompareTo(expectedSelected[0]));
+                Assert.Equal(expectedSelected[0], selectionModel.SelectedIndex);
                 if (selectionModel.Source != null)
                 {
                     Assert.Equal(selectionModel.SelectedItem, GetData(selectionModel, expectedSelected[0]));
