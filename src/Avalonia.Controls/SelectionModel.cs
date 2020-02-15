@@ -561,7 +561,7 @@ namespace Avalonia.Controls
             ApplyAutoSelect();
         }
 
-        internal object? ResolvePath(object data, SelectionNode sourceNode)
+        internal object? ResolvePath(object data, IndexPath dataIndexPath)
         {
             object? resolved = null;
 
@@ -570,18 +570,18 @@ namespace Avalonia.Controls
             {
                 if (_childrenRequestedEventArgs == null)
                 {
-                    _childrenRequestedEventArgs = new SelectionModelChildrenRequestedEventArgs(data, sourceNode);
+                    _childrenRequestedEventArgs = new SelectionModelChildrenRequestedEventArgs(data, dataIndexPath, false);
                 }
                 else
                 {
-                    _childrenRequestedEventArgs.Initialize(data, sourceNode);
+                    _childrenRequestedEventArgs.Initialize(data, dataIndexPath, false);
                 }
 
                 ChildrenRequested(this, _childrenRequestedEventArgs);
                 resolved = _childrenRequestedEventArgs.Children;
 
                 // Clear out the values in the args so that it cannot be used after the event handler call.
-                _childrenRequestedEventArgs.Initialize(null, null);
+                _childrenRequestedEventArgs.Initialize(null, default, true);
             }
             else
             {
