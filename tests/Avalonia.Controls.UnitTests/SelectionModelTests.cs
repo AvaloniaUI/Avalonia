@@ -277,21 +277,21 @@ namespace Avalonia.Controls.UnitTests
                 // Validate SourceIndices.
                 var expectedSourceIndices = new List<IndexPath>()
                 {
-                    Path(),
                     Path(1),
                     Path(1, 0),
-                    Path(1),
-                    Path(1, 0, 1),
-                    Path(1, 0, 1),
-                    Path(1, 0, 1),
                     Path(1, 0, 1),
                     Path(1, 1),
-                    Path(1, 1),
+                    Path(1, 0, 1, 3),
+                    Path(1, 0, 1, 2),
+                    Path(1, 0, 1, 1),
+                    Path(1, 0, 1, 0),
+                    Path(1, 1, 1),
                     Path(1, 1, 0),
-                    Path(1, 1, 0),
-                    Path(1, 1, 0),
-                    Path(1, 1, 0),
-                    Path(1, 1, 1)
+                    Path(1, 1, 0, 3),
+                    Path(1, 1, 0, 2),
+                    Path(1, 1, 0, 1),
+                    Path(1, 1, 0, 0),
+                    Path(1, 1, 1, 0)
                 };
 
                 Assert.Equal(expectedSourceIndices.Count, sourcePaths.Count);
