@@ -78,8 +78,6 @@ namespace Avalonia.Styling
         {
             Contract.Requires<ArgumentNullException>(control != null);
 
-            var description = style?.ToString();
-
             if (Property == null)
             {
                 throw new InvalidOperationException("Setter.Property must be set.");
@@ -107,6 +105,8 @@ namespace Avalonia.Styling
                 }
                 else
                 {
+                    var description = style?.ToString();
+
                     var activated = new ActivatedValue(activator, value, description);
                     return control.Bind(Property, activated, BindingPriority.StyleTrigger);
                 }
