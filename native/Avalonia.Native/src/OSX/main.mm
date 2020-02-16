@@ -174,20 +174,20 @@ public:
         return (IAvnMacOptions*)new MacOptions();
     }
     
-    virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv)  override
+    virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnWindow** ppv)  override
     {
         if(cb == nullptr || ppv == nullptr)
             return E_POINTER;
-        *ppv = CreateAvnWindow(cb);
+        *ppv = CreateAvnWindow(cb, gl);
         return S_OK;
     };
     
-    virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv) override
+    virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnPopup** ppv) override
     {
         if(cb == nullptr || ppv == nullptr)
             return E_POINTER;
         
-        *ppv = CreateAvnPopup(cb);
+        *ppv = CreateAvnPopup(cb, gl);
         return S_OK;
     }
     
@@ -221,9 +221,9 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT ObtainGlFeature(IAvnGlFeature** ppv) override
+    virtual HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv) override
     {
-        auto rv = ::GetGlFeature();
+        auto rv = ::GetGlDisplay();
         if(rv == NULL)
             return E_FAIL;
         rv->AddRef();

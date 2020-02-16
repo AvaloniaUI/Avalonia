@@ -11,14 +11,13 @@
 #include <pthread.h>
 
 extern IAvnPlatformThreadingInterface* CreatePlatformThreading();
-extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events);
-extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events);
+extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl);
+extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events, IAvnGlContext* gl);
 extern IAvnSystemDialogs* CreateSystemDialogs();
 extern IAvnScreens* CreateScreens();
 extern IAvnClipboard* CreateClipboard();
 extern IAvnCursorFactory* CreateCursorFactory();
-extern IAvnGlFeature* GetGlFeature();
-extern IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(NSWindow* window, NSView* view);
+extern IAvnGlDisplay* GetGlDisplay();
 extern IAvnAppMenu* CreateAppMenu();
 extern IAvnAppMenuItem* CreateAppMenuItem();
 extern IAvnAppMenuItem* CreateAppMenuItemSeperator();

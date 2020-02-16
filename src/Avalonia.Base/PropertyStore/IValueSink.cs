@@ -15,6 +15,9 @@ namespace Avalonia.PropertyStore
             Optional<T> oldValue,
             BindingValue<T> newValue);
 
-        void Completed(AvaloniaProperty property, IPriorityValueEntry entry);
+        void Completed<T>(
+            StyledPropertyBase<T> property,
+            IPriorityValueEntry entry,
+            Optional<T> oldValue);
     }
 }

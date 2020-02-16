@@ -788,7 +788,7 @@ namespace Avalonia.Controls
                     removedItems.Add(removedDate.Value);
                 }
 
-                handler(this, new SelectionChangedEventArgs(SelectingItemsControl.SelectionChangedEvent, addedItems, removedItems));
+                handler(this, new SelectionChangedEventArgs(SelectingItemsControl.SelectionChangedEvent, removedItems, addedItems));
             }
         }
         private void OnCalendarClosed(EventArgs e)
@@ -1008,7 +1008,7 @@ namespace Avalonia.Controls
                     }
                 case Key.Down:
                     { 
-                        if ((e.Modifiers & InputModifiers.Control) == InputModifiers.Control)
+                        if ((e.KeyModifiers & KeyModifiers.Control) == KeyModifiers.Control)
                         {
                             HandlePopUp();
                             return true;

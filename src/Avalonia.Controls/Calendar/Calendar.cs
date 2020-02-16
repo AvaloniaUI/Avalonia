@@ -1575,7 +1575,7 @@ namespace Avalonia.Controls
             base.OnPointerWheelChanged(e);
             if (!e.Handled)
             {
-                CalendarExtensions.GetMetaKeyState(e.InputModifiers, out bool ctrl, out bool shift);
+                CalendarExtensions.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
 
                 if (!ctrl)
                 {
@@ -1631,7 +1631,7 @@ namespace Avalonia.Controls
             // Some keys (e.g. Left/Right) need to be translated in RightToLeft mode
             Key invariantKey = e.Key;  //InteractionHelper.GetLogicalKey(FlowDirection, e.Key);
 
-            CalendarExtensions.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            CalendarExtensions.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
 
             switch (invariantKey)
             {

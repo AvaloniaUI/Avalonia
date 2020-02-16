@@ -10,17 +10,21 @@
 
 **Avalonia** is a WPF/UWP-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of Operating Systems such as Windows (.NET Framework, .NET Core), Linux (via Xorg), macOS and with experimental support for Android and iOS.
 
-**Avalonia** is ready for **General-Purpose Desktop App Development**. However, there may be some bugs and breaking changes as we continue along into this project's development. To see the status of some of our features, please see our [Roadmap here](https://github.com/AvaloniaUI/Avalonia/issues/2239).
+**Avalonia** is ready for **General-Purpose Desktop App Development**. However, there may be some bugs and [breaking changes](https://github.com/AvaloniaUI/Avalonia/wiki/Breaking-Changes) as we continue along into this project's development. To see the status of some of our features, please see our [Roadmap here](https://github.com/AvaloniaUI/Avalonia/issues/2239).
 
 | Control catalog | Desktop platforms | Mobile platforms |
 |---|---|---|
 | <a href='https://youtu.be/wHcB3sGLVYg'><img width='300' src='http://avaloniaui.net/images/screen.png'></a> | <a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0' target='_blank'><img width='300' src='http://avaloniaui.net/images/avalonia-video.png'></a> | <a href='https://www.youtube.com/watch?v=NJ9-hnmUbBM' target='_blank'><img width='300' src='https://i.ytimg.com/vi/NJ9-hnmUbBM/hqdefault.jpg'></a> |
+
+[Awesome Avalonia](https://github.com/AvaloniaCommunity/awesome-avalonia) is curated list of awesome Avalonia UI tools, libraries, projects and resources.
 
 ## Getting Started
 
 Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started. After installing it, open "New Project" dialog in Visual Studio, choose "Avalonia" in "Visual C#" section, select "Avalonia .NET Core Application" and press OK (<a href="http://avaloniaui.net/docs/quickstart/images/new-project-dialog.png">screenshot</a>). Now you can write code and markup that will work on multiple platforms!
 
 For those without Visual Studio, a starter guide for .NET Core CLI can be found [here](http://avaloniaui.net/docs/quickstart/create-new-project#net-core).
+
+If you need to develop Avalonia app with JetBrains Rider, go and *vote* on [this issue](https://youtrack.jetbrains.com/issue/RIDER-39247) in their tracker. JetBrains won't do things without their users telling them that they want the feature,  so only **YOU** can make it happen.
 
 Avalonia is delivered via <b>NuGet</b> package manager. You can find the packages here: [stable(ish)](https://www.nuget.org/packages/Avalonia/)
 
