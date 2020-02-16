@@ -83,14 +83,6 @@ namespace Avalonia.FreeDesktop.Notifications
 
         private async ValueTask EnsureConnection()
         {
-            var isConnected = await 
-                Connection.Session.IsServiceActiveAsync(NotificationsService);
-
-            if (!isConnected)
-            {
-                throw new InvalidOperationException($"Unable to connect to {NotificationsService}");
-            }
-
             _actionWatcher ??= await _proxy.WatchActionInvokedAsync(
                 OnNotificationActionInvoked,
                 OnNotificationActionInvokedError
