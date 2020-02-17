@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    public class ViewModelBase : INotifyPropertyChanged
+    internal class ViewModelBase : INotifyPropertyChanged
     {
         private PropertyChangedEventHandler _propertyChanged;
         private List<string> events = new List<string>();

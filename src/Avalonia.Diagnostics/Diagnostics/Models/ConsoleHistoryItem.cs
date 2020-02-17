@@ -3,7 +3,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Diagnostics.Models
 {
-    public class ConsoleHistoryItem
+    internal class ConsoleHistoryItem
     {
         public ConsoleHistoryItem(string input, object output)
         {

@@ -8,7 +8,7 @@ using Avalonia.Markup.Xaml;
 
 namespace Avalonia.Diagnostics.Views
 {
-    public class EventsPageView : UserControl
+    internal class EventsPageView : UserControl
     {
         private readonly ListBox _events;
 

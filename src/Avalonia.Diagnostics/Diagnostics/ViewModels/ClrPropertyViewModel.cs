@@ -8,7 +8,6 @@ namespace Avalonia.Diagnostics.ViewModels
         private readonly object _target;
         private string _type;
         private object _value;
-        private TypeConverter _converter;
 
         public ClrPropertyViewModel(object o, PropertyInfo property)
         {

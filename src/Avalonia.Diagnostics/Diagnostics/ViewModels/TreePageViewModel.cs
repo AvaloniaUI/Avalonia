@@ -79,7 +79,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 {
                     control = control.GetVisualParent<IControl>();
                 }
-            }            
+            }
 
             if (node != null)
             {

@@ -9,9 +9,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private string _type;
         private object _value;
         private string _priority;
-        private TypeConverter _converter;
         private string _group;
-        private DataGridCollectionView _bindingsView;
 
         public AvaloniaPropertyViewModel(AvaloniaObject o, AvaloniaProperty property)
         {

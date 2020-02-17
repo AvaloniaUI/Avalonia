@@ -10,8 +10,8 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class ConsoleViewModel : ViewModelBase
     {
-        readonly ConsoleContext _context;
-        readonly Action<ConsoleContext> _updateContext;
+        private readonly ConsoleContext _context;
+        private readonly Action<ConsoleContext> _updateContext;
         private int _historyIndex = -1;
         private string _input;
         private bool _isVisible;

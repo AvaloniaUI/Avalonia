@@ -43,12 +43,6 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public IEnumerable<string> Classes
-        {
-            get;
-            private set;
-        }
-
         public DataGridCollectionView PropertiesView { get; }
 
         public string PropertyFilter
@@ -166,7 +160,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
                 else
                 {
-                    return string.Compare(x.Name, y.Name);
+                    return string.CompareOrdinal(x.Name, y.Name);
                 }
             }
 
