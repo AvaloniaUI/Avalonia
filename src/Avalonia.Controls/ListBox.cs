@@ -35,6 +35,12 @@ namespace Avalonia.Controls
             SelectingItemsControl.SelectedItemsProperty;
 
         /// <summary>
+        /// Defines the <see cref="Selection"/> property.
+        /// </summary>
+        public static readonly new DirectProperty<SelectingItemsControl, ISelectionModel> SelectionProperty =
+            SelectingItemsControl.SelectionProperty;
+
+        /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
         /// </summary>
         public static readonly new StyledProperty<SelectionMode> SelectionModeProperty = 
@@ -74,6 +80,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets a model holding the current selection.
+        /// </summary>
+        public new ISelectionModel Selection
+        {
+            get => base.Selection;
+            set => base.Selection = value;
+        }
+
+        /// <summary>
         /// Gets or sets the selection mode.
         /// </summary>
         /// <remarks>
@@ -98,12 +113,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Selects all items in the <see cref="ListBox"/>.
         /// </summary>
-        public new void SelectAll() => base.SelectAll();
+        public void SelectAll() => Selection.SelectAll();
 
         /// <summary>
         /// Deselects all items in the <see cref="ListBox"/>.
         /// </summary>
-        public new void UnselectAll() => base.UnselectAll();
+        public void UnselectAll() => Selection.ClearSelection();
 
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()

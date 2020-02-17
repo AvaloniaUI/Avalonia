@@ -170,6 +170,19 @@ namespace Avalonia.Controls.UnitTests.Utils
         }
 
         [Fact]
+        public void Setting_Items_To_Null_Creates_Empty_Items()
+        {
+            var target = CreateTarget();
+            var oldItems = target.GetOrCreateItems();
+
+            target.SetItems(null);
+
+            var newItems = Assert.IsType<AvaloniaList<object>>(target.GetOrCreateItems());
+
+            Assert.NotSame(oldItems, newItems);
+        }
+
+        [Fact]
         public void Handles_Null_Model_Source()
         {
             var model = new SelectionModel();

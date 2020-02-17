@@ -19,6 +19,7 @@ namespace Avalonia.Controls.Utils
 
         public SelectedItemsSync(ISelectionModel model)
         {
+            model = model ?? throw new ArgumentNullException(nameof(model));
             Model = model;
         }
 
@@ -37,9 +38,9 @@ namespace Avalonia.Controls.Utils
             return _items;
         }
 
-        public void SetItems(IList items)
+        public void SetItems(IList? items)
         {
-            items = items ?? throw new ArgumentNullException(nameof(items));
+            items ??= new AvaloniaList<object>();
 
             if (items.IsFixedSize)
             {

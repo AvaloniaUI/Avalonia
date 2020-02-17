@@ -176,11 +176,12 @@ namespace Avalonia.Controls
             {
                 var isSelected = IsSelectedWithPartialAt(value);
 
-                if (!isSelected.HasValue || !isSelected.Value)
+                if (!IsSelectedAt(value) || SelectedItems.Count > 1)
                 {
                     using var operation = new Operation(this);
                     ClearSelection(resetAnchor: true);
                     SelectWithPathImpl(value, select: true);
+                    ApplyAutoSelect();
                 }
             }
         }
