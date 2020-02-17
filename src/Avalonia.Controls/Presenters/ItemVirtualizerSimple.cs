@@ -289,20 +289,15 @@ namespace Avalonia.Controls.Presenters
                     break;
             }
 
-            return ScrollIntoView(newItemIndex);
+            return ScrollIntoViewCore(newItemIndex);
         }
 
         /// <inheritdoc/>
-        public override void ScrollIntoView(object item)
+        public override void ScrollIntoView(int index)
         {
-            if (Items != null)
+            if (index != -1)
             {
-                var index = Items.IndexOf(item);
-
-                if (index != -1)
-                {
-                    ScrollIntoView(index);
-                }
+                ScrollIntoViewCore(index);
             }
         }
 
@@ -514,7 +509,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         /// <param name="index">The item index.</param>
         /// <returns>The container that was brought into view.</returns>
-        private IControl ScrollIntoView(int index)
+        private IControl ScrollIntoViewCore(int index)
         {
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;

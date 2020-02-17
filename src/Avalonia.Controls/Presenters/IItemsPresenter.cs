@@ -14,6 +14,6 @@ namespace Avalonia.Controls.Presenters
 
         void ItemsChanged(NotifyCollectionChangedEventArgs e);
 
-        void ScrollIntoView(object item);
+        void ScrollIntoView(int index);
     }
 }

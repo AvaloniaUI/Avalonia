@@ -575,7 +575,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 target.Arrange(Rect.Empty);
 
                 // Check for issue #591: this should not throw.
-                target.ScrollIntoView(items[0]);
+                target.ScrollIntoView(0);
             }
         }
 
@@ -729,7 +729,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var last = (target.Items as IList)[10];
 
-            target.ScrollIntoView(last);
+            target.ScrollIntoView(10);
 
             Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
             Assert.Same(target.Panel.Children[9].DataContext, last);
@@ -746,12 +746,12 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var last = (target.Items as IList)[10];
 
-            target.ScrollIntoView(last);
+            target.ScrollIntoView(10);
 
             Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
             Assert.Same(target.Panel.Children[9].DataContext, last);
 
-            target.ScrollIntoView(last);
+            target.ScrollIntoView(10);
 
             Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
             Assert.Same(target.Panel.Children[9].DataContext, last);

@@ -120,9 +120,9 @@ namespace Avalonia.Controls.Presenters
             return Virtualizer?.GetControlInDirection(direction, from);
         }
 
-        public override void ScrollIntoView(object item)
+        public override void ScrollIntoView(int index)
         {
-            Virtualizer?.ScrollIntoView(item);
+            Virtualizer?.ScrollIntoView(index);
         }
 
         /// <inheritdoc/>

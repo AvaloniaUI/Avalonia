@@ -342,8 +342,14 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Scrolls the specified item into view.
         /// </summary>
+        /// <param name="index">The index of the item.</param>
+        public void ScrollIntoView(int index) => Presenter?.ScrollIntoView(index);
+
+        /// <summary>
+        /// Scrolls the specified item into view.
+        /// </summary>
         /// <param name="item">The item.</param>
-        public void ScrollIntoView(object item) => Presenter?.ScrollIntoView(item);
+        public void ScrollIntoView(object item) => ScrollIntoView(IndexOf(Items, item));
 
         /// <summary>
         /// Tries to get the container that was the source of an event.
@@ -665,12 +671,9 @@ namespace Avalonia.Controls.Primitives
         {
             if (e.PropertyName == nameof(SelectionModel.AnchorIndex) && AutoScrollToSelectedItem)
             {
-                var index = Selection.AnchorIndex.GetSize() > 0 ? Selection.AnchorIndex.GetAt(0) : -1;
-                var item = index != -1 ? ElementAt(Items, index) : null;
-
-                if (item != null)
+                if (Selection.AnchorIndex.GetSize() > 0)
                 {
-                    ScrollIntoView(item);
+                    ScrollIntoView(Selection.AnchorIndex.GetAt(0));
                 }
             }
         }
