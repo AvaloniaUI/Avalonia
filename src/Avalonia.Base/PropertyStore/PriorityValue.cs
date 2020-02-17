@@ -117,7 +117,10 @@ namespace Avalonia.PropertyStore
             UpdateEffectiveValue();
         }
 
-        void IValueSink.Completed(AvaloniaProperty property, IPriorityValueEntry entry)
+        void IValueSink.Completed<TValue>(
+            StyledPropertyBase<TValue> property,
+            IPriorityValueEntry entry,
+            Optional<TValue> oldValue)
         {
             _entries.Remove((IPriorityValueEntry<T>)entry);
             UpdateEffectiveValue();
