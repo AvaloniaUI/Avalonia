@@ -684,6 +684,57 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Ctrl_Selecting_Raises_SelectionChanged_Events()
+        {
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = new[] { "Foo", "Bar", "Baz", "Qux" },
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            SelectionChangedEventArgs receivedArgs = null;
+
+            target.SelectionChanged += (_, args) => receivedArgs = args;
+
+            void VerifyAdded(string selection)
+            {
+                Assert.NotNull(receivedArgs);
+                Assert.Equal(new[] { selection }, receivedArgs.AddedItems);
+                Assert.Empty(receivedArgs.RemovedItems);
+            }
+
+            void VerifyRemoved(string selection)
+            {
+                Assert.NotNull(receivedArgs);
+                Assert.Equal(new[] { selection }, receivedArgs.RemovedItems);
+                Assert.Empty(receivedArgs.AddedItems);
+            }
+
+            _helper.Click((Interactive)target.Presenter.Panel.Children[1]);
+
+            VerifyAdded("Bar");
+
+            receivedArgs = null;
+            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: InputModifiers.Control);
+
+            VerifyAdded("Baz");
+
+            receivedArgs = null;
+            _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: InputModifiers.Control);
+
+            VerifyAdded("Qux");
+
+            receivedArgs = null;
+            _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: InputModifiers.Control);
+
+            VerifyRemoved("Bar");
+        }
+
+        [Fact]
         public void Ctrl_Selecting_SelectedItem_With_Multiple_Selection_Active_Sets_SelectedItem_To_Next_Selection()
         {
             var target = new ListBox
@@ -798,6 +849,52 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Shift_Selecting_Raises_SelectionChanged_Events()
+        {
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = new[] { "Foo", "Bar", "Baz", "Qux" },
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            SelectionChangedEventArgs receivedArgs = null;
+
+            target.SelectionChanged += (_, args) => receivedArgs = args;
+
+            void VerifyAdded(params string[] selection)
+            {
+                Assert.NotNull(receivedArgs);
+                Assert.Equal(selection, receivedArgs.AddedItems);
+                Assert.Empty(receivedArgs.RemovedItems);
+            }
+
+            void VerifyRemoved(string selection)
+            {
+                Assert.NotNull(receivedArgs);
+                Assert.Equal(new[] { selection }, receivedArgs.RemovedItems);
+                Assert.Empty(receivedArgs.AddedItems);
+            }
+
+            _helper.Click((Interactive)target.Presenter.Panel.Children[1]);
+
+            VerifyAdded("Bar");
+
+            receivedArgs = null;
+            _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: InputModifiers.Shift);
+
+            VerifyAdded("Baz" ,"Qux");
+
+            receivedArgs = null;
+            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: InputModifiers.Shift);
+
+            VerifyRemoved("Qux");
+        }
+
+        [Fact]
         public void Duplicate_Items_Are_Added_To_SelectedItems_In_Order()
         {
             var target = new ListBox
@@ -843,6 +940,30 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(0, target.SelectedIndex);
             Assert.Equal("Foo", target.SelectedItem);
+        }
+
+        [Fact]
+        public void SelectAll_Raises_SelectionChanged_Event()
+        {
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[] { "Foo", "Bar", "Baz" },
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            SelectionChangedEventArgs receivedArgs = null;
+
+            target.SelectionChanged += (_, args) => receivedArgs = args;
+
+            target.SelectAll();
+
+            Assert.NotNull(receivedArgs);
+            Assert.Equal(target.Items, receivedArgs.AddedItems);
+            Assert.Empty(receivedArgs.RemovedItems);
         }
 
         [Fact]
