@@ -1,14 +1,25 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="ProgressBar">
     <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
-    <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}"/> 
+    <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}">
-          <Border Name="PART_Indicator" Background="{TemplateBinding Foreground}"/>
-        </Border>
+        <Grid>
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}">
+            <Border Name="PART_Indicator" Background="{TemplateBinding Foreground}"/>
+          </Border>
+          <LayoutTransformControl
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsVisible="{Binding ShowProgressText, RelativeSource={RelativeSource TemplatedParent}}"
+                Name="PART_LayoutTransformControl">
+            <TextBlock
+                Foreground="{DynamicResource ThemeForegroundBrush}"
+                Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:0}%}" />
+          </LayoutTransformControl>
+        </Grid>
       </ControlTemplate>
     </Setter>
   </Style>
@@ -22,42 +33,49 @@
   </Style>
   <Style Selector="ProgressBar:horizontal">
     <Setter Property="MinWidth" Value="200"/>
-    <Setter Property="MinHeight" Value="14"/>
+    <Setter Property="MinHeight" Value="16"/>
   </Style>
   <Style Selector="ProgressBar:vertical">
-    <Setter Property="MinWidth" Value="14"/>
+    <Setter Property="MinWidth" Value="16"/>
     <Setter Property="MinHeight" Value="200"/>
   </Style>
+  <Style Selector="ProgressBar:vertical /template/ LayoutTransformControl#PART_LayoutTransformControl">
+    <Setter Property="LayoutTransform">
+      <Setter.Value>
+        <RotateTransform Angle="90"/>
+      </Setter.Value>
+    </Setter>
+  </Style>
   <Style Selector="ProgressBar:horizontal:indeterminate /template/ Border#PART_Indicator">
-      <Style.Animations>
-          <Animation Duration="0:0:3"
-                     IterationCount="Infinite"
-                     Easing="LinearEasing">
-              <KeyFrame Cue="0%">
-                  <Setter Property="TranslateTransform.X"
-                          Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
-              </KeyFrame>
-              <KeyFrame Cue="100%">
-                  <Setter Property="TranslateTransform.X"
-                          Value="{Binding IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
-              </KeyFrame>
+    <Style.Animations>
+      <Animation Duration="0:0:3"
+                 IterationCount="Infinite"
+                 Easing="LinearEasing">
+        <KeyFrame Cue="0%">
+          <Setter Property="TranslateTransform.X"
+                  Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="TranslateTransform.X"
+                  Value="{Binding IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
       </Animation>
-      </Style.Animations>
+    </Style.Animations>
   </Style>
   <Style Selector="ProgressBar:vertical:indeterminate /template/ Border#PART_Indicator">
-      <Style.Animations>
-          <Animation Duration="0:0:3"
-                     IterationCount="Infinite"
-                     Easing="LinearEasing">
-              <KeyFrame Cue="0%">
-                  <Setter Property="TranslateTransform.Y"
-                          Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
-              </KeyFrame>
-              <KeyFrame Cue="100%">
-                  <Setter Property="TranslateTransform.Y"
-                          Value="{Binding IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
-              </KeyFrame>
+    <Style.Animations>
+      <Animation Duration="0:0:3"
+                 IterationCount="Infinite"
+                 Easing="LinearEasing">
+        <KeyFrame Cue="0%">
+          <Setter Property="TranslateTransform.Y"
+                  Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="TranslateTransform.Y"
+                  Value="{Binding IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
       </Animation>
-      </Style.Animations>
+    </Style.Animations>
   </Style>
 </Styles>

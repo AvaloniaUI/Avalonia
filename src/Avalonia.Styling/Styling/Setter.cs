@@ -3,9 +3,7 @@
 
 using System;
 using System.Reactive.Disposables;
-using System.Reflection;
 using Avalonia.Animation;
-using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
@@ -80,8 +78,6 @@ namespace Avalonia.Styling
         {
             Contract.Requires<ArgumentNullException>(control != null);
 
-            var description = style?.ToString();
-
             if (Property == null)
             {
                 throw new InvalidOperationException("Setter.Property must be set.");
@@ -92,14 +88,15 @@ namespace Avalonia.Styling
 
             if (binding == null)
             {
-                var template = value as ITemplate;
-                bool isPropertyOfTypeITemplate = typeof(ITemplate).GetTypeInfo()
-                    .IsAssignableFrom(Property.PropertyType.GetTypeInfo());
-
-                if (template != null && !isPropertyOfTypeITemplate)
+                if (value is ITemplate template)
                 {
-                    var materialized = template.Build();
-                    value = materialized;
+                    bool isPropertyOfTypeITemplate = typeof(ITemplate).IsAssignableFrom(Property.PropertyType);
+
+                    if (!isPropertyOfTypeITemplate)
+                    {
+                        var materialized = template.Build();
+                        value = materialized;
+                    }
                 }
 
                 if (activator == null)
@@ -108,6 +105,8 @@ namespace Avalonia.Styling
                 }
                 else
                 {
+                    var description = style?.ToString();
+
                     var activated = new ActivatedValue(activator, value, description);
                     return control.Bind(Property, activated, BindingPriority.StyleTrigger);
                 }

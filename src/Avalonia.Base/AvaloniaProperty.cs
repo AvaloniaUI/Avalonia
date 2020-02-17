@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reactive.Subjects;
-using System.Reflection;
 using Avalonia.Data;
 using Avalonia.Utilities;
 
@@ -22,7 +20,6 @@ namespace Avalonia
         public static readonly object UnsetValue = new UnsetValueType();
 
         private static int s_nextId;
-        private readonly Subject<AvaloniaPropertyChangedEventArgs> _initialized;
         private readonly Subject<AvaloniaPropertyChangedEventArgs> _changed;
         private readonly PropertyMetadata _defaultMetadata;
         private readonly Dictionary<Type, PropertyMetadata> _metadata;
@@ -55,7 +52,6 @@ namespace Avalonia
                 throw new ArgumentException("'name' may not contain periods.");
             }
 
-            _initialized = new Subject<AvaloniaPropertyChangedEventArgs>();
             _changed = new Subject<AvaloniaPropertyChangedEventArgs>();
             _metadata = new Dictionary<Type, PropertyMetadata>();
 
@@ -83,7 +79,6 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(source != null);
             Contract.Requires<ArgumentNullException>(ownerType != null);
 
-            _initialized = source._initialized;
             _changed = source._changed;
             _metadata = new Dictionary<Type, PropertyMetadata>();
 
@@ -137,22 +132,6 @@ namespace Avalonia
         /// Gets a value indicating whether this is a readonly property.
         /// </summary>
         public virtual bool IsReadOnly => false;
-
-        /// <summary>
-        /// Gets an observable that is fired when this property is initialized on a
-        /// new <see cref="AvaloniaObject"/> instance.
-        /// </summary>
-        /// <remarks>
-        /// This observable is fired each time a new <see cref="AvaloniaObject"/> is constructed
-        /// for all properties registered on the object's type. The default value of the property
-        /// for the object is passed in the args' NewValue (OldValue will always be
-        /// <see cref="UnsetValue"/>.
-        /// </remarks>
-        /// <value>
-        /// An observable that is fired when this property is initialized on a new
-        /// <see cref="AvaloniaObject"/> instance.
-        /// </value>
-        public IObservable<AvaloniaPropertyChangedEventArgs> Initialized => _initialized;
 
         /// <summary>
         /// Gets an observable that is fired when this property changes on any
@@ -491,26 +470,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// True if <see cref="Initialized"/> has any observers.
-        /// </summary>
-        internal bool HasNotifyInitializedObservers => _initialized.HasObservers;
-
-        /// <summary>
-        /// Notifies the <see cref="Initialized"/> observable.
-        /// </summary>
-        /// <param name="o">The object being initialized.</param>
-        internal abstract void NotifyInitialized(IAvaloniaObject o);
-
-        /// <summary>
-        /// Notifies the <see cref="Initialized"/> observable.
-        /// </summary>
-        /// <param name="e">The observable arguments.</param>
-        internal void NotifyInitialized(AvaloniaPropertyChangedEventArgs e)
-        {
-            _initialized.OnNext(e);
-        }
-
-        /// <summary>
         /// Notifies the <see cref="Changed"/> observable.
         /// </summary>
         /// <param name="e">The observable arguments.</param>
@@ -602,7 +561,7 @@ namespace Avalonia
                     return result;
                 }
 
-                currentType = currentType.GetTypeInfo().BaseType;
+                currentType = currentType.BaseType;
             }
 
             _metadataCache[type] = _defaultMetadata;

@@ -59,7 +59,7 @@ namespace Avalonia
         private int _initCount;
         private string _name;
         private readonly Classes _classes = new Classes();
-        private IStyleRoot _styleRoot;
+        private ILogicalRoot _logicalRoot;
         private IAvaloniaList<ILogical> _logicalChildren;
         private IResourceDictionary _resources;
         private Styles _styles;
@@ -81,7 +81,7 @@ namespace Avalonia
         /// </summary>
         public StyledElement()
         {
-            _styleRoot = this as IStyleRoot;
+            _logicalRoot = this as ILogicalRoot;
         }
 
         /// <summary>
@@ -307,7 +307,7 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether the element is attached to a rooted logical tree.
         /// </summary>
-        bool ILogical.IsAttachedToLogicalTree => _styleRoot != null;
+        bool ILogical.IsAttachedToLogicalTree => _logicalRoot != null;
 
         /// <summary>
         /// Gets the styled element's logical parent.
@@ -367,7 +367,7 @@ namespace Avalonia
                 throw new InvalidOperationException("BeginInit was not called.");
             }
 
-            if (--_initCount == 0 && _styleRoot != null)
+            if (--_initCount == 0 && _logicalRoot != null)
             {
                 InitializeStylesIfNeeded();
 
@@ -442,9 +442,9 @@ namespace Avalonia
 
                 Parent = (IStyledElement)parent;
 
-                if (_styleRoot != null)
+                if (_logicalRoot != null)
                 {
-                    var e = new LogicalTreeAttachmentEventArgs(_styleRoot, this, old);
+                    var e = new LogicalTreeAttachmentEventArgs(_logicalRoot, this, old);
                     OnDetachedFromLogicalTreeCore(e);
                 }
 
@@ -458,9 +458,9 @@ namespace Avalonia
                 }
                 ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
 
-                if (Parent is IStyleRoot || Parent?.IsAttachedToLogicalTree == true || this is IStyleRoot)
+                if (Parent is ILogicalRoot || Parent?.IsAttachedToLogicalTree == true || this is ILogicalRoot)
                 {
-                    var newRoot = FindStyleRoot(this);
+                    var newRoot = FindLogicalRoot(this);
 
                     if (newRoot == null)
                     {
@@ -486,83 +486,6 @@ namespace Avalonia
         void ISetInheritanceParent.SetParent(IAvaloniaObject parent)
         {
             InheritanceParent = parent;
-        }
-
-        /// <summary>
-        /// Adds a pseudo-class to be set when a property is true.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="className">The pseudo-class.</param>
-        [Obsolete("Use PseudoClass<TOwner> and specify the control type.")]
-        protected static void PseudoClass(AvaloniaProperty<bool> property, string className)
-        {
-            PseudoClass<StyledElement>(property, className);
-        }
-
-        /// <summary>
-        /// Adds a pseudo-class to be set when a property is true.
-        /// </summary>
-        /// <typeparam name="TOwner">The type to apply the pseudo-class to.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="className">The pseudo-class.</param>
-        protected static void PseudoClass<TOwner>(AvaloniaProperty<bool> property, string className)
-            where TOwner : class, IStyledElement
-        {
-            PseudoClass<TOwner, bool>(property, x => x, className);
-        }
-
-        /// <summary>
-        /// Adds a pseudo-class to be set when a property equals a certain value.
-        /// </summary>
-        /// <typeparam name="TProperty">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="selector">Returns a boolean value based on the property value.</param>
-        /// <param name="className">The pseudo-class.</param>
-        [Obsolete("Use PseudoClass<TOwner, TProperty> and specify the control type.")]
-        protected static void PseudoClass<TProperty>(
-            AvaloniaProperty<TProperty> property,
-            Func<TProperty, bool> selector,
-            string className)
-        {
-            PseudoClass<StyledElement, TProperty>(property, selector, className);
-        }
-
-        /// <summary>
-        /// Adds a pseudo-class to be set when a property equals a certain value.
-        /// </summary>
-        /// <typeparam name="TProperty">The type of the property.</typeparam>
-        /// <typeparam name="TOwner">The type to apply the pseudo-class to.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="selector">Returns a boolean value based on the property value.</param>
-        /// <param name="className">The pseudo-class.</param>
-        protected static void PseudoClass<TOwner, TProperty>(
-            AvaloniaProperty<TProperty> property,
-            Func<TProperty, bool> selector,
-            string className)
-                where TOwner : class, IStyledElement
-        {
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
-            Contract.Requires<ArgumentNullException>(className != null);
-
-            if (string.IsNullOrWhiteSpace(className))
-            {
-                throw new ArgumentException("Cannot supply an empty className.");
-            }
-
-            property.Changed.Merge(property.Initialized)
-                .Where(e => e.Sender is TOwner)
-                .Subscribe(e =>
-                {
-                    if (selector((TProperty)e.NewValue))
-                    {
-                        ((StyledElement)e.Sender).PseudoClasses.Add(className);
-                    }
-                    else
-                    {
-                        ((StyledElement)e.Sender).PseudoClasses.Remove(className);
-                    }
-                });
         }
 
         protected virtual void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -650,9 +573,12 @@ namespace Avalonia
                     element._dataContextUpdating = true;
                     element.OnDataContextBeginUpdate();
 
-                    foreach (var child in element.LogicalChildren)
+                    var logicalChildren = element.LogicalChildren;
+                    var logicalChildrenCount = logicalChildren.Count;
+
+                    for (var i = 0; i < logicalChildrenCount; i++)
                     {
-                        if (child is StyledElement s &&
+                        if (element.LogicalChildren[i] is StyledElement s &&
                             s.InheritanceParent == element &&
                             !s.IsSet(DataContextProperty))
                         {
@@ -671,11 +597,11 @@ namespace Avalonia
             }
         }
 
-        private static IStyleRoot FindStyleRoot(IStyleHost e)
+        private static ILogicalRoot FindLogicalRoot(IStyleHost e)
         {
             while (e != null)
             {
-                if (e is IStyleRoot root)
+                if (e is ILogicalRoot root)
                 {
                     return root;
                 }
@@ -701,7 +627,7 @@ namespace Avalonia
 
         private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
         {
-            if (this.GetLogicalParent() == null && !(this is IStyleRoot))
+            if (this.GetLogicalParent() == null && !(this is ILogicalRoot))
             {
                 throw new InvalidOperationException(
                     $"AttachedToLogicalTreeCore called for '{GetType().Name}' but control has no logical parent.");
@@ -713,9 +639,9 @@ namespace Avalonia
             // - ListBox makes ListBoxItem a logical child
             // - ListBox template gets applied; making its Panel get attached to logical tree
             // - That AttachedToLogicalTree signal travels down to the ListBoxItem
-            if (_styleRoot == null)
+            if (_logicalRoot == null)
             {
-                _styleRoot = e.Root;
+                _logicalRoot = e.Root;
 
                 InitializeStylesIfNeeded(true);
 
@@ -723,24 +649,36 @@ namespace Avalonia
                 AttachedToLogicalTree?.Invoke(this, e);
             }
 
-            foreach (var child in LogicalChildren.OfType<StyledElement>())
+            var logicalChildren = LogicalChildren;
+            var logicalChildrenCount = logicalChildren.Count;
+
+            for (var i = 0; i < logicalChildrenCount; i++)
             {
-                child.OnAttachedToLogicalTreeCore(e);
+                if (logicalChildren[i] is StyledElement child)
+                {
+                    child.OnAttachedToLogicalTreeCore(e);
+                }
             }
         }
 
         private void OnDetachedFromLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
         {
-            if (_styleRoot != null)
+            if (_logicalRoot != null)
             {
-                _styleRoot = null;
+                _logicalRoot = null;
                 _styleDetach.OnNext(this);
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
 
-                foreach (var child in LogicalChildren.OfType<StyledElement>())
+                var logicalChildren = LogicalChildren;
+                var logicalChildrenCount = logicalChildren.Count;
+
+                for (var i = 0; i < logicalChildrenCount; i++)
                 {
-                    child.OnDetachedFromLogicalTreeCore(e);
+                    if (logicalChildren[i] is StyledElement child)
+                    {
+                        child.OnDetachedFromLogicalTreeCore(e);
+                    }
                 }
 
 #if DEBUG

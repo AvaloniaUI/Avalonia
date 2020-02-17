@@ -60,7 +60,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var parentMock = new Mock<Control>();
             parentMock.As<IContentPresenterHost>();
             parentMock.As<IRenderRoot>();
-            parentMock.As<IStyleRoot>();
+            parentMock.As<ILogicalRoot>();
 
             (target as ISetLogicalParent).SetParent(parentMock.Object);
 
@@ -105,7 +105,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var parentMock = new Mock<Control>();
             parentMock.As<IRenderRoot>();
-            parentMock.As<IStyleRoot>();
+            parentMock.As<ILogicalRoot>();
             parentMock.As<ILogical>().SetupGet(l => l.IsAttachedToLogicalTree).Returns(true);
 
             (contentControl as ISetLogicalParent).SetParent(parentMock.Object);
@@ -150,7 +150,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var parentMock = new Mock<Control>();
             parentMock.As<IContentPresenterHost>();
             parentMock.As<IRenderRoot>();
-            parentMock.As<IStyleRoot>();
+            parentMock.As<ILogicalRoot>();
 
             (target as ISetLogicalParent).SetParent(parentMock.Object);
 

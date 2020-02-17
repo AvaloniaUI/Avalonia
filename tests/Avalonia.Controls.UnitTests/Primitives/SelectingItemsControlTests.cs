@@ -1185,6 +1185,28 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void MoveSelection_Does_Select_Disabled_Controls()
+        {
+            // Issue #3426.
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem(),
+                    new ListBoxItem { IsEnabled = false },
+                },
+                SelectedIndex = 0,
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.MoveSelection(NavigationDirection.Next, true);
+
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
+        [Fact]
         public void Pre_Selecting_Item_Should_Set_Selection_After_It_Was_Added_When_AlwaysSelected()
         {
             var target = new TestSelector(SelectionMode.AlwaysSelected)

@@ -51,10 +51,9 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Single(target.GetLogicalChildren());
 
-            var child = target.GetLogicalChildren().Single();
+            var child = GetContainerTextBlock(target.GetLogicalChildren().Single());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Foo", ((TextBlock)child).Text);
+            Assert.Equal("Foo", child.Text);
         }
 
         [Fact]
@@ -98,20 +97,18 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(3, target.GetLogicalChildren().Count());
 
-            var child = target.GetLogicalChildren().First();
+            var child = GetContainerTextBlock(target.GetLogicalChildren().First());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Foo", ((TextBlock)child).Text);
+            Assert.Equal("Foo", child.Text);
 
             var newItems = items.ToList();
             newItems.RemoveAt(0);
 
             target.Items = newItems;
 
-            child = target.GetLogicalChildren().First();
+            child = GetContainerTextBlock(target.GetLogicalChildren().First());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Bar", ((TextBlock)child).Text);
+            Assert.Equal("Bar", child.Text);
         }
 
         [Fact]
@@ -136,20 +133,18 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Single(target.GetLogicalChildren());
 
-            var child = target.GetLogicalChildren().Single();
+            var child = GetContainerTextBlock(target.GetLogicalChildren().Single());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Foo", ((TextBlock)child).Text);
+            Assert.Equal("Foo", child.Text);
 
             var newItems = items.ToList();
             newItems.RemoveAt(0);
 
             target.Items = newItems;
 
-            child = target.GetLogicalChildren().Single();
+            child = GetContainerTextBlock(target.GetLogicalChildren().Single());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Bar", ((TextBlock)child).Text);
+            Assert.Equal("Bar", child.Text);
         }
 
         [Fact]
@@ -197,10 +192,9 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(3, target.GetLogicalChildren().Count());
 
-            var child = target.GetLogicalChildren().First();
+            var child = GetContainerTextBlock(target.GetLogicalChildren().First());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Foo", ((TextBlock)child).Text);
+            Assert.Equal("Foo", child.Text);
 
             target.Items = null;
 
@@ -233,7 +227,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal("FooBar", target.SelectedItem);
 
-            var child = target.GetVisualDescendants().LastOrDefault();
+            var child = GetContainerTextBlock(target.GetVisualDescendants().LastOrDefault());
 
             Assert.IsType<TextBlock>(child);
             Assert.Equal("FooBar", ((TextBlock)child).Text);
@@ -261,14 +255,13 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(3, target.GetLogicalChildren().Count());
 
-            var child = target.GetLogicalChildren().First();
+            var child = GetContainerTextBlock(target.GetLogicalChildren().First());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Foo", ((TextBlock)child).Text);
+            Assert.Equal("Foo", child.Text);
 
             items.RemoveAt(0);
 
-            child = target.GetLogicalChildren().First();
+            child = GetContainerTextBlock(target.GetLogicalChildren().First());
 
             Assert.IsType<TextBlock>(child);
             Assert.Equal("Bar", ((TextBlock)child).Text);
@@ -313,6 +306,13 @@ namespace Avalonia.Controls.UnitTests
                 [~CarouselPresenter.SelectedIndexProperty] = control[~Carousel.SelectedIndexProperty],
                 [~CarouselPresenter.PageTransitionProperty] = control[~Carousel.PageTransitionProperty],
             }.RegisterInNameScope(scope);
+        }
+
+        private static TextBlock GetContainerTextBlock(object control)
+        {
+            var contentPresenter = Assert.IsType<ContentPresenter>(control);
+            contentPresenter.UpdateChild();
+            return Assert.IsType<TextBlock>(contentPresenter.Child);
         }
     }
 }

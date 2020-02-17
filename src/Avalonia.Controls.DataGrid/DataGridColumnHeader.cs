@@ -190,28 +190,28 @@ namespace Avalonia.Controls
             }
         }
 
-        internal void OnMouseLeftButtonUp_Click(InputModifiers inputModifiers, ref bool handled)
+        internal void OnMouseLeftButtonUp_Click(KeyModifiers keyModifiers, ref bool handled)
         {
             // completed a click without dragging, so we're sorting
-            InvokeProcessSort(inputModifiers);
+            InvokeProcessSort(keyModifiers);
             handled = true;
         } 
 
-        internal void InvokeProcessSort(InputModifiers inputModifiers)
+        internal void InvokeProcessSort(KeyModifiers keyModifiers)
         {
             Debug.Assert(OwningGrid != null);
-            if (OwningGrid.WaitForLostFocus(() => InvokeProcessSort(inputModifiers)))
+            if (OwningGrid.WaitForLostFocus(() => InvokeProcessSort(keyModifiers)))
             {
                 return;
             }
             if (OwningGrid.CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true))
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => ProcessSort(inputModifiers));
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => ProcessSort(keyModifiers));
             }
         } 
 
         //TODO GroupSorting
-        internal void ProcessSort(InputModifiers inputModifiers)
+        internal void ProcessSort(KeyModifiers keyModifiers)
         {
             // if we can sort:
             //  - DataConnection.AllowSort is true, and
@@ -233,7 +233,7 @@ namespace Avalonia.Controls
 
                 DataGridSortDescription newSort;
 
-                KeyboardHelper.GetMetaKeyState(inputModifiers, out bool ctrl, out bool shift);
+                KeyboardHelper.GetMetaKeyState(keyModifiers, out bool ctrl, out bool shift);
 
                 DataGridSortDescription sort = OwningColumn.GetSortDescription();
                 IDataGridCollectionView collectionView = owningGrid.DataConnection.CollectionView;
@@ -326,7 +326,7 @@ namespace Avalonia.Controls
 
             if (OwningGrid != null && OwningGrid.ColumnHeaders != null)
             {
-                args.Device.Capture(this);
+                args.Pointer.Capture(this);
 
                 _dragMode = DragMode.MouseDown;
                 _frozenColumnsWidth = OwningGrid.ColumnsInternal.GetVisibleFrozenEdgedColumnsWidth();
@@ -371,7 +371,7 @@ namespace Avalonia.Controls
             {
                 if (_dragMode == DragMode.MouseDown)
                 {
-                   OnMouseLeftButtonUp_Click(args.InputModifiers, ref handled);
+                   OnMouseLeftButtonUp_Click(args.KeyModifiers, ref handled);
                 }
                 else if (_dragMode == DragMode.Reorder)
                 {
@@ -391,7 +391,7 @@ namespace Avalonia.Controls
                 SetDragCursor(mousePosition);
 
                 // Variables that track drag mode states get reset in DataGridColumnHeader_LostMouseCapture
-                args.Device.Capture(null);
+                args.Pointer.Capture(null);
                 OnLostMouseCapture();
                 _dragMode = DragMode.None;
                 handled = true;

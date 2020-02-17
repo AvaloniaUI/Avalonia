@@ -14,14 +14,18 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
+        private readonly GlPlatformFeature _glFeature;
         IAvnWindow _native;
-        public WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(opts)
+        internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
+            GlPlatformFeature glFeature) : base(opts, glFeature)
         {
             _factory = factory;
             _opts = opts;
+            _glFeature = glFeature;
             using (var e = new WindowEvents(this))
             {
-                Init(_native = factory.CreateWindow(e), factory.CreateScreens());
+                Init(_native = factory.CreateWindow(e,
+                    _opts.UseGpu ? glFeature?.DeferredContext.Context : null), factory.CreateScreens());
             }
 
             NativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
@@ -113,6 +117,6 @@ namespace Avalonia.Native
         public void Move(PixelPoint point) => Position = point;
 
         public override IPopupImpl CreatePopup() =>
-            _opts.OverlayPopups ? null : new PopupImpl(_factory, _opts, this);
+            _opts.OverlayPopups ? null : new PopupImpl(_factory, _opts, _glFeature, this);
     }
 }
