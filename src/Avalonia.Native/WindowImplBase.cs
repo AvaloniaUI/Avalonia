@@ -162,9 +162,12 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.Resized(AvnSize size)
             {
-                var s = new Size(size.Width, size.Height);
-                _parent._savedLogicalSize = s;
-                _parent.Resized?.Invoke(s);
+                if (_parent._native != null)
+                {
+                    var s = new Size(size.Width, size.Height);
+                    _parent._savedLogicalSize = s;
+                    _parent.Resized?.Invoke(s);
+                }
             }
 
             void IAvnWindowBaseEvents.PositionChanged(AvnPoint position)
@@ -317,7 +320,7 @@ namespace Avalonia.Native
             _native.SetTopMost(value);
         }
 
-        public double Scaling => _native.GetScaling();
+        public double Scaling => _native?.GetScaling() ?? 1;
 
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }

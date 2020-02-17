@@ -12,7 +12,9 @@
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
-          <DockPanel Margin="{TemplateBinding Padding}">
+          <DockPanel Margin="{TemplateBinding Padding}"
+                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
 
             <TextBlock Name="floatingWatermark"
                        Foreground="{DynamicResource ThemeAccentBrush}"
