@@ -61,5 +61,8 @@ namespace Avalonia.Media
         {
             ctx.CubicBezierTo(Point1, Point2, Point3);
         }
+
+        public override string ToString()
+            => $"C {Point1} {Point2} {Point3}";
     }
 }
