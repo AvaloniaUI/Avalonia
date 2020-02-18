@@ -161,8 +161,6 @@ namespace Avalonia.Controls
         /// </summary>
         static ScrollViewer()
         {
-            AffectsValidation(ExtentProperty, OffsetProperty);
-            AffectsValidation(ViewportProperty, OffsetProperty);
             HorizontalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer>((x, e) => x.ScrollBarVisibilityChanged(e));
             VerticalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer>((x, e) => x.ScrollBarVisibilityChanged(e));
         }
@@ -249,6 +247,22 @@ namespace Avalonia.Controls
         {
             get { return GetValue(VerticalScrollBarVisibilityProperty); }
             set { SetValue(VerticalScrollBarVisibilityProperty, value); }
+        }
+
+        /// <summary>
+        /// Scrolls to the top-left corner of the content.
+        /// </summary>
+        public void ScrollToHome()
+        {
+            Offset = new Vector(double.NegativeInfinity, double.NegativeInfinity);
+        }
+
+        /// <summary>
+        /// Scrolls to the bottom-left corner of the content.
+        /// </summary>
+        public void ScrollToEnd()
+        {
+            Offset = new Vector(double.NegativeInfinity, double.PositiveInfinity);
         }
 
         /// <summary>

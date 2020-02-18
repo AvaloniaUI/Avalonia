@@ -190,13 +190,13 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DatePicker, DatePickerFormat>(
                 nameof(SelectedDateFormat),
                 defaultValue: DatePickerFormat.Short,
-                validate: ValidateSelectedDateFormat);
+                validate: IsValidSelectedDateFormat);
 
         public static readonly StyledProperty<string> CustomDateFormatStringProperty =
             AvaloniaProperty.Register<DatePicker, string>(
                 nameof(CustomDateFormatString),
                 defaultValue: "d",
-                validate: ValidateDateFormatString);
+                validate: IsValidDateFormatString);
 
         public static readonly DirectProperty<DatePicker, string> TextProperty =
             AvaloniaProperty.RegisterDirect<DatePicker, string>(
@@ -512,11 +512,17 @@ namespace Avalonia.Controls
             base.OnTemplateApplied(e);
         }
 
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
         {
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
+
             if (property == SelectedDateProperty)
             {
-                DataValidationErrors.SetError(this, status.Error);
+                DataValidationErrors.SetError(this, newValue.Error);
             }
         }
 
@@ -782,7 +788,7 @@ namespace Avalonia.Controls
                     removedItems.Add(removedDate.Value);
                 }
 
-                handler(this, new SelectionChangedEventArgs(SelectingItemsControl.SelectionChangedEvent, addedItems, removedItems));
+                handler(this, new SelectionChangedEventArgs(SelectingItemsControl.SelectionChangedEvent, removedItems, addedItems));
             }
         }
         private void OnCalendarClosed(EventArgs e)
@@ -1002,7 +1008,7 @@ namespace Avalonia.Controls
                     }
                 case Key.Down:
                     { 
-                        if ((e.Modifiers & InputModifiers.Control) == InputModifiers.Control)
+                        if ((e.KeyModifiers & KeyModifiers.Control) == KeyModifiers.Control)
                         {
                             HandlePopUp();
                             return true;
@@ -1140,27 +1146,9 @@ namespace Avalonia.Controls
                 || value == DatePickerFormat.Short
                 || value == DatePickerFormat.Custom;
         }
-        private static DatePickerFormat ValidateSelectedDateFormat(DatePicker dp, DatePickerFormat format)
+        private static bool IsValidDateFormatString(string formatString)
         {
-            if(IsValidSelectedDateFormat(format))
-            {
-                return format;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(format), "DatePickerFormat value is not valid.");
-            }
-        }
-        private static string ValidateDateFormatString(DatePicker dp, string formatString)
-        {
-            if(string.IsNullOrWhiteSpace(formatString))
-            {
-                throw new ArgumentException("DateFormatString value is not valid.", nameof(formatString));
-            }
-            else
-            {
-                return formatString;
-            }
+            return !string.IsNullOrWhiteSpace(formatString);
         }
         private static DateTime DiscardDayTime(DateTime d)
         {

@@ -30,7 +30,8 @@ namespace Avalonia.Controls
         ILayoutRoot,
         IRenderRoot,
         ICloseable,
-        IStyleRoot,
+        IStyleHost,
+        ILogicalRoot,
         IWeakSubscriber<ResourcesChangedEventArgs>
     {
         /// <summary>
@@ -266,7 +267,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
-            var logicalArgs = new LogicalTreeAttachmentEventArgs(this);
+            var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
             var visualArgs = new VisualTreeAttachmentEventArgs(this, this);

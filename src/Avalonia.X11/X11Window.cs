@@ -102,7 +102,7 @@ namespace Avalonia.X11
                 valueMask |= SetWindowValuemask.ColorMap;   
             }
 
-            int defaultWidth = 300, defaultHeight = 200;
+            int defaultWidth = 0, defaultHeight = 0;
 
             if (!_popup && Screen != null)
             {
@@ -116,6 +116,10 @@ namespace Avalonia.X11
                     defaultHeight = (int)(monitor.WorkingArea.Height * 0.7d);
                 }
             }
+
+            // check if the calculated size is zero then compensate to hardcoded resolution
+            defaultWidth = Math.Max(defaultWidth, 300);
+            defaultHeight = Math.Max(defaultHeight, 200);
 
             _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, defaultWidth, defaultHeight, 0,
                 depth,
@@ -133,7 +137,7 @@ namespace Avalonia.X11
                 _renderHandle = _handle;
                 
             Handle = new PlatformHandle(_handle, "XID");
-            _realSize = new PixelSize(300, 200);
+            _realSize = new PixelSize(defaultWidth, defaultHeight);
             platform.Windows[_handle] = OnEvent;
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
                                      | XEventMask.ResizeRedirectMask
@@ -991,11 +995,18 @@ namespace Avalonia.X11
 
         public void SetIcon(IWindowIconImpl icon)
         {
-            var data = ((X11IconData)icon).Data;
-            fixed (void* pdata = data)
-                XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_ICON,
-                    new IntPtr((int)Atom.XA_CARDINAL), 32, PropertyMode.Replace,
-                    pdata, data.Length);
+            if (icon != null)
+            {
+                var data = ((X11IconData)icon).Data;
+                fixed (void* pdata = data)
+                    XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_ICON,
+                        new IntPtr((int)Atom.XA_CARDINAL), 32, PropertyMode.Replace,
+                        pdata, data.Length);
+            }
+            else
+            {
+                XDeleteProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_ICON);
+            }
         }
 
         public void ShowTaskbarIcon(bool value)

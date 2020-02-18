@@ -21,6 +21,28 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void ClearValue_Raises_PropertyChanged()
+        {
+            Class1 target = new Class1();
+            var raised = 0;
+
+            target.SetValue(Class1.FooProperty, "newvalue");
+            target.PropertyChanged += (s, e) =>
+            {
+                Assert.Same(target, s);
+                Assert.Equal(BindingPriority.Unset, e.Priority);
+                Assert.Equal(Class1.FooProperty, e.Property);
+                Assert.Equal("newvalue", (string)e.OldValue);
+                Assert.Equal("foodefault", (string)e.NewValue);
+                ++raised;
+            };
+
+            target.ClearValue(Class1.FooProperty);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
         public void SetValue_Sets_Value()
         {
             Class1 target = new Class1();
@@ -55,6 +77,25 @@ namespace Avalonia.Base.UnitTests
             };
 
             target.SetValue(Class1.FooProperty, "newvalue");
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void SetValue_Style_Priority_Raises_PropertyChanged()
+        {
+            Class1 target = new Class1();
+            bool raised = false;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                raised = s == target &&
+                         e.Property == Class1.FooProperty &&
+                         (string)e.OldValue == "foodefault" &&
+                         (string)e.NewValue == "newvalue";
+            };
+
+            target.SetValue(Class1.FooProperty, "newvalue", BindingPriority.Style);
 
             Assert.True(raised);
         }
@@ -178,6 +219,39 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void SetValue_Style_Doesnt_Override_LocalValue()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "one", BindingPriority.LocalValue);
+            Assert.Equal("one", target.GetValue(Class1.FooProperty));
+            target.SetValue(Class1.FooProperty, "two", BindingPriority.Style);
+            Assert.Equal("one", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void SetValue_LocalValue_Overrides_Style()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "one", BindingPriority.Style);
+            Assert.Equal("one", target.GetValue(Class1.FooProperty));
+            target.SetValue(Class1.FooProperty, "two", BindingPriority.LocalValue);
+            Assert.Equal("two", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void SetValue_Animation_Overrides_LocalValue()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "one", BindingPriority.LocalValue);
+            Assert.Equal("one", target.GetValue(Class1.FooProperty));
+            target.SetValue(Class1.FooProperty, "two", BindingPriority.Animation);
+            Assert.Equal("two", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
         public void Setting_UnsetValue_Reverts_To_Default_Value()
         {
             Class1 target = new Class1();
@@ -188,10 +262,35 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
         }
 
+        [Fact]
+        public void Setting_Object_Property_To_UnsetValue_Reverts_To_Default_Value()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FrankProperty, "newvalue");
+            target.SetValue(Class1.FrankProperty, AvaloniaProperty.UnsetValue);
+
+            Assert.Equal("Kups", target.GetValue(Class1.FrankProperty));
+        }
+
+        [Fact]
+        public void Setting_Object_Property_To_DoNothing_Does_Nothing()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FrankProperty, "newvalue");
+            target.SetValue(Class1.FrankProperty, BindingOperations.DoNothing);
+
+            Assert.Equal("newvalue", target.GetValue(Class1.FrankProperty));
+        }
+
         private class Class1 : AvaloniaObject
         {
             public static readonly StyledProperty<string> FooProperty =
                 AvaloniaProperty.Register<Class1, string>("Foo", "foodefault");
+
+            public static readonly StyledProperty<object> FrankProperty =
+                AvaloniaProperty.Register<Class1, object>("Frank", "Kups");
         }
 
         private class Class2 : Class1

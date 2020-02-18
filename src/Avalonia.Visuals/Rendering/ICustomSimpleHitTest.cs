@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using System.Linq;
+using Avalonia.VisualTree;
+
 namespace Avalonia.Rendering
 {
     /// <summary>
@@ -8,5 +12,14 @@ namespace Avalonia.Rendering
     public interface ICustomSimpleHitTest
     {
         bool HitTest(Point point);
+    }
+
+    public static class CustomSimpleHitTestExtensions
+    {
+        public static bool HitTestCustom(this IVisual visual, Point point)
+            => (visual as ICustomSimpleHitTest)?.HitTest(point) ?? visual.TransformedBounds?.Contains(point) == true;
+
+        public static bool HitTestCustom(this IEnumerable<IVisual> children, Point point)
+            => children.Any(ctrl => ctrl.HitTestCustom(point));
     }
 }

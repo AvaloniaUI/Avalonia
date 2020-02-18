@@ -12,7 +12,9 @@
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
-          <DockPanel Margin="{TemplateBinding Padding}">
+          <DockPanel Margin="{TemplateBinding Padding}"
+                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
 
             <TextBlock Name="floatingWatermark"
                        Foreground="{DynamicResource ThemeAccentBrush}"
@@ -70,4 +72,7 @@
   <Style Selector="TextBox">
     <Setter Property="Cursor" Value="IBeam" />
   </Style>
+    <Style Selector="TextBox:disabled /template/ Border#border">
+        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
 </Styles>

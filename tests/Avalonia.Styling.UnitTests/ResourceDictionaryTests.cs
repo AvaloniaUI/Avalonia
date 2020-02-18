@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Controls;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Styling.UnitTests
@@ -136,24 +137,6 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void ResourcesChanged_Should_Not_Be_Raised_On_Empty_MergedDictionary_Remove()
-        {
-            var target = new ResourceDictionary
-            {
-                MergedDictionaries =
-                {
-                    new ResourceDictionary(),
-                }
-            };
-            var raised = false;
-
-            target.ResourcesChanged += (_, __) => raised = true;
-            target.MergedDictionaries.RemoveAt(0);
-
-            Assert.False(raised);
-        }
-
-        [Fact]
         public void ResourcesChanged_Should_Be_Raised_On_MergedDictionary_Resource_Add()
         {
             var target = new ResourceDictionary
@@ -170,6 +153,38 @@ namespace Avalonia.Styling.UnitTests
             ((IResourceDictionary)target.MergedDictionaries[0]).Add("foo", "bar");
 
             Assert.True(raised);
+        }
+
+        [Fact]
+        public void MergedDictionary_ParentResourcesChanged_Should_Be_Called_On_Resource_Add()
+        {
+            var target = new ResourceDictionary();
+            var merged = new Mock<ISetResourceParent>();
+
+            target.MergedDictionaries.Add(merged.Object);
+            merged.ResetCalls();
+
+            target.Add("foo", "bar");
+
+            merged.Verify(
+                x => x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void MergedDictionary_ParentResourcesChanged_Should_Be_Called_On_NotifyResourceChanged()
+        {
+            var target = new ResourceDictionary();
+            var merged = new Mock<ISetResourceParent>();
+
+            target.MergedDictionaries.Add(merged.Object);
+            merged.ResetCalls();
+
+            ((ISetResourceParent)target).ParentResourcesChanged(new ResourcesChangedEventArgs());
+
+            merged.Verify(
+                x => x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
         }
     }
 }

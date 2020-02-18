@@ -223,7 +223,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
-        
+        [Fact]
+        public void Popup_Close_On_Closed_Popup_Should_Not_Raise_Closed_Event()
+        {
+            using (CreateServices())
+            {
+                var window = PreparedWindow();
+                var target = new Popup() { PlacementMode = PlacementMode.Pointer };
+
+                window.Content = target;
+                window.ApplyTemplate();
+                
+                int closedCount = 0;
+
+                target.Closed += (sender, args) =>
+                {
+                    closedCount++;
+                };
+
+                target.Close();
+                target.Close();
+                target.Close();
+                target.Close();
+
+                Assert.Equal(0, closedCount);
+            }
+        }
+
         [Fact]
         public void Templated_Control_With_Popup_In_Template_Should_Set_TemplatedParent()
         {

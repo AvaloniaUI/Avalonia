@@ -14,7 +14,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// A style that consists of a number of child styles.
     /// </summary>
-    public class Styles : AvaloniaObject, IAvaloniaList<IStyle>, IStyle, ISetStyleParent
+    public class Styles : AvaloniaObject, IAvaloniaList<IStyle>, IStyle, ISetResourceParent
     {
         private IResourceNode _parent;
         private IResourceDictionary _resources;
@@ -27,10 +27,10 @@ namespace Avalonia.Styling
             _styles.ForEachItem(
                 x =>
                 {
-                    if (x.ResourceParent == null && x is ISetStyleParent setParent)
+                    if (x.ResourceParent == null && x is ISetResourceParent setParent)
                     {
                         setParent.SetParent(this);
-                        setParent.NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                        setParent.ParentResourcesChanged(new ResourcesChangedEventArgs());
                     }
 
                     if (x.HasResources)
@@ -43,10 +43,10 @@ namespace Avalonia.Styling
                 },
                 x =>
                 {
-                    if (x.ResourceParent == this && x is ISetStyleParent setParent)
+                    if (x.ResourceParent == this && x is ISetResourceParent setParent)
                     {
                         setParent.SetParent(null);
-                        setParent.NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                        setParent.ParentResourcesChanged(new ResourcesChangedEventArgs());
                     }
 
                     if (x.HasResources)
@@ -98,7 +98,7 @@ namespace Avalonia.Styling
 
                 if (hadResources || _resources.Count > 0)
                 {
-                    ((ISetStyleParent)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                    ((ISetResourceParent)this).ParentResourcesChanged(new ResourcesChangedEventArgs());
                 }
             }
         }
@@ -239,14 +239,16 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         public bool Remove(IStyle item) => _styles.Remove(item);
 
+        public AvaloniaList<IStyle>.Enumerator GetEnumerator() => _styles.GetEnumerator();
+
         /// <inheritdoc/>
-        public IEnumerator<IStyle> GetEnumerator() => _styles.GetEnumerator();
+        IEnumerator<IStyle> IEnumerable<IStyle>.GetEnumerator() => _styles.GetEnumerator();
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => _styles.GetEnumerator();
 
         /// <inheritdoc/>
-        void ISetStyleParent.SetParent(IResourceNode parent)
+        void ISetResourceParent.SetParent(IResourceNode parent)
         {
             if (_parent != null && parent != null)
             {
@@ -257,7 +259,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        void ISetStyleParent.NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        void ISetResourceParent.ParentResourcesChanged(ResourcesChangedEventArgs e)
         {
             ResourcesChanged?.Invoke(this, e);
         }
@@ -266,7 +268,7 @@ namespace Avalonia.Styling
         {
             foreach (var child in this)
             {
-                (child as ISetStyleParent)?.NotifyResourcesChanged(e);
+                (child as ISetResourceParent)?.ParentResourcesChanged(e);
             }
 
             ResourcesChanged?.Invoke(this, e);
@@ -280,7 +282,7 @@ namespace Avalonia.Styling
             {
                 if (foundSource)
                 {
-                    (child as ISetStyleParent)?.NotifyResourcesChanged(e);
+                    (child as ISetResourceParent)?.ParentResourcesChanged(e);
                 }
 
                 foundSource |= child == sender;
