@@ -489,6 +489,53 @@ namespace Avalonia.Styling.UnitTests
                 called);
         }
 
+        [Fact]
+        public void Changing_Parent_Notifies_Resources_ParentResourcesChanged()
+        {
+            var resources = new Mock<IResourceDictionary>();
+            var setResourceParent = resources.As<ISetResourceParent>();
+            var target = new TestControl { Resources = resources.Object };
+            var parent = new Decorator { Resources = { { "foo", "bar" } } };
+
+            setResourceParent.ResetCalls();
+            parent.Child = target;
+
+            setResourceParent.Verify(x =>
+                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void Changing_Parent_Notifies_Styles_ParentResourcesChanged()
+        {
+            var style = new Mock<IStyle>();
+            var setResourceParent = style.As<ISetResourceParent>();
+            var target = new TestControl { Styles = { style.Object } };
+            var parent = new Decorator { Resources = { { "foo", "bar" } } };
+
+            setResourceParent.ResetCalls();
+            parent.Child = target;
+
+            setResourceParent.Verify(x =>
+                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void Changing_Resources_Notifies_Styles()
+        {
+            var style = new Mock<IStyle>();
+            var setResourceParent = style.As<ISetResourceParent>();
+            var target = new TestControl { Styles = { style.Object } };
+
+            setResourceParent.ResetCalls();
+            target.Resources.Add("foo", "bar");
+
+            setResourceParent.Verify(x =>
+                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
+        }
+
         private interface IDataContextEvents
         {
             event EventHandler DataContextBeginUpdate;
