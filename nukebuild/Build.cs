@@ -26,7 +26,7 @@ using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
  running and debugging a particular target (optionally without deps) would be way easier
  ReSharper/Rider - https://plugins.jetbrains.com/plugin/10803-nuke-support
  VSCode - https://marketplace.visualstudio.com/items?itemName=nuke.support
- 
+
  */
 
 partial class Build : NukeBuild
@@ -54,7 +54,7 @@ partial class Build : NukeBuild
     protected override void OnBuildInitialized()
     {
         Parameters = new BuildParameters(this);
-        Information("Building version {0} of Avalonia ({1}) using version {2} of Nuke.", 
+        Information("Building version {0} of Avalonia ({1}) using version {2} of Nuke.",
             Parameters.Version,
             Parameters.Configuration,
             typeof(NukeBuild).Assembly.GetName().Version.ToString());
@@ -93,8 +93,10 @@ partial class Build : NukeBuild
         string projectFile,
         Configure<MSBuildSettings> configurator = null)
     {
-        return MSBuild(projectFile, c =>
+        return MSBuild(c =>
         {
+            c = c.SetProjectFile(projectFile);
+
             // This is required for VS2019 image on Azure Pipelines
             if (Parameters.IsRunningOnWindows && Parameters.IsRunningOnAzure)
             {
@@ -114,8 +116,8 @@ partial class Build : NukeBuild
     }
     Target Clean => _ => _.Executes(() =>
     {
-        DeleteDirectories(Parameters.BuildDirs);
-        EnsureCleanDirectories(Parameters.BuildDirs);
+        Parameters.BuildDirs.ForEach(DeleteDirectory);
+        Parameters.BuildDirs.ForEach(DeleteDirectory);
         EnsureCleanDirectory(Parameters.ArtifactsDir);
         EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
         EnsureCleanDirectory(Parameters.NugetRoot);
@@ -134,12 +136,13 @@ partial class Build : NukeBuild
                 );
 
             else
-                DotNetBuild(Parameters.MSBuildSolution, c => c
+                DotNetBuild(c => c
+                    .SetProjectFile(Parameters.MSBuildSolution)
                     .AddProperty("PackageVersion", Parameters.Version)
                     .SetConfiguration(Parameters.Configuration)
                 );
         });
-    
+
     void RunCoreTest(string project)
     {
         if(!project.EndsWith(".csproj"))
@@ -153,13 +156,13 @@ partial class Build : NukeBuild
         var targets = xdoc.Root.Descendants("TargetFrameworks").FirstOrDefault();
         if (targets != null)
             frameworks = targets.Value.Split(';').Where(f => !string.IsNullOrWhiteSpace(f)).ToList();
-        else 
+        else
             frameworks = new List<string> {xdoc.Root.Descendants("TargetFramework").First().Value};
-        
+
         foreach(var fw in frameworks)
         {
             if (fw.StartsWith("net4")
-                && RuntimeInformation.IsOSPlatform(OSPlatform.Linux) 
+                && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
                 && Environment.GetEnvironmentVariable("FORCE_LINUX_TESTS") != "1")
             {
                 Information($"Skipping {fw} tests on Linux - https://github.com/mono/mono/issues/13969");
@@ -184,7 +187,7 @@ partial class Build : NukeBuild
     }
 
     Target RunCoreLibsTests => _ => _
-        .OnlyWhen(() => !Parameters.SkipTests)
+        .OnlyWhenStatic(() => !Parameters.SkipTests)
         .DependsOn(Compile)
         .Executes(() =>
         {
@@ -204,7 +207,7 @@ partial class Build : NukeBuild
         });
 
     Target RunRenderTests => _ => _
-        .OnlyWhen(() => !Parameters.SkipTests)
+        .OnlyWhenStatic(() => !Parameters.SkipTests)
         .DependsOn(Compile)
         .Executes(() =>
         {
@@ -212,9 +215,9 @@ partial class Build : NukeBuild
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj");
         });
-    
+
     Target RunDesignerTests => _ => _
-        .OnlyWhen(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
+        .OnlyWhenStatic(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
         .DependsOn(Compile)
         .Executes(() =>
         {
@@ -224,7 +227,7 @@ partial class Build : NukeBuild
     [PackageExecutable("JetBrains.dotMemoryUnit", "dotMemoryUnit.exe")] readonly Tool DotMemoryUnit;
 
     Target RunLeakTests => _ => _
-        .OnlyWhen(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
+        .OnlyWhenStatic(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
         .DependsOn(Compile)
         .Executes(() =>
         {
@@ -235,7 +238,7 @@ partial class Build : NukeBuild
         });
 
     Target ZipFiles => _ => _
-        .After(CreateNugetPackages, Compile, RunCoreLibsTests, Package)    
+        .After(CreateNugetPackages, Compile, RunCoreLibsTests, Package)
         .Executes(() =>
         {
             var data = Parameters;
@@ -259,9 +262,10 @@ partial class Build : NukeBuild
                 MsBuildCommon(Parameters.MSBuildSolution, c => c
                     .AddTargets("Pack"));
             else
-                DotNetPack(Parameters.MSBuildSolution, c =>
-                    c.SetConfiguration(Parameters.Configuration)
-                        .AddProperty("PackageVersion", Parameters.Version));
+                DotNetPack(c => c
+                    .SetProject(Parameters.MSBuildSolution)
+                    .SetConfiguration(Parameters.Configuration)
+                    .AddProperty("PackageVersion", Parameters.Version));
         });
 
     Target CreateNugetPackages => _ => _
@@ -274,29 +278,29 @@ partial class Build : NukeBuild
                 new NumergeNukeLogger()))
                 throw new Exception("Package merge failed");
         });
-    
+
     Target RunTests => _ => _
         .DependsOn(RunCoreLibsTests)
         .DependsOn(RunRenderTests)
         .DependsOn(RunDesignerTests)
         .DependsOn(RunLeakTests);
-    
+
     Target Package => _ => _
         .DependsOn(RunTests)
         .DependsOn(CreateNugetPackages);
-    
+
     Target CiAzureLinux => _ => _
         .DependsOn(RunTests);
-    
+
     Target CiAzureOSX => _ => _
         .DependsOn(Package)
         .DependsOn(ZipFiles);
-    
+
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
         .DependsOn(ZipFiles);
 
-    
+
     public static int Main() =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? Execute<Build>(x => x.Package)
