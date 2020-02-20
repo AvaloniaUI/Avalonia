@@ -213,6 +213,7 @@ namespace Avalonia
                 {
                     _styles = new Styles(this);
                     _styles.ResourcesChanged += ThisResourcesChanged;
+                    NotifyResourcesChanged(new ResourcesChangedEventArgs());
                 }
 
                 return _styles;
