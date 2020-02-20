@@ -67,6 +67,7 @@ namespace Avalonia
         private Subject<IStyleable> _styleDetach = new Subject<IStyleable>();
         private ITemplatedControl _templatedParent;
         private bool _dataContextUpdating;
+        private bool _notifyingResourcesChanged;
 
         /// <summary>
         /// Initializes static members of the <see cref="StyledElement"/> class.
@@ -235,6 +236,7 @@ namespace Avalonia
                     }
 
                     _styles.ResourcesChanged += ThisResourcesChanged;
+                    NotifyResourcesChanged(new ResourcesChangedEventArgs());
                 }
             }
         }
@@ -253,6 +255,7 @@ namespace Avalonia
 
                 if (_resources != null)
                 {
+                    (_resources as ISetResourceParent)?.SetParent(null);
                     hadResources = _resources.Count > 0;
                     _resources.ResourcesChanged -= ThisResourcesChanged;
                 }
@@ -260,9 +263,14 @@ namespace Avalonia
                 _resources = value;
                 _resources.ResourcesChanged += ThisResourcesChanged;
 
+                if (value is ISetResourceParent setParent && setParent.ResourceParent == null)
+                {
+                    setParent.SetParent(this);
+                }
+
                 if (hadResources || _resources.Count > 0)
                 {
-                    ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                    NotifyResourcesChanged(new ResourcesChangedEventArgs());
                 }
             }
         }
@@ -407,10 +415,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e)
-        {
-            ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
-        }
+        void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
 
         /// <inheritdoc/>
         bool IResourceProvider.TryGetResource(object key, out object value)
@@ -456,7 +461,8 @@ namespace Avalonia
                 {
                     Parent.ResourcesChanged += ThisResourcesChanged;
                 }
-                ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                
+                NotifyResourcesChanged(new ResourcesChangedEventArgs());
 
                 if (Parent is ILogicalRoot || Parent?.IsAttachedToLogicalTree == true || this is ILogicalRoot)
                 {
@@ -721,9 +727,29 @@ namespace Avalonia
             }
         }
 
+        private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            if (_notifyingResourcesChanged)
+            {
+                return;
+            }
+
+            try
+            {
+                _notifyingResourcesChanged = true;
+                (_resources as ISetResourceParent)?.ParentResourcesChanged(e);
+                (_styles as ISetResourceParent)?.ParentResourcesChanged(e);
+                ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+            }
+            finally
+            {
+                _notifyingResourcesChanged = false;
+            }
+        }
+
         private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
         {
-            ((ILogical)this).NotifyResourcesChanged(e);
+            NotifyResourcesChanged(e);
         }
     }
 }

@@ -490,6 +490,36 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
+        public void Resources_Parent_Is_Set()
+        {
+            var target = new TestControl();
+
+            Assert.Same(target, ((IResourceNode)target.Resources).ResourceParent);
+        }
+
+        [Fact]
+        public void Assigned_Resources_Parent_Is_Set()
+        {
+            var resources = new ResourceDictionary();
+            var target = new TestControl { Resources = resources };
+
+            Assert.Same(target, ((IResourceNode)resources).ResourceParent);
+        }
+
+        [Fact]
+        public void Assigning_Resources_Raises_ResourcesChanged()
+        {
+            var resources = new ResourceDictionary { { "foo", "bar" } };
+            var target = new TestControl();
+            var raised = 0;
+
+            target.ResourcesChanged += (s, e) => ++raised;
+            target.Resources = resources;
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
         public void Changing_Parent_Notifies_Resources_ParentResourcesChanged()
         {
             var resources = new Mock<IResourceDictionary>();
@@ -503,6 +533,36 @@ namespace Avalonia.Styling.UnitTests
             setResourceParent.Verify(x =>
                 x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
                 Times.Once);
+        }
+
+        [Fact]
+        public void Styles_Parent_Is_Set()
+        {
+            var target = new TestControl();
+
+            Assert.Same(target, ((IResourceNode)target.Styles).ResourceParent);
+        }
+
+        [Fact]
+        public void Assigned_Styles_Parent_Is_Set()
+        {
+            var styles = new Styles();
+            var target = new TestControl { Styles = styles };
+
+            Assert.Same(target, ((IResourceNode)styles).ResourceParent);
+        }
+
+        [Fact]
+        public void Assigning_Styles_Raises_ResourcesChanged()
+        {
+            var styles = new Styles { Resources = { { "foo", "bar" } } };
+            var target = new TestControl();
+            var raised = 0;
+
+            target.ResourcesChanged += (s, e) => ++raised;
+            target.Styles = styles;
+
+            Assert.Equal(1, raised);
         }
 
         [Fact]

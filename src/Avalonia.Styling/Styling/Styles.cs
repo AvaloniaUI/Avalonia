@@ -20,6 +20,7 @@ namespace Avalonia.Styling
         private IResourceDictionary _resources;
         private AvaloniaList<IStyle> _styles = new AvaloniaList<IStyle>();
         private Dictionary<Type, List<IStyle>> _cache;
+        private bool _notifyingResourcesChanged;
 
         public Styles()
         {
@@ -38,7 +39,7 @@ namespace Avalonia.Styling
                         ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
                     }
 
-                    x.ResourcesChanged += SubResourceChanged;
+                    x.ResourcesChanged += NotifyResourcesChanged;
                     _cache = null;
                 },
                 x =>
@@ -54,7 +55,7 @@ namespace Avalonia.Styling
                         ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
                     }
 
-                    x.ResourcesChanged -= SubResourceChanged;
+                    x.ResourcesChanged -= NotifyResourcesChanged;
                     _cache = null;
                 },
                 () => { });
@@ -90,11 +91,11 @@ namespace Avalonia.Styling
                 if (_resources != null)
                 {
                     hadResources = _resources.Count > 0;
-                    _resources.ResourcesChanged -= ResourceDictionaryChanged;
+                    _resources.ResourcesChanged -= NotifyResourcesChanged;
                 }
 
                 _resources = value;
-                _resources.ResourcesChanged += ResourceDictionaryChanged;
+                _resources.ResourcesChanged += NotifyResourcesChanged;
 
                 if (hadResources || _resources.Count > 0)
                 {
@@ -261,34 +262,35 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         void ISetResourceParent.ParentResourcesChanged(ResourcesChangedEventArgs e)
         {
-            ResourcesChanged?.Invoke(this, e);
+            NotifyResourcesChanged(e);
         }
 
-        private void ResourceDictionaryChanged(object sender, ResourcesChangedEventArgs e)
+        private void NotifyResourcesChanged(object sender, ResourcesChangedEventArgs e)
         {
-            foreach (var child in this)
+            NotifyResourcesChanged(e);
+        }
+
+        private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            if (_notifyingResourcesChanged)
             {
-                (child as ISetResourceParent)?.ParentResourcesChanged(e);
+                return;
             }
 
-            ResourcesChanged?.Invoke(this, e);
-        }
-
-        private void SubResourceChanged(object sender, ResourcesChangedEventArgs e)
-        {
-            var foundSource = false;
-
-            foreach (var child in this)
+            try
             {
-                if (foundSource)
+                _notifyingResourcesChanged = true;
+                foreach (var child in this)
                 {
                     (child as ISetResourceParent)?.ParentResourcesChanged(e);
                 }
 
-                foundSource |= child == sender;
+                ResourcesChanged?.Invoke(this, e);
             }
-
-            ResourcesChanged?.Invoke(this, e);
+            finally
+            {
+                _notifyingResourcesChanged = false;
+            }
         }
     }
 }
