@@ -13,6 +13,7 @@ using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.MSBuild;
 using Nuke.Common.Utilities;
+using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
@@ -31,6 +32,8 @@ using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 
 partial class Build : NukeBuild
 {
+    [Solution("Avalonia.sln")] readonly Solution Solution;
+
     static Lazy<string> MsBuildExe = new Lazy<string>(() =>
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -93,27 +96,20 @@ partial class Build : NukeBuild
         string projectFile,
         Configure<MSBuildSettings> configurator = null)
     {
-        return MSBuild(c =>
-        {
-            c = c.SetProjectFile(projectFile);
-
+        return MSBuild(c => c
+            .SetProjectFile(projectFile)
             // This is required for VS2019 image on Azure Pipelines
-            if (Parameters.IsRunningOnWindows && Parameters.IsRunningOnAzure)
-            {
-                var javaSdk = Environment.GetEnvironmentVariable("JAVA_HOME_8_X64");
-                if (javaSdk != null)
-                    c = c.AddProperty("JavaSdkDirectory", javaSdk);
-            }
-
-            c = c.AddProperty("PackageVersion", Parameters.Version)
-                .AddProperty("iOSRoslynPathHackRequired", "true")
-                .SetToolPath(MsBuildExe.Value)
-                .SetConfiguration(Parameters.Configuration)
-                .SetVerbosity(MSBuildVerbosity.Minimal);
-            c = configurator?.Invoke(c) ?? c;
-            return c;
-        });
+            .When(Parameters.IsRunningOnWindows &&
+                  Parameters.IsRunningOnAzure, c => c
+                .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_8_X64")))
+            .AddProperty("PackageVersion", Parameters.Version)
+            .AddProperty("iOSRoslynPathHackRequired", true)
+            .SetToolPath(MsBuildExe.Value)
+            .SetConfiguration(Parameters.Configuration)
+            .SetVerbosity(MSBuildVerbosity.Minimal)
+            .Apply(configurator));
     }
+
     Target Clean => _ => _.Executes(() =>
     {
         Parameters.BuildDirs.ForEach(DeleteDirectory);
@@ -143,23 +139,12 @@ partial class Build : NukeBuild
                 );
         });
 
-    void RunCoreTest(string project)
+    void RunCoreTest(string projectName)
     {
-        if(!project.EndsWith(".csproj"))
-            project = System.IO.Path.Combine(project, System.IO.Path.GetFileName(project)+".csproj");
-        Information("Running tests from " + project);
-        XDocument xdoc;
-        using (var s = File.OpenRead(project))
-            xdoc = XDocument.Load(s);
+        Information($"Running tests from {projectName}");
+        var project = Solution.GetProject(projectName).NotNull("project != null");
 
-        List<string> frameworks = null;
-        var targets = xdoc.Root.Descendants("TargetFrameworks").FirstOrDefault();
-        if (targets != null)
-            frameworks = targets.Value.Split(';').Where(f => !string.IsNullOrWhiteSpace(f)).ToList();
-        else
-            frameworks = new List<string> {xdoc.Root.Descendants("TargetFramework").First().Value};
-
-        foreach(var fw in frameworks)
+        foreach (var fw in project.GetTargetFrameworks())
         {
             if (fw.StartsWith("net4")
                 && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
@@ -170,19 +155,16 @@ partial class Build : NukeBuild
             }
 
             Information("Running for " + fw);
-            DotNetTest(c =>
-            {
-                c = c
-                    .SetProjectFile(project)
-                    .SetConfiguration(Parameters.Configuration)
-                    .SetFramework(fw)
-                    .EnableNoBuild()
-                    .EnableNoRestore();
-                // NOTE: I can see that we could maybe add another extension method "Switch" or "If" to make this more  convenient
-                if (Parameters.PublishTestResults)
-                    c = c.SetLogger("trx").SetResultsDirectory(Parameters.TestResultsRoot);
-                return c;
-            });
+
+            DotNetTest(c => c
+                .SetProjectFile(project)
+                .SetConfiguration(Parameters.Configuration)
+                .SetFramework(fw)
+                .EnableNoBuild()
+                .EnableNoRestore()
+                .When(Parameters.PublishTestResults, c => c
+                    .SetLogger("trx")
+                    .SetResultsDirectory(Parameters.TestResultsRoot)));
         }
     }
 
@@ -191,19 +173,19 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("./tests/Avalonia.Animation.UnitTests");
-            RunCoreTest("./tests/Avalonia.Base.UnitTests");
-            RunCoreTest("./tests/Avalonia.Controls.UnitTests");
-            RunCoreTest("./tests/Avalonia.Controls.DataGrid.UnitTests");
-            RunCoreTest("./tests/Avalonia.Input.UnitTests");
-            RunCoreTest("./tests/Avalonia.Interactivity.UnitTests");
-            RunCoreTest("./tests/Avalonia.Layout.UnitTests");
-            RunCoreTest("./tests/Avalonia.Markup.UnitTests");
-            RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests");
-            RunCoreTest("./tests/Avalonia.Styling.UnitTests");
-            RunCoreTest("./tests/Avalonia.Visuals.UnitTests");
-            RunCoreTest("./tests/Avalonia.Skia.UnitTests");
-            RunCoreTest("./tests/Avalonia.ReactiveUI.UnitTests");
+            RunCoreTest("Avalonia.Animation.UnitTests");
+            RunCoreTest("Avalonia.Base.UnitTests");
+            RunCoreTest("Avalonia.Controls.UnitTests");
+            RunCoreTest("Avalonia.Controls.DataGrid.UnitTests");
+            RunCoreTest("Avalonia.Input.UnitTests");
+            RunCoreTest("Avalonia.Interactivity.UnitTests");
+            RunCoreTest("Avalonia.Layout.UnitTests");
+            RunCoreTest("Avalonia.Markup.UnitTests");
+            RunCoreTest("Avalonia.Markup.Xaml.UnitTests");
+            RunCoreTest("Avalonia.Styling.UnitTests");
+            RunCoreTest("Avalonia.Visuals.UnitTests");
+            RunCoreTest("Avalonia.Skia.UnitTests");
+            RunCoreTest("Avalonia.ReactiveUI.UnitTests");
         });
 
     Target RunRenderTests => _ => _
@@ -211,9 +193,9 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj");
+            RunCoreTest("Avalonia.Skia.RenderTests");
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj");
+                RunCoreTest("Avalonia.Direct2D1.RenderTests");
         });
 
     Target RunDesignerTests => _ => _
@@ -221,7 +203,7 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("./tests/Avalonia.DesignerSupport.Tests");
+            RunCoreTest("Avalonia.DesignerSupport.Tests");
         });
 
     [PackageExecutable("JetBrains.dotMemoryUnit", "dotMemoryUnit.exe")] readonly Tool DotMemoryUnit;
@@ -306,4 +288,12 @@ partial class Build : NukeBuild
             ? Execute<Build>(x => x.Package)
             : Execute<Build>(x => x.RunTests);
 
+}
+
+public static class ToolSettingsExtensions
+{
+    public static T Apply<T>(this T settings, Configure<T> configurator)
+    {
+        return configurator != null ? configurator(settings) : settings;
+    }
 }
