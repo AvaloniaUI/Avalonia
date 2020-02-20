@@ -132,8 +132,16 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         public void ExecuteInitialLayoutPass(ILayoutRoot root)
         {
-            Measure(root);
-            Arrange(root);
+            try
+            {
+                _running = true;
+                Measure(root);
+                Arrange(root);
+            }
+            finally
+            {
+                _running = false;
+            }
 
             // Running the initial layout pass may have caused some control to be invalidated
             // so run a full layout pass now (this usually due to scrollbars; its not known

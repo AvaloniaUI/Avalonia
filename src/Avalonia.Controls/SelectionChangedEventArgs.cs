@@ -16,13 +16,13 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the <see cref="SelectionChangedEventArgs"/> class.
         /// </summary>
         /// <param name="routedEvent">The event being raised.</param>
-        /// <param name="addedItems">The items added to the selection.</param>
         /// <param name="removedItems">The items removed from the selection.</param>
-        public SelectionChangedEventArgs(RoutedEvent routedEvent, IList addedItems, IList removedItems)
+        /// <param name="addedItems">The items added to the selection.</param>
+        public SelectionChangedEventArgs(RoutedEvent routedEvent, IList removedItems, IList addedItems)
             : base(routedEvent)
         {
-            AddedItems = addedItems;
             RemovedItems = removedItems;
+            AddedItems = addedItems;
         }
 
         /// <summary>

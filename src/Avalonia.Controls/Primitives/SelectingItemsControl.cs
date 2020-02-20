@@ -939,8 +939,8 @@ namespace Avalonia.Controls.Primitives
             {
                 var changed = new SelectionChangedEventArgs(
                     SelectionChangedEvent,
-                    added ?? Empty,
-                    removed ?? Empty);
+                    removed ?? Empty,
+                    added ?? Empty);
                 RaiseEvent(changed);
             }
         }
@@ -1055,8 +1055,8 @@ namespace Avalonia.Controls.Primitives
 
                 var e = new SelectionChangedEventArgs(
                     SelectionChangedEvent,
-                    added != -1 ? new[] { ElementAt(Items, added) } : Array.Empty<object>(),
-                    removed?.Select(x => ElementAt(Items, x)).ToArray() ?? Array.Empty<object>());
+                    removed?.Select(x => ElementAt(Items, x)).ToArray() ?? Array.Empty<object>(),
+                    added != -1 ? new[] { ElementAt(Items, added) } : Array.Empty<object>());
                 RaiseEvent(e);
             }
 

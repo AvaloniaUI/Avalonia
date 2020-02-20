@@ -51,6 +51,18 @@ namespace Avalonia.Base.UnitTests.Data.Converters
         }
 
         [Fact]
+        public void Can_Convert_String_To_TimeSpan()
+        {
+            var result = DefaultValueConverter.Instance.Convert(
+                "00:00:10",
+                typeof(TimeSpan),
+                null,
+                CultureInfo.InvariantCulture);
+
+            Assert.Equal(TimeSpan.FromSeconds(10), result);
+        }
+
+        [Fact]
         public void Can_Convert_Int_To_Enum()
         {
             var result = DefaultValueConverter.Instance.Convert(

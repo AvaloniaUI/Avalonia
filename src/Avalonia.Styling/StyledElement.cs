@@ -488,83 +488,6 @@ namespace Avalonia
             InheritanceParent = parent;
         }
 
-        /// <summary>
-        /// Adds a pseudo-class to be set when a property is true.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="className">The pseudo-class.</param>
-        [Obsolete("Use PseudoClass<TOwner> and specify the control type.")]
-        protected static void PseudoClass(AvaloniaProperty<bool> property, string className)
-        {
-            PseudoClass<StyledElement>(property, className);
-        }
-
-        /// <summary>
-        /// Adds a pseudo-class to be set when a property is true.
-        /// </summary>
-        /// <typeparam name="TOwner">The type to apply the pseudo-class to.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="className">The pseudo-class.</param>
-        protected static void PseudoClass<TOwner>(AvaloniaProperty<bool> property, string className)
-            where TOwner : class, IStyledElement
-        {
-            PseudoClass<TOwner, bool>(property, x => x, className);
-        }
-
-        /// <summary>
-        /// Adds a pseudo-class to be set when a property equals a certain value.
-        /// </summary>
-        /// <typeparam name="TProperty">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="selector">Returns a boolean value based on the property value.</param>
-        /// <param name="className">The pseudo-class.</param>
-        [Obsolete("Use PseudoClass<TOwner, TProperty> and specify the control type.")]
-        protected static void PseudoClass<TProperty>(
-            AvaloniaProperty<TProperty> property,
-            Func<TProperty, bool> selector,
-            string className)
-        {
-            PseudoClass<StyledElement, TProperty>(property, selector, className);
-        }
-
-        /// <summary>
-        /// Adds a pseudo-class to be set when a property equals a certain value.
-        /// </summary>
-        /// <typeparam name="TProperty">The type of the property.</typeparam>
-        /// <typeparam name="TOwner">The type to apply the pseudo-class to.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="selector">Returns a boolean value based on the property value.</param>
-        /// <param name="className">The pseudo-class.</param>
-        protected static void PseudoClass<TOwner, TProperty>(
-            AvaloniaProperty<TProperty> property,
-            Func<TProperty, bool> selector,
-            string className)
-                where TOwner : class, IStyledElement
-        {
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
-            Contract.Requires<ArgumentNullException>(className != null);
-
-            if (string.IsNullOrWhiteSpace(className))
-            {
-                throw new ArgumentException("Cannot supply an empty className.");
-            }
-
-            property.Changed.Merge(property.Initialized)
-                .Where(e => e.Sender is TOwner)
-                .Subscribe(e =>
-                {
-                    if (selector((TProperty)e.NewValue))
-                    {
-                        ((StyledElement)e.Sender).PseudoClasses.Add(className);
-                    }
-                    else
-                    {
-                        ((StyledElement)e.Sender).PseudoClasses.Remove(className);
-                    }
-                });
-        }
-
         protected virtual void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
@@ -650,9 +573,12 @@ namespace Avalonia
                     element._dataContextUpdating = true;
                     element.OnDataContextBeginUpdate();
 
-                    foreach (var child in element.LogicalChildren)
+                    var logicalChildren = element.LogicalChildren;
+                    var logicalChildrenCount = logicalChildren.Count;
+
+                    for (var i = 0; i < logicalChildrenCount; i++)
                     {
-                        if (child is StyledElement s &&
+                        if (element.LogicalChildren[i] is StyledElement s &&
                             s.InheritanceParent == element &&
                             !s.IsSet(DataContextProperty))
                         {
@@ -723,9 +649,15 @@ namespace Avalonia
                 AttachedToLogicalTree?.Invoke(this, e);
             }
 
-            foreach (var child in LogicalChildren.OfType<StyledElement>())
+            var logicalChildren = LogicalChildren;
+            var logicalChildrenCount = logicalChildren.Count;
+
+            for (var i = 0; i < logicalChildrenCount; i++)
             {
-                child.OnAttachedToLogicalTreeCore(e);
+                if (logicalChildren[i] is StyledElement child)
+                {
+                    child.OnAttachedToLogicalTreeCore(e);
+                }
             }
         }
 
@@ -738,9 +670,15 @@ namespace Avalonia
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
 
-                foreach (var child in LogicalChildren.OfType<StyledElement>())
+                var logicalChildren = LogicalChildren;
+                var logicalChildrenCount = logicalChildren.Count;
+
+                for (var i = 0; i < logicalChildrenCount; i++)
                 {
-                    child.OnDetachedFromLogicalTreeCore(e);
+                    if (logicalChildren[i] is StyledElement child)
+                    {
+                        child.OnDetachedFromLogicalTreeCore(e);
+                    }
                 }
 
 #if DEBUG

@@ -65,6 +65,30 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Vector(10, 10), target.Offset);
         }
 
+        [Fact]
+        public void Test_ScrollToHome()
+        {
+            var target = new ScrollViewer();
+            target.SetValue(ScrollViewer.ExtentProperty, new Size(50, 50));
+            target.SetValue(ScrollViewer.ViewportProperty, new Size(10, 10));
+            target.Offset = new Vector(25, 25);
+            target.ScrollToHome();
+
+            Assert.Equal(new Vector(0, 0), target.Offset);
+        }
+
+        [Fact]
+        public void Test_ScrollToEnd()
+        {
+            var target = new ScrollViewer();
+            target.SetValue(ScrollViewer.ExtentProperty, new Size(50, 50));
+            target.SetValue(ScrollViewer.ViewportProperty, new Size(10, 10));
+            target.Offset = new Vector(25, 25);
+            target.ScrollToEnd();
+
+            Assert.Equal(new Vector(0, 40), target.Offset);
+        }
+
         private Control CreateTemplate(ScrollViewer control, INameScope scope)
         {
             return new Grid
