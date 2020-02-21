@@ -63,7 +63,7 @@ namespace Avalonia.Input
         event EventHandler<PointerReleasedEventArgs> PointerReleased;
 
         /// <summary>
-        /// Occurs when the mouse wheen is scrolled over the control.
+        /// Occurs when the mouse wheel is scrolled over the control.
         /// </summary>
         event EventHandler<PointerWheelEventArgs> PointerWheelChanged;
 
