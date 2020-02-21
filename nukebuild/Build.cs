@@ -113,7 +113,7 @@ partial class Build : NukeBuild
     Target Clean => _ => _.Executes(() =>
     {
         Parameters.BuildDirs.ForEach(DeleteDirectory);
-        Parameters.BuildDirs.ForEach(DeleteDirectory);
+        Parameters.BuildDirs.ForEach(EnsureCleanDirectory);
         EnsureCleanDirectory(Parameters.ArtifactsDir);
         EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
         EnsureCleanDirectory(Parameters.NugetRoot);
