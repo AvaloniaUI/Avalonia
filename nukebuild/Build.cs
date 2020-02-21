@@ -150,11 +150,11 @@ partial class Build : NukeBuild
                 && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
                 && Environment.GetEnvironmentVariable("FORCE_LINUX_TESTS") != "1")
             {
-                Information($"Skipping {fw} tests on Linux - https://github.com/mono/mono/issues/13969");
+                Information($"Skipping {projectName} ({fw}) tests on Linux - https://github.com/mono/mono/issues/13969");
                 continue;
             }
 
-            Information("Running for " + fw);
+            Information($"Running for {projectName} ({fw}) ...");
 
             DotNetTest(c => c
                 .SetProjectFile(project)
