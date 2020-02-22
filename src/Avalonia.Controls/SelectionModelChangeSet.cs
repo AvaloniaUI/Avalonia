@@ -7,7 +7,7 @@ namespace Avalonia.Controls
 {
     internal class SelectionModelChangeSet
     {
-        private List<SelectionNodeOperation> _changes;
+        private readonly List<SelectionNodeOperation> _changes;
 
         public SelectionModelChangeSet(List<SelectionNodeOperation> changes)
         {
@@ -63,7 +63,7 @@ namespace Avalonia.Controls
         {
             static int GetCount(SelectionNodeOperation info) => info.DeselectedCount;
             static List<IndexRange>? GetRanges(SelectionNodeOperation info) => info.DeselectedRanges;
-            return GetIndexAt(infos, index, GetCount, GetRanges);
+            return GetIndexAt(infos, index, x => GetCount(x), x => GetRanges(x));
         }
 
         private IndexPath GetSelectedIndexAt(
@@ -72,7 +72,7 @@ namespace Avalonia.Controls
         {
             static int GetCount(SelectionNodeOperation info) => info.SelectedCount;
             static List<IndexRange>? GetRanges(SelectionNodeOperation info) => info.SelectedRanges;
-            return GetIndexAt(infos, index, GetCount, GetRanges);
+            return GetIndexAt(infos, index, x => GetCount(x), x => GetRanges(x));
         }
 
         private object? GetDeselectedItemAt(
@@ -81,7 +81,7 @@ namespace Avalonia.Controls
         {
             static int GetCount(SelectionNodeOperation info) => info.Items != null ? info.DeselectedCount : 0;
             static List<IndexRange>? GetRanges(SelectionNodeOperation info) => info.DeselectedRanges;
-            return GetItemAt(infos, index, GetCount, GetRanges);
+            return GetItemAt(infos, index, x => GetCount(x), x => GetRanges(x));
         }
 
         private object? GetSelectedItemAt(
@@ -90,7 +90,7 @@ namespace Avalonia.Controls
         {
             static int GetCount(SelectionNodeOperation info) => info.Items != null ? info.SelectedCount : 0;
             static List<IndexRange>? GetRanges(SelectionNodeOperation info) => info.SelectedRanges;
-            return GetItemAt(infos, index, GetCount, GetRanges);
+            return GetItemAt(infos, index, x => GetCount(x), x => GetRanges(x));
         }
 
         private IndexPath GetIndexAt(
