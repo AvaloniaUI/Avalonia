@@ -84,17 +84,6 @@ namespace Avalonia.Controls.Primitives
             return base.CreateFormattedText(constraint, StripAccessKey(text));
         }
 
-        /// <summary>
-        /// Measures the control.
-        /// </summary>
-        /// <param name="availableSize">The available size for the control.</param>
-        /// <returns>The desired size.</returns>
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            var result = base.MeasureOverride(availableSize);
-            return result.WithHeight(result.Height + 1);
-        }
-
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
