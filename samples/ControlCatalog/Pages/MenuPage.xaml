@@ -16,13 +16,13 @@
                 <TextBlock Classes="h3" Margin="4 8">Defined in XAML</TextBlock>
                 <Menu>
                     <MenuItem Header="_First">
-                        <MenuItem Header="Standard _Menu Item"/>
+                        <MenuItem Header="Standard _Menu Item" InputGestureText="Ctrl+A"/>
                         <Separator/>
                         <MenuItem Header="Menu with _Submenu">
                             <MenuItem Header="Submenu _1"/>
                             <MenuItem Header="Submenu _2"/>
                         </MenuItem>
-                        <MenuItem Header="Menu Item with _Icon">
+                        <MenuItem Header="Menu Item with _Icon" InputGestureText="Ctrl+Shift+B">
                             <MenuItem.Icon>
                                 <Image Source="/Assets/github_icon.png"/>
                             </MenuItem.Icon>
