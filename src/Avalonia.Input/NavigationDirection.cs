@@ -100,12 +100,12 @@ namespace Avalonia.Input
         /// </returns>
         public static NavigationDirection? ToNavigationDirection(
             this Key key,
-            InputModifiers modifiers = InputModifiers.None)
+            KeyModifiers modifiers = KeyModifiers.None)
         {
             switch (key)
             {
                 case Key.Tab:
-                    return (modifiers & InputModifiers.Shift) != 0 ?
+                    return (modifiers & KeyModifiers.Shift) != 0 ?
                         NavigationDirection.Next : NavigationDirection.Previous;
                 case Key.Up:
                     return NavigationDirection.Up;
