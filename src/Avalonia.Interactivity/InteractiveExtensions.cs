@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
 
 namespace Avalonia.Interactivity
@@ -30,6 +28,9 @@ namespace Avalonia.Interactivity
             bool handledEventsToo = false)
                 where TEventArgs : RoutedEventArgs
         {
+            o = o ?? throw new ArgumentNullException(nameof(o));
+            routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
+
             return Observable.Create<TEventArgs>(x => o.AddHandler(
                 routedEvent, 
                 (_, e) => x.OnNext(e), 

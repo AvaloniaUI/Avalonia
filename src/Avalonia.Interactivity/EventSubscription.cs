@@ -9,12 +9,24 @@ namespace Avalonia.Interactivity
 
     internal class EventSubscription
     {
-        public HandlerInvokeSignature InvokeAdapter { get; set; }
+        public EventSubscription(
+            Delegate handler,
+            RoutingStrategies routes,
+            bool handledEventsToo,
+            HandlerInvokeSignature? invokeAdapter = null)
+        {
+            Handler = handler;
+            Routes = routes;
+            HandledEventsToo = handledEventsToo;
+            InvokeAdapter = invokeAdapter;
+        }
 
-        public Delegate Handler { get; set; }
+        public HandlerInvokeSignature? InvokeAdapter { get; }
 
-        public RoutingStrategies Routes { get; set; }
+        public Delegate Handler { get; }
 
-        public bool AlsoIfHandled { get; set; }
+        public RoutingStrategies Routes { get; }
+
+        public bool HandledEventsToo { get; }
     }
 }

@@ -15,16 +15,16 @@ namespace Avalonia.Interactivity
     /// </summary>
     public class Interactive : Layoutable, IInteractive
     {
-        private Dictionary<RoutedEvent, List<EventSubscription>> _eventHandlers;
+        private Dictionary<RoutedEvent, List<EventSubscription>>? _eventHandlers;
 
         private static readonly Dictionary<Type, HandlerInvokeSignature> s_invokeHandlerCache = new Dictionary<Type, HandlerInvokeSignature>();
 
         /// <summary>
         /// Gets the interactive parent of the object for bubbling and tunneling events.
         /// </summary>
-        IInteractive IInteractive.InteractiveParent => ((IVisual)this).VisualParent as IInteractive;
+        IInteractive? IInteractive.InteractiveParent => ((IVisual)this).VisualParent as IInteractive;
 
-        private Dictionary<RoutedEvent, List<EventSubscription>> EventHandlers => _eventHandlers ?? (_eventHandlers = new Dictionary<RoutedEvent, List<EventSubscription>>());
+        private Dictionary<RoutedEvent, List<EventSubscription>> EventHandlers => _eventHandlers ??= new Dictionary<RoutedEvent, List<EventSubscription>>();
 
         /// <summary>
         /// Adds a handler for the specified routed event.
@@ -40,16 +40,10 @@ namespace Avalonia.Interactivity
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false)
         {
-            Contract.Requires<ArgumentNullException>(routedEvent != null);
-            Contract.Requires<ArgumentNullException>(handler != null);
+            routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
+            handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
-            var subscription = new EventSubscription
-            {
-                Handler = handler,
-                Routes = routes,
-                AlsoIfHandled = handledEventsToo,
-            };
-
+            var subscription = new EventSubscription(handler, routes, handledEventsToo);
             return AddEventSubscription(routedEvent, subscription);
         }
 
@@ -68,12 +62,12 @@ namespace Avalonia.Interactivity
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false) where TEventArgs : RoutedEventArgs
         {
-            Contract.Requires<ArgumentNullException>(routedEvent != null);
-            Contract.Requires<ArgumentNullException>(handler != null);
+            routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
+            handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
             // EventHandler delegate is not covariant, this forces us to create small wrapper
             // that will cast our type erased instance and invoke it.
-            Type eventArgsType = routedEvent.EventArgsType;
+            var eventArgsType = routedEvent.EventArgsType;
 
             if (!s_invokeHandlerCache.TryGetValue(eventArgsType, out var invokeAdapter))
             {
@@ -90,14 +84,7 @@ namespace Avalonia.Interactivity
                 s_invokeHandlerCache.Add(eventArgsType, invokeAdapter);
             }
 
-            var subscription = new EventSubscription
-            {
-                InvokeAdapter = invokeAdapter,
-                Handler = handler,
-                Routes = routes,
-                AlsoIfHandled = handledEventsToo,
-            };
-
+            var subscription = new EventSubscription(handler, routes, handledEventsToo, invokeAdapter);
             return AddEventSubscription(routedEvent, subscription);
         }
 
@@ -108,12 +95,11 @@ namespace Avalonia.Interactivity
         /// <param name="handler">The handler.</param>
         public void RemoveHandler(RoutedEvent routedEvent, Delegate handler)
         {
-            Contract.Requires<ArgumentNullException>(routedEvent != null);
-            Contract.Requires<ArgumentNullException>(handler != null);
+            routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
+            handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
-            List<EventSubscription> subscriptions = null;
-
-            if (_eventHandlers?.TryGetValue(routedEvent, out subscriptions) == true)
+            if (_eventHandlers is object &&
+                _eventHandlers.TryGetValue(routedEvent, out var subscriptions) == true)
             {
                 subscriptions.RemoveAll(x => x.Handler == handler);
             }
@@ -137,9 +123,14 @@ namespace Avalonia.Interactivity
         /// <param name="e">The event args.</param>
         public void RaiseEvent(RoutedEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            e = e ?? throw new ArgumentNullException(nameof(e));
 
-            e.Source = e.Source ?? this;
+            if (e.RoutedEvent == null)
+            {
+                throw new ArgumentException("Cannot raise an event whose RoutedEvent is null.");
+            }
+
+            e.Source ??= this;
 
             if (e.RoutedEvent.RoutingStrategies == RoutingStrategies.Direct)
             {
@@ -167,7 +158,7 @@ namespace Avalonia.Interactivity
         /// <param name="e">The event args.</param>
         private void BubbleEvent(RoutedEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            e = e ?? throw new ArgumentNullException(nameof(e));
 
             e.Route = RoutingStrategies.Bubble;
 
@@ -182,7 +173,7 @@ namespace Avalonia.Interactivity
         /// <param name="e">The event args.</param>
         private void TunnelEvent(RoutedEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            e = e ?? throw new ArgumentNullException(nameof(e));
 
             e.Route = RoutingStrategies.Tunnel;
 
@@ -197,18 +188,17 @@ namespace Avalonia.Interactivity
         /// <param name="e">The event args.</param>
         private void RaiseEventImpl(RoutedEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            e = e ?? throw new ArgumentNullException(nameof(e));
 
-            e.RoutedEvent.InvokeRaised(this, e);
+            e.RoutedEvent!.InvokeRaised(this, e);
 
-            List<EventSubscription> subscriptions = null;
-
-            if (_eventHandlers?.TryGetValue(e.RoutedEvent, out subscriptions) == true)
+            if (_eventHandlers is object && 
+                _eventHandlers.TryGetValue(e.RoutedEvent, out var subscriptions) == true)
             {
                 foreach (var sub in subscriptions.ToList())
                 {
                     bool correctRoute = (e.Route & sub.Routes) != 0;
-                    bool notFinished = !e.Handled || sub.AlsoIfHandled;
+                    bool notFinished = !e.Handled || sub.HandledEventsToo;
 
                     if (correctRoute && notFinished)
                     {
@@ -313,7 +303,7 @@ namespace Avalonia.Interactivity
             {
                 _preTraverse.Execute(target, _args);
 
-                IInteractive parent = target.InteractiveParent;
+                var parent = target.InteractiveParent;
 
                 if (parent != null)
                 {
