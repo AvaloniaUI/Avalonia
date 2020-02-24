@@ -210,6 +210,29 @@ namespace Avalonia.Interactivity
             return new UnsubscribeDisposable(subscriptions, subscription);
         }
 
+        private sealed class EventSubscription
+        {
+            public EventSubscription(
+                Delegate handler,
+                RoutingStrategies routes,
+                bool handledEventsToo,
+                Action<Delegate, object, RoutedEventArgs>? invokeAdapter = null)
+            {
+                Handler = handler;
+                Routes = routes;
+                HandledEventsToo = handledEventsToo;
+                InvokeAdapter = invokeAdapter;
+            }
+
+            public Action<Delegate, object, RoutedEventArgs>? InvokeAdapter { get; }
+
+            public Delegate Handler { get; }
+
+            public RoutingStrategies Routes { get; }
+
+            public bool HandledEventsToo { get; }
+        }
+
         private sealed class UnsubscribeDisposable : IDisposable
         {
             private readonly List<EventSubscription> _subscriptions;
