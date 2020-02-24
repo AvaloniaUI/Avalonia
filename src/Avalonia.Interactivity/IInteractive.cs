@@ -61,6 +61,13 @@ namespace Avalonia.Interactivity
             where TEventArgs : RoutedEventArgs;
 
         /// <summary>
+        /// Adds the object's handlers for a routed event to an event route.
+        /// </summary>
+        /// <param name="routedEvent">The event.</param>
+        /// <param name="route">The event route.</param>
+        void AddToEventRoute(RoutedEvent routedEvent, EventRoute route);
+
+        /// <summary>
         /// Raises a routed event.
         /// </summary>
         /// <param name="e">The event args.</param>

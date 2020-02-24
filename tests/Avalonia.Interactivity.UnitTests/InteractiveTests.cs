@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using Xunit;
 

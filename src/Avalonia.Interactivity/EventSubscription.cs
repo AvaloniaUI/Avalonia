@@ -5,15 +5,13 @@ using System;
 
 namespace Avalonia.Interactivity
 {
-    internal delegate void HandlerInvokeSignature(Delegate baseHandler, object sender, RoutedEventArgs args);
-
     internal class EventSubscription
     {
         public EventSubscription(
             Delegate handler,
             RoutingStrategies routes,
             bool handledEventsToo,
-            HandlerInvokeSignature? invokeAdapter = null)
+            Action<Delegate, object, RoutedEventArgs>? invokeAdapter = null)
         {
             Handler = handler;
             Routes = routes;
@@ -21,7 +19,7 @@ namespace Avalonia.Interactivity
             InvokeAdapter = invokeAdapter;
         }
 
-        public HandlerInvokeSignature? InvokeAdapter { get; }
+        public Action<Delegate, object, RoutedEventArgs>? InvokeAdapter { get; }
 
         public Delegate Handler { get; }
 

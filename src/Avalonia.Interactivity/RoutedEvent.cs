@@ -48,6 +48,8 @@ namespace Avalonia.Interactivity
 
         public RoutingStrategies RoutingStrategies { get; }
 
+        public bool HasRaisedSubscriptions => _raised.HasObservers;
+
         public IObservable<(object, RoutedEventArgs)> Raised => _raised;
         public IObservable<RoutedEventArgs> RouteFinished => _routeFinished;
 
