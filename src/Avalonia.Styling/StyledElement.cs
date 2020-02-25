@@ -209,11 +209,10 @@ namespace Avalonia
         {
             get
             {
-                if (_styles is null)
+                if (_styles == null)
                 {
                     _styles = new Styles(this);
                     _styles.ResourcesChanged += ThisResourcesChanged;
-                    NotifyResourcesChanged(new ResourcesChangedEventArgs());
                 }
 
                 return _styles;
