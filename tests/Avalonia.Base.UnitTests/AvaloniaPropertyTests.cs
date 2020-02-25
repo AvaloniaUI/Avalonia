@@ -146,7 +146,7 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
-            internal override void RouteSetValue(
+            internal override IDisposable RouteSetValue(
                 IAvaloniaObject o,
                 object value,
                 BindingPriority priority)

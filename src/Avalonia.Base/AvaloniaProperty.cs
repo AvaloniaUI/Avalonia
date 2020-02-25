@@ -496,7 +496,10 @@ namespace Avalonia
         /// <param name="o">The object instance.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority.</param>
-        internal abstract void RouteSetValue(
+        /// <returns>
+        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
+        /// </returns>
+        internal abstract IDisposable? RouteSetValue(
             IAvaloniaObject o,
             object value,
             BindingPriority priority);

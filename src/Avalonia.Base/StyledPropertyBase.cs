@@ -194,7 +194,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        internal override void RouteSetValue(
+        internal override IDisposable RouteSetValue(
             IAvaloniaObject o,
             object value,
             BindingPriority priority)
@@ -203,7 +203,7 @@ namespace Avalonia
 
             if (v.HasValue)
             {
-                o.SetValue<TValue>(this, (TValue)v.Value, priority);
+                return o.SetValue<TValue>(this, (TValue)v.Value, priority);
             }
             else if (v.Type == BindingValueType.UnsetValue)
             {
@@ -213,6 +213,8 @@ namespace Avalonia
             {
                 throw v.Error;
             }
+
+            return null;
         }
 
         /// <inheritdoc/>
