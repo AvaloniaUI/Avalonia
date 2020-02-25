@@ -167,8 +167,7 @@ namespace Avalonia
             {
                 if (_styles == null)
                 {
-                    _styles = new Styles();
-                    ((ISetResourceParent)_styles).SetParent(this);
+                    _styles = new Styles(this);
                     _styles.ResourcesChanged += ThisResourcesChanged;
                 }
 

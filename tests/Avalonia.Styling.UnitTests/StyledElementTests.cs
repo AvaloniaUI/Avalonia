@@ -544,28 +544,6 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Assigned_Styles_Parent_Is_Set()
-        {
-            var styles = new Styles();
-            var target = new TestControl { Styles = styles };
-
-            Assert.Same(target, ((IResourceNode)styles).ResourceParent);
-        }
-
-        [Fact]
-        public void Assigning_Styles_Raises_ResourcesChanged()
-        {
-            var styles = new Styles { Resources = { { "foo", "bar" } } };
-            var target = new TestControl();
-            var raised = 0;
-
-            target.ResourcesChanged += (s, e) => ++raised;
-            target.Styles = styles;
-
-            Assert.Equal(1, raised);
-        }
-
-        [Fact]
         public void Changing_Parent_Notifies_Styles_ParentResourcesChanged()
         {
             var style = new Mock<IStyle>();

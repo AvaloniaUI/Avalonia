@@ -215,29 +215,15 @@ namespace Avalonia
         /// </remarks>
         public Styles Styles
         {
-            get { return _styles ?? (Styles = new Styles()); }
-            set
+            get
             {
-                Contract.Requires<ArgumentNullException>(value != null);
-
-                if (_styles != value)
+                if (_styles == null)
                 {
-                    if (_styles != null)
-                    {
-                        (_styles as ISetResourceParent)?.SetParent(null);
-                        _styles.ResourcesChanged -= ThisResourcesChanged;
-                    }
-
-                    _styles = value;
-
-                    if (value is ISetResourceParent setParent && setParent.ResourceParent == null)
-                    {
-                        setParent.SetParent(this);
-                    }
-
+                    _styles = new Styles(this);
                     _styles.ResourcesChanged += ThisResourcesChanged;
-                    NotifyResourcesChanged(new ResourcesChangedEventArgs());
                 }
+
+                return _styles;
             }
         }
 

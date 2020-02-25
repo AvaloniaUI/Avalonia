@@ -61,6 +61,12 @@ namespace Avalonia.Styling
                 () => { });
         }
 
+        public Styles(IResourceNode parent)
+            : this()
+        {
+            _parent = parent;
+        }
+
         public event NotifyCollectionChangedEventHandler CollectionChanged
         {
             add => _styles.CollectionChanged += value;
