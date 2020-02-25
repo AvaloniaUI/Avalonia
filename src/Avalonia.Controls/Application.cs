@@ -44,6 +44,7 @@ namespace Avalonia
         private readonly Styler _styler = new Styler();
         private Styles _styles;
         private IResourceDictionary _resources;
+        private bool _notifyingResourcesChanged;
 
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -160,7 +161,20 @@ namespace Avalonia
         /// <remarks>
         /// Global styles apply to all windows in the application.
         /// </remarks>
-        public Styles Styles => _styles ?? (_styles = new Styles());
+        public Styles Styles
+        {
+            get
+            {
+                if (_styles == null)
+                {
+                    _styles = new Styles();
+                    ((ISetResourceParent)_styles).SetParent(this);
+                    _styles.ResourcesChanged += ThisResourcesChanged;
+                }
+
+                return _styles;
+            }
+        }
 
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
@@ -233,9 +247,29 @@ namespace Avalonia
             
         }
 
+        private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            if (_notifyingResourcesChanged)
+            {
+                return;
+            }
+
+            try
+            {
+                _notifyingResourcesChanged = true;
+                (_resources as ISetResourceParent)?.ParentResourcesChanged(e);
+                (_styles as ISetResourceParent)?.ParentResourcesChanged(e);
+                ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+            }
+            finally
+            {
+                _notifyingResourcesChanged = false;
+            }
+        }
+
         private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
         {
-            ResourcesChanged?.Invoke(this, e);
+            NotifyResourcesChanged(e);
         }
 
         private string _name;
