@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using Avalonia.Data;
 using Avalonia.Reactive;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -167,6 +168,12 @@ namespace Avalonia
             HasCoercion |= metadata.CoerceValue != null;
 
             base.OverrideMetadata(type, metadata);
+        }
+
+        /// <inheritdoc/>
+        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
+        {
+            vistor.Visit(this, ref data);
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Data;
 using Avalonia.Reactive;
+using Avalonia.Utilities;
 
 #nullable enable
 
@@ -99,6 +100,12 @@ namespace Avalonia
         public new DirectPropertyMetadata<TValue> GetMetadata(Type type)
         {
             return (DirectPropertyMetadata<TValue>)base.GetMetadata(type);
+        }
+
+        /// <inheritdoc/>
+        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
+        {
+            vistor.Visit(this, ref data);
         }
 
         /// <inheritdoc/>

@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Data;
+using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -121,6 +122,11 @@ namespace Avalonia.Base.UnitTests
             public void OverrideMetadata<T>(PropertyMetadata metadata)
             {
                 OverrideMetadata(typeof(T), metadata);
+            }
+
+            public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
+            {
+                throw new NotImplementedException();
             }
 
             internal override IDisposable RouteBind(
