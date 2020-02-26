@@ -70,8 +70,7 @@ namespace Avalonia.Styling
 
         protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
         {
-            IStyleActivator? activator = null;
-            OrActivator? activators = null;
+            var activators = new OrActivatorBuilder();
             var neverThisInstance = false;
 
             foreach (var selector in _selectors)
@@ -87,32 +86,14 @@ namespace Avalonia.Styling
                         neverThisInstance = true;
                         break;
                     case SelectorMatchResult.Sometimes:
-                        if (activator is null && activators is null)
-                        {
-                            activator = match.Activator;
-                        }
-                        else
-                        {
-                            if (activators is null)
-                            {
-                                activators = new OrActivator();
-                                activators.Add(activator!);
-                                activator = null;
-                            }
-
-                            activators.Add(match.Activator!);
-                        }
+                        activators.Add(match.Activator!);
                         break;
                 }
             }
 
-            if (activators is object)
+            if (activators.Count > 0)
             {
-                return new SelectorMatch(activators);
-            }
-            else if (activator is object)
-            {
-                return new SelectorMatch(activator);
+                return new SelectorMatch(activators.Get());
             }
             else if (neverThisInstance)
             {

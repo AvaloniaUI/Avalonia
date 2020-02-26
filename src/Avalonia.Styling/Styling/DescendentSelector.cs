@@ -41,8 +41,7 @@ namespace Avalonia.Styling
         protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
         {
             var c = (ILogical)control;
-            IStyleActivator? descendentMatch = null;
-            OrActivator? descendantMatches = null;
+            var descendantMatches = new OrActivatorBuilder();
 
             while (c != null)
             {
@@ -54,21 +53,7 @@ namespace Avalonia.Styling
 
                     if (match.Result == SelectorMatchResult.Sometimes)
                     {
-                        if (descendentMatch is null && descendantMatches is null)
-                        {
-                            descendentMatch = match.Activator;
-                        }
-                        else
-                        {
-                            if (descendantMatches is null)
-                            {
-                                descendantMatches = new OrActivator();
-                                descendantMatches.Add(descendentMatch!);
-                                descendentMatch = null;
-                            }
-
-                            descendantMatches.Add(match.Activator!);
-                        }
+                        descendantMatches.Add(match.Activator);
                     }
                     else if (match.IsMatch)
                     {
@@ -77,13 +62,9 @@ namespace Avalonia.Styling
                 }
             }
 
-            if (descendantMatches is object)
+            if (descendantMatches.Count > 0)
             {
-                return new SelectorMatch(descendantMatches);
-            }
-            else if (descendentMatch is object)
-            {
-                return new SelectorMatch(descendentMatch);
+                return new SelectorMatch(descendantMatches.Get());
             }
             else
             {
