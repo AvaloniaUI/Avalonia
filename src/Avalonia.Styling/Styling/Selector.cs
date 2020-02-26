@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using Avalonia.Utilities;
+using Avalonia.Styling.Activators;
+
+#nullable enable
 
 namespace Avalonia.Styling
 {
@@ -30,7 +30,7 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets the target type of the selector, if available.
         /// </summary>
-        public abstract Type TargetType { get; }
+        public abstract Type? TargetType { get; }
 
         /// <summary>
         /// Tries to match the selector with a control.
@@ -43,8 +43,8 @@ namespace Avalonia.Styling
         /// <returns>A <see cref="SelectorMatch"/>.</returns>
         public SelectorMatch Match(IStyleable control, bool subscribe = true)
         {
-            ValueSingleOrList<IObservable<bool>> inputs = default;
-
+            IStyleActivator? activator = null;
+            AndActivator? activators = null;
             var selector = this;
             var alwaysThisType = true;
             var hitCombinator = false;
@@ -69,21 +69,39 @@ namespace Avalonia.Styling
                 }
                 else if (match.Result == SelectorMatchResult.Sometimes)
                 {
-                    Debug.Assert(match.Activator != null);
+                    if (match.Activator is null)
+                    {
+                        throw new AvaloniaInternalException(
+                            "SelectorMatch returned Sometimes but there is no activator.");
+                    }
 
-                    inputs.Add(match.Activator);
+                    if (activator is null && activators is null)
+                    {
+                        activator = match.Activator;
+                    }
+                    else
+                    {
+                        if (activators is null)
+                        {
+                            activators = new AndActivator();
+                            activators.Add(activator!);
+                            activator = null;
+                        }
+
+                        activators.Add(match.Activator);
+                    }
                 }
 
                 selector = selector.MovePrevious();
             }
 
-            if (inputs.HasList)
+            if (activators is object)
             {
-                return new SelectorMatch(StyleActivator.And(inputs.List));
+                return new SelectorMatch(activators);
             }
-            else if (inputs.IsSingle)
+            else if (activator is object)
             {
-                return new SelectorMatch(inputs.Single);
+                return new SelectorMatch(activator);
             }
             else
             {
@@ -107,6 +125,6 @@ namespace Avalonia.Styling
         /// <summary>
         /// Moves to the previous selector.
         /// </summary>
-        protected abstract Selector MovePrevious();
+        protected abstract Selector? MovePrevious();
     }
 }

@@ -33,7 +33,7 @@ namespace Avalonia.Styling.UnitTests
             var style = Mock.Of<IStyle>();
             var setter = new Setter(TextBlock.TextProperty, binding);
 
-            setter.Apply(style, control, null);
+            setter.Instance(control, false).Activate();
 
             Assert.Equal("foo", control.Text);
         }
@@ -46,7 +46,7 @@ namespace Avalonia.Styling.UnitTests
             var style = Mock.Of<IStyle>();
             var setter = new Setter(Decorator.ChildProperty, template);
 
-            setter.Apply(style, control, null);
+            setter.Instance(control, false).Activate();
 
             Assert.IsType<Canvas>(control.Child);
         }
@@ -62,13 +62,13 @@ namespace Avalonia.Styling.UnitTests
                 RelativeSource = new RelativeSource(RelativeSourceMode.Self),
             };
             var setter = new Setter(Decorator.TagProperty, binding);
-            var activator = new BehaviorSubject<bool>(true);
 
-            setter.Apply(style, control, activator);
+            var instance = setter.Instance(control, true);
+            instance.Activate();
             Assert.Equal("foobar", control.Tag);
 
             // Issue #1218 caused TestConverter.ConvertBack to throw here.
-            activator.OnNext(false);
+            instance.Deactivate();
             Assert.Null(control.Tag);
         }
 
@@ -77,13 +77,14 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Mock<IStyleable>();
             var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TextProperty, "foo");
+            var setter = new Setter(TextBlock.TagProperty, "foo");
 
-            setter.Apply(style, control.Object, null);
+            setter.Instance(control.Object, false).Activate();
 
-            control.Verify(x => x.Bind(
-                TextBlock.TextProperty,
-                It.IsAny<IObservable<BindingValue<string>>>()));
+            control.Verify(x => x.SetValue(
+                TextBlock.TagProperty,
+                "foo",
+                BindingPriority.Style));
         }
 
         [Fact]
@@ -91,14 +92,15 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Mock<IStyleable>();
             var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TextProperty, "foo");
+            var setter = new Setter(TextBlock.TagProperty, "foo");
             var activator = new Subject<bool>();
 
-            setter.Apply(style, control.Object, activator);
+            setter.Instance(control.Object, true).Activate();
 
-            control.Verify(x => x.Bind(
-                TextBlock.TextProperty,
-                It.IsAny<IObservable<BindingValue<string>>>()));
+            control.Verify(x => x.SetValue(
+                TextBlock.TagProperty,
+                "foo",
+                BindingPriority.StyleTrigger));
         }
 
         [Fact]
@@ -106,13 +108,14 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Mock<IStyleable>();
             var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TextProperty, CreateMockBinding(TextBlock.TextProperty));
+            var setter = new Setter(TextBlock.TagProperty, CreateMockBinding(TextBlock.TagProperty));
 
-            setter.Apply(style, control.Object, null);
+            setter.Instance(control.Object, false).Activate();
 
             control.Verify(x => x.Bind(
-                TextBlock.TextProperty,
-                It.IsAny<IObservable<BindingValue<string>>>()));
+                TextBlock.TagProperty,
+                It.IsAny<IObservable<BindingValue<object>>>(),
+                BindingPriority.Style));
         }
 
         [Fact]
@@ -120,14 +123,14 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Mock<IStyleable>();
             var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TextProperty, CreateMockBinding(TextBlock.TextProperty));
-            var activator = new Subject<bool>();
+            var setter = new Setter(TextBlock.TagProperty, CreateMockBinding(TextBlock.TagProperty));
 
-            setter.Apply(style, control.Object, activator);
+            setter.Instance(control.Object, true).Activate();
 
             control.Verify(x => x.Bind(
-                TextBlock.TextProperty,
-                It.IsAny<IObservable<BindingValue<string>>>()));
+                TextBlock.TagProperty,
+                It.IsAny<IObservable<BindingValue<object>>>(),
+                BindingPriority.StyleTrigger));
         }
 
         private IBinding CreateMockBinding(AvaloniaProperty property)

@@ -3,6 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using Avalonia.Styling.Activators;
+
+#nullable enable
 
 namespace Avalonia.Styling
 {
@@ -12,8 +15,8 @@ namespace Avalonia.Styling
     internal class OrSelector : Selector
     {
         private readonly IReadOnlyList<Selector> _selectors;
-        private string _selectorString;
-        private Type _targetType;
+        private string? _selectorString;
+        private Type? _targetType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrSelector"/> class.
@@ -21,8 +24,15 @@ namespace Avalonia.Styling
         /// <param name="selectors">The selectors to OR.</param>
         public OrSelector(IReadOnlyList<Selector> selectors)
         {
-            Contract.Requires<ArgumentNullException>(selectors != null);
-            Contract.Requires<ArgumentException>(selectors.Count > 1);
+            if (selectors is null)
+            {
+                throw new ArgumentNullException(nameof(selectors));
+            }
+
+            if (selectors.Count <= 1)
+            {
+                throw new ArgumentException("Need more than one selector to OR.");
+            }
 
             _selectors = selectors;
         }
@@ -34,7 +44,7 @@ namespace Avalonia.Styling
         public override bool IsCombinator => false;
 
         /// <inheritdoc/>
-        public override Type TargetType
+        public override Type? TargetType
         {
             get
             {
@@ -60,7 +70,8 @@ namespace Avalonia.Styling
 
         protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
         {
-            var activators = new List<IObservable<bool>>();
+            IStyleActivator? activator = null;
+            OrActivator? activators = null;
             var neverThisInstance = false;
 
             foreach (var selector in _selectors)
@@ -76,18 +87,32 @@ namespace Avalonia.Styling
                         neverThisInstance = true;
                         break;
                     case SelectorMatchResult.Sometimes:
-                        activators.Add(match.Activator);
+                        if (activator is null && activators is null)
+                        {
+                            activator = match.Activator;
+                        }
+                        else
+                        {
+                            if (activators is null)
+                            {
+                                activators = new OrActivator();
+                                activators.Add(activator!);
+                                activator = null;
+                            }
+
+                            activators.Add(match.Activator!);
+                        }
                         break;
                 }
             }
 
-            if (activators.Count > 1)
+            if (activators is object)
             {
-                return new SelectorMatch(StyleActivator.Or(activators));
+                return new SelectorMatch(activators);
             }
-            else if (activators.Count == 1)
+            else if (activator is object)
             {
-                return new SelectorMatch(activators[0]);
+                return new SelectorMatch(activator);
             }
             else if (neverThisInstance)
             {
@@ -99,11 +124,11 @@ namespace Avalonia.Styling
             }
         }
 
-        protected override Selector MovePrevious() => null;
+        protected override Selector? MovePrevious() => null;
 
-        private Type EvaluateTargetType()
+        private Type? EvaluateTargetType()
         {
-            var result = default(Type);
+            Type? result = null;
 
             foreach (var selector in _selectors)
             {

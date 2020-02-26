@@ -86,6 +86,35 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
+        public void Control_With_Class_Descendent_Of_Control_With_Two_Classes()
+        {
+            var textBlock = new TextBlock();
+            var control = new Button { Content = textBlock };
+
+            control.ApplyTemplate();
+
+            var selector = default(Selector)
+                .OfType<Button>()
+                .Class("foo")
+                .Class("bar")
+                .Descendant()
+                .OfType<TextBlock>()
+                .Class("baz");
+
+            var values = new List<bool>();
+            var match = selector.Match(textBlock);
+
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            match.Activator.Subscribe(x => values.Add(x));
+
+            Assert.Equal(new[] { false }, values);
+            control.Classes.AddRange(new[] { "foo", "bar" });
+            Assert.Equal(new[] { false }, values);
+            textBlock.Classes.Add("baz");
+            Assert.Equal(new[] { false, true }, values);
+        }
+
+        [Fact]
         public void Named_Class_Template_Child_Of_Control()
         {
             var template = new FuncControlTemplate((parent, scope) =>

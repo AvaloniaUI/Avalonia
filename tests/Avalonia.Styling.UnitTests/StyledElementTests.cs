@@ -352,7 +352,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void StyleDetach_Is_Triggered_When_Control_Removed_From_Logical_Tree()
+        public void StyleInstance_Is_Disposed_When_Control_Removed_From_Logical_Tree()
         {
             using (AvaloniaLocator.EnterScope())
             {
@@ -361,11 +361,12 @@ namespace Avalonia.Styling.UnitTests
 
                 root.Child = child;
 
-                bool styleDetachTriggered = false;
-                ((IStyleable)child).StyleDetach.Subscribe(_ => styleDetachTriggered = true);
+                var styleInstance = new Mock<IStyleInstance>();
+                ((IStyleable)child).StyleApplied(styleInstance.Object);
+
                 root.Child = null;
 
-                Assert.True(styleDetachTriggered);
+                styleInstance.Verify(x => x.Dispose(), Times.Once);
             }
         }
 

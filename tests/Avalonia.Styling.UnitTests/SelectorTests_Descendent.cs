@@ -90,7 +90,7 @@ namespace Avalonia.Styling.UnitTests
             child.LogicalParent = parent;
 
             var selector = default(Selector).OfType<TestLogical1>().Class("foo").Descendant().OfType<TestLogical3>();
-            var activator = selector.Match(child).Activator;
+            var activator = selector.Match(child).Activator.ToObservable();
 
             Assert.False(await activator.Take(1));
             parent.Classes.Add("foo");

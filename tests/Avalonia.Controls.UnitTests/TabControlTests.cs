@@ -163,7 +163,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         new Style(x => x.OfType<TabItem>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(TemplatedControl.TemplateProperty, template)
                             }
