@@ -207,9 +207,9 @@ namespace Avalonia
         /// </remarks>
         public Styles Styles
         {
-            get
+            get 
             {
-                if (_styles == null)
+                if (_styles is null)
                 {
                     _styles = new Styles(this);
                     _styles.ResourcesChanged += ThisResourcesChanged;
