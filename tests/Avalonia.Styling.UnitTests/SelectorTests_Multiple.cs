@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.VisualTree;
@@ -150,6 +151,31 @@ namespace Avalonia.Styling.UnitTests
             Assert.Equal(new[] { false, true }, values);
             border.Classes.Remove("foo");
             Assert.Equal(new[] { false, true, false }, values);
+        }
+
+        [Fact]
+        public async Task Nested_PropertyEquals()
+        {
+            var control = new Canvas();
+            var parent = new Border { Child = control };
+
+            var target = default(Selector)
+                .OfType<Border>()
+                .PropertyEquals(Border.TagProperty, "foo")
+                .Child()
+                .OfType<Canvas>()
+                .PropertyEquals(Canvas.TagProperty, "bar");
+
+            var match = target.Match(control);
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+
+            var activator = match.Activator;
+
+            Assert.False(await activator.Take(1));
+            control.Tag = "bar";
+            Assert.False(await activator.Take(1));
+            parent.Tag = "foo";
+            Assert.True(await activator.Take(1));
         }
 
         [Fact]

@@ -81,7 +81,11 @@ namespace Avalonia.Styling
             Activator = match;
         }
 
-        private SelectorMatch(SelectorMatchResult result)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SelectorMatch"/> class with the specified result.
+        /// </summary>
+        /// <param name="result">The match result.</param>
+        public SelectorMatch(SelectorMatchResult result)
         {
             Result = result;
             Activator = null;
@@ -102,5 +106,30 @@ namespace Avalonia.Styling
         /// change over time.
         /// </summary>
         public IStyleActivator? Activator { get; }
+
+        /// <summary>
+        /// Logical ANDs this <see cref="SelectorMatch"/> with another.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public SelectorMatch And(in SelectorMatch other)
+        {
+            var result = (SelectorMatchResult)Math.Min((int)Result, (int)other.Result);
+
+            if (result == SelectorMatchResult.Sometimes)
+            {
+                var activators = new AndActivatorBuilder();
+                activators.Add(Activator);
+                activators.Add(other.Activator);
+                return new SelectorMatch(activators.Get());
+            }
+            else
+            {
+                return new SelectorMatch(result);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string ToString() => Result.ToString();
     }
 }
