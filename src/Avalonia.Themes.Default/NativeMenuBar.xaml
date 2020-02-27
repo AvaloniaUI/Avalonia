@@ -13,6 +13,7 @@
         <Menu.Styles>
           <Style Selector="MenuItem">
             <Setter Property="Header" Value="{Binding Header}"/>
+            <Setter Property="InputGestureText" Value="{Binding Gesture}"/>
             <Setter Property="Items" Value="{Binding Menu.Items}"/>
             <Setter Property="Command" Value="{Binding Command}"/>
             <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>

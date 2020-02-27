@@ -1,9 +1,10 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Avalonia.Input
 {
@@ -108,19 +109,43 @@ namespace Avalonia.Input
 
         public override string ToString()
         {
-            var parts = new List<string>();
+            var s = new StringBuilder();
 
-            foreach (var flag in Enum.GetValues(typeof(KeyModifiers)).Cast<KeyModifiers>())
+            static void Plus(StringBuilder s)
             {
-                if (KeyModifiers.HasFlag(flag) && flag != KeyModifiers.None)
+                if (s.Length > 0)
                 {
-                    parts.Add(flag.ToString());
+                    s.Append("+");
                 }
             }
 
-            parts.Add(Key.ToString());
+            if (KeyModifiers.HasFlagCustom(KeyModifiers.Control))
+            {
+                s.Append("Ctrl");
+            }
 
-            return string.Join(" + ", parts);
+            if (KeyModifiers.HasFlagCustom(KeyModifiers.Shift))
+            {
+                Plus(s);
+                s.Append("Shift");
+            }
+            
+            if (KeyModifiers.HasFlagCustom(KeyModifiers.Alt))
+            {
+                Plus(s);
+                s.Append("Alt");
+            }
+            
+            if (KeyModifiers.HasFlagCustom(KeyModifiers.Meta))
+            {
+                Plus(s);
+                s.Append("⌘");
+            }
+
+            Plus(s);
+            s.Append(Key);
+
+            return s.ToString();
         }
 
         public bool Matches(KeyEventArgs keyEvent) => ResolveNumPadOperationKey(keyEvent.Key) == Key && keyEvent.KeyModifiers == KeyModifiers;
@@ -141,7 +166,8 @@ namespace Avalonia.Input
                 return KeyModifiers.Control;
             }
 
-            if (modifier.Equals("cmd".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            if (modifier.Equals("cmd".AsSpan(), StringComparison.OrdinalIgnoreCase) ||
+                modifier.Equals("⌘".AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
                 return KeyModifiers.Meta;
             }
