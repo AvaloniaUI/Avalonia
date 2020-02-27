@@ -53,7 +53,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
                     }
                 };
 
-                setter.Instance(control, false).Activate();
+                setter.Instance(control).Start(false);
                 Assert.Equal("foo", control.Text);
 
                 control.Text = "bar";

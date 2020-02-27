@@ -23,12 +23,14 @@ namespace Avalonia.Styling
             Source = source ?? throw new ArgumentNullException(nameof(source));
             Target = target ?? throw new ArgumentNullException(nameof(target));
 
-            _setters = new List<ISetterInstance>(setters.Count);
+            var setterCount = setters.Count;
+
+            _setters = new List<ISetterInstance>(setterCount);
             _activator = activator;
 
-            foreach (var setter in setters)
+            for (var i = 0; i < setterCount; ++i)
             {
-                _setters.Add(setter.Instance(target, activator is object));
+                _setters.Add(setters[i].Instance(Target));
             }
         }
 
@@ -37,19 +39,26 @@ namespace Avalonia.Styling
 
         public void Start()
         {
-            if (_activator == null)
+            var hasActivator = _activator is object;
+
+            foreach (var setter in _setters)
             {
-                ActivatorChanged(true);
+                setter.Start(hasActivator);
             }
-            else
+
+            if (hasActivator)
             {
-                _activator.Subscribe(this, 0);
+                _activator!.Subscribe(this, 0);
             }
         }
 
         public void Dispose()
         {
-            ActivatorChanged(false);
+            foreach (var setter in _setters)
+            {
+                setter.Dispose();
+            }
+
             _activator?.Dispose();
         }
 

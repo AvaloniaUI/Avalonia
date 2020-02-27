@@ -61,7 +61,7 @@ namespace Avalonia.Styling
             }
         }
 
-        public ISetterInstance Instance(IStyleable target, bool hasActivator)
+        public ISetterInstance Instance(IStyleable target)
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
 
@@ -70,60 +70,67 @@ namespace Avalonia.Styling
                 throw new InvalidOperationException("Setter.Property must be set.");
             }
 
-            var priority = hasActivator ? BindingPriority.StyleTrigger : BindingPriority.Style;
+            var value = Value;
 
-            if (Value is IBinding binding)
+            if (value is ITemplate template &&
+                !typeof(ITemplate).IsAssignableFrom(Property.PropertyType))
             {
-                return new PropertySetterBindingInstance(target, Property, priority, binding);
+                value = template.Build();
             }
-            else
+
+            var data = new SetterVisitorData
             {
-                var value = Value;
+                target = target,
+                value = value,
+            };
 
-                if (value is ITemplate template &&
-                    !typeof(ITemplate).IsAssignableFrom(Property.PropertyType))
-                {
-                    value = template.Build();
-                }
-
-                var data = new SetterVisitorData
-                {
-                    target = target,
-                    priority = priority,
-                    value = value,
-                };
-
-                Property.Accept(this, ref data);
-                return data.result!;
-            }
+            Property.Accept(this, ref data);
+            return data.result!;
         }
 
         void IAvaloniaPropertyVisitor<SetterVisitorData>.Visit<T>(
             StyledPropertyBase<T> property,
             ref SetterVisitorData data)
         {
-            data.result = new PropertySetterInstance<T>(
-                data.target,
-                property,
-                data.priority,
-                (T)data.value);
+            if (data.value is IBinding binding)
+            {
+                data.result = new PropertySetterBindingInstance<T>(
+                    data.target,
+                    property,
+                    binding);
+            }
+            else
+            {
+                data.result = new PropertySetterInstance<T>(
+                    data.target,
+                    property,
+                    (T)data.value);
+            }
         }
 
         void IAvaloniaPropertyVisitor<SetterVisitorData>.Visit<T>(
             DirectPropertyBase<T> property,
             ref SetterVisitorData data)
         {
-            data.result = new PropertySetterInstance<T>(
-                data.target,
-                property,
-                data.priority,
-                (T)data.value);
+            if (data.value is IBinding binding)
+            {
+                data.result = new PropertySetterBindingInstance<T>(
+                    data.target,
+                    property,
+                    binding);
+            }
+            else
+            {
+                data.result = new PropertySetterInstance<T>(
+                    data.target,
+                    property,
+                    (T)data.value);
+            }
         }
 
         private struct SetterVisitorData
         {
             public IStyleable target;
-            public BindingPriority priority;
             public object? value;
             public ISetterInstance? result;
         }
