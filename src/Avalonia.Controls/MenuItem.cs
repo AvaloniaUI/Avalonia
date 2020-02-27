@@ -209,7 +209,7 @@ namespace Avalonia.Controls
         /// Setting this property does not cause the input gesture to be handled by the menu item,
         /// it simply displays the gesture text in the menu.
         /// </remarks>
-        public object InputGestureText
+        public string InputGestureText
         {
             get { return GetValue(InputGestureTextProperty); }
             set { SetValue(InputGestureTextProperty, value); }
