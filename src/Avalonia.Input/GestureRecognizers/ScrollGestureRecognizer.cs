@@ -148,6 +148,7 @@ namespace Avalonia.Input.GestureRecognizers
                     EndGesture();
                 else
                 {
+                    _tracking = null;
                     var savedGestureId = _gestureId;
                     var st = Stopwatch.StartNew();
                     var lastTime = TimeSpan.Zero;
