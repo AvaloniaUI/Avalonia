@@ -1,0 +1,57 @@
+﻿using System;
+using Avalonia.Platform;
+using Avalonia.Utility;
+
+namespace Avalonia.Media.TextFormatting
+{
+    /// <summary>
+    /// A class that is responsible for text shaping.
+    /// </summary>
+    public class TextShaper
+    {
+        private readonly ITextShaperImpl _platformImpl;
+
+        public TextShaper(ITextShaperImpl platformImpl)
+        {
+            _platformImpl = platformImpl;
+        }
+
+        /// <summary>
+        /// Gets the current text shaper.
+        /// </summary>
+        public static TextShaper Current
+        {
+            get
+            {
+                var current = AvaloniaLocator.Current.GetService<TextShaper>();
+
+                if (current != null)
+                {
+                    return current;
+                }
+
+                var textShaperImpl = AvaloniaLocator.Current.GetService<ITextShaperImpl>();
+
+                if (textShaperImpl == null)
+                    throw new InvalidOperationException("No text shaper implementation was registered.");
+
+                current = new TextShaper(textShaperImpl);
+
+                AvaloniaLocator.CurrentMutable.Bind<TextShaper>().ToConstant(current);
+
+                return current;
+            }
+        }
+
+        /// <summary>
+        /// Shapes the specified text and returns a resulting glyph run.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="textFormat">The text format.</param>
+        /// <returns>A shaped glyph run.</returns>
+        public GlyphRun ShapeText(ReadOnlySlice<char> text, TextFormat textFormat)
+        {
+            return _platformImpl.ShapeText(text, textFormat);
+        }
+    }
+}
