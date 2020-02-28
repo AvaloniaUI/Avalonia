@@ -98,9 +98,9 @@ namespace Avalonia.Styling
             var match = Selector is object ? Selector.Match(target) :
                 target == host ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
 
-            if (match.IsMatch && _setters is object)
+            if (match.IsMatch && (_setters is object || _animations is object))
             {
-                var instance = new StyleInstance(this, target, _setters, match.Activator);
+                var instance = new StyleInstance(this, target, _setters, _animations, match.Activator);
                 target.StyleApplied(instance);
                 instance.Start();
             }

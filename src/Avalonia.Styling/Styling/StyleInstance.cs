@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive.Subjects;
+using Avalonia.Animation;
 using Avalonia.Styling.Activators;
 
 #nullable enable
@@ -8,29 +10,46 @@ namespace Avalonia.Styling
 {
     internal class StyleInstance : IStyleInstance, IStyleActivatorSink
     {
-        private readonly List<ISetterInstance> _setters;
+        private readonly List<ISetterInstance>? _setters;
+        private readonly List<IDisposable>? _animations;
         private readonly IStyleActivator? _activator;
+        private readonly Subject<bool>? _animationTrigger;
         private bool _active;
 
         public StyleInstance(
             IStyle source,
             IStyleable target,
-            IReadOnlyList<ISetter> setters,
+            IReadOnlyList<ISetter>? setters,
+            IReadOnlyList<IAnimation>? animations,
             IStyleActivator? activator = null)
         {
-            setters = setters ?? throw new ArgumentNullException(nameof(setters));
-
             Source = source ?? throw new ArgumentNullException(nameof(source));
             Target = target ?? throw new ArgumentNullException(nameof(target));
-
-            var setterCount = setters.Count;
-
-            _setters = new List<ISetterInstance>(setterCount);
             _activator = activator;
 
-            for (var i = 0; i < setterCount; ++i)
+            if (setters is object)
             {
-                _setters.Add(setters[i].Instance(Target));
+                var setterCount = setters.Count;
+
+                _setters = new List<ISetterInstance>(setterCount);
+
+                for (var i = 0; i < setterCount; ++i)
+                {
+                    _setters.Add(setters[i].Instance(Target));
+                }
+            }
+
+            if (animations is object && target is Animatable animatable)
+            {
+                var animationsCount = animations.Count;
+
+                _animations = new List<IDisposable>();
+                _animationTrigger = new Subject<bool>();
+
+                for (var i = 0; i < animationsCount; ++i)
+                {
+                    _animations.Add(animations[i].Apply(animatable, null, _animationTrigger));
+                }
             }
         }
 
@@ -41,22 +60,40 @@ namespace Avalonia.Styling
         {
             var hasActivator = _activator is object;
 
-            foreach (var setter in _setters)
+            if (_setters is object)
             {
-                setter.Start(hasActivator);
+                foreach (var setter in _setters)
+                {
+                    setter.Start(hasActivator);
+                }
             }
 
             if (hasActivator)
             {
                 _activator!.Subscribe(this, 0);
             }
+            else if (_animationTrigger != null)
+            {
+                _animationTrigger.OnNext(true);
+            }
         }
 
         public void Dispose()
         {
-            foreach (var setter in _setters)
+            if (_setters is object)
             {
-                setter.Dispose();
+                foreach (var setter in _setters)
+                {
+                    setter.Dispose();
+                }
+            }
+
+            if (_animations is object)
+            {
+                foreach (var subscripion in _animations)
+                {
+                    subscripion.Dispose();
+                }
             }
 
             _activator?.Dispose();
@@ -68,18 +105,23 @@ namespace Avalonia.Styling
             {
                 _active = value;
 
-                if (_active)
+                _animationTrigger?.OnNext(value);
+
+                if (_setters is object)
                 {
-                    foreach (var setter in _setters)
+                    if (_active)
                     {
-                        setter.Activate();
+                        foreach (var setter in _setters)
+                        {
+                            setter.Activate();
+                        }
                     }
-                }
-                else
-                {
-                    foreach (var setter in _setters)
+                    else
                     {
-                        setter.Deactivate();
+                        foreach (var setter in _setters)
+                        {
+                            setter.Deactivate();
+                        }
                     }
                 }
             }
