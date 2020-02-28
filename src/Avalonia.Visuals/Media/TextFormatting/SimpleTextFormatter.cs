@@ -164,35 +164,6 @@ namespace Avalonia.Media.TextFormatting
                         }
                     }
 
-                    if (textTrimming == TextTrimming.CharacterEllipsis)
-                    {
-                        if (measuredLength < text.End)
-                        {
-                            var currentBreakPosition = 0;
-
-                            var graphemeEnumerator = new GraphemeEnumerator(currentRun.Text);
-
-                            while (currentBreakPosition < measuredLength && graphemeEnumerator.MoveNext())
-                            {
-                                var nextBreakPosition = graphemeEnumerator.Current.Text.End;
-
-                                if (nextBreakPosition == 0)
-                                {
-                                    break;
-                                }
-
-                                if (nextBreakPosition > measuredLength)
-                                {
-                                    break;
-                                }
-
-                                currentBreakPosition = nextBreakPosition;
-                            }
-
-                            measuredLength = currentBreakPosition;
-                        }
-                    }
-
                     var splitResult = SplitTextRuns(textRuns, measuredLength);
 
                     var trimmedRuns = new List<TextRun>(splitResult.First.Count + 1);
