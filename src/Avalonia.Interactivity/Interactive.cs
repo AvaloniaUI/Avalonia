@@ -15,9 +15,6 @@ namespace Avalonia.Interactivity
     {
         private Dictionary<RoutedEvent, List<EventSubscription>>? _eventHandlers;
 
-        private static readonly Dictionary<Type, Action<Delegate, object, RoutedEventArgs>> s_invokeHandlerCache
-            = new Dictionary<Type, Action<Delegate, object, RoutedEventArgs>>();
-
         /// <summary>
         /// Gets the interactive parent of the object for bubbling and tunneling events.
         /// </summary>
@@ -62,26 +59,16 @@ namespace Avalonia.Interactivity
             routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
             handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
-            // EventHandler delegate is not covariant, this forces us to create small wrapper
-            // that will cast our type erased instance and invoke it.
-            var eventArgsType = routedEvent.EventArgsType;
-
-            if (!s_invokeHandlerCache.TryGetValue(eventArgsType, out var invokeAdapter))
+            static void InvokeAdapter(Delegate baseHandler, object sender, RoutedEventArgs args)
             {
-                void InvokeAdapter(Delegate baseHandler, object sender, RoutedEventArgs args)
-                {
-                    var typedHandler = (EventHandler<TEventArgs>)baseHandler;
-                    var typedArgs = (TEventArgs)args;
+                var typedHandler = (EventHandler<TEventArgs>)baseHandler;
+                var typedArgs = (TEventArgs)args;
 
-                    typedHandler(sender, typedArgs);
-                }
-
-                invokeAdapter = InvokeAdapter;
-
-                s_invokeHandlerCache.Add(eventArgsType, invokeAdapter);
+                typedHandler(sender, typedArgs);
             }
 
-            var subscription = new EventSubscription(handler, routes, handledEventsToo, invokeAdapter);
+            var subscription = new EventSubscription(handler, routes, handledEventsToo, (baseHandler, sender, args) => InvokeAdapter(baseHandler, sender, args));
+
             return AddEventSubscription(routedEvent, subscription);
         }
 
@@ -96,9 +83,15 @@ namespace Avalonia.Interactivity
             handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
             if (_eventHandlers is object &&
-                _eventHandlers.TryGetValue(routedEvent, out var subscriptions) == true)
+                _eventHandlers.TryGetValue(routedEvent, out var subscriptions))
             {
-                subscriptions.RemoveAll(x => x.Handler == handler);
+                for (var i = subscriptions.Count - 1; i >= 0; i--)
+                {
+                    if (subscriptions[i].Handler == handler)
+                    {
+                        subscriptions.RemoveAt(i);
+                    }
+                }
             }
         }
 
