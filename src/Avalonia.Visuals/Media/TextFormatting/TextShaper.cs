@@ -43,12 +43,7 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
-        /// <summary>
-        /// Shapes the specified text and returns a resulting glyph run.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="textFormat">The text format.</param>
-        /// <returns>A shaped glyph run.</returns>
+        /// <inheritdoc cref="ITextShaperImpl.ShapeText"/>
         public GlyphRun ShapeText(ReadOnlySlice<char> text, TextFormat textFormat)
         {
             return _platformImpl.ShapeText(text, textFormat);

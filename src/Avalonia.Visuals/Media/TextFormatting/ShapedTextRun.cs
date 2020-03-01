@@ -22,9 +22,7 @@ namespace Avalonia.Media.TextFormatting
             GlyphRun = glyphRun;
         }
 
-        /// <summary>
-        /// Gets the bounds.
-        /// </summary>
+        /// <inheritdoc/>
         public override Rect Bounds => GlyphRun.Bounds;
 
         /// <summary>
@@ -35,11 +33,7 @@ namespace Avalonia.Media.TextFormatting
         /// </value>
         public GlyphRun GlyphRun { get; }
 
-        /// <summary>
-        /// Draws the <see cref="TextRun"/> at the given origin.
-        /// </summary>
-        /// <param name="drawingContext">The drawing context.</param>
-        /// <param name="origin">The origin.</param>
+        /// <inheritdoc/>
         public override void Draw(IDrawingContextImpl drawingContext, Point origin)
         {
             if (GlyphRun.GlyphIndices.Length == 0)

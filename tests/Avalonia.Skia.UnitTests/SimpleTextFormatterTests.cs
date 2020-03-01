@@ -43,7 +43,7 @@ namespace Avalonia.Skia.UnitTests
             {
                 var defaultTextRunStyle = new TextStyle(Typeface.Default, 12, Brushes.Black);
 
-                var textSource = new MultipleBufferTextSource(defaultTextRunStyle);
+                var textSource = new MultiBufferTextSource(defaultTextRunStyle);
 
                 var formatter = new SimpleTextFormatter();
 
@@ -56,17 +56,19 @@ namespace Avalonia.Skia.UnitTests
             }
         }
 
-        private class MultipleBufferTextSource : ITextSource
+        private class MultiBufferTextSource : ITextSource
         {
             private readonly string[] _runTexts;
             private readonly TextStyle _defaultStyle;
 
-            public MultipleBufferTextSource(TextStyle defaultStyle)
+            public MultiBufferTextSource(TextStyle defaultStyle)
             {
                 _defaultStyle = defaultStyle;
 
                 _runTexts = new[] { "A123456789", "B123456789", "C123456789", "D123456789", "E123456789" };
             }
+
+            public TextPointer TextPointer => new TextPointer(0, 50);
 
             public TextRun GetTextRun(int textSourceIndex)
             {
@@ -197,7 +199,7 @@ namespace Avalonia.Skia.UnitTests
         }
 
         [Fact]
-        public void Should_Split_Run_On_Direction()
+        public void Should_Split_Run_On_Script()
         {
             using (Start())
             {
@@ -219,18 +221,36 @@ namespace Avalonia.Skia.UnitTests
         {
             using (Start())
             {
-                const string text = "0123456789";
-
-                var textSource = new SimpleTextSource(text, new TextStyle(Typeface.Default));
+                var textSource = new MultiBufferTextSource(new TextStyle(Typeface.Default));
 
                 var formatter = new SimpleTextFormatter();
 
                 var textLine =
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity, new TextParagraphProperties());
 
-                var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(text.Length));
+                var currentDistance = 0.0;
 
-                Assert.Equal(textLine.LineMetrics.Size.Width, distance);
+                foreach (var run in textLine.TextRuns)
+                {
+                    var textRun = (ShapedTextRun)run;
+
+                    var glyphRun = textRun.GlyphRun;
+
+                    for (var i = 0; i < glyphRun.GlyphClusters.Length; i++)
+                    {
+                        var cluster = glyphRun.GlyphClusters[i];
+
+                        var advance = glyphRun.GlyphAdvances[i];
+
+                        var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(cluster));
+
+                        Assert.Equal(currentDistance, distance);
+
+                        currentDistance += advance;
+                    }
+                }
+
+                Assert.Equal(currentDistance, textLine.GetDistanceFromCharacterHit(new CharacterHit(textSource.TextPointer.Length)));
             }
         }
 
@@ -239,18 +259,40 @@ namespace Avalonia.Skia.UnitTests
         {
             using (Start())
             {
-                const string text = "0123456789";
-
-                var textSource = new SimpleTextSource(text, new TextStyle(Typeface.Default));
+                var textSource = new MultiBufferTextSource(new TextStyle(Typeface.Default));
 
                 var formatter = new SimpleTextFormatter();
 
                 var textLine =
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity, new TextParagraphProperties());
 
-                var characterHit = textLine.GetCharacterHitFromDistance(textLine.LineMetrics.Size.Width);
+                var currentDistance = 0.0;
 
-                Assert.Equal(textLine.Text.Length, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+                CharacterHit characterHit;
+
+                foreach (var run in textLine.TextRuns)
+                {
+                    var textRun = (ShapedTextRun)run;
+
+                    var glyphRun = textRun.GlyphRun;
+
+                    for (var i = 0; i < glyphRun.GlyphClusters.Length; i++)
+                    {
+                        var cluster = glyphRun.GlyphClusters[i];
+
+                        var advance = glyphRun.GlyphAdvances[i];
+
+                        characterHit = textLine.GetCharacterHitFromDistance(currentDistance);
+
+                        Assert.Equal(cluster, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+
+                        currentDistance += advance;
+                    }
+                }
+
+                characterHit = textLine.GetCharacterHitFromDistance(textLine.LineMetrics.Size.Width);
+
+                Assert.Equal(textSource.TextPointer.End, characterHit.FirstCharacterIndex);
             }
         }
 

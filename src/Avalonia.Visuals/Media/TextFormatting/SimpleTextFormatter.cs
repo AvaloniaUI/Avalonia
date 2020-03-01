@@ -166,7 +166,7 @@ namespace Avalonia.Media.TextFormatting
 
                     var splitResult = SplitTextRuns(textRuns, measuredLength);
 
-                    var trimmedRuns = new List<TextRun>(splitResult.First.Count + 1);
+                    var trimmedRuns = new List<ShapedTextRun>(splitResult.First.Count + 1);
 
                     trimmedRuns.AddRange(splitResult.First);
 

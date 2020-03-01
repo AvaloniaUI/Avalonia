@@ -20,7 +20,7 @@ namespace Avalonia.Media.TextFormatting
 
         private readonly ReadOnlySlice<char> _text;
         private readonly TextParagraphProperties _paragraphProperties;
-        private readonly TextStyleRun[] _textStyleOverrides;
+        private readonly IReadOnlyList<TextStyleRun> _textStyleOverrides;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TextLayout" /> class.
@@ -47,7 +47,7 @@ namespace Avalonia.Media.TextFormatting
             TextDecorationCollection textDecorations = null,
             double maxWidth = double.PositiveInfinity,
             double maxHeight = double.PositiveInfinity,
-            TextStyleRun[] textStyleOverrides = null)
+            IReadOnlyList<TextStyleRun> textStyleOverrides = null)
         {
             _text = string.IsNullOrEmpty(text) ?
                 new ReadOnlySlice<char>() :
@@ -276,10 +276,10 @@ namespace Avalonia.Media.TextFormatting
         {
             private readonly ReadOnlySlice<char> _text;
             private readonly TextStyle _defaultStyle;
-            private readonly TextStyleRun[] _textStyleOverrides;
+            private readonly IReadOnlyList<TextStyleRun> _textStyleOverrides;
 
             public FormattedTextSource(ReadOnlySlice<char> text, TextStyle defaultStyle,
-                TextStyleRun[] textStyleOverrides)
+                IReadOnlyList<TextStyleRun> textStyleOverrides)
             {
                 _text = text;
                 _defaultStyle = defaultStyle;
@@ -311,8 +311,13 @@ namespace Avalonia.Media.TextFormatting
             /// The created text style run.
             /// </returns>
             private static TextStyleRun CreateTextStyleRunWithOverride(ReadOnlySlice<char> text,
-                TextStyle defaultTextStyle, ReadOnlySpan<TextStyleRun> textStyleOverrides)
+                TextStyle defaultTextStyle, IReadOnlyList<TextStyleRun> textStyleOverrides)
             {
+                if(textStyleOverrides == null || textStyleOverrides.Count == 0)
+                {
+                    return new TextStyleRun(new TextPointer(text.Start, text.Length), defaultTextStyle);
+                }
+
                 var currentTextStyle = defaultTextStyle;
 
                 var hasOverride = false;
@@ -321,7 +326,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var length = 0;
 
-                for (; i < textStyleOverrides.Length; i++)
+                for (; i < textStyleOverrides.Count; i++)
                 {
                     var styleOverride = textStyleOverrides[i];
 
@@ -341,7 +346,7 @@ namespace Avalonia.Media.TextFormatting
                     if (textPointer.Start > text.Start)
                     {
                         if (styleOverride.Style.TextFormat != currentTextStyle.TextFormat ||
-                            currentTextStyle.Foreground != styleOverride.Style.Foreground)
+                            !currentTextStyle.Foreground.Equals(styleOverride.Style.Foreground))
                         {
                             length = Math.Min(Math.Abs(textPointer.Start - text.Start), text.Length);
 
@@ -361,9 +366,9 @@ namespace Avalonia.Media.TextFormatting
                     currentTextStyle = styleOverride.Style;
                 }
 
-                if (length < text.Length && i == textStyleOverrides.Length)
+                if (length < text.Length && i == textStyleOverrides.Count)
                 {
-                    if (currentTextStyle.Foreground == defaultTextStyle.Foreground &&
+                    if (currentTextStyle.Foreground.Equals(defaultTextStyle.Foreground) &&
                         currentTextStyle.TextFormat == defaultTextStyle.TextFormat)
                     {
                         length = text.Length;

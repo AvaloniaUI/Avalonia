@@ -11,25 +11,13 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public abstract class TextLine
     {
-        protected TextLine()
-        {
-            
-        }
-
-        protected TextLine(TextPointer text, IReadOnlyList<TextRun> textRuns, TextLineMetrics lineMetrics)
-        {
-            Text = text;
-            TextRuns = textRuns;
-            LineMetrics = lineMetrics;
-        }
-
         /// <summary>
         /// Gets the text.
         /// </summary>
         /// <value>
         /// The text pointer.
         /// </value>
-        public TextPointer Text { get; protected set; }
+        public abstract TextPointer Text { get; }
 
         /// <summary>
         /// Gets the text runs.
@@ -37,7 +25,7 @@ namespace Avalonia.Media.TextFormatting
         /// <value>
         /// The text runs.
         /// </value>
-        public IReadOnlyList<TextRun> TextRuns { get; protected set; }
+        public abstract IReadOnlyList<TextRun> TextRuns { get; }
 
         /// <summary>
         /// Gets the line metrics.
@@ -45,7 +33,7 @@ namespace Avalonia.Media.TextFormatting
         /// <value>
         /// The line metrics.
         /// </value>
-        public TextLineMetrics LineMetrics { get; protected set; }
+        public abstract TextLineMetrics LineMetrics { get; }
 
         /// <summary>
         /// Draws the <see cref="TextLine"/> at the given origin.

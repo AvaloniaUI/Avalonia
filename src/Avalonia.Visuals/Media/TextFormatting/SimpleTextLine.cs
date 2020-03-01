@@ -6,42 +6,43 @@ namespace Avalonia.Media.TextFormatting
 {
     internal class SimpleTextLine : TextLine
     {
-        public SimpleTextLine(TextPointer textPointer, IReadOnlyList<TextRun> textRuns, TextLineMetrics lineMetrics) :
-            base(textPointer, textRuns, lineMetrics)
-        {
+        private readonly IReadOnlyList<ShapedTextRun> _textRuns;
 
+        public SimpleTextLine(TextPointer textPointer, IReadOnlyList<ShapedTextRun> textRuns, TextLineMetrics lineMetrics)
+        {
+            Text = textPointer;
+            _textRuns = textRuns;
+            LineMetrics = lineMetrics;
         }
 
+        /// <inheritdoc/>
+        public override TextPointer Text { get; }
+
+        /// <inheritdoc/>
+        public override IReadOnlyList<TextRun> TextRuns => _textRuns;
+
+        /// <inheritdoc/>
+        public override TextLineMetrics LineMetrics { get; }
+
+        /// <inheritdoc/>
         public override void Draw(IDrawingContextImpl drawingContext, Point origin)
         {
             var currentX = origin.X;
 
-            foreach (var textRun in TextRuns)
+            foreach (var textRun in _textRuns)
             {
-                if (!(textRun is DrawableTextRun drawableRun))
-                {
-                    continue;
-                }
-
                 var baselineOrigin = new Point(currentX + LineMetrics.BaselineOrigin.X,
                     origin.Y + LineMetrics.BaselineOrigin.Y);
 
-                drawableRun.Draw(drawingContext, baselineOrigin);
+                textRun.Draw(drawingContext, baselineOrigin);
 
-                currentX += drawableRun.Bounds.Width;
+                currentX += textRun.Bounds.Width;
             }
         }
 
-        /// <summary>
-        /// Client to get the character hit corresponding to the specified
-        /// distance from the beginning of the line.
-        /// </summary>
-        /// <param name="distance">distance in text flow direction from the beginning of the line</param>
-        /// <returns>character hit</returns>
+        /// <inheritdoc/>
         public override CharacterHit GetCharacterHitFromDistance(double distance)
         {
-            var first = Text.Start;
-
             if (distance < 0)
             {
                 // hit happens before the line, return the first position
@@ -49,45 +50,30 @@ namespace Avalonia.Media.TextFormatting
             }
 
             // process hit that happens within the line
-            var runIndex = new CharacterHit();
+            var characterHit = new CharacterHit();
 
-            foreach (var run in TextRuns) 
+            foreach (var run in _textRuns)
             {
-                var shapedTextRun = (ShapedTextRun)run;
+                characterHit = run.GlyphRun.GetCharacterHitFromDistance(distance, out _);
 
-                first += runIndex.TrailingLength;
-
-                runIndex = shapedTextRun.GlyphRun.GetCharacterHitFromDistance(distance, out _);
-
-                first += runIndex.FirstCharacterIndex;
-
-                if (distance <= shapedTextRun.Bounds.Width)
+                if (distance <= run.Bounds.Width)
                 {
                     break;
                 }
 
-                distance -= shapedTextRun.Bounds.Width;
+                distance -= run.Bounds.Width;
             }
 
-            return new CharacterHit(first, runIndex.TrailingLength);
+            return characterHit;
         }
 
-        /// <summary>
-        /// Client to get the distance from the beginning of the line from the specified
-        /// character hit.
-        /// </summary>
-        /// <param name="characterHit">character hit of the character to query the distance.</param>
-        /// <returns>distance in text flow direction from the beginning of the line.</returns>
+        /// <inheritdoc/>
         public override double GetDistanceFromCharacterHit(CharacterHit characterHit)
         {
-            return DistanceFromCp(characterHit.FirstCharacterIndex + (characterHit.TrailingLength != 0 ? 1 : 0));
+            return DistanceFromCodepointIndex(characterHit.FirstCharacterIndex + (characterHit.TrailingLength != 0 ? 1 : 0));
         }
 
-        /// <summary>
-        /// Client to get the next character hit for caret navigation
-        /// </summary>
-        /// <param name="characterHit">the current character hit</param>
-        /// <returns>the next character hit</returns>
+        /// <inheritdoc/>
         public override CharacterHit GetNextCaretCharacterHit(CharacterHit characterHit)
         {
             int nextVisibleCp;
@@ -95,7 +81,7 @@ namespace Avalonia.Media.TextFormatting
 
             if (characterHit.TrailingLength == 0)
             {
-                navigableCpFound = FindNextVisibleCp(characterHit.FirstCharacterIndex, out nextVisibleCp);
+                navigableCpFound = FindNextCodepointIndex(characterHit.FirstCharacterIndex, out nextVisibleCp);
 
                 if (navigableCpFound)
                 {
@@ -104,7 +90,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            navigableCpFound = FindNextVisibleCp(characterHit.FirstCharacterIndex + 1, out nextVisibleCp);
+            navigableCpFound = FindNextCodepointIndex(characterHit.FirstCharacterIndex + 1, out nextVisibleCp);
 
             if (navigableCpFound)
             {
@@ -116,18 +102,14 @@ namespace Avalonia.Media.TextFormatting
             return characterHit;
         }
 
-        /// <summary>
-        /// Client to get the previous character hit for caret navigation
-        /// </summary>
-        /// <param name="characterHit">the current character hit</param>
-        /// <returns>the previous character hit</returns>
+        /// <inheritdoc/>
         public override CharacterHit GetPreviousCaretCharacterHit(CharacterHit characterHit)
         {
-            int previousVisibleCp;
-            bool navigableCpFound;
+            int previousCodepointIndex;
+            bool codepointIndexFound;
 
-            int cpHit = characterHit.FirstCharacterIndex;
-            bool trailingHit = (characterHit.TrailingLength != 0);
+            var cpHit = characterHit.FirstCharacterIndex;
+            var trailingHit = characterHit.TrailingLength != 0;
 
             // Input can be right after the end of the current line. Snap it to be at the end of the line.
             if (cpHit >= Text.Start + Text.Length)
@@ -139,32 +121,28 @@ namespace Avalonia.Media.TextFormatting
 
             if (trailingHit)
             {
-                navigableCpFound = FindPreviousVisibleCp(cpHit, out previousVisibleCp);
+                codepointIndexFound = FindPreviousCodepointIndex(cpHit, out previousCodepointIndex);
 
-                if (navigableCpFound)
+                if (codepointIndexFound)
                 {
                     // Move from trailing to leading edge
-                    return new CharacterHit(previousVisibleCp, 0);
+                    return new CharacterHit(previousCodepointIndex, 0);
                 }
             }
 
-            navigableCpFound = FindPreviousVisibleCp(cpHit - 1, out previousVisibleCp);
+            codepointIndexFound = FindPreviousCodepointIndex(cpHit - 1, out previousCodepointIndex);
 
-            if (navigableCpFound)
+            if (codepointIndexFound)
             {
                 // Move from leading edge of current character to leading edge of previous
-                return new CharacterHit(previousVisibleCp, 0);
+                return new CharacterHit(previousCodepointIndex, 0);
             }
 
             // Can't move, we're before the first character
             return characterHit;
         }
 
-        /// <summary>
-        /// Client to get the previous character hit after backspacing
-        /// </summary>
-        /// <param name="characterHit">the current character hit</param>
-        /// <returns>the character hit after backspacing</returns>
+        /// <inheritdoc/>
         public override CharacterHit GetBackspaceCaretCharacterHit(CharacterHit characterHit)
         {
             // same operation as move-to-previous
@@ -172,44 +150,41 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Get distance from line start to the specified cp
+        /// Get distance from line start to the specified codepoint index
         /// </summary>
-        private double DistanceFromCp(int currentIndex)
+        private double DistanceFromCodepointIndex(int codepointIndex)
         {
-            var distance = 0.0;
-            var dcp = currentIndex - Text.Start;
+            var currentDistance = 0.0;
 
-            foreach (var textRun in TextRuns)
+            foreach (var textRun in _textRuns)
             {
-                var run = (ShapedTextRun)textRun;
-
-                distance += run.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(dcp));
-
-                if (dcp <= run.Text.Length)
+                if (codepointIndex > textRun.Text.End)
                 {
-                    break;
+                    currentDistance += textRun.Bounds.Width;
+
+                    continue;
                 }
 
-                dcp -= run.Text.Length;
+                return currentDistance + textRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(codepointIndex));
             }
 
-            return distance;
+            return currentDistance;
         }
 
         /// <summary>
-        /// Search forward from the given cp index (inclusive) to find the next navigable cp index.
-        /// Return true if one such cp is found, false otherwise.
+        /// Search forward from the given codepoint index (inclusive) to find the next navigable codepoint index.
+        /// Return true if one such codepoint index is found, false otherwise.
         /// </summary>
-        private bool FindNextVisibleCp(int cp, out int cpVisible)
+        private bool FindNextCodepointIndex(int codepointIndex, out int nextCodepointIndex)
         {
-            cpVisible = cp;
+            nextCodepointIndex = codepointIndex;
 
-            if (cp >= Text.Start + Text.Length)
+            if (codepointIndex >= Text.Start + Text.Length)
             {
                 return false; // Cannot go forward anymore
             }
 
-            GetRunIndexAtCp(cp, out var runIndex, out var cpRunStart);
+            GetRunIndexAtCodepointIndex(codepointIndex, out var runIndex, out var cpRunStart);
 
             while (runIndex < TextRuns.Count)
             {
@@ -217,7 +192,7 @@ namespace Avalonia.Media.TextFormatting
                 // navigable.
                 if (runIndex < TextRuns.Count)
                 {
-                    cpVisible = Math.Max(cpRunStart, cp);
+                    nextCodepointIndex = Math.Max(cpRunStart, codepointIndex);
                     return true;
                 }
 
@@ -228,29 +203,29 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Search backward from the given cp index (inclusive) to find the previous navigable cp index.
-        /// Return true if one such cp is found, false otherwise.
+        /// Search backward from the given codepoint index (inclusive) to find the previous navigable codepoint index.
+        /// Return true if one such codepoint is found, false otherwise.
         /// </summary>
-        private bool FindPreviousVisibleCp(int cp, out int cpVisible)
+        private bool FindPreviousCodepointIndex(int codepointIndex, out int previousCodepointIndex)
         {
-            cpVisible = cp;
+            previousCodepointIndex = codepointIndex;
 
-            if (cp < Text.Start)
+            if (codepointIndex < Text.Start)
             {
                 return false; // Cannot go backward anymore.
             }
 
             // Position the cpRunEnd at the end of the span that contains the given cp
-            GetRunIndexAtCp(cp, out var runIndex, out var cpRunEnd);
+            GetRunIndexAtCodepointIndex(codepointIndex, out var runIndex, out var codepointIndexAtRunEnd);
 
-            cpRunEnd += TextRuns[runIndex].Text.End;
+            codepointIndexAtRunEnd += TextRuns[runIndex].Text.End;
 
             while (runIndex >= 0)
             {
                 // Visible content has caret stops at its leading edge.
                 if (runIndex + 1 < TextRuns.Count)
                 {
-                    cpVisible = Math.Min(cpRunEnd, cp);
+                    previousCodepointIndex = Math.Min(codepointIndexAtRunEnd, codepointIndex);
                     return true;
                 }
 
@@ -258,25 +233,26 @@ namespace Avalonia.Media.TextFormatting
                 if (runIndex == TextRuns.Count)
                 {
                     // Get the cp index at the beginning of the newline sequence.
-                    cpVisible = cpRunEnd - TextRuns[runIndex].Text.Length + 1;
+                    previousCodepointIndex = codepointIndexAtRunEnd - TextRuns[runIndex].Text.Length + 1;
                     return true;
                 }
 
-                cpRunEnd -= TextRuns[runIndex--].Text.Length;
+                codepointIndexAtRunEnd -= TextRuns[runIndex--].Text.Length;
             }
 
             return false;
         }
 
-        private void GetRunIndexAtCp(int cp, out int runIndex, out int cpRunStart)
+        private void GetRunIndexAtCodepointIndex(int codepointIndex, out int runIndex, out int codepointIndexAtRunStart)
         {
-            cpRunStart = Text.Start;
+            codepointIndexAtRunStart = Text.Start;
             runIndex = 0;
 
             // Find the span that contains the given cp
-            while (runIndex < TextRuns.Count && cpRunStart + TextRuns[runIndex].Text.Length <= cp)
+            while (runIndex < TextRuns.Count &&
+                   codepointIndexAtRunStart + TextRuns[runIndex].Text.Length <= codepointIndex)
             {
-                cpRunStart += TextRuns[runIndex++].Text.Length;
+                codepointIndexAtRunStart += TextRuns[runIndex++].Text.Length;
             }
         }
     }
