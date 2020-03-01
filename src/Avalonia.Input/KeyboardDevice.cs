@@ -38,7 +38,7 @@ namespace Avalonia.Input
         public void SetFocusedElement(
             IInputElement element, 
             NavigationMethod method,
-            InputModifiers modifiers)
+            KeyModifiers keyModifiers)
         {
             if (element != FocusedElement)
             {
@@ -56,7 +56,7 @@ namespace Avalonia.Input
                 {
                     RoutedEvent = InputElement.GotFocusEvent,
                     NavigationMethod = method,
-                    InputModifiers = modifiers,
+                    KeyModifiers = keyModifiers,
                 });
             }
         }

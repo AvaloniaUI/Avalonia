@@ -56,11 +56,11 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="control">The control to focus.</param>
         /// <param name="method">The method by which focus was changed.</param>
-        /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
+        /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
         public void Focus(
             IInputElement control, 
             NavigationMethod method = NavigationMethod.Unspecified,
-            InputModifiers modifiers = InputModifiers.None)
+            KeyModifiers keyModifiers = KeyModifiers.None)
         {
             if (control != null)
             {
@@ -70,7 +70,7 @@ namespace Avalonia.Input
                 if (scope != null)
                 {
                     Scope = scope;
-                    SetFocusedElement(scope, control, method, modifiers);
+                    SetFocusedElement(scope, control, method, keyModifiers);
                 }
             }
             else if (Current != null)
@@ -98,7 +98,7 @@ namespace Avalonia.Input
         /// <param name="scope">The focus scope.</param>
         /// <param name="element">The element to focus. May be null.</param>
         /// <param name="method">The method by which focus was changed.</param>
-        /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
+        /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
         /// <remarks>
         /// If the specified scope is the current <see cref="Scope"/> then the keyboard focus
         /// will change.
@@ -107,7 +107,7 @@ namespace Avalonia.Input
             IFocusScope scope,
             IInputElement element,
             NavigationMethod method = NavigationMethod.Unspecified,
-            InputModifiers modifiers = InputModifiers.None)
+            KeyModifiers keyModifiers = KeyModifiers.None)
         {
             Contract.Requires<ArgumentNullException>(scope != null);
 
@@ -126,7 +126,7 @@ namespace Avalonia.Input
 
             if (Scope == scope)
             {
-                KeyboardDevice.Instance?.SetFocusedElement(element, method, modifiers);
+                KeyboardDevice.Instance?.SetFocusedElement(element, method, keyModifiers);
             }
         }
 
@@ -198,7 +198,7 @@ namespace Avalonia.Input
                 {
                     if (element is IInputElement inputElement && CanFocus(inputElement))
                     {
-                        Instance?.Focus(inputElement, NavigationMethod.Pointer, ev.InputModifiers);
+                        Instance?.Focus(inputElement, NavigationMethod.Pointer, ev.KeyModifiers);
 
                         break;
                     }

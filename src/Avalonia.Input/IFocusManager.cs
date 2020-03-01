@@ -23,11 +23,11 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="control">The control to focus.</param>
         /// <param name="method">The method by which focus was changed.</param>
-        /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
+        /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
         void Focus(
-            IInputElement control, 
+            IInputElement control,
             NavigationMethod method = NavigationMethod.Unspecified,
-            InputModifiers modifiers = InputModifiers.None);
+            KeyModifiers keyModifiers = KeyModifiers.None);
 
         /// <summary>
         /// Notifies the focus manager of a change in focus scope.
