@@ -34,6 +34,14 @@ namespace Avalonia.Styling
             _target = target;
             _styledProperty = property;
             _binding = binding.Initiate(_target, property);
+
+            if (_binding.Mode == BindingMode.OneTime)
+            {
+                // For the moment, we don't support OneTime bindings in setters, because I'm not
+                // sure what the semantics should be in the case of activation/deactivation.
+                throw new NotSupportedException("OneTime bindings are not supported in setters.");
+            }
+
             _inner = new Inner(this);
         }
 
