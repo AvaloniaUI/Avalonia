@@ -30,6 +30,7 @@ namespace Avalonia.Base.UnitTests
             target.PropertyChanged += (s, e) =>
             {
                 Assert.Same(target, s);
+                Assert.Equal(BindingPriority.Unset, e.Priority);
                 Assert.Equal(Class1.FooProperty, e.Property);
                 Assert.Equal("newvalue", (string)e.OldValue);
                 Assert.Equal("foodefault", (string)e.NewValue);
@@ -236,6 +237,17 @@ namespace Avalonia.Base.UnitTests
             target.SetValue(Class1.FooProperty, "one", BindingPriority.Style);
             Assert.Equal("one", target.GetValue(Class1.FooProperty));
             target.SetValue(Class1.FooProperty, "two", BindingPriority.LocalValue);
+            Assert.Equal("two", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void SetValue_Animation_Overrides_LocalValue()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "one", BindingPriority.LocalValue);
+            Assert.Equal("one", target.GetValue(Class1.FooProperty));
+            target.SetValue(Class1.FooProperty, "two", BindingPriority.Animation);
             Assert.Equal("two", target.GetValue(Class1.FooProperty));
         }
 

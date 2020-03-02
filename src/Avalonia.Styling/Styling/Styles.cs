@@ -239,8 +239,10 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         public bool Remove(IStyle item) => _styles.Remove(item);
 
+        public AvaloniaList<IStyle>.Enumerator GetEnumerator() => _styles.GetEnumerator();
+
         /// <inheritdoc/>
-        public IEnumerator<IStyle> GetEnumerator() => _styles.GetEnumerator();
+        IEnumerator<IStyle> IEnumerable<IStyle>.GetEnumerator() => _styles.GetEnumerator();
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => _styles.GetEnumerator();

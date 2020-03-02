@@ -34,7 +34,6 @@ namespace Avalonia
         public AvaloniaObject()
         {
             VerifyAccess();
-            AvaloniaPropertyRegistry.Instance.NotifyInitialized(this);
         }
 
         /// <summary>
@@ -479,7 +478,13 @@ namespace Avalonia
             }
         }
 
-        void IValueSink.Completed(AvaloniaProperty property, IPriorityValueEntry entry) { }
+        void IValueSink.Completed<T>(
+            StyledPropertyBase<T> property,
+            IPriorityValueEntry entry,
+            Optional<T> oldValue) 
+        {
+            ((IValueSink)this).ValueChanged(property, BindingPriority.Unset, oldValue, default);
+        }
 
         /// <summary>
         /// Called for each inherited property when the <see cref="InheritanceParent"/> changes.
