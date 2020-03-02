@@ -153,12 +153,6 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IFontManagerImpl CreateFontManager()
-        {
-            return new FontManagerImpl();
-        }
-
-        /// <inheritdoc />
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
         {
             var count = glyphRun.GlyphIndices.Length;
@@ -206,7 +200,7 @@ namespace Avalonia.Skia
                         }
                     }
 
-                    buffer.SetGlyphs(glyphRun.GlyphIndices.AsSpan());
+                    buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
                 }
                 else
                 {
@@ -232,7 +226,7 @@ namespace Avalonia.Skia
                         }
                     }
 
-                    buffer.SetGlyphs(glyphRun.GlyphIndices.AsSpan());
+                    buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
 
                     width = currentX;
                 }

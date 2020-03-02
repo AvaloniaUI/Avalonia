@@ -182,8 +182,6 @@ namespace Avalonia.Layout.UnitTests
                     It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()))
                 .Returns(new FormattedTextMock("TEST"));
 
-            renderInterface.Setup(x => x.CreateFontManager()).Returns(new MockFontManagerImpl());
-
             var streamGeometry = new Mock<IStreamGeometryImpl>();
             streamGeometry.Setup(x =>
                     x.Open())
@@ -210,6 +208,8 @@ namespace Avalonia.Layout.UnitTests
                 .Bind<IRuntimePlatform>().ToConstant(new AppBuilder().RuntimePlatform)
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface.Object)
                 .Bind<IStyler>().ToConstant(new Styler())
+                .Bind<IFontManagerImpl>().ToConstant(new MockFontManagerImpl())
+                .Bind<ITextShaperImpl>().ToConstant(new MockTextShaperImpl())
                 .Bind<IWindowingPlatform>().ToConstant(new Avalonia.Controls.UnitTests.WindowingPlatformMock(() => windowImpl.Object));
 
             var theme = new DefaultTheme();
