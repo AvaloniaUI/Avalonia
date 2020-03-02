@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -43,8 +44,6 @@ namespace Avalonia.Controls
         static Slider()
         {
             OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
-            PseudoClass<Slider, Orientation>(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
-            PseudoClass<Slider, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
             Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
             Thumb.DragDeltaEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e), RoutingStrategies.Bubble);
@@ -55,6 +54,7 @@ namespace Avalonia.Controls
         /// </summary>
         public Slider()
         {
+            UpdatePseudoClasses(Orientation);
         }
 
         /// <summary>
@@ -137,6 +137,20 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
+        {
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
+
+            if (property == OrientationProperty)
+            {
+                UpdatePseudoClasses(newValue.GetValueOrDefault<Orientation>());
+            }
+        }
+
         /// <summary>
         /// Called when user start dragging the <see cref="Thumb"/>.
         /// </summary>
@@ -189,6 +203,12 @@ namespace Avalonia.Controls
             }
 
             return value;
+        }
+
+        private void UpdatePseudoClasses(Orientation o)
+        {
+            PseudoClasses.Set(":vertical", o == Orientation.Vertical);
+            PseudoClasses.Set(":horizontal", o == Orientation.Horizontal);
         }
     }
 }

@@ -148,7 +148,7 @@ namespace Avalonia
                         _values.Remove(property);
                         _sink.ValueChanged(
                             property,
-                            BindingPriority.LocalValue,
+                            BindingPriority.Unset,
                             old,
                             BindingValue<T>.Unset);
                     }
@@ -173,7 +173,7 @@ namespace Avalonia
             {
                 return new Diagnostics.AvaloniaPropertyValue(
                     property,
-                    slot.Value.HasValue ? (object)slot.Value : AvaloniaProperty.UnsetValue,
+                    slot.Value.HasValue ? slot.Value.Value : AvaloniaProperty.UnsetValue,
                     slot.ValuePriority,
                     null);
             }
@@ -190,13 +190,17 @@ namespace Avalonia
             _sink.ValueChanged(property, priority, oldValue, newValue);
         }
 
-        void IValueSink.Completed(AvaloniaProperty property, IPriorityValueEntry entry)
+        void IValueSink.Completed<T>(
+            StyledPropertyBase<T> property,
+            IPriorityValueEntry entry,
+            Optional<T> oldValue)
         {
             if (_values.TryGetValue(property, out var slot))
             {
                 if (slot == entry)
                 {
                     _values.Remove(property);
+                    _sink.Completed(property, entry, oldValue);
                 }
             }
         }
@@ -228,6 +232,7 @@ namespace Avalonia
                 else
                 {
                     var priorityValue = new PriorityValue<T>(_owner, property, this, l);
+                    priorityValue.SetValue(value, priority);
                     _values.SetValue(property, priorityValue);
                 }
             }

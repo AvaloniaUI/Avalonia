@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -183,6 +184,14 @@ namespace Avalonia.Utilities
                         return false;
                     }
                 }
+            }
+
+            var typeConverter = TypeDescriptor.GetConverter(to);
+
+            if (typeConverter.CanConvertFrom(from) == true)
+            {
+                result = typeConverter.ConvertFrom(null, culture, value);
+                return true;
             }
 
             var cast = FindTypeConversionOperatorMethod(from, to, OperatorType.Implicit | OperatorType.Explicit);

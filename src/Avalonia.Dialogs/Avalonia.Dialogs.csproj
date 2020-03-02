@@ -13,7 +13,6 @@
   <Import Project="..\..\build\BuildTargets.targets" />
 
   <ItemGroup>
-    <ProjectReference Include="..\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
   </ItemGroup>
 </Project>
