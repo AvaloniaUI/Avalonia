@@ -2,6 +2,13 @@
 
 namespace Avalonia.Styling.Activators
 {
+    /// <summary>
+    /// Builds an <see cref="AndActivator"/>.
+    /// </summary>
+    /// <remarks>
+    /// When ANDing style activators, if there is more than one input then creates an instance of
+    /// <see cref="AndActivator"/>. If there is only one input, returns the input directly.
+    /// </remarks>
     internal struct AndActivatorBuilder
     {
         private IStyleActivator? _single;

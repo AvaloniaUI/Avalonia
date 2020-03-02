@@ -110,7 +110,7 @@ namespace Avalonia.Styling
 
             // Selectors are stored from right-to-left, so we recurse into the selector in order to
             // reverse this order, because the type selector will be on the left and is our best
-            // oppurtunity exit early.
+            // opportunity to exit early.
             if (previous != null && !previous.IsCombinator)
             {
                 var previousMatch = Match(control, previous, subscribe, ref activators, ref combinator);

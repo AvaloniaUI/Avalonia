@@ -7,6 +7,11 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Styling
 {
+    /// <summary>
+    /// A <see cref="Setter"/> which has been instanced on a control and has an
+    /// <see cref="IBinding"/> as its value.
+    /// </summary>
+    /// <typeparam name="T">The target property type.</typeparam>
     internal class PropertySetterBindingInstance<T> : SingleSubscriberObservableBase<BindingValue<T>>,
         ISubject<BindingValue<T>>,
         ISetterInstance

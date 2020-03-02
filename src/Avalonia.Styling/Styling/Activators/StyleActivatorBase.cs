@@ -2,6 +2,9 @@
 
 namespace Avalonia.Styling.Activators
 {
+    /// <summary>
+    /// Base class implementation of <see cref="IStyleActivator"/>.
+    /// </summary>
     internal abstract class StyleActivatorBase : IStyleActivator
     {
         private IStyleActivatorSink? _sink;

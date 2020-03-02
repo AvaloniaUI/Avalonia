@@ -4,6 +4,9 @@
 
 namespace Avalonia.Styling.Activators
 {
+    /// <summary>
+    /// An <see cref="IStyleActivator"/> which listens to a property value on a control.
+    /// </summary>
     internal class PropertyEqualsActivator : StyleActivatorBase, IObserver<object>
     {
         private readonly IStyleable _control;

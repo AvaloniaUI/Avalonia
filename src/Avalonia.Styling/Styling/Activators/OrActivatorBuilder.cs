@@ -2,6 +2,13 @@
 
 namespace Avalonia.Styling.Activators
 {
+    /// <summary>
+    /// Builds an <see cref="OrActivator"/>.
+    /// </summary>
+    /// <remarks>
+    /// When ORing style activators, if there is more than one input then creates an instance of
+    /// <see cref="OrActivator"/>. If there is only one input, returns the input directly.
+    /// </remarks>
     internal struct OrActivatorBuilder
     {
         private IStyleActivator? _single;

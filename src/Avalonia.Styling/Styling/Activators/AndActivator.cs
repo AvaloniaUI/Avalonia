@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace Avalonia.Styling.Activators
 {
+    /// <summary>
+    /// An aggregate <see cref="IStyleActivator"/> which is active when all of its inputs are
+    /// active.
+    /// </summary>
     internal class AndActivator : StyleActivatorBase, IStyleActivatorSink
     {
         private List<IStyleActivator>? _sources;

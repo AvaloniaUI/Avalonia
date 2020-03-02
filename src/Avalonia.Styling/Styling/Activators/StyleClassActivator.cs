@@ -6,6 +6,10 @@ using Avalonia.Collections;
 
 namespace Avalonia.Styling.Activators
 {
+    /// <summary>
+    /// An <see cref="IStyleActivator"/> which is active when a set of classes match those on a
+    /// control.
+    /// </summary>
     internal sealed class StyleClassActivator : StyleActivatorBase
     {
         private readonly IList<string> _match;

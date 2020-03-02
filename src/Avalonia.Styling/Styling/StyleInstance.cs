@@ -8,6 +8,9 @@ using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling
 {
+    /// <summary>
+    /// A <see cref="Style"/> which has been instanced on a control.
+    /// </summary>
     internal class StyleInstance : IStyleInstance, IStyleActivatorSink
     {
         private readonly List<ISetterInstance>? _setters;

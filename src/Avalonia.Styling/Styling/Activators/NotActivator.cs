@@ -2,6 +2,9 @@
 
 namespace Avalonia.Styling.Activators
 {
+    /// <summary>
+    /// An <see cref="IStyleActivator"/> which inverts the state of an input activator.
+    /// </summary>
     internal class NotActivator : StyleActivatorBase, IStyleActivatorSink
     {
         private readonly IStyleActivator _source;
