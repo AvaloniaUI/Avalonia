@@ -13,7 +13,6 @@ namespace ControlCatalog.Pages
         private readonly Image _bitmapImage;
         private readonly Image _drawingImage;
         private readonly Image _croppedImage;
-        private readonly IBitmap _croppedBitmapSource;
 
         public ImagePage()
         {
@@ -21,8 +20,6 @@ namespace ControlCatalog.Pages
             _bitmapImage = this.FindControl<Image>("bitmapImage");
             _drawingImage = this.FindControl<Image>("drawingImage");
             _croppedImage = this.FindControl<Image>("croppedImage");
-            _croppedBitmapSource = LoadBitmap("avares://ControlCatalog/Assets/delicate-arch-896885_640.jpg");
-            _croppedImage.Source = new CroppedBitmap(_croppedBitmapSource, default);
         }
 
         private void InitializeComponent()
@@ -53,15 +50,16 @@ namespace ControlCatalog.Pages
             if (_croppedImage != null)
             {
                 var comboxBox = (ComboBox)sender;
-                _croppedImage.Source =  new CroppedBitmap( _croppedBitmapSource,  GetCropRect(comboxBox.SelectedIndex));
+                var croppedBitmap = _croppedImage.Source as CroppedBitmap;
+                croppedBitmap.SourceRect = GetCropRect(comboxBox.SelectedIndex);
             }
         }
 
         private PixelRect GetCropRect(int index)
         {
-            var bitmapWidth = _croppedBitmapSource.PixelSize.Width;
-            var bitmapHeight = _croppedBitmapSource.PixelSize.Height;
-            var cropSize = new PixelSize(bitmapWidth / 2, bitmapHeight / 2);
+            var bitmapWidth = 640;
+            var bitmapHeight = 426;
+            var cropSize = new PixelSize(320, 240);
             return index switch
             {
                 1 => new PixelRect(new PixelPoint((bitmapWidth - cropSize.Width) / 2, (bitmapHeight - cropSize.Width) / 2), cropSize),
@@ -72,12 +70,6 @@ namespace ControlCatalog.Pages
                 _ => PixelRect.Empty
             };
             
-        }
-
-        private IBitmap LoadBitmap(string uri)
-        {
-            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-            return new Bitmap(assets.Open(new Uri(uri)));
         }
     }
 }
