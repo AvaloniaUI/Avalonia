@@ -20,8 +20,8 @@
                          Platform=$(Platform)" />
 
     <ItemGroup>
-      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/netcoreapp2.0/Avalonia.Designer.HostApp.dll">
-        <PackagePath>tools/netcoreapp2.0/designer</PackagePath>
+      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/netcoreapp3.1/Avalonia.Designer.HostApp.dll">
+        <PackagePath>tools/netcoreapp3.1/designer</PackagePath>
         <Visible>false</Visible>
         <BuildAction>None</BuildAction>
       </_PackageFiles>
