@@ -395,7 +395,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Invalidates <see cref="TextLayout"/>.
         /// </summary>
-        protected void InvalidateFormattedText()
+        protected void InvalidateTextLayout()
         {
             _textLayout = null;
         }
@@ -412,6 +412,11 @@ namespace Avalonia.Controls
                 return new Size();
             }
 
+            if (_constraint != availableSize)
+            {
+                InvalidateTextLayout();
+            }
+
             _constraint = availableSize;
 
             return TextLayout?.Bounds.Size ?? Size.Empty;
@@ -420,13 +425,13 @@ namespace Avalonia.Controls
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
-            InvalidateFormattedText();
+            InvalidateTextLayout();
             InvalidateMeasure();
         }
 
         private void OnTextPropertiesChanged()
         {
-            InvalidateFormattedText();
+            InvalidateTextLayout();
             InvalidateMeasure();
         }
     }
