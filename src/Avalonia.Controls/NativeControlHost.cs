@@ -39,7 +39,7 @@ namespace Avalonia.Controls
 
         void UpdateHost()
         {
-            _currentHost = (_currentRoot.PlatformImpl as ITopLevelImplWithNativeControlHost)?.NativeControlHost;
+            _currentHost = (_currentRoot?.PlatformImpl as ITopLevelImplWithNativeControlHost)?.NativeControlHost;
             var needsAttachment = _currentHost != null;
             var needsShow = needsAttachment && IsEffectivelyVisible && TransformedBounds.HasValue;
             
