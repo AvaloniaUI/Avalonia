@@ -3,7 +3,6 @@ using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
-using Moq;
 
 namespace Avalonia.UnitTests
 {
@@ -29,7 +28,7 @@ namespace Avalonia.UnitTests
 
         public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
         {
-            return Mock.Of<IGlyphTypefaceImpl>();
+            return new MockGlyphTypeface();
         }
     }
 }

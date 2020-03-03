@@ -16,7 +16,7 @@ namespace Avalonia.Skia
 
         public GlyphTypefaceImpl(SKTypeface typeface)
         {
-            Typeface = typeface;
+            Typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
 
             Face = new Face(GetTable)
             {

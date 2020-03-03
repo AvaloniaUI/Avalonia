@@ -63,8 +63,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Same(textBlock, textBlockNode.Visual);
                 Assert.Equal(1, textBlockNode.DrawOperations.Count);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
-                Assert.NotNull(textNode.Text);
+                var textNode = (GlyphRunNode)textBlockNode.DrawOperations[0].Item;
+                Assert.NotNull(textNode.GlyphRun);
             }
         }
 
@@ -371,7 +371,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 var textBlockNode = (VisualNode)borderNode.Children[0];
                 Assert.Same(textBlock, textBlockNode.Visual);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
+                var textNode = (GlyphRunNode)textBlockNode.DrawOperations[0].Item;
                 Assert.Same(initialTextNode.Item, textNode);
             }
         }

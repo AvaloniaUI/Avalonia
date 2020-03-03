@@ -6,8 +6,8 @@ namespace Avalonia.UnitTests
     public class MockGlyphTypeface : IGlyphTypefaceImpl
     {
         public short DesignEmHeight => 10;
-        public int Ascent => 100;
-        public int Descent => 0;
+        public int Ascent => 2;
+        public int Descent => 10;
         public int LineGap { get; }
         public int UnderlinePosition { get; }
         public int UnderlineThickness { get; }
@@ -27,7 +27,7 @@ namespace Avalonia.UnitTests
 
         public int GetGlyphAdvance(ushort glyph)
         {
-            return 100;
+            return 8;
         }
 
         public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
@@ -36,7 +36,7 @@ namespace Avalonia.UnitTests
 
             for (var i = 0; i < advances.Length; i++)
             {
-                advances[i] = 100;
+                advances[i] = 8;
             }
 
             return advances;
