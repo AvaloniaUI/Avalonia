@@ -46,7 +46,7 @@ namespace Avalonia.Styling
             {
                 var animationsCount = animations.Count;
 
-                _animations = new List<IDisposable>();
+                _animations = new List<IDisposable>(animationsCount);
                 _animationTrigger = new Subject<bool>();
 
                 for (var i = 0; i < animationsCount; ++i)
