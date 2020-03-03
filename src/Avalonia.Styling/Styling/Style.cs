@@ -145,11 +145,6 @@ namespace Avalonia.Styling
                 throw new InvalidOperationException("The Style already has a parent.");
             }
 
-            if (parent == null)
-            {
-                //Detach();
-            }
-
             _parent = parent;
         }
 
