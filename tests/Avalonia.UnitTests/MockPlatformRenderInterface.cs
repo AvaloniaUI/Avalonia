@@ -79,11 +79,6 @@ namespace Avalonia.UnitTests
             throw new NotImplementedException();
         }
 
-        public IFontManagerImpl CreateFontManager()
-        {
-            return new MockFontManagerImpl();
-        }
-
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
         {
             width = 0;

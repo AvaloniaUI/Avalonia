@@ -12,3 +12,4 @@ using Avalonia.Metadata;
 
 [assembly: InternalsVisibleTo("Avalonia.Direct2D1.RenderTests")]
 [assembly: InternalsVisibleTo("Avalonia.Skia.RenderTests")]
+[assembly: InternalsVisibleTo("Avalonia.Skia.UnitTests")]
