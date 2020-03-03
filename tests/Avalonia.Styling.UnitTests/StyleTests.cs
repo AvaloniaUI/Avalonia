@@ -244,6 +244,72 @@ namespace Avalonia.Styling.UnitTests
             Assert.Equal(new Thickness(0), border.BorderThickness);
         }
 
+        [Fact]
+        public void Style_Should_Be_Detached_From_Control_When_Removed()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                var border = new Border();
+                var root = new TestRoot
+                {
+                    Styles =
+                    { 
+                        new Style(x => x.OfType<Border>())
+                        {
+                            Setters =
+                            {
+                                new Setter(Border.BorderThicknessProperty, new Thickness(4)),
+                            }
+                        }
+                    },
+                    Child = border,
+                };
+
+                root.Measure(Size.Infinity);
+                Assert.Equal(new Thickness(4), border.BorderThickness);
+
+                root.Styles.RemoveAt(0);
+                Assert.Equal(new Thickness(0), border.BorderThickness);
+            }
+        }
+
+        [Fact]
+        public void Style_Should_Be_Atttached_To_Control_When_Added()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                var border = new Border();
+                var root = new TestRoot
+                {
+                    Styles =
+                    {
+                        new Style(x => x.OfType<Border>())
+                        {
+                            Setters =
+                            {
+                                new Setter(Border.BorderThicknessProperty, new Thickness(4)),
+                            }
+                        }
+                    },
+                    Child = border,
+                };
+
+                root.Measure(Size.Infinity);
+                Assert.Equal(new Thickness(4), border.BorderThickness);
+
+                root.Styles.Add(new Style(x => x.OfType<Border>())
+                {
+                    Setters =
+                    {
+                        new Setter(Border.BorderThicknessProperty, new Thickness(6)),
+                    }
+                });
+
+                root.Measure(Size.Infinity);
+                Assert.Equal(new Thickness(6), border.BorderThickness);
+            }
+        }
+
         private class Class1 : Control
         {
             public static readonly StyledProperty<string> FooProperty =
