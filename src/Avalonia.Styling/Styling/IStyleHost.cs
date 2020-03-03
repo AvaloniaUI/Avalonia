@@ -2,6 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 
+using System.Collections.Generic;
+
+#nullable enable
+
 namespace Avalonia.Styling
 {
     /// <summary>
@@ -27,5 +31,17 @@ namespace Avalonia.Styling
         /// Gets the parent style host element.
         /// </summary>
         IStyleHost StylingParent { get; }
+
+        /// <summary>
+        /// Called when styles are added to <see cref="Styles"/>.
+        /// </summary>
+        /// <param name="styles">The added styles.</param>
+        void StylesAdded(IReadOnlyList<IStyle> styles);
+
+        /// <summary>
+        /// Called when styles are removed from <see cref="Styles"/>.
+        /// </summary>
+        /// <param name="styles">The removed styles.</param>
+        void StylesRemoved(IReadOnlyList<IStyle> styles);
     }
 }

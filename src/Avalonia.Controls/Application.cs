@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reactive.Concurrency;
 using System.Threading;
 using Avalonia.Animation;
@@ -214,6 +215,14 @@ namespace Avalonia
                    Styles.TryGetResource(key, out value);
         }
 
+        void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
+        {
+        }
+
+        void IStyleHost.StylesRemoved(IReadOnlyList<IStyle> styles)
+        {
+        }
+
         /// <summary>
         /// Register's the services needed by Avalonia.
         /// </summary>
@@ -286,6 +295,5 @@ namespace Avalonia
             get => _name;
             set => SetAndRaise(NameProperty, ref _name, value);
         }
-
     }
 }

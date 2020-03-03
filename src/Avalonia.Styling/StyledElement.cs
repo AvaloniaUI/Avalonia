@@ -352,20 +352,33 @@ namespace Avalonia
 
             if (--_initCount == 0 && _logicalRoot != null)
             {
-                InitializeStylesIfNeeded();
-
+                ApplyStyling();
                 InitializeIfNeeded();
             }
         }
 
-        private void InitializeStylesIfNeeded(bool force = false)
+        /// <summary>
+        /// Applies styling to the control if the control is initialized and styling is not
+        /// already applied.
+        /// </summary>
+        /// <returns>
+        /// A value indicating whether styling is now applied to the control.
+        /// </returns>
+        protected bool ApplyStyling()
         {
-            if (_initCount == 0 && (!_styled || force))
+            if (_initCount == 0 && !_styled)
             {
-                ApplyStyling();
+                AvaloniaLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
                 _styled = true;
             }
+
+            return _styled;
         }
+
+        /// <summary>
+        /// Detaches all styles from the element and queues a restyle.
+        /// </summary>
+        protected virtual void InvalidateStyles() => DetachStyles();
 
         protected void InitializeIfNeeded()
         {
@@ -479,6 +492,20 @@ namespace Avalonia
         }
 
         void IStyleable.DetachStyles() => DetachStyles();
+
+        void IStyleable.DetachStyles(IReadOnlyList<IStyle> styles) => DetachStyles(styles);
+
+        void IStyleable.InvalidateStyles() => InvalidateStyles();
+
+        void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
+        {
+            InvalidateStylesOnThisAndDescendents();
+        }
+
+        void IStyleHost.StylesRemoved(IReadOnlyList<IStyle> styles)
+        {
+            DetachStylesFromThisAndDescendents(styles);
+        }
 
         protected virtual void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -604,11 +631,6 @@ namespace Avalonia
             return null;
         }
 
-        private void ApplyStyling()
-        {
-            AvaloniaLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
-        }
-
         private static void ValidateLogicalChild(ILogical c)
         {
             if (c == null)
@@ -635,7 +657,7 @@ namespace Avalonia
             {
                 _logicalRoot = e.Root;
 
-                InitializeStylesIfNeeded(true);
+                ApplyStyling();
 
                 OnAttachedToLogicalTree(e);
                 AttachedToLogicalTree?.Invoke(this, e);
@@ -712,6 +734,64 @@ namespace Avalonia
                 }
 
                 _appliedStyles.Clear();
+            }
+
+            _styled = false;
+        }
+
+        private void DetachStyles(IReadOnlyList<IStyle> styles)
+        {
+            styles = styles ?? throw new ArgumentNullException(nameof(styles));
+
+            if (_appliedStyles is null)
+            {
+                return;
+            }
+
+            var count = styles.Count;
+
+            for (var i = 0; i < count; ++i)
+            {
+                for (var j = _appliedStyles.Count - 1; j >= 0; --j)
+                {
+                    var applied = _appliedStyles[j];
+
+                    if (applied.Source == styles[i])
+                    {
+                        applied.Dispose();
+                        _appliedStyles.RemoveAt(j);
+                    }
+                }
+            }
+        }
+
+        private void InvalidateStylesOnThisAndDescendents()
+        {
+            InvalidateStyles();
+
+            if (_logicalChildren is object)
+            {
+                var childCount = _logicalChildren.Count;
+
+                for (var i = 0; i < childCount; ++i)
+                {
+                    (_logicalChildren[i] as StyledElement)?.InvalidateStylesOnThisAndDescendents();
+                }
+            }
+        }
+
+        private void DetachStylesFromThisAndDescendents(IReadOnlyList<IStyle> styles)
+        {
+            DetachStyles(styles);
+
+            if (_logicalChildren is object)
+            {
+                var childCount = _logicalChildren.Count;
+
+                for (var i = 0; i < childCount; ++i)
+                {
+                    (_logicalChildren[i] as StyledElement)?.DetachStylesFromThisAndDescendents(styles);
+                }
             }
         }
 
