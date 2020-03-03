@@ -153,9 +153,13 @@ namespace Avalonia.Controls
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetTitle((string)e.NewValue));
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
-                (s, e) => s.PlatformImpl?.SetSystemDecorations(((bool)e.NewValue) ? SystemDecorations.Full : SystemDecorations.None));
+                (s, e) => s.SetValue(SystemDecorationsProperty, (bool)e.NewValue ? SystemDecorations.Full : SystemDecorations.None));
             SystemDecorationsProperty.Changed.AddClassHandler<Window>(
-                (s, e) => s.PlatformImpl?.SetSystemDecorations((SystemDecorations)e.NewValue));
+                (s, e) =>
+                {
+                    s.PlatformImpl?.SetSystemDecorations((SystemDecorations)e.NewValue);
+                    s.SetValue(HasSystemDecorationsProperty, (SystemDecorations)e.NewValue != SystemDecorations.None);
+                });
 
             ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue));
 
