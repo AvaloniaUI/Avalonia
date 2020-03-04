@@ -92,6 +92,10 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("glGenRenderbuffers")]
         public GlGenRenderbuffers GenRenderbuffers { get; }
         
+        public delegate void GlDeleteRenderbuffers(int count, int[] renderbuffers);
+        [GlEntryPoint("glDeleteRenderbuffers")]
+        public GlDeleteTextures DeleteRenderbuffers { get; }
+        
         public delegate void GlBindRenderbuffer(int target, int fb);
         [GlEntryPoint("glBindRenderbuffer")]
         public GlBindRenderbuffer BindRenderbuffer { get; }
