@@ -157,11 +157,14 @@ NSArray<NSString*>* _modes;
 
 -(void) perform
 {
+    ComPtr<IAvnSignaledCallback> cb;
     @synchronized (self) {
         _signaled  = false;
-        if(_parent != NULL && _parent->SignaledCallback != NULL)
-            _parent->SignaledCallback->Signaled(0, false);
+        if(_parent != NULL)
+            cb = _parent->SignaledCallback;
     }
+    if(cb != nullptr)
+        cb->Signaled(0, false);
 }
 
 -(void) setParent:(PlatformThreadingInterface *)parent
