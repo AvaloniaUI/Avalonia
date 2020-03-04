@@ -99,10 +99,10 @@ namespace ControlCatalog.Pages
         uniform float uDisco;
         void main()
         {
-            float discoScale = sin(uTime*10)/10;
-            float distortionX = 1 + uDisco * cos(uTime*20)/10;
+            float discoScale = sin(uTime * 10.0) / 10.0;
+            float distortionX = 1.0 + uDisco * cos(uTime * 20.0) / 10.0;
             
-            float scale = 1 + uDisco * discoScale;
+            float scale = 1.0 + uDisco * discoScale;
             
             vec3 scaledPos = aPos;
             scaledPos.x = scaledPos.x * distortionX;
@@ -127,15 +127,15 @@ namespace ControlCatalog.Pages
         void main()
         {
             float y = (VecPos.y - uMinY) / (uMaxY - uMinY);
-            float c = cos(atan(VecPos.x, VecPos.z)*20.0+uTime*40.0+y*50);
-            float s = sin(-atan(VecPos.z, VecPos.x)*20.0-uTime*20.0-y*30);
+            float c = cos(atan(VecPos.x, VecPos.z) * 20.0 + uTime * 40.0 + y * 50.0);
+            float s = sin(-atan(VecPos.z, VecPos.x) * 20.0 - uTime * 20.0 - y * 30.0);
 
             vec3 discoColor = vec3(
-                0.5 + abs(0.5-y)*cos(uTime*10),
-                0.25 + (smoothstep(0.3, 0.8, y)*(0.5-c/4)),
-                0.25 + abs((smoothstep(0.1, 0.4, y)*(0.5-s/4))));
+                0.5 + abs(0.5 - y) * cos(uTime * 10),
+                0.25 + (smoothstep(0.3, 0.8, y) * (0.5 - c/4)),
+                0.25 + abs((smoothstep(0.1, 0.4, y) * (0.5 - s/4))));
 
-            vec3 objectColor = vec3((1.0 - y), 0.40 +  y / 4.0, y * 0.75+0.25);
+            vec3 objectColor = vec3((1.0 - y), 0.40 +  y / 4.0, y * 0.75 + 0.25);
             objectColor = objectColor * (1-uDisco) + discoColor * uDisco;
 
             float ambientStrength = 0.3;
