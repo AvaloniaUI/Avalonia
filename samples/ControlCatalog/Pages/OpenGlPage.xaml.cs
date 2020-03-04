@@ -85,7 +85,7 @@ namespace ControlCatalog.Pages
         private string WithVersionAndPrecision(string shader, string precision) =>
             WithVersion(DisplayType == GlDisplayType.OpenGLES ? $"precision {precision};\n{shader}" : shader);
 
-        private string VertexShaderSource => WithVersion(@"
+        private string VertexShaderSource => WithVersionAndPrecision(@"
         attribute vec3 aPos;
         attribute vec3 aNormal;
         uniform mat4 uModel;
@@ -113,7 +113,7 @@ namespace ControlCatalog.Pages
             VecPos = aPos;
             Normal = normalize(vec3(uModel * vec4(aNormal, 1.0)));
         }
-");
+", "mediump float");
 
         private string FragmentShaderSource => WithVersionAndPrecision(@"
         varying vec3 FragPos; 
@@ -131,12 +131,12 @@ namespace ControlCatalog.Pages
             float s = sin(-atan(VecPos.z, VecPos.x) * 20.0 - uTime * 20.0 - y * 30.0);
 
             vec3 discoColor = vec3(
-                0.5 + abs(0.5 - y) * cos(uTime * 10),
-                0.25 + (smoothstep(0.3, 0.8, y) * (0.5 - c/4)),
-                0.25 + abs((smoothstep(0.1, 0.4, y) * (0.5 - s/4))));
+                0.5 + abs(0.5 - y) * cos(uTime * 10.0),
+                0.25 + (smoothstep(0.3, 0.8, y) * (0.5 - c / 4.0)),
+                0.25 + abs((smoothstep(0.1, 0.4, y) * (0.5 - s / 4.0))));
 
             vec3 objectColor = vec3((1.0 - y), 0.40 +  y / 4.0, y * 0.75 + 0.25);
-            objectColor = objectColor * (1-uDisco) + discoColor * uDisco;
+            objectColor = objectColor * (1.0 - uDisco) + discoColor * uDisco;
 
             float ambientStrength = 0.3;
             vec3 lightColor = vec3(1.0, 1.0, 1.0);
