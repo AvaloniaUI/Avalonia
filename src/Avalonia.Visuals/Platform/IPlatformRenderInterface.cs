@@ -113,12 +113,6 @@ namespace Avalonia.Platform
         IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride);
 
         /// <summary>
-        ///     Creates a font manager implementation.
-        /// </summary>
-        /// <returns>The font manager.</returns>
-        IFontManagerImpl CreateFontManager();
-
-        /// <summary>
         /// Creates a platform implementation of a glyph run.
         /// </summary>
         /// <param name="glyphRun">The glyph run.</param>

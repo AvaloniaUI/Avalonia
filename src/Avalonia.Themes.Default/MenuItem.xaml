@@ -55,8 +55,7 @@
             <Popup Name="PART_Popup"
                    PlacementMode="Right"
                    StaysOpen="True"
-                   IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
-                   ObeyScreenEdges="True">
+                   IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
               <Border Background="{TemplateBinding Background}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">
@@ -106,8 +105,7 @@
             </ContentPresenter>
             <Popup Name="PART_Popup"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
-                   StaysOpen="True" 
-                   ObeyScreenEdges="True">
+                   StaysOpen="True">
               <Border Background="{TemplateBinding Background}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">
