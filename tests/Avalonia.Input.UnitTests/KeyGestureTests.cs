@@ -21,7 +21,7 @@ namespace Avalonia.Input.UnitTests
             new object[]{new KeyGesture(Key.A, KeyModifiers.Control | KeyModifiers.Shift), "Ctrl+Shift+A"},
             new object[]{new KeyGesture(Key.A, KeyModifiers.Alt | KeyModifiers.Shift), "Shift+Alt+A"},
             new object[]{new KeyGesture(Key.A, KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Shift), "Ctrl+Shift+Alt+A"},
-            new object[]{new KeyGesture(Key.A, KeyModifiers.Meta | KeyModifiers.Shift), "Shift+⌘+A"},
+            new object[]{new KeyGesture(Key.A, KeyModifiers.Meta | KeyModifiers.Shift), "Shift+Cmd+A"},
         };
 
         [Theory]

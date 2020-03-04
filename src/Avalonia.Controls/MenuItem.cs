@@ -50,10 +50,10 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<MenuItem, object>(nameof(Icon));
 
         /// <summary>
-        /// Defines the <see cref="InputGestureText"/> property.
+        /// Defines the <see cref="InputGesture"/> property.
         /// </summary>
-        public static readonly StyledProperty<string> InputGestureTextProperty =
-            AvaloniaProperty.Register<MenuItem, string>(nameof(InputGestureText));
+        public static readonly StyledProperty<KeyGesture> InputGestureProperty =
+            AvaloniaProperty.Register<MenuItem, KeyGesture>(nameof(InputGesture));
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
@@ -209,10 +209,10 @@ namespace Avalonia.Controls
         /// Setting this property does not cause the input gesture to be handled by the menu item,
         /// it simply displays the gesture text in the menu.
         /// </remarks>
-        public string InputGestureText
+        public KeyGesture InputGesture
         {
-            get { return GetValue(InputGestureTextProperty); }
-            set { SetValue(InputGestureTextProperty, value); }
+            get { return GetValue(InputGestureProperty); }
+            set { SetValue(InputGestureProperty, value); }
         }
 
         /// <summary>

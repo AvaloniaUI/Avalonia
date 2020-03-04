@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Avalonia.Input
@@ -129,17 +130,17 @@ namespace Avalonia.Input
                 Plus(s);
                 s.Append("Shift");
             }
-            
+
             if (KeyModifiers.HasFlagCustom(KeyModifiers.Alt))
             {
                 Plus(s);
                 s.Append("Alt");
             }
-            
+
             if (KeyModifiers.HasFlagCustom(KeyModifiers.Meta))
             {
                 Plus(s);
-                s.Append("⌘");
+                s.Append("Cmd");
             }
 
             Plus(s);
@@ -167,6 +168,7 @@ namespace Avalonia.Input
             }
 
             if (modifier.Equals("cmd".AsSpan(), StringComparison.OrdinalIgnoreCase) ||
+                modifier.Equals("win".AsSpan(), StringComparison.OrdinalIgnoreCase) ||
                 modifier.Equals("⌘".AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
                 return KeyModifiers.Meta;
