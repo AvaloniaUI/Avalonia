@@ -8,8 +8,10 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Diagnostics;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using JetBrains.dotMemoryUnit;
@@ -370,6 +372,56 @@ namespace Avalonia.LeakTests
             }
         }
 
+        [Fact]
+        public void Control_With_Style_RenderTransform_Is_Freed()
+        {
+            // # Issue #3545
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Styles =
+                        {
+                            new Style(x => x.OfType<Canvas>())
+                            {
+                                Setters =
+                                {
+                                    new Setter
+                                    {
+                                        Property = Visual.RenderTransformProperty,
+                                        Value = new RotateTransform(45),
+                                    }
+                                }
+                            }
+                        },
+                        Content = new Canvas()
+                    };
+
+                    window.Show();
+
+                    // Do a layout and make sure that Canvas gets added to visual tree with
+                    // its render transform.
+                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    var canvas = Assert.IsType<Canvas>(window.Presenter.Child);
+                    Assert.IsType<RotateTransform>(canvas.RenderTransform);
+
+                    // Clear the content and ensure the Canvas is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+            }
+        }
+
         private IDisposable Start()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow);
@@ -396,6 +448,8 @@ namespace Avalonia.LeakTests
             }
 
             public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter) => null;
+
+            public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter) => null;
 
             public void Paint(Rect rect)
             {

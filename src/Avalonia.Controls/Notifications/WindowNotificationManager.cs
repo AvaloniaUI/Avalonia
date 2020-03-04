@@ -7,6 +7,8 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
+using Avalonia.Rendering;
+using Avalonia.Data;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Notifications
@@ -14,7 +16,7 @@ namespace Avalonia.Controls.Notifications
     /// <summary>
     /// An <see cref="INotificationManager"/> that displays notifications in a <see cref="Window"/>.
     /// </summary>
-    public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
+    public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager, ICustomSimpleHitTest
     {
         private IList _items;
 
@@ -67,15 +69,12 @@ namespace Avalonia.Controls.Notifications
                         Install(host);
                     });
             }
+
+            UpdatePseudoClasses(Position);
         }
 
         static WindowNotificationManager()
         {
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopLeft, ":topleft");
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopRight, ":topright");
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomLeft, ":bottomleft");
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomRight, ":bottomright");
-
             HorizontalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(Layout.HorizontalAlignment.Stretch);
             VerticalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(Layout.VerticalAlignment.Stretch);
         }
@@ -142,6 +141,20 @@ namespace Avalonia.Controls.Notifications
             notificationControl.Close();
         }
 
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
+        {
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
+
+            if (property == PositionProperty)
+            {
+                UpdatePseudoClasses(newValue.GetValueOrDefault<NotificationPosition>());
+            }
+        }
+
         /// <summary>
         /// Installs the <see cref="WindowNotificationManager"/> within the <see cref="AdornerLayer"/>
         /// of the host <see cref="Window"/>.
@@ -153,5 +166,15 @@ namespace Avalonia.Controls.Notifications
 
             adornerLayer?.Children.Add(this);
         }
+
+        private void UpdatePseudoClasses(NotificationPosition position)
+        {
+            PseudoClasses.Set(":topleft", position == NotificationPosition.TopLeft);
+            PseudoClasses.Set(":topright", position == NotificationPosition.TopRight);
+            PseudoClasses.Set(":bottomleft", position == NotificationPosition.BottomLeft);
+            PseudoClasses.Set(":bottomright", position == NotificationPosition.BottomRight);
+        }
+
+        public bool HitTest(Point point) => VisualChildren.HitTestCustom(point);
     }
 }

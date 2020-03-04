@@ -14,6 +14,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Data;
+using Avalonia.Layout;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -63,7 +64,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, int>(nameof(MaxLength), defaultValue: 0);
 
         public static readonly DirectProperty<TextBox, string> TextProperty =
-            TextBlock.TextProperty.AddOwner<TextBox>(
+            TextBlock.TextProperty.AddOwnerWithDataValidation<TextBox>(
                 o => o.Text,
                 (o, v) => o.Text = v,
                 defaultBindingMode: BindingMode.TwoWay,
@@ -71,6 +72,18 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<TextBox>();
+
+        /// <summary>
+        /// Defines the <see cref="HorizontalAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
+            ContentControl.HorizontalContentAlignmentProperty.AddOwner<TextBox>();
+
+        /// <summary>
+        /// Defines the <see cref="VerticalAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
+            ContentControl.VerticalContentAlignmentProperty.AddOwner<TextBox>();
 
         public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
@@ -133,7 +146,7 @@ namespace Avalonia.Controls
                         return ScrollBarVisibility.Hidden;
                     }
                 });
-            Bind(
+            this.Bind(
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
@@ -262,6 +275,24 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the horizontal alignment of the content within the control.
+        /// </summary>
+        public HorizontalAlignment HorizontalContentAlignment
+        {
+            get { return GetValue(HorizontalContentAlignmentProperty); }
+            set { SetValue(HorizontalContentAlignmentProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the vertical alignment of the content within the control.
+        /// </summary>
+        public VerticalAlignment VerticalContentAlignment
+        {
+            get { return GetValue(VerticalContentAlignmentProperty); }
+            set { SetValue(VerticalContentAlignmentProperty, value); }
+        }
+
         public TextAlignment TextAlignment
         {
             get { return GetValue(TextAlignmentProperty); }
@@ -316,8 +347,7 @@ namespace Avalonia.Controls
                 !AcceptsReturn &&
                 Text?.Length > 0)
             {
-                SelectionStart = 0;
-                SelectionEnd = Text.Length;
+                SelectAll();
             }
             else
             {
@@ -403,12 +433,12 @@ namespace Avalonia.Controls
             bool movement = false;
             bool selection = false;
             bool handled = false;
-            var modifiers = e.Modifiers;
+            var modifiers = e.KeyModifiers;
 
             var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
-            bool DetectSelection() => e.Modifiers.HasFlag(keymap.SelectionModifiers);
+            bool DetectSelection() => e.KeyModifiers.HasFlag(keymap.SelectionModifiers);
 
             if (Match(keymap.SelectAll))
             {
@@ -673,8 +703,7 @@ namespace Avalonia.Controls
                         SelectionEnd = StringUtils.NextWord(text, index);
                         break;
                     case 3:
-                        SelectionStart = 0;
-                        SelectionEnd = text.Length;
+                        SelectAll();
                         break;
                 }
             }
@@ -702,11 +731,11 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
             if (property == TextProperty)
             {
-                DataValidationErrors.SetError(this, status.Error);
+                DataValidationErrors.SetError(this, value.Error);
             }
         }
 
@@ -896,7 +925,10 @@ namespace Avalonia.Controls
             CaretIndex = caretIndex;
         }
 
-        private void SelectAll()
+        /// <summary>
+        /// Select all text in the TextBox
+        /// </summary>
+        public void SelectAll()
         {
             SelectionStart = 0;
             SelectionEnd = Text?.Length ?? 0;

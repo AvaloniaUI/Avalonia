@@ -386,11 +386,18 @@ namespace Avalonia
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
 
-            if (VisualChildren != null)
+            var visualChildren = VisualChildren;
+
+            if (visualChildren != null)
             {
-                foreach (Visual child in VisualChildren.OfType<Visual>())
+                var visualChildrenCount = visualChildren.Count;
+
+                for (var i = 0; i < visualChildrenCount; i++)
                 {
-                    child.OnAttachedToVisualTreeCore(e);
+                    if (visualChildren[i] is Visual child)
+                    {
+                        child.OnAttachedToVisualTreeCore(e);
+                    }
                 }
             }
         }
@@ -415,11 +422,18 @@ namespace Avalonia
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root?.Renderer?.AddDirty(this);
 
-            if (VisualChildren != null)
+            var visualChildren = VisualChildren;
+
+            if (visualChildren != null)
             {
-                foreach (Visual child in VisualChildren.OfType<Visual>())
+                var visualChildrenCount = visualChildren.Count;
+
+                for (var i = 0; i < visualChildrenCount; i++)
                 {
-                    child.OnDetachedFromVisualTreeCore(e);
+                    if (visualChildren[i] is Visual child)
+                    {
+                        child.OnDetachedFromVisualTreeCore(e);
+                    }
                 }
             }
         }
@@ -447,7 +461,11 @@ namespace Avalonia
         /// <param name="newParent">The new visual parent.</param>
         protected virtual void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            RaisePropertyChanged(VisualParentProperty, oldParent, newParent, BindingPriority.LocalValue);
+            RaisePropertyChanged(
+                VisualParentProperty,
+                new Optional<IVisual>(oldParent),
+                new BindingValue<IVisual>(newParent),
+                BindingPriority.LocalValue);
         }
 
         protected override sealed void LogBindingError(AvaloniaProperty property, Exception e)

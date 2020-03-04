@@ -109,7 +109,7 @@ namespace Avalonia.Skia
             {
                 var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
 
-                skTypeface = fontCollection.Get(typeface.FontFamily, typeface.Weight, typeface.Style);
+                skTypeface = fontCollection.Get(typeface);
             }
 
             return new GlyphTypefaceImpl(skTypeface);

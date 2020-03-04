@@ -2,44 +2,38 @@
 using Avalonia.OpenGL;
 using Avalonia.Native.Interop;
 using System.Drawing;
-using System.Reactive.Disposables;
 using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
     class GlPlatformFeature : IWindowingPlatformGlFeature
     {
-        private GlContext _immediateContext;
-        public GlPlatformFeature(IAvnGlFeature feature)
+        public GlPlatformFeature(IAvnGlDisplay display)
         {
-            Display = new GlDisplay(feature.ObtainDisplay());
-            _immediateContext = new GlContext(Display, feature.ObtainImmediateContext());
+            var immediate = display.CreateContext(null);
+            var deferred = display.CreateContext(immediate);
+            GlDisplay = new GlDisplay(display, immediate.SampleCount, immediate.StencilSize);
+            
+            ImmediateContext = new GlContext(GlDisplay, immediate);
+            DeferredContext = new GlContext(GlDisplay, deferred);
         }
 
-        public GlDisplay Display { get; }
-        IGlDisplay IWindowingPlatformGlFeature.Display => Display;
-
-        public IGlContext CreateContext()
-        {
-            if (_immediateContext != null)
-            {
-                var rv = _immediateContext;
-                _immediateContext = null;
-                return rv;
-            }
-
-            throw new PlatformNotSupportedException(
-                "OSX backend haven't switched to the new model yet, so there are no custom contexts, sorry");
-        }
+        public IGlContext ImmediateContext { get; }
+        internal GlContext DeferredContext { get; }
+        internal GlDisplay GlDisplay;
+        public IGlDisplay Display => GlDisplay;
+        public IGlContext CreateContext() => new GlContext(GlDisplay, ((GlContext)ImmediateContext).Context);
     }
 
     class GlDisplay : IGlDisplay
     {
         private readonly IAvnGlDisplay _display;
 
-        public GlDisplay(IAvnGlDisplay display)
+        public GlDisplay(IAvnGlDisplay display, int sampleCount, int stencilSize)
         {
             _display = display;
+            SampleCount = sampleCount;
+            StencilSize = stencilSize;
             GlInterface = new GlInterface((name, optional) =>
             {
                 var rv = _display.GetProcAddress(name);
@@ -53,16 +47,16 @@ namespace Avalonia.Native
 
         public GlInterface GlInterface { get; }
 
-        public int SampleCount => _display.GetSampleCount();
+        public int SampleCount { get; }
 
-        public int StencilSize => _display.GetStencilSize();
+        public int StencilSize { get; }
 
-        public void ClearContext() => _display.ClearContext();
+        public void ClearContext() => _display.LegacyClearCurrentContext();
     }
 
     class GlContext : IGlContext
     {
-        public IAvnGlContext Context { get; }
+        public IAvnGlContext Context { get; private set; }
 
         public GlContext(GlDisplay display, IAvnGlContext context)
         {
@@ -72,16 +66,12 @@ namespace Avalonia.Native
 
         public IGlDisplay Display { get; }
 
-        public IDisposable MakeCurrent()
-        {
-            Context.MakeCurrent();
-            // HACK: OSX backend haven't switched to the new model, so there are only 2 pre-created contexts now
-            return Disposable.Empty;
-        }
+        public IDisposable MakeCurrent() => Context.MakeCurrent();
 
         public void Dispose()
         {
-            // HACK: OSX backend haven't switched to the new model, so there are only 2 pre-created contexts now
+            Context.Dispose();
+            Context = null;
         }
     }
 
@@ -97,7 +87,7 @@ namespace Avalonia.Native
         public IGlPlatformSurfaceRenderingSession BeginDraw()
         {
             var feature = (GlPlatformFeature)AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
-            return new GlPlatformSurfaceRenderingSession(feature.Display, _target.BeginDrawing());
+            return new GlPlatformSurfaceRenderingSession(feature.GlDisplay, _target.BeginDrawing());
         }
 
         public void Dispose()
@@ -130,6 +120,9 @@ namespace Avalonia.Native
 
         public double Scaling => _session.GetScaling();
 
+
+        public bool IsYFlipped => true;
+        
         public void Dispose()
         {
             _session?.Dispose();
@@ -149,5 +142,6 @@ namespace Avalonia.Native
         {
             return new GlPlatformSurfaceRenderTarget(_window.CreateGlRenderTarget());
         }
+
     }
 }

@@ -627,6 +627,137 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
+        [Fact]
+        public void Resource_With_DynamicResource_Is_Updated_When_Added_To_Parent()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Resources>
+        <SolidColorBrush x:Key='brush' Color='{DynamicResource color}'/>
+    </UserControl.Resources>
+
+    <Border Name='border' Background='{DynamicResource brush}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            DelayedBinding.ApplyBindings(border);
+
+            var brush = (SolidColorBrush)border.Background;
+            Assert.Equal(0u, brush.Color.ToUint32());
+
+            brush.GetObservable(SolidColorBrush.ColorProperty).Subscribe(_ => { });
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window
+                {
+                    Resources =
+                    {
+                        { "color", Colors.Red }
+                    },
+                    Content = userControl,
+                };
+
+                window.Show();
+
+                Assert.Equal(Colors.Red, brush.Color);
+            }
+        }
+
+        [Fact]
+        public void MergedDictionary_Resource_With_DynamicResource_Is_Updated_When_Added_To_Parent()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <SolidColorBrush x:Key='brush' Color='{DynamicResource color}'/>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Name='border' Background='{DynamicResource brush}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            DelayedBinding.ApplyBindings(border);
+
+            var brush = (SolidColorBrush)border.Background;
+            Assert.Equal(0u, brush.Color.ToUint32());
+
+            brush.GetObservable(SolidColorBrush.ColorProperty).Subscribe(_ => { });
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window
+                {
+                    Resources =
+                    {
+                        { "color", Colors.Red }
+                    },
+                    Content = userControl,
+                };
+
+                window.Show();
+
+                Assert.Equal(Colors.Red, brush.Color);
+            }
+        }
+
+        [Fact]
+        public void Style_Resource_With_DynamicResource_Is_Updated_When_Added_To_Parent()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Styles>
+        <Style>
+            <Style.Resources>
+                <SolidColorBrush x:Key='brush' Color='{DynamicResource color}'/>
+            </Style.Resources>
+        </Style>
+    </UserControl.Styles>
+
+    <Border Name='border' Background='{DynamicResource brush}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            DelayedBinding.ApplyBindings(border);
+
+            var brush = (SolidColorBrush)border.Background;
+            Assert.Equal(0u, brush.Color.ToUint32());
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window
+                {
+                    Resources =
+                    {
+                        { "color", Colors.Red }
+                    },
+                    Content = userControl,
+                };
+
+                window.Show();
+
+                Assert.Equal(Colors.Red, brush.Color);
+            }
+        }
+
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(

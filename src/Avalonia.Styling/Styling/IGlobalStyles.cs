@@ -6,7 +6,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// Defines the style host that provides styles global to the application.
     /// </summary>
-    public interface IGlobalStyles : IStyleRoot
+    public interface IGlobalStyles : IStyleHost
     {
     }
 }

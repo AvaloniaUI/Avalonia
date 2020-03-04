@@ -27,5 +27,8 @@ namespace Avalonia.Media
         {
             ctx.LineTo(Point);
         }
+
+        public override string ToString()
+            => $"L {Point}";
     }
 }

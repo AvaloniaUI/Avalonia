@@ -31,7 +31,7 @@ namespace Avalonia.OpenGL
                 }
             }
 
-            context.DrawImage(_bitmap, 1, new Rect(_bitmap.Size), Bounds);
+            context.DrawImage(_bitmap, new Rect(_bitmap.Size), Bounds);
             base.Render(context);
         }
 
