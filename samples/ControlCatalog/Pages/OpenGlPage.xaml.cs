@@ -66,6 +66,16 @@ namespace ControlCatalog.Pages
             set => SetAndRaise(DiscoProperty, ref _disco, value);
         }
 
+        private string _info;
+
+        public static readonly DirectProperty<OpenGlPageControl, string> InfoProperty =
+            AvaloniaProperty.RegisterDirect<OpenGlPageControl, string>("Info", o => o.Info, (o, v) => o.Info = v);
+
+        public string Info
+        {
+            get => _info;
+            private set => SetAndRaise(InfoProperty, ref _info, value);
+        }
 
         static OpenGlPageControl()
         {
@@ -79,13 +89,33 @@ namespace ControlCatalog.Pages
         private int _indexBufferObject;
         private int _vertexArrayObject;
 
-        private string WithVersion(string shader) =>
-            $"#version {(DisplayType == GlDisplayType.OpenGl ? 120 : 100)}\n" + shader;
+        private string GetShader(bool fragment, string shader)
+        {
+            var version = (DisplayType == GlDisplayType.OpenGl ?
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? 150 : 120 :
+                100);
+            var data = "#version " + version + "\n";
+            if (DisplayType == GlDisplayType.OpenGLES)
+                data += "precision mediump float\n";
+            if (version >= 150)
+            {
+                shader = shader.Replace("attribute", "in");
+                if (fragment)
+                    shader = shader
+                        .Replace("varying", "in")
+                        .Replace("//DECLAREGLFRAG", "out vec4 outFragColor;")
+                        .Replace("gl_FragColor", "outFragColor");
+                else
+                    shader = shader.Replace("varying", "out");
+            }
 
-        private string WithVersionAndPrecision(string shader, string precision) =>
-            WithVersion(DisplayType == GlDisplayType.OpenGLES ? $"precision {precision};\n{shader}" : shader);
+            data += shader;
 
-        private string VertexShaderSource => WithVersionAndPrecision(@"
+            return data;
+        }
+
+
+        private string VertexShaderSource => GetShader(false, @"
         attribute vec3 aPos;
         attribute vec3 aNormal;
         uniform mat4 uModel;
@@ -113,9 +143,9 @@ namespace ControlCatalog.Pages
             VecPos = aPos;
             Normal = normalize(vec3(uModel * vec4(aNormal, 1.0)));
         }
-", "mediump float");
+");
 
-        private string FragmentShaderSource => WithVersionAndPrecision(@"
+        private string FragmentShaderSource => GetShader(true, @"
         varying vec3 FragPos; 
         varying vec3 VecPos; 
         varying vec3 Normal;
@@ -123,6 +153,7 @@ namespace ControlCatalog.Pages
         uniform float uMinY;
         uniform float uTime;
         uniform float uDisco;
+        //DECLAREGLFRAG
 
         void main()
         {
@@ -154,7 +185,7 @@ namespace ControlCatalog.Pages
             gl_FragColor = vec4(result, 1.0);
 
         }
-", "mediump float");
+");
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         private struct Vertex
@@ -224,6 +255,9 @@ namespace ControlCatalog.Pages
         protected unsafe override void OnOpenGlInit(GlInterface GL, int fb)
         {
             CheckError(GL);
+
+            Info = $"Renderer: {GL.GetString(GL_RENDERER)} Version: {GL.GetString(GL_VERSION)}";
+            
             // Load the source of the vertex shader and compile it.
             _vertexShader = GL.CreateShader(GL_VERTEX_SHADER);
             Console.WriteLine(GL.CompileShaderAndGetError(_vertexShader, VertexShaderSource));
@@ -247,6 +281,7 @@ namespace ControlCatalog.Pages
             _vertexBufferObject = GL.GenBuffer();
             // Bind the VBO and copy the vertex data into it.
             GL.BindBuffer(GL_ARRAY_BUFFER, _vertexBufferObject);
+            CheckError(GL);
             var vertexSize = Marshal.SizeOf<Vertex>();
             fixed (void* pdata = _points)
                 GL.BufferData(GL_ARRAY_BUFFER, new IntPtr(_points.Length * vertexSize),
@@ -254,13 +289,14 @@ namespace ControlCatalog.Pages
 
             _indexBufferObject = GL.GenBuffer();
             GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBufferObject);
+            CheckError(GL);
             fixed (void* pdata = _indices)
                 GL.BufferData(GL_ELEMENT_ARRAY_BUFFER, new IntPtr(_indices.Length * sizeof(ushort)), new IntPtr(pdata),
                     GL_STATIC_DRAW);
-
+            CheckError(GL);
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
-
+            CheckError(GL);
             GL.VertexAttribPointer(positionLocation, 3, GL_FLOAT,
                 0, vertexSize, IntPtr.Zero);
             GL.VertexAttribPointer(normalLocation, 3, GL_FLOAT,
@@ -300,6 +336,7 @@ namespace ControlCatalog.Pages
             GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBufferObject);
             GL.BindVertexArray(_vertexArrayObject);
             GL.UseProgram(_shaderProgram);
+            CheckError(GL);
             var projection =
                 Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)(Bounds.Width / Bounds.Height),
                     0.01f, 1000);
@@ -321,6 +358,7 @@ namespace ControlCatalog.Pages
             GL.Uniform1f(minYLoc, _minY);
             GL.Uniform1f(timeLoc, (float)St.Elapsed.TotalSeconds);
             GL.Uniform1f(discoLoc, _disco);
+            CheckError(GL);
             GL.DrawElements(GL_TRIANGLES, _indices.Length, GL_UNSIGNED_SHORT, IntPtr.Zero);
 
             CheckError(GL);

@@ -30,7 +30,8 @@ namespace Avalonia.OpenGL
                         foreach (var ep in a.EntryPoints)
                         {
                             proc = getProcAddress(ep, true);
-
+                            if(proc != IntPtr.Zero)
+                                break;
                         }
 
                         if (proc == IntPtr.Zero && !a.Optional)

@@ -8,8 +8,11 @@ namespace Avalonia.Native
 {
     class GlPlatformFeature : IWindowingPlatformGlFeature
     {
+        private readonly IAvnGlDisplay _display;
+
         public GlPlatformFeature(IAvnGlDisplay display)
         {
+            _display = display;
             var immediate = display.CreateContext(null);
             var deferred = display.CreateContext(immediate);
             GlDisplay = new GlDisplay(display, immediate.SampleCount, immediate.StencilSize);
@@ -22,7 +25,9 @@ namespace Avalonia.Native
         internal GlContext DeferredContext { get; }
         internal GlDisplay GlDisplay;
         public IGlDisplay Display => GlDisplay;
-        public IGlContext CreateContext() => new GlContext(GlDisplay, ((GlContext)ImmediateContext).Context);
+
+        public IGlContext CreateContext() => new GlContext(GlDisplay,
+            _display.CreateContext(((GlContext)ImmediateContext).Context));
     }
 
     class GlDisplay : IGlDisplay

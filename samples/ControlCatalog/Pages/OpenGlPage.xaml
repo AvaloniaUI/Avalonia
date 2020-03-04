@@ -4,6 +4,9 @@
              xmlns:pages="clr-namespace:ControlCatalog.Pages">
   <Grid>
     <pages:OpenGlPageControl x:Name="GL"/>
+    <StackPanel>
+      <TextBlock Text="{Binding #GL.Info}"/>
+    </StackPanel>
     <Grid ColumnDefinitions="*,Auto" Margin="20">
       <StackPanel Grid.Column="1" MinWidth="300">
         <TextBlock>Yaw</TextBlock>
