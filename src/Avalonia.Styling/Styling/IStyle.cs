@@ -3,6 +3,8 @@
 
 using Avalonia.Controls;
 
+#nullable enable
+
 namespace Avalonia.Styling
 {
     /// <summary>
@@ -13,17 +15,11 @@ namespace Avalonia.Styling
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.
         /// </summary>
-        /// <param name="control">The control to attach to.</param>
-        /// <param name="container">
-        /// The control that contains this style. May be null.
-        /// </param>
+        /// <param name="target">The control to attach to.</param>
+        /// <param name="host">The element that hosts the style.</param>
         /// <returns>
-        /// True if the style can match a control of type <paramref name="control"/>
-        /// (even if it does not match this control specifically); false if the style
-        /// can never match.
+        /// A <see cref="SelectorMatchResult"/> describing how the style matches the control.
         /// </returns>
-        bool Attach(IStyleable control, IStyleHost container);
-
-        void Detach();
+        SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host);
     }
 }
