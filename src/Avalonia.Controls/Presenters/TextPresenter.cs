@@ -292,6 +292,8 @@ namespace Avalonia.Controls.Presenters
                 _constraint = _formattedText.Constraint;
                 _formattedText = null;
             }
+
+            InvalidateVisual();
         }
 
         /// <summary>
