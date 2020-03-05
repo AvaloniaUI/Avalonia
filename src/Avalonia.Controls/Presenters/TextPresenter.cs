@@ -82,6 +82,7 @@ namespace Avalonia.Controls.Presenters
                 SelectionStartProperty, SelectionEndProperty);
 
             Observable.Merge(
+                TextProperty.Changed,
                 SelectionStartProperty.Changed,
                 SelectionEndProperty.Changed,
                 PasswordCharProperty.Changed
