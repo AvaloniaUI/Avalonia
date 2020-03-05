@@ -81,7 +81,7 @@ namespace Avalonia.Controls.Converters
             }
 
             Plus(s);
-            s.Append(gesture.Key);
+            s.Append(ToString(gesture.Key));
 
             return s.ToString();
         }
@@ -110,9 +110,64 @@ namespace Avalonia.Controls.Converters
                 s.Append('⌘');
             }
 
-            s.Append(gesture.Key);
+            s.Append(ToOSXString(gesture.Key));
 
             return s.ToString();
+        }
+
+        private static string ToString(Key key)
+        {
+            return key switch
+            {
+                Key.Add => "+",
+                Key.Back => "Backspace",
+                Key.D0 => "0",
+                Key.D1 => "1",
+                Key.D2 => "2",
+                Key.D3 => "3",
+                Key.D4 => "4",
+                Key.D5 => "5",
+                Key.D6 => "6",
+                Key.D7 => "7",
+                Key.D8 => "8",
+                Key.D9 => "9",
+                Key.Divide => "/",
+                Key.OemBackslash => "\\",
+                Key.OemCloseBrackets => "]",
+                Key.OemComma => ",",
+                Key.OemMinus => "-",
+                Key.OemOpenBrackets => "[",
+                Key.OemPeriod=> ".",
+                Key.OemPipe => "|",
+                Key.OemPlus => "+",
+                Key.OemQuestion => "/",
+                Key.OemQuotes => "\"",
+                Key.OemSemicolon => ";",
+                Key.OemTilde => "`",
+                Key.Subtract => "-",
+                _ => key.ToString(),
+            };
+        }
+
+        private static string ToOSXString(Key key)
+        {
+            return key switch
+            {
+                Key.Back => "⌫",
+                Key.Down => "↓",
+                Key.End => "↘",
+                Key.Escape => "⎋",
+                Key.Home => "↖",
+                Key.Left => "←",
+                Key.Return => "↩",
+                Key.PageDown => "⇞",
+                Key.PageUp => "⇟",
+                Key.Right => "→",
+                Key.Space => "␣",
+                Key.Tab => "⇥",
+                Key.Up => "↑",
+                _ => ToString(key),
+            };
         }
     }
 }
