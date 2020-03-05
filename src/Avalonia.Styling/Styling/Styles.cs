@@ -84,6 +84,8 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         IStyle IReadOnlyList<IStyle>.this[int index] => _styles[index];
 
+        IReadOnlyList<IStyle> IStyle.Children => this;
+
         /// <inheritdoc/>
         public IStyle this[int index]
         {
@@ -257,10 +259,7 @@ namespace Avalonia.Styling
                     _cache = null;
                 }
 
-                if (_parent is IStyleHost host)
-                {
-                    host.StylesAdded(ToReadOnlyList<IStyle>(items));
-                }
+                GetHost()?.StylesAdded(ToReadOnlyList<IStyle>(items));
             }
 
             void Remove(IList items)
@@ -284,10 +283,7 @@ namespace Avalonia.Styling
                     _cache = null;
                 }
 
-                if (_parent is IStyleHost host)
-                {
-                    host.StylesRemoved(ToReadOnlyList<IStyle>(items));
-                }
+                GetHost()?.StylesRemoved(ToReadOnlyList<IStyle>(items));
             }
 
             switch (e.Action)
@@ -307,6 +303,23 @@ namespace Avalonia.Styling
             }
 
             CollectionChanged?.Invoke(this, e);
+        }
+
+        private IStyleHost? GetHost()
+        {
+            var node = _parent;
+
+            while (node != null)
+            {
+                if (node is IStyleHost host)
+                {
+                    return host;
+                }
+
+                node = node.ResourceParent;
+            }
+
+            return null;
         }
 
         private void NotifyResourcesChanged(object sender, ResourcesChangedEventArgs e)

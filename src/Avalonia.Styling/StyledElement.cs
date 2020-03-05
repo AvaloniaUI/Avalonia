@@ -504,7 +504,8 @@ namespace Avalonia
 
         void IStyleHost.StylesRemoved(IReadOnlyList<IStyle> styles)
         {
-            DetachStylesFromThisAndDescendents(styles);
+            var allStyles = RecurseStyles(styles);
+            DetachStylesFromThisAndDescendents(allStyles);
         }
 
         protected virtual void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -829,6 +830,43 @@ namespace Avalonia
         private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
         {
             NotifyResourcesChanged(e);
+        }
+
+        private static IReadOnlyList<IStyle> RecurseStyles(IReadOnlyList<IStyle> styles)
+        {
+            var count = styles.Count;
+            List<IStyle>? result = null;
+
+            for (var i = 0; i < count; ++i)
+            {
+                var style = styles[i];
+
+                if (style.Children.Count > 0)
+                {
+                    if (result is null)
+                    {
+                        result = new List<IStyle>(styles);
+                    }
+
+                    RecurseStyles(style.Children, result);
+                }
+            }
+
+            return result ?? styles;
+        }
+
+        private static void RecurseStyles(IReadOnlyList<IStyle> styles, List<IStyle> result)
+        {
+            var count = styles.Count;
+
+            result.Capacity += count;
+
+            for (var i = 0; i < count; ++i)
+            {
+                var style = styles[i];
+                result.Add(style);
+                RecurseStyles(style.Children, result);
+            }
         }
     }
 }

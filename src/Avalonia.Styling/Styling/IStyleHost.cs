@@ -33,13 +33,13 @@ namespace Avalonia.Styling
         IStyleHost StylingParent { get; }
 
         /// <summary>
-        /// Called when styles are added to <see cref="Styles"/>.
+        /// Called when styles are added to <see cref="Styles"/> or a nested styles collection.
         /// </summary>
         /// <param name="styles">The added styles.</param>
         void StylesAdded(IReadOnlyList<IStyle> styles);
 
         /// <summary>
-        /// Called when styles are removed from <see cref="Styles"/>.
+        /// Called when styles are removed from <see cref="Styles"/> or a nested styles collection.
         /// </summary>
         /// <param name="styles">The removed styles.</param>
         void StylesRemoved(IReadOnlyList<IStyle> styles);
