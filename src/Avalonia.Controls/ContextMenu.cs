@@ -104,8 +104,7 @@ namespace Avalonia.Controls
                 {
                     PlacementMode = PlacementMode.Pointer,
                     PlacementTarget = control,
-                    StaysOpen = false,
-                    ObeyScreenEdges = true
+                    StaysOpen = false
                 };
 
                 _popup.Opened += PopupOpened;

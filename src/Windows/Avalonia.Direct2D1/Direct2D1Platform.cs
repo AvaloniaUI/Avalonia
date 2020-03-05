@@ -109,7 +109,10 @@ namespace Avalonia.Direct2D1
         public static void Initialize()
         {
             InitializeDirect2D();
-            AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(s_instance);
+            AvaloniaLocator.CurrentMutable
+                .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
+                .Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl())
+                .Bind<ITextShaperImpl>().ToConstant(new TextShaperImpl());
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
         }
 
@@ -192,12 +195,6 @@ namespace Avalonia.Direct2D1
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new WicBitmapImpl(format, data, size, dpi, stride);
-        }
-
-        /// <inheritdoc />
-        public IFontManagerImpl CreateFontManager()
-        {
-            return new FontManagerImpl();
         }
 
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
