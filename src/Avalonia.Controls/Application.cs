@@ -46,6 +46,8 @@ namespace Avalonia
         private Styles _styles;
         private IResourceDictionary _resources;
         private bool _notifyingResourcesChanged;
+        private Action<IReadOnlyList<IStyle>> _stylesAdded;
+        private Action<IReadOnlyList<IStyle>> _stylesRemoved;
 
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -202,6 +204,18 @@ namespace Avalonia
         /// </summary>
         public IApplicationLifetime ApplicationLifetime { get; set; }
 
+        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesAdded
+        {
+            add => _stylesAdded += value;
+            remove => _stylesAdded -= value;
+        }
+
+        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesRemoved
+        {
+            add => _stylesRemoved += value;
+            remove => _stylesRemoved -= value;
+        }
+
         /// <summary>
         /// Initializes the application by loading XAML etc.
         /// </summary>
@@ -217,10 +231,12 @@ namespace Avalonia
 
         void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
         {
+            _stylesAdded?.Invoke(styles);
         }
 
         void IStyleHost.StylesRemoved(IReadOnlyList<IStyle> styles)
         {
+            _stylesRemoved?.Invoke(styles);
         }
 
         /// <summary>
