@@ -9,6 +9,8 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
 
+#nullable enable
+
 namespace Avalonia.Styling
 {
     /// <summary>
@@ -16,10 +18,10 @@ namespace Avalonia.Styling
     /// </summary>
     public class Styles : AvaloniaObject, IAvaloniaList<IStyle>, IStyle, ISetResourceParent
     {
-        private IResourceNode _parent;
-        private IResourceDictionary _resources;
-        private AvaloniaList<IStyle> _styles = new AvaloniaList<IStyle>();
-        private Dictionary<Type, List<IStyle>> _cache;
+        private readonly AvaloniaList<IStyle> _styles = new AvaloniaList<IStyle>();
+        private IResourceNode? _parent;
+        private IResourceDictionary? _resources;
+        private Dictionary<Type, List<IStyle>?>? _cache;
         private bool _notifyingResourcesChanged;
 
         public Styles()
@@ -74,7 +76,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+        public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
         /// <inheritdoc/>
         public int Count => _styles.Count;
@@ -90,7 +92,7 @@ namespace Avalonia.Styling
             get => _resources ?? (Resources = new ResourceDictionary());
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
+                value = value ?? throw new ArgumentNullException(nameof(Resources));
 
                 var hadResources = false;
 
@@ -111,7 +113,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        IResourceNode IResourceNode.ResourceParent => _parent;
+        IResourceNode? IResourceNode.ResourceParent => _parent;
 
         /// <inheritdoc/>
         bool ICollection<IStyle>.IsReadOnly => false;
@@ -126,66 +128,50 @@ namespace Avalonia.Styling
             set => _styles[index] = value;
         }
 
-        /// <summary>
-        /// Attaches the style to a control if the style's selector matches.
-        /// </summary>
-        /// <param name="control">The control to attach to.</param>
-        /// <param name="container">
-        /// The control that contains this style. May be null.
-        /// </param>
-        public bool Attach(IStyleable control, IStyleHost container)
+        /// <inheritdoc/>
+        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
         {
-            if (_cache == null)
-            {
-                _cache = new Dictionary<Type, List<IStyle>>();
-            }
+            _cache ??= new Dictionary<Type, List<IStyle>?>();
 
-            if (_cache.TryGetValue(control.StyleKey, out var cached))
+            if (_cache.TryGetValue(target.StyleKey, out var cached))
             {
-                if (cached != null)
+                if (cached is object)
                 {
                     foreach (var style in cached)
                     {
-                        style.Attach(control, container);
+                        style.TryAttach(target, host);
                     }
 
-                    return true;
+                    return SelectorMatchResult.AlwaysThisType;
                 }
-
-                return false;
+                else
+                {
+                    return SelectorMatchResult.NeverThisType;
+                }
             }
             else
             {
-                List<IStyle> result = null;
+                List<IStyle>? matches = null;
 
-                foreach (var style in this)
+                foreach (var child in this)
                 {
-                    if (style.Attach(control, container))
+                    if (child.TryAttach(target, host) != SelectorMatchResult.NeverThisType)
                     {
-                        if (result == null)
-                        {
-                            result = new List<IStyle>();
-                        }
-
-                        result.Add(style);
+                        matches ??= new List<IStyle>();
+                        matches.Add(child);
                     }
                 }
 
-                _cache.Add(control.StyleKey, result);
-                return result != null;
-            }
-        }
-
-        public void Detach()
-        {
-            foreach (IStyle style in this)
-            {
-                style.Detach();
+                _cache.Add(target.StyleKey, matches);
+                
+                return matches is null ?
+                    SelectorMatchResult.NeverThisType :
+                    SelectorMatchResult.AlwaysThisType;
             }
         }
 
         /// <inheritdoc/>
-        public bool TryGetResource(object key, out object value)
+        public bool TryGetResource(object key, out object? value)
         {
             if (_resources != null && _resources.TryGetResource(key, out value))
             {

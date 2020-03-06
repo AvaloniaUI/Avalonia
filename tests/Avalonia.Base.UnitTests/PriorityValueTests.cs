@@ -24,7 +24,11 @@ namespace Avalonia.Base.UnitTests
                 Owner,
                 TestProperty,
                 NullSink,
-                new ConstantValueEntry<string>(TestProperty, "1", BindingPriority.StyleTrigger));
+                new ConstantValueEntry<string>(
+                    TestProperty,
+                    "1",
+                    BindingPriority.StyleTrigger,
+                    NullSink));
 
             Assert.Equal("1", target.Value.Value);
             Assert.Equal(BindingPriority.StyleTrigger, target.ValuePriority);
