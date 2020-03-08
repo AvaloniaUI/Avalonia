@@ -128,7 +128,7 @@ namespace Avalonia.OpenGL
 
                     gl.GenTextures(1, oneArr);
                     _texture = oneArr[0];
-                    gl.BindTexture(GL_TEXTURE_2D, _texture);
+                    
                     ResizeTexture(gl);
 
                     gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
@@ -167,12 +167,17 @@ namespace Avalonia.OpenGL
         void ResizeTexture(GlInterface gl)
         {
             var size = GetPixelSize();
+
+            gl.GetIntegerv( GL_TEXTURE_BINDING_2D, out var oldTexture);
+            gl.BindTexture(GL_TEXTURE_2D, _texture);
             gl.TexImage2D(GL_TEXTURE_2D, 0, 
                 DisplayType == GlDisplayType.OpenGLES ? GL_RGBA : GL_RGBA8,
                 size.Width, size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
             gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            gl.BindTexture(GL_TEXTURE_2D, oldTexture);
 
+            gl.GetIntegerv(GL_RENDERBUFFER_BINDING, out var oldRenderBuffer);
             gl.DeleteRenderbuffers(1, new[] { _renderBuffer });
             var oneArr = new int[1];
             gl.GenRenderbuffers(1, oneArr);
@@ -182,6 +187,7 @@ namespace Avalonia.OpenGL
                 DisplayType == GlDisplayType.OpenGLES ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT,
                 size.Width, size.Height);
             gl.FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _renderBuffer);
+            gl.BindRenderbuffer(GL_RENDERBUFFER, oldRenderBuffer);
             using (_bitmap.Lock())
                 _bitmap.SetTexture(_texture, GL_RGBA8, size, 1);
         }
