@@ -1,11 +1,5 @@
 using System;
-using System.Linq;
 using System.Reactive.Disposables;
-using System.Reactive.Threading.Tasks;
-using System.Reflection;
-using System.Threading.Tasks;
-using Avalonia.LogicalTree;
-using Avalonia.Reactive;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls

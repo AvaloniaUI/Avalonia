@@ -25,7 +25,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         new Style(x => x.OfType<UserControl>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(TemplatedControl.TemplateProperty, GetTemplate())
                             }
