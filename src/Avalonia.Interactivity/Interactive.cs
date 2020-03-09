@@ -203,7 +203,7 @@ namespace Avalonia.Interactivity
             return new UnsubscribeDisposable(subscriptions, subscription);
         }
 
-        private sealed class EventSubscription
+        private readonly struct EventSubscription
         {
             public EventSubscription(
                 Delegate handler,
