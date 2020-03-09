@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
 
@@ -34,9 +35,8 @@ namespace Avalonia.Benchmarks.Styling
         {
             var styles = UnitTestApplication.Current.Styles;
 
-            styles.Attach(_control, UnitTestApplication.Current);
-
-            styles.Detach();
+            styles.TryAttach(_control, UnitTestApplication.Current);
+            ((IStyleable)_control).DetachStyles();
         }
 
         public void Dispose()

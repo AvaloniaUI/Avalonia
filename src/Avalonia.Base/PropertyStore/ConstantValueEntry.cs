@@ -10,16 +10,20 @@ namespace Avalonia.PropertyStore
     /// <see cref="PriorityValue{T}"/>.
     /// </summary>
     /// <typeparam name="T">The property type.</typeparam>
-    internal class ConstantValueEntry<T> : IPriorityValueEntry<T>
+    internal class ConstantValueEntry<T> : IPriorityValueEntry<T>, IDisposable
     {
+        private IValueSink _sink;
+
         public ConstantValueEntry(
             StyledPropertyBase<T> property,
             T value,
-            BindingPriority priority)
+            BindingPriority priority,
+            IValueSink sink)
         {
             Property = property;
             Value = value;
             Priority = priority;
+            _sink = sink;
         }
 
         public StyledPropertyBase<T> Property { get; }
@@ -28,6 +32,7 @@ namespace Avalonia.PropertyStore
         Optional<object> IValue.Value => Value.ToObject();
         BindingPriority IValue.ValuePriority => Priority;
 
-        public void Reparent(IValueSink sink) { }
+        public void Dispose() => _sink.Completed(Property, this, Value);
+        public void Reparent(IValueSink sink) => _sink = sink;
     }
 }

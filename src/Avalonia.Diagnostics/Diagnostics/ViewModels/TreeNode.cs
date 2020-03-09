@@ -6,6 +6,8 @@ using System.Collections.Specialized;
 using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Collections;
+using Avalonia.Controls;
+using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
@@ -22,22 +24,25 @@ namespace Avalonia.Diagnostics.ViewModels
             Type = visual.GetType().Name;
             Visual = visual;
 
-            if (visual is IStyleable styleable)
+            if (visual is IControl control)
             {
+                var removed = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
+                    x => control.DetachedFromLogicalTree += x,
+                    x => control.DetachedFromLogicalTree -= x);
                 var classesChanged = Observable.FromEventPattern<
                         NotifyCollectionChangedEventHandler,
                         NotifyCollectionChangedEventArgs>(
-                    x => styleable.Classes.CollectionChanged += x,
-                    x => styleable.Classes.CollectionChanged -= x)
-                    .TakeUntil(((IStyleable)styleable).StyleDetach);
+                        x => control.Classes.CollectionChanged += x,
+                        x => control.Classes.CollectionChanged -= x)
+                    .TakeUntil(removed);
 
                 classesChanged.Select(_ => Unit.Default)
                     .StartWith(Unit.Default)
                     .Subscribe(_ =>
                     {
-                        if (styleable.Classes.Count > 0)
+                        if (control.Classes.Count > 0)
                         {
-                            Classes = "(" + string.Join(" ", styleable.Classes) + ")";
+                            Classes = "(" + string.Join(" ", control.Classes) + ")";
                         }
                         else
                         {
