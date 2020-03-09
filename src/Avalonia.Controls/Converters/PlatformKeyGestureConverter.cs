@@ -148,6 +148,8 @@ namespace Avalonia.Controls.Converters
                 Key.D9 => "9",
                 Key.Decimal => ".",
                 Key.Divide => "/",
+                Key.Down => "Down Arrow",
+                Key.Left => "Left Arrow",
                 Key.Multiply => "*",
                 Key.OemBackslash => "\\",
                 Key.OemCloseBrackets => "]",
@@ -161,8 +163,10 @@ namespace Avalonia.Controls.Converters
                 Key.OemQuotes => "\"",
                 Key.OemSemicolon => ";",
                 Key.OemTilde => "`",
+                Key.Right => "Right Arrow",
                 Key.Separator => "/",
                 Key.Subtract => "-",
+                Key.Up => "Up Arrow",
                 _ => key.ToString(),
             };
         }
