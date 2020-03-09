@@ -13,7 +13,7 @@ namespace Avalonia.Interactivity
         /// <summary>
         /// Gets the interactive parent of the object for bubbling and tunneling events.
         /// </summary>
-        IInteractive InteractiveParent { get; }
+        IInteractive? InteractiveParent { get; }
 
         /// <summary>
         /// Adds a handler for the specified routed event.
@@ -59,6 +59,13 @@ namespace Avalonia.Interactivity
         /// <param name="handler">The handler.</param>
         void RemoveHandler<TEventArgs>(RoutedEvent<TEventArgs> routedEvent, EventHandler<TEventArgs> handler)
             where TEventArgs : RoutedEventArgs;
+
+        /// <summary>
+        /// Adds the object's handlers for a routed event to an event route.
+        /// </summary>
+        /// <param name="routedEvent">The event.</param>
+        /// <param name="route">The event route.</param>
+        void AddToEventRoute(RoutedEvent routedEvent, EventRoute route);
 
         /// <summary>
         /// Raises a routed event.

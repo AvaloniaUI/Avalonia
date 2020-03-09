@@ -16,7 +16,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new TextBlock();
             var target = default(Selector).PropertyEquals(TextBlock.TextProperty, "foo");
-            var activator = target.Match(control).Activator;
+            var activator = target.Match(control).Activator.ToObservable();
 
             Assert.False(await activator.Take(1));
             control.Text = "foo";

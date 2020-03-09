@@ -25,10 +25,14 @@ namespace Avalonia.Interactivity
             Type eventArgsType,
             Type ownerType)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(eventArgsType != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
-            Contract.Requires<InvalidCastException>(typeof(RoutedEventArgs).IsAssignableFrom(eventArgsType));
+            name = name ?? throw new ArgumentNullException(nameof(name));
+            eventArgsType = eventArgsType ?? throw new ArgumentNullException(nameof(name));
+            ownerType = ownerType ?? throw new ArgumentNullException(nameof(name));
+
+            if (!typeof(RoutedEventArgs).IsAssignableFrom(eventArgsType))
+            {
+                throw new InvalidCastException("eventArgsType must be derived from RoutedEventArgs.");
+            }
 
             EventArgsType = eventArgsType;
             Name = name;
@@ -44,6 +48,8 @@ namespace Avalonia.Interactivity
 
         public RoutingStrategies RoutingStrategies { get; }
 
+        public bool HasRaisedSubscriptions => _raised.HasObservers;
+
         public IObservable<(object, RoutedEventArgs)> Raised => _raised;
         public IObservable<RoutedEventArgs> RouteFinished => _routeFinished;
 
@@ -52,7 +58,7 @@ namespace Avalonia.Interactivity
             RoutingStrategies routingStrategy)
                 where TEventArgs : RoutedEventArgs
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            name = name ?? throw new ArgumentNullException(nameof(name));
 
             var routedEvent = new RoutedEvent<TEventArgs>(name, routingStrategy, typeof(TOwner));
             RoutedEventRegistry.Instance.Register(typeof(TOwner), routedEvent);
@@ -65,7 +71,7 @@ namespace Avalonia.Interactivity
             Type ownerType)
                 where TEventArgs : RoutedEventArgs
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            name = name ?? throw new ArgumentNullException(nameof(name));
 
             var routedEvent = new RoutedEvent<TEventArgs>(name, routingStrategy, ownerType);
             RoutedEventRegistry.Instance.Register(ownerType, routedEvent);
@@ -108,8 +114,6 @@ namespace Avalonia.Interactivity
         public RoutedEvent(string name, RoutingStrategies routingStrategies, Type ownerType)
             : base(name, routingStrategies, typeof(TEventArgs), ownerType)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
         }
 
         [Obsolete("Use overload taking Action<TTarget, TEventArgs>.")]

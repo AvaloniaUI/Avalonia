@@ -36,7 +36,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1
             {
-                Classes = new Classes { "foo" },
+                Classes = { "foo" },
             };
 
             var target = default(Selector).Class("foo");
@@ -51,7 +51,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1
             {
-                Classes = new Classes { "bar" },
+                Classes = { "bar" },
             };
 
             var target = default(Selector).Class("foo");
@@ -66,7 +66,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1
             {
-                Classes = new Classes { "foo" },
+                Classes = { "foo" },
                 TemplatedParent = new Mock<ITemplatedControl>().Object,
             };
 
@@ -83,7 +83,7 @@ namespace Avalonia.Styling.UnitTests
             var control = new Control1();
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).Activator;
+            var activator = target.Match(control).Activator.ToObservable();
 
             Assert.False(await activator.Take(1));
             control.Classes.Add("foo");
@@ -95,11 +95,11 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1
             {
-                Classes = new Classes { "foo" },
+                Classes = { "foo" },
             };
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).Activator;
+            var activator = target.Match(control).Activator.ToObservable();
 
             Assert.True(await activator.Take(1));
             control.Classes.Remove("foo");
@@ -111,7 +111,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1();
             var target = default(Selector).Class("foo").Class("bar");
-            var activator = target.Match(control).Activator;
+            var activator = target.Match(control).Activator.ToObservable();
 
             Assert.False(await activator.Take(1));
             control.Classes.Add("foo");
@@ -128,7 +128,7 @@ namespace Avalonia.Styling.UnitTests
             // Test for #1698
             var control = new Control1
             {
-                Classes = new Classes { "foo" },
+                Classes = { "foo" },
             };
 
             var target = default(Selector).Class("foo");
