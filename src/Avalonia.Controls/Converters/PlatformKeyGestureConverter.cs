@@ -146,7 +146,9 @@ namespace Avalonia.Controls.Converters
                 Key.D7 => "7",
                 Key.D8 => "8",
                 Key.D9 => "9",
+                Key.Decimal => ".",
                 Key.Divide => "/",
+                Key.Multiply => "*",
                 Key.OemBackslash => "\\",
                 Key.OemCloseBrackets => "]",
                 Key.OemComma => ",",
@@ -159,6 +161,7 @@ namespace Avalonia.Controls.Converters
                 Key.OemQuotes => "\"",
                 Key.OemSemicolon => ";",
                 Key.OemTilde => "`",
+                Key.Separator => "/",
                 Key.Subtract => "-",
                 _ => key.ToString(),
             };
