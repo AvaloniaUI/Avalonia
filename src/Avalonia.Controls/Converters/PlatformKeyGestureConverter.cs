@@ -7,6 +7,10 @@ using Avalonia.Input;
 
 namespace Avalonia.Controls.Converters
 {
+    /// <summary>
+    /// Converts a <see cref="KeyGesture"/> to a string, formatting it according to the current
+    /// platform's style guidelines.
+    /// </summary>
     public class PlatformKeyGestureConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -17,22 +21,7 @@ namespace Avalonia.Controls.Converters
             }
             else if (value is KeyGesture gesture && targetType == typeof(string))
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    return ToString(gesture, "Win");
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    return ToString(gesture, "Super");
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    return ToOSXString(gesture);
-                }
-                else
-                {
-                    return gesture.ToString();
-                }
+                return ToPlatformString(gesture);
             }
             else
             {
@@ -43,6 +32,32 @@ namespace Avalonia.Controls.Converters
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Converts a <see cref="KeyGesture"/> to a string, formatting it according to the current
+        /// platform's style guidelines.
+        /// </summary>
+        /// <param name="gesture">The gesture.</param>
+        /// <returns>The gesture formatted according to the current platform.</returns>
+        public static string ToPlatformString(KeyGesture gesture)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return ToString(gesture, "Win");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return ToString(gesture, "Super");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return ToOSXString(gesture);
+            }
+            else
+            {
+                return gesture.ToString();
+            }
         }
 
         private static string ToString(KeyGesture gesture, string meta)
