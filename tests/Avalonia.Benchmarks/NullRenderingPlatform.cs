@@ -72,7 +72,9 @@ namespace Avalonia.Benchmarks
 
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
         {
-            throw new NotImplementedException();
+            width = default;
+
+            return new NullGlyphRun();
         }
     }
 }
