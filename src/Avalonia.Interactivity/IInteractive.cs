@@ -23,7 +23,7 @@ namespace Avalonia.Interactivity
         /// <param name="routes">The routing strategies to listen to.</param>
         /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
         /// <returns>A disposable that terminates the event subscription.</returns>
-        IDisposable AddHandler(
+        void AddHandler(
             RoutedEvent routedEvent,
             Delegate handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
@@ -38,7 +38,7 @@ namespace Avalonia.Interactivity
         /// <param name="routes">The routing strategies to listen to.</param>
         /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
         /// <returns>A disposable that terminates the event subscription.</returns>
-        IDisposable AddHandler<TEventArgs>(
+        void AddHandler<TEventArgs>(
             RoutedEvent<TEventArgs> routedEvent,
             EventHandler<TEventArgs> handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
