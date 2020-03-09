@@ -69,7 +69,6 @@
                                     Items="{TemplateBinding Items}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
                                     ItemTemplate="{TemplateBinding ItemTemplate}"
-                                    Margin="4 2"
                                     Grid.IsSharedSizeScope="True"/>
                 </ScrollViewer>
               </Border>
@@ -119,7 +118,6 @@
                                   Items="{TemplateBinding Items}"
                                   ItemsPanel="{TemplateBinding ItemsPanel}"
                                   ItemTemplate="{TemplateBinding ItemTemplate}"
-                                  Margin="2"
                                   Grid.IsSharedSizeScope="True"/>
                 </ScrollViewer>
               </Border>
@@ -128,6 +126,10 @@
         </Border>
       </ControlTemplate>
     </Setter>
+  </Style>
+
+  <Style Selector="MenuItem /template/ ItemsPresenter#PART_ItemsPresenter">
+    <Setter Property="Margin" Value="2"/>
   </Style>
 
   <Style Selector="MenuItem:selected /template/ Border#root">
