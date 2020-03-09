@@ -47,7 +47,8 @@
                 </DataTemplate>
               </ContentPresenter.DataTemplates>
             </ContentPresenter>
-            <TextBlock Grid.Column="3"
+            <TextBlock x:Name="PART_InputGestureText"
+                       Grid.Column="3"
                        Text="{TemplateBinding InputGesture, Converter={StaticResource KeyGestureConverter}}"
                        VerticalAlignment="Center"/>
             <Path Name="rightArrow"
