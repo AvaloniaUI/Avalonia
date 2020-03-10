@@ -235,6 +235,7 @@ namespace Avalonia.Media.TextFormatting
 
                         if (!double.IsPositiveInfinity(MaxHeight) && bottom + textLine.LineMetrics.Size.Height > MaxHeight)
                         {
+                            currentPosition = _text.Length;
                             break;
                         }
 

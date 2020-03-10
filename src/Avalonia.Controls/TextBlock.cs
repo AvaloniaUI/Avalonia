@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Reactive.Linq;
-using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -118,7 +117,16 @@ namespace Avalonia.Controls
         {
             ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
 
-            AffectsRender<TextBlock>(BackgroundProperty);
+            AffectsRender<TextBlock>(
+                BackgroundProperty, ForegroundProperty, FontSizeProperty, 
+                FontWeightProperty, FontStyleProperty, TextWrappingProperty, 
+                TextTrimmingProperty, TextAlignmentProperty, FontFamilyProperty, 
+                TextDecorationsProperty, TextProperty, PaddingProperty);
+
+            AffectsMeasure<TextBlock>(
+                FontSizeProperty, FontWeightProperty, FontStyleProperty, 
+                FontFamilyProperty, TextTrimmingProperty, TextProperty,
+                PaddingProperty);
 
             Observable.Merge(
                 TextProperty.Changed,
@@ -128,8 +136,11 @@ namespace Avalonia.Controls
                 TextTrimmingProperty.Changed,
                 FontSizeProperty.Changed,
                 FontStyleProperty.Changed,
-                FontWeightProperty.Changed
-            ).AddClassHandler<TextBlock>((x, _) => x.OnTextPropertiesChanged());
+                FontWeightProperty.Changed,
+                FontFamilyProperty.Changed,
+                TextDecorationsProperty.Changed,
+                PaddingProperty.Changed
+            ).AddClassHandler<TextBlock>((x, _) => x.InvalidateTextLayout());
         }
 
         /// <summary>
@@ -448,13 +459,9 @@ namespace Avalonia.Controls
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
-            InvalidateTextLayout();
-            InvalidateMeasure();
-        }
 
-        private void OnTextPropertiesChanged()
-        {
             InvalidateTextLayout();
+
             InvalidateMeasure();
         }
     }
