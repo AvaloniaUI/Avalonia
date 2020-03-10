@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Reactive.Linq;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -20,6 +21,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextBlock>();
 
+        /// <summary>
+        /// Defines the <see cref="Padding"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Thickness> PaddingProperty =
+            Decorator.PaddingProperty.AddOwner<TextBlock>();
+
         // TODO: Define these attached properties elsewhere (e.g. on a Text class) and AddOwner
         // them into TextBlock.
 
@@ -29,7 +36,7 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
             AvaloniaProperty.RegisterAttached<TextBlock, Control, FontFamily>(
                 nameof(FontFamily),
-                defaultValue:  FontFamily.Default,
+                defaultValue: FontFamily.Default,
                 inherits: true);
 
         /// <summary>
@@ -110,16 +117,13 @@ namespace Avalonia.Controls
         static TextBlock()
         {
             ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
-            AffectsRender<TextBlock>(
-                BackgroundProperty,
-                ForegroundProperty,
-                FontWeightProperty,
-                FontSizeProperty,
-                FontStyleProperty);
 
             Observable.Merge(
                 TextProperty.Changed,
+                ForegroundProperty.Changed,
                 TextAlignmentProperty.Changed,
+                TextWrappingProperty.Changed,
+                TextTrimmingProperty.Changed,
                 FontSizeProperty.Changed,
                 FontStyleProperty.Changed,
                 FontWeightProperty.Changed
@@ -143,6 +147,15 @@ namespace Avalonia.Controls
             {
                 return _textLayout ?? (_textLayout = CreateTextLayout(_constraint, Text));
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the padding to place around the <see cref="Text"/>.
+        /// </summary>
+        public Thickness Padding
+        {
+            get { return GetValue(PaddingProperty); }
+            set { SetValue(PaddingProperty, value); }
         }
 
         /// <summary>
@@ -363,7 +376,9 @@ namespace Avalonia.Controls
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            TextLayout?.Draw(context.PlatformImpl, new Point());
+            var padding = Padding;
+
+            TextLayout?.Draw(context.PlatformImpl, new Point(padding.Left, padding.Top));
         }
 
         /// <summary>
@@ -411,6 +426,10 @@ namespace Avalonia.Controls
             {
                 return new Size();
             }
+
+            var padding = Padding;
+
+            availableSize = availableSize.Deflate(padding);
 
             if (_constraint != availableSize)
             {
