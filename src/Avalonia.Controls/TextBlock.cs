@@ -118,6 +118,8 @@ namespace Avalonia.Controls
         {
             ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
 
+            AffectsRender<TextBlock>(BackgroundProperty);
+
             Observable.Merge(
                 TextProperty.Changed,
                 ForegroundProperty.Changed,
@@ -438,7 +440,9 @@ namespace Avalonia.Controls
 
             _constraint = availableSize;
 
-            return TextLayout?.Bounds.Size ?? Size.Empty;
+            var measuredSize = TextLayout?.Bounds.Size ?? Size.Empty;
+
+            return measuredSize.Inflate(padding);
         }
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
