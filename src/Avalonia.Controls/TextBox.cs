@@ -275,6 +275,22 @@ namespace Avalonia.Controls
             }
         }
 
+        public string SelectedText
+        {
+            get { return GetSelection(); }
+            set
+            {
+                if (value == null)
+                {
+                    return;
+                }
+
+                _undoRedoHelper.Snapshot();
+                HandleTextInput(value);
+                _undoRedoHelper.Snapshot();
+            }
+        }
+
         /// <summary>
         /// Gets or sets the horizontal alignment of the content within the control.
         /// </summary>
