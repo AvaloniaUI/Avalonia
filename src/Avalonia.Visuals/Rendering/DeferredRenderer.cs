@@ -356,7 +356,8 @@ namespace Avalonia.Rendering
                     node.BeginRender(context, isLayerRoot);
 
                     var drawOperations = node.DrawOperations;
-                    for (int i = 0; i < drawOperations.Count; i++)
+                    var drawOperationsCount = drawOperations.Count;
+                    for (int i = 0; i < drawOperationsCount; i++)
                     {
                         var operation = drawOperations[i];
                         _currentDraw = operation;
@@ -365,7 +366,8 @@ namespace Avalonia.Rendering
                     }
 
                     var children = node.Children;
-                    for (int i = 0; i < children.Count; i++)
+                    var childrenCount = children.Count;
+                    for (int i = 0; i < childrenCount; i++)
                     {
                         var child = children[i];
                         Render(context, (VisualNode)child, layer, clipBounds);
