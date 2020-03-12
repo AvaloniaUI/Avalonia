@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Data;
+using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -79,24 +80,6 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Initialized_Observable_Fired()
-        {
-            bool invoked = false;
-
-            Class1.FooProperty.Initialized.Subscribe(x =>
-            {
-                Assert.Equal(AvaloniaProperty.UnsetValue, x.OldValue);
-                Assert.Equal("default", x.NewValue);
-                Assert.Equal(BindingPriority.Unset, x.Priority);
-                invoked = true;
-            });
-
-            var target = new Class1();
-
-            Assert.True(invoked);
-        }
-
-        [Fact]
         public void Changed_Observable_Fired()
         {
             var target = new Class1();
@@ -141,7 +124,7 @@ namespace Avalonia.Base.UnitTests
                 OverrideMetadata(typeof(T), metadata);
             }
 
-            internal override void NotifyInitialized(IAvaloniaObject o)
+            public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
             {
                 throw new NotImplementedException();
             }
@@ -169,7 +152,7 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
-            internal override void RouteSetValue(
+            internal override IDisposable RouteSetValue(
                 IAvaloniaObject o,
                 object value,
                 BindingPriority priority)

@@ -205,7 +205,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Setting_Logical_Parent_Subscribes_To_Parents_ResourceChanged_Event()
+        public void Setting_Logical_Parent_Raises_Child_ResourcesChanged()
         {
             var parent = new ContentControl();
             var child = new StyledElement();
@@ -218,6 +218,23 @@ namespace Avalonia.Controls.UnitTests
             parent.Resources.Add("foo", "bar");
 
             Assert.True(raisedOnChild);
+        }
+
+        [Fact]
+        public void Setting_Logical_Parent_Raises_Style_ResourcesChanged()
+        {
+            var style = new Style(x => x.OfType<Canvas>());
+            var parent = new ContentControl();
+            var child = new StyledElement { Styles = { style } };
+
+            ((ISetLogicalParent)child).SetParent(parent);
+            var raised = false;
+
+            style.ResourcesChanged += (_, __) => raised = true;
+
+            parent.Resources.Add("foo", "bar");
+
+            Assert.True(raised);
         }
 
         private IControlTemplate ContentControlTemplate()

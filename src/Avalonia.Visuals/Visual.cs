@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Logging;
@@ -336,7 +335,15 @@ namespace Avalonia
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
             where T : Visual
         {
-            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            static void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Sender is T sender)
+                {
+                    sender.InvalidateVisual();
+                }
+            }
+
+            static void InvalidateAndSubscribe(AvaloniaPropertyChangedEventArgs e)
             {
                 if (e.Sender is T sender)
                 {
@@ -347,7 +354,7 @@ namespace Avalonia
 
                     if (e.NewValue is IAffectsRender newValue)
                     {
-                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);                        
+                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);
                     }
 
                     sender.InvalidateVisual();
@@ -356,7 +363,14 @@ namespace Avalonia
 
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(Invalidate);
+                if (property.CanValueAffectRender())
+                {
+                    property.Changed.Subscribe(e => InvalidateAndSubscribe(e));
+                }
+                else
+                {
+                    property.Changed.Subscribe(e => Invalidate(e));
+                }
             }
         }
 
@@ -386,11 +400,18 @@ namespace Avalonia
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
 
-            if (VisualChildren != null)
+            var visualChildren = VisualChildren;
+
+            if (visualChildren != null)
             {
-                foreach (Visual child in VisualChildren.OfType<Visual>())
+                var visualChildrenCount = visualChildren.Count;
+
+                for (var i = 0; i < visualChildrenCount; i++)
                 {
-                    child.OnAttachedToVisualTreeCore(e);
+                    if (visualChildren[i] is Visual child)
+                    {
+                        child.OnAttachedToVisualTreeCore(e);
+                    }
                 }
             }
         }
@@ -415,11 +436,18 @@ namespace Avalonia
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root?.Renderer?.AddDirty(this);
 
-            if (VisualChildren != null)
+            var visualChildren = VisualChildren;
+
+            if (visualChildren != null)
             {
-                foreach (Visual child in VisualChildren.OfType<Visual>())
+                var visualChildrenCount = visualChildren.Count;
+
+                for (var i = 0; i < visualChildrenCount; i++)
                 {
-                    child.OnDetachedFromVisualTreeCore(e);
+                    if (visualChildren[i] is Visual child)
+                    {
+                        child.OnDetachedFromVisualTreeCore(e);
+                    }
                 }
             }
         }

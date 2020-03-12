@@ -10,10 +10,8 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Fact]
         public void Should_Create_Single_Instance_Typeface()
         {
-            using (AvaloniaLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(new MockPlatformRenderInterface());
-
                 var fontFamily = new FontFamily("MyFont");
 
                 var typeface = FontManager.Current.GetOrAddTypeface(fontFamily);

@@ -4,6 +4,7 @@
 using System.Reactive.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
@@ -19,6 +20,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextBlock>();
 
+        /// <summary>
+        /// Defines the <see cref="Padding"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Thickness> PaddingProperty =
+            Decorator.PaddingProperty.AddOwner<TextBlock>();
+
         // TODO: Define these attached properties elsewhere (e.g. on a Text class) and AddOwner
         // them into TextBlock.
 
@@ -28,7 +35,7 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
             AvaloniaProperty.RegisterAttached<TextBlock, Control, FontFamily>(
                 nameof(FontFamily),
-                defaultValue:  FontFamily.Default,
+                defaultValue: FontFamily.Default,
                 inherits: true);
 
         /// <summary>
@@ -87,8 +94,20 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             AvaloniaProperty.Register<TextBlock, TextWrapping>(nameof(TextWrapping));
 
+        /// <summary>
+        /// Defines the <see cref="TextTrimming"/> property.
+        /// </summary>
+        public static readonly StyledProperty<TextTrimming> TextTrimmingProperty =
+            AvaloniaProperty.Register<TextBlock, TextTrimming>(nameof(TextTrimming));
+
+        /// <summary>
+        /// Defines the <see cref="TextDecorations"/> property.
+        /// </summary>
+        public static readonly StyledProperty<TextDecorationCollection> TextDecorationsProperty =
+            AvaloniaProperty.Register<TextBlock, TextDecorationCollection>(nameof(TextDecorations));
+
         private string _text;
-        private FormattedText _formattedText;
+        private TextLayout _textLayout;
         private Size _constraint;
 
         /// <summary>
@@ -97,20 +116,31 @@ namespace Avalonia.Controls
         static TextBlock()
         {
             ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
+
             AffectsRender<TextBlock>(
-                BackgroundProperty,
-                ForegroundProperty,
-                FontWeightProperty,
-                FontSizeProperty,
-                FontStyleProperty);
+                BackgroundProperty, ForegroundProperty, FontSizeProperty, 
+                FontWeightProperty, FontStyleProperty, TextWrappingProperty, 
+                TextTrimmingProperty, TextAlignmentProperty, FontFamilyProperty, 
+                TextDecorationsProperty, TextProperty, PaddingProperty);
+
+            AffectsMeasure<TextBlock>(
+                FontSizeProperty, FontWeightProperty, FontStyleProperty, 
+                FontFamilyProperty, TextTrimmingProperty, TextProperty,
+                PaddingProperty);
 
             Observable.Merge(
                 TextProperty.Changed,
+                ForegroundProperty.Changed,
                 TextAlignmentProperty.Changed,
+                TextWrappingProperty.Changed,
+                TextTrimmingProperty.Changed,
                 FontSizeProperty.Changed,
                 FontStyleProperty.Changed,
-                FontWeightProperty.Changed
-            ).AddClassHandler<TextBlock>((x,_) => x.OnTextPropertiesChanged());
+                FontWeightProperty.Changed,
+                FontFamilyProperty.Changed,
+                TextDecorationsProperty.Changed,
+                PaddingProperty.Changed
+            ).AddClassHandler<TextBlock>((x, _) => x.InvalidateTextLayout());
         }
 
         /// <summary>
@@ -119,6 +149,26 @@ namespace Avalonia.Controls
         public TextBlock()
         {
             _text = string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="TextLayout"/> used to render the text.
+        /// </summary>
+        public TextLayout TextLayout
+        {
+            get
+            {
+                return _textLayout ?? (_textLayout = CreateTextLayout(_constraint, Text));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the padding to place around the <see cref="Text"/>.
+        /// </summary>
+        public Thickness Padding
+        {
+            get { return GetValue(PaddingProperty); }
+            set { SetValue(PaddingProperty, value); }
         }
 
         /// <summary>
@@ -186,22 +236,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the <see cref="FormattedText"/> used to render the text.
-        /// </summary>
-        public FormattedText FormattedText
-        {
-            get
-            {
-                if (_formattedText == null)
-                {
-                    _formattedText = CreateFormattedText(_constraint, Text);
-                }
-
-                return _formattedText;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the control's text wrapping mode.
         /// </summary>
         public TextWrapping TextWrapping
@@ -211,12 +245,30 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the control's text trimming mode.
+        /// </summary>
+        public TextTrimming TextTrimming
+        {
+            get { return GetValue(TextTrimmingProperty); }
+            set { SetValue(TextTrimmingProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the text alignment.
         /// </summary>
         public TextAlignment TextAlignment
         {
             get { return GetValue(TextAlignmentProperty); }
             set { SetValue(TextAlignmentProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the text decorations.
+        /// </summary>
+        public TextDecorationCollection TextDecorations
+        {
+            get => GetValue(TextDecorationsProperty);
+            set => SetValue(TextDecorationsProperty, value);
         }
 
         /// <summary>
@@ -337,39 +389,43 @@ namespace Avalonia.Controls
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            FormattedText.Constraint = Bounds.Size;
-            context.DrawText(Foreground, new Point(), FormattedText);
+            var padding = Padding;
+
+            TextLayout?.Draw(context.PlatformImpl, new Point(padding.Left, padding.Top));
         }
 
         /// <summary>
-        /// Creates the <see cref="FormattedText"/> used to render the text.
+        /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
         /// <param name="constraint">The constraint of the text.</param>
         /// <param name="text">The text to format.</param>
-        /// <returns>A <see cref="FormattedText"/> object.</returns>
-        protected virtual FormattedText CreateFormattedText(Size constraint, string text)
+        /// <returns>A <see cref="TextLayout"/> object.</returns>
+        protected virtual TextLayout CreateTextLayout(Size constraint, string text)
         {
-            return new FormattedText
+            if (constraint == Size.Empty)
             {
-                Constraint = constraint,
-                Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily, FontWeight, FontStyle),
-                FontSize = FontSize,
-                Text = text ?? string.Empty,
-                TextAlignment = TextAlignment,
-                TextWrapping = TextWrapping,
-            };
+                return null;
+            }
+
+            return new TextLayout(
+                text ?? string.Empty,
+                FontManager.Current?.GetOrAddTypeface(FontFamily, FontWeight, FontStyle),
+                FontSize,
+                Foreground,
+                TextAlignment,
+                TextWrapping,
+                TextTrimming,
+                TextDecorations,
+                constraint.Width,
+                constraint.Height);
         }
 
         /// <summary>
-        /// Invalidates <see cref="FormattedText"/>.
+        /// Invalidates <see cref="TextLayout"/>.
         /// </summary>
-        protected void InvalidateFormattedText()
+        protected void InvalidateTextLayout()
         {
-            if (_formattedText != null)
-            {
-                _constraint = _formattedText.Constraint;
-                _formattedText = null;
-            }
+            _textLayout = null;
         }
 
         /// <summary>
@@ -379,33 +435,33 @@ namespace Avalonia.Controls
         /// <returns>The desired size.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (!string.IsNullOrEmpty(Text))
+            if (string.IsNullOrEmpty(Text))
             {
-                if (TextWrapping == TextWrapping.Wrap)
-                {
-                    FormattedText.Constraint = new Size(availableSize.Width, double.PositiveInfinity);
-                }
-                else
-                {
-                    FormattedText.Constraint = Size.Infinity;
-                }
-
-                return FormattedText.Bounds.Size;
+                return new Size();
             }
 
-            return new Size();
+            var padding = Padding;
+
+            availableSize = availableSize.Deflate(padding);
+
+            if (_constraint != availableSize)
+            {
+                InvalidateTextLayout();
+            }
+
+            _constraint = availableSize;
+
+            var measuredSize = TextLayout?.Bounds.Size ?? Size.Empty;
+
+            return measuredSize.Inflate(padding);
         }
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
-            InvalidateFormattedText();
-            InvalidateMeasure();
-        }
 
-        private void OnTextPropertiesChanged()
-        {
-            InvalidateFormattedText();
+            InvalidateTextLayout();
+
             InvalidateMeasure();
         }
     }

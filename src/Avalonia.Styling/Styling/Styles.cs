@@ -9,6 +9,8 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
 
+#nullable enable
+
 namespace Avalonia.Styling
 {
     /// <summary>
@@ -16,10 +18,11 @@ namespace Avalonia.Styling
     /// </summary>
     public class Styles : AvaloniaObject, IAvaloniaList<IStyle>, IStyle, ISetResourceParent
     {
-        private IResourceNode _parent;
-        private IResourceDictionary _resources;
-        private AvaloniaList<IStyle> _styles = new AvaloniaList<IStyle>();
-        private Dictionary<Type, List<IStyle>> _cache;
+        private readonly AvaloniaList<IStyle> _styles = new AvaloniaList<IStyle>();
+        private IResourceNode? _parent;
+        private IResourceDictionary? _resources;
+        private Dictionary<Type, List<IStyle>?>? _cache;
+        private bool _notifyingResourcesChanged;
 
         public Styles()
         {
@@ -38,7 +41,7 @@ namespace Avalonia.Styling
                         ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
                     }
 
-                    x.ResourcesChanged += SubResourceChanged;
+                    x.ResourcesChanged += NotifyResourcesChanged;
                     _cache = null;
                 },
                 x =>
@@ -54,10 +57,16 @@ namespace Avalonia.Styling
                         ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
                     }
 
-                    x.ResourcesChanged -= SubResourceChanged;
+                    x.ResourcesChanged -= NotifyResourcesChanged;
                     _cache = null;
                 },
                 () => { });
+        }
+
+        public Styles(IResourceNode parent)
+            : this()
+        {
+            _parent = parent;
         }
 
         public event NotifyCollectionChangedEventHandler CollectionChanged
@@ -67,7 +76,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+        public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
         /// <inheritdoc/>
         public int Count => _styles.Count;
@@ -83,18 +92,18 @@ namespace Avalonia.Styling
             get => _resources ?? (Resources = new ResourceDictionary());
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
+                value = value ?? throw new ArgumentNullException(nameof(Resources));
 
                 var hadResources = false;
 
                 if (_resources != null)
                 {
                     hadResources = _resources.Count > 0;
-                    _resources.ResourcesChanged -= ResourceDictionaryChanged;
+                    _resources.ResourcesChanged -= NotifyResourcesChanged;
                 }
 
                 _resources = value;
-                _resources.ResourcesChanged += ResourceDictionaryChanged;
+                _resources.ResourcesChanged += NotifyResourcesChanged;
 
                 if (hadResources || _resources.Count > 0)
                 {
@@ -104,7 +113,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        IResourceNode IResourceNode.ResourceParent => _parent;
+        IResourceNode? IResourceNode.ResourceParent => _parent;
 
         /// <inheritdoc/>
         bool ICollection<IStyle>.IsReadOnly => false;
@@ -119,66 +128,50 @@ namespace Avalonia.Styling
             set => _styles[index] = value;
         }
 
-        /// <summary>
-        /// Attaches the style to a control if the style's selector matches.
-        /// </summary>
-        /// <param name="control">The control to attach to.</param>
-        /// <param name="container">
-        /// The control that contains this style. May be null.
-        /// </param>
-        public bool Attach(IStyleable control, IStyleHost container)
+        /// <inheritdoc/>
+        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
         {
-            if (_cache == null)
-            {
-                _cache = new Dictionary<Type, List<IStyle>>();
-            }
+            _cache ??= new Dictionary<Type, List<IStyle>?>();
 
-            if (_cache.TryGetValue(control.StyleKey, out var cached))
+            if (_cache.TryGetValue(target.StyleKey, out var cached))
             {
-                if (cached != null)
+                if (cached is object)
                 {
                     foreach (var style in cached)
                     {
-                        style.Attach(control, container);
+                        style.TryAttach(target, host);
                     }
 
-                    return true;
+                    return SelectorMatchResult.AlwaysThisType;
                 }
-
-                return false;
+                else
+                {
+                    return SelectorMatchResult.NeverThisType;
+                }
             }
             else
             {
-                List<IStyle> result = null;
+                List<IStyle>? matches = null;
 
-                foreach (var style in this)
+                foreach (var child in this)
                 {
-                    if (style.Attach(control, container))
+                    if (child.TryAttach(target, host) != SelectorMatchResult.NeverThisType)
                     {
-                        if (result == null)
-                        {
-                            result = new List<IStyle>();
-                        }
-
-                        result.Add(style);
+                        matches ??= new List<IStyle>();
+                        matches.Add(child);
                     }
                 }
 
-                _cache.Add(control.StyleKey, result);
-                return result != null;
-            }
-        }
-
-        public void Detach()
-        {
-            foreach (IStyle style in this)
-            {
-                style.Detach();
+                _cache.Add(target.StyleKey, matches);
+                
+                return matches is null ?
+                    SelectorMatchResult.NeverThisType :
+                    SelectorMatchResult.AlwaysThisType;
             }
         }
 
         /// <inheritdoc/>
-        public bool TryGetResource(object key, out object value)
+        public bool TryGetResource(object key, out object? value)
         {
             if (_resources != null && _resources.TryGetResource(key, out value))
             {
@@ -239,8 +232,10 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         public bool Remove(IStyle item) => _styles.Remove(item);
 
+        public AvaloniaList<IStyle>.Enumerator GetEnumerator() => _styles.GetEnumerator();
+
         /// <inheritdoc/>
-        public IEnumerator<IStyle> GetEnumerator() => _styles.GetEnumerator();
+        IEnumerator<IStyle> IEnumerable<IStyle>.GetEnumerator() => _styles.GetEnumerator();
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => _styles.GetEnumerator();
@@ -259,34 +254,35 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         void ISetResourceParent.ParentResourcesChanged(ResourcesChangedEventArgs e)
         {
-            ResourcesChanged?.Invoke(this, e);
+            NotifyResourcesChanged(e);
         }
 
-        private void ResourceDictionaryChanged(object sender, ResourcesChangedEventArgs e)
+        private void NotifyResourcesChanged(object sender, ResourcesChangedEventArgs e)
         {
-            foreach (var child in this)
+            NotifyResourcesChanged(e);
+        }
+
+        private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            if (_notifyingResourcesChanged)
             {
-                (child as ISetResourceParent)?.ParentResourcesChanged(e);
+                return;
             }
 
-            ResourcesChanged?.Invoke(this, e);
-        }
-
-        private void SubResourceChanged(object sender, ResourcesChangedEventArgs e)
-        {
-            var foundSource = false;
-
-            foreach (var child in this)
+            try
             {
-                if (foundSource)
+                _notifyingResourcesChanged = true;
+                foreach (var child in this)
                 {
                     (child as ISetResourceParent)?.ParentResourcesChanged(e);
                 }
 
-                foundSource |= child == sender;
+                ResourcesChanged?.Invoke(this, e);
             }
-
-            ResourcesChanged?.Invoke(this, e);
+            finally
+            {
+                _notifyingResourcesChanged = false;
+            }
         }
     }
 }

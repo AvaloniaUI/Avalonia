@@ -65,7 +65,7 @@ namespace Avalonia.Controls
         private const double DATAGRID_minimumColumnHeaderHeight = 4;
         internal const double DATAGRID_maximumStarColumnWidth = 10000;
         internal const double DATAGRID_minimumStarColumnWidth = 0.001;
-        private const double DATAGRID_mouseWheelDelta = 48.0;
+        private const double DATAGRID_mouseWheelDelta = 72.0;
         private const double DATAGRID_maxHeadersThickness = 32768;
 
         private const double DATAGRID_defaultRowHeight = 22;
@@ -148,6 +148,9 @@ namespace Avalonia.Controls
         private byte _verticalScrollChangesIgnored;
 
         private IEnumerable _items;
+
+        public event EventHandler<ScrollEventArgs> HorizontalScroll;
+        public event EventHandler<ScrollEventArgs> VerticalScroll;
 
         /// <summary>
         /// Identifies the CanUserReorderColumns dependency property.
@@ -373,7 +376,11 @@ namespace Avalonia.Controls
         public bool IsValid
         {
             get { return _isValid; }
-            internal set { SetAndRaise(IsValidProperty, ref _isValid, value); }
+            internal set 
+            { 
+                SetAndRaise(IsValidProperty, ref _isValid, value);
+                PseudoClasses.Set(":invalid", !value);
+            }
         }
 
         public static readonly StyledProperty<double> MaxColumnWidthProperty =
@@ -655,8 +662,6 @@ namespace Avalonia.Controls
                 ColumnHeaderHeightProperty,
                 HorizontalScrollBarVisibilityProperty,
                 VerticalScrollBarVisibilityProperty);
-
-            PseudoClass<DataGrid, bool>(IsValidProperty, x => !x, ":invalid");
 
             ItemsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnItemsPropertyChanged(e));
             CanUserResizeColumnsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnCanUserResizeColumnsChanged(e));
@@ -4223,6 +4228,7 @@ namespace Avalonia.Controls
         private void HorizontalScrollBar_Scroll(object sender, ScrollEventArgs e)
         {
             ProcessHorizontalScroll(e.ScrollEventType);
+            HorizontalScroll?.Invoke(sender, e);
         }
 
         private bool IsColumnOutOfBounds(int columnIndex)
@@ -5555,6 +5561,7 @@ namespace Avalonia.Controls
         private void VerticalScrollBar_Scroll(object sender, ScrollEventArgs e)
         {
             ProcessVerticalScroll(e.ScrollEventType);
+            VerticalScroll?.Invoke(sender, e);
         }
 
         //TODO: Ensure left button is checked for

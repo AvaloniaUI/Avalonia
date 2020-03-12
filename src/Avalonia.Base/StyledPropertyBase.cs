@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using Avalonia.Data;
 using Avalonia.Reactive;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -169,6 +170,12 @@ namespace Avalonia
             base.OverrideMetadata(type, metadata);
         }
 
+        /// <inheritdoc/>
+        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
+        {
+            vistor.Visit(this, ref data);
+        }
+
         /// <summary>
         /// Gets the string representation of the property.
         /// </summary>
@@ -180,21 +187,6 @@ namespace Avalonia
 
         /// <inheritdoc/>
         object IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
-
-        /// <inheritdoc/>
-        internal override void NotifyInitialized(IAvaloniaObject o)
-        {
-            if (HasNotifyInitializedObservers)
-            {
-                var e = new AvaloniaPropertyChangedEventArgs<TValue>(
-                    o,
-                    this,
-                    default,
-                    o.GetValue(this),
-                    BindingPriority.Unset);
-                NotifyInitialized(e);
-            }
-        }
 
         /// <inheritdoc/>
         internal override void RouteClearValue(IAvaloniaObject o)
@@ -209,7 +201,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        internal override void RouteSetValue(
+        internal override IDisposable RouteSetValue(
             IAvaloniaObject o,
             object value,
             BindingPriority priority)
@@ -218,7 +210,7 @@ namespace Avalonia
 
             if (v.HasValue)
             {
-                o.SetValue<TValue>(this, (TValue)v.Value, priority);
+                return o.SetValue<TValue>(this, (TValue)v.Value, priority);
             }
             else if (v.Type == BindingValueType.UnsetValue)
             {
@@ -228,6 +220,8 @@ namespace Avalonia
             {
                 throw v.Error;
             }
+
+            return null;
         }
 
         /// <inheritdoc/>

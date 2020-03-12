@@ -20,7 +20,6 @@ namespace Avalonia
         public static readonly object UnsetValue = new UnsetValueType();
 
         private static int s_nextId;
-        private readonly Subject<AvaloniaPropertyChangedEventArgs> _initialized;
         private readonly Subject<AvaloniaPropertyChangedEventArgs> _changed;
         private readonly PropertyMetadata _defaultMetadata;
         private readonly Dictionary<Type, PropertyMetadata> _metadata;
@@ -53,7 +52,6 @@ namespace Avalonia
                 throw new ArgumentException("'name' may not contain periods.");
             }
 
-            _initialized = new Subject<AvaloniaPropertyChangedEventArgs>();
             _changed = new Subject<AvaloniaPropertyChangedEventArgs>();
             _metadata = new Dictionary<Type, PropertyMetadata>();
 
@@ -81,7 +79,6 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(source != null);
             Contract.Requires<ArgumentNullException>(ownerType != null);
 
-            _initialized = source._initialized;
             _changed = source._changed;
             _metadata = new Dictionary<Type, PropertyMetadata>();
 
@@ -135,22 +132,6 @@ namespace Avalonia
         /// Gets a value indicating whether this is a readonly property.
         /// </summary>
         public virtual bool IsReadOnly => false;
-
-        /// <summary>
-        /// Gets an observable that is fired when this property is initialized on a
-        /// new <see cref="AvaloniaObject"/> instance.
-        /// </summary>
-        /// <remarks>
-        /// This observable is fired each time a new <see cref="AvaloniaObject"/> is constructed
-        /// for all properties registered on the object's type. The default value of the property
-        /// for the object is passed in the args' NewValue (OldValue will always be
-        /// <see cref="UnsetValue"/>.
-        /// </remarks>
-        /// <value>
-        /// An observable that is fired when this property is initialized on a new
-        /// <see cref="AvaloniaObject"/> instance.
-        /// </value>
-        public IObservable<AvaloniaPropertyChangedEventArgs> Initialized => _initialized;
 
         /// <summary>
         /// Gets an observable that is fired when this property changes on any
@@ -489,24 +470,13 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// True if <see cref="Initialized"/> has any observers.
+        /// Uses the visitor pattern to resolve an untyped property to a typed property.
         /// </summary>
-        internal bool HasNotifyInitializedObservers => _initialized.HasObservers;
-
-        /// <summary>
-        /// Notifies the <see cref="Initialized"/> observable.
-        /// </summary>
-        /// <param name="o">The object being initialized.</param>
-        internal abstract void NotifyInitialized(IAvaloniaObject o);
-
-        /// <summary>
-        /// Notifies the <see cref="Initialized"/> observable.
-        /// </summary>
-        /// <param name="e">The observable arguments.</param>
-        internal void NotifyInitialized(AvaloniaPropertyChangedEventArgs e)
-        {
-            _initialized.OnNext(e);
-        }
+        /// <typeparam name="TData">The type of user data passed.</typeparam>
+        /// <param name="vistor">The visitor which will accept the typed property.</param>
+        /// <param name="data">The user data to pass.</param>
+        public abstract void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
+            where TData : struct;
 
         /// <summary>
         /// Notifies the <see cref="Changed"/> observable.
@@ -535,7 +505,10 @@ namespace Avalonia
         /// <param name="o">The object instance.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority.</param>
-        internal abstract void RouteSetValue(
+        /// <returns>
+        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
+        /// </returns>
+        internal abstract IDisposable? RouteSetValue(
             IAvaloniaObject o,
             object value,
             BindingPriority priority);
