@@ -683,13 +683,12 @@ namespace Avalonia.Controls
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            var point = e.GetPosition(_presenter);
-            var index = _presenter.GetCaretIndex(point);
             var text = Text;
 
             if (text != null && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                CaretIndex = index;
+                var point = e.GetPosition(_presenter);
+                var index = CaretIndex = _presenter.GetCaretIndex(point);
                 switch (e.ClickCount)
                 {
                     case 1:
