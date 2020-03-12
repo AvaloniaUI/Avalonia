@@ -11,6 +11,7 @@ namespace Avalonia.Controls
         private KeyGesture _gesture;
         private bool _enabled = true;
         private ICommand _command;
+        private bool _isChecked = false;
 
         private NativeMenu _menu;
 
@@ -86,6 +87,24 @@ namespace Avalonia.Controls
             get => _gesture;
             set => SetAndRaise(GestureProperty, ref _gesture, value);
         }                
+            get => GetValue(GestureProperty);
+            set => SetValue(GestureProperty, value);
+        }
+
+        public static readonly DirectProperty<NativeMenuItem, bool> IsCheckedProperty =
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, bool>(
+                nameof(IsChecked),
+                o => o._isChecked,
+                (o, v) => o._isChecked = v,
+                defaultBindingMode: Data.BindingMode.TwoWay);
+
+        public bool IsChecked
+        {
+            get => GetValue(IsCheckedProperty);
+            set => SetValue(IsCheckedProperty, value);
+        }
+
+        private ICommand _command;
 
         public static readonly DirectProperty<NativeMenuItem, ICommand> CommandProperty =
             Button.CommandProperty.AddOwner<NativeMenuItem>(
