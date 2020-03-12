@@ -349,6 +349,9 @@ namespace Avalonia.Native
 
                         return false;
                     }), new MenuActionCallback(() => { item.RaiseClick(); }));
+
+                    menuItem.IsChecked = item.IsChecked;
+
                     menu.AddItem(menuItem);
 
                     if (item.Menu?.Items?.Count >= 0)
@@ -409,6 +412,8 @@ namespace Avalonia.Native
                         {
                             menuItem.Title = buffer.DangerousGetHandle();
                         }
+
+                        menuItem.IsChecked = item.IsChecked;
 
                         if (item.Gesture != null)
                         {
