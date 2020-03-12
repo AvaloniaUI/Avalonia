@@ -110,6 +110,12 @@ HRESULT AvnAppMenuItem::SetAction (IAvnPredicateCallback* predicate, IAvnActionC
     return S_OK;
 }
 
+HRESULT AvnAppMenuItem::SetIsChecked (bool isChecked)
+{
+    [_native setState:(isChecked ? NSOnState : NSOffState)];
+    return S_OK;
+}
+
 bool AvnAppMenuItem::EvaluateItemEnabled()
 {
     if(_predicate != nullptr)
