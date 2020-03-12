@@ -407,6 +407,7 @@ AVNCOM(IAvnAppMenuItem, 19) : IUnknown
     virtual HRESULT SetTitle (void* utf8String) = 0;
     virtual HRESULT SetGesture (void* utf8String, AvnInputModifiers modifiers) = 0;
     virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) = 0;
+    virtual HRESULT SetIsChecked (bool isChecked) = 0;
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();

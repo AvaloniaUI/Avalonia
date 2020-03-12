@@ -46,6 +46,8 @@ public:
     
     virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) override;
     
+    virtual HRESULT SetIsChecked (bool isChecked) override;
+    
     bool EvaluateItemEnabled();
     
     void RaiseOnClicked();
