@@ -103,7 +103,7 @@ namespace Avalonia.Controls
         public bool IsChecked
         {
             get => GetValue(IsCheckedProperty);
-            set => SetValue(IsCheckedProperty, value);
+            set { SetAndRaise(IsCheckedProperty, ref _isChecked, value); }
         }
 
         private ICommand _command;
