@@ -2,19 +2,19 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
+using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
-using System.Collections.Generic;
-using System.Linq;
 using JetBrains.Annotations;
-using System.ComponentModel;
-using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -81,8 +81,11 @@ namespace Avalonia.Controls
         /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
         [Obsolete("Use SystemDecorationsProperty instead")]
-        public static readonly StyledProperty<bool> HasSystemDecorationsProperty =
-            AvaloniaProperty.Register<Window, bool>(nameof(HasSystemDecorations), true);
+        public static readonly DirectProperty<Window, bool> HasSystemDecorationsProperty =
+            AvaloniaProperty.RegisterDirect<Window, bool>(
+                nameof(HasSystemDecorations),
+                o => o.HasSystemDecorations,
+                (o, v) => o.HasSystemDecorations = v);
 
         /// <summary>
         /// Defines the <see cref="SystemDecorations"/> property.
@@ -152,15 +155,6 @@ namespace Avalonia.Controls
         {
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetTitle((string)e.NewValue));
-            HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
-                (s, e) => s.SetValue(SystemDecorationsProperty, (bool)e.NewValue ? SystemDecorations.Full : SystemDecorations.None));
-            SystemDecorationsProperty.Changed.AddClassHandler<Window>(
-                (s, e) =>
-                {
-                    s.PlatformImpl?.SetSystemDecorations((SystemDecorations)e.NewValue);
-                    s.SetValue(HasSystemDecorationsProperty, (SystemDecorations)e.NewValue != SystemDecorations.None);
-                });
-
             ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue));
 
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue)?.PlatformImpl));
@@ -169,7 +163,7 @@ namespace Avalonia.Controls
 
             WindowStateProperty.Changed.AddClassHandler<Window>(
                 (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.WindowState = (WindowState)e.NewValue; });
-            
+
             MinWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size((double)e.NewValue, w.MinHeight), new Size(w.MaxWidth, w.MaxHeight)));
             MinHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue), new Size(w.MaxWidth, w.MaxHeight)));
             MaxWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size((double)e.NewValue, w.MaxHeight)));
@@ -224,12 +218,20 @@ namespace Avalonia.Controls
         /// <summary>
         /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
-        /// 
         [Obsolete("Use SystemDecorations instead")]
         public bool HasSystemDecorations
         {
-            get { return GetValue(HasSystemDecorationsProperty); }
-            set { SetValue(HasSystemDecorationsProperty, value); }
+            get => SystemDecorations == SystemDecorations.Full;
+            set
+            {
+                var oldValue = HasSystemDecorations;
+
+                if (oldValue != value)
+                {
+                    SystemDecorations = value ? SystemDecorations.Full : SystemDecorations.None;
+                    RaisePropertyChanged(HasSystemDecorationsProperty, oldValue, value);
+                }
+            }
         }
 
         /// <summary>
@@ -628,5 +630,27 @@ namespace Avalonia.Controls
         /// <see cref="Closing"/> event needs to be raised.
         /// </remarks>
         protected virtual void OnClosing(CancelEventArgs e) => Closing?.Invoke(this, e);
+
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
+        {
+            if (property == SystemDecorationsProperty)
+            {
+                var typedNewValue = newValue.GetValueOrDefault<SystemDecorations>();
+
+                PlatformImpl?.SetSystemDecorations(typedNewValue);
+
+                var o = oldValue.GetValueOrDefault<SystemDecorations>() == SystemDecorations.Full;
+                var n = typedNewValue == SystemDecorations.Full;
+
+                if (o != n)
+                {
+                    RaisePropertyChanged(HasSystemDecorationsProperty, o, n);
+                }
+            }
+        }
     }
 }
