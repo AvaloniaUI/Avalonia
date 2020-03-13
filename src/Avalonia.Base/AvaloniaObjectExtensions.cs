@@ -458,7 +458,10 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
-        public static void SetValue(
+        /// <returns>
+        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
+        /// </returns>
+        public static IDisposable SetValue(
             this IAvaloniaObject target,
             AvaloniaProperty property,
             object value,
@@ -467,7 +470,7 @@ namespace Avalonia
             target = target ?? throw new ArgumentNullException(nameof(target));
             property = property ?? throw new ArgumentNullException(nameof(property));
 
-            property.RouteSetValue(target, value, priority);
+            return property.RouteSetValue(target, value, priority);
         }
 
         /// <summary>
@@ -478,7 +481,10 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
-        public static void SetValue<T>(
+        /// <returns>
+        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
+        /// </returns>
+        public static IDisposable SetValue<T>(
             this IAvaloniaObject target,
             AvaloniaProperty<T> property,
             T value,
@@ -490,11 +496,10 @@ namespace Avalonia
             switch (property)
             {
                 case StyledPropertyBase<T> styled:
-                    target.SetValue(styled, value, priority);
-                    break;
+                    return target.SetValue(styled, value, priority);
                 case DirectPropertyBase<T> direct:
                     target.SetValue(direct, value);
-                    break;
+                    return null;
                 default:
                     throw new NotSupportedException("Unsupported AvaloniaProperty type.");
             }

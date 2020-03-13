@@ -311,7 +311,10 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
-        public void SetValue<T>(
+        /// <returns>
+        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
+        /// </returns>
+        public IDisposable SetValue<T>(
             StyledPropertyBase<T> property,
             T value,
             BindingPriority priority = BindingPriority.LocalValue)
@@ -335,8 +338,10 @@ namespace Avalonia
             }
             else if (!(value is DoNothingType))
             {
-                Values.SetValue(property, value, priority);
+                return Values.SetValue(property, value, priority);
             }
+
+            return null;
         }
 
         /// <summary>

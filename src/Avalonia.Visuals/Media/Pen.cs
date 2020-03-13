@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using Avalonia.Media.Immutable;
 using Avalonia.Utilities;
 
@@ -197,7 +196,15 @@ namespace Avalonia.Media
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
             where T : Pen
         {
-            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            static void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Sender is T sender)
+                {
+                    sender.RaiseInvalidated(EventArgs.Empty);
+                }
+            }
+
+            static void InvalidateAndSubscribe(AvaloniaPropertyChangedEventArgs e)
             {
                 if (e.Sender is T sender)
                 {
@@ -223,7 +230,14 @@ namespace Avalonia.Media
 
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(Invalidate);
+                if (property.CanValueAffectRender())
+                {
+                    property.Changed.Subscribe(e => InvalidateAndSubscribe(e));
+                }
+                else
+                {
+                    property.Changed.Subscribe(e => Invalidate(e));
+                }
             }
         }
 

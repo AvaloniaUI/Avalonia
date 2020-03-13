@@ -201,18 +201,17 @@ namespace Avalonia.Media.TextFormatting
             var availableWidth = paragraphWidth;
             var currentWidth = 0.0;
             var runIndex = 0;
+            var length = 0;
 
             while (runIndex < textRuns.Count)
             {
                 var currentRun = textRuns[runIndex];
 
-                currentWidth += currentRun.GlyphRun.Bounds.Width;
-
-                if (currentWidth > availableWidth)
+                if (currentWidth + currentRun.GlyphRun.Bounds.Width > availableWidth)
                 {
-                    var measuredLength = MeasureText(currentRun, paragraphWidth);
+                    var measuredLength = MeasureText(currentRun, paragraphWidth - currentWidth);
 
-                    if (measuredLength < text.End)
+                    if (measuredLength < currentRun.Text.Length)
                     {
                         var currentBreakPosition = -1;
 
@@ -241,15 +240,19 @@ namespace Avalonia.Media.TextFormatting
                         }
                     }
 
-                    var splitResult = SplitTextRuns(textRuns, measuredLength);
+                    length += measuredLength;
+
+                    var splitResult = SplitTextRuns(textRuns, length);
 
                     var textLineMetrics =
                         TextLineMetrics.Create(splitResult.First, paragraphWidth, paragraphProperties.TextAlignment);
 
-                    return new SimpleTextLine(text.Take(measuredLength), splitResult.First, textLineMetrics);
+                    return new SimpleTextLine(text.Take(length), splitResult.First, textLineMetrics);
                 }
 
-                availableWidth -= currentRun.GlyphRun.Bounds.Width;
+                currentWidth += currentRun.GlyphRun.Bounds.Width;
+
+                length += currentRun.GlyphRun.Characters.Length;
 
                 runIndex++;
             }
@@ -281,10 +284,16 @@ namespace Avalonia.Media.TextFormatting
 
                 if (measuredWidth + advance > availableWidth)
                 {
+                    index--;
                     break;
                 }
 
                 measuredWidth += advance;
+            }
+
+            if(index < 0)
+            {
+                return 0;
             }
 
             var cluster = textRun.GlyphRun.GlyphClusters[index];
@@ -355,7 +364,7 @@ namespace Avalonia.Media.TextFormatting
                     continue;
                 }
 
-                var firstCount = currentRun.GlyphRun.Characters.Length > 1 ? i + 1 : i;
+                var firstCount = currentRun.GlyphRun.Characters.Length >= 1 ? i + 1 : i;
 
                 var first = new ShapedTextRun[firstCount];
 
