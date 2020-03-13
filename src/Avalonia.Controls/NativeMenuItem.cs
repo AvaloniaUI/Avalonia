@@ -95,8 +95,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsCheckedProperty =
             AvaloniaProperty.Register<NativeMenuItem, bool>(
                 nameof(IsChecked),
-                defaultValue: false,
-                defaultBindingMode: Data.BindingMode.TwoWay);
+                defaultValue: false);
 
         public bool IsChecked
         {
