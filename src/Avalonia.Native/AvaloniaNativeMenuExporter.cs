@@ -129,6 +129,7 @@ namespace Avalonia.Native
         private bool _exported = false;
         private IAvnWindow _nativeWindow;
         private List<NativeMenuItem> _menuItems = new List<NativeMenuItem>();
+        private Dictionary<NativeMenuItem, IAvnAppMenuItem> _nativeMenuItemsMap = new Dictionary<NativeMenuItem, IAvnAppMenuItem>();
 
         private static Dictionary<Key, OsxUnicodeSpecialKey> osxKeys = new Dictionary<Key, OsxUnicodeSpecialKey>
         {
@@ -239,7 +240,11 @@ namespace Avalonia.Native
 
         private void OnItemPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
         {
-            QueueReset();
+            if (e.Sender is NativeMenuItem menuItem && _nativeMenuItemsMap.ContainsKey(menuItem)) {
+                if (e.Property.Name == "IsChecked") {
+                    _nativeMenuItemsMap[menuItem].IsChecked = menuItem.IsChecked;
+                }
+            }
         }
 
         private void OnMenuItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -258,6 +263,7 @@ namespace Avalonia.Native
             }
 
             _menuItems.Clear();
+            _nativeMenuItemsMap.Clear();
 
             if(_nativeWindow is null)
             {
@@ -352,6 +358,12 @@ namespace Avalonia.Native
 
                     menuItem.IsChecked = item.IsChecked;
 
+                    item.PropertyChanged += OnItemPropertyChanged;
+
+                    if (!_nativeMenuItemsMap.ContainsKey(item)) {
+                        _nativeMenuItemsMap.Add(item, menuItem);
+                    }
+
                     menu.AddItem(menuItem);
 
                     if (item.Menu?.Items?.Count >= 0)
@@ -383,6 +395,8 @@ namespace Avalonia.Native
                 {
                     var menuItem = _factory.CreateMenuItem();
 
+                    item.PropertyChanged += OnItemPropertyChanged;
+                    
                     AddMenuItem(item);
 
                     menuItem.SetAction(new PredicateCallback(() =>
@@ -423,7 +437,9 @@ namespace Avalonia.Native
                             }
                         }
                     }
-
+                    if (!_nativeMenuItemsMap.ContainsKey(item)) {
+                        _nativeMenuItemsMap.Add(item, menuItem);
+                    }
                     menu.AddItem(menuItem);
                 }
                 else if(i is NativeMenuItemSeperator seperator)
