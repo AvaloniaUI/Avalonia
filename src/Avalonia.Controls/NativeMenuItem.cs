@@ -10,7 +10,6 @@ namespace Avalonia.Controls
         private string _header;
         private KeyGesture _gesture;
         private bool _enabled = true;
-        private bool _isChecked = false;
 
         private NativeMenu _menu;
 
@@ -102,7 +101,7 @@ namespace Avalonia.Controls
         public bool IsChecked
         {
             get => GetValue(IsCheckedProperty);
-            set => SetAndRaise(IsCheckedProperty, ref _isChecked, value);
+            set => SetValue(IsCheckedProperty, value);
         }
 
         private ICommand _command;
