@@ -240,8 +240,10 @@ namespace Avalonia.Native
 
         private void OnItemPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Sender is NativeMenuItem menuItem && _nativeMenuItemsMap.ContainsKey(menuItem)) {
-                if (e.Property.Name == "IsChecked") {
+            if (e.Sender is NativeMenuItem menuItem && _nativeMenuItemsMap.ContainsKey(menuItem))
+            {
+                if (e.Property.Name == "IsChecked")
+                {
                     _nativeMenuItemsMap[menuItem].IsChecked = menuItem.IsChecked;
                 }
             }
@@ -360,7 +362,8 @@ namespace Avalonia.Native
 
                     item.PropertyChanged += OnItemPropertyChanged;
 
-                    if (!_nativeMenuItemsMap.ContainsKey(item)) {
+                    if (!_nativeMenuItemsMap.ContainsKey(item))
+                    {
                         _nativeMenuItemsMap.Add(item, menuItem);
                     }
 
@@ -437,9 +440,12 @@ namespace Avalonia.Native
                             }
                         }
                     }
-                    if (!_nativeMenuItemsMap.ContainsKey(item)) {
+                    
+                    if (!_nativeMenuItemsMap.ContainsKey(item))
+                    {
                         _nativeMenuItemsMap.Add(item, menuItem);
                     }
+
                     menu.AddItem(menuItem);
                 }
                 else if(i is NativeMenuItemSeperator seperator)
