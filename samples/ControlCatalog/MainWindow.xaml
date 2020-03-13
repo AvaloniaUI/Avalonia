@@ -36,6 +36,15 @@
           </NativeMenu>
         </NativeMenuItem.Menu>
       </NativeMenuItem>
+      <NativeMenuItem Header="Options">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Check Me Out" 
+                            Command="{Binding ToggleMenuItemCheckedCommand}"
+                            IsChecked="{Binding IsMenuItemChecked}"  />
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
     </NativeMenu>
   </NativeMenu.Menu>
 
