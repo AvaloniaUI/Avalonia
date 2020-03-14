@@ -335,7 +335,7 @@ namespace Avalonia.Controls
             _oldSelectedItemsCache = new List<object>(_selectedItemsCache);
 
             return
-                new SelectionChangedEventArgs(DataGrid.SelectionChangedEvent, removedSelectedItems, addedSelectedItems)
+                new SelectionChangedEventArgs(DataGrid.SelectionChangedEvent, addedSelectedItems, removedSelectedItems)
                 {
                     Source = OwningGrid
                 };
