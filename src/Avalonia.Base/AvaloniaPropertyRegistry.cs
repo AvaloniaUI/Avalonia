@@ -26,8 +26,6 @@ namespace Avalonia
             new Dictionary<Type, List<AvaloniaProperty>>();
         private readonly Dictionary<Type, List<AvaloniaProperty>> _directCache =
             new Dictionary<Type, List<AvaloniaProperty>>();
-        private readonly Dictionary<Type, List<PropertyInitializationData>> _initializedCache =
-            new Dictionary<Type, List<PropertyInitializationData>>();
         private readonly Dictionary<Type, List<AvaloniaProperty>> _inheritedCache =
             new Dictionary<Type, List<AvaloniaProperty>>();
 
@@ -408,7 +406,6 @@ namespace Avalonia
             }
             
             _registeredCache.Clear();
-            _initializedCache.Clear();
             _inheritedCache.Clear();
         }
 
@@ -445,32 +442,7 @@ namespace Avalonia
             }
             
             _attachedCache.Clear();
-            _initializedCache.Clear();
             _inheritedCache.Clear();
-        }
-
-        private readonly struct PropertyInitializationData
-        {
-            public AvaloniaProperty Property { get; }
-            public object Value { get; }
-            public bool IsDirect { get; }
-            public IDirectPropertyAccessor DirectAccessor { get; }
-
-            public PropertyInitializationData(AvaloniaProperty property, IDirectPropertyAccessor directAccessor)
-            {
-                Property = property;
-                Value = null;
-                IsDirect = true;
-                DirectAccessor = directAccessor;
-            }
-
-            public PropertyInitializationData(AvaloniaProperty property, IStyledPropertyAccessor styledAccessor, Type type)
-            {
-                Property = property;
-                Value = styledAccessor.GetDefaultValue(type);
-                IsDirect = false;
-                DirectAccessor = null;
-            }
         }
     }
 }
