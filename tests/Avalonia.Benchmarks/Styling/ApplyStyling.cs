@@ -45,7 +45,7 @@ namespace Avalonia.Benchmarks.Styling
             {
                 _window.Styles.Add(new Style(x => x.OfType<TextBox>().Class("foo").Class("bar").Class("baz"))
                 {
-                    Setters = new[]
+                    Setters =
                     {
                         new Setter(TextBox.TextProperty, "foo"),
                     }

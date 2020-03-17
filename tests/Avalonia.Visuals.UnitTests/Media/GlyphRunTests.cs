@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Avalonia.Utility;
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Media
@@ -32,7 +33,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 25.0, 0, 3, true)]
-        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 20.0, 2, 0, true)]
+        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 20.0, 1, 1, true)]
         [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 26.0, 2, 1, true)]
         [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 35.0, 2, 1, false)]
         [Theory]
@@ -51,6 +52,8 @@ namespace Avalonia.Visuals.UnitTests.Media
             }
         }
 
+        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 10, 11, 12 }, 0, -1, 10, 1, 10)]
+        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 10, 11, 12 }, 0, 15, 12, 1, 10)]
         [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 0, 0, 0, 3, 30.0)]
         [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 1, 2 }, 0, 1, 1, 1, 10.0)]
         [InlineData(new double[] { 10, 10, 10, 10 }, new ushort[] { 0, 1, 1, 3 }, 0, 2, 1, 2, 20.0)]
@@ -121,10 +124,14 @@ namespace Avalonia.Visuals.UnitTests.Media
             var count = glyphAdvances.Length;
             var glyphIndices = new ushort[count];
 
+            var start = bidiLevel == 0 ? glyphClusters[0] : glyphClusters[glyphClusters.Length - 1];
+
+            var characters = new ReadOnlySlice<char>(new char[count], start, count);
+
             var bounds = new Rect(0, 0, count * 10, 10);
 
             return new GlyphRun(new GlyphTypeface(new MockGlyphTypeface()), 10, glyphIndices, glyphAdvances,
-                glyphClusters: glyphClusters, bidiLevel: bidiLevel, bounds: bounds);
+                glyphClusters: glyphClusters, characters: characters, biDiLevel: bidiLevel, bounds: bounds);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Avalonia.Diagnostics
                 }
             }
 
-            return root.AddHandler(
+            return root.AddDisposableHandler(
                 InputElement.KeyDownEvent,
                 PreviewKeyDown,
                 RoutingStrategies.Tunnel);

@@ -69,14 +69,14 @@ namespace Avalonia.Media
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
             where T : Brush
         {
-            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            static void Invalidate(AvaloniaPropertyChangedEventArgs e)
             {
                 (e.Sender as T)?.RaiseInvalidated(EventArgs.Empty);
             }
 
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(Invalidate);
+                property.Changed.Subscribe(e => Invalidate(e));
             }
         }
 

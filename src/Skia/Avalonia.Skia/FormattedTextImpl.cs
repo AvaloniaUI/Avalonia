@@ -642,6 +642,11 @@ namespace Avalonia.Skia
                 var lastLine = _skiaLines[_skiaLines.Count - 1];
                 _bounds = new Rect(0, 0, maxX, lastLine.Top + lastLine.Height);
 
+                if (double.IsPositiveInfinity(Constraint.Width))
+                {
+                    return;
+                }
+
                 switch (_paint.TextAlign)
                 {
                     case SKTextAlign.Center:

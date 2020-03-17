@@ -352,7 +352,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void StyleDetach_Is_Triggered_When_Control_Removed_From_Logical_Tree()
+        public void StyleInstance_Is_Disposed_When_Control_Removed_From_Logical_Tree()
         {
             using (AvaloniaLocator.EnterScope())
             {
@@ -361,11 +361,12 @@ namespace Avalonia.Styling.UnitTests
 
                 root.Child = child;
 
-                bool styleDetachTriggered = false;
-                ((IStyleable)child).StyleDetach.Subscribe(_ => styleDetachTriggered = true);
+                var styleInstance = new Mock<IStyleInstance>();
+                ((IStyleable)child).StyleApplied(styleInstance.Object);
+
                 root.Child = null;
 
-                Assert.True(styleDetachTriggered);
+                styleInstance.Verify(x => x.Dispose(), Times.Once);
             }
         }
 
@@ -487,6 +488,91 @@ namespace Avalonia.Styling.UnitTests
                     "end root",
                 },
                 called);
+        }
+
+        [Fact]
+        public void Resources_Parent_Is_Set()
+        {
+            var target = new TestControl();
+
+            Assert.Same(target, ((IResourceNode)target.Resources).ResourceParent);
+        }
+
+        [Fact]
+        public void Assigned_Resources_Parent_Is_Set()
+        {
+            var resources = new ResourceDictionary();
+            var target = new TestControl { Resources = resources };
+
+            Assert.Same(target, ((IResourceNode)resources).ResourceParent);
+        }
+
+        [Fact]
+        public void Assigning_Resources_Raises_ResourcesChanged()
+        {
+            var resources = new ResourceDictionary { { "foo", "bar" } };
+            var target = new TestControl();
+            var raised = 0;
+
+            target.ResourcesChanged += (s, e) => ++raised;
+            target.Resources = resources;
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Changing_Parent_Notifies_Resources_ParentResourcesChanged()
+        {
+            var resources = new Mock<IResourceDictionary>();
+            var setResourceParent = resources.As<ISetResourceParent>();
+            var target = new TestControl { Resources = resources.Object };
+            var parent = new Decorator { Resources = { { "foo", "bar" } } };
+
+            setResourceParent.ResetCalls();
+            parent.Child = target;
+
+            setResourceParent.Verify(x =>
+                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void Styles_Parent_Is_Set()
+        {
+            var target = new TestControl();
+
+            Assert.Same(target, ((IResourceNode)target.Styles).ResourceParent);
+        }
+
+        [Fact]
+        public void Changing_Parent_Notifies_Styles_ParentResourcesChanged()
+        {
+            var style = new Mock<IStyle>();
+            var setResourceParent = style.As<ISetResourceParent>();
+            var target = new TestControl { Styles = { style.Object } };
+            var parent = new Decorator { Resources = { { "foo", "bar" } } };
+
+            setResourceParent.ResetCalls();
+            parent.Child = target;
+
+            setResourceParent.Verify(x =>
+                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void Changing_Resources_Notifies_Styles()
+        {
+            var style = new Mock<IStyle>();
+            var setResourceParent = style.As<ISetResourceParent>();
+            var target = new TestControl { Styles = { style.Object } };
+
+            setResourceParent.ResetCalls();
+            target.Resources.Add("foo", "bar");
+
+            setResourceParent.Verify(x =>
+                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
         }
 
         private interface IDataContextEvents

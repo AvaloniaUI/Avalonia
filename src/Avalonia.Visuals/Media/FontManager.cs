@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,7 +20,7 @@ namespace Avalonia.Media
             new ConcurrentDictionary<FontKey, Typeface>();
         private readonly FontFamily _defaultFontFamily;
 
-        private FontManager(IFontManagerImpl platformImpl)
+        public FontManager(IFontManagerImpl platformImpl)
         {
             PlatformImpl = platformImpl;
 
@@ -39,14 +40,9 @@ namespace Avalonia.Media
                     return current;
                 }
 
-                var renderInterface = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+                var fontManagerImpl = AvaloniaLocator.Current.GetService<IFontManagerImpl>();
 
-                var fontManagerImpl = renderInterface?.CreateFontManager();
-
-                if (fontManagerImpl == null)
-                {
-                    return null;
-                }
+                if (fontManagerImpl == null) throw new InvalidOperationException("No font manager implementation was registered.");
 
                 current = new FontManager(fontManagerImpl);
 
