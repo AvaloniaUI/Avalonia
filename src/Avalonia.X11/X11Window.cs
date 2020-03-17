@@ -173,6 +173,7 @@ namespace Avalonia.X11
             
             Surfaces = surfaces.ToArray();
             UpdateMotifHints();
+            UpdateSizeHints(null);
             _xic = XCreateIC(_x11.Xim, XNames.XNInputStyle, XIMProperties.XIMPreeditNothing | XIMProperties.XIMStatusNothing,
                 XNames.XNClientWindow, _handle, IntPtr.Zero);
             XFlush(_x11.Display);
@@ -219,12 +220,16 @@ namespace Avalonia.X11
             var decorations = MotifDecorations.Menu | MotifDecorations.Title | MotifDecorations.Border |
                               MotifDecorations.Maximize | MotifDecorations.Minimize | MotifDecorations.ResizeH;
 
-            if (_popup || !_systemDecorations)
+            if (_popup || _systemDecorations == SystemDecorations.None)
             {
                 decorations = 0;
             }
+            else if (_systemDecorations == SystemDecorations.BorderOnly)
+            {
+                decorations = MotifDecorations.Border;
+            }
 
-            if (!_canResize)
+            if (!_canResize || _systemDecorations == SystemDecorations.BorderOnly)
             {
                 functions &= ~(MotifFunctions.Resize | MotifFunctions.Maximize);
                 decorations &= ~(MotifDecorations.Maximize | MotifDecorations.ResizeH);
@@ -247,7 +252,7 @@ namespace Avalonia.X11
             var min = _minMaxSize.minSize;
             var max = _minMaxSize.maxSize;
 
-            if (!_canResize)
+            if (!_canResize || _systemDecorations == SystemDecorations.BorderOnly)
                 max = min = _realSize;
             
             if (preResize.HasValue)
@@ -621,7 +626,7 @@ namespace Avalonia.X11
             return rv;
         }
         
-        private bool _systemDecorations = true;
+        private SystemDecorations _systemDecorations = SystemDecorations.Full;
         private bool _canResize = true;
         private const int MaxWindowDimension = 100000;
 
@@ -777,10 +782,11 @@ namespace Avalonia.X11
             (int)(point.X * Scaling + Position.X),
             (int)(point.Y * Scaling + Position.Y));
         
-        public void SetSystemDecorations(bool enabled)
+        public void SetSystemDecorations(SystemDecorations enabled)
         {
             _systemDecorations = enabled;
             UpdateMotifHints();
+            UpdateSizeHints(null);
         }
 
 
