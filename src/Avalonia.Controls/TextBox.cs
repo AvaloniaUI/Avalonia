@@ -715,7 +715,7 @@ namespace Avalonia.Controls
         protected override void OnPointerMoved(PointerEventArgs e)
         {
             // selection should not change during pointer move if the user right clicks
-            if (_presenter != null && e.Pointer.Captured == _presenter && !e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            if (_presenter != null && e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 var point = e.GetPosition(_presenter);
 
