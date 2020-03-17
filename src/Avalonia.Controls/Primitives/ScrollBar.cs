@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive;
-using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Input;
@@ -57,6 +55,16 @@ namespace Avalonia.Controls.Primitives
         {
             Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragComplete(e), RoutingStrategies.Bubble);
+
+            static void AffectsIsVisible(AvaloniaProperty property)
+            {
+                property.Changed.AddClassHandler<ScrollBar>((x, e) => x.CalculateIsVisible());
+            }
+
+            AffectsIsVisible(MinimumProperty);
+            AffectsIsVisible(MaximumProperty);
+            AffectsIsVisible(ViewportSizeProperty);
+            AffectsIsVisible(VisibilityProperty);
         }
 
         /// <summary>
@@ -64,13 +72,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public ScrollBar()
         {
-            var isVisible = Observable.Merge(
-                this.GetObservable(MinimumProperty).Select(_ => Unit.Default),
-                this.GetObservable(MaximumProperty).Select(_ => Unit.Default),
-                this.GetObservable(ViewportSizeProperty).Select(_ => Unit.Default),
-                this.GetObservable(VisibilityProperty).Select(_ => Unit.Default))
-                .Select(_ => CalculateIsVisible());
-            this.Bind(IsVisibleProperty, isVisible, BindingPriority.Style);
             UpdatePseudoClasses(Orientation);
         }
 
@@ -107,24 +108,18 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Calculates whether the scrollbar should be visible.
         /// </summary>
-        /// <returns>The scrollbar's visibility.</returns>
-        private bool CalculateIsVisible()
+        private void CalculateIsVisible()
         {
-            switch (Visibility)
+            var isVisible = Visibility switch
             {
-                case ScrollBarVisibility.Visible:
-                    return true;
+                ScrollBarVisibility.Visible => true,
+                ScrollBarVisibility.Disabled => false,
+                ScrollBarVisibility.Hidden => false,
+                ScrollBarVisibility.Auto => (double.IsNaN(ViewportSize) || Maximum > 0),
+                _ => throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.")
+            };
 
-                case ScrollBarVisibility.Disabled:
-                case ScrollBarVisibility.Hidden:
-                    return false;
-
-                case ScrollBarVisibility.Auto:
-                    return double.IsNaN(ViewportSize) || Maximum > 0;
-
-                default:
-                    throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.");
-            }
+            SetValue(IsVisibleProperty, isVisible, BindingPriority.Style);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
