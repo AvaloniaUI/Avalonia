@@ -14,12 +14,16 @@ namespace Avalonia.Styling.Activators
     {
         private readonly IList<string> _match;
         private readonly IAvaloniaReadOnlyList<string> _classes;
+        private NotifyCollectionChangedEventHandler? _classesChangedHandler;
 
         public StyleClassActivator(IAvaloniaReadOnlyList<string> classes, IList<string> match)
         {
             _classes = classes;
             _match = match;
         }
+
+        private NotifyCollectionChangedEventHandler ClassesChangedHandler =>
+            _classesChangedHandler ??= ClassesChanged;
 
         public static bool AreClassesMatching(IReadOnlyList<string> classes, IList<string> toMatch)
         {
@@ -51,16 +55,15 @@ namespace Avalonia.Styling.Activators
             return remainingMatches == 0;
         }
 
-
         protected override void Initialize()
         {
             PublishNext(IsMatching());
-            _classes.CollectionChanged += ClassesChanged;
+            _classes.CollectionChanged += ClassesChangedHandler;
         }
 
         protected override void Deinitialize()
         {
-            _classes.CollectionChanged -= ClassesChanged;
+            _classes.CollectionChanged -= ClassesChangedHandler;
         }
 
         private void ClassesChanged(object sender, NotifyCollectionChangedEventArgs e)
