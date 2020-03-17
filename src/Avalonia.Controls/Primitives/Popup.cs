@@ -279,7 +279,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            DeferCleanup(topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel));
+            DeferCleanup(topLevel.AddDisposableHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel));
 
             DeferCleanup(InputManager.Instance?.Process.Subscribe(ListenForNonClientClick));
 

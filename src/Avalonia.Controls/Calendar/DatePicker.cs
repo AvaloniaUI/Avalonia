@@ -476,7 +476,7 @@ namespace Avalonia.Controls
             {
                 _dropDownButton.Click += DropDownButton_Click;
                 _buttonPointerPressedSubscription =
-                    _dropDownButton.AddHandler(PointerPressedEvent, DropDownButton_PointerPressed, handledEventsToo: true);
+                    _dropDownButton.AddDisposableHandler(PointerPressedEvent, DropDownButton_PointerPressed, handledEventsToo: true);
             }
 
             if (_textBox != null)

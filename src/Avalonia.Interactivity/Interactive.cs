@@ -27,8 +27,7 @@ namespace Avalonia.Interactivity
         /// <param name="handler">The handler.</param>
         /// <param name="routes">The routing strategies to listen to.</param>
         /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
-        /// <returns>A disposable that terminates the event subscription.</returns>
-        public IDisposable AddHandler(
+        public void AddHandler(
             RoutedEvent routedEvent,
             Delegate handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
@@ -38,7 +37,8 @@ namespace Avalonia.Interactivity
             handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
             var subscription = new EventSubscription(handler, routes, handledEventsToo);
-            return AddEventSubscription(routedEvent, subscription);
+
+            AddEventSubscription(routedEvent, subscription);
         }
 
         /// <summary>
@@ -49,8 +49,7 @@ namespace Avalonia.Interactivity
         /// <param name="handler">The handler.</param>
         /// <param name="routes">The routing strategies to listen to.</param>
         /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
-        /// <returns>A disposable that terminates the event subscription.</returns>
-        public IDisposable AddHandler<TEventArgs>(
+        public void AddHandler<TEventArgs>(
             RoutedEvent<TEventArgs> routedEvent,
             EventHandler<TEventArgs> handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
@@ -69,7 +68,7 @@ namespace Avalonia.Interactivity
 
             var subscription = new EventSubscription(handler, routes, handledEventsToo, (baseHandler, sender, args) => InvokeAdapter(baseHandler, sender, args));
 
-            return AddEventSubscription(routedEvent, subscription);
+            AddEventSubscription(routedEvent, subscription);
         }
 
         /// <summary>
@@ -188,7 +187,7 @@ namespace Avalonia.Interactivity
             return result;
         }
 
-        private IDisposable AddEventSubscription(RoutedEvent routedEvent, EventSubscription subscription)
+        private void AddEventSubscription(RoutedEvent routedEvent, EventSubscription subscription)
         {
             _eventHandlers ??= new Dictionary<RoutedEvent, List<EventSubscription>>();
 
@@ -199,8 +198,6 @@ namespace Avalonia.Interactivity
             }
 
             subscriptions.Add(subscription);
-
-            return new UnsubscribeDisposable(subscriptions, subscription);
         }
 
         private readonly struct EventSubscription
@@ -224,23 +221,6 @@ namespace Avalonia.Interactivity
             public RoutingStrategies Routes { get; }
 
             public bool HandledEventsToo { get; }
-        }
-
-        private sealed class UnsubscribeDisposable : IDisposable
-        {
-            private readonly List<EventSubscription> _subscriptions;
-            private readonly EventSubscription _subscription;
-
-            public UnsubscribeDisposable(List<EventSubscription> subscriptions, EventSubscription subscription)
-            {
-                _subscriptions = subscriptions;
-                _subscription = subscription;
-            }
-
-            public void Dispose()
-            {
-                _subscriptions.Remove(_subscription);
-            }
         }
     }
 }

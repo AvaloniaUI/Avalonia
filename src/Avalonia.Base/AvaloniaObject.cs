@@ -80,8 +80,12 @@ namespace Avalonia
                     _inheritanceParent?.RemoveInheritanceChild(this);
                     _inheritanceParent = value;
 
-                    foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegisteredInherited(GetType()))
+                    var properties = AvaloniaPropertyRegistry.Instance.GetRegisteredInherited(GetType());
+                    var propertiesCount = properties.Count;
+
+                    for (var i = 0; i < propertiesCount; i++)
                     {
+                        var property = properties[i];
                         if (valuestore?.IsSet(property) == true)
                         {
                             // If local value set there can be no change.
