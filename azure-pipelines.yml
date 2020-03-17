@@ -35,16 +35,16 @@ jobs:
     vmImage: 'macOS-10.14'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.x'
+    displayName: 'Use .NET Core SDK 3.1.101'
     inputs:
       packageType: sdk
-      version: 3.1.x
+      version: 3.1.101
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core Runtime 3.1.x'
+    displayName: 'Use .NET Core Runtime 3.1.1'
     inputs:
       packageType: runtime
-      version: 3.1.x
+      version: 3.1.1
 
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
