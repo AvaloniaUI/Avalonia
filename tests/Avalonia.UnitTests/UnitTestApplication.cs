@@ -22,9 +22,9 @@ namespace Avalonia.UnitTests
 
         public UnitTestApplication() : this(null)
         {
-            
+
         }
-        
+
         public UnitTestApplication(TestServices services)
         {
             _services = services ?? new TestServices();
@@ -61,6 +61,8 @@ namespace Avalonia.UnitTests
                 .Bind<IMouseDevice>().ToConstant(Services.MouseDevice?.Invoke())
                 .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
+                .Bind<IFontManagerImpl>().ToConstant(Services.FontManagerImpl)
+                .Bind<ITextShaperImpl>().ToConstant(Services.TextShaperImpl)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Services.ThreadingInterface)
                 .Bind<IScheduler>().ToConstant(Services.Scheduler)
                 .Bind<IStandardCursorFactory>().ToConstant(Services.StandardCursorFactory)

@@ -4,6 +4,7 @@
 using Avalonia.Styling;
 using System;
 using Avalonia.Controls;
+using System.Collections.Generic;
 
 namespace Avalonia.Markup.Xaml.Styling
 {
@@ -67,23 +68,7 @@ namespace Avalonia.Markup.Xaml.Styling
         IResourceNode IResourceNode.ResourceParent => _parent;
 
         /// <inheritdoc/>
-        public bool Attach(IStyleable control, IStyleHost container)
-        {
-            if (Source != null)
-            {
-                return Loaded.Attach(control, container);
-            }
-
-            return false;
-        }
-
-        public void Detach()
-        {
-            if (Source != null)
-            {
-                Loaded.Detach();
-            }
-        }
+        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost host) => Loaded.TryAttach(target, host);
 
         /// <inheritdoc/>
         public bool TryGetResource(object key, out object value) => Loaded.TryGetResource(key, out value);

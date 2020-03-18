@@ -363,7 +363,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         new Style(x => x.OfType<TestTemplatedControl>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(
                                     TemplatedControl.TemplateProperty,
@@ -399,7 +399,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         new Style(x => x.OfType<TestTemplatedControl>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(
                                     TemplatedControl.TemplateProperty,
@@ -438,7 +438,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         new Style(x => x.OfType<TestTemplatedControl>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(
                                     TemplatedControl.TemplateProperty,
@@ -458,7 +458,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         new Style(x => x.OfType<TestTemplatedControl>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(
                                     TemplatedControl.TemplateProperty,

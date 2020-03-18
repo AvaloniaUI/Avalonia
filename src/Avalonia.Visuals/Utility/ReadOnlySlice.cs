@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Avalonia.Utilities;
 
 namespace Avalonia.Utility
@@ -12,6 +13,7 @@ namespace Avalonia.Utility
     ///     ReadOnlySlice enables the ability to work with a sequence within a region of memory and retains the position in within that region.
     /// </summary>
     /// <typeparam name="T">The type of elements in the slice.</typeparam>
+    [DebuggerTypeProxy(typeof(ReadOnlySlice<>.ReadOnlySliceDebugView))]
     public readonly struct ReadOnlySlice<T> : IReadOnlyList<T>
     {
         public ReadOnlySlice(ReadOnlyMemory<T> buffer) : this(buffer, 0, buffer.Length) { }
@@ -57,16 +59,7 @@ namespace Avalonia.Utility
         /// </summary>
         public ReadOnlyMemory<T> Buffer { get; }
 
-        public T this[int index] => Buffer.Span[Start + index];
-
-        /// <summary>
-        ///     Returns a span of the underlying buffer.
-        /// </summary>
-        /// <returns>The <see cref="ReadOnlySpan{T}"/> of the underlying buffer.</returns>
-        public ReadOnlySpan<T> AsSpan()
-        {
-            return Buffer.Span.Slice(Start, Length);
-        }
+        public T this[int index] => Buffer.Span[index];
 
         /// <summary>
         ///     Returns a sub slice of elements that start at the specified index and has the specified number of elements.
@@ -76,17 +69,19 @@ namespace Avalonia.Utility
         /// <returns>A <see cref="ReadOnlySlice{T}"/> that contains the specified number of elements from the specified start.</returns>
         public ReadOnlySlice<T> AsSlice(int start, int length)
         {
-            if (start < 0 || start >= Length)
+            if (start < Start || start > End)
             {
                 throw new ArgumentOutOfRangeException(nameof(start));
             }
 
-            if (Start + start > End)
+            if (start + length > Start + Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
-            return new ReadOnlySlice<T>(Buffer, Start + start, length);
+            var bufferOffset = start - Start;
+
+            return new ReadOnlySlice<T>(Buffer.Slice(bufferOffset), start, length);
         }
 
         /// <summary>
@@ -101,7 +96,7 @@ namespace Avalonia.Utility
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
-            return new ReadOnlySlice<T>(Buffer, Start, length);
+            return new ReadOnlySlice<T>(Buffer.Slice(0, length), Start, length);
         }
 
         /// <summary>
@@ -116,7 +111,7 @@ namespace Avalonia.Utility
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
-            return new ReadOnlySlice<T>(Buffer, Start + length, Length - length);
+            return new ReadOnlySlice<T>(Buffer.Slice(length), Start + length, Length - length);
         }
 
         /// <summary>
@@ -149,6 +144,26 @@ namespace Avalonia.Utility
         public static implicit operator ReadOnlySlice<T>(ReadOnlyMemory<T> memory)
         {
             return new ReadOnlySlice<T>(memory);
+        }
+
+        internal class ReadOnlySliceDebugView
+        {
+            private readonly ReadOnlySlice<T> _readOnlySlice;
+
+            public ReadOnlySliceDebugView(ReadOnlySlice<T> readOnlySlice)
+            {
+                _readOnlySlice = readOnlySlice;
+            }
+
+            public int Start => _readOnlySlice.Start;
+
+            public int End => _readOnlySlice.End;
+
+            public int Length => _readOnlySlice.Length;
+
+            public bool IsEmpty => _readOnlySlice.IsEmpty;
+
+            public ReadOnlyMemory<T> Items => _readOnlySlice.Buffer;
         }
     }
 }

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -358,6 +357,29 @@ namespace Avalonia.Interactivity.UnitTests
             Assert.Equal(1, called);
         }
 
+        [Fact]
+        public void Removing_Control_In_Handler_Should_Not_Stop_Event()
+        {
+            // Issue #3176
+            var ev = new RoutedEvent("test", RoutingStrategies.Bubble, typeof(RoutedEventArgs), typeof(TestInteractive));
+            var invoked = new List<string>();
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
+            var parent = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+            var target = (IInteractive)parent.GetVisualChildren().Single();
+
+            EventHandler<RoutedEventArgs> removeHandler = (s, e) =>
+            {
+                parent.Children = Array.Empty<IVisual>();
+            };
+            
+            target.AddHandler(ev, removeHandler);
+
+            var args = new RoutedEventArgs(ev, target);
+            target.RaiseEvent(args);
+
+            Assert.Equal(new[] { "3", "2b", "1" }, invoked);
+        }
+
         private TestInteractive CreateTree(
             RoutedEvent ev,
             EventHandler<RoutedEventArgs> handler,
@@ -414,6 +436,7 @@ namespace Avalonia.Interactivity.UnitTests
 
                 set
                 {
+                    VisualChildren.Clear();
                     VisualChildren.AddRange(value.Cast<Visual>());
                 }
             }

@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Data;
 using Avalonia.Reactive;
+using Avalonia.Utilities;
 
 #nullable enable
 
@@ -102,6 +103,12 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
+        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
+        {
+            vistor.Visit(this, ref data);
+        }
+
+        /// <inheritdoc/>
         internal override void RouteClearValue(IAvaloniaObject o)
         {
             o.ClearValue<TValue>(this);
@@ -114,7 +121,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        internal override void RouteSetValue(
+        internal override IDisposable? RouteSetValue(
             IAvaloniaObject o,
             object value,
             BindingPriority priority)
@@ -133,6 +140,8 @@ namespace Avalonia
             {
                 throw v.Error!;
             }
+
+            return null;
         }
 
         /// <inheritdoc/>

@@ -20,9 +20,9 @@ namespace Avalonia.Skia
             _typefaces.TryAdd(key, typeface);
         }
 
-        public SKTypeface Get(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle)
+        public SKTypeface Get(Typeface typeface)
         {
-            var key = new FontKey(fontFamily, fontWeight, fontStyle);
+            var key = new FontKey(typeface.FontFamily, typeface.Weight, typeface.Style);
 
             return GetNearestMatch(_typefaces, key);
         }

@@ -355,15 +355,21 @@ namespace Avalonia.Rendering
 
                     node.BeginRender(context, isLayerRoot);
 
-                    foreach (var operation in node.DrawOperations)
+                    var drawOperations = node.DrawOperations;
+                    var drawOperationsCount = drawOperations.Count;
+                    for (int i = 0; i < drawOperationsCount; i++)
                     {
+                        var operation = drawOperations[i];
                         _currentDraw = operation;
                         operation.Item.Render(context);
                         _currentDraw = null;
                     }
 
-                    foreach (var child in node.Children)
+                    var children = node.Children;
+                    var childrenCount = children.Count;
+                    for (int i = 0; i < childrenCount; i++)
                     {
+                        var child = children[i];
                         Render(context, (VisualNode)child, layer, clipBounds);
                     }
 
