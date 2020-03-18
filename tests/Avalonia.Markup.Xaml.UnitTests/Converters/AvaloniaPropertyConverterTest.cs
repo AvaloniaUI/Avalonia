@@ -9,6 +9,7 @@ using Avalonia.Styling;
 using Xunit;
 using System.ComponentModel;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
+using System.Collections.Generic;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
@@ -140,6 +141,16 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
             }
 
             public void DetachStyles()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void DetachStyles(IReadOnlyList<IStyle> styles)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void InvalidateStyles()
             {
                 throw new NotImplementedException();
             }
