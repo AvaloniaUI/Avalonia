@@ -104,6 +104,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     }
                 }
 
+                if (results != null && result != null)
+                {
+                    results.Add(result);
+                }
+
                 return results ?? result;
             }
 
@@ -158,9 +163,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         protected void EmitCall(XamlIlEmitContext context, IXamlIlEmitter codeGen, Func<IXamlIlMethod, bool> method)
         {
             var selectors = context.Configuration.TypeSystem.GetType("Avalonia.Styling.Selectors");
-            var found = selectors.FindMethod(m => m.IsStatic && m.Parameters.Count > 0 &&
-                                      m.Parameters[0].FullName == "Avalonia.Styling.Selector"
-                                      && method(m));
+            var found = selectors.FindMethod(m => m.IsStatic && m.Parameters.Count > 0 && method(m));
             codeGen.EmitCall(found);
         }
     }
