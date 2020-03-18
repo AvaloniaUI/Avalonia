@@ -207,7 +207,7 @@ namespace Avalonia
         /// </remarks>
         public Styles Styles
         {
-            get 
+            get
             {
                 if (_styles is null)
                 {
@@ -859,8 +859,6 @@ namespace Avalonia
         private static void RecurseStyles(IReadOnlyList<IStyle> styles, List<IStyle> result)
         {
             var count = styles.Count;
-
-            result.Capacity += count;
 
             for (var i = 0; i < count; ++i)
             {
