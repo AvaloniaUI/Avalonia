@@ -233,6 +233,12 @@ namespace Avalonia.Media.TextFormatting
 
                         var textLine = TextFormatter.Current.FormatLine(textSource, 0, MaxWidth, _paragraphProperties);
 
+                        if (!double.IsPositiveInfinity(MaxHeight) && bottom + textLine.LineMetrics.Size.Height > MaxHeight)
+                        {
+                            currentPosition = _text.Length;
+                            break;
+                        }
+
                         UpdateBounds(textLine, ref left, ref right, ref bottom);
 
                         textLines.Add(textLine);
@@ -253,15 +259,15 @@ namespace Avalonia.Media.TextFormatting
                     {
                         var emptyTextLine = CreateEmptyTextLine(currentPosition);
 
+                        if (!double.IsPositiveInfinity(MaxHeight) && bottom + emptyTextLine.LineMetrics.Size.Height > MaxHeight)
+                        {
+                            break;
+                        }
+
                         UpdateBounds(emptyTextLine, ref left, ref right, ref bottom);
 
                         textLines.Add(emptyTextLine);
 
-                        break;
-                    }
-
-                    if (!double.IsPositiveInfinity(MaxHeight) && MaxHeight < Bounds.Height)
-                    {
                         break;
                     }
                 }

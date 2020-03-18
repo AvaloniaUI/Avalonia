@@ -1,6 +1,10 @@
 <Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
         xmlns:sys="clr-namespace:System;assembly=netstandard">
-  
+  <Styles.Resources>
+    <conv:PlatformKeyGestureConverter x:Key="KeyGestureConverter"/>
+  </Styles.Resources>
   <Style Selector="MenuItem">
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="BorderThickness" Value="1"/>
@@ -11,7 +15,14 @@
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
-          <Grid ColumnDefinitions="20,5,*,20">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="20"/>
+              <ColumnDefinition Width="5"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto" SharedSizeGroup="MenuItemIGT"/>
+              <ColumnDefinition Width="20"/>
+            </Grid.ColumnDefinitions>
             <ContentPresenter Name="icon"
                               Content="{TemplateBinding Icon}"
                               Width="16"
@@ -36,12 +47,16 @@
                 </DataTemplate>
               </ContentPresenter.DataTemplates>
             </ContentPresenter>
+            <TextBlock x:Name="PART_InputGestureText"
+                       Grid.Column="3"
+                       Text="{TemplateBinding InputGesture, Converter={StaticResource KeyGestureConverter}}"
+                       VerticalAlignment="Center"/>
             <Path Name="rightArrow"
                   Data="M0,0L4,3.5 0,7z"
                   Fill="{DynamicResource ThemeForegroundBrush}"
                   Margin="10,0,0,0"
                   VerticalAlignment="Center"
-                  Grid.Column="3"/>
+                  Grid.Column="4"/>
             <Popup Name="PART_Popup"
                    PlacementMode="Right"
                    StaysOpen="True"
@@ -54,7 +69,7 @@
                                     Items="{TemplateBinding Items}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
                                     ItemTemplate="{TemplateBinding ItemTemplate}"
-                                    Margin="4 2"/>                                      
+                                    Grid.IsSharedSizeScope="True"/>
                 </ScrollViewer>
               </Border>
             </Popup>
@@ -100,10 +115,10 @@
                       BorderThickness="{TemplateBinding BorderThickness}">
                 <ScrollViewer>
                   <ItemsPresenter Name="PART_ItemsPresenter"
-                                    Items="{TemplateBinding Items}"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}"
-                                    ItemTemplate="{TemplateBinding ItemTemplate}"
-                                    Margin="2"/>
+                                  Items="{TemplateBinding Items}"
+                                  ItemsPanel="{TemplateBinding ItemsPanel}"
+                                  ItemTemplate="{TemplateBinding ItemTemplate}"
+                                  Grid.IsSharedSizeScope="True"/>
                 </ScrollViewer>
               </Border>
             </Popup>
@@ -111,6 +126,10 @@
         </Border>
       </ControlTemplate>
     </Setter>
+  </Style>
+
+  <Style Selector="MenuItem /template/ ItemsPresenter#PART_ItemsPresenter">
+    <Setter Property="Margin" Value="2"/>
   </Style>
 
   <Style Selector="MenuItem:selected /template/ Border#root">
