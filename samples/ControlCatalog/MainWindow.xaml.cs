@@ -29,10 +29,10 @@ namespace ControlCatalog
                 MaxItems = 3
             };
 
-            DataContext = new MainWindowViewModel(_notificationArea);
-            _recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[2] as NativeMenuItem).Menu;
-            var mainMenu = this.FindControl<Menu>("MainMenu");
-            mainMenu.AttachedToVisualTree += MenuAttached;
+            DataContext = new MainWindowViewModel();
+            //_recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[2] as NativeMenuItem).Menu;
+            //var mainMenu = this.FindControl<Menu>("MainMenu");
+            //mainMenu.AttachedToVisualTree += MenuAttached;
         }
 
         public void MenuAttached(object sender, VisualTreeAttachmentEventArgs e)
@@ -61,6 +61,13 @@ namespace ControlCatalog
             var theme = new Avalonia.Themes.Default.DefaultTheme();
             theme.TryGetResource("Button", out _);
             AvaloniaXamlLoader.Load(this);
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var result = base.MeasureOverride(availableSize);
+
+            return result;
         }
     }
 }
