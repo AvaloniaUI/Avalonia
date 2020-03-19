@@ -427,6 +427,7 @@ private:
     ComPtr<IAvnWindowEvents> WindowEvents;
     WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
+        _lastWindowState = Normal;
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
         [Window disableCursorRects];
@@ -440,7 +441,7 @@ private:
                 [[Window parentWindow] removeChildWindow:Window];
             WindowBaseImpl::Show();
             
-            return SetWindowState(Normal);
+            return SetWindowState(_lastWindowState);
         }
     }
     
