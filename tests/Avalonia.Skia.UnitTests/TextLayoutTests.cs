@@ -29,10 +29,10 @@ namespace Avalonia.Skia.UnitTests
 
                 var layout = new TextLayout(
                     s_multiLineText,
-                    Typeface.Default, 
+                    Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    textStyleOverrides : spans);
+                    textStyleOverrides: spans);
 
                 var textLine = layout.TextLines[0];
 
@@ -72,16 +72,16 @@ namespace Avalonia.Skia.UnitTests
                         12.0f,
                         Brushes.Black.ToImmutable(),
                         textWrapping: TextWrapping.Wrap,
-                        maxWidth : 25);
+                        maxWidth: 25);
 
                     var actual = new TextLayout(
                         s_multiLineText,
                         Typeface.Default,
                         12.0f,
                         Brushes.Black.ToImmutable(),
-                        textWrapping : TextWrapping.Wrap,
-                        maxWidth : 25,
-                        textStyleOverrides : spans);
+                        textWrapping: TextWrapping.Wrap,
+                        maxWidth: 25,
+                        textStyleOverrides: spans);
 
                     Assert.Equal(expected.TextLines.Count, actual.TextLines.Count);
 
@@ -115,7 +115,7 @@ namespace Avalonia.Skia.UnitTests
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    textStyleOverrides : spans);
+                    textStyleOverrides: spans);
 
                 var textLine = layout.TextLines[0];
 
@@ -153,7 +153,7 @@ namespace Avalonia.Skia.UnitTests
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    textStyleOverrides : spans);
+                    textStyleOverrides: spans);
 
                 var textLine = layout.TextLines[0];
 
@@ -190,7 +190,7 @@ namespace Avalonia.Skia.UnitTests
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    textStyleOverrides : spans);
+                    textStyleOverrides: spans);
 
                 var textLine = layout.TextLines[0];
 
@@ -301,8 +301,8 @@ namespace Avalonia.Skia.UnitTests
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    textWrapping : TextWrapping.Wrap,
-                    maxWidth : 180,
+                    textWrapping: TextWrapping.Wrap,
+                    maxWidth: 180,
                     textStyleOverrides: spans);
 
                 Assert.Equal(
@@ -332,8 +332,8 @@ namespace Avalonia.Skia.UnitTests
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    maxWidth : 200, 
-                    maxHeight : 125,
+                    maxWidth: 200,
+                    maxHeight: 125,
                     textStyleOverrides: spans);
 
                 Assert.Equal(foreground, layout.TextLines[0].TextRuns[1].Style.Foreground);
@@ -430,7 +430,7 @@ namespace Avalonia.Skia.UnitTests
 
                 Assert.Equal(5, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters[5]);
 
-                if(expectedLength == 7)
+                if (expectedLength == 7)
                 {
                     Assert.Equal(5, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters[6]);
                 }
@@ -480,12 +480,38 @@ namespace Avalonia.Skia.UnitTests
             }
         }
 
+        [InlineData("0123456789\r0123456789", 2)]
+        [InlineData("0123456789", 1)]
+        [Theory]
+        public void Should_Include_Last_Line_When_Constraint_Is_Surpassed(string text, int numberOfLines)
+        {
+            using (Start())
+            {
+                var glyphTypeface = Typeface.Default.GlyphTypeface;
+
+                var emHeight = glyphTypeface.DesignEmHeight;
+
+                var lineHeight = (glyphTypeface.Descent - glyphTypeface.Ascent) * (12.0 / emHeight);
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black.ToImmutable(),
+                    maxHeight: lineHeight * numberOfLines - lineHeight * 0.5);
+
+                Assert.Equal(numberOfLines, layout.TextLines.Count);
+
+                Assert.Equal(numberOfLines * lineHeight, layout.Bounds.Height);
+            }
+        }
+
         public static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(renderInterface: new PlatformRenderInterface(null), 
+                .With(renderInterface: new PlatformRenderInterface(null),
                     textShaperImpl: new TextShaperImpl(),
-                    fontManagerImpl : new CustomFontManagerImpl()));
+                    fontManagerImpl: new CustomFontManagerImpl()));
 
             return disposable;
         }

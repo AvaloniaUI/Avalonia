@@ -233,15 +233,15 @@ namespace Avalonia.Media.TextFormatting
 
                         var textLine = TextFormatter.Current.FormatLine(textSource, 0, MaxWidth, _paragraphProperties);
 
+                        UpdateBounds(textLine, ref left, ref right, ref bottom);
+
+                        textLines.Add(textLine);
+
                         if (!double.IsPositiveInfinity(MaxHeight) && bottom + textLine.LineMetrics.Size.Height > MaxHeight)
                         {
                             currentPosition = _text.Length;
                             break;
                         }
-
-                        UpdateBounds(textLine, ref left, ref right, ref bottom);
-
-                        textLines.Add(textLine);
 
                         if (_paragraphProperties.TextTrimming != TextTrimming.None)
                         {
@@ -254,22 +254,15 @@ namespace Avalonia.Media.TextFormatting
 
                         currentPosition += textLine.Text.Length;
                     }
+                }
 
-                    if (lineBreaker.Current.Required && currentPosition == _text.Length)
-                    {
-                        var emptyTextLine = CreateEmptyTextLine(currentPosition);
+                if (lineBreaker.Current.Required && currentPosition == _text.Length)
+                {
+                    var emptyTextLine = CreateEmptyTextLine(currentPosition);
 
-                        if (!double.IsPositiveInfinity(MaxHeight) && bottom + emptyTextLine.LineMetrics.Size.Height > MaxHeight)
-                        {
-                            break;
-                        }
+                    UpdateBounds(emptyTextLine, ref left, ref right, ref bottom);
 
-                        UpdateBounds(emptyTextLine, ref left, ref right, ref bottom);
-
-                        textLines.Add(emptyTextLine);
-
-                        break;
-                    }
+                    textLines.Add(emptyTextLine);
                 }
 
                 Bounds = new Rect(left, 0, right, bottom);
