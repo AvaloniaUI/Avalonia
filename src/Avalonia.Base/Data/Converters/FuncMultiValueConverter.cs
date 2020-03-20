@@ -28,9 +28,25 @@ namespace Avalonia.Data.Converters
         }
 
         /// <inheritdoc/>
-        public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture) 
         {
-            var converted = values.OfType<TIn>().ToList();
+            //standard OfType skip null values, even they are valid for the Type
+            static IEnumerable<TIn> OfTypeWithDefaultSupport(IList<object> list)
+            {
+                foreach (object obj in list)
+                {
+                    if (obj is TIn result)
+                    {
+                        yield return result;
+                    }
+                    else if (Equals(obj, default(TIn)))
+                    {
+                        yield return default(TIn);
+                    }
+                }
+            }
+
+            var converted = OfTypeWithDefaultSupport(values).ToList();
 
             if (converted.Count == values.Count)
             {
