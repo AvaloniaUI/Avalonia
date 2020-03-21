@@ -90,6 +90,8 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         bool IResourceProvider.HasResources => _resources?.Count > 0;
 
+        IReadOnlyList<IStyle> IStyle.Children => Array.Empty<IStyle>();
+
         /// <inheritdoc/>
         public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
         {
