@@ -78,8 +78,10 @@ namespace Avalonia.PropertyStore
 
         public void ClearLocalValue() => UpdateEffectiveValue();
 
-        public void SetValue(T value, BindingPriority priority)
+        public IDisposable? SetValue(T value, BindingPriority priority)
         {
+            IDisposable? result = null;
+
             if (priority == BindingPriority.LocalValue)
             {
                 _localValue = value;
@@ -87,10 +89,13 @@ namespace Avalonia.PropertyStore
             else
             {
                 var insert = FindInsertPoint(priority);
-                _entries.Insert(insert, new ConstantValueEntry<T>(Property, value, priority));
+                var entry = new ConstantValueEntry<T>(Property, value, priority, this);
+                _entries.Insert(insert, entry);
+                result = entry;
             }
 
             UpdateEffectiveValue();
+            return result;
         }
 
         public BindingEntry<T> AddBinding(IObservable<BindingValue<T>> source, BindingPriority priority)
@@ -117,7 +122,10 @@ namespace Avalonia.PropertyStore
             UpdateEffectiveValue();
         }
 
-        void IValueSink.Completed(AvaloniaProperty property, IPriorityValueEntry entry)
+        void IValueSink.Completed<TValue>(
+            StyledPropertyBase<TValue> property,
+            IPriorityValueEntry entry,
+            Optional<TValue> oldValue)
         {
             _entries.Remove((IPriorityValueEntry<T>)entry);
             UpdateEffectiveValue();

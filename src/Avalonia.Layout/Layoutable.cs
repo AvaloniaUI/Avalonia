@@ -507,6 +507,7 @@ namespace Avalonia.Layout
             {
                 var margin = Margin;
 
+                ApplyStyling();
                 ApplyTemplate();
 
                 var constrained = LayoutHelper.ApplyLayoutConstraints(
@@ -690,6 +691,12 @@ namespace Avalonia.Layout
             }
 
             return finalSize;
+        }
+
+        protected sealed override void InvalidateStyles()
+        {
+            base.InvalidateStyles();
+            InvalidateMeasure();
         }
 
         /// <inheritdoc/>

@@ -3,6 +3,8 @@
 
 using System;
 
+#nullable enable
+
 namespace Avalonia.Styling
 {
     /// <summary>
@@ -11,11 +13,15 @@ namespace Avalonia.Styling
     public interface ISetter
     {
         /// <summary>
-        /// Applies the setter to a control.
+        /// Instances a setter on a control.
         /// </summary>
-        /// <param name="style">The style that is being applied.</param>
-        /// <param name="control">The control.</param>
-        /// <param name="activator">An optional activator.</param>
-        IDisposable Apply(IStyle style, IStyleable control, IObservable<bool> activator);
+        /// <param name="target">The control.</param>
+        /// <returns>An <see cref="ISetterInstance"/>.</returns>
+        /// <remarks>
+        /// This method should return an <see cref="ISetterInstance"/> which can be used to apply
+        /// the setter to the specified control. Note that it should not apply the setter value 
+        /// until <see cref="ISetterInstance.Start(bool)"/> is called.
+        /// </remarks>
+        ISetterInstance Instance(IStyleable target);
     }
 }

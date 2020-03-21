@@ -341,11 +341,62 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Child_Should_Be_Measured_With_Width_And_Height_If_SizeToContent_Is_Manual()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new ChildControl();
+                var target = new Window 
+                { 
+                    Width = 100,
+                    Height = 50,
+                    SizeToContent = SizeToContent.Manual,
+                    Content = child 
+                };
+
+                target.Show();
+
+                Assert.Equal(new Size(100, 50), child.MeasureSize);
+            }
+        }
+
+        [Fact]
+        public void Child_Should_Be_Measured_With_Infinity_If_SizeToContent_Is_WidthAndHeight()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new ChildControl();
+                var target = new Window
+                {
+                    Width = 100,
+                    Height = 50,
+                    SizeToContent = SizeToContent.WidthAndHeight,
+                    Content = child
+                };
+
+                target.Show();
+
+                Assert.Equal(Size.Infinity, child.MeasureSize);
+            }
+        }
+
         private IWindowImpl CreateImpl(Mock<IRenderer> renderer)
         {
             return Mock.Of<IWindowImpl>(x =>
                 x.Scaling == 1 &&
                 x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer.Object);
+        }
+
+        private class ChildControl : Control
+        {
+            public Size MeasureSize { get; private set; }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                MeasureSize = availableSize;
+                return base.MeasureOverride(availableSize);
+            }
         }
     }
 }

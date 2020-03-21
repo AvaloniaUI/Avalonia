@@ -25,6 +25,12 @@ struct IAvnGlSurfaceRenderingSession;
 struct IAvnAppMenu;
 struct IAvnAppMenuItem;
 
+enum SystemDecorations {
+    SystemDecorationsNone = 0,
+    SystemDecorationsBorderOnly = 1,
+    SystemDecorationsFull = 2,
+};
+
 struct AvnSize
 {
     double Width, Height;
@@ -177,14 +183,14 @@ AVNCOM(IAvaloniaNativeFactory, 01) : IUnknown
 public:
     virtual HRESULT Initialize() = 0;
     virtual IAvnMacOptions* GetMacOptions() = 0;
-    virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv) = 0;
-    virtual HRESULT CreatePopup (IAvnWindowEvents* cb, IAvnPopup** ppv) = 0;
+    virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnWindow** ppv) = 0;
+    virtual HRESULT CreatePopup (IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnPopup** ppv) = 0;
     virtual HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv) = 0;
     virtual HRESULT CreateSystemDialogs (IAvnSystemDialogs** ppv) = 0;
     virtual HRESULT CreateScreens (IAvnScreens** ppv) = 0;
     virtual HRESULT CreateClipboard(IAvnClipboard** ppv) = 0;
     virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) = 0;
-    virtual HRESULT ObtainGlFeature(IAvnGlFeature** ppv) = 0;
+    virtual HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv) = 0;
     virtual HRESULT ObtainAppMenu(IAvnAppMenu** retOut) = 0;
     virtual HRESULT SetAppMenu(IAvnAppMenu* menu) = 0;
     virtual HRESULT CreateMenu (IAvnAppMenu** ppv) = 0;
@@ -219,15 +225,12 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT SetTopMost (bool value) = 0;
     virtual HRESULT SetCursor(IAvnCursor* cursor) = 0;
     virtual HRESULT CreateGlRenderTarget(IAvnGlSurfaceRenderTarget** ret) = 0;
-    virtual HRESULT GetSoftwareFramebuffer(AvnFramebuffer*ret) = 0;
     virtual HRESULT SetMainMenu(IAvnAppMenu* menu) = 0;
     virtual HRESULT ObtainMainMenu(IAvnAppMenu** retOut) = 0;
     virtual HRESULT ObtainNSWindowHandle(void** retOut) = 0;
     virtual HRESULT ObtainNSWindowHandleRetained(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandle(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandleRetained(void** retOut) = 0;
-    virtual bool TryLock() = 0;
-    virtual void Unlock() = 0;
 };
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
@@ -239,7 +242,7 @@ AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
 {
     virtual HRESULT ShowDialog (IAvnWindow* parent) = 0;
     virtual HRESULT SetCanResize(bool value) = 0;
-    virtual HRESULT SetHasDecorations(bool value) = 0;
+    virtual HRESULT SetHasDecorations(SystemDecorations value) = 0;
     virtual HRESULT SetTitle (void* utf8Title) = 0;
     virtual HRESULT SetTitleBarColor (AvnColor color) = 0;
     virtual HRESULT SetWindowState(AvnWindowState state) = 0;
@@ -360,24 +363,21 @@ AVNCOM(IAvnCursorFactory, 11) : IUnknown
     virtual HRESULT GetCursor (AvnStandardCursorType cursorType, IAvnCursor** retOut) = 0;
 };
 
-
-AVNCOM(IAvnGlFeature, 12) : IUnknown
-{
-    virtual HRESULT ObtainDisplay(IAvnGlDisplay**retOut) = 0;
-    virtual HRESULT ObtainImmediateContext(IAvnGlContext**retOut) = 0;
-};
-
 AVNCOM(IAvnGlDisplay, 13) : IUnknown
 {
-    virtual HRESULT GetSampleCount(int* ret) = 0;
-    virtual HRESULT GetStencilSize(int* ret) = 0;
-    virtual HRESULT ClearContext() = 0;
+    virtual HRESULT CreateContext(IAvnGlContext* share, IAvnGlContext**ppv) = 0;
+    virtual void LegacyClearCurrentContext() = 0;
+    virtual HRESULT WrapContext(void* native, IAvnGlContext**ppv) = 0;
     virtual void* GetProcAddress(char* proc) = 0;
 };
 
 AVNCOM(IAvnGlContext, 14) : IUnknown
 {
-    virtual HRESULT MakeCurrent() = 0;
+    virtual HRESULT MakeCurrent(IUnknown** ppv) = 0;
+    virtual HRESULT LegacyMakeCurrent() = 0;
+    virtual int GetSampleCount() = 0;
+    virtual int GetStencilSize() = 0;
+    virtual void* GetNativeHandle() = 0;
 };
 
 AVNCOM(IAvnGlSurfaceRenderTarget, 15) : IUnknown

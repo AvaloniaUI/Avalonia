@@ -188,6 +188,7 @@ namespace Avalonia.Base.UnitTests
             target.PropertyChanged += (s, e) =>
             {
                 Assert.Same(target, s);
+                Assert.Equal(BindingPriority.LocalValue, e.Priority);
                 Assert.Equal(Class1.FooProperty, e.Property);
                 Assert.Equal("newvalue", (string)e.OldValue);
                 Assert.Equal("unset", (string)e.NewValue);
@@ -422,22 +423,6 @@ namespace Avalonia.Base.UnitTests
 
             source.OnNext("third");
             Assert.Equal("second", target.Foo);
-        }
-
-        [Fact]
-        public void Property_Notifies_Initialized()
-        {
-            bool raised = false;
-
-            Class1.FooProperty.Initialized.Subscribe(e =>
-                raised = e.Property == Class1.FooProperty &&
-                         e.OldValue == AvaloniaProperty.UnsetValue &&
-                         (string)e.NewValue == "initial" &&
-                         e.Priority == BindingPriority.Unset);
-
-            var target = new Class1();
-
-            Assert.True(raised);
         }
 
         [Fact]

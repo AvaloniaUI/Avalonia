@@ -13,6 +13,7 @@ using Avalonia.Platform;
 using System.Threading.Tasks;
 using System;
 using System.Threading;
+using Avalonia.Media;
 using Avalonia.Threading;
 #if AVALONIA_SKIA
 using Avalonia.Skia;
@@ -26,10 +27,21 @@ namespace Avalonia.Skia.RenderTests
 namespace Avalonia.Direct2D1.RenderTests
 #endif
 {
+    using Avalonia.Shared.PlatformSupport;
+
     public class TestBase
     {
+#if AVALONIA_SKIA
+        private static string s_fontUri = "resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests#Noto Mono";
+#else
+        private static string s_fontUri = "resm:Avalonia.Direct2D1.RenderTests.Assets?assembly=Avalonia.Direct2D1.RenderTests#Noto Mono";
+#endif
+        public static FontFamily TestFontFamily = new FontFamily(s_fontUri);
+
         private static readonly TestThreadingInterface threadingInterface =
             new TestThreadingInterface();
+
+        private static readonly IAssetLoader assetLoader = new AssetLoader();
 
         static TestBase()
         {
@@ -42,6 +54,9 @@ namespace Avalonia.Direct2D1.RenderTests
                 .Bind<IPlatformThreadingInterface>()
                 .ToConstant(threadingInterface);
 
+            AvaloniaLocator.CurrentMutable
+                .Bind<IAssetLoader>()
+                .ToConstant(assetLoader);
         }
 
         public TestBase(string outputPath)

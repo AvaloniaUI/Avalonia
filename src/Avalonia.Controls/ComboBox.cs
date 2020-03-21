@@ -9,6 +9,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -130,7 +131,7 @@ namespace Avalonia.Controls
                 return;
 
             if (e.Key == Key.F4 ||
-                ((e.Key == Key.Down || e.Key == Key.Up) && ((e.Modifiers & InputModifiers.Alt) != 0)))
+                ((e.Key == Key.Down || e.Key == Key.Up) && ((e.KeyModifiers & KeyModifiers.Alt) != 0)))
             {
                 IsDropDownOpen = !IsDropDownOpen;
                 e.Handled = true;
@@ -265,7 +266,7 @@ namespace Avalonia.Controls
             var toplevel = this.GetVisualRoot() as TopLevel;
             if (toplevel != null)
             {
-                _subscriptionsOnOpen = toplevel.AddHandler(PointerWheelChangedEvent, (s, ev) =>
+                _subscriptionsOnOpen = toplevel.AddDisposableHandler(PointerWheelChangedEvent, (s, ev) =>
                 {
                     //eat wheel scroll event outside dropdown popup while it's open
                     if (IsDropDownOpen && (ev.Source as IVisual).GetVisualRoot() == toplevel)

@@ -1,6 +1,6 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)\..\tools\netcoreapp2.0\designer\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
+    <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)\..\tools\netcoreapp3.1\designer\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
     <AvaloniaPreviewerNetFullToolPath>$(MSBuildThisFileDirectory)\..\tools\net461\designer\Avalonia.Designer.HostApp.exe</AvaloniaPreviewerNetFullToolPath>
     <AvaloniaBuildTasksLocation>$(MSBuildThisFileDirectory)\..\tools\netstandard2.0\Avalonia.Build.Tasks.dll</AvaloniaBuildTasksLocation>
     <AvaloniaUseExternalMSBuild>false</AvaloniaUseExternalMSBuild>

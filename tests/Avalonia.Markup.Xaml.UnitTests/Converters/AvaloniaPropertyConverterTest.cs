@@ -9,6 +9,7 @@ using Avalonia.Styling;
 using Xunit;
 using System.ComponentModel;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
+using System.Collections.Generic;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
@@ -139,7 +140,25 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
                 get { throw new NotImplementedException(); }
             }
 
-            IObservable<IStyleable> IStyleable.StyleDetach { get; }
+            public void DetachStyles()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void DetachStyles(IReadOnlyList<IStyle> styles)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void InvalidateStyles()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void StyleApplied(IStyleInstance instance)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class AttachedOwner

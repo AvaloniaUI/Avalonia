@@ -14,7 +14,7 @@
       <NativeMenuItem Header="File">
         <NativeMenuItem.Menu>
           <NativeMenu>
-            <NativeMenuItem Header="Open" Clicked="OnOpenClicked"/>
+            <NativeMenuItem Header="Open" Clicked="OnOpenClicked" Gesture="Ctrl+O"/>
             <NativeMenuItemSeperator/>
             <NativeMenuItem Header="Recent">
               <NativeMenuItem.Menu>
@@ -22,7 +22,9 @@
               </NativeMenuItem.Menu>
             </NativeMenuItem>
             <NativeMenuItemSeperator/>
-            <NativeMenuItem Header="Quit Avalonia" Clicked="OnCloseClicked" Gesture="CMD+Q"/>
+            <NativeMenuItem Header="{x:Static local:MainWindow.MenuQuitHeader}"
+                            Gesture="{x:Static local:MainWindow.MenuQuitGesture}"
+                            Clicked="OnCloseClicked" />
           </NativeMenu>
         </NativeMenuItem.Menu>
       </NativeMenuItem>

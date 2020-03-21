@@ -60,9 +60,9 @@ namespace Avalonia.Native
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
 
-        public WindowBaseImpl(AvaloniaNativePlatformOptions opts)
+        internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, GlPlatformFeature glFeature)
         {
-            _gpu = opts.UseGpu;
+            _gpu = opts.UseGpu && glFeature != null;
             _deferredRendering = opts.UseDeferredRendering;
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
@@ -75,8 +75,8 @@ namespace Avalonia.Native
             _native = window;
 
             Handle = new MacOSTopLevelWindowHandle(window);
-            
-            _glSurface = new GlPlatformSurface(window);
+            if (_gpu)
+                _glSurface = new GlPlatformSurface(window);
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
             _savedScaling = Scaling;
@@ -103,25 +103,20 @@ namespace Avalonia.Native
 
         public ILockedFramebuffer Lock()
         {
-            if(_deferredRendering)
+            var w = _savedLogicalSize.Width * _savedScaling;
+            var h = _savedLogicalSize.Height * _savedScaling;
+            var dpi = _savedScaling * 96;
+            return new DeferredFramebuffer(cb =>
             {
-                var w = _savedLogicalSize.Width * _savedScaling;
-                var h = _savedLogicalSize.Height * _savedScaling;
-                var dpi = _savedScaling * 96;
-                return new DeferredFramebuffer(cb =>
+                lock (_syncRoot)
                 {
-                    lock (_syncRoot)
-                    {
-                        if (_native == null)
-                            return false;
-                        cb(_native);
-                        _lastRenderedLogicalSize = _savedLogicalSize;
-                        return true;
-                    }
-                }, (int)w, (int)h, new Vector(dpi, dpi));
-           }
-
-            return new FramebufferWrapper(_native.GetSoftwareFramebuffer());
+                    if (_native == null)
+                        return false;
+                    cb(_native);
+                    _lastRenderedLogicalSize = _savedLogicalSize;
+                    return true;
+                }
+            }, (int)w, (int)h, new Vector(dpi, dpi));
         }
 
         public Action<Rect> Paint { get; set; }
@@ -129,28 +124,6 @@ namespace Avalonia.Native
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice => _mouse;
         public abstract IPopupImpl CreatePopup();
-
-
-        class FramebufferWrapper : ILockedFramebuffer
-        {
-            public FramebufferWrapper(AvnFramebuffer fb)
-            {
-                Address = fb.Data;
-                Size = new PixelSize(fb.Width, fb.Height);
-                RowBytes = fb.Stride;
-                Dpi = new Vector(fb.Dpi.X, fb.Dpi.Y);
-                Format = (PixelFormat)fb.PixelFormat;
-            }
-            public IntPtr Address { get; set; }
-            public PixelSize Size { get; set; }
-            public int RowBytes {get;set;}
-            public Vector Dpi { get; set; }
-            public PixelFormat Format { get; }
-            public void Dispose()
-            {
-                // Do nothing
-            }
-        }
 
         protected class WindowBaseEvents : CallbackBase, IAvnWindowBaseEvents
         {
@@ -189,9 +162,12 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.Resized(AvnSize size)
             {
-                var s = new Size(size.Width, size.Height);
-                _parent._savedLogicalSize = s;
-                _parent.Resized?.Invoke(s);
+                if (_parent._native != null)
+                {
+                    var s = new Size(size.Width, size.Height);
+                    _parent._savedLogicalSize = s;
+                    _parent.Resized?.Invoke(s);
+                }
             }
 
             void IAvnWindowBaseEvents.PositionChanged(AvnPoint position)
@@ -278,9 +254,7 @@ namespace Avalonia.Native
         public IRenderer CreateRenderer(IRenderRoot root)
         {
             if (_deferredRendering)
-                return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>(),
-                    rendererLock:
-                    _gpu ? new AvaloniaNativeDeferredRendererLock(_native) : null);
+                return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
             return new ImmediateRenderer(root);
         }
 
@@ -346,7 +320,7 @@ namespace Avalonia.Native
             _native.SetTopMost(value);
         }
 
-        public double Scaling => _native.GetScaling();
+        public double Scaling => _native?.GetScaling() ?? 1;
 
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
