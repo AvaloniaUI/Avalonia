@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.UnitTests;
 using Avalonia.Utility;
 using Xunit;
@@ -240,7 +242,9 @@ namespace Avalonia.Skia.UnitTests
                     {
                         var cluster = glyphRun.GlyphClusters[i];
 
-                        var advance = glyphRun.GlyphAdvances[i];
+                        var glyph = glyphRun.GlyphIndices[i];
+
+                        var advance = glyphRun.GlyphTypeface.GetGlyphAdvance(glyph) * glyphRun.Scale;
 
                         var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(cluster));
 
@@ -280,7 +284,9 @@ namespace Avalonia.Skia.UnitTests
                     {
                         var cluster = glyphRun.GlyphClusters[i];
 
-                        var advance = glyphRun.GlyphAdvances[i];
+                        var glyph = glyphRun.GlyphIndices[i];
+
+                        var advance = glyphRun.GlyphTypeface.GetGlyphAdvance(glyph) * glyphRun.Scale;
 
                         characterHit = textLine.GetCharacterHitFromDistance(currentDistance);
 
@@ -293,6 +299,62 @@ namespace Avalonia.Skia.UnitTests
                 characterHit = textLine.GetCharacterHitFromDistance(textLine.LineMetrics.Size.Width);
 
                 Assert.Equal(textSource.TextPointer.End, characterHit.FirstCharacterIndex);
+            }
+        }
+
+        [InlineData("Whether to turn off HTTPS. This option only applies if Individual, " +
+                    "IndividualB2C, SingleOrg, or MultiOrg aren't used for &#8209;&#8209;auth."
+            , "Noto Sans", 40)]
+        [InlineData("01234 56789 01234 56789", "Noto Mono", 7)]
+        [Theory]
+        public void Should_Wrap_Text(string text, string familyName, int numberOfCharactersPerLine)
+        {
+            using (Start())
+            {
+                var lineBreaker = new LineBreakEnumerator(text.AsMemory());
+
+                var expected = new List<int>();
+
+                while (lineBreaker.MoveNext())
+                {
+                    expected.Add(lineBreaker.Current.PositionWrap - 1);
+                }
+
+                var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#" +
+                                            familyName);
+
+                var defaultStyle = new TextStyle(typeface);
+
+                var textSource = new SimpleTextSource(text, defaultStyle);
+
+                var formatter = new SimpleTextFormatter();
+
+                var glyph = typeface.GlyphTypeface.GetGlyph('a');
+
+                var advance = typeface.GlyphTypeface.GetGlyphAdvance(glyph) *
+                              (12.0 / typeface.GlyphTypeface.DesignEmHeight);
+
+                var paragraphWidth = advance * numberOfCharactersPerLine;
+
+                var currentPosition = 0;
+
+                while (currentPosition < text.Length)
+                {
+                    var textLine =
+                        formatter.FormatLine(textSource, currentPosition, paragraphWidth,
+                            new TextParagraphProperties(defaultStyle, textWrapping: TextWrapping.Wrap));
+
+                    Assert.True(expected.Contains(textLine.Text.End));
+
+                    var index = expected.IndexOf(textLine.Text.End);
+
+                    for (var i = 0; i <= index; i++)
+                    {
+                        expected.RemoveAt(0);
+                    }
+
+                    currentPosition += textLine.Text.Length;
+                }
             }
         }
 
