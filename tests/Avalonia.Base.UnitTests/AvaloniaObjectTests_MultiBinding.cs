@@ -123,6 +123,44 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("Converted: ", target.Foo);
         }
 
+        [Fact]
+        public void MultiValueConverter_Should_Not_Skip_Valid_Null_ReferenceType_Value()
+        {
+            var target = new FuncMultiValueConverter<string, string>(v => string.Join(",", v.ToArray()));
+
+            object value = target.Convert(new[] { "Foo", "Bar", "Baz" }, typeof(string), null, CultureInfo.InvariantCulture);
+
+            Assert.Equal("Foo,Bar,Baz", value);
+
+            value = target.Convert(new[] { null, "Bar", "Baz" }, typeof(string), null, CultureInfo.InvariantCulture);
+
+            Assert.Equal(",Bar,Baz", value);
+        }
+
+        [Fact]
+        public void MultiValueConverter_Should_Not_Skip_Valid_Default_ValueType_Value()
+        {
+            var target = new FuncMultiValueConverter<StringValueTypeWrapper, string>(v => string.Join(",", v.ToArray()));
+
+            IList<object> create(string[] values) =>
+                values.Select(v => (object)(v != null ? new StringValueTypeWrapper() { Value = v } : default)).ToList();
+
+            object value = target.Convert(create(new[] { "Foo", "Bar", "Baz" }), typeof(string), null, CultureInfo.InvariantCulture);
+
+            Assert.Equal("Foo,Bar,Baz", value);
+
+            value = target.Convert(create(new[] { null, "Bar", "Baz" }), typeof(string), null, CultureInfo.InvariantCulture);
+
+            Assert.Equal(",Bar,Baz", value);
+        }
+
+        private struct StringValueTypeWrapper
+        {
+            public string Value;
+
+            public override string ToString() => Value;
+        }
+
         private static IMultiValueConverter StringJoinConverter = new FuncMultiValueConverter<object, string>(v => string.Join(",", v.ToArray()));
 
         private class Class1 : AvaloniaObject
