@@ -42,6 +42,35 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("Bar", target.Foo);
         }
 
+        [Fact]
+        public void Should_Update_With_Multiple_Bindings()
+        {
+            var target = new Class1();
+
+            var bindings = Enumerable.Range(0, 3).Select(i => new BehaviorSubject<object>("Empty")).ToArray();
+
+            var mb = new MultiBinding()
+            {
+                Converter = StringJoinConverter,
+                Bindings = bindings.Select(b => b.ToBinding()).ToArray()
+            };
+            target.Bind(Class1.FooProperty, mb);
+
+            Assert.Equal("Empty,Empty,Empty", target.Foo);
+
+            bindings[0].OnNext("Foo");
+
+            Assert.Equal("Foo,Empty,Empty", target.Foo);
+
+            bindings[1].OnNext("Bar");
+
+            Assert.Equal("Foo,Bar,Empty", target.Foo);
+
+            bindings[2].OnNext("Baz");
+
+            Assert.Equal("Foo,Bar,Baz", target.Foo);
+        }
+
         private static IMultiValueConverter StringJoinConverter = new FuncMultiValueConverter<object, string>(v => string.Join(",", v.ToArray()));
 
         private class Class1 : AvaloniaObject
