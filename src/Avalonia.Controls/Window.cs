@@ -189,6 +189,8 @@ namespace Avalonia.Controls
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
+
+            PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
         }
 
         /// <summary>
