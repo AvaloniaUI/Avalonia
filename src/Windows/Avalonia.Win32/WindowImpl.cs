@@ -312,15 +312,6 @@ namespace Avalonia.Win32
             }
         }
 
-        public void SetSystemDecorations(SystemDecorations value)
-        {
-            var newWindowProperties = _windowProperties;
-
-            newWindowProperties.Decorations = value;
-
-            UpdateWindowProperties(newWindowProperties);
-        }
-
         public void Invalidate(Rect rect)
         {
             var scaling = Scaling;
@@ -354,11 +345,6 @@ namespace Avalonia.Win32
         {
             _owner = inputRoot;
             CreateDropTarget();
-        }
-
-        public void SetTitle(string title)
-        {
-            SetWindowText(_hwnd, title);
         }
 
         public void Hide()
@@ -407,30 +393,20 @@ namespace Avalonia.Win32
 #endif
         }
 
+        public void SetTitle(string title)
+        {
+            SetWindowText(_hwnd, title);
+        }
+
         public void SetCursor(IPlatformHandle cursor)
         {
             var hCursor = cursor?.Handle ?? DefaultCursor;
             SetClassLong(_hwnd, ClassLongIndex.GCLP_HCURSOR, hCursor);
 
             if (_owner.IsPointerOver)
+            {
                 UnmanagedMethods.SetCursor(hCursor);
-        }
-
-        protected virtual IntPtr CreateWindowOverride(ushort atom)
-        {
-            return CreateWindowEx(
-                0,
-                atom,
-                null,
-                (int)WindowStyles.WS_OVERLAPPEDWINDOW,
-                CW_USEDEFAULT,
-                CW_USEDEFAULT,
-                CW_USEDEFAULT,
-                CW_USEDEFAULT,
-                IntPtr.Zero,
-                IntPtr.Zero,
-                IntPtr.Zero,
-                IntPtr.Zero);
+            }
         }
 
         public void SetIcon(IWindowIconImpl icon)
@@ -459,6 +435,15 @@ namespace Avalonia.Win32
             UpdateWindowProperties(newWindowProperties);
         }
 
+        public void SetSystemDecorations(SystemDecorations value)
+        {
+            var newWindowProperties = _windowProperties;
+
+            newWindowProperties.Decorations = value;
+
+            UpdateWindowProperties(newWindowProperties);
+        }
+
         public void SetTopmost(bool value)
         {
             if (value == _topmost)
@@ -475,6 +460,23 @@ namespace Avalonia.Win32
             _topmost = value;
         }
 
+        protected virtual IntPtr CreateWindowOverride(ushort atom)
+        {
+            return CreateWindowEx(
+                0,
+                atom,
+                null,
+                (int)WindowStyles.WS_OVERLAPPEDWINDOW,
+                CW_USEDEFAULT,
+                CW_USEDEFAULT,
+                CW_USEDEFAULT,
+                CW_USEDEFAULT,
+                IntPtr.Zero,
+                IntPtr.Zero,
+                IntPtr.Zero,
+                IntPtr.Zero);
+        }
+
         private void CreateWindow()
         {
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.
@@ -482,12 +484,13 @@ namespace Avalonia.Win32
 
             _className = $"Avalonia-{Guid.NewGuid().ToString()}";
 
+            // Unique DC helps with performance when using Gpu based rendering
+            const ClassStyles windowClassStyle = ClassStyles.CS_OWNDC | ClassStyles.CS_HREDRAW | ClassStyles.CS_VREDRAW;
+
             var wndClassEx = new WNDCLASSEX
             {
                 cbSize = Marshal.SizeOf<WNDCLASSEX>(),
-                style =
-                    (int)(ClassStyles.CS_OWNDC | ClassStyles.CS_HREDRAW |
-                          ClassStyles.CS_VREDRAW), // Unique DC helps with performance when using Gpu based rendering
+                style = (int)windowClassStyle,
                 lpfnWndProc = _wndProcDelegate,
                 hInstance = GetModuleHandle(null),
                 hCursor = DefaultCursor,
@@ -605,8 +608,7 @@ namespace Avalonia.Win32
 
         private void SetStyle(WindowStyles style) => SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
 
-        private void SetExtendedStyle(WindowStyles style) =>
-            SetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE, (uint)style);
+        private void SetExtendedStyle(WindowStyles style) => SetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE, (uint)style);
 
         private void UpdateEnabled()
         {
@@ -617,6 +619,8 @@ namespace Avalonia.Win32
         {
             var oldProperties = _windowProperties;
 
+            // Calling SetWindowPos will cause events to be sent and we need to respond
+            // according to the new values already.
             _windowProperties = newProperties;
 
             if (oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar)

@@ -26,31 +26,40 @@ namespace Avalonia.Win32
             switch ((WindowsMessage)msg)
             {
                 case WindowsMessage.WM_ACTIVATE:
+                {
                     var wa = (WindowActivate)(ToInt32(wParam) & 0xffff);
 
                     switch (wa)
                     {
                         case WindowActivate.WA_ACTIVE:
                         case WindowActivate.WA_CLICKACTIVE:
+                        {
                             Activated?.Invoke();
                             break;
+                        }
 
                         case WindowActivate.WA_INACTIVE:
+                        {
                             Deactivated?.Invoke();
                             break;
+                        }
                     }
 
                     return IntPtr.Zero;
+                }
 
                 case WindowsMessage.WM_NCCALCSIZE:
+                {
                     if (ToInt32(wParam) == 1 && !HasFullDecorations)
                     {
                         return IntPtr.Zero;
                     }
 
                     break;
+                }
 
                 case WindowsMessage.WM_CLOSE:
+                {
                     bool? preventClosing = Closing?.Invoke();
                     if (preventClosing == true)
                     {
@@ -58,13 +67,16 @@ namespace Avalonia.Win32
                     }
 
                     break;
+                }
 
                 case WindowsMessage.WM_DESTROY:
+                {
                     //Window doesn't exist anymore
                     _hwnd = IntPtr.Zero;
                     //Remove root reference to this class, so unmanaged delegate can be collected
                     s_instances.Remove(this);
                     Closed?.Invoke();
+
                     if (_parent != null)
                     {
                         _parent._disabledBy.Remove(this);
@@ -76,8 +88,10 @@ namespace Avalonia.Win32
                     //Free other resources
                     Dispose();
                     return IntPtr.Zero;
+                }
 
                 case WindowsMessage.WM_DPICHANGED:
+                {
                     var dpi = ToInt32(wParam) & 0xffff;
                     var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
                     _scaling = dpi / 96.0;
@@ -91,9 +105,11 @@ namespace Avalonia.Win32
                         SetWindowPosFlags.SWP_NOZORDER |
                         SetWindowPosFlags.SWP_NOACTIVATE);
                     return IntPtr.Zero;
+                }
 
                 case WindowsMessage.WM_KEYDOWN:
                 case WindowsMessage.WM_SYSKEYDOWN:
+                {
                     e = new RawKeyEventArgs(
                         WindowsKeyboardDevice.Instance,
                         timestamp,
@@ -102,13 +118,17 @@ namespace Avalonia.Win32
                         KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)),
                         WindowsKeyboardDevice.Instance.Modifiers);
                     break;
+                }
 
                 case WindowsMessage.WM_MENUCHAR:
+                {
                     // mute the system beep
-                    return (IntPtr)((Int32)MenuCharParam.MNC_CLOSE << 16);
+                    return (IntPtr)((int)MenuCharParam.MNC_CLOSE << 16);
+                }
 
                 case WindowsMessage.WM_KEYUP:
                 case WindowsMessage.WM_SYSKEYUP:
+                {
                     e = new RawKeyEventArgs(
                         WindowsKeyboardDevice.Instance,
                         timestamp,
@@ -117,7 +137,9 @@ namespace Avalonia.Win32
                         KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)),
                         WindowsKeyboardDevice.Instance.Modifiers);
                     break;
+                }
                 case WindowsMessage.WM_CHAR:
+                {
                     // Ignore control chars
                     if (ToInt32(wParam) >= 32)
                     {
@@ -126,13 +148,18 @@ namespace Avalonia.Win32
                     }
 
                     break;
+                }
 
                 case WindowsMessage.WM_LBUTTONDOWN:
                 case WindowsMessage.WM_RBUTTONDOWN:
                 case WindowsMessage.WM_MBUTTONDOWN:
                 case WindowsMessage.WM_XBUTTONDOWN:
+                {
                     if (ShouldIgnoreTouchEmulatedMessage())
+                    {
                         break;
+                    }
+
                     e = new RawPointerEventArgs(
                         _mouseDevice,
                         timestamp,
@@ -149,13 +176,18 @@ namespace Avalonia.Win32
                         },
                         DipFromLParam(lParam), GetMouseModifiers(wParam));
                     break;
+                }
 
                 case WindowsMessage.WM_LBUTTONUP:
                 case WindowsMessage.WM_RBUTTONUP:
                 case WindowsMessage.WM_MBUTTONUP:
                 case WindowsMessage.WM_XBUTTONUP:
+                {
                     if (ShouldIgnoreTouchEmulatedMessage())
+                    {
                         break;
+                    }
+
                     e = new RawPointerEventArgs(
                         _mouseDevice,
                         timestamp,
@@ -172,10 +204,15 @@ namespace Avalonia.Win32
                         },
                         DipFromLParam(lParam), GetMouseModifiers(wParam));
                     break;
+                }
 
                 case WindowsMessage.WM_MOUSEMOVE:
+                {
                     if (ShouldIgnoreTouchEmulatedMessage())
+                    {
                         break;
+                    }
+
                     if (!_trackingMouse)
                     {
                         var tm = new TRACKMOUSEEVENT
@@ -197,8 +234,10 @@ namespace Avalonia.Win32
                         DipFromLParam(lParam), GetMouseModifiers(wParam));
 
                     break;
+                }
 
                 case WindowsMessage.WM_MOUSEWHEEL:
+                {
                     e = new RawMouseWheelEventArgs(
                         _mouseDevice,
                         timestamp,
@@ -206,8 +245,10 @@ namespace Avalonia.Win32
                         PointToClient(PointFromLParam(lParam)),
                         new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta), GetMouseModifiers(wParam));
                     break;
+                }
 
                 case WindowsMessage.WM_MOUSEHWHEEL:
+                {
                     e = new RawMouseWheelEventArgs(
                         _mouseDevice,
                         timestamp,
@@ -215,8 +256,10 @@ namespace Avalonia.Win32
                         PointToClient(PointFromLParam(lParam)),
                         new Vector(-(ToInt32(wParam) >> 16) / wheelDelta, 0), GetMouseModifiers(wParam));
                     break;
+                }
 
                 case WindowsMessage.WM_MOUSELEAVE:
+                {
                     _trackingMouse = false;
                     e = new RawPointerEventArgs(
                         _mouseDevice,
@@ -225,11 +268,13 @@ namespace Avalonia.Win32
                         RawPointerEventType.LeaveWindow,
                         new Point(-1, -1), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
+                }
 
                 case WindowsMessage.WM_NCLBUTTONDOWN:
                 case WindowsMessage.WM_NCRBUTTONDOWN:
                 case WindowsMessage.WM_NCMBUTTONDOWN:
                 case WindowsMessage.WM_NCXBUTTONDOWN:
+                {
                     e = new RawPointerEventArgs(
                         _mouseDevice,
                         timestamp,
@@ -247,14 +292,15 @@ namespace Avalonia.Win32
                         },
                         PointToClient(PointFromLParam(lParam)), GetMouseModifiers(wParam));
                     break;
+                }
                 case WindowsMessage.WM_TOUCH:
+                {
                     var touchInputCount = wParam.ToInt32();
 
                     var pTouchInputs = stackalloc TOUCHINPUT[touchInputCount];
                     var touchInputs = new Span<TOUCHINPUT>(pTouchInputs, touchInputCount);
 
-                    if (GetTouchInputInfo(lParam, (uint)touchInputCount, pTouchInputs,
-                        Marshal.SizeOf<TOUCHINPUT>()))
+                    if (GetTouchInputInfo(lParam, (uint)touchInputCount, pTouchInputs, Marshal.SizeOf<TOUCHINPUT>()))
                     {
                         foreach (var touchInput in touchInputs)
                         {
@@ -275,27 +321,32 @@ namespace Avalonia.Win32
                     }
 
                     break;
+                }
                 case WindowsMessage.WM_NCPAINT:
+                {
                     if (!HasFullDecorations)
                     {
                         return IntPtr.Zero;
                     }
 
                     break;
+                }
 
                 case WindowsMessage.WM_NCACTIVATE:
+                {
                     if (!HasFullDecorations)
                     {
                         return new IntPtr(1);
                     }
 
                     break;
+                }
 
                 case WindowsMessage.WM_PAINT:
+                {
                     using (_rendererLock.Lock())
                     {
-                        PAINTSTRUCT ps;
-                        if (BeginPaint(_hwnd, out ps) != IntPtr.Zero)
+                        if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
                         {
                             var f = Scaling;
                             var r = ps.rcPaint;
@@ -306,8 +357,10 @@ namespace Avalonia.Win32
                     }
 
                     return IntPtr.Zero;
+                }
 
                 case WindowsMessage.WM_SIZE:
+                {
                     using (_rendererLock.Lock())
                     {
                         // Do nothing here, just block until the pending frame render is completed on the render thread
@@ -334,38 +387,52 @@ namespace Avalonia.Win32
                     }
 
                     return IntPtr.Zero;
+                }
 
                 case WindowsMessage.WM_MOVE:
+                {
                     PositionChanged?.Invoke(new PixelPoint((short)(ToInt32(lParam) & 0xffff),
                         (short)(ToInt32(lParam) >> 16)));
                     return IntPtr.Zero;
+                }
 
                 case WindowsMessage.WM_GETMINMAXINFO:
-
+                {
                     MINMAXINFO mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
 
                     if (_minSize.Width > 0)
+                    {
                         mmi.ptMinTrackSize.X =
                             (int)((_minSize.Width * Scaling) + BorderThickness.Left + BorderThickness.Right);
+                    }
 
                     if (_minSize.Height > 0)
+                    {
                         mmi.ptMinTrackSize.Y =
                             (int)((_minSize.Height * Scaling) + BorderThickness.Top + BorderThickness.Bottom);
+                    }
 
-                    if (!Double.IsInfinity(_maxSize.Width) && _maxSize.Width > 0)
+                    if (!double.IsInfinity(_maxSize.Width) && _maxSize.Width > 0)
+                    {
                         mmi.ptMaxTrackSize.X =
                             (int)((_maxSize.Width * Scaling) + BorderThickness.Left + BorderThickness.Right);
+                    }
 
-                    if (!Double.IsInfinity(_maxSize.Height) && _maxSize.Height > 0)
+                    if (!double.IsInfinity(_maxSize.Height) && _maxSize.Height > 0)
+                    {
                         mmi.ptMaxTrackSize.Y =
                             (int)((_maxSize.Height * Scaling) + BorderThickness.Top + BorderThickness.Bottom);
+                    }
 
                     Marshal.StructureToPtr(mmi, lParam, true);
                     return IntPtr.Zero;
+                }
 
                 case WindowsMessage.WM_DISPLAYCHANGE:
+                {
                     (Screen as ScreenImpl)?.InvalidateScreensCache();
                     return IntPtr.Zero;
+                }
             }
 
 #if USE_MANAGED_DRAG
@@ -384,7 +451,9 @@ namespace Avalonia.Win32
             }
 
             using (_rendererLock.Lock())
+            {
                 return DefWindowProc(hWnd, msg, wParam, lParam);
+            }
         }
 
         private static int ToInt32(IntPtr ptr)
@@ -410,7 +479,10 @@ namespace Avalonia.Win32
         private bool ShouldIgnoreTouchEmulatedMessage()
         {
             if (!_multitouch)
+            {
                 return false;
+            }
+
             var marker = 0xFF515700L;
             var info = GetMessageExtraInfo().ToInt64();
             return (info & marker) == marker;
@@ -420,16 +492,32 @@ namespace Avalonia.Win32
         {
             var keys = (ModifierKeys)ToInt32(wParam);
             var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
+
             if (keys.HasFlagCustom(ModifierKeys.MK_LBUTTON))
+            {
                 modifiers |= RawInputModifiers.LeftMouseButton;
+            }
+
             if (keys.HasFlagCustom(ModifierKeys.MK_RBUTTON))
+            {
                 modifiers |= RawInputModifiers.RightMouseButton;
+            }
+
             if (keys.HasFlagCustom(ModifierKeys.MK_MBUTTON))
+            {
                 modifiers |= RawInputModifiers.MiddleMouseButton;
+            }
+
             if (keys.HasFlagCustom(ModifierKeys.MK_XBUTTON1))
+            {
                 modifiers |= RawInputModifiers.XButton1MouseButton;
+            }
+
             if (keys.HasFlagCustom(ModifierKeys.MK_XBUTTON2))
+            {
                 modifiers |= RawInputModifiers.XButton2MouseButton;
+            }
+
             return modifiers;
         }
     }
