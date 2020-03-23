@@ -99,6 +99,30 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("", target.Foo);
         }
 
+        [Fact]
+        public void Should_Update_When_Null_Value_In_Bindings_With_StringFormat()
+        {
+            var target = new Class1();
+
+            var b = new Subject<object>();
+
+            var mb = new MultiBinding()
+            {
+                StringFormat = "Converted: {0}",
+                Bindings = new[]
+                {
+                    b.ToBinding()
+                }
+            };
+            target.Bind(Class1.FooProperty, mb);
+
+            Assert.Equal(null, target.Foo);
+            b.OnNext("Foo");
+            Assert.Equal("Converted: Foo", target.Foo);
+            b.OnNext(null);
+            Assert.Equal("Converted: ", target.Foo);
+        }
+
         private static IMultiValueConverter StringJoinConverter = new FuncMultiValueConverter<object, string>(v => string.Join(",", v.ToArray()));
 
         private class Class1 : AvaloniaObject
