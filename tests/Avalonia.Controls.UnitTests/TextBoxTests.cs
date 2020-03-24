@@ -385,6 +385,49 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(target.SelectionEnd <= "123".Length);
             }
         }
+
+        [Fact]
+        public void SelectedText_Changes_OnSelectionChange()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123456789"
+                };
+
+                Assert.True(target.SelectedText == "");
+
+                target.SelectionStart = 2;
+                target.SelectionEnd = 4;
+
+                Assert.True(target.SelectedText == "23");
+            }
+        }
+
+        [Fact]
+        public void SelectedText_EditsText()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123"
+                };
+
+                target.SelectedText = "AA";
+                Assert.True(target.Text == "AA0123");
+
+                target.SelectionStart = 1;
+                target.SelectionEnd = 3;
+                target.SelectedText = "BB";
+
+                Assert.True(target.Text == "ABB123");
+            }
+        }
+
         [Fact]
         public void CoerceCaretIndex_Doesnt_Cause_Exception_with_malformed_line_ending()
         {

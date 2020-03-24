@@ -115,7 +115,6 @@ public:
             [NSApp activateIgnoringOtherApps:YES];
             
             [Window setTitle:_lastTitle];
-            [Window setTitleVisibility:NSWindowTitleVisible];
         
             return S_OK;
         }
@@ -411,7 +410,7 @@ class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, pub
 {
 private:
     bool _canResize = true;
-    bool _hasDecorations = true;
+    SystemDecorations _hasDecorations = SystemDecorationsFull;
     CGRect _lastUndecoratedFrame;
     AvnWindowState _lastWindowState;
     
@@ -427,6 +426,7 @@ private:
     ComPtr<IAvnWindowEvents> WindowEvents;
     WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
+        _lastWindowState = Normal;
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
         [Window disableCursorRects];
@@ -440,7 +440,7 @@ private:
                 [[Window parentWindow] removeChildWindow:Window];
             WindowBaseImpl::Show();
             
-            return SetWindowState(Normal);
+            return SetWindowState(_lastWindowState);
         }
     }
     
@@ -476,23 +476,26 @@ private:
     
     bool IsZoomed ()
     {
-        return _hasDecorations ? [Window isZoomed] : UndecoratedIsMaximized();
+        return _hasDecorations != SystemDecorationsNone ? [Window isZoomed] : UndecoratedIsMaximized();
     }
     
     void DoZoom()
     {
-        if (_hasDecorations)
+        switch (_hasDecorations)
         {
-            [Window performZoom:Window];
-        }
-        else
-        {
-            if (!UndecoratedIsMaximized())
-            {
-                _lastUndecoratedFrame = [Window frame];
-            }
-            
-            [Window zoom:Window];
+            case SystemDecorationsNone:
+                if (!UndecoratedIsMaximized())
+                {
+                    _lastUndecoratedFrame = [Window frame];
+                }
+                
+                [Window zoom:Window];
+                break;
+
+            case SystemDecorationsBorderOnly:
+            case SystemDecorationsFull:
+                [Window performZoom:Window];
+                break;
         }
     }
     
@@ -506,13 +509,35 @@ private:
         }
     }
     
-    virtual HRESULT SetHasDecorations(bool value) override
+    virtual HRESULT SetHasDecorations(SystemDecorations value) override
     {
         @autoreleasepool
         {
             _hasDecorations = value;
             UpdateStyle();
-            
+
+            switch (_hasDecorations)
+            {
+                case SystemDecorationsNone:
+                    [Window setHasShadow:NO];
+                    [Window setTitleVisibility:NSWindowTitleHidden];
+                    [Window setTitlebarAppearsTransparent:YES];
+                    break;
+
+                case SystemDecorationsBorderOnly:
+                    [Window setHasShadow:YES];
+                    [Window setTitleVisibility:NSWindowTitleHidden];
+                    [Window setTitlebarAppearsTransparent:YES];
+                    break;
+
+                case SystemDecorationsFull:
+                    [Window setHasShadow:YES];
+                    [Window setTitleVisibility:NSWindowTitleVisible];
+                    [Window setTitlebarAppearsTransparent:NO];
+                    [Window setTitle:_lastTitle];
+                    break;
+            }
+
             return S_OK;
         }
     }
@@ -523,7 +548,6 @@ private:
         {
             _lastTitle = [NSString stringWithUTF8String:(const char*)utf8title];
             [Window setTitle:_lastTitle];
-            [Window setTitleVisibility:NSWindowTitleVisible];
             
             return S_OK;
         }
@@ -645,10 +669,26 @@ protected:
     virtual NSWindowStyleMask GetStyle() override
     {
         unsigned long s = NSWindowStyleMaskBorderless;
-        if(_hasDecorations)
-            s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
-        if(_canResize)
-            s = s | NSWindowStyleMaskResizable;
+
+        switch (_hasDecorations)
+        {
+            case SystemDecorationsNone:
+                break;
+
+            case SystemDecorationsBorderOnly:
+                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView;
+                break;
+
+            case SystemDecorationsFull:
+                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskBorderless;
+                if(_canResize)
+                {
+                    s = s | NSWindowStyleMaskResizable;
+                }
+
+                break;
+        }
+
         return s;
     }
 };

@@ -9,6 +9,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Platform;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -266,6 +267,44 @@ namespace Avalonia.Controls.UnitTests
                 impl.Object.Closed();
 
                 mouseDevice.Verify(x => x.TopLevelClosed(target));
+            }
+        }
+
+        [Fact]
+        public void Reacts_To_Changes_In_Global_Styles()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                impl.SetupGet(x => x.Scaling).Returns(1);
+
+                var child = new Border { Classes = { "foo" } };
+                var target = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTemplate(),
+                    Content = child,
+                };
+
+                target.LayoutManager.ExecuteInitialLayoutPass(target);
+
+                Assert.Equal(new Thickness(0), child.BorderThickness);
+
+                var style = new Style(x => x.OfType<Border>().Class("foo"))
+                {
+                    Setters =
+                    {
+                        new Setter(Border.BorderThicknessProperty, new Thickness(2))
+                    }
+                };
+
+                Application.Current.Styles.Add(style);
+                target.LayoutManager.ExecuteInitialLayoutPass(target);
+
+                Assert.Equal(new Thickness(2), child.BorderThickness);
+
+                Application.Current.Styles.Remove(style);
+
+                Assert.Equal(new Thickness(0), child.BorderThickness);
             }
         }
 

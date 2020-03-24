@@ -237,6 +237,12 @@ namespace Avalonia.Media.TextFormatting
 
                         textLines.Add(textLine);
 
+                        if (!double.IsPositiveInfinity(MaxHeight) && bottom + textLine.LineMetrics.Size.Height > MaxHeight)
+                        {
+                            currentPosition = _text.Length;
+                            break;
+                        }
+
                         if (_paragraphProperties.TextTrimming != TextTrimming.None)
                         {
                             currentPosition += remainingLength;
@@ -248,22 +254,15 @@ namespace Avalonia.Media.TextFormatting
 
                         currentPosition += textLine.Text.Length;
                     }
+                }
 
-                    if (lineBreaker.Current.Required && currentPosition == _text.Length)
-                    {
-                        var emptyTextLine = CreateEmptyTextLine(currentPosition);
+                if (lineBreaker.Current.Required && currentPosition == _text.Length)
+                {
+                    var emptyTextLine = CreateEmptyTextLine(currentPosition);
 
-                        UpdateBounds(emptyTextLine, ref left, ref right, ref bottom);
+                    UpdateBounds(emptyTextLine, ref left, ref right, ref bottom);
 
-                        textLines.Add(emptyTextLine);
-
-                        break;
-                    }
-
-                    if (!double.IsPositiveInfinity(MaxHeight) && MaxHeight < Bounds.Height)
-                    {
-                        break;
-                    }
+                    textLines.Add(emptyTextLine);
                 }
 
                 Bounds = new Rect(left, 0, right, bottom);

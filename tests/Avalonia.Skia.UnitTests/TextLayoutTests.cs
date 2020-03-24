@@ -406,9 +406,13 @@ namespace Avalonia.Skia.UnitTests
         }
 
         [Theory]
-        [InlineData("abcde\r\n")]
-        [InlineData("abcde\n\r")]
-        public void Should_Break_With_BreakChar_Pair(string text)
+        [InlineData("abcde\r\n", 7)] // Carriage Return + Line Feed
+        [InlineData("abcde\n\r", 7)] // This isn't valid but we somehow have to support it.
+        [InlineData("abcde\u000A", 6)] // Line Feed
+        [InlineData("abcde\u000B", 6)] // Vertical Tab
+        [InlineData("abcde\u000C", 6)] // Form Feed
+        [InlineData("abcde\u000D", 6)] // Carriage Return
+        public void Should_Break_With_BreakChar(string text, int expectedLength)
         {
             using (Start())
             {
@@ -422,11 +426,14 @@ namespace Avalonia.Skia.UnitTests
 
                 Assert.Equal(1, layout.TextLines[0].TextRuns.Count);
 
-                Assert.Equal(7, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters.Length);
+                Assert.Equal(expectedLength, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters.Length);
 
                 Assert.Equal(5, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters[5]);
 
-                Assert.Equal(5, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters[6]);
+                if(expectedLength == 7)
+                {
+                    Assert.Equal(5, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters[6]);
+                }
             }
         }
 
@@ -470,6 +477,32 @@ namespace Avalonia.Skia.UnitTests
                 {
                     Assert.Equal(replacementGlyph, glyph);
                 }
+            }
+        }
+
+        [InlineData("0123456789\r0123456789", 2)]
+        [InlineData("0123456789", 1)]
+        [Theory]
+        public void Should_Include_Last_Line_When_Constraint_Is_Surpassed(string text, int numberOfLines)
+        {
+            using (Start())
+            {
+                var glyphTypeface = Typeface.Default.GlyphTypeface;
+
+                var emHeight = glyphTypeface.DesignEmHeight;
+
+                var lineHeight = (glyphTypeface.Descent - glyphTypeface.Ascent) * (12.0 / emHeight);
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black.ToImmutable(),
+                    maxHeight: lineHeight * numberOfLines - lineHeight * 0.5);
+
+                Assert.Equal(numberOfLines, layout.TextLines.Count);
+
+                Assert.Equal(numberOfLines * lineHeight, layout.Bounds.Height);
             }
         }
 

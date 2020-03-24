@@ -6,6 +6,8 @@ using System;
 using Avalonia.Controls;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace Avalonia.Markup.Xaml.Styling
 {
     /// <summary>
@@ -14,8 +16,8 @@ namespace Avalonia.Markup.Xaml.Styling
     public class StyleInclude : IStyle, ISetResourceParent
     {
         private Uri _baseUri;
-        private IStyle _loaded;
-        private IResourceNode _parent;
+        private IStyle[]? _loaded;
+        private IResourceNode? _parent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyleInclude"/> class.
@@ -41,7 +43,7 @@ namespace Avalonia.Markup.Xaml.Styling
         /// <summary>
         /// Gets or sets the source URL.
         /// </summary>
-        public Uri Source { get; set; }
+        public Uri? Source { get; set; }
 
         /// <summary>
         /// Gets the loaded style.
@@ -53,11 +55,12 @@ namespace Avalonia.Markup.Xaml.Styling
                 if (_loaded == null)
                 {
                     var loader = new AvaloniaXamlLoader();
-                    _loaded = (IStyle)loader.Load(Source, _baseUri);
-                    (_loaded as ISetResourceParent)?.SetParent(this);
+                    var loaded = (IStyle)loader.Load(Source, _baseUri);
+                    (loaded as ISetResourceParent)?.SetParent(this);
+                    _loaded = new[] { loaded };
                 }
 
-                return _loaded;
+                return _loaded?[0]!;
             }
         }
 
@@ -65,13 +68,15 @@ namespace Avalonia.Markup.Xaml.Styling
         bool IResourceProvider.HasResources => Loaded.HasResources;
 
         /// <inheritdoc/>
-        IResourceNode IResourceNode.ResourceParent => _parent;
+        IResourceNode? IResourceNode.ResourceParent => _parent;
+
+        IReadOnlyList<IStyle> IStyle.Children => _loaded ?? Array.Empty<IStyle>();
 
         /// <inheritdoc/>
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost host) => Loaded.TryAttach(target, host);
+        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host) => Loaded.TryAttach(target, host);
 
         /// <inheritdoc/>
-        public bool TryGetResource(object key, out object value) => Loaded.TryGetResource(key, out value);
+        public bool TryGetResource(object key, out object? value) => Loaded.TryGetResource(key, out value);
 
         /// <inheritdoc/>
         void ISetResourceParent.ParentResourcesChanged(ResourcesChangedEventArgs e)
