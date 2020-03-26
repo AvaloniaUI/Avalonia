@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Collections;
 
 #nullable enable
@@ -38,5 +39,15 @@ namespace Avalonia.Styling
         /// Detaches all styles applied to the element.
         /// </summary>
         void DetachStyles();
+
+        /// <summary>
+        /// Detaches a collection of styles, if applied to the element.
+        /// </summary>
+        void DetachStyles(IReadOnlyList<IStyle> styles);
+
+        /// <summary>
+        /// Detaches all styles from the element and queues a restyle.
+        /// </summary>
+        void InvalidateStyles();
     }
 }

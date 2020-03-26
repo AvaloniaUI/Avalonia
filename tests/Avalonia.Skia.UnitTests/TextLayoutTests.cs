@@ -480,6 +480,32 @@ namespace Avalonia.Skia.UnitTests
             }
         }
 
+        [InlineData("0123456789\r0123456789", 2)]
+        [InlineData("0123456789", 1)]
+        [Theory]
+        public void Should_Include_Last_Line_When_Constraint_Is_Surpassed(string text, int numberOfLines)
+        {
+            using (Start())
+            {
+                var glyphTypeface = Typeface.Default.GlyphTypeface;
+
+                var emHeight = glyphTypeface.DesignEmHeight;
+
+                var lineHeight = (glyphTypeface.Descent - glyphTypeface.Ascent) * (12.0 / emHeight);
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black.ToImmutable(),
+                    maxHeight: lineHeight * numberOfLines - lineHeight * 0.5);
+
+                Assert.Equal(numberOfLines, layout.TextLines.Count);
+
+                Assert.Equal(numberOfLines * lineHeight, layout.Bounds.Height);
+            }
+        }
+
         public static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
