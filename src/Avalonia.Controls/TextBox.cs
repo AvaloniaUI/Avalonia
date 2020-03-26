@@ -701,7 +701,8 @@ namespace Avalonia.Controls
         {
             var text = Text;
 
-            if (text != null && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            var clickInfo = e.GetCurrentPoint(this);
+            if (text != null && clickInfo.Properties.IsLeftButtonPressed && !(clickInfo.Pointer?.Captured is Border))
             {
                 var point = e.GetPosition(_presenter);
                 var index = CaretIndex = _presenter.GetCaretIndex(point);
