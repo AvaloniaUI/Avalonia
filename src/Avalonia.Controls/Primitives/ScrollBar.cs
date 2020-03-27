@@ -55,16 +55,6 @@ namespace Avalonia.Controls.Primitives
         {
             Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragComplete(e), RoutingStrategies.Bubble);
-
-            static void AffectsIsVisible(AvaloniaProperty property)
-            {
-                property.Changed.AddClassHandler<ScrollBar>((x, e) => x.CalculateIsVisible());
-            }
-
-            AffectsIsVisible(MinimumProperty);
-            AffectsIsVisible(MaximumProperty);
-            AffectsIsVisible(ViewportSizeProperty);
-            AffectsIsVisible(VisibilityProperty);
         }
 
         /// <summary>
@@ -106,9 +96,9 @@ namespace Avalonia.Controls.Primitives
         public event EventHandler<ScrollEventArgs> Scroll;
 
         /// <summary>
-        /// Calculates whether the scrollbar should be visible.
+        /// Calculates and updates whether the scrollbar should be visible.
         /// </summary>
-        private void CalculateIsVisible()
+        private void UpdateIsVisible()
         {
             var isVisible = Visibility switch
             {
@@ -147,6 +137,16 @@ namespace Avalonia.Controls.Primitives
             if (property == OrientationProperty)
             {
                 UpdatePseudoClasses(newValue.GetValueOrDefault<Orientation>());
+            }
+            else
+            {
+                if (property == MinimumProperty ||
+                    property == MaximumProperty || 
+                    property == ViewportSizeProperty ||
+                    property == VisibilityProperty)
+                {
+                    UpdateIsVisible();
+                }
             }
         }
 
