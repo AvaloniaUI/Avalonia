@@ -404,6 +404,7 @@ protected:
         [Window setStyleMask:GetStyle()];
     }
     
+public:
     virtual void OnResized ()
     {
         
@@ -659,7 +660,6 @@ private:
         }
     }
 
-public:
     virtual void OnResized () override
     {
         if(_shown)
@@ -1373,12 +1373,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)windowDidResize:(NSNotification *)notification
 {
-    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
-    
-    if(parent != nullptr)
-    {
-        parent->OnResized();
-    }
+    _parent->OnResized();
 }
 
 - (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame

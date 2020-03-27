@@ -34,7 +34,6 @@ struct INSWindowHolder
 struct IWindowStateChanged
 {
     virtual void WindowStateChanged () = 0;
-    virtual void OnResized () = 0;
 };
 
 #endif /* window_h */
