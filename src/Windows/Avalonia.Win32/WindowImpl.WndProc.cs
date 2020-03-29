@@ -483,7 +483,10 @@ namespace Avalonia.Win32
                 return false;
             }
 
-            var marker = 0xFF515700L;
+            // MI_WP_SIGNATURE
+            // https://docs.microsoft.com/en-us/windows/win32/tablet/system-events-and-mouse-messages
+            const long marker = 0xFF515700L;
+
             var info = GetMessageExtraInfo().ToInt64();
             return (info & marker) == marker;
         }
