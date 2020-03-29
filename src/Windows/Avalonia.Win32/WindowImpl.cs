@@ -165,11 +165,7 @@ namespace Avalonia.Win32
 
         public IScreenImpl Screen { get; }
 
-        public IPlatformHandle Handle
-        {
-            get;
-            private set;
-        }
+        public IPlatformHandle Handle { get; private set; }
 
         public Size MaxClientSize
         {
@@ -191,15 +187,12 @@ namespace Avalonia.Win32
                 var placement = default(WINDOWPLACEMENT);
                 GetWindowPlacement(_hwnd, ref placement);
 
-                switch (placement.ShowCmd)
+                return placement.ShowCmd switch
                 {
-                    case ShowWindowCommand.Maximize:
-                        return WindowState.Maximized;
-                    case ShowWindowCommand.Minimize:
-                        return WindowState.Minimized;
-                    default:
-                        return WindowState.Normal;
-                }
+                    ShowWindowCommand.Maximize => WindowState.Maximized,
+                    ShowWindowCommand.Minimize => WindowState.Minimized,
+                    _ => WindowState.Normal
+                };
             }
 
             set
