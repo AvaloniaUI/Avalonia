@@ -385,7 +385,7 @@ namespace Avalonia.Win32
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
 #if USE_MANAGED_DRAG
-            _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position));
+            _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position.ToPoint(_scaling)));
 #else
             _mouseDevice.Capture(null);
             DefWindowProc(_hwnd, (int)WindowsMessage.WM_NCLBUTTONDOWN,
