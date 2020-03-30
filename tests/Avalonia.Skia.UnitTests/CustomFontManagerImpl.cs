@@ -14,12 +14,14 @@ namespace Avalonia.Skia.UnitTests
 
         private readonly Typeface _defaultTypeface =
             new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono");
+        private readonly Typeface _italicTypeface = 
+            new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Sans");
         private readonly Typeface _emojiTypeface =
             new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Twitter Color Emoji");
 
         public CustomFontManagerImpl()
         {
-            _customTypefaces = new[] { _emojiTypeface, _defaultTypeface };
+            _customTypefaces = new[] { _emojiTypeface, _italicTypeface, _defaultTypeface };
         }
 
         public string GetDefaultFontFamilyName()
@@ -56,6 +58,7 @@ namespace Avalonia.Skia.UnitTests
             switch (typeface.FontFamily.Name)
             {
                 case "Twitter Color Emoji":
+                case "Noto Sans":
                 case "Noto Mono":
                     var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
                     var skTypeface = typefaceCollection.Get(typeface);

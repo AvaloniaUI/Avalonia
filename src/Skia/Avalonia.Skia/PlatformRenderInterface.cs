@@ -173,16 +173,26 @@ namespace Avalonia.Skia
 
             using (var textBlobBuilder = new SKTextBlobBuilder())
             {
+                SKTextBlob textBlob;
+
+                width = 0;
+
                 var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
 
                 if (glyphRun.GlyphOffsets.IsEmpty)
                 {
-                    width = 0;
-
-                    var buffer = textBlobBuilder.AllocateHorizontalRun(paint, count, 0);
-
-                    if (!glyphTypeface.IsFixedPitch)
+                    if (glyphTypeface.IsFixedPitch)
                     {
+                        textBlobBuilder.AddRun(paint, 0, 0, glyphRun.GlyphIndices.Buffer.Span);
+
+                        textBlob = textBlobBuilder.Build();
+
+                        width = glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[0]) * scale * glyphRun.GlyphIndices.Length;
+                    }
+                    else
+                    {
+                        var buffer = textBlobBuilder.AllocateHorizontalRun(paint, count, 0);
+
                         var positions = buffer.GetPositionSpan();
 
                         for (var i = 0; i < count; i++)
@@ -198,9 +208,11 @@ namespace Avalonia.Skia
                                 width += glyphRun.GlyphAdvances[i];
                             }
                         }
-                    }
 
-                    buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
+                        buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
+
+                        textBlob = textBlobBuilder.Build();
+                    }
                 }
                 else
                 {
@@ -229,9 +241,9 @@ namespace Avalonia.Skia
                     buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
 
                     width = currentX;
-                }
 
-                var textBlob = textBlobBuilder.Build();
+                    textBlob = textBlobBuilder.Build();
+                }
 
                 return new GlyphRunImpl(paint, textBlob);
             }
