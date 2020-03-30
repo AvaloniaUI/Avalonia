@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive;
-using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Input;
@@ -64,13 +62,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public ScrollBar()
         {
-            var isVisible = Observable.Merge(
-                this.GetObservable(MinimumProperty).Select(_ => Unit.Default),
-                this.GetObservable(MaximumProperty).Select(_ => Unit.Default),
-                this.GetObservable(ViewportSizeProperty).Select(_ => Unit.Default),
-                this.GetObservable(VisibilityProperty).Select(_ => Unit.Default))
-                .Select(_ => CalculateIsVisible());
-            this.Bind(IsVisibleProperty, isVisible, BindingPriority.Style);
             UpdatePseudoClasses(Orientation);
         }
 
@@ -105,26 +96,20 @@ namespace Avalonia.Controls.Primitives
         public event EventHandler<ScrollEventArgs> Scroll;
 
         /// <summary>
-        /// Calculates whether the scrollbar should be visible.
+        /// Calculates and updates whether the scrollbar should be visible.
         /// </summary>
-        /// <returns>The scrollbar's visibility.</returns>
-        private bool CalculateIsVisible()
+        private void UpdateIsVisible()
         {
-            switch (Visibility)
+            var isVisible = Visibility switch
             {
-                case ScrollBarVisibility.Visible:
-                    return true;
+                ScrollBarVisibility.Visible => true,
+                ScrollBarVisibility.Disabled => false,
+                ScrollBarVisibility.Hidden => false,
+                ScrollBarVisibility.Auto => (double.IsNaN(ViewportSize) || Maximum > 0),
+                _ => throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.")
+            };
 
-                case ScrollBarVisibility.Disabled:
-                case ScrollBarVisibility.Hidden:
-                    return false;
-
-                case ScrollBarVisibility.Auto:
-                    return double.IsNaN(ViewportSize) || Maximum > 0;
-
-                default:
-                    throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.");
-            }
+            SetValue(IsVisibleProperty, isVisible, BindingPriority.Style);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -152,6 +137,16 @@ namespace Avalonia.Controls.Primitives
             if (property == OrientationProperty)
             {
                 UpdatePseudoClasses(newValue.GetValueOrDefault<Orientation>());
+            }
+            else
+            {
+                if (property == MinimumProperty ||
+                    property == MaximumProperty || 
+                    property == ViewportSizeProperty ||
+                    property == VisibilityProperty)
+                {
+                    UpdateIsVisible();
+                }
             }
         }
 
