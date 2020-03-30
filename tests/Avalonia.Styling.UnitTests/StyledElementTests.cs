@@ -11,6 +11,10 @@ using Xunit;
 using Avalonia.LogicalTree;
 using Avalonia.Controls;
 using System.ComponentModel;
+using Avalonia.Controls.Primitives;
+using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
 
 namespace Avalonia.Styling.UnitTests
 {
@@ -573,6 +577,53 @@ namespace Avalonia.Styling.UnitTests
             setResourceParent.Verify(x =>
                 x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
                 Times.Once);
+        }
+
+        [Fact]
+        public void SetParent_Does_Not_Crash_Due_To_Reentrancy()
+        {
+            // Issue #3708
+            var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            ContentControl target;
+            var root = new TestRoot
+            {
+                DataContext = false,
+                Child = target = new ContentControl
+                {
+                    Styles =
+                    {
+                        new Style(x => x.OfType<ContentControl>())
+                        {
+                            Setters =
+                            {
+                                new Setter(
+                                    ContentControl.ContentProperty,
+                                    new FuncTemplate<IControl>(() => new TextBlock { Text = "Enabled" })),
+                            },
+                        },
+                        new Style(x => x.OfType<ContentControl>().Class(":disabled"))
+                        {
+                            Setters =
+                            {
+                                new Setter(
+                                    ContentControl.ContentProperty,
+                                    new FuncTemplate<IControl>(() => new TextBlock { Text = "Disabled" })),
+                            },
+                        },
+                    },
+                    [!ContentControl.IsEnabledProperty] = new Binding(),
+                }
+            };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(0, 0, 100, 100));
+
+            var textBlock = Assert.IsType<TextBlock>(target.Content);
+            Assert.Equal("Disabled", textBlock.Text);
+
+            // #3708 was crashing here with AvaloniaInternalException.
+            root.Child = null;
         }
 
         private interface IDataContextEvents
