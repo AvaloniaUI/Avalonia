@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Linq;
 using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers;
@@ -118,7 +115,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button.foo");
 
             Assert.Equal(
-                new SelectorGrammar.ISyntax[] 
+                new SelectorGrammar.ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
                     new SelectorGrammar.ClassSyntax { Class = "foo" },

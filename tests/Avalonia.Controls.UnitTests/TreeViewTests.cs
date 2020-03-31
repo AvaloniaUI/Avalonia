@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,7 +21,7 @@ namespace Avalonia.Controls.UnitTests
     public class TreeViewTests
     {
         MouseTestHelper _mouse = new MouseTestHelper();
-        
+
         [Fact]
         public void Items_Should_Be_Created()
         {
@@ -207,7 +204,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(container1.IsSelected);
 
             _mouse.Click(container2, modifiers: InputModifiers.Control);
-            
+
             Assert.Equal(item2, target.SelectedItem);
             Assert.False(container1.IsSelected);
             Assert.True(container2.IsSelected);

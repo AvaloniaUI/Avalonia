@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Subjects;
 
@@ -11,7 +8,7 @@ namespace Avalonia.Data
     /// </summary>
     /// <remarks>
     /// Whereas an <see cref="IBinding"/> holds a description of a binding such as "Bind to the X
-    /// property on a control's DataContext"; this class represents a binding that has been 
+    /// property on a control's DataContext"; this class represents a binding that has been
     /// *instanced* by calling <see cref="IBinding.Initiate(IAvaloniaObject, AvaloniaProperty, object, bool)"/>
     /// on a target object.
     /// </remarks>

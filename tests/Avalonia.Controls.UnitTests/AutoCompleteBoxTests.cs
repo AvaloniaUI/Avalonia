@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -365,9 +362,9 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(textbox.Text, control.Text);
             });
         }
-        
+
         /// <summary>
-        /// Retrieves a defined predicate filter through a new AutoCompleteBox 
+        /// Retrieves a defined predicate filter through a new AutoCompleteBox
         /// control instance.
         /// </summary>
         /// <param name="mode">The FilterMode of interest.</param>

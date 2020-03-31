@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
@@ -18,7 +15,7 @@ namespace Avalonia.Controls.UnitTests
     public class ListBoxTests
     {
         private MouseTestHelper _mouse = new MouseTestHelper();
-        
+
         [Fact]
         public void Should_Use_ItemTemplate_To_Create_Item_Content()
         {

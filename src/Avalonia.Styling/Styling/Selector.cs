@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Styling.Activators;
 
@@ -43,11 +40,11 @@ namespace Avalonia.Styling
         /// <returns>A <see cref="SelectorMatch"/>.</returns>
         public SelectorMatch Match(IStyleable control, bool subscribe = true)
         {
-            // First match the selector until a combinator is found. Selectors are stored from 
+            // First match the selector until a combinator is found. Selectors are stored from
             // right-to-left, so MatchUntilCombinator reverses this order because the type selector
             // will be on the left.
             var match = MatchUntilCombinator(control, this, subscribe, out var combinator);
-            
+
             // If the pre-combinator selector matches, we can now match the combinator, if any.
             if (match.IsMatch && combinator is object)
             {

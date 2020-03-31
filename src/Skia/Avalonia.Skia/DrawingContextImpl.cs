@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -78,7 +75,7 @@ namespace Avalonia.Skia
             _grContext = createInfo.GrContext;
             if (_grContext != null)
                 Monitor.Enter(_grContext);
-            
+
             Canvas = createInfo.Canvas;
 
             if (Canvas == null)
@@ -94,7 +91,7 @@ namespace Avalonia.Skia
 
             Transform = Matrix.Identity;
         }
-        
+
         /// <summary>
         /// Skia canvas.
         /// </summary>
@@ -201,7 +198,7 @@ namespace Avalonia.Skia
                     {
                         Canvas.DrawRect(rc, paint.Paint);
                     }
-                  
+
                 }
             }
 
@@ -217,7 +214,7 @@ namespace Avalonia.Skia
                     {
                         Canvas.DrawRect(rc, paint.Paint);
                     }
-                   
+
                 }
             }
         }
@@ -676,7 +673,7 @@ namespace Avalonia.Skia
             private readonly SKColor _color;
             private readonly SKShader _shader;
             private readonly SKPaint _paint;
-            
+
             public PaintState(SKPaint paint, SKColor color, SKShader shader)
             {
                 _paint = paint;
@@ -750,7 +747,7 @@ namespace Avalonia.Skia
                         "PaintWrapper disposable object limit reached. You need to add extra struct fields to support more disposables.");
                 }
             }
-            
+
             /// <inheritdoc />
             public void Dispose()
             {

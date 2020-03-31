@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.IO;
 using Avalonia.Platform;
@@ -42,7 +39,7 @@ namespace Avalonia.Media.Imaging
         {
             PlatformImpl = impl.Clone();
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Bitmap"/> class.
         /// </summary>
@@ -51,7 +48,7 @@ namespace Avalonia.Media.Imaging
         {
             PlatformImpl = RefCountable.Create(impl);
         }
-        
+
         /// <inheritdoc/>
         public virtual void Dispose()
         {

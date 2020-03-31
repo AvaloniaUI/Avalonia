@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -223,7 +220,7 @@ namespace Avalonia.Controls.Primitives
             {
                 throw new InvalidOperationException("Popup has no logical parent and PlacementTarget is null");
             }
-            
+
             var topLevel = placementTarget.VisualRoot as TopLevel;
 
             if (topLevel == null)
@@ -254,7 +251,7 @@ namespace Avalonia.Controls.Primitives
 
             popupHost.ConfigurePosition(
                 placementTarget,
-                PlacementMode, 
+                PlacementMode,
                 new Point(HorizontalOffset, VerticalOffset));
 
             DeferCleanup(SubscribeToEventHandler<IPopupHost, EventHandler<TemplateAppliedEventArgs>>(popupHost, RootTemplateApplied,
@@ -471,7 +468,7 @@ namespace Avalonia.Controls.Primitives
             var popupHost = _openState.PopupHost;
 
             IVisual? root = child.VisualRoot;
-            
+
             while (root is IHostedVisualTreeRoot hostedRoot)
             {
                 if (root == popupHost)
@@ -484,7 +481,7 @@ namespace Avalonia.Controls.Primitives
 
             return false;
         }
-        
+
         public bool IsInsidePopup(IVisual visual)
         {
             if (_openState is null)

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -14,7 +11,7 @@ namespace Avalonia.Skia
     internal abstract class GeometryImpl : IGeometryImpl
     {
         private PathCache _pathCache;
-        
+
         /// <inheritdoc />
         public abstract Rect Bounds { get; }
         public abstract SKPath EffectivePath { get; }
@@ -33,12 +30,12 @@ namespace Avalonia.Skia
             // Usually this function is being called with same stroke width per path, so this saves a lot of Skia traffic.
 
             var strokeWidth = (float)(pen?.Thickness ?? 0);
-            
+
             if (!_pathCache.HasCacheFor(strokeWidth))
             {
                 UpdatePathCache(strokeWidth);
             }
-            
+
             return PathContainsCore(_pathCache.CachedStrokePath, point);
         }
 
@@ -61,7 +58,7 @@ namespace Avalonia.Skia
                 {
                     paint.IsStroke = true;
                     paint.StrokeWidth = strokeWidth;
-                    
+
                     paint.GetFillPath(EffectivePath, strokePath);
 
                     _pathCache.Cache(strokePath, strokeWidth, strokePath.TightBounds.ToAvaloniaRect());
@@ -92,15 +89,15 @@ namespace Avalonia.Skia
         public Rect GetRenderBounds(IPen pen)
         {
             var strokeWidth = (float)(pen?.Thickness ?? 0);
-            
+
             if (!_pathCache.HasCacheFor(strokeWidth))
             {
                 UpdatePathCache(strokeWidth);
             }
-            
+
             return _pathCache.CachedGeometryRenderBounds.Inflate(strokeWidth / 2.0);
         }
-        
+
         /// <inheritdoc />
         public ITransformedGeometryImpl WithTransform(Matrix transform)
         {
@@ -118,12 +115,12 @@ namespace Avalonia.Skia
         private struct PathCache
         {
             private float _cachedStrokeWidth;
-            
+
             /// <summary>
             /// Tolerance for two stroke widths to be deemed equal
             /// </summary>
             public const float Tolerance = float.Epsilon;
-            
+
             /// <summary>
             /// Cached contour path.
             /// </summary>

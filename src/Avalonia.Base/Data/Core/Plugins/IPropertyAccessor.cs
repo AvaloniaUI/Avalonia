@@ -1,12 +1,9 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
-    /// Defines an accessor to a property on an object returned by a 
+    /// Defines an accessor to a property on an object returned by a
     /// <see cref="IPropertyAccessorPlugin"/>
     /// </summary>
     public interface IPropertyAccessor : IDisposable

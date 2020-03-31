@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -188,7 +185,7 @@ namespace Avalonia.Rendering.SceneGraph
             private readonly Func<IVisual, bool> _filter;
             private readonly IVisualNode _sceneRoot;
             private readonly Point _point;
-            
+
             public HitTestEnumerable(IVisualNode root, Func<IVisual, bool> filter, Point point, IVisualNode sceneRoot)
             {
                 _root = root;

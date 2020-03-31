@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia;
 using Avalonia.VisualTree;
 using Avalonia.Controls;
@@ -25,7 +22,7 @@ namespace Avalonia.ReactiveUI
         {
             DataContextChanged += (sender, args) => ViewModel = DataContext as TViewModel;
         }
-            
+
         /// <summary>
         /// The ViewModel.
         /// </summary>

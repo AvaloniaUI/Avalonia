@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Xunit;
 using ReactiveUI;
 using Avalonia.ReactiveUI;
@@ -24,7 +21,7 @@ namespace Avalonia.ReactiveUI.UnitTests
 
         public class NestedView : ReactiveUserControl<NestedViewModel> { }
 
-        public class ExampleViewModel : ReactiveObject 
+        public class ExampleViewModel : ReactiveObject
         {
             public ObservableCollection<NestedViewModel> Items { get; } = new ObservableCollection<NestedViewModel>();
         }
@@ -41,7 +38,7 @@ namespace Avalonia.ReactiveUI.UnitTests
             }
         }
 
-        public AutoDataTemplateBindingHookTest() 
+        public AutoDataTemplateBindingHookTest()
         {
             Locator.CurrentMutable.RegisterConstant(new AutoDataTemplateBindingHook(), typeof(IPropertyBindingHook));
             Locator.CurrentMutable.RegisterConstant(new AvaloniaActivationForViewFetcher(), typeof(IActivationForViewFetcher));

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -11,8 +8,8 @@ namespace Avalonia.Base.UnitTests
         public void IsDirect_Property_Returns_True()
         {
             var target = new DirectProperty<Class1, string>(
-                "test", 
-                o => null, 
+                "test",
+                o => null,
                 null,
                 new DirectPropertyMetadata<string>(),
                 false);

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Subjects;
 using System.Threading;
@@ -54,7 +51,7 @@ namespace Avalonia.Base.UnitTests
             {
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
-                Assert.Throws<InvalidOperationException>(() => 
+                Assert.Throws<InvalidOperationException>(() =>
                     target.Bind(
                         Class1.StyledProperty,
                         new BehaviorSubject<string>("foo")));

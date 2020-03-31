@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
@@ -37,7 +34,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
         /// </summary>
-        public static readonly new StyledProperty<SelectionMode> SelectionModeProperty = 
+        public static readonly new StyledProperty<SelectionMode> SelectionModeProperty =
             SelectingItemsControl.SelectionModeProperty;
 
         /// <summary>
@@ -109,7 +106,7 @@ namespace Avalonia.Controls
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator<ListBoxItem>(
-                this, 
+                this,
                 ListBoxItem.ContentProperty,
                 ListBoxItem.ContentTemplateProperty);
         }

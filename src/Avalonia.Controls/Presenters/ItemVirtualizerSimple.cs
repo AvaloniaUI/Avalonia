@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
@@ -413,7 +410,7 @@ namespace Avalonia.Controls.Presenters
         /// that are still visible to the correct place, and recycles and moves the others. For
         /// example: if there are 20 items and 10 containers visible and the user scrolls 5
         /// items down, then the bottom 5 containers will be moved to the top and the top 5 will
-        /// be moved to the bottom and recycled to display the newly visible item. Updates 
+        /// be moved to the bottom and recycled to display the newly visible item. Updates
         /// <see cref="ItemVirtualizer.FirstIndex"/> and <see cref="ItemVirtualizer.NextIndex"/>
         /// with their new values.
         /// </remarks>
@@ -422,7 +419,7 @@ namespace Avalonia.Controls.Presenters
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;
 
-            //validate delta it should never overflow last index or generate index < 0 
+            //validate delta it should never overflow last index or generate index < 0
             delta = MathUtilities.Clamp(delta, -FirstIndex, ItemCount - FirstIndex - panel.Children.Count);
 
             var sign = delta < 0 ? -1 : 1;
@@ -474,7 +471,7 @@ namespace Avalonia.Controls.Presenters
             }
             else
             {
-                // Items have been removed and now the range FirstIndex..NextIndex goes out of 
+                // Items have been removed and now the range FirstIndex..NextIndex goes out of
                 // the item bounds. Remove any excess containers, try to scroll up and then recycle
                 // the containers to make sure they point to the correct item.
                 var newFirstIndex = Math.Max(0, FirstIndex - (NextIndex - ItemCount));
@@ -540,7 +537,7 @@ namespace Avalonia.Controls.Presenters
                 var layoutManager = (Owner.GetVisualRoot() as ILayoutRoot)?.LayoutManager;
 
                 // We need to do a layout here because it's possible that the container we moved to
-                // is only partially visible due to differing item sizes. If the container is only 
+                // is only partially visible due to differing item sizes. If the container is only
                 // partially visible, scroll again. Don't do this if there's no layout manager:
                 // it means we're running a unit test.
                 if (container != null && layoutManager != null)

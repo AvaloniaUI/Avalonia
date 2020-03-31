@@ -1,13 +1,10 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
-// Don't need to override GetHashCode as the ISyntax objects will not be stored in a hash; the 
+// Don't need to override GetHashCode as the ISyntax objects will not be stored in a hash; the
 // only reason they have overridden Equals methods is for unit testing.
 #pragma warning disable 659
 
@@ -380,8 +377,8 @@ namespace Avalonia.Markup.Parsers
 
             public override bool Equals(object obj)
             {
-                return obj is PropertySyntax && 
-                    ((PropertySyntax)obj).Property == Property && 
+                return obj is PropertySyntax &&
+                    ((PropertySyntax)obj).Property == Property &&
                     ((PropertySyntax)obj).Value == Value;
             }
         }

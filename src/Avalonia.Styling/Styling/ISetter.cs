@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 #nullable enable
@@ -19,7 +16,7 @@ namespace Avalonia.Styling
         /// <returns>An <see cref="ISetterInstance"/>.</returns>
         /// <remarks>
         /// This method should return an <see cref="ISetterInstance"/> which can be used to apply
-        /// the setter to the specified control. Note that it should not apply the setter value 
+        /// the setter to the specified control. Note that it should not apply the setter value
         /// until <see cref="ISetterInstance.Start(bool)"/> is called.
         /// </remarks>
         ISetterInstance Instance(IStyleable target);

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -39,7 +36,7 @@ namespace Avalonia.Controls
         private Button _increaseButton;
 
         /// <summary>
-        /// Initializes static members of the <see cref="Slider"/> class. 
+        /// Initializes static members of the <see cref="Slider"/> class.
         /// </summary>
         static Slider()
         {
@@ -50,7 +47,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Instantiates a new instance of the <see cref="Slider"/> class. 
+        /// Instantiates a new instance of the <see cref="Slider"/> class.
         /// </summary>
         public Slider()
         {

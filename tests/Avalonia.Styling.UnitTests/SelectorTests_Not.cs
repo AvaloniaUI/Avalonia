@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -26,7 +23,7 @@ namespace Avalonia.Styling.UnitTests
 
             Assert.Equal(SelectorMatchResult.NeverThisType, target.Match(control).Result);
         }
-        
+
         [Fact]
         public void Not_OfType_Doesnt_Match_Control_Of_Correct_Type()
         {

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -19,7 +16,7 @@ namespace Avalonia.Controls.UnitTests
     public class ListBoxTests_Single
     {
         MouseTestHelper _mouse = new MouseTestHelper();
-        
+
         [Fact]
         public void Focusing_Item_With_Tab_Should_Not_Select_It()
         {

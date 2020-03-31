@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -211,14 +208,14 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 var result = root.Renderer.HitTest(new Point(100, 100), root, null);
 
                 Assert.Equal(
-                    new[] 
+                    new[]
                     {
                         container.Children[2],
                         container.Children[0],
                         container.Children[1],
                         container,
                         root
-                    }, 
+                    },
                     result);
             }
         }

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -19,7 +16,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             : base(@"Shapes\Line")
         {
         }
-        
+
         [Fact]
         public async Task Line_1px_Stroke()
         {
@@ -39,7 +36,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-        
+
         [Fact]
         public async Task Line_1px_Stroke_Reversed()
         {

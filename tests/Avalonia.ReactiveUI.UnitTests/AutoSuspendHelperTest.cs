@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
@@ -42,9 +39,9 @@ namespace Avalonia.ReactiveUI.UnitTests
         }
 
         [Fact]
-        public void AutoSuspendHelper_Should_Immediately_Fire_IsLaunchingNew() 
+        public void AutoSuspendHelper_Should_Immediately_Fire_IsLaunchingNew()
         {
-            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
             using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 var isLaunchingReceived = false;
@@ -64,7 +61,7 @@ namespace Avalonia.ReactiveUI.UnitTests
         public void AutoSuspendHelper_Should_Throw_When_Not_Supported_Lifetime_Is_Used()
         {
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
-            using (var lifetime = new ExoticApplicationLifetimeWithoutLifecycleEvents()) 
+            using (var lifetime = new ExoticApplicationLifetimeWithoutLifecycleEvents())
             {
                 var application = AvaloniaLocator.Current.GetService<Application>();
                 application.ApplicationLifetime = lifetime;
@@ -83,10 +80,10 @@ namespace Avalonia.ReactiveUI.UnitTests
         }
 
         [Fact]
-        public void ShouldPersistState_Should_Fire_On_App_Exit_When_SuspensionDriver_Is_Initialized() 
+        public void ShouldPersistState_Should_Fire_On_App_Exit_When_SuspensionDriver_Is_Initialized()
         {
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
-            using (var lifetime = new ClassicDesktopStyleApplicationLifetime()) 
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 var shouldPersistReceived = false;
                 var application = AvaloniaLocator.Current.GetService<Application>();

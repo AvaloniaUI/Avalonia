@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using System.Reactive;
@@ -97,7 +94,7 @@ namespace Avalonia.Data
         public string StringFormat { get; set; }
 
         public WeakReference DefaultAnchor { get; set; }
-        
+
         public WeakReference<INameScope> NameScope { get; set; }
 
         /// <summary>
@@ -114,9 +111,9 @@ namespace Avalonia.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
             anchor = anchor ?? DefaultAnchor?.Target;
-            
+
             enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
-            
+
             ExpressionObserver observer;
 
             INameScope nameScope = null;
@@ -142,7 +139,7 @@ namespace Avalonia.Data
                         target,
                         node,
                         targetProperty == StyledElement.DataContextProperty,
-                        anchor); 
+                        anchor);
                 }
                 else
                 {
@@ -205,7 +202,7 @@ namespace Avalonia.Data
             // We only respect `StringFormat` if the type of the property we're assigning to will
             // accept a string. Note that this is slightly different to WPF in that WPF only applies
             // `StringFormat` for target type `string` (not `object`).
-            if (!string.IsNullOrWhiteSpace(StringFormat) && 
+            if (!string.IsNullOrWhiteSpace(StringFormat) &&
                 (targetType == typeof(string) || targetType == typeof(object)))
             {
                 converter = new StringFormatValueConverter(StringFormat, converter);
@@ -324,7 +321,7 @@ namespace Avalonia.Data
             ExpressionNode node)
         {
             Contract.Requires<ArgumentNullException>(target != null);
-            
+
             var result = new ExpressionObserver(
                 () => target.GetValue(StyledElement.TemplatedParentProperty),
                 node,
@@ -339,13 +336,13 @@ namespace Avalonia.Data
             // The DataContext is based on the visual parent and not the logical parent: this may
             // seem counter intuitive considering the fact that property inheritance works on the logical
             // tree, but consider a ContentControl with a ContentPresenter. The ContentControl's
-            // Content property is bound to a value which becomes the ContentPresenter's 
+            // Content property is bound to a value which becomes the ContentPresenter's
             // DataContext - it is from this that the child hosted by the ContentPresenter needs to
             // inherit its DataContext.
             return target.GetObservable(Visual.VisualParentProperty)
                 .Select(x =>
                 {
-                    return (x as IAvaloniaObject)?.GetObservable(StyledElement.DataContextProperty) ?? 
+                    return (x as IAvaloniaObject)?.GetObservable(StyledElement.DataContextProperty) ??
                            Observable.Return((object)null);
                 }).Switch();
         }

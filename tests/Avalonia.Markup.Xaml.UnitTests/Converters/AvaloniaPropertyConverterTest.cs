@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Moq;
 using Avalonia.Collections;
@@ -91,7 +88,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         }
 
 
-        
+
         private ITypeDescriptorContext CreateContext(Style style = null)
         {
             var tdMock = new Mock<ITypeDescriptorContext>();
@@ -106,7 +103,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
 
             ps.SetupGet(v => v.Parents)
                 .Returns(new object[] {style});
-            
+
             tr.Setup(v => v.Resolve(nameof(Class1)))
                 .Returns(typeof(Class1));
             tr.Setup(v => v.Resolve(nameof(AttachedOwner)))

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Specialized;
 using Avalonia.Collections;
@@ -20,7 +17,7 @@ namespace Avalonia
     /// </summary>
     /// <remarks>
     /// The <see cref="Visual"/> class represents elements that have a visual on-screen
-    /// representation and stores all the information needed for an 
+    /// representation and stores all the information needed for an
     /// <see cref="IRenderer"/> to render the control. To traverse the visual tree, use the
     /// extension methods defined in <see cref="VisualExtensions"/>.
     /// </remarks>
@@ -281,7 +278,7 @@ namespace Avalonia
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
         IRenderRoot IVisual.VisualRoot => VisualRoot;
-        
+
         TransformedBounds? IVisual.TransformedBounds
         {
             get { return _transformedBounds; }
@@ -381,7 +378,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Calls the <see cref="OnAttachedToVisualTree(VisualTreeAttachmentEventArgs)"/> method 
+        /// Calls the <see cref="OnAttachedToVisualTree(VisualTreeAttachmentEventArgs)"/> method
         /// for this control and all of its visual descendants.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -417,7 +414,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Calls the <see cref="OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs)"/> method 
+        /// Calls the <see cref="OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs)"/> method
         /// for this control and all of its visual descendants.
         /// </summary>
         /// <param name="e">The event args.</param>

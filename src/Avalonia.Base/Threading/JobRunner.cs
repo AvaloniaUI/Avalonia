@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -71,7 +68,7 @@ namespace Avalonia.Threading
         /// Post action that will be invoked on main thread
         /// </summary>
         /// <param name="action">The method.</param>
-        /// 
+        ///
         /// <param name="priority">The priority with which to invoke the method.</param>
         internal void Post(Action action, DispatcherPriority priority)
         {
@@ -112,14 +109,14 @@ namespace Avalonia.Threading
             }
             return null;
         }
-        
+
         private interface IJob
         {
             /// <summary>
             /// Gets the job priority.
             /// </summary>
             DispatcherPriority Priority { get; }
-            
+
             /// <summary>
             /// Runs the job.
             /// </summary>
@@ -160,7 +157,7 @@ namespace Avalonia.Threading
             /// The task.
             /// </summary>
             public Task Task => _taskCompletionSource?.Task;
-            
+
             /// <inheritdoc/>
             void IJob.Run()
             {
@@ -180,7 +177,7 @@ namespace Avalonia.Threading
                 }
             }
         }
-        
+
         /// <summary>
         /// A job to run.
         /// </summary>
@@ -203,7 +200,7 @@ namespace Avalonia.Threading
 
             /// <inheritdoc/>
             public DispatcherPriority Priority { get; }
-            
+
             /// <summary>
             /// The task.
             /// </summary>

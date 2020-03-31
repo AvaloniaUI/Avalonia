@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,14 +21,14 @@ namespace Avalonia.Controls.Primitives
     /// <remarks>
     /// <para>
     /// <see cref="SelectingItemsControl"/> provides a base class for <see cref="ItemsControl"/>s
-    /// that maintain a selection (single or multiple). By default only its 
+    /// that maintain a selection (single or multiple). By default only its
     /// <see cref="SelectedIndex"/> and <see cref="SelectedItem"/> properties are visible; the
-    /// current multiple selection <see cref="SelectedItems"/> together with the 
-    /// <see cref="SelectionMode"/> properties are protected, however a derived  class can expose 
+    /// current multiple selection <see cref="SelectedItems"/> together with the
+    /// <see cref="SelectionMode"/> properties are protected, however a derived  class can expose
     /// these if it wishes to support multiple selection.
     /// </para>
     /// <para>
-    /// <see cref="SelectingItemsControl"/> maintains a selection respecting the current 
+    /// <see cref="SelectingItemsControl"/> maintains a selection respecting the current
     /// <see cref="SelectionMode"/> but it does not react to user input; this must be handled in a
     /// derived class. It does, however, respond to <see cref="IsSelectedChangedEvent"/> events
     /// from items and updates the selection accordingly.

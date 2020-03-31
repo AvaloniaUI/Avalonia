@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using System.Reactive.Linq;
@@ -73,7 +70,7 @@ namespace Avalonia.Data.Core
         /// </param>
         /// <param name="priority">The binding priority.</param>
         public BindingExpression(
-            ExpressionObserver inner, 
+            ExpressionObserver inner,
             Type targetType,
             object fallbackValue,
             object targetNullValue,
@@ -283,7 +280,7 @@ namespace Avalonia.Data.Core
                 return new BindingNotification(converted);
             }
             else
-            { 
+            {
                 return new BindingNotification(
                     new InvalidCastException(
                         $"Could not convert FallbackValue '{_fallbackValue}' to '{_targetType}'"),

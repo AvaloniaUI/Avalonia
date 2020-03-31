@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -27,7 +24,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Carousel, IPageTransition>(nameof(PageTransition));
 
         /// <summary>
-        /// The default value of <see cref="ItemsControl.ItemsPanelProperty"/> for 
+        /// The default value of <see cref="ItemsControl.ItemsPanelProperty"/> for
         /// <see cref="Carousel"/>.
         /// </summary>
         private static readonly ITemplate<IPanel> PanelTemplate =
@@ -41,7 +38,7 @@ namespace Avalonia.Controls
             SelectionModeProperty.OverrideDefaultValue<Carousel>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<Carousel>(PanelTemplate);
         }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether the items in the carousel are virtualized.
         /// </summary>

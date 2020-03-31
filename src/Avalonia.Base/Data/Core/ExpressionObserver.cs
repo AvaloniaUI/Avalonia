@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -95,7 +92,7 @@ namespace Avalonia.Data.Core
             string description)
         {
             Contract.Requires<ArgumentNullException>(rootObservable != null);
-            
+
             _node = node;
             Description = description;
             _root = rootObservable;
@@ -197,7 +194,7 @@ namespace Avalonia.Data.Core
         /// <param name="value">The value to set.</param>
         /// <param name="priority">The binding priority to use.</param>
         /// <returns>
-        /// True if the value could be set; false if the expression does not evaluate to a 
+        /// True if the value could be set; false if the expression does not evaluate to a
         /// property. Note that the <see cref="ExpressionObserver"/> must be subscribed to
         /// before setting the target value can work, as setting the value requires the
         /// expression to be evaluated.
@@ -235,7 +232,7 @@ namespace Avalonia.Data.Core
         public string Expression { get; }
 
         /// <summary>
-        /// Gets the type of the expression result or null if the expression could not be 
+        /// Gets the type of the expression result or null if the expression could not be
         /// evaluated.
         /// </summary>
         public Type ResultType => (Leaf as SettableNode)?.PropertyType;

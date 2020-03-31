@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Input
 {
     /// <summary>
@@ -80,7 +77,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="direction">The direction.</param>
         /// <returns>
-        /// True if the direction represents a directional movement (any value except 
+        /// True if the direction represents a directional movement (any value except
         /// <see cref="NavigationDirection.Next"/> and <see cref="NavigationDirection.Previous"/>);
         /// otherwise false.
         /// </returns>

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -77,7 +74,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         public void Attached_Property_With_Namespace_Is_Set()
         {
             var xaml =
-                @"<ContentControl xmlns='https://github.com/avaloniaui' 
+                @"<ContentControl xmlns='https://github.com/avaloniaui'
                     xmlns:test='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'
                     test:BasicTestsAttachedPropertyHolder.Foo='Bar'/>";
 
@@ -117,7 +114,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal("Foo", ToolTip.GetTip(target));
         }
-        
+
         [Fact]
         public void NonExistent_Property_Throws()
         {
@@ -311,7 +308,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         public void ControlTemplate_With_TargetType_Is_Operational()
         {
             var xaml = @"
-<ControlTemplate xmlns='https://github.com/avaloniaui' 
+<ControlTemplate xmlns='https://github.com/avaloniaui'
                  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                  TargetType='{x:Type ContentControl}'>
     <ContentPresenter Content='{TemplateBinding Content}' />
@@ -887,7 +884,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
             {
                 var xaml = @"
-<Window xmlns='https://github.com/avaloniaui' 
+<Window xmlns='https://github.com/avaloniaui'
     xmlns:d='http://schemas.microsoft.com/expression/blend/2008'
     xmlns:mc='http://schemas.openxmlformats.org/markup-compatibility/2006'
     mc:Ignorable='d'

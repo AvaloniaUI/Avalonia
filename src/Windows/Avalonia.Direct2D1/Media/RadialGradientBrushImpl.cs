@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Linq;
 using Avalonia.Media;
 
@@ -26,7 +23,7 @@ namespace Avalonia.Direct2D1.Media
 
             var centerPoint = brush.Center.ToPixels(destinationSize);
             var gradientOrigin = brush.GradientOrigin.ToPixels(destinationSize) - centerPoint;
-            
+
             // Note: Direct2D supports RadiusX and RadiusY but Cairo backend supports only Radius property
             var radiusX = brush.Radius * destinationSize.Width;
             var radiusY = brush.Radius * destinationSize.Height;

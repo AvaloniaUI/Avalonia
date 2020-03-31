@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using System.Reactive.Linq;
@@ -27,13 +24,13 @@ namespace Avalonia.Input
         {
             _pointer = pointer ?? new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
         }
-        
+
         /// <summary>
         /// Gets the control that is currently capturing by the mouse, if any.
         /// </summary>
         /// <remarks>
-        /// When an element captures the mouse, it receives mouse input whether the cursor is 
-        /// within the control's bounds or not. To set the mouse capture, call the 
+        /// When an element captures the mouse, it receives mouse input whether the cursor is
+        /// within the control's bounds or not. To set the mouse capture, call the
         /// <see cref="Capture"/> method.
         /// </remarks>
         [Obsolete("Use IPointer instead")]
@@ -53,7 +50,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="control">The control.</param>
         /// <remarks>
-        /// When an element captures the mouse, it receives mouse input whether the cursor is 
+        /// When an element captures the mouse, it receives mouse input whether the cursor is
         /// within the control's bounds or not. The current mouse capture control is exposed
         /// by the <see cref="Captured"/> property.
         /// </remarks>
@@ -126,7 +123,7 @@ namespace Avalonia.Input
                 rv++;
             return rv;
         }
-        
+
         private void ProcessRawEvent(RawPointerEventArgs e)
         {
             Contract.Requires<ArgumentNullException>(e != null);
@@ -208,7 +205,7 @@ namespace Avalonia.Input
                 kind = PointerUpdateKind.XButton1Released;
             if (args.Type == RawPointerEventType.XButton2Up)
                 kind = PointerUpdateKind.XButton2Released;
-            
+
             return new PointerPointProperties(args.InputModifiers, kind);
         }
 
@@ -365,7 +362,7 @@ namespace Avalonia.Input
                 element.RaiseEvent(e);
                 element = (IInputElement)element.VisualParent;
             }
-            
+
             root.PointerOverElement = null;
         }
 
@@ -387,7 +384,7 @@ namespace Avalonia.Input
             }
         }
 
-        private IInputElement SetPointerOver(IPointerDevice device, ulong timestamp, IInputRoot root, Point p, 
+        private IInputElement SetPointerOver(IPointerDevice device, ulong timestamp, IInputRoot root, Point p,
             PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
@@ -440,14 +437,14 @@ namespace Avalonia.Input
             {
                 ClearChildrenPointerOver(e,branch,false);
             }
-            
+
             while (el != null && el != branch)
             {
                 e.Source = el;
                 e.Handled = false;
                 el.RaiseEvent(e);
                 el = (IInputElement)el.VisualParent;
-            }            
+            }
 
             el = root.PointerOverElement = element;
             e.RoutedEvent = InputElement.PointerEnterEvent;

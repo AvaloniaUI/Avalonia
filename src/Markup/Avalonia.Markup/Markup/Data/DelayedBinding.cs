@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -18,12 +15,12 @@ namespace Avalonia.Markup.Data
     /// when a control has finished initializing. This is done because applying bindings as soon
     /// as controls are created means that long-form bindings (i.e. bindings that don't use the
     /// `{Binding}` markup extension but instead use `&lt;Binding&gt;`) don't work, as the binding
-    /// is applied to the property before the properties on the `Binding` object are set. Looking 
+    /// is applied to the property before the properties on the `Binding` object are set. Looking
     /// at WPF it uses a similar mechanism for bindings that come from XAML.
     /// </remarks>
     public static class DelayedBinding
     {
-        private static ConditionalWeakTable<IStyledElement, List<Entry>> _entries = 
+        private static ConditionalWeakTable<IStyledElement, List<Entry>> _entries =
             new ConditionalWeakTable<IStyledElement, List<Entry>>();
 
         /// <summary>

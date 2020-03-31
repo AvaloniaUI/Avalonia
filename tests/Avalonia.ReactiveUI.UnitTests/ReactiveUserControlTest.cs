@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls;
 using Avalonia.UnitTests;
 using ReactiveUI;
@@ -16,7 +13,7 @@ namespace Avalonia.ReactiveUI.UnitTests
         public class ExampleView : ReactiveUserControl<ExampleViewModel> { }
 
         [Fact]
-        public void Data_Context_Should_Stay_In_Sync_With_Reactive_User_Control_View_Model() 
+        public void Data_Context_Should_Stay_In_Sync_With_Reactive_User_Control_View_Model()
         {
             var view = new ExampleView();
             var viewModel = new ExampleViewModel();

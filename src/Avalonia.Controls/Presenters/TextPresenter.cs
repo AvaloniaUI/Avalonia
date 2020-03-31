@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
 using Avalonia.Media;
@@ -222,7 +219,7 @@ namespace Avalonia.Controls.Presenters
             get => GetValue(SelectionForegroundBrushProperty);
             set => SetValue(SelectionForegroundBrushProperty, value);
         }
-        
+
         public IBrush CaretBrush
         {
             get => GetValue(CaretBrushProperty);
@@ -410,7 +407,7 @@ namespace Avalonia.Controls.Presenters
                 }
                 else
                 {
-                    // The measure is currently invalid so there's no point trying to bring the 
+                    // The measure is currently invalid so there's no point trying to bring the
                     // current char into view until a measure has been carried out as the scroll
                     // viewer extents may not be up-to-date.
                     Dispatcher.UIThread.Post(

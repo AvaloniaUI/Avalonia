@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia;
 using Avalonia.VisualTree;
 using Avalonia.Controls;
@@ -25,7 +22,7 @@ namespace Avalonia.ReactiveUI
     {
         private readonly Subject<IDisposable> _shouldPersistState = new Subject<IDisposable>();
         private readonly Subject<Unit> _isLaunchingNew = new Subject<Unit>();
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AutoSuspendHelper"/> class.
         /// </summary>
@@ -59,7 +56,7 @@ namespace Avalonia.ReactiveUI
                             + "after Avalonia application initialization is completed.";
                 throw new ArgumentNullException(message);
             }
-            
+
             var errored = new Subject<Unit>();
             AppDomain.CurrentDomain.UnhandledException += (o, e) => errored.OnNext(Unit.Default);
             RxApp.SuspensionHost.ShouldInvalidateState = errored;
@@ -84,7 +81,7 @@ namespace Avalonia.ReactiveUI
             this.Log().Debug("Received IControlledApplicationLifetime exit event.");
             var manual = new ManualResetEvent(false);
             _shouldPersistState.OnNext(Disposable.Create(() => manual.Set()));
-                    
+
             manual.WaitOne();
             this.Log().Debug("Completed actions on IControlledApplicationLifetime exit event.");
         }

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
@@ -25,12 +22,12 @@ namespace Avalonia.Direct2D1.Media
             var font = ((GlyphTypefaceImpl)typeface.GlyphTypeface.PlatformImpl).DWFont;
             var familyName = font.FontFamily.FamilyNames.GetString(0);
             using (var textFormat = new DWrite.TextFormat(
-                Direct2D1Platform.DirectWriteFactory, 
-                familyName, 
-                font.FontFamily.FontCollection, 
+                Direct2D1Platform.DirectWriteFactory,
+                familyName,
+                font.FontFamily.FontCollection,
                 (DWrite.FontWeight)typeface.Weight,
-                (DWrite.FontStyle)typeface.Style, 
-                DWrite.FontStretch.Normal, 
+                (DWrite.FontStyle)typeface.Style,
+                DWrite.FontStretch.Normal,
                 (float)fontSize))
             {
                 textFormat.WordWrapping =

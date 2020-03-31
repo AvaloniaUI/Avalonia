@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers.Nodes;
 using Avalonia.Utilities;
@@ -270,7 +267,7 @@ namespace Avalonia.Markup.Parsers
 
             return State.AfterMember;
         }
-        
+
         private static TypeName ParseTypeName(ref CharacterReader r)
         {
             ReadOnlySpan<char> ns, typeName;
@@ -289,7 +286,7 @@ namespace Avalonia.Markup.Parsers
 
             return new TypeName(ns, typeName);
         }
-      
+
         private static bool ParseNot(ref CharacterReader r)
         {
             return !r.End && r.TakeIf('!');

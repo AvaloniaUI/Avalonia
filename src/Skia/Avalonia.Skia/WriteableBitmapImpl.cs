@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.IO;
 using System.Threading;
@@ -31,9 +28,9 @@ namespace Avalonia.Skia
             Dpi = dpi;
 
             var colorType = PixelFormatHelper.ResolveColorType(format);
-            
+
             var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
-            
+
             if (runtimePlatform != null)
             {
                 _bitmap = new SKBitmap();
@@ -141,7 +138,7 @@ namespace Avalonia.Skia
                 _bitmap = null;
                 _parent = null;
             }
-            
+
             /// <inheritdoc />
             public IntPtr Address => _bitmap.GetPixels();
 

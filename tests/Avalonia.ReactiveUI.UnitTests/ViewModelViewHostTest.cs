@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls;
 using Avalonia.UnitTests;
 using ReactiveUI;
@@ -27,20 +24,20 @@ namespace Avalonia.ReactiveUI.UnitTests
         }
 
         [Fact]
-        public void ViewModelViewHost_View_Should_Stay_In_Sync_With_ViewModel() 
+        public void ViewModelViewHost_View_Should_Stay_In_Sync_With_ViewModel()
         {
             var defaultContent = new TextBlock();
-            var host = new ViewModelViewHost 
+            var host = new ViewModelViewHost
             {
                 DefaultContent = defaultContent,
                 PageTransition = null
             };
 
-            var root = new TestRoot 
-            { 
-                Child = host 
+            var root = new TestRoot
+            {
+                Child = host
             };
-            
+
             Assert.NotNull(host.Content);
             Assert.Equal(typeof(TextBlock), host.Content.GetType());
             Assert.Equal(defaultContent, host.Content);

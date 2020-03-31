@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using Avalonia.Utilities;
@@ -8,7 +5,7 @@ using Avalonia.Utilities;
 namespace Avalonia
 {
     /// <summary>
-    /// Defines the reference point units of an <see cref="RelativePoint"/> or 
+    /// Defines the reference point units of an <see cref="RelativePoint"/> or
     /// <see cref="RelativeRect"/>.
     /// </summary>
     public enum RelativeUnit

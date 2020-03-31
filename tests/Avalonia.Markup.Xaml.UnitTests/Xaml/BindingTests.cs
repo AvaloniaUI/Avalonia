@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.UnitTests;
@@ -314,7 +311,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             InlineData(@"Hello \{0\}"),
             InlineData(@"'Hello {0}'"),
             InlineData(@"Hello {0}")]
-        
+
         public void Binding_To_TextBlock_Text_With_StringConverter_Works(string fmt)
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -323,16 +320,16 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
-    <TextBlock Name='textBlock' Text=""{Binding Foo, StringFormat=" + fmt + @"}""/> 
+    <TextBlock Name='textBlock' Text=""{Binding Foo, StringFormat=" + fmt + @"}""/>
 </Window>";
                 var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml); 
-                var textBlock = window.FindControl<TextBlock>("textBlock"); 
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
 
                 textBlock.DataContext = new { Foo = "world" };
-                window.ApplyTemplate(); 
+                window.ApplyTemplate();
 
-                Assert.Equal("Hello world", textBlock.Text); 
+                Assert.Equal("Hello world", textBlock.Text);
             }
         }
 
@@ -354,7 +351,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 <Binding Path='Greeting2'/>
             </MultiBinding>
         </TextBlock.Text>
-    </TextBlock> 
+    </TextBlock>
 </Window>";
                 var loader = new AvaloniaXamlLoader();
                 var window = (Window)loader.Load(xaml);

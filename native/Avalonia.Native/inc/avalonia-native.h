@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 #include "com.h"
 #include "key.h"
 
@@ -235,7 +232,7 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
 {
-    
+
 };
 
 AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
@@ -277,7 +274,7 @@ AVNCOM(IAvnWindowEvents, 06) : IAvnWindowBaseEvents
      * return true to allow the close, return false to prevent close.
      */
     virtual bool Closing () = 0;
-    
+
     virtual void WindowStateChanged (AvnWindowState state) = 0;
 };
 
@@ -324,7 +321,7 @@ AVNCOM(IAvnSystemDialogs, 0d) : IUnknown
                                      IAvnSystemDialogEvents* events,
                                      const char* title,
                                      const char* initialPath) = 0;
-    
+
     virtual void OpenFileDialog (IAvnWindow* parentWindowHandle,
                                  IAvnSystemDialogEvents* events,
                                  bool allowMultiple,
@@ -332,7 +329,7 @@ AVNCOM(IAvnSystemDialogs, 0d) : IUnknown
                                  const char* initialDirectory,
                                  const char* initialFile,
                                  const char* filters) = 0;
-    
+
     virtual void SaveFileDialog (IAvnWindow* parentWindowHandle,
                                  IAvnSystemDialogEvents* events,
                                  const char* title,

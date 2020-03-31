@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -40,7 +37,7 @@ namespace Avalonia.Skia
         public StreamGeometryImpl() : this(CreateEmptyPath(), Rect.Empty)
         {
         }
-        
+
         /// <inheritdoc />
         public override SKPath EffectivePath => _effectivePath;
 
@@ -88,7 +85,7 @@ namespace Avalonia.Skia
                 _geometryImpl = geometryImpl;
                 _path = _geometryImpl._effectivePath;
             }
-            
+
             /// <inheritdoc />
             /// <remarks>Will update bounds of passed geometry.</remarks>
             public void Dispose()

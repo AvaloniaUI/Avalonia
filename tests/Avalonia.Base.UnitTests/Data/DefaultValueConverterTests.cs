@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -18,9 +15,9 @@ namespace Avalonia.Base.UnitTests.Data.Converters
         public void Can_Convert_String_To_Int()
         {
             var result = DefaultValueConverter.Instance.Convert(
-                "5", 
-                typeof(int), 
-                null, 
+                "5",
+                typeof(int),
+                null,
                 CultureInfo.InvariantCulture);
 
             Assert.Equal(5, result);

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
@@ -40,7 +37,7 @@ namespace Avalonia.Input
             {
                 _ev = ev;
             }
-            
+
             public void ProcessRawEvent(RawInputEventArgs ev) => throw new NotSupportedException();
 
             public IInputElement Captured => _ev.Pointer.Captured;
@@ -61,7 +58,7 @@ namespace Avalonia.Input
         public IPointerDevice Device => _device ?? (_device = new EmulatedDevice(this));
 
         [Obsolete("Use KeyModifiers and PointerPointProperties")]
-        public InputModifiers InputModifiers 
+        public InputModifiers InputModifiers
         {
             get
             {
@@ -72,11 +69,11 @@ namespace Avalonia.Input
                     mods |= InputModifiers.MiddleMouseButton;
                 if (_properties.IsRightButtonPressed)
                     mods |= InputModifiers.RightMouseButton;
-                
+
                 return mods;
             }
         }
-        
+
         public KeyModifiers KeyModifiers { get; }
 
         public Point GetPosition(IVisual relativeTo)
@@ -90,7 +87,7 @@ namespace Avalonia.Input
 
         [Obsolete("Use GetCurrentPoint")]
         public PointerPoint GetPointerPoint(IVisual relativeTo) => GetCurrentPoint(relativeTo);
-        
+
         /// <summary>
         /// Returns the PointerPoint associated with the current event
         /// </summary>
@@ -104,7 +101,7 @@ namespace Avalonia.Input
         /// </summary>
         protected PointerPointProperties Properties => _properties;
     }
-    
+
     public enum MouseButton
     {
         None,

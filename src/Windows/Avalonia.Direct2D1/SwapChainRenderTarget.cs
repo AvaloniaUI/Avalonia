@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using Avalonia.Direct2D1.Media;
+﻿using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -10,7 +7,7 @@ using SharpDX.Direct2D1;
 using SharpDX.DXGI;
 
 namespace Avalonia.Direct2D1
-{   
+{
     public abstract class SwapChainRenderTarget : IRenderTarget, ILayerFactory
     {
         private Size2 _savedSize;

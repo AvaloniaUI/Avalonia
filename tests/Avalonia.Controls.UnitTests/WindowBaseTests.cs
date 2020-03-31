@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive;
 using System.Reactive.Subjects;
@@ -239,7 +236,7 @@ namespace Avalonia.Controls.UnitTests
             public bool IsClosed { get; private set; }
 
             public TestWindowBase(IRenderer renderer = null)
-                : base(Mock.Of<IWindowBaseImpl>(x => 
+                : base(Mock.Of<IWindowBaseImpl>(x =>
                     x.Scaling == 1 &&
                     x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer))
             {

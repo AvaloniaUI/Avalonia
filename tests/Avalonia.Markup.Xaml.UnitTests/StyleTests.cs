@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls;
@@ -25,7 +22,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 var setter = (Setter)(style.Setters.First());
 
                 Assert.IsType<Binding>(setter.Value);
-            }                
+            }
         }
 
         [Fact]

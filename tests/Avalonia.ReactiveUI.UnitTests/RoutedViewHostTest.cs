@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
@@ -54,22 +51,22 @@ namespace Avalonia.ReactiveUI.UnitTests
         }
 
         [Fact]
-        public void RoutedViewHost_Should_Stay_In_Sync_With_RoutingState() 
+        public void RoutedViewHost_Should_Stay_In_Sync_With_RoutingState()
         {
             var screen = new ScreenViewModel();
             var defaultContent = new TextBlock();
-            var host = new RoutedViewHost 
-            { 
+            var host = new RoutedViewHost
+            {
                 Router = screen.Router,
                 DefaultContent = defaultContent,
                 PageTransition = null
             };
 
-            var root = new TestRoot 
-            { 
-                Child = host 
+            var root = new TestRoot
+            {
+                Child = host
             };
-            
+
             Assert.NotNull(host.Content);
             Assert.Equal(typeof(TextBlock), host.Content.GetType());
             Assert.Equal(defaultContent, host.Content);

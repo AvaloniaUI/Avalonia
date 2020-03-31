@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using Avalonia.Input;
 using Avalonia.Win32.Interop;
@@ -406,7 +403,7 @@ namespace Avalonia.Win32.Input
                     virtualKey = (int)UnmanagedMethods.VirtualKeyStates.VK_LMENU;
                 }
             }
-            
+
             if (virtualKey == (int)UnmanagedMethods.VirtualKeyStates.VK_CONTROL)
             {
                 bool isRight = IsExtended(keyData);

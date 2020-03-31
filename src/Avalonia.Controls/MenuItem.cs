@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -245,7 +242,7 @@ namespace Avalonia.Controls
         public bool IsTopLevel => Parent is Menu;
 
         /// <inheritdoc/>
-        bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false; 
+        bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false;
 
         /// <inheritdoc/>
         IMenuElement IMenuItem.Parent => Parent as IMenuElement;
@@ -280,7 +277,7 @@ namespace Avalonia.Controls
                     .Select(x => x.ContainerControl)
                     .OfType<IMenuItem>();
             }
-        }            
+        }
 
         /// <summary>
         /// Opens the submenu.

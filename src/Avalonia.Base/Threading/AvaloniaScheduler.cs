@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
@@ -40,7 +37,7 @@ namespace Avalonia.Threading
                             composite.Add(action(this, state));
                         }
                     }, DispatcherPriority.DataBind);
-                    composite.Add(cancellation); 
+                    composite.Add(cancellation);
                 }
                 else
                 {

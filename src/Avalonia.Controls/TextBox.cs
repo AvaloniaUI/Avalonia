@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
@@ -610,7 +607,7 @@ namespace Avalonia.Controls
                         {
                             var removedCharacters = 1;
                             // handle deleting /r/n
-                            // you don't ever want to leave a dangling /r around. So, if deleting /n, check to see if 
+                            // you don't ever want to leave a dangling /r around. So, if deleting /n, check to see if
                             // a /r should also be deleted.
                             if (CaretIndex > 1 &&
                                 text[CaretIndex - 1] == '\n' &&
@@ -638,7 +635,7 @@ namespace Avalonia.Controls
                         {
                             var removedCharacters = 1;
                             // handle deleting /r/n
-                            // you don't ever want to leave a dangling /r around. So, if deleting /n, check to see if 
+                            // you don't ever want to leave a dangling /r around. So, if deleting /n, check to see if
                             // a /r should also be deleted.
                             if (CaretIndex < text.Length - 1 &&
                                 text[caretIndex + 1] == '\n' &&
@@ -754,7 +751,7 @@ namespace Avalonia.Controls
                     // if it did not, we change the selection to where the user clicked
                     var firstSelection = Math.Min(SelectionStart, SelectionEnd);
                     var lastSelection = Math.Max(SelectionStart, SelectionEnd);
-                    var didClickInSelection = SelectionStart != SelectionEnd && 
+                    var didClickInSelection = SelectionStart != SelectionEnd &&
                         caretIndex >= firstSelection && caretIndex <= lastSelection;
                     if (!didClickInSelection)
                     {

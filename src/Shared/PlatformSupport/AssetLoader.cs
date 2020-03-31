@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -155,9 +152,9 @@ namespace Avalonia.Shared.PlatformSupport
                     $"Relative uris for 'resm' scheme aren't supported; {baseUri} uses resm");
             return new Uri(baseUri, uri);
         }
-        
+
         private IAssetDescriptor GetAsset(Uri uri, Uri baseUri)
-        {           
+        {
             if (uri.IsAbsoluteUri && uri.Scheme == "resm")
             {
                 var asm = GetAssembly(uri) ?? GetAssembly(baseUri) ?? _defaultResmAssembly;
@@ -195,7 +192,7 @@ namespace Avalonia.Shared.PlatformSupport
             var asm = GetAssembly(uri.Authority);
             return (asm, uri.AbsolutePath);
         }
-        
+
         private AssemblyDescriptor GetAssembly(Uri uri)
         {
             if (uri != null)
@@ -283,7 +280,7 @@ namespace Avalonia.Shared.PlatformSupport
 
             public Assembly Assembly => _asm;
         }
-        
+
         private class AvaloniaResourceDescriptor : IAssetDescriptor
         {
             private readonly int _offset;
@@ -296,13 +293,13 @@ namespace Avalonia.Shared.PlatformSupport
                 _length = length;
                 Assembly = asm;
             }
-            
+
             public Stream GetStream()
             {
                 return new SlicedStream(Assembly.GetManifestResourceStream(AvaloniaResourceName), _offset, _length);
             }
         }
-        
+
         class SlicedStream : Stream
         {
             private readonly Stream _baseStream;
@@ -390,7 +387,7 @@ namespace Avalonia.Shared.PlatformSupport
             public Dictionary<string, IAssetDescriptor> AvaloniaResources { get; }
             public string Name { get; }
         }
-        
+
         public static void RegisterResUriParsers()
         {
             if (!UriParser.IsKnownScheme("avares"))

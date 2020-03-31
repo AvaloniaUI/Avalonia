@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Primitives;
@@ -238,8 +235,8 @@ namespace Avalonia.Controls
             _popup = OverlayPopupHost.CreatePopupHost(control, null);
             _popup.SetChild(this);
             ((ISetLogicalParent)_popup).SetParent(control);
-            
-            _popup.ConfigurePosition(control, GetPlacement(control), 
+
+            _popup.ConfigurePosition(control, GetPlacement(control),
                 new Point(GetHorizontalOffset(control), GetVerticalOffset(control)));
             _popup.Show();
         }

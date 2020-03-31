@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Reactive.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -117,11 +114,11 @@ namespace Avalonia.Controls
         {
             ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
 
-            AffectsRender<TextBlock>(BackgroundProperty, ForegroundProperty, 
+            AffectsRender<TextBlock>(BackgroundProperty, ForegroundProperty,
                 TextAlignmentProperty, TextDecorationsProperty);
 
-            AffectsMeasure<TextBlock>(FontSizeProperty, FontWeightProperty, 
-                FontStyleProperty, TextWrappingProperty, FontFamilyProperty, 
+            AffectsMeasure<TextBlock>(FontSizeProperty, FontWeightProperty,
+                FontStyleProperty, TextWrappingProperty, FontFamilyProperty,
                 TextTrimmingProperty, TextProperty, PaddingProperty);
 
             Observable.Merge(TextProperty.Changed, ForegroundProperty.Changed,

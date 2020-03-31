@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Threading.Tasks;
 using Avalonia.Platform;
 
@@ -19,6 +16,6 @@ namespace Avalonia.Controls.Platform
         /// <returns>A task returning the selected filenames.</returns>
         Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent);
 
-        Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent);   
+        Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent);
     }
 }

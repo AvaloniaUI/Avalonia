@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -142,8 +139,8 @@ namespace Avalonia.Interactivity.UnitTests
         {
             var ev = new RoutedEvent(
                 "test",
-                RoutingStrategies.Bubble | RoutingStrategies.Tunnel, 
-                typeof(RoutedEventArgs), 
+                RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
+                typeof(RoutedEventArgs),
                 typeof(TestInteractive));
             var invoked = new List<string>();
 
@@ -371,7 +368,7 @@ namespace Avalonia.Interactivity.UnitTests
             {
                 parent.Children = Array.Empty<IVisual>();
             };
-            
+
             target.AddHandler(ev, removeHandler);
 
             var args = new RoutedEventArgs(ev, target);

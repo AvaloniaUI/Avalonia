@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -87,7 +84,7 @@ namespace Avalonia.Native
             Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d));
         }
 
-        public Size ClientSize 
+        public Size ClientSize
         {
             get
             {
@@ -98,7 +95,7 @@ namespace Avalonia.Native
 
         public IEnumerable<object> Surfaces => new[] {
             (_gpu ? _glSurface : (object)null),
-            this 
+            this
         };
 
         public ILockedFramebuffer Lock()
@@ -331,7 +328,7 @@ namespace Avalonia.Native
             {
                 return;
             }
-            
+
             var newCursor = cursor as AvaloniaNativeCursor;
             newCursor = newCursor ?? (_cursorFactory.GetCursor(StandardCursorType.Arrow) as AvaloniaNativeCursor);
             _native.Cursor = newCursor.Cursor;

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
 
@@ -47,7 +44,7 @@ namespace Avalonia.Controls.Templates
         /// </param>
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
         public FuncDataTemplate(
-            Type type, 
+            Type type,
             Func<object, INameScope, IControl> build,
             bool supportsRecycling = false)
             : this(o => IsInstance(o, type), build, supportsRecycling)

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +22,7 @@ namespace Avalonia.Skia
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             Text = text ?? string.Empty;
-            
+
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
 
@@ -560,13 +557,13 @@ namespace Avalonia.Skia
             float widthConstraint = double.IsPositiveInfinity(_constraint.Width)
                                         ? -1
                                         : (float)_constraint.Width;
-            
+
             while(curOff < length)
             {
                 float lineWidth = -1;
                 int measured;
                 int trailingnumber = 0;
-                
+
                 float constraint = -1;
 
                 if (_wrapping == TextWrapping.Wrap)

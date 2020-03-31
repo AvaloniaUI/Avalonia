@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 
 namespace Avalonia.Data.Core.Plugins
 {
@@ -9,7 +6,7 @@ namespace Avalonia.Data.Core.Plugins
     /// Base class for data validators.
     /// </summary>
     /// <remarks>
-    /// Data validators are <see cref="IPropertyAccessor"/>s that are returned from an 
+    /// Data validators are <see cref="IPropertyAccessor"/>s that are returned from an
     /// <see cref="IDataValidationPlugin"/>. They wrap an inner <see cref="IPropertyAccessor"/>
     /// and convert any values received from the inner property accessor into
     /// <see cref="BindingNotification"/>s.

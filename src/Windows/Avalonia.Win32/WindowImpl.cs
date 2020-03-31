@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -163,7 +160,7 @@ namespace Avalonia.Win32
             int requestedClientHeight = (int)(value.Height * Scaling);
             UnmanagedMethods.RECT clientRect;
             UnmanagedMethods.GetClientRect(_hwnd, out clientRect);
-           
+
             // do comparison after scaling to avoid rounding issues
             if (requestedClientWidth != clientRect.Width || requestedClientHeight != clientRect.Height)
             {
@@ -433,7 +430,7 @@ namespace Avalonia.Win32
             var info = GetMessageExtraInfo().ToInt64();
             return (info & marker) == marker;
         }
-        
+
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         protected virtual unsafe IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
@@ -443,7 +440,7 @@ namespace Avalonia.Win32
             uint timestamp = unchecked((uint)UnmanagedMethods.GetMessageTime());
 
             RawInputEventArgs e = null;
-            
+
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
                 case UnmanagedMethods.WindowsMessage.WM_ACTIVATE:
@@ -679,7 +676,7 @@ namespace Avalonia.Win32
                         CloseTouchInputHandle(lParam);
                         return IntPtr.Zero;
                     }
-                    
+
                     break;
                 case WindowsMessage.WM_NCPAINT:
                     if (_decorated != SystemDecorations.Full)
@@ -839,7 +836,7 @@ namespace Avalonia.Win32
             _multitouch = Win32Platform.Options.EnableMultitouch ?? false;
             if (_multitouch)
                 RegisterTouchWindow(_hwnd, 0);
-            
+
             if (UnmanagedMethods.ShCoreAvailable)
             {
                 uint dpix, dpiy;
@@ -1019,8 +1016,8 @@ namespace Avalonia.Win32
             var oldClientRectOrigin = new UnmanagedMethods.POINT();
             ClientToScreen(_hwnd, ref oldClientRectOrigin);
             oldClientRect.Offset(oldClientRectOrigin);
-            
-            
+
+
             SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
 
             UnmanagedMethods.GetWindowRect(_hwnd, out var windowRect);

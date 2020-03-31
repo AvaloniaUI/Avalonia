@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Serilog;
 using Serilog.Context;
@@ -55,9 +52,9 @@ namespace Avalonia.Logging.Serilog
         }
 
         public void Log<T0>(
-            LogEventLevel level, 
+            LogEventLevel level,
             string area, object source,
-            string messageTemplate, 
+            string messageTemplate,
             T0 propertyValue0)
         {
             Contract.Requires<ArgumentNullException>(area != null);
@@ -70,7 +67,7 @@ namespace Avalonia.Logging.Serilog
         }
 
         public void Log<T0, T1>(
-            LogEventLevel level, 
+            LogEventLevel level,
             string area,
             object source,
             string messageTemplate,
@@ -87,12 +84,12 @@ namespace Avalonia.Logging.Serilog
         }
 
         public void Log<T0, T1, T2>(
-            LogEventLevel level, 
-            string area, 
-            object source, 
-            string messageTemplate, 
+            LogEventLevel level,
+            string area,
+            object source,
+            string messageTemplate,
             T0 propertyValue0,
-            T1 propertyValue1, 
+            T1 propertyValue1,
             T2 propertyValue2)
         {
             Contract.Requires<ArgumentNullException>(area != null);
@@ -129,7 +126,7 @@ namespace Avalonia.Logging.Serilog
                 LogContext.PushProperty("SourceHash", source?.GetHashCode())
                 );
         }
-        
+
         private readonly struct LogContextDisposable : IDisposable
         {
             private readonly IDisposable _areaDisposable;

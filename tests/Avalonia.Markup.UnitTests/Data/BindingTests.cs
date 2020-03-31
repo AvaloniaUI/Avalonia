@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -315,7 +312,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             // When binding to DataContext and the target isn't found, the binding should produce
             // null rather than UnsetValue in order to not propagate incorrect DataContexts from
-            // parent controls while things are being set up. This logic is implemented in 
+            // parent controls while things are being set up. This logic is implemented in
             // `Avalonia.Markup.Data.Binding.Initiate`.
             Assert.True(child.IsSet(Control.DataContextProperty));
 
@@ -502,7 +499,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(0, target.GetValue(OldDataContextTest.FooProperty));
             Assert.Equal(0, target.GetValue(OldDataContextTest.BarProperty));
 
-            // The problem was here - DataContext is now null, setting Foo to 0. Bar is bound to 
+            // The problem was here - DataContext is now null, setting Foo to 0. Bar is bound to
             // Foo so Bar also gets set to 0. However the Bar binding still had a reference to
             // the VM and so vm.Bar was set to 0 erroneously.
             Assert.Equal(1, vm.Foo);
@@ -681,7 +678,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             public static readonly StyledProperty<string> TwoWayProperty =
                 AvaloniaProperty.Register<TwoWayBindingTest, string>(
-                    "TwoWay", 
+                    "TwoWay",
                     defaultBindingMode: BindingMode.TwoWay);
 
             public string TwoWay

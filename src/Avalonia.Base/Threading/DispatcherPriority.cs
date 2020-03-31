@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Threading
 {
     /// <summary>
@@ -13,7 +10,7 @@ namespace Avalonia.Threading
         /// Minimum possible priority
         /// </summary>
         MinValue = 1,
-        
+
         /// <summary>
         /// The job will be processed when the system is idle.
         /// </summary>
@@ -48,12 +45,12 @@ namespace Avalonia.Threading
         /// The job will be processed with the same priority as render.
         /// </summary>
         Render = 7,
-        
+
         /// <summary>
         /// The job will be processed with the same priority as render.
         /// </summary>
         Layout = 8,
-        
+
         /// <summary>
         /// The job will be processed with the same priority as data binding.
         /// </summary>
@@ -68,7 +65,7 @@ namespace Avalonia.Threading
         /// The job will be processed before other asynchronous operations.
         /// </summary>
         Send = 11,
-        
+
         /// <summary>
         /// Maximum possible priority
         /// </summary>

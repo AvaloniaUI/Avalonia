@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -208,11 +205,11 @@ namespace Avalonia.Controls.Presenters
         /// Updates the <see cref="Child"/> control based on the control's <see cref="Content"/>.
         /// </summary>
         /// <remarks>
-        /// Usually the <see cref="Child"/> control is created automatically when 
+        /// Usually the <see cref="Child"/> control is created automatically when
         /// <see cref="ApplyTemplate"/> is called; however for this to happen, the control needs to
         /// be attached to a logical tree (if the control is not attached to the logical tree, it
-        /// is reasonable to expect that the DataTemplates needed for the child are not yet 
-        /// available). This method forces the <see cref="Child"/> control's creation at any point, 
+        /// is reasonable to expect that the DataTemplates needed for the child are not yet
+        /// available). This method forces the <see cref="Child"/> control's creation at any point,
         /// and is particularly useful in unit tests.
         /// </remarks>
         public void UpdateChild()

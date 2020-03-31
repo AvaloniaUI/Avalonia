@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Diagnostics;
 using Avalonia.Data;
@@ -27,7 +24,7 @@ namespace Avalonia
         /// <param name="notifying">A <see cref="AvaloniaProperty.Notifying"/> callback.</param>
         protected StyledPropertyBase(
             string name,
-            Type ownerType,            
+            Type ownerType,
             StyledPropertyMetadata<TValue> metadata,
             bool inherits = false,
             Func<TValue, bool> validate = null,

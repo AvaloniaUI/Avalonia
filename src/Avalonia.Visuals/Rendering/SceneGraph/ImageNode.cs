@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using Avalonia.Platform;
+﻿using Avalonia.Platform;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
 
@@ -31,7 +28,7 @@ namespace Avalonia.Rendering.SceneGraph
             DestRect = destRect;
             BitmapInterpolationMode = bitmapInterpolationMode;
             SourceVersion = Source.Item.Version;
-        }        
+        }
 
         /// <summary>
         /// Gets the transform with which the node will be drawn.

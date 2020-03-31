@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -238,7 +235,7 @@ namespace Avalonia.Controls.UnitTests
         /// <remarks>
         /// If a TabControl is created with non IHeadered controls as its items, don't try to
         /// display the control in the header: if the control is part of the header then
-        /// *that* control would also end up in the content region, resulting in dual-parentage 
+        /// *that* control would also end up in the content region, resulting in dual-parentage
         /// breakage.
         /// </remarks>
         [Fact]

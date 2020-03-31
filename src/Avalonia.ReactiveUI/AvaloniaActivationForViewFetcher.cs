@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
 using Avalonia.VisualTree;
@@ -35,7 +32,7 @@ namespace Avalonia.ReactiveUI
         /// <summary>
         /// Listens to Opened and Closed events for Avalonia windows.
         /// </summary>
-        private IObservable<bool> GetActivationForWindowBase(WindowBase window) 
+        private IObservable<bool> GetActivationForWindowBase(WindowBase window)
         {
             var windowLoaded = Observable
                 .FromEventPattern(
@@ -53,10 +50,10 @@ namespace Avalonia.ReactiveUI
         }
 
         /// <summary>
-        /// Listens to AttachedToVisualTree and DetachedFromVisualTree 
+        /// Listens to AttachedToVisualTree and DetachedFromVisualTree
         /// events for Avalonia IVisuals.
         /// </summary>
-        private IObservable<bool> GetActivationForVisual(IVisual visual) 
+        private IObservable<bool> GetActivationForVisual(IVisual visual)
         {
             var visualLoaded = Observable
                 .FromEventPattern<VisualTreeAttachmentEventArgs>(

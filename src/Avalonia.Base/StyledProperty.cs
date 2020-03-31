@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia
@@ -39,12 +36,12 @@ namespace Avalonia
             : base(source, ownerType)
         {
         }
-        
+
         /// <summary>
         /// Registers the property on another type.
         /// </summary>
         /// <typeparam name="TOwner">The type of the additional owner.</typeparam>
-        /// <returns>The property.</returns>        
+        /// <returns>The property.</returns>
         public StyledProperty<TValue> AddOwner<TOwner>() where TOwner : IAvaloniaObject
         {
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), this);

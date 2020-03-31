@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -99,15 +96,15 @@ namespace Avalonia.Controls
         {
             Contract.Requires<ArgumentNullException>(anchor != null);
             Contract.Requires<ArgumentNullException>(name != null);
-               
+
             var nameScope = (anchor as INameScope) ?? NameScope.GetNameScope((StyledElement)anchor);
             if (nameScope == null)
                 throw new InvalidOperationException(
                     "The control doesn't have an associated name scope, probably no registrations has been done yet");
-            
+
             return nameScope.Get<T>(name);
         }
-        
+
         public static INameScope FindNameScope(this ILogical control)
         {
             Contract.Requires<ArgumentNullException>(control != null);

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia;
 using Avalonia.VisualTree;
 using Avalonia.Controls;
@@ -9,7 +6,7 @@ using ReactiveUI;
 namespace Avalonia.ReactiveUI
 {
     /// <summary>
-    /// A ReactiveUI UserControl that implements <see cref="IViewFor{TViewModel}"/> 
+    /// A ReactiveUI UserControl that implements <see cref="IViewFor{TViewModel}"/>
     /// and will activate your ViewModel automatically if it supports activation.
     /// </summary>
     /// <typeparam name="TViewModel">ViewModel type.</typeparam>

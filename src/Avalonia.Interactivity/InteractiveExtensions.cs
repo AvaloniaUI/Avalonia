@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -55,8 +52,8 @@ namespace Avalonia.Interactivity
             routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
 
             return Observable.Create<TEventArgs>(x => o.AddDisposableHandler(
-                routedEvent, 
-                (_, e) => x.OnNext(e), 
+                routedEvent,
+                (_, e) => x.OnNext(e),
                 routes,
                 handledEventsToo));
         }

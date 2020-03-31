@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -35,7 +32,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
 
                 // Value is first signalled without an error as validation hasn't been updated.
                 new BindingNotification(6),
-                
+
                 // Then the ErrorsChanged event is fired.
                 new BindingNotification(new DataValidationException("Must be less than Maximum"), BindingErrorType.DataValidationError, 6),
 

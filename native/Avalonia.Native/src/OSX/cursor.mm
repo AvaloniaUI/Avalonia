@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 #include "common.h"
 #include "cursor.h"
 #include <map>
@@ -53,16 +50,16 @@ class CursorFactory : public ComSingleObject<IAvnCursorFactory, &IID_IAvnCursorF
 
 public:
     FORWARD_IUNKNOWN()
-    
+
     virtual HRESULT GetCursor (AvnStandardCursorType cursorType, IAvnCursor** retOut) override
     {
         *retOut = s_cursorMap[cursorType];
-        
+
         if(*retOut != nullptr)
         {
             (*retOut)->AddRef();
         }
-            
+
         return S_OK;
     }
 };

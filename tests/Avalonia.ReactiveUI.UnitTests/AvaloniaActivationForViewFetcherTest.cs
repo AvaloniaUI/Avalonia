@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
@@ -28,7 +25,7 @@ namespace Avalonia.ReactiveUI.UnitTests
 
             public TestUserControlWithWhenActivated()
             {
-                this.WhenActivated(disposables => 
+                this.WhenActivated(disposables =>
                 {
                     Active = true;
                     Disposable
@@ -44,7 +41,7 @@ namespace Avalonia.ReactiveUI.UnitTests
 
             public TestWindowWithWhenActivated()
             {
-                this.WhenActivated(disposables => 
+                this.WhenActivated(disposables =>
                 {
                     Active = true;
                     Disposable
@@ -60,10 +57,10 @@ namespace Avalonia.ReactiveUI.UnitTests
 
             public bool IsActivated { get; private set; }
 
-            public ActivatableViewModel() 
+            public ActivatableViewModel()
             {
                 Activator = new ViewModelActivator();
-                this.WhenActivated(disposables => 
+                this.WhenActivated(disposables =>
                 {
                     IsActivated = true;
                     Disposable
@@ -114,7 +111,7 @@ namespace Avalonia.ReactiveUI.UnitTests
         public AvaloniaActivationForViewFetcherTest()
         {
             Locator.CurrentMutable.RegisterConstant(
-                new AvaloniaActivationForViewFetcher(), 
+                new AvaloniaActivationForViewFetcher(),
                 typeof(IActivationForViewFetcher));
         }
 
@@ -142,7 +139,7 @@ namespace Avalonia.ReactiveUI.UnitTests
         }
 
         [Fact]
-        public void Get_Affinity_For_View_Should_Return_Non_Zero_For_Visual_Elements() 
+        public void Get_Affinity_For_View_Should_Return_Non_Zero_For_Visual_Elements()
         {
             var userControl = new TestUserControl();
             var activationForViewFetcher = new AvaloniaActivationForViewFetcher();
@@ -169,9 +166,9 @@ namespace Avalonia.ReactiveUI.UnitTests
         }
 
         [Fact]
-        public void Activation_For_View_Fetcher_Should_Support_Windows() 
+        public void Activation_For_View_Fetcher_Should_Support_Windows()
         {
-            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
             {
                 var window = new TestWindowWithWhenActivated();
                 Assert.False(window.Active);
@@ -185,9 +182,9 @@ namespace Avalonia.ReactiveUI.UnitTests
         }
 
         [Fact]
-        public void Activatable_Window_View_Model_Is_Activated_And_Deactivated() 
+        public void Activatable_Window_View_Model_Is_Activated_And_Deactivated()
         {
-            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
             {
                 var viewModel = new ActivatableViewModel();
                 var window = new ActivatableWindow { ViewModel = viewModel };
@@ -202,7 +199,7 @@ namespace Avalonia.ReactiveUI.UnitTests
         }
 
         [Fact]
-        public void Activatable_User_Control_View_Model_Is_Activated_And_Deactivated() 
+        public void Activatable_User_Control_View_Model_Is_Activated_And_Deactivated()
         {
             var root = new TestRoot();
             var viewModel = new ActivatableViewModel();

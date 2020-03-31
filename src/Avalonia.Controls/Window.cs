@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -134,7 +131,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent WindowClosedEvent =
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowClosed", RoutingStrategies.Direct);
-        
+
         /// <summary>
         /// Routed event that can be used for global tracking of opening windows
         /// </summary>
@@ -237,7 +234,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Sets the system decorations (title bar, border, etc)
         /// </summary>
-        /// 
+        ///
         public SystemDecorations SystemDecorations
         {
             get { return GetValue(SystemDecorationsProperty); }
@@ -247,7 +244,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Enables or disables the taskbar icon
         /// </summary>
-        /// 
+        ///
         public bool ShowInTaskbar
         {
             get { return GetValue(ShowInTaskbarProperty); }
@@ -303,18 +300,18 @@ namespace Avalonia.Controls
                 PlatformImpl?.Move(value);
             }
         }
-        
+
         /// <summary>
         /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
         /// </summary>
         public void BeginMoveDrag(PointerPressedEventArgs e) => PlatformImpl?.BeginMoveDrag(e);
 
         /// <summary>
-        /// Starts resizing a window. This function is used if an application has window resizing controls. 
+        /// Starts resizing a window. This function is used if an application has window resizing controls.
         /// Should be called from left mouse button press event handler
         /// </summary>
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e) => PlatformImpl?.BeginResizeDrag(edge, e);
-        
+
         /// <summary>
         /// Carries out the arrange pass of the window.
         /// </summary>
@@ -329,7 +326,7 @@ namespace Avalonia.Controls
 
             return base.ArrangeOverride(PlatformImpl?.ClientSize ?? default(Size));
         }
-        
+
         /// <inheritdoc/>
         Size ILayoutRoot.MaxClientSize => _maxPlatformClientSize;
 
@@ -339,7 +336,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired before a window is closed.
         /// </summary>
-        public event EventHandler<CancelEventArgs> Closing;      
+        public event EventHandler<CancelEventArgs> Closing;
 
         /// <summary>
         /// Closes the window.

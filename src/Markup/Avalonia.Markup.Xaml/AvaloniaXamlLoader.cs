@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.IO;
 using System.Reflection;
@@ -58,8 +55,8 @@ namespace Avalonia.Markup.Xaml
                 if (compiledResult != null)
                     return compiledResult;
             }
-            
-            
+
+
             var asset = assetLocator.OpenAndGetAssembly(uri, baseUri);
             using (var stream = asset.stream)
             {
@@ -67,7 +64,7 @@ namespace Avalonia.Markup.Xaml
                 return Load(stream, asset.assembly, null, absoluteUri);
             }
         }
-        
+
         /// <summary>
         /// Loads XAML from a string.
         /// </summary>
@@ -97,7 +94,7 @@ namespace Avalonia.Markup.Xaml
         /// </param>
         /// <param name="uri">The URI of the XAML</param>
         /// <returns>The loaded object.</returns>
-        public object Load(Stream stream, Assembly localAssembly, object rootInstance = null, Uri uri = null) 
+        public object Load(Stream stream, Assembly localAssembly, object rootInstance = null, Uri uri = null)
             => AvaloniaXamlIlRuntimeCompiler.Load(stream, localAssembly, rootInstance, uri, IsDesignMode);
 
         public static object Parse(string xaml, Assembly localAssembly = null)

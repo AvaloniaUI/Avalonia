@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Reactive;
 using System.Reactive.Linq;
 
@@ -22,7 +19,7 @@ namespace Avalonia.Utilities
         /// <param name="eventName">Name of the event to convert.</param>
         /// <returns></returns>
         public static IObservable<EventPattern<object, TEventArgs>> FromEventPattern<TTarget, TEventArgs>(
-            TTarget target, 
+            TTarget target,
             string eventName)
             where TEventArgs : EventArgs
         {

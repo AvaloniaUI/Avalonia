@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Styling;
 using System;
 using Avalonia.Controls;
@@ -32,7 +29,7 @@ namespace Avalonia.Markup.Xaml.Styling
         {
             _baseUri = serviceProvider.GetContextBaseUri();
         }
-        
+
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged
         {

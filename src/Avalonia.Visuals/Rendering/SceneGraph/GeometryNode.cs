@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
@@ -75,7 +72,7 @@ namespace Avalonia.Rendering.SceneGraph
         public bool Equals(Matrix transform, IBrush brush, IPen pen, IGeometryImpl geometry)
         {
             return transform == Transform &&
-                Equals(brush, Brush) && 
+                Equals(brush, Brush) &&
                 Equals(Pen, pen) &&
                 Equals(geometry, Geometry);
         }

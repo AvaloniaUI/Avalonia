@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Xunit;
 
@@ -51,7 +48,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Throws<InvalidOperationException>(() => target.Register("bar", element));
         }
 
-        
+
         /*
          `async void` here is intentional since we expect the continuation to be
          executed *synchronously* and behave more like an event handler to make sure that
@@ -63,7 +60,7 @@ namespace Avalonia.Controls.UnitTests
         {
             _found = await scope.FindAsync(name);
         }
-        
+
         [Fact]
         public void FindAsync_Should_Find_Controls_Added_Earlier()
         {
@@ -73,19 +70,19 @@ namespace Avalonia.Controls.UnitTests
             FindAsync(scope, "foo");
             Assert.Same(_found, element);
         }
-        
+
         [Fact]
         public void FindAsync_Should_Find_Controls_Added_Later()
         {
             var scope = new NameScope();
             var element = new object();
-            
+
             FindAsync(scope, "foo");
             Assert.Null(_found);
             scope.Register("foo", element);
             Assert.Same(_found, element);
         }
-        
+
         [Fact]
         public void FindAsync_Should_Return_Null_After_Scope_Completion()
         {
@@ -116,7 +113,7 @@ namespace Avalonia.Controls.UnitTests
             childScope.Complete();
             Assert.Same(element, childScope.Find("foo"));
         }
-        
+
         [Fact]
         public void Child_Scope_Should_Prefer_Own_Elements()
         {
@@ -142,8 +139,8 @@ namespace Avalonia.Controls.UnitTests
             childScope.Complete();
             Assert.Same(element, _found);
         }
-        
-        
+
+
         [Fact]
         public void Child_Scope_FindAsync_Should_Prefer_Own_Elements()
         {

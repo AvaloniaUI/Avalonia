@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia.Input.Raw
@@ -46,7 +43,7 @@ namespace Avalonia.Input.Raw
             ulong timestamp,
             IInputRoot root,
             RawPointerEventType type,
-            Point position, 
+            Point position,
             RawInputModifiers inputModifiers)
             : base(device, timestamp, root)
         {

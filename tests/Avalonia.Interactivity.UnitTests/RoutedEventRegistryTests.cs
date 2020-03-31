@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -13,7 +10,7 @@ namespace Avalonia.Interactivity.UnitTests
         [Fact]
         public void Pointer_Events_Should_Be_Registered()
         {
-            var expectedEvents = new List<RoutedEvent> { InputElement.PointerPressedEvent, InputElement.PointerReleasedEvent }; 
+            var expectedEvents = new List<RoutedEvent> { InputElement.PointerPressedEvent, InputElement.PointerReleasedEvent };
             var registeredEvents = RoutedEventRegistry.Instance.GetRegistered<InputElement>();
             Assert.Contains(registeredEvents, expectedEvents.Contains);
         }

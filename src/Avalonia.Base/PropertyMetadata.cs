@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Data;
 
 namespace Avalonia
@@ -40,7 +37,7 @@ namespace Avalonia
         /// <param name="baseMetadata">The base metadata to merge.</param>
         /// <param name="property">The property to which the metadata is being applied.</param>
         public virtual void Merge(
-            PropertyMetadata baseMetadata, 
+            PropertyMetadata baseMetadata,
             AvaloniaProperty property)
         {
             if (_defaultBindingMode == BindingMode.Default)

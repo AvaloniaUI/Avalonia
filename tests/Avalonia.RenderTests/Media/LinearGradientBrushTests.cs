@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls;
 using Avalonia.Media;
 using System;
@@ -21,7 +18,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         public LinearGradientBrushTests() : base(@"Media\LinearGradientBrush")
         {
         }
-        
+
         [Fact]
         public async Task LinearGradientBrush_RedBlue_Horizontal_Fill()
         {
@@ -48,7 +45,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             await RenderToFile(target);
             CompareImages();
         }
-        
+
         [Fact]
         public async Task LinearGradientBrush_RedBlue_Vertical_Fill()
         {

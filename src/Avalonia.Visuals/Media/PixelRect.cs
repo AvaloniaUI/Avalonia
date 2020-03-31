@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using Avalonia.Utilities;
@@ -263,7 +260,7 @@ namespace Avalonia
         {
             return (rect.X < Right) && (X < rect.Right) && (rect.Y < Bottom) && (Y < rect.Bottom);
         }
-        
+
         /// <summary>
         /// Translates the rectangle by an offset.
         /// </summary>

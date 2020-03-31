@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -38,7 +35,7 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <value>
         /// The metrics of the font.
-        /// </value> 
+        /// </value>
         public FontMetrics FontMetrics { get; }
 
         public static bool operator ==(TextFormat self, TextFormat other)

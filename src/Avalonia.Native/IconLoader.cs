@@ -1,13 +1,10 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.IO;
+﻿using System.IO;
 using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
-    // OSX doesn't have a concept of *window* icon. 
-    // Icons in the title bar are only shown if there is 
+    // OSX doesn't have a concept of *window* icon.
+    // Icons in the title bar are only shown if there is
     // an opened file (on disk) associated with the current window
     // see http://stackoverflow.com/a/7038671/2231814
     class IconLoader : IPlatformIconLoader

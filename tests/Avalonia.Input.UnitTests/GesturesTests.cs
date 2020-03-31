@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -12,7 +9,7 @@ namespace Avalonia.Interactivity.UnitTests
     public class GesturesTests
     {
         private MouseTestHelper _mouse = new MouseTestHelper();
-        
+
         [Fact]
         public void Tapped_Should_Follow_Pointer_Pressed_Released()
         {

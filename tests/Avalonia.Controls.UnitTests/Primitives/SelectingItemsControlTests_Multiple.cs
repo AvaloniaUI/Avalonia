@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -167,7 +164,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedItems.Add("foo");
 
             bool raised = false;
-            target.PropertyChanged += (s, e) => 
+            target.PropertyChanged += (s, e) =>
                 raised |= e.Property.Name == "SelectedIndex" ||
                           e.Property.Name == "SelectedItem";
 
@@ -189,9 +186,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedItems.Add("foo");
 
             bool raised = false;
-            target.PropertyChanged += (s, e) => 
-                raised |= e.Property.Name == "SelectedIndex" && 
-                          (int)e.OldValue == 0 && 
+            target.PropertyChanged += (s, e) =>
+                raised |= e.Property.Name == "SelectedIndex" &&
+                          (int)e.OldValue == 0 &&
                           (int)e.NewValue == -1;
 
             target.SelectedItems.RemoveAt(0);
@@ -514,10 +511,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
         ///   longer any items
         /// - However, the news that DataContext is now null hasn't yet reached the SelectedItems
         ///   binding and so the unselection is sent back to the ViewModel
-        /// 
+        ///
         /// This is a similar problem to that tested by XamlBindingTest.Should_Not_Write_To_Old_DataContext.
         /// However, that tests a general property binding problem: here we are writing directly
-        /// to the SelectedItems collection - not via a binding - so it's something that the 
+        /// to the SelectedItems collection - not via a binding - so it's something that the
         /// binding system cannot solve. Instead we solve it by not clearing SelectedItems when
         /// DataContext is in the process of changing.
         /// </remarks>
@@ -662,7 +659,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.True(called);
         }
-        
+
         [Fact]
         public void Shift_Selecting_From_No_Selection_Selects_From_Start()
         {
@@ -1154,7 +1151,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class TestSelector : SelectingItemsControl
         {
-            public static readonly new AvaloniaProperty<IList> SelectedItemsProperty = 
+            public static readonly new AvaloniaProperty<IList> SelectedItemsProperty =
                 SelectingItemsControl.SelectedItemsProperty;
 
             public new IList SelectedItems
@@ -1183,7 +1180,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectedItems = new List<string>();
             }
 
-            public List<string> Items { get; } 
+            public List<string> Items { get; }
             public List<string> SelectedItems { get; }
         }
 

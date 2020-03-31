@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Reactive.Concurrency;
@@ -194,13 +191,13 @@ namespace Avalonia
 
         /// <inheritdoc/>
         IResourceNode IResourceNode.ResourceParent => null;
-        
+
         /// <summary>
         /// Application lifetime, use it for things like setting the main window and exiting the app from code
         /// Currently supported lifetimes are:
         /// - <see cref="IClassicDesktopStyleApplicationLifetime"/>
         /// - <see cref="ISingleViewApplicationLifetime"/>
-        /// - <see cref="IControlledApplicationLifetime"/> 
+        /// - <see cref="IControlledApplicationLifetime"/>
         /// </summary>
         public IApplicationLifetime ApplicationLifetime { get; set; }
 
@@ -268,7 +265,7 @@ namespace Avalonia
 
         public virtual void OnFrameworkInitializationCompleted()
         {
-            
+
         }
 
         private void NotifyResourcesChanged(ResourcesChangedEventArgs e)

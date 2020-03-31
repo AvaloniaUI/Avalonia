@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -361,7 +358,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 var border = (Border)button.GetVisualChildren().Single();
                 var brush = (SolidColorBrush)border.Background;
-                
+
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
         }

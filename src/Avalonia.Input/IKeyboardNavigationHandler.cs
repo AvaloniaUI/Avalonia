@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Input
 {
     /// <summary>
@@ -24,7 +21,7 @@ namespace Avalonia.Input
         /// <param name="direction">The direction to move.</param>
         /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
         void Move(
-            IInputElement element, 
+            IInputElement element,
             NavigationDirection direction,
             InputModifiers modifiers = InputModifiers.None);
     }

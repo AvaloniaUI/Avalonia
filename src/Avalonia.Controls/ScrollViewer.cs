@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -17,7 +14,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
         /// </summary>
         /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
         public static readonly DirectProperty<ScrollViewer, bool> CanHorizontallyScrollProperty =
@@ -29,7 +26,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="CanVerticallyScroll"/> property.
         /// </summary>
         /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
         public static readonly DirectProperty<ScrollViewer, bool> CanVerticallyScrollProperty =
@@ -66,7 +63,7 @@ namespace Avalonia.Controls
         /// Defines the HorizontalScrollBarMaximum property.
         /// </summary>
         /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
         public static readonly DirectProperty<ScrollViewer, double> HorizontalScrollBarMaximumProperty =
@@ -78,7 +75,7 @@ namespace Avalonia.Controls
         /// Defines the HorizontalScrollBarValue property.
         /// </summary>
         /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
         public static readonly DirectProperty<ScrollViewer, double> HorizontalScrollBarValueProperty =
@@ -91,7 +88,7 @@ namespace Avalonia.Controls
         /// Defines the HorizontalScrollBarViewportSize property.
         /// </summary>
         /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
         public static readonly DirectProperty<ScrollViewer, double> HorizontalScrollBarViewportSizeProperty =
@@ -111,7 +108,7 @@ namespace Avalonia.Controls
         /// Defines the VerticalScrollBarMaximum property.
         /// </summary>
         /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
         public static readonly DirectProperty<ScrollViewer, double> VerticalScrollBarMaximumProperty =
@@ -123,7 +120,7 @@ namespace Avalonia.Controls
         /// Defines the VerticalScrollBarValue property.
         /// </summary>
         /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
         public static readonly DirectProperty<ScrollViewer, double> VerticalScrollBarValueProperty =
@@ -136,7 +133,7 @@ namespace Avalonia.Controls
         /// Defines the VerticalScrollBarViewportSize property.
         /// </summary>
         /// <remarks>
-        /// There is no public C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
         public static readonly DirectProperty<ScrollViewer, double> VerticalScrollBarViewportSizeProperty =

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using Avalonia.Animation.Animators;
@@ -250,7 +247,7 @@ namespace Avalonia
         /// <returns>The normalized vector.</returns>
         public static Vector Normalize(Vector vector)
             => Divide(vector, vector.Length);
-        
+
         /// <summary>
         /// Divides the first vector by the second.
         /// </summary>

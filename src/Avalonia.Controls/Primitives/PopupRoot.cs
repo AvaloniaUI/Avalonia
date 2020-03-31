@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
@@ -98,7 +95,7 @@ namespace Avalonia.Controls.Primitives
         public void SetChild(IControl control) => Content = control;
 
         IVisual IPopupHost.HostedVisualTreeRoot => this;
-        
+
         public IDisposable BindConstraints(AvaloniaObject popup, StyledProperty<double> widthProperty, StyledProperty<double> minWidthProperty,
             StyledProperty<double> maxWidthProperty, StyledProperty<double> heightProperty, StyledProperty<double> minHeightProperty,
             StyledProperty<double> maxHeightProperty, StyledProperty<bool> topmostProperty)

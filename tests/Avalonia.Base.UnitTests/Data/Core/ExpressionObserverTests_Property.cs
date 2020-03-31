@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Reactive;
@@ -121,7 +118,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                 result);
-            
+
         }
 
         [Fact]
@@ -563,7 +560,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             GC.WaitForPendingFinalizers();
             GC.WaitForPendingFinalizers();
             GC.Collect(2);
-            
+
 
             Assert.Null(result.Item2.Target);
         }

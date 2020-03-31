@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -19,7 +16,7 @@ namespace Avalonia.Shared.PlatformSupport
         }
 
         public IUnmanagedBlob AllocBlob(int size) => new UnmanagedBlob(this, size);
-        
+
         class UnmanagedBlob : IUnmanagedBlob
         {
             private readonly StandardRuntimePlatform _plat;
@@ -41,15 +38,15 @@ namespace Avalonia.Shared.PlatformSupport
 
             [MethodImpl(MethodImplOptions.NoInlining)]
             static void Spawn() => new GCThreadDetector();
-            
+
             static UnmanagedBlob()
             {
                 Spawn();
                 GC.WaitForPendingFinalizers();
             }
-            
+
 #endif
-            
+
             public UnmanagedBlob(StandardRuntimePlatform plat, int size)
             {
                 if (size <= 0)
@@ -108,13 +105,13 @@ namespace Avalonia.Shared.PlatformSupport
                 DoDispose();
             }
 
-            public IntPtr Address => IsDisposed ? throw new ObjectDisposedException("UnmanagedBlob") : _address; 
+            public IntPtr Address => IsDisposed ? throw new ObjectDisposedException("UnmanagedBlob") : _address;
             public int Size { get; private set; }
             public bool IsDisposed { get; private set; }
         }
-        
-        
-        
+
+
+
 #if NET461 || NETCOREAPP2_0
         [DllImport("libc", SetLastError = true)]
         private static extern IntPtr mmap(IntPtr addr, IntPtr length, int prot, int flags, int fd, IntPtr offset);
@@ -124,9 +121,9 @@ namespace Avalonia.Shared.PlatformSupport
         private static extern long sysconf(int name);
 
         private bool? _useMmap;
-        private bool UseMmap 
+        private bool UseMmap
             => _useMmap ?? ((_useMmap = GetRuntimeInfo().OperatingSystem == OperatingSystemType.Linux)).Value;
-        
+
         IntPtr Alloc(int size)
         {
             if (UseMmap)

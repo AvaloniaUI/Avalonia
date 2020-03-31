@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls;
 using Avalonia.Media;
 using System;
@@ -21,7 +18,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         public RadialGradientBrushTests() : base(@"Media\RadialGradientBrush")
         {
         }
-        
+
         [Fact]
         public async Task RadialGradientBrush_RedBlue()
         {

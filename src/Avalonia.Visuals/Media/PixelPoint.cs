@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Globalization;
 using Avalonia.Utilities;
 
@@ -59,7 +56,7 @@ namespace Avalonia
         {
             return !(left == right);
         }
-        
+
         /// <summary>
         /// Converts the <see cref="Point"/> to a <see cref="Vector"/>.
         /// </summary>
@@ -68,7 +65,7 @@ namespace Avalonia
         {
             return new PixelVector(p.X, p.Y);
         }
-        
+
         /// <summary>
         /// Adds two points.
         /// </summary>
@@ -163,7 +160,7 @@ namespace Avalonia
                 return hash;
             }
         }
-        
+
         /// <summary>
         /// Returns a new <see cref="PixelPoint"/> with the same Y co-ordinate and the specified X co-ordinate.
         /// </summary>

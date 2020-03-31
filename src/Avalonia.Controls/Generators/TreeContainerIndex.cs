@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +8,9 @@ namespace Avalonia.Controls.Generators
     /// Maintains an index of all item containers currently materialized by a <see cref="TreeView"/>.
     /// </summary>
     /// <remarks>
-    /// Each <see cref="TreeViewItem"/> has its own <see cref="TreeItemContainerGenerator{T}"/> 
+    /// Each <see cref="TreeViewItem"/> has its own <see cref="TreeItemContainerGenerator{T}"/>
     /// that maintains the list of its direct children, but they also share an instance of this
-    /// class in their <see cref="TreeItemContainerGenerator{T}.Index"/> property which tracks 
+    /// class in their <see cref="TreeItemContainerGenerator{T}.Index"/> property which tracks
     /// the containers materialized for the entire tree.
     /// </remarks>
     public class TreeContainerIndex
@@ -52,7 +49,7 @@ namespace Avalonia.Controls.Generators
             _containerToItem.Add(container, item);
 
             Materialized?.Invoke(
-                this, 
+                this,
                 new ItemContainerEventArgs(new ItemContainerInfo(container, item, 0)));
         }
 
@@ -67,7 +64,7 @@ namespace Avalonia.Controls.Generators
             _itemToContainer.Remove(item);
 
             Dematerialized?.Invoke(
-                this, 
+                this,
                 new ItemContainerEventArgs(new ItemContainerInfo(container, item, 0)));
         }
 

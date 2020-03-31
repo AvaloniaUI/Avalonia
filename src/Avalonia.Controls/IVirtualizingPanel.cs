@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using Avalonia.Layout;
+﻿using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -72,7 +69,7 @@ namespace Avalonia.Controls
         double CrossAxisOffset { get; set; }
 
         /// <summary>
-        /// Invalidates the measure of the control and forces a call to 
+        /// Invalidates the measure of the control and forces a call to
         /// <see cref="IVirtualizingController.UpdateControls"/> on the next measure.
         /// </summary>
         /// <remarks>

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
@@ -563,7 +560,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
-            
+
             target.ItemContainerGenerator.Materialized += (s, e) =>
             {
                 Assert.IsType<Canvas>(e.Containers[0].Item);

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 
@@ -32,7 +29,7 @@ namespace Avalonia.Controls.Generators
         /// have an index, and what happens if the contains passed in aren't sequential?
         /// </remarks>
         public ItemContainerEventArgs(
-            int startingIndex, 
+            int startingIndex,
             IList<ItemContainerInfo> containers)
         {
             StartingIndex = startingIndex;

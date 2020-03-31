@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Styling.Activators;
 
@@ -69,7 +66,7 @@ namespace Avalonia.Styling
         public static readonly SelectorMatch AlwaysThisInstance = new SelectorMatch(SelectorMatchResult.AlwaysThisInstance);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SelectorMatch"/> class with a 
+        /// Initializes a new instance of the <see cref="SelectorMatch"/> class with a
         /// <see cref="SelectorMatchResult.Sometimes"/> result.
         /// </summary>
         /// <param name="match">The match activator.</param>

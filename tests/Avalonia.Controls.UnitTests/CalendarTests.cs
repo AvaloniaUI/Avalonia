@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using Xunit;
+﻿using Xunit;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,7 +10,7 @@ namespace Avalonia.Controls.UnitTests
     {
         private static bool CompareDates(DateTime first, DateTime second)
         {
-            return first.Year == second.Year && 
+            return first.Year == second.Year &&
                 first.Month == second.Month &&
                 first.Day == second.Day;
         }
@@ -168,7 +165,7 @@ namespace Avalonia.Controls.UnitTests
                 e.AddedItems
                  .Cast<object>()
                  .ToList();
-            _selectedDateChangedRemovedDays = 
+            _selectedDateChangedRemovedDays =
                 e.RemovedItems
                  .Cast<object>()
                  .ToList();

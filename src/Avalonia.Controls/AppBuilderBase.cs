@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
@@ -20,7 +17,7 @@ namespace Avalonia.Controls
         private Action _optionsInitializers;
         private Func<Application> _appFactory;
         private IApplicationLifetime _lifetime;
-        
+
         /// <summary>
         /// Gets or sets the <see cref="IRuntimePlatform"/> instance.
         /// </summary>
@@ -35,12 +32,12 @@ namespace Avalonia.Controls
         /// Gets the <see cref="Application"/> instance being initialized.
         /// </summary>
         public Application Instance { get; private set; }
-        
+
         /// <summary>
         /// Gets the type of the Instance (even if it's not created yet)
         /// </summary>
         public Type ApplicationType { get; private set; }
-        
+
         /// <summary>
         /// Gets or sets a method to call the initialize the windowing subsystem.
         /// </summary>
@@ -68,7 +65,7 @@ namespace Avalonia.Controls
 
 
         public Action<TAppBuilder> AfterPlatformServicesSetupCallback { get; private set; } = builder => { };
-        
+
         protected AppBuilderBase(IRuntimePlatform platform, Action<TAppBuilder> platformServices)
         {
             RuntimePlatform = platform;
@@ -98,8 +95,8 @@ namespace Avalonia.Controls
             AfterSetupCallback = (Action<TAppBuilder>)Delegate.Combine(AfterSetupCallback, callback);
             return Self;
         }
-        
-        
+
+
         public TAppBuilder AfterPlatformServicesSetup(Action<TAppBuilder> callback)
         {
             AfterPlatformServicesSetupCallback = (Action<TAppBuilder>)Delegate.Combine(AfterPlatformServicesSetupCallback, callback);
@@ -123,7 +120,7 @@ namespace Avalonia.Controls
                 ((IClassicDesktopStyleApplicationLifetime)builder.Instance.ApplicationLifetime)
                     .MainWindow = window;
             });
-            
+
             // Copy-pasted because we can't call extension methods due to generic constraints
             var lifetime = new ClassicDesktopStyleApplicationLifetime() {ShutdownMode = ShutdownMode.OnMainWindowClose};
             SetupWithLifetime(lifetime);
@@ -165,7 +162,7 @@ namespace Avalonia.Controls
             Setup();
             return Self;
         }
-        
+
         /// <summary>
         /// Specifies a windowing subsystem to use.
         /// </summary>
@@ -248,7 +245,7 @@ namespace Avalonia.Controls
             _optionsInitializers += () => { AvaloniaLocator.CurrentMutable.Bind<T>().ToConstant(options); };
             return Self;
         }
-        
+
         /// <summary>
         /// Configures platform-specific options
         /// </summary>
@@ -257,7 +254,7 @@ namespace Avalonia.Controls
             _optionsInitializers += () => { AvaloniaLocator.CurrentMutable.Bind<T>().ToFunc(options); };
             return Self;
         }
-        
+
         /// <summary>
         /// Sets up the platform-speciic services for the <see cref="Application"/>.
         /// </summary>

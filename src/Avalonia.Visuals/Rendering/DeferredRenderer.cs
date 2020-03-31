@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -321,10 +318,10 @@ namespace Avalonia.Rendering
                         _lastSceneId = scene.Generation;
 
 
-                    // We have consumed the previously available scene, but there might be some dirty 
+                    // We have consumed the previously available scene, but there might be some dirty
                     // rects since the last update. *If* we are on UI thread, we can force immediate scene
                     // rebuild before rendering anything on-screen
-                    // We are calling the same method recursively here 
+                    // We are calling the same method recursively here
                     if (!recursiveCall && Dispatcher.UIThread.CheckAccess() && NeedsUpdate)
                     {
                         UpdateScene();
@@ -438,7 +435,7 @@ namespace Avalonia.Rendering
                 Math.Floor(rect.Y * scale) / scale,
                 Math.Ceiling(rect.Width * scale) / scale,
                 Math.Ceiling(rect.Height * scale) / scale);
-                
+
         }
 
         private void RenderOverlay(Scene scene, ref IDrawingContextImpl parentContent)

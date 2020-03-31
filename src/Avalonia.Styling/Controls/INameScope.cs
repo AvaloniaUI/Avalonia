@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Threading.Tasks;
 using Avalonia.Utilities;
@@ -26,7 +23,7 @@ namespace Avalonia.Controls
         /// <param name="name">The name.</param>
         /// <returns>The element, or null if the name was not found.</returns>
         SynchronousCompletionAsyncResult<object> FindAsync(string name);
-        
+
         /// <summary>
         /// Finds a named element in the name scope, returns immediately, doesn't traverse the name scope stack
         /// </summary>
@@ -38,7 +35,7 @@ namespace Avalonia.Controls
         /// Marks the name scope as completed, no further registrations will be allowed
         /// </summary>
         void Complete();
-        
+
         /// <summary>
         /// Returns whether further registrations are allowed on the scope
         /// </summary>

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using SharpDX;
@@ -79,7 +76,7 @@ namespace Avalonia.Direct2D1
             else
                 return LineJoin.Bevel;
         }
-        
+
         public static SharpDX.Direct2D1.CapStyle ToDirect2D(this Avalonia.Media.PenLineCap lineCap)
         {
             if (lineCap == Avalonia.Media.PenLineCap.Flat)

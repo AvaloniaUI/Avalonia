@@ -1,12 +1,9 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia
 {
     /// <summary>
-    /// Provides a runtime interface for getting and setting 
+    /// Provides a runtime interface for getting and setting
     /// <see cref="DirectProperty{TOwner, TValue}"/> values.
     /// </summary>
     internal interface IDirectPropertyAccessor

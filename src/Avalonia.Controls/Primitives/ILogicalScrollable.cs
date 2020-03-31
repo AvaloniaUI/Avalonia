@@ -1,13 +1,10 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Input;
 
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
-    /// Interface implemented by controls that handle their own scrolling when placed inside a 
+    /// Interface implemented by controls that handle their own scrolling when placed inside a
     /// <see cref="ScrollViewer"/>.
     /// </summary>
     /// <remarks>
@@ -39,12 +36,12 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This method notifies the attached <see cref="ScrollViewer"/> of a change in 
-        /// the <see cref="IScrollable.Extent"/>, <see cref="IScrollable.Offset"/> or 
+        /// This method notifies the attached <see cref="ScrollViewer"/> of a change in
+        /// the <see cref="IScrollable.Extent"/>, <see cref="IScrollable.Offset"/> or
         /// <see cref="IScrollable.Viewport"/> properties.
         /// </para>
         /// <para>
-        /// This property is set by the parent <see cref="ScrollViewer"/> when the 
+        /// This property is set by the parent <see cref="ScrollViewer"/> when the
         /// <see cref="ILogicalScrollable"/> is placed inside it.
         /// </para>
         /// </remarks>

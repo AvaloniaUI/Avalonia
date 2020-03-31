@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 
 namespace Avalonia.Platform
 {
@@ -13,17 +10,17 @@ namespace Avalonia.Platform
         short DesignEmHeight { get; }
 
         /// <summary>
-        ///     Gets the recommended distance above the baseline in design em size. 
+        ///     Gets the recommended distance above the baseline in design em size.
         /// </summary>
         int Ascent { get; }
 
         /// <summary>
-        ///     Gets the recommended distance under the baseline in design em size. 
+        ///     Gets the recommended distance under the baseline in design em size.
         /// </summary>
         int Descent { get; }
 
         /// <summary>
-        ///      Gets the recommended additional space between two lines of text in design em size. 
+        ///      Gets the recommended additional space between two lines of text in design em size.
         /// </summary>
         int LineGap { get; }
 
@@ -48,7 +45,7 @@ namespace Avalonia.Platform
         int StrikethroughThickness { get; }
 
         /// <summary>
-        ///     A <see cref="bool"/> value indicating whether all glyphs in the font have the same advancement. 
+        ///     A <see cref="bool"/> value indicating whether all glyphs in the font have the same advancement.
         /// </summary>
         bool IsFixedPitch { get; }
 

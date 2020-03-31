@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 
@@ -77,7 +74,7 @@ namespace Avalonia.Interactivity
         }
 
         /// <summary>
-        /// Returns all routed events registered with the provided type.         
+        /// Returns all routed events registered with the provided type.
         /// If the type is not found or does not provide any routed events, an empty list is returned.
         /// </summary>
         /// <typeparam name="TOwner">The type.</typeparam>

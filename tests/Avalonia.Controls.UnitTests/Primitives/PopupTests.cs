@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -23,7 +20,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
     public class PopupTests
     {
         protected bool UsePopupHost;
-        
+
         [Fact]
         public void Setting_Child_Should_Set_Child_Controls_LogicalParent()
         {
@@ -233,7 +230,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 window.Content = target;
                 window.ApplyTemplate();
-                
+
                 int closedCount = 0;
 
                 target.Closed += (sender, args) =>
@@ -338,7 +335,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.False(beginCalled);
             }
         }
-        
+
         [Fact]
         public void Popup_Host_Type_Should_Match_Platform_Preference()
         {

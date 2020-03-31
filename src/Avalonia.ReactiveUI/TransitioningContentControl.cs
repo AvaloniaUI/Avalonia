@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -25,7 +22,7 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public static readonly StyledProperty<object> DefaultContentProperty =
             AvaloniaProperty.Register<TransitioningContentControl, object>(nameof(DefaultContent));
-        
+
         /// <summary>
         /// Gets or sets the animation played when content appears and disappears.
         /// </summary>
@@ -52,9 +49,9 @@ namespace Avalonia.ReactiveUI
             get => base.Content;
             set => UpdateContentWithTransition(value);
         }
-        
+
         /// <summary>
-        /// TransitioningContentControl uses the default ContentControl 
+        /// TransitioningContentControl uses the default ContentControl
         /// template from Avalonia default theme.
         /// </summary>
         Type IStyleable.StyleKey => typeof(ContentControl);

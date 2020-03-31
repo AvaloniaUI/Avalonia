@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -79,7 +76,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var data = new IndeiTest();
             var observer = ExpressionObserver.Create(data, o => o.MustBePositive, true);
             var result = new List<object>();
-            
+
             var errmsg = string.Empty;
             try { typeof(IndeiTest).GetProperty(nameof(IndeiTest.MustBePositive)).SetValue(data, "foo"); }
             catch(Exception e) { errmsg = e.Message; }
@@ -128,7 +125,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             observer.Subscribe(_ => { });
 
             // We may want to change this but I've never seen an example of data validation on an
-            // intermediate object in a chain so for the moment I'm not sure what the result of 
+            // intermediate object in a chain so for the moment I'm not sure what the result of
             // validating such a thing should look like.
             Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
             Assert.Equal(1, data.Inner.ErrorsChangedSubscriptionCount);

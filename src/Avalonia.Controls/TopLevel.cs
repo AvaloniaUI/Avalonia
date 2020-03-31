@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Primitives;
@@ -124,7 +121,7 @@ namespace Avalonia.Controls
             styler?.ApplyStyles(this);
 
             ClientSize = impl.ClientSize;
-            
+
             this.GetObservable(PointerOverElementProperty)
                 .Select(
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
@@ -173,7 +170,7 @@ namespace Avalonia.Controls
         /// </summary>
         [CanBeNull]
         public ITopLevelImpl PlatformImpl { get; private set; }
-        
+
         /// <summary>
         /// Gets the renderer for the window.
         /// </summary>
@@ -241,7 +238,7 @@ namespace Avalonia.Controls
         {
             PlatformImpl?.Invalidate(rect);
         }
-        
+
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
         {
@@ -253,7 +250,7 @@ namespace Avalonia.Controls
         {
             return PlatformImpl?.PointToScreen(p) ?? default;
         }
-        
+
         /// <summary>
         /// Creates the layout manager for this <see cref="TopLevel" />.
         /// </summary>
@@ -306,7 +303,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Handles a window scaling change notification from 
+        /// Handles a window scaling change notification from
         /// <see cref="ITopLevelImpl.ScalingChanged"/>.
         /// </summary>
         /// <param name="scaling">The window scaling.</param>

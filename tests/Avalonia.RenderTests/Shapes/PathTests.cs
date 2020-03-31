@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
@@ -44,7 +41,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-        
+
         [Fact]
         public async Task Line_Relative()
         {
@@ -65,7 +62,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-        
+
         [Fact]
         public async Task HorizontalLine_Absolute()
         {
@@ -86,7 +83,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-        
+
         [Fact]
         public async Task HorizontalLine_Relative()
         {
@@ -107,7 +104,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-        
+
         [Fact]
         public async Task VerticalLine_Absolute()
         {
@@ -128,7 +125,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-        
+
         [Fact]
         public async Task VerticalLine_Relative()
         {
@@ -149,7 +146,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-        
+
         [Fact]
         public async Task CubicBezier_Absolute()
         {
@@ -171,7 +168,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-        
+
         [Fact]
         public async Task CubicBezier_Relative()
         {
@@ -193,7 +190,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-        
+
         [Fact]
         public async Task Arc_Absolute()
         {
@@ -215,7 +212,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-        
+
         [Fact]
         public async Task Arc_Relative()
         {

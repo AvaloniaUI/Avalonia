@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -132,13 +129,13 @@ namespace Avalonia.Input
             RoutedEvent.Register<InputElement, PointerReleasedEventArgs>(
                 "PointerReleased",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-        
+
         /// <summary>
         /// Defines the <see cref="PointerCaptureLost"/> routed event.
         /// </summary>
         public static readonly RoutedEvent<PointerCaptureLostEventArgs> PointerCaptureLostEvent =
             RoutedEvent.Register<InputElement, PointerCaptureLostEventArgs>(
-                "PointerCaptureLost", 
+                "PointerCaptureLost",
                 RoutingStrategies.Direct);
 
         /// <summary>
@@ -289,7 +286,7 @@ namespace Avalonia.Input
             add => AddHandler(PointerCaptureLostEvent, value);
             remove => RemoveHandler(PointerCaptureLostEvent, value);
         }
-        
+
         /// <summary>
         /// Occurs when the mouse wheen is scrolled over the control.
         /// </summary>
@@ -588,7 +585,7 @@ namespace Avalonia.Input
 
             // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
             // will cause extra allocations and overhead.
-            
+
             var children = VisualChildren;
 
             // ReSharper disable once ForCanBeConvertedToForeach
@@ -606,7 +603,7 @@ namespace Avalonia.Input
             {
                 PseudoClasses.Set(":focus", isFocused.Value);
             }
-            
+
             if (isPointerOver.HasValue)
             {
                 PseudoClasses.Set(":pointerover", isPointerOver.Value);

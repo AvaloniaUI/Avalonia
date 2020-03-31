@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -148,7 +145,7 @@ namespace Avalonia.Input
                 {
                     // TODO: Use FocusScopes to store the current element and restore it when context menu is closed.
                     // Save currently focused input element.
-                    _restoreFocusElement = FocusManager.Instance.Current;                    
+                    _restoreFocusElement = FocusManager.Instance.Current;
 
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").

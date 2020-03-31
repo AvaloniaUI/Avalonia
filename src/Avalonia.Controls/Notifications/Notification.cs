@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 
 namespace Avalonia.Controls.Notifications
 {
@@ -20,7 +17,7 @@ namespace Avalonia.Controls.Notifications
         /// <param name="title">The title of the notification.</param>
         /// <param name="message">The message to be displayed in the notification.</param>
         /// <param name="type">The <see cref="NotificationType"/> of the notification.</param>
-        /// <param name="expiration">The expiry time at which the notification will close. 
+        /// <param name="expiration">The expiry time at which the notification will close.
         /// Use <see cref="TimeSpan.Zero"/> for notifications that will remain open.</param>
         /// <param name="onClick">An Action to call when the notification is clicked.</param>
         /// <param name="onClose">An Action to call when the notification is closed.</param>

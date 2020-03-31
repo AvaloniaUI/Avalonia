@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -11,8 +8,8 @@ namespace Avalonia.Base.UnitTests
         public void AddOwnered_Property_Should_Equal_Original()
         {
             var p1 = new StyledProperty<string>(
-                "p1", 
-                typeof(Class1), 
+                "p1",
+                typeof(Class1),
                 new StyledPropertyMetadata<string>());
             var p2 = p1.AddOwner<Class2>();
 

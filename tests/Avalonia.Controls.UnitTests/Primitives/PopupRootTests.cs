@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using Avalonia.Controls.Presenters;
@@ -72,21 +69,21 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 window.ApplyTemplate();
                 target.Open();
 
-               
+
                 Assert.Single(((Visual)target.Host).GetVisualChildren());
 
                 var templatedChild = ((Visual)target.Host).GetVisualChildren().Single();
-                
+
                 Assert.IsType<VisualLayerManager>(templatedChild);
                 var contentPresenter = templatedChild.VisualChildren.Single();
                 Assert.IsType<ContentPresenter>(contentPresenter);
-                
-                
+
+
                 Assert.Equal((PopupRoot)target.Host, ((IControl)templatedChild).TemplatedParent);
                 Assert.Equal((PopupRoot)target.Host, ((IControl)contentPresenter).TemplatedParent);
             }
         }
-        
+
         [Fact]
         public void PopupRoot_Should_Have_Null_VisualParent()
         {
@@ -99,7 +96,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.Null(((Visual)target.Host).GetVisualParent());
             }
         }
-        
+
         [Fact]
         public void Attaching_PopupRoot_To_Parent_Logical_Tree_Raises_DetachedFromLogicalTree_And_AttachedToLogicalTree()
         {

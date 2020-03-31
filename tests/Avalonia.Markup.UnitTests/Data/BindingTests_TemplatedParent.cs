@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -34,7 +31,7 @@ namespace Avalonia.Markup.UnitTests.Data
             target.Object.Bind(TextBox.TextProperty, binding);
 
             target.Verify(x => x.Bind(
-                TextBox.TextProperty, 
+                TextBox.TextProperty,
                 It.IsAny<IObservable<BindingValue<string>>>()));
         }
 

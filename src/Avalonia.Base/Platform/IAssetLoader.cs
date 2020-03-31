@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,9 +12,9 @@ namespace Avalonia.Platform
     {
         /// <summary>
         /// We need a way to override the default assembly selected by the host platform
-        /// because right now it is selecting the wrong one for PCL based Apps. The 
-        /// AssetLoader needs a refactor cause right now it lives in 3+ platforms which 
-        /// can all be loaded on Windows. 
+        /// because right now it is selecting the wrong one for PCL based Apps. The
+        /// AssetLoader needs a refactor cause right now it lives in 3+ platforms which
+        /// can all be loaded on Windows.
         /// </summary>
         /// <param name="assembly"></param>
         void SetDefaultAssembly(Assembly assembly);

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 #ifndef cursor_h
 #define cursor_h
 
@@ -24,7 +21,7 @@ public:
     {
         return _native;
     }
-    
+
     bool IsHidden ()
     {
         return _isHidden;

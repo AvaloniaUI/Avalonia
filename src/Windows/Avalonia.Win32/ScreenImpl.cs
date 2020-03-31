@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
@@ -36,7 +33,7 @@ namespace Avalonia.Win32
                                 var shcore = LoadLibrary("shcore.dll");
                                 var method = GetProcAddress(shcore, nameof(GetDpiForMonitor));
                                 if (method != IntPtr.Zero)
-                                { 
+                                {
                                     GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var x, out _);
                                     dpi = (double)x;
                                 }

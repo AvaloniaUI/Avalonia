@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Avalonia.Platform;
 
 namespace Avalonia.Media.TextFormatting
@@ -43,7 +40,7 @@ namespace Avalonia.Media.TextFormatting
         public abstract void Draw(IDrawingContextImpl drawingContext, Point origin);
 
         /// <summary>
-        /// Client to get the character hit corresponding to the specified 
+        /// Client to get the character hit corresponding to the specified
         /// distance from the beginning of the line.
         /// </summary>
         /// <param name="distance">distance in text flow direction from the beginning of the line</param>
@@ -51,7 +48,7 @@ namespace Avalonia.Media.TextFormatting
         public abstract CharacterHit GetCharacterHitFromDistance(double distance);
 
         /// <summary>
-        /// Client to get the distance from the beginning of the line from the specified 
+        /// Client to get the distance from the beginning of the line from the specified
         /// <see cref="CharacterHit"/>.
         /// </summary>
         /// <param name="characterHit"><see cref="CharacterHit"/> of the character to query the distance.</param>

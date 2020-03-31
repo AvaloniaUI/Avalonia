@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -80,7 +77,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(services))
             {
                 var impl = new Mock<ITopLevelImpl>();
-                
+
                 var target = new TestTopLevel(impl.Object, Mock.Of<ILayoutManager>());
 
                 // The layout pass should be scheduled by the derived class.

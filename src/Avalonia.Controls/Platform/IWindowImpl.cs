@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -65,7 +62,7 @@ namespace Avalonia.Platform
         void BeginMoveDrag(PointerPressedEventArgs e);
 
         /// <summary>
-        /// Starts resizing a window. This function is used if an application has window resizing controls. 
+        /// Starts resizing a window. This function is used if an application has window resizing controls.
         /// Should be called from left mouse button press event handler
         /// </summary>
         void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e);
@@ -83,7 +80,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Minimum width of the window.
         /// </summary>
-        /// 
+        ///
         void SetMinMaxSize(Size minSize, Size maxSize);
     }
 }

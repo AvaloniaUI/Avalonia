@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -60,7 +57,7 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public static readonly StyledProperty<RoutingState> RouterProperty =
             AvaloniaProperty.Register<RoutedViewHost, RoutingState>(nameof(Router));
-    
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RoutedViewHost"/> class.
         /// </summary>
@@ -74,7 +71,7 @@ namespace Avalonia.ReactiveUI
                     .DisposeWith(disposables);
             });
         }
-        
+
         /// <summary>
         /// Gets or sets the <see cref="RoutingState"/> of the view model stack.
         /// </summary>
@@ -83,12 +80,12 @@ namespace Avalonia.ReactiveUI
             get => GetValue(RouterProperty);
             set => SetValue(RouterProperty, value);
         }
-        
+
         /// <summary>
         /// Gets or sets the ReactiveUI view locator used by this router.
         /// </summary>
         public IViewLocator ViewLocator { get; set; }
-    
+
         /// <summary>
         /// Invoked when ReactiveUI router navigates to a view model.
         /// </summary>
@@ -101,7 +98,7 @@ namespace Avalonia.ReactiveUI
                 Content = DefaultContent;
                 return;
             }
-    
+
             var viewLocator = ViewLocator ?? global::ReactiveUI.ViewLocator.Current;
             var viewInstance = viewLocator.ResolveView(viewModel);
             if (viewInstance == null)
@@ -110,7 +107,7 @@ namespace Avalonia.ReactiveUI
                 Content = DefaultContent;
                 return;
             }
-    
+
             this.Log().Info($"Ready to show {viewInstance} with autowired {viewModel}.");
             viewInstance.ViewModel = viewModel;
             if (viewInstance is IStyledElement styled)

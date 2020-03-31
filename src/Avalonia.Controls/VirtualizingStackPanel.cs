@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Specialized;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -39,7 +36,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                var bounds = Orientation == Orientation.Horizontal ? 
+                var bounds = Orientation == Orientation.Horizontal ?
                     _availableSpace.Width : _availableSpace.Height;
                 return Math.Max(0, _takenSpace - bounds);
             }
@@ -148,7 +145,7 @@ namespace Avalonia.Controls
         }
 
         internal override void ArrangeChild(
-            IControl child, 
+            IControl child,
             Rect rect,
             Size panelSize,
             Orientation orientation)

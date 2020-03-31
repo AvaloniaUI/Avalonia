@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -213,8 +210,8 @@ namespace Avalonia.Controls
         /// An <see cref="IItemContainerGenerator"/> or null.
         /// </returns>
         /// <remarks>
-        /// Certain controls such as <see cref="TabControl"/> don't actually create item 
-        /// containers; however they want it to be ItemsControls so that they have an Items 
+        /// Certain controls such as <see cref="TabControl"/> don't actually create item
+        /// containers; however they want it to be ItemsControls so that they have an Items
         /// property etc. In this case, a derived class can override this method to return null
         /// in order to disable the creation of item containers.
         /// </remarks>

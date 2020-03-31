@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Interactivity;
 
@@ -26,7 +23,7 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEvent =
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGesture", RoutingStrategies.Bubble, typeof(Gestures));
- 
+
         public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEndedEvent =
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));

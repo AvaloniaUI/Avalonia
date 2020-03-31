@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -112,7 +109,7 @@ namespace Avalonia.Media
                 }
 
                 bool initialCommand = true;
-                
+
                 do
                 {
                     if (!initialCommand)
@@ -163,7 +160,7 @@ namespace Avalonia.Media
 
                     initialCommand = false;
                 } while (PeekArgument(span));
-                
+
             }
 
             if (_isOpen)
@@ -404,7 +401,7 @@ namespace Avalonia.Media
             span = ReadSeparator(span);
 
             var sweepDirection = ReadBool(ref span) ? SweepDirection.Clockwise : SweepDirection.CounterClockwise;
-            
+
             span = ReadSeparator(span);
 
             var end = relative
@@ -465,9 +462,9 @@ namespace Avalonia.Media
                     {
                         i++;
                         for (; i < remaining.Length && char.IsNumber(remaining[i]); i++) valid = true;
-                    }                  
-                }               
-            }          
+                    }
+                }
+            }
 
             if (!valid)
             {
@@ -503,7 +500,7 @@ namespace Avalonia.Media
             {
                 throw new InvalidDataException("Invalid bool rule.");
             }
-            
+
             switch (boolValue[0])
             {
                 case '0':

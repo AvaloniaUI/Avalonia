@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,7 +85,7 @@ namespace Avalonia.Utilities
             private int _count = 0;
 
             delegate void CallerDelegate(TSubscriber s, object sender, T args);
-            
+
             struct Descriptor
             {
                 public WeakReference<TSubscriber> Subscriber;
@@ -97,7 +94,7 @@ namespace Avalonia.Utilities
 
             private static Dictionary<MethodInfo, CallerDelegate> s_Callers =
                 new Dictionary<MethodInfo, CallerDelegate>();
-            
+
             public Subscription(SubscriptionDic<T, TSubscriber> sdic, Type targetType, object target, string eventName)
             {
                 _sdic = sdic;

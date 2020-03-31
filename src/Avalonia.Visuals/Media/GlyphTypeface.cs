@@ -1,16 +1,13 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
     public sealed class GlyphTypeface : IDisposable
     {
-        public GlyphTypeface(Typeface typeface) 
+        public GlyphTypeface(Typeface typeface)
             : this(FontManager.Current?.PlatformImpl.CreateGlyphTypeface(typeface))
-        { 
+        {
         }
 
         public GlyphTypeface(IGlyphTypefaceImpl platformImpl)
@@ -26,17 +23,17 @@ namespace Avalonia.Media
         public short DesignEmHeight => PlatformImpl.DesignEmHeight;
 
         /// <summary>
-        ///     Gets the recommended distance above the baseline in design em size. 
+        ///     Gets the recommended distance above the baseline in design em size.
         /// </summary>
         public int Ascent => PlatformImpl.Ascent;
 
         /// <summary>
-        ///     Gets the recommended distance under the baseline in design em size. 
+        ///     Gets the recommended distance under the baseline in design em size.
         /// </summary>
         public int Descent => PlatformImpl.Descent;
 
         /// <summary>
-        ///      Gets the recommended additional space between two lines of text in design em size. 
+        ///      Gets the recommended additional space between two lines of text in design em size.
         /// </summary>
         public int LineGap => PlatformImpl.LineGap;
 
@@ -66,7 +63,7 @@ namespace Avalonia.Media
         public int StrikethroughThickness => PlatformImpl.StrikethroughThickness;
 
         /// <summary>
-        ///     A <see cref="bool"/> value indicating whether all glyphs in the font have the same advancement. 
+        ///     A <see cref="bool"/> value indicating whether all glyphs in the font have the same advancement.
         /// </summary>
         public bool IsFixedPitch => PlatformImpl.IsFixedPitch;
 

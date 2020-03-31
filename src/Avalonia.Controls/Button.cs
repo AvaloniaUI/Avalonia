@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using System.Windows.Input;
@@ -169,7 +166,7 @@ namespace Avalonia.Controls
             private set { SetValue(IsPressedProperty, value); }
         }
 
-        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute; 
+        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
 
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -310,7 +307,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
             IsPressed = false;

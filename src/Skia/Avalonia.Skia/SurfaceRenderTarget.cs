@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.IO;
 using System.Reactive.Disposables;
@@ -20,7 +17,7 @@ namespace Avalonia.Skia
         private readonly SKCanvas _canvas;
         private readonly bool _disableLcdRendering;
         private readonly GRContext _grContext;
-        
+
         /// <summary>
         /// Create new surface render target.
         /// </summary>
@@ -70,7 +67,7 @@ namespace Avalonia.Skia
         {
             _canvas.RestoreToCount(-1);
             _canvas.ResetMatrix();
-            
+
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Canvas = _canvas,
@@ -117,7 +114,7 @@ namespace Avalonia.Skia
                 context.Canvas.DrawImage(image, sourceRect, destRect, paint);
             }
         }
-        
+
         /// <summary>
         /// Create Skia image snapshot from a surface.
         /// </summary>

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -51,7 +48,7 @@ namespace Avalonia.Data
         /// Gets or sets the binding priority.
         /// </summary>
         public BindingPriority Priority { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the relative source for the binding.
         /// </summary>
@@ -80,12 +77,12 @@ namespace Avalonia.Data
             // We only respect `StringFormat` if the type of the property we're assigning to will
             // accept a string. Note that this is slightly different to WPF in that WPF only applies
             // `StringFormat` for target type `string` (not `object`).
-            if (!string.IsNullOrWhiteSpace(StringFormat) && 
+            if (!string.IsNullOrWhiteSpace(StringFormat) &&
                 (targetType == typeof(string) || targetType == typeof(object)))
             {
                 converter = new StringFormatMultiValueConverter(StringFormat, converter);
             }
-            
+
             var children = Bindings.Select(x => x.Initiate(target, null));
 
             var input = children.Select(x => x.Observable)

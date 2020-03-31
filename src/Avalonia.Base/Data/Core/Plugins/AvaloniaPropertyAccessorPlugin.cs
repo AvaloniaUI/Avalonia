@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Runtime.ExceptionServices;
 
@@ -28,7 +25,7 @@ namespace Avalonia.Data.Core.Plugins
         /// <param name="reference">A weak reference to the object.</param>
         /// <param name="propertyName">The property name.</param>
         /// <returns>
-        /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
+        /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the
         /// property will be made.
         /// </returns>
         public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -120,7 +117,7 @@ namespace Avalonia.LeakTests
 
                     window.Show();
 
-                    // Do a layout and make sure that ScrollViewer gets added to visual tree and its 
+                    // Do a layout and make sure that ScrollViewer gets added to visual tree and its
                     // template applied.
                     window.LayoutManager.ExecuteInitialLayoutPass(window);
                     Assert.IsType<ScrollViewer>(window.Presenter.Child);
@@ -157,7 +154,7 @@ namespace Avalonia.LeakTests
 
                     window.Show();
 
-                    // Do a layout and make sure that TextBox gets added to visual tree and its 
+                    // Do a layout and make sure that TextBox gets added to visual tree and its
                     // template applied.
                     window.LayoutManager.ExecuteInitialLayoutPass(window);
                     Assert.IsType<TextBox>(window.Presenter.Child);
@@ -201,7 +198,7 @@ namespace Avalonia.LeakTests
 
                     window.Show();
 
-                    // Do a layout and make sure that TextBox gets added to visual tree and its 
+                    // Do a layout and make sure that TextBox gets added to visual tree and its
                     // Text property set.
                     window.LayoutManager.ExecuteInitialLayoutPass(window);
                     Assert.IsType<TextBox>(window.Presenter.Child);
@@ -239,7 +236,7 @@ namespace Avalonia.LeakTests
 
                 window.Show();
 
-                // Do a layout and make sure that TextBox gets added to visual tree and its 
+                // Do a layout and make sure that TextBox gets added to visual tree and its
                 // template applied.
                 window.LayoutManager.ExecuteInitialLayoutPass(window);
                 Assert.Same(textBox, window.Presenter.Child);

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -78,7 +75,7 @@ namespace Avalonia.Animation
             {
                 var animation = new Animation
                 {
-                    Children = 
+                    Children =
                     {
                         new KeyFrame
                         {
@@ -103,7 +100,7 @@ namespace Avalonia.Animation
                                 }
                             },
                             Cue = new Cue(1d)
-                        }                       
+                        }
                     }
                 };
                 animation.Duration = Duration;

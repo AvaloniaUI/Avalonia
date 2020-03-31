@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
@@ -88,7 +85,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<TemplateAppliedEventArgs> TemplateAppliedEvent =
             RoutedEvent.Register<TemplatedControl, TemplateAppliedEventArgs>(
-                "TemplateApplied", 
+                "TemplateApplied",
                 RoutingStrategies.Direct);
 
         private IControlTemplate _appliedTemplate;
@@ -219,7 +216,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="value">The property value.</param>
         /// <remarks>
         /// When a control is navigated to using the keyboard, a focus adorner is shown - usually
-        /// around the control itself. However if the TemplatedControl.IsTemplateFocusTarget 
+        /// around the control itself. However if the TemplatedControl.IsTemplateFocusTarget
         /// attached property is set to true on an element in the control template, then the focus
         /// adorner will be shown around that control instead.
         /// </remarks>
@@ -235,9 +232,9 @@ namespace Avalonia.Controls.Primitives
             var logical = (ILogical)this;
 
             // Apply the template if it is not the same as the template already applied - except
-            // for in the case that the template is null and we're not attached to the logical 
+            // for in the case that the template is null and we're not attached to the logical
             // tree. In that case, the template has probably been cleared because the style setting
-            // the template has been detached, so we want to wait until it's re-attached to the 
+            // the template has been detached, so we want to wait until it's re-attached to the
             // logical tree as if it's re-attached to the same tree the template will be the same
             // and we don't need to do anything.
             if (_appliedTemplate != template && (template != null || logical.IsAttachedToLogicalTree))
@@ -261,7 +258,7 @@ namespace Avalonia.Controls.Primitives
                     ApplyTemplatedParent(child);
                     ((ISetLogicalParent)child).SetParent(this);
                     VisualChildren.Add(child);
-                    
+
                     // Existing code kinda expect to see a NameScope even if it's empty
                     if (nameScope == null)
                         nameScope = new NameScope();

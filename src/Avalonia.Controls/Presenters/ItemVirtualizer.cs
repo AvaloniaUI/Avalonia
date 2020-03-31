@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Reactive.Linq;
@@ -115,7 +112,7 @@ namespace Avalonia.Controls.Presenters
         {
             get
             {
-                return Vertical ? 
+                return Vertical ?
                     new Size(Owner.Panel.Bounds.Width, ViewportValue) :
                     new Size(ViewportValue, Owner.Panel.Bounds.Height);
             }
@@ -152,9 +149,9 @@ namespace Avalonia.Controls.Presenters
                 }
             }
         }
-        
+
         /// <summary>
-        /// Creates an <see cref="ItemVirtualizer"/> based on an item presenter's 
+        /// Creates an <see cref="ItemVirtualizer"/> based on an item presenter's
         /// <see cref="ItemVirtualizationMode"/>.
         /// </summary>
         /// <param name="owner">The items presenter.</param>
@@ -242,7 +239,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Called when the items for the presenter change, either because 
+        /// Called when the items for the presenter change, either because
         /// <see cref="ItemsPresenterBase.Items"/> has been set, the items collection has been
         /// modified, or the panel has been created.
         /// </summary>
