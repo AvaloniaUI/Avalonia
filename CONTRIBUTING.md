@@ -6,7 +6,7 @@ Drop into our [gitter chat room](https://gitter.im/AvaloniaUI/Avalonia) and let 
 
 ## Style
 
-The codebase uses [.net core](https://github.com/dotnet/corefx/blob/master/Documentation/coding-guidelines/coding-style.md) coding style.
+The codebase uses [.net core](https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/coding-style.md) coding style.
 
 Try to keep lines of code around 100 characters in length or less, though this is not a hard limit.
 If you're a few characters over then don't worry too much.
