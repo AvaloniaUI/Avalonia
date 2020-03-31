@@ -95,6 +95,7 @@ namespace Avalonia
     {
         public bool UseEGL { get; set; }
         public bool UseGpu { get; set; } = true;
+        public bool UseDeferredRendering { get; set; } = true;
 
         public List<string> GlxRendererBlacklist { get; set; } = new List<string>
         {
