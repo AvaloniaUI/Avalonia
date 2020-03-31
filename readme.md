@@ -44,13 +44,22 @@ Documentation can be found on our website at http://avaloniaui.net/docs/. We als
 
 ## Building and Using
 
-See the [build instructions here](http://avaloniaui.net/contributing/build).
+See the [build instructions here](Documentation/build.md).
 
 ## Contributing
 
-Please read the [contribution guidelines](http://avaloniaui.net/contributing/contributing) before submitting a pull request.
+Please read the [contribution guidelines](CONTRIBUTING.md) before submitting a pull request.
 
-### Contributors
+## Code of Conduct
+
+This project has adopted the code of conduct defined by the Contributor Covenant to clarify expected behavior in our community.
+For more information see the [.NET Foundation Code of Conduct](https://dotnetfoundation.org/code-of-conduct). 
+
+## Licence
+
+Avalonia is licenced under the [MIT licence](licence.md).
+
+## Contributors
 
 This project exists thanks to all the people who contribute. [[Contribute](http://avaloniaui.net/contributing/contributing)].
 <a href="https://github.com/AvaloniaUI/Avalonia/graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
@@ -75,3 +84,7 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/Avalonia/sponsor/7/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/7/avatar.svg"></a>
 <a href="https://opencollective.com/Avalonia/sponsor/8/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/8/avatar.svg"></a>
 <a href="https://opencollective.com/Avalonia/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/9/avatar.svg"></a> 
+
+## .NET Foundation
+
+This project is supported by the [.NET Foundation](https://dotnetfoundation.org).
