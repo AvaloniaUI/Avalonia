@@ -453,18 +453,14 @@ namespace Avalonia
                 
                 NotifyResourcesChanged(new ResourcesChangedEventArgs());
 
-                if (Parent is ILogicalRoot || Parent?.IsAttachedToLogicalTree == true || this is ILogicalRoot)
+                var newRoot = FindLogicalRoot(this);
+
+                if (newRoot is object)
                 {
-                    var newRoot = FindLogicalRoot(this);
-
-                    if (newRoot == null)
-                    {
-                        throw new AvaloniaInternalException("Parent is attached to logical tree but cannot find root.");
-                    }
-
                     var e = new LogicalTreeAttachmentEventArgs(newRoot, this, parent);
                     OnAttachedToLogicalTreeCore(e);
                 }
+
 #nullable disable
                 RaisePropertyChanged(
                     ParentProperty,
@@ -618,7 +614,7 @@ namespace Avalonia
             }
         }
 
-        private static ILogicalRoot? FindLogicalRoot(IStyleHost e)
+        private static ILogicalRoot? FindLogicalRoot(IStyleHost? e)
         {
             while (e != null)
             {
