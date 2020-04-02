@@ -10,6 +10,8 @@ namespace Avalonia.Controls
     /// </summary>
     public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
+        private static readonly Size s_defaultSmallChange = new Size(16, 16);
+
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
         /// </summary>
@@ -58,6 +60,22 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<ScrollViewer, Size>(nameof(Viewport),
                 o => o.Viewport,
                 (o, v) => o.Viewport = v);
+
+        /// <summary>
+        /// Defines the <see cref="LargeChange"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollViewer, Size> LargeChangeProperty =
+            AvaloniaProperty.RegisterDirect<ScrollViewer, Size>(
+                nameof(LargeChange),
+                o => o.LargeChange);
+
+        /// <summary>
+        /// Defines the <see cref="SmallChange"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollViewer, Size> SmallChangeProperty =
+            AvaloniaProperty.RegisterDirect<ScrollViewer, Size>(
+                nameof(SmallChange),
+                o => o.SmallChange);
 
         /// <summary>
         /// Defines the HorizontalScrollBarMaximum property.
@@ -149,9 +167,13 @@ namespace Avalonia.Controls
                 nameof(VerticalScrollBarVisibility),
                 ScrollBarVisibility.Auto);
 
+        private IDisposable _childSubscription;
+        private ILogicalScrollable _logicalScrollable;
         private Size _extent;
         private Vector _offset;
         private Size _viewport;
+        private Size _largeChange;
+        private Size _smallChange = s_defaultSmallChange;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollViewer"/> class.
@@ -229,6 +251,16 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets the large (page) change value for the scroll viewer.
+        /// </summary>
+        public Size LargeChange => _largeChange;
+
+        /// <summary>
+        /// Gets the small (line) change value for the scroll viewer.
+        /// </summary>
+        public Size SmallChange => _smallChange;
+
+        /// <summary>
         /// Gets or sets the horizontal scrollbar visibility.
         /// </summary>
         public ScrollBarVisibility HorizontalScrollBarVisibility
@@ -244,22 +276,6 @@ namespace Avalonia.Controls
         {
             get { return GetValue(VerticalScrollBarVisibilityProperty); }
             set { SetValue(VerticalScrollBarVisibilityProperty, value); }
-        }
-
-        /// <summary>
-        /// Scrolls to the top-left corner of the content.
-        /// </summary>
-        public void ScrollToHome()
-        {
-            Offset = new Vector(double.NegativeInfinity, double.NegativeInfinity);
-        }
-
-        /// <summary>
-        /// Scrolls to the bottom-left corner of the content.
-        /// </summary>
-        public void ScrollToEnd()
-        {
-            Offset = new Vector(double.NegativeInfinity, double.PositiveInfinity);
         }
 
         /// <summary>
@@ -348,6 +364,22 @@ namespace Avalonia.Controls
         IControl IScrollAnchorProvider.CurrentAnchor => null; // TODO: Implement
 
         /// <summary>
+        /// Scrolls to the top-left corner of the content.
+        /// </summary>
+        public void ScrollToHome()
+        {
+            Offset = new Vector(double.NegativeInfinity, double.NegativeInfinity);
+        }
+
+        /// <summary>
+        /// Scrolls to the bottom-left corner of the content.
+        /// </summary>
+        public void ScrollToEnd()
+        {
+            Offset = new Vector(double.NegativeInfinity, double.PositiveInfinity);
+        }
+
+        /// <summary>
         /// Gets the value of the HorizontalScrollBarVisibility attached property.
         /// </summary>
         /// <param name="control">The control to read the value from.</param>
@@ -397,6 +429,22 @@ namespace Avalonia.Controls
             // TODO: Implement
         }
 
+        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        {
+            _childSubscription?.Dispose();
+            _childSubscription = null;
+
+            if (base.RegisterContentPresenter(presenter))
+            {
+                _childSubscription = Presenter?
+                    .GetObservable(ContentPresenter.ChildProperty)
+                    .Subscribe(ChildChanged);
+                return true;
+            }
+
+            return false;
+        }
+
         internal static Vector CoerceOffset(Size extent, Size viewport, Vector offset)
         {
             var maxX = Math.Max(extent.Width - viewport.Width, 0);
@@ -429,6 +477,28 @@ namespace Avalonia.Controls
             {
                 return value;
             }
+        }
+
+        private void ChildChanged(IControl child)
+        {
+            if (_logicalScrollable is object)
+            {
+                _logicalScrollable.ScrollInvalidated -= LogicalScrollInvalidated;
+                _logicalScrollable = null;
+            }
+
+            if (child is ILogicalScrollable logical)
+            {
+                _logicalScrollable = logical;
+                logical.ScrollInvalidated += LogicalScrollInvalidated;
+            }
+
+            CalculatedPropertiesChanged();
+        }
+
+        private void LogicalScrollInvalidated(object sender, EventArgs e)
+        {
+            CalculatedPropertiesChanged();
         }
 
         private void ScrollBarVisibilityChanged(AvaloniaPropertyChangedEventArgs e)
@@ -465,6 +535,17 @@ namespace Avalonia.Controls
             RaisePropertyChanged(VerticalScrollBarMaximumProperty, 0, VerticalScrollBarMaximum);
             RaisePropertyChanged(VerticalScrollBarValueProperty, 0, VerticalScrollBarValue);
             RaisePropertyChanged(VerticalScrollBarViewportSizeProperty, 0, VerticalScrollBarViewportSize);
+
+            if (_logicalScrollable?.IsLogicalScrollEnabled == true)
+            {
+                SetAndRaise(SmallChangeProperty, ref _smallChange, _logicalScrollable.ScrollSize);
+                SetAndRaise(LargeChangeProperty, ref _largeChange, _logicalScrollable.PageScrollSize);
+            }
+            else
+            {
+                SetAndRaise(SmallChangeProperty, ref _smallChange, s_defaultSmallChange);
+                SetAndRaise(LargeChangeProperty, ref _largeChange, Viewport);
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
