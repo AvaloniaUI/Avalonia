@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using Avalonia.Animation.Animators;
 
 namespace Avalonia.Media
@@ -96,6 +97,11 @@ namespace Avalonia.Media
             {
                 var or = 0u;
 
+                if (s.Length >= 4 && s.Length <= 5)
+                {
+                    s = string.Concat(s.SelectMany(@char => new[] { @char, @char })).Substring(1);
+                }
+                
                 if (s.Length == 7)
                 {
                     or = 0xff000000;
