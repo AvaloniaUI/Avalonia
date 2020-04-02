@@ -60,8 +60,8 @@ namespace ControlCatalog
             var decorations = this.Find<ComboBox>("Decorations");
             decorations.SelectionChanged += (sender, e) =>
             {
-                Window window = (Window)VisualRoot;
-                window.SystemDecorations = (SystemDecorations)decorations.SelectedIndex;
+                if (VisualRoot is Window window)
+                    window.SystemDecorations = (SystemDecorations)decorations.SelectedIndex;
             };
         }
 
@@ -69,7 +69,8 @@ namespace ControlCatalog
         {
             base.OnAttachedToVisualTree(e);
             var decorations = this.Find<ComboBox>("Decorations");
-            decorations.SelectedIndex = (int)((Window)VisualRoot).SystemDecorations;
+            if (VisualRoot is Window window)
+                decorations.SelectedIndex = (int)window.SystemDecorations;
         }
     }
 }
