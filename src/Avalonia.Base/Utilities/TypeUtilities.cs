@@ -1,7 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -13,7 +11,7 @@ namespace Avalonia.Utilities
     /// </summary>
     public static class TypeUtilities
     {
-        private static int[] Conversions =
+        private static readonly int[] Conversions =
         {
             0b101111111111101, // Boolean
             0b100001111111110, // Char
@@ -32,7 +30,7 @@ namespace Avalonia.Utilities
             0b111111111111111, // String
         };
 
-        private static int[] ImplicitConversions =
+        private static readonly int[] ImplicitConversions =
         {
             0b000000000000001, // Boolean
             0b001110111100010, // Char
@@ -51,7 +49,7 @@ namespace Avalonia.Utilities
             0b100000000000000, // String
         };
 
-        private static Type[] InbuiltTypes =
+        private static readonly Type[] InbuiltTypes =
         {
             typeof(Boolean),
             typeof(Char),
@@ -70,7 +68,7 @@ namespace Avalonia.Utilities
             typeof(String),
         };
 
-        private static readonly Type[] NumericTypes = new[]
+        private static readonly Type[] NumericTypes =
         {
             typeof(Byte),
             typeof(Decimal),
@@ -92,8 +90,7 @@ namespace Avalonia.Utilities
         /// <returns>True if the type accepts null values; otherwise false.</returns>
         public static bool AcceptsNull(Type type)
         {
-            var t = type.GetTypeInfo();
-            return !t.IsValueType || (t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(Nullable<>)));
+            return !type.IsValueType || IsNullableType(type);
         }
 
         /// <summary>
@@ -119,10 +116,8 @@ namespace Avalonia.Utilities
             }
 
             var from = value.GetType();
-            var fromTypeInfo = from.GetTypeInfo();
-            var toTypeInfo = to.GetTypeInfo();
 
-            if (toTypeInfo.IsAssignableFrom(fromTypeInfo))
+            if (to.IsAssignableFrom(from))
             {
                 result = value;
                 return true;
@@ -134,7 +129,7 @@ namespace Avalonia.Utilities
                 return true;
             }
 
-            if (toTypeInfo.IsEnum && from == typeof(string))
+            if (to.IsEnum && from == typeof(string))
             {
                 if (Enum.IsDefined(to, (string)value))
                 {
@@ -143,7 +138,7 @@ namespace Avalonia.Utilities
                 }
             }
 
-            if (!fromTypeInfo.IsEnum && toTypeInfo.IsEnum)
+            if (!from.IsEnum && to.IsEnum)
             {
                 result = null;
 
@@ -154,7 +149,7 @@ namespace Avalonia.Utilities
                 }
             }
 
-            if (fromTypeInfo.IsEnum && IsNumeric(to))
+            if (from.IsEnum && IsNumeric(to))
             {
                 try
                 {
@@ -188,8 +183,15 @@ namespace Avalonia.Utilities
                 }
             }
 
-            var cast = from.GetRuntimeMethods()
-                .FirstOrDefault(m => (m.Name == "op_Implicit" || m.Name == "op_Explicit") && m.ReturnType == to);
+            var typeConverter = TypeDescriptor.GetConverter(to);
+
+            if (typeConverter.CanConvertFrom(from) == true)
+            {
+                result = typeConverter.ConvertFrom(null, culture, value);
+                return true;
+            }
+
+            var cast = FindTypeConversionOperatorMethod(from, to, OperatorType.Implicit | OperatorType.Explicit);
 
             if (cast != null)
             {
@@ -224,10 +226,8 @@ namespace Avalonia.Utilities
             }
 
             var from = value.GetType();
-            var fromTypeInfo = from.GetTypeInfo();
-            var toTypeInfo = to.GetTypeInfo();
 
-            if (toTypeInfo.IsAssignableFrom(fromTypeInfo))
+            if (to.IsAssignableFrom(from))
             {
                 result = value;
                 return true;
@@ -253,8 +253,7 @@ namespace Avalonia.Utilities
                 }
             }
 
-            var cast = from.GetRuntimeMethods()
-                .FirstOrDefault(m => m.Name == "op_Implicit" && m.ReturnType == to);
+            var cast = FindTypeConversionOperatorMethod(from, to, OperatorType.Implicit);
 
             if (cast != null)
             {
@@ -291,6 +290,17 @@ namespace Avalonia.Utilities
             return TryConvertImplicit(type, value, out object result) ? result : Default(type);
         }
 
+        public static T ConvertImplicit<T>(object value)
+        {
+            if (TryConvertImplicit(typeof(T), value, out var result))
+            {
+                return (T)result;
+            }
+
+            throw new InvalidCastException(
+                $"Unable to convert object '{value ?? "(null)"}' of type '{value?.GetType()}' to type '{typeof(T)}'.");
+        }
+
         /// <summary>
         /// Gets the default value for the specified type.
         /// </summary>
@@ -298,9 +308,7 @@ namespace Avalonia.Utilities
         /// <returns>The default value.</returns>
         public static object Default(Type type)
         {
-            var typeInfo = type.GetTypeInfo();
-
-            if (typeInfo.IsValueType)
+            if (type.IsValueType)
             {
                 return Activator.CreateInstance(type);
             }
@@ -326,14 +334,57 @@ namespace Avalonia.Utilities
                 return false;
             }
 
-            if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            Type underlyingType = Nullable.GetUnderlyingType(type);
+
+            if (underlyingType != null)
             {
-                return IsNumeric(Nullable.GetUnderlyingType(type));
+                return IsNumeric(underlyingType);
             }
             else
             {
                 return NumericTypes.Contains(type);
             }
+        }
+
+        [Flags]
+        private enum OperatorType
+        {
+            Implicit = 1,
+            Explicit = 2
+        }
+
+        private static bool IsNullableType(Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+        }
+
+        private static MethodInfo FindTypeConversionOperatorMethod(Type fromType, Type toType, OperatorType operatorType)
+        {
+            const string implicitName = "op_Implicit";
+            const string explicitName = "op_Explicit";
+
+            bool allowImplicit = (operatorType & OperatorType.Implicit) != 0;
+            bool allowExplicit = (operatorType & OperatorType.Explicit) != 0;
+
+            foreach (MethodInfo method in fromType.GetMethods())
+            {
+                if (!method.IsSpecialName || method.ReturnType != toType)
+                {
+                    continue;
+                }
+
+                if (allowImplicit && method.Name == implicitName)
+                {
+                    return method;
+                }
+
+                if (allowExplicit && method.Name == explicitName)
+                {
+                    return method;
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -1,16 +1,14 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A control scrolls its content if the content is bigger than the space available.
     /// </summary>
-    public class ScrollViewer : ContentControl, IScrollable
+    public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
@@ -160,10 +158,8 @@ namespace Avalonia.Controls
         /// </summary>
         static ScrollViewer()
         {
-            AffectsValidation(ExtentProperty, OffsetProperty);
-            AffectsValidation(ViewportProperty, OffsetProperty);
-            HorizontalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer>(x => x.ScrollBarVisibilityChanged);
-            VerticalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer>(x => x.ScrollBarVisibilityChanged);
+            HorizontalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer>((x, e) => x.ScrollBarVisibilityChanged(e));
+            VerticalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer>((x, e) => x.ScrollBarVisibilityChanged(e));
         }
 
         /// <summary>
@@ -251,6 +247,22 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Scrolls to the top-left corner of the content.
+        /// </summary>
+        public void ScrollToHome()
+        {
+            Offset = new Vector(double.NegativeInfinity, double.NegativeInfinity);
+        }
+
+        /// <summary>
+        /// Scrolls to the bottom-left corner of the content.
+        /// </summary>
+        public void ScrollToEnd()
+        {
+            Offset = new Vector(double.NegativeInfinity, double.PositiveInfinity);
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the viewer can scroll horizontally.
         /// </summary>
         protected bool CanHorizontallyScroll
@@ -332,6 +344,9 @@ namespace Avalonia.Controls
             get { return _viewport.Height; }
         }
 
+        /// <inheritdoc/>
+        IControl IScrollAnchorProvider.CurrentAnchor => null; // TODO: Implement
+
         /// <summary>
         /// Gets the value of the HorizontalScrollBarVisibility attached property.
         /// </summary>
@@ -370,6 +385,16 @@ namespace Avalonia.Controls
         public static void SetVerticalScrollBarVisibility(Control control, ScrollBarVisibility value)
         {
             control.SetValue(VerticalScrollBarVisibilityProperty, value);
+        }
+
+        void IScrollAnchorProvider.RegisterAnchorCandidate(IControl element)
+        {
+            // TODO: Implement
+        }
+
+        void IScrollAnchorProvider.UnregisterAnchorCandidate(IControl element)
+        {
+            // TODO: Implement
         }
 
         internal static Vector CoerceOffset(Size extent, Size viewport, Vector offset)
@@ -440,6 +465,20 @@ namespace Avalonia.Controls
             RaisePropertyChanged(VerticalScrollBarMaximumProperty, 0, VerticalScrollBarMaximum);
             RaisePropertyChanged(VerticalScrollBarValueProperty, 0, VerticalScrollBarValue);
             RaisePropertyChanged(VerticalScrollBarViewportSizeProperty, 0, VerticalScrollBarViewportSize);
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.PageUp)
+            {
+                VerticalScrollBarValue = Math.Max(_offset.Y - _viewport.Height, 0);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.PageDown)
+            {
+                VerticalScrollBarValue = Math.Min(_offset.Y + _viewport.Height, VerticalScrollBarMaximum);
+                e.Handled = true;
+            }
         }
     }
 }

@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Reflection;
 
 namespace Avalonia.Data.Core.Plugins
@@ -12,17 +9,17 @@ namespace Avalonia.Data.Core.Plugins
     public class ExceptionValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
-        public bool Match(WeakReference reference, string memberName) => true;
+        public bool Match(WeakReference<object> reference, string memberName) => true;
 
         /// <inheritdoc/>
-        public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor inner)
+        public IPropertyAccessor Start(WeakReference<object> reference, string name, IPropertyAccessor inner)
         {
             return new Validator(reference, name, inner);
         }
 
-        private class Validator : DataValidationBase
+        private sealed class Validator : DataValidationBase
         {
-            public Validator(WeakReference reference, string name, IPropertyAccessor inner)
+            public Validator(WeakReference<object> reference, string name, IPropertyAccessor inner)
                 : base(inner)
             {
             }

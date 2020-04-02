@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using ReactiveUI;
+﻿using ReactiveUI;
 using System;
 
 namespace BindingDemo.ViewModels
@@ -21,7 +18,7 @@ namespace BindingDemo.ViewModels
                 }
                 else
                 {
-                    throw new ArgumentOutOfRangeException("Value must be less than 10.");
+                    throw new ArgumentOutOfRangeException(nameof(value), "Value must be less than 10.");
                 }
             }
         }

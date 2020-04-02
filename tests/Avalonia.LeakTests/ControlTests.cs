@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +5,10 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Diagnostics;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using JetBrains.dotMemoryUnit;
@@ -67,13 +66,15 @@ namespace Avalonia.LeakTests
             {
                 Func<Window> run = () =>
                 {
+                    var scope = new NameScope();
                     var window = new Window
                     {
                         Content = new Canvas
                         {
                             Name = "foo"
-                        }
+                        }.RegisterInNameScope(scope)
                     };
+                    NameScope.SetNameScope(window, scope);
 
                     window.Show();
 
@@ -84,6 +85,8 @@ namespace Avalonia.LeakTests
 
                     // Clear the content and ensure the Canvas is removed.
                     window.Content = null;
+                    NameScope.SetNameScope(window, null);
+
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
@@ -279,7 +282,7 @@ namespace Avalonia.LeakTests
                             DataTemplates =
                             {
                                 new FuncTreeDataTemplate<Node>(
-                                    x => new TextBlock { Text = x.Name },
+                                    (x, _) => new TextBlock { Text = x.Name },
                                     x => x.Children)
                             },
                             Items = nodes
@@ -309,6 +312,39 @@ namespace Avalonia.LeakTests
 
 
         [Fact]
+        public void Slider_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new Slider()
+                    };
+
+                    window.Show();
+
+                    // Do a layout and make sure that Slider gets added to visual tree.
+                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    Assert.IsType<Slider>(window.Presenter.Child);
+
+                    // Clear the content and ensure the Slider is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Slider>()).ObjectsCount));
+            }
+        }
+
+        [Fact]
         public void RendererIsDisposed()
         {
             using (Start())
@@ -333,6 +369,56 @@ namespace Avalonia.LeakTests
             }
         }
 
+        [Fact]
+        public void Control_With_Style_RenderTransform_Is_Freed()
+        {
+            // # Issue #3545
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Styles =
+                        {
+                            new Style(x => x.OfType<Canvas>())
+                            {
+                                Setters =
+                                {
+                                    new Setter
+                                    {
+                                        Property = Visual.RenderTransformProperty,
+                                        Value = new RotateTransform(45),
+                                    }
+                                }
+                            }
+                        },
+                        Content = new Canvas()
+                    };
+
+                    window.Show();
+
+                    // Do a layout and make sure that Canvas gets added to visual tree with
+                    // its render transform.
+                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    var canvas = Assert.IsType<Canvas>(window.Presenter.Child);
+                    Assert.IsType<RotateTransform>(canvas.RenderTransform);
+
+                    // Clear the content and ensure the Canvas is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+            }
+        }
+
         private IDisposable Start()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow);
@@ -348,6 +434,7 @@ namespace Avalonia.LeakTests
         {
             public bool DrawFps { get; set; }
             public bool DrawDirtyRects { get; set; }
+            public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
 
             public void AddDirty(IVisual visual)
             {
@@ -359,7 +446,13 @@ namespace Avalonia.LeakTests
 
             public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter) => null;
 
+            public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter) => null;
+
             public void Paint(Rect rect)
+            {
+            }
+
+            public void RecalculateChildren(IVisual visual)
             {
             }
 

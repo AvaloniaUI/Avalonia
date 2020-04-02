@@ -1,10 +1,8 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
@@ -25,6 +23,7 @@ namespace Avalonia.Data
         public Binding()
         {
             FallbackValue = AvaloniaProperty.UnsetValue;
+            TargetNullValue = AvaloniaProperty.UnsetValue;
         }
 
         /// <summary>
@@ -60,6 +59,11 @@ namespace Avalonia.Data
         public object FallbackValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the value to use when the binding result is null.
+        /// </summary>
+        public object TargetNullValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the binding mode.
         /// </summary>
         public BindingMode Mode { get; set; }
@@ -90,6 +94,8 @@ namespace Avalonia.Data
         public string StringFormat { get; set; }
 
         public WeakReference DefaultAnchor { get; set; }
+        
+        public WeakReference<INameScope> NameScope { get; set; }
 
         /// <summary>
         /// Gets or sets a function used to resolve types from names in the binding path.
@@ -110,7 +116,9 @@ namespace Avalonia.Data
             
             ExpressionObserver observer;
 
-            var (node, mode)  = ExpressionObserverBuilder.Parse(Path, enableDataValidation, TypeResolver);
+            INameScope nameScope = null;
+            NameScope?.TryGetTarget(out nameScope);
+            var (node, mode) = ExpressionObserverBuilder.Parse(Path, enableDataValidation, TypeResolver, nameScope);
 
             if (ElementName != null)
             {
@@ -204,6 +212,7 @@ namespace Avalonia.Data
                 observer,
                 targetType,
                 fallback,
+                TargetNullValue,
                 converter ?? DefaultValueConverter.Instance,
                 ConverterParameter,
                 Priority);
@@ -219,9 +228,9 @@ namespace Avalonia.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
-            if (!(target is IStyledElement))
+            if (!(target is IDataContextProvider))
             {
-                target = anchor as IStyledElement;
+                target = anchor as IDataContextProvider;
 
                 if (target == null)
                 {
@@ -254,9 +263,12 @@ namespace Avalonia.Data
             ExpressionNode node)
         {
             Contract.Requires<ArgumentNullException>(target != null);
-            
+
+            NameScope.TryGetTarget(out var scope);
+            if (scope == null)
+                throw new InvalidOperationException("Name scope is null or was already collected");
             var result = new ExpressionObserver(
-                ControlLocator.Track(target, elementName),
+                NameScopeLocator.Track(scope, elementName),
                 node,
                 null);
             return result;

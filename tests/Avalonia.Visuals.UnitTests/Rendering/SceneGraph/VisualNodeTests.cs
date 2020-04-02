@@ -24,7 +24,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             var node = new VisualNode(Mock.Of<IVisual>(), null);
             var collection = node.Children;
 
-            node.AddChild(Mock.Of<IVisualNode>());
+            node.AddChild(Mock.Of<IVisualNode>(x => x.Parent == node));
 
             Assert.NotSame(collection, node.Children);
         }
@@ -91,6 +91,34 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             
             Assert.Same(node1.DrawOperations[0].Item, node2.DrawOperations[0].Item);
             Assert.NotSame(node1.DrawOperations[0], node2.DrawOperations[0]);
+        }
+
+        [Fact]
+        public void SortChildren_Does_Not_Throw_On_Null_Children()
+        {
+            var node = new VisualNode(Mock.Of<IVisual>(), null);
+            var scene = new Scene(Mock.Of<IVisual>());
+
+            node.SortChildren(scene);
+        }
+
+        [Fact]
+        public void TrimChildren_Should_Work_Correctly()
+        {
+            var parent = new VisualNode(Mock.Of<IVisual>(), null);
+            var child1 = new VisualNode(Mock.Of<IVisual>(), parent);
+            var child2 = new VisualNode(Mock.Of<IVisual>(), parent);
+            var child3 = new VisualNode(Mock.Of<IVisual>(), parent);
+
+            parent.AddChild(child1);
+            parent.AddChild(child2);
+            parent.AddChild(child3);
+            parent.TrimChildren(2);
+
+            Assert.Equal(2, parent.Children.Count);
+            Assert.False(child1.Disposed);
+            Assert.False(child2.Disposed);
+            Assert.True(child3.Disposed);
         }
     }
 }

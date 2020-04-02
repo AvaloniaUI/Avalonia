@@ -1,10 +1,10 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="NumericUpDown">
-    <Setter Property="TemplatedControl.BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
-    <Setter Property="TemplatedControl.BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
-    <Setter Property="TemplatedControl.Background" Value="{DynamicResource ThemeBackgroundBrush}" />
-    <Setter Property="TemplatedControl.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
-    <Setter Property="TemplatedControl.Template">
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
+    <Setter Property="Padding" Value="4"/>
+    <Setter Property="Template">
       <ControlTemplate>
         <ButtonSpinner Name="PART_Spinner"
                        Background="{TemplateBinding Background}"
@@ -17,25 +17,22 @@
                        ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}">
           <TextBox Name="PART_TextBox"
                    BorderThickness="0"
-                   Background="Transparent"
-                   ContextMenu="{TemplateBinding ContextMenu}"
-                   FontFamily="{TemplateBinding FontFamily}"
-                   FontSize="{TemplateBinding FontSize}"
-                   FontStyle="{TemplateBinding FontStyle}"
-                   FontWeight="{TemplateBinding FontWeight}"
-                   Foreground="{TemplateBinding Foreground}"
+                   Background="{TemplateBinding Background}" 
+                   BorderBrush="{TemplateBinding BorderBrush}"
+                   Padding="{TemplateBinding Padding}"
                    Watermark="{TemplateBinding Watermark}"
+                   DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
                    IsReadOnly="{TemplateBinding IsReadOnly}"
                    Text="{TemplateBinding Text}"
-                   Padding="{TemplateBinding Padding}"
-                   TextAlignment="Left"
-                   Margin="1"
-                   MinWidth="20"
                    AcceptsReturn="False"
                    TextWrapping="NoWrap">
           </TextBox>
         </ButtonSpinner>
       </ControlTemplate>
     </Setter>
+  </Style>
+  <Style Selector="NumericUpDown /template/ TextBox#PART_TextBox">
+    <Setter Property="Margin" Value="4"/>
+    <Setter Property="MinWidth" Value="20"/>
   </Style>
 </Styles>

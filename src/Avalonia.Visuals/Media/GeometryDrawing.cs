@@ -1,10 +1,13 @@
-﻿namespace Avalonia.Media
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Media
 {
     public class GeometryDrawing : Drawing
     {
         public static readonly StyledProperty<Geometry> GeometryProperty =
             AvaloniaProperty.Register<GeometryDrawing, Geometry>(nameof(Geometry));
 
+        [Content]
         public Geometry Geometry
         {
             get => GetValue(GeometryProperty);
@@ -23,7 +26,7 @@
         public static readonly StyledProperty<Pen> PenProperty =
             AvaloniaProperty.Register<GeometryDrawing, Pen>(nameof(Pen));
 
-        public Pen Pen
+        public IPen Pen
         {
             get => GetValue(PenProperty);
             set => SetValue(PenProperty, value);
@@ -31,7 +34,10 @@
 
         public override void Draw(DrawingContext context)
         {
-            context.DrawGeometry(Brush, Pen, Geometry);
+            if (Geometry != null)
+            {
+                context.DrawGeometry(Brush, Pen, Geometry);
+            }
         }
 
         public override Rect GetBounds()

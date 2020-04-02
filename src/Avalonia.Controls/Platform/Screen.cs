@@ -2,14 +2,17 @@
 {
     public class Screen
     {
-        public Rect Bounds { get; }
+        public double PixelDensity { get; }
 
-        public Rect WorkingArea { get; }
+        public PixelRect Bounds { get; }
+
+        public PixelRect WorkingArea { get; }
 
         public bool Primary { get; }
         
-        public Screen(Rect bounds, Rect workingArea, bool primary)
+        public Screen(double pixelDensity, PixelRect bounds, PixelRect workingArea, bool primary)
         {
+            this.PixelDensity = pixelDensity;
             this.Bounds = bounds;
             this.WorkingArea = workingArea;
             this.Primary = primary;

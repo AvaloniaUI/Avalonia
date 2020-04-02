@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Avalonia.Designer.HostApp.NetFX": {
-      "commandName": "Project",
-      "commandLineArgs": "--transport tcp-bson://127.0.0.1:25000/ bin/Debug/net461/ControlCatalog.Desktop.exe"
-    }
-  }
-}

@@ -1,5 +1,6 @@
 using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 
 namespace Avalonia.Controls
 {
@@ -13,18 +14,11 @@ namespace Avalonia.Controls
 
     public class Expander : HeaderedContentControl
     {
-        public static readonly DirectProperty<Expander, IPageTransition> ContentTransitionProperty =
-            AvaloniaProperty.RegisterDirect<Expander, IPageTransition>(
-                nameof(ContentTransition),
-                o => o.ContentTransition,
-                (o, v) => o.ContentTransition = v);
+        public static readonly StyledProperty<IPageTransition> ContentTransitionProperty =
+            AvaloniaProperty.Register<Expander, IPageTransition>(nameof(ContentTransition));
 
-        public static readonly DirectProperty<Expander, ExpandDirection> ExpandDirectionProperty =
-            AvaloniaProperty.RegisterDirect<Expander, ExpandDirection>(
-                nameof(ExpandDirection),
-                o => o.ExpandDirection,
-                (o, v) => o.ExpandDirection = v,
-                ExpandDirection.Down);
+        public static readonly StyledProperty<ExpandDirection> ExpandDirectionProperty =
+            AvaloniaProperty.Register<Expander, ExpandDirection>(nameof(ExpandDirection), ExpandDirection.Down);
 
         public static readonly DirectProperty<Expander, bool> IsExpandedProperty =
             AvaloniaProperty.RegisterDirect<Expander, bool>(
@@ -33,34 +27,38 @@ namespace Avalonia.Controls
                 (o, v) => o.IsExpanded = v,
                 defaultBindingMode: Data.BindingMode.TwoWay);
 
+        private bool _isExpanded;
+
         static Expander()
         {
-            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Down, ":down");
-            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Up, ":up");
-            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Left, ":left");
-            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Right, ":right");
+            IsExpandedProperty.Changed.AddClassHandler<Expander>((x, e) => x.OnIsExpandedChanged(e));
+        }
 
-            PseudoClass(IsExpandedProperty, ":expanded");
-
-            IsExpandedProperty.Changed.AddClassHandler<Expander>(x => x.OnIsExpandedChanged);
+        public Expander()
+        {
+            UpdatePseudoClasses(ExpandDirection);
         }
 
         public IPageTransition ContentTransition
         {
-            get { return _contentTransition; }
-            set { SetAndRaise(ContentTransitionProperty, ref _contentTransition, value); }
+            get => GetValue(ContentTransitionProperty);
+            set => SetValue(ContentTransitionProperty, value);
         }
 
         public ExpandDirection ExpandDirection
         {
-            get { return _expandDirection; }
-            set { SetAndRaise(ExpandDirectionProperty, ref _expandDirection, value); }
+            get => GetValue(ExpandDirectionProperty);
+            set => SetValue(ExpandDirectionProperty, value);
         }
 
         public bool IsExpanded
         {
             get { return _isExpanded; }
-            set { SetAndRaise(IsExpandedProperty, ref _isExpanded, value); }
+            set 
+            { 
+                SetAndRaise(IsExpandedProperty, ref _isExpanded, value);
+                PseudoClasses.Set(":expanded", value);
+            }
         }
 
         protected virtual void OnIsExpandedChanged(AvaloniaPropertyChangedEventArgs e)
@@ -80,8 +78,26 @@ namespace Avalonia.Controls
             }
         }
 
-        private IPageTransition _contentTransition;
-        private ExpandDirection _expandDirection;
-        private bool _isExpanded;
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
+        {
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
+
+            if (property == ExpandDirectionProperty)
+            {
+                UpdatePseudoClasses(newValue.GetValueOrDefault<ExpandDirection>());
+            }
+        }
+
+        private void UpdatePseudoClasses(ExpandDirection d)
+        {
+            PseudoClasses.Set(":up", d == ExpandDirection.Up);
+            PseudoClasses.Set(":down", d == ExpandDirection.Down);
+            PseudoClasses.Set(":left", d == ExpandDirection.Left);
+            PseudoClasses.Set(":right", d == ExpandDirection.Right);
+        }
     }
 }

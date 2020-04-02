@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.RadioButtonPage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">RadioButton</TextBlock>
     <TextBlock Classes="h2">Allows the selection of a single option of many</TextBlock>

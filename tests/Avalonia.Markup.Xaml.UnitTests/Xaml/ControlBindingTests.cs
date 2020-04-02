@@ -1,17 +1,13 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
-    public class ControlBindingTests
+    public class ControlBindingTests : XamlTestBase
     {
         [Fact]
         public void Binding_ProgressBar_Value_To_Invalid_Value_Uses_FallbackValue()

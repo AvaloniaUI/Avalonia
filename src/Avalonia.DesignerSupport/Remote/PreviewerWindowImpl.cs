@@ -2,6 +2,7 @@
 using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Controls.Remote.Server;
+using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Viewport;
@@ -27,16 +28,16 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void BeginMoveDrag()
+        public void BeginMoveDrag(PointerPressedEventArgs e)
         {
         }
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
         }
 
-        public Point Position { get; set; }
-        public Action<Point> PositionChanged { get; set; }
+        public PixelPoint Position { get; set; }
+        public Action<PixelPoint> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
         public Func<bool> Closing { get; set; }
@@ -72,6 +73,11 @@ namespace Avalonia.DesignerSupport.Remote
             RenderIfNeeded();
         }
 
+        public void Move(PixelPoint point)
+        {
+            
+        }
+
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
         }
@@ -86,12 +92,11 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public IDisposable ShowDialog()
+        public void ShowDialog(IWindowImpl parent)
         {
-            return Disposable.Empty;
         }
 
-        public void SetSystemDecorations(bool enabled)
+        public void SetSystemDecorations(SystemDecorations enabled)
         {
         }
 

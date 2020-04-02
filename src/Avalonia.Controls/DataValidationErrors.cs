@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
@@ -22,8 +19,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the DataValidationErrors.Errors attached property.
         /// </summary>
-        public static readonly AttachedProperty<IEnumerable<Exception>> ErrorsProperty =
-            AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, IEnumerable<Exception>>("Errors");
+        public static readonly AttachedProperty<IEnumerable<object>> ErrorsProperty =
+            AvaloniaProperty.RegisterAttached<DataValidationErrors, Control, IEnumerable<object>>("Errors");
 
         /// <summary>
         /// Defines the DataValidationErrors.HasErrors attached property.
@@ -56,7 +53,7 @@ namespace Avalonia.Controls
         {
             ErrorsProperty.Changed.Subscribe(ErrorsChanged);
             HasErrorsProperty.Changed.Subscribe(HasErrorsChanged);
-            TemplatedParentProperty.Changed.AddClassHandler<DataValidationErrors>(x => x.OnTemplatedParentChange);
+            TemplatedParentProperty.Changed.AddClassHandler<DataValidationErrors>((x, e) => x.OnTemplatedParentChange(e));
         }
 
         private void OnTemplatedParentChange(AvaloniaPropertyChangedEventArgs e)
@@ -76,7 +73,7 @@ namespace Avalonia.Controls
         private static void ErrorsChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var control = (Control)e.Sender;
-            var errors = (IEnumerable<Exception>)e.NewValue;
+            var errors = (IEnumerable<object>)e.NewValue;
 
             var hasErrors = false;
             if (errors != null && errors.Any())
@@ -91,11 +88,11 @@ namespace Avalonia.Controls
             classes.Set(":error", (bool)e.NewValue);
         }
 
-        public static IEnumerable<Exception> GetErrors(Control control)
+        public static IEnumerable<object> GetErrors(Control control)
         {
             return control.GetValue(ErrorsProperty);
         }
-        public static void SetErrors(Control control, IEnumerable<Exception> errors)
+        public static void SetErrors(Control control, IEnumerable<object> errors)
         {
             control.SetValue(ErrorsProperty, errors);
         }
@@ -112,14 +109,14 @@ namespace Avalonia.Controls
             return control.GetValue(HasErrorsProperty);
         }
 
-        private static IEnumerable<Exception> UnpackException(Exception exception)
+        private static IEnumerable<object> UnpackException(Exception exception)
         {
             if (exception != null)
             {
                 var aggregate = exception as AggregateException;
                 var exceptions = aggregate == null ?
-                    (IEnumerable<Exception>)new[] { exception } :
-                    aggregate.InnerExceptions;
+                    new[] { GetExceptionData(exception) } :
+                    aggregate.InnerExceptions.Select(GetExceptionData).ToArray();
                 var filtered = exceptions.Where(x => !(x is BindingChainException)).ToList();
 
                 if (filtered.Count > 0)
@@ -129,6 +126,14 @@ namespace Avalonia.Controls
             }
 
             return null;
+        }
+
+        private static object GetExceptionData(Exception exception)
+        {
+            if (exception is DataValidationException dataValidationException)
+                return dataValidationException.ErrorData;
+
+            return exception;
         }
     }
 }

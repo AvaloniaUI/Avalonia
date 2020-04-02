@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using Avalonia.Controls.Primitives;
@@ -169,7 +166,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.False(target.IsVisible);
         }
 
-        private static Control Template(ScrollBar control)
+        private static Control Template(ScrollBar control, INameScope scope)
         {
             return new Border
             {
@@ -185,11 +182,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         Template = new FuncControlTemplate<Thumb>(ThumbTemplate),
                     },
-                },
+                }.RegisterInNameScope(scope),
             };
         }
 
-        private static Control ThumbTemplate(Thumb control)
+        private static Control ThumbTemplate(Thumb control, INameScope scope)
         {
             return new Border
             {

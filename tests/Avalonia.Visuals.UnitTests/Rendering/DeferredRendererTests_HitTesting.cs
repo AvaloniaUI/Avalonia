@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.Linq;
+﻿using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Layout;
@@ -405,7 +402,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root.Renderer = new DeferredRenderer(root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
-
+                
+                root.Renderer.Paint(Rect.Empty);
                 var result = root.Renderer.HitTest(new Point(50, 150), root, null).First();
 
                 Assert.Equal(item1, result);
@@ -421,6 +419,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 container.InvalidateArrange();
                 container.Arrange(new Rect(container.DesiredSize));
 
+                root.Renderer.Paint(Rect.Empty);
                 result = root.Renderer.HitTest(new Point(50, 150), root, null).First();
                 Assert.Equal(item2, result);
 

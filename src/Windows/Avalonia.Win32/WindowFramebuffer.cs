@@ -11,21 +11,21 @@ namespace Avalonia.Win32
         private IUnmanagedBlob _bitmapBlob;
         private UnmanagedMethods.BITMAPINFOHEADER _bmpInfo;
 
-        public WindowFramebuffer(IntPtr handle, int width, int height)
+        public WindowFramebuffer(IntPtr handle, PixelSize size)
         {
             
-            if (width <= 0)
-                throw new ArgumentException("width is less than zero");
-            if (height <= 0)
-                throw new ArgumentException("height is less than zero");
+            if (size.Width <= 0)
+                throw new ArgumentException("Width is less than zero");
+            if (size.Height <= 0)
+                throw new ArgumentException("Height is less than zero");
             _handle = handle;
             _bmpInfo.Init();
             _bmpInfo.biPlanes = 1;
             _bmpInfo.biBitCount = 32;
             _bmpInfo.Init();
-            _bmpInfo.biWidth = width;
-            _bmpInfo.biHeight = -height;
-            _bitmapBlob = AvaloniaLocator.Current.GetService<IRuntimePlatform>().AllocBlob(width * height * 4);
+            _bmpInfo.biWidth = size.Width;
+            _bmpInfo.biHeight = -size.Height;
+            _bitmapBlob = AvaloniaLocator.Current.GetService<IRuntimePlatform>().AllocBlob(size.Width * size.Height * 4);
         }
 
         ~WindowFramebuffer()
@@ -34,7 +34,7 @@ namespace Avalonia.Win32
         }
 
         public IntPtr Address => _bitmapBlob.Address;
-        public int RowBytes => Width * 4;
+        public int RowBytes => Size.Width * 4;
         public PixelFormat Format => PixelFormat.Bgra8888;
 
         public Vector Dpi
@@ -61,19 +61,17 @@ namespace Avalonia.Win32
             }
         }
 
-        public int Width => _bmpInfo.biWidth;
-
-        public int Height => -_bmpInfo.biHeight;
+        public PixelSize Size => new PixelSize(_bmpInfo.biWidth, -_bmpInfo.biHeight);
 
         public void DrawToDevice(IntPtr hDC, int destX = 0, int destY = 0, int srcX = 0, int srcY = 0, int width = -1,
             int height = -1)
         {
             if (width == -1)
-                width = Width;
+                width = Size.Width;
             if (height == -1)
-                height = Height;
+                height = Size.Height;
             UnmanagedMethods.SetDIBitsToDevice(hDC, destX, destY, (uint) width, (uint) height, srcX, srcY,
-                0, (uint)Height, _bitmapBlob.Address, ref _bmpInfo, 0);
+                0, (uint)Size.Height, _bitmapBlob.Address, ref _bmpInfo, 0);
         }
 
         public bool DrawToWindow(IntPtr hWnd, int destX = 0, int destY = 0, int srcX = 0, int srcY = 0, int width = -1,

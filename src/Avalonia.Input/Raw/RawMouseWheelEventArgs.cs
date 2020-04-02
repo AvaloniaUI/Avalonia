@@ -1,18 +1,15 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 
 namespace Avalonia.Input.Raw
 {
-    public class RawMouseWheelEventArgs : RawMouseEventArgs
+    public class RawMouseWheelEventArgs : RawPointerEventArgs
     {
         public RawMouseWheelEventArgs(
             IInputDevice device,
-            uint timestamp,
+            ulong timestamp,
             IInputRoot root,
             Point position,
-            Vector delta, InputModifiers inputModifiers)
-            : base(device, timestamp, root, RawMouseEventType.Wheel, position, inputModifiers)
+            Vector delta, RawInputModifiers inputModifiers)
+            : base(device, timestamp, root, RawPointerEventType.Wheel, position, inputModifiers)
         {
             Delta = delta;
         }

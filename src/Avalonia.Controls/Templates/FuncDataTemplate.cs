@@ -1,9 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
-using System.Reflection;
 
 namespace Avalonia.Controls.Templates
 {
@@ -17,7 +13,7 @@ namespace Avalonia.Controls.Templates
         /// </summary>
         public static readonly FuncDataTemplate Default =
             new FuncDataTemplate<object>(
-                data =>
+                (data, s) =>
                 {
                     if (data != null)
                     {
@@ -49,7 +45,7 @@ namespace Avalonia.Controls.Templates
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
         public FuncDataTemplate(
             Type type, 
-            Func<object, IControl> build,
+            Func<object, INameScope, IControl> build,
             bool supportsRecycling = false)
             : this(o => IsInstance(o, type), build, supportsRecycling)
         {
@@ -67,7 +63,7 @@ namespace Avalonia.Controls.Templates
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
         public FuncDataTemplate(
             Func<object, bool> match,
-            Func<object, IControl> build,
+            Func<object, INameScope, IControl> build,
             bool supportsRecycling = false)
             : base(build)
         {
@@ -102,7 +98,7 @@ namespace Avalonia.Controls.Templates
         /// </returns>
         private static bool IsInstance(object o, Type t)
         {
-            return (o != null) && t.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo());
+            return t.IsInstanceOfType(o);
         }
     }
 }

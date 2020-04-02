@@ -1,10 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -331,7 +327,7 @@ namespace Avalonia.Interactivity.UnitTests
 
             var target = CreateTree(ev, null, 0);
 
-            ev.AddClassHandler<TestInteractive>(x => x.ClassHandler, RoutingStrategies.Bubble);
+            ev.AddClassHandler<TestInteractive>((x, e) => x.ClassHandler(e), RoutingStrategies.Bubble);
 
             var args = new RoutedEventArgs(ev, target);
             target.RaiseEvent(args);
@@ -356,6 +352,29 @@ namespace Avalonia.Interactivity.UnitTests
             target.RaiseEvent(args);
 
             Assert.Equal(1, called);
+        }
+
+        [Fact]
+        public void Removing_Control_In_Handler_Should_Not_Stop_Event()
+        {
+            // Issue #3176
+            var ev = new RoutedEvent("test", RoutingStrategies.Bubble, typeof(RoutedEventArgs), typeof(TestInteractive));
+            var invoked = new List<string>();
+            EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
+            var parent = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+            var target = (IInteractive)parent.GetVisualChildren().Single();
+
+            EventHandler<RoutedEventArgs> removeHandler = (s, e) =>
+            {
+                parent.Children = Array.Empty<IVisual>();
+            };
+            
+            target.AddHandler(ev, removeHandler);
+
+            var args = new RoutedEventArgs(ev, target);
+            target.RaiseEvent(args);
+
+            Assert.Equal(new[] { "3", "2b", "1" }, invoked);
         }
 
         private TestInteractive CreateTree(
@@ -414,6 +433,7 @@ namespace Avalonia.Interactivity.UnitTests
 
                 set
                 {
+                    VisualChildren.Clear();
                     VisualChildren.AddRange(value.Cast<Visual>());
                 }
             }

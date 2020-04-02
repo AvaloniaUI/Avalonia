@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 
@@ -11,12 +8,5 @@ namespace Avalonia.Themes.Default
     /// </summary>
     public class DefaultTheme : Styles
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultTheme"/> class.
-        /// </summary>
-        public DefaultTheme()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
     }
 }

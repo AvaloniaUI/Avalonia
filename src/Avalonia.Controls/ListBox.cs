@@ -1,12 +1,10 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -30,13 +28,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
-        public static readonly new AvaloniaProperty<IList> SelectedItemsProperty =
+        public static readonly new DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
             SelectingItemsControl.SelectedItemsProperty;
 
         /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
         /// </summary>
-        public static readonly new AvaloniaProperty<SelectionMode> SelectionModeProperty = 
+        public static readonly new StyledProperty<SelectionMode> SelectionModeProperty = 
             SelectingItemsControl.SelectionModeProperty;
 
         /// <summary>
@@ -66,9 +64,19 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        public new IList SelectedItems => base.SelectedItems;
+        public new IList SelectedItems
+        {
+            get => base.SelectedItems;
+            set => base.SelectedItems = value;
+        }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the selection mode.
+        /// </summary>
+        /// <remarks>
+        /// Note that the selection mode only applies to selections made via user interaction.
+        /// Multiple selections can be made programatically regardless of the value of this property.
+        /// </remarks>
         public new SelectionMode SelectionMode
         {
             get { return base.SelectionMode; }
@@ -83,6 +91,16 @@ namespace Avalonia.Controls
             get { return GetValue(VirtualizationModeProperty); }
             set { SetValue(VirtualizationModeProperty, value); }
         }
+
+        /// <summary>
+        /// Selects all items in the <see cref="ListBox"/>.
+        /// </summary>
+        public new void SelectAll() => base.SelectAll();
+
+        /// <summary>
+        /// Deselects all items in the <see cref="ListBox"/>.
+        /// </summary>
+        public new void UnselectAll() => base.UnselectAll();
 
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
@@ -103,7 +121,7 @@ namespace Avalonia.Controls
                 e.Handled = UpdateSelectionFromEventSource(
                     e.Source,
                     true,
-                    (e.InputModifiers & InputModifiers.Shift) != 0);
+                    (e.KeyModifiers & KeyModifiers.Shift) != 0);
             }
         }
 
@@ -112,20 +130,26 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.MouseButton == MouseButton.Left || e.MouseButton == MouseButton.Right)
+            if (e.Source is IVisual source)
             {
-                e.Handled = UpdateSelectionFromEventSource(
-                    e.Source,
-                    true,
-                    (e.InputModifiers & InputModifiers.Shift) != 0,
-                    (e.InputModifiers & InputModifiers.Control) != 0);
+                var point = e.GetCurrentPoint(source);
+
+                if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
+                {
+                    e.Handled = UpdateSelectionFromEventSource(
+                        e.Source,
+                        true,
+                        (e.KeyModifiers & KeyModifiers.Shift) != 0,
+                        (e.KeyModifiers & KeyModifiers.Control) != 0,
+                        point.Properties.IsRightButtonPressed);
+                }
             }
         }
 
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
             Scroll = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
+            base.OnTemplateApplied(e);
         }
     }
 }

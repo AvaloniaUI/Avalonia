@@ -40,8 +40,6 @@ namespace Avalonia.DesignerSupport.Remote
             return s_lastWindow;
         }
 
-        public IPopupImpl CreatePopup() => new WindowStub();
-
         public static void Initialize(IAvaloniaRemoteTransportConnection transport)
         {
             s_transport = transport;
@@ -53,10 +51,12 @@ namespace Avalonia.DesignerSupport.Remote
                 .Bind<IKeyboardDevice>().ToConstant(Keyboard)
                 .Bind<IPlatformSettings>().ToConstant(instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(threading)
-                .Bind<IRenderLoop>().ToConstant(threading)
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
+                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogsStub>()
                 .Bind<IWindowingPlatform>().ToConstant(instance)
-                .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>();
+                .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
 
         }
 

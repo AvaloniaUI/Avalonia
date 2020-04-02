@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
@@ -8,7 +5,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Markup.Data;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -56,7 +52,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234"
                 };
 
-                RaiseKeyEvent(target, Key.A, InputModifiers.Control);
+                RaiseKeyEvent(target, Key.A, KeyModifiers.Control);
 
                 Assert.Equal(0, target.SelectionStart);
                 Assert.Equal(4, target.SelectionEnd);
@@ -73,7 +69,7 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate()
                 };
 
-                RaiseKeyEvent(target, Key.A, InputModifiers.Control);
+                RaiseKeyEvent(target, Key.A, KeyModifiers.Control);
 
                 Assert.Equal(0, target.SelectionStart);
                 Assert.Equal(0, target.SelectionEnd);
@@ -91,7 +87,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234"
                 };
 
-                RaiseKeyEvent(target, Key.Z, InputModifiers.Control);
+                RaiseKeyEvent(target, Key.Z, KeyModifiers.Control);
 
                 Assert.Equal("1234", target.Text);
             }
@@ -137,29 +133,29 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 // (First| Second Third Fourth)
-                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
                 Assert.Equal(" Second Third Fourth", textBox.Text);
 
                 // ( Second |Third Fourth)
                 textBox.CaretIndex = 8;
-                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
                 Assert.Equal(" Third Fourth", textBox.Text);
 
                 // ( Thi|rd Fourth)
                 textBox.CaretIndex = 4;
-                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
                 Assert.Equal(" rd Fourth", textBox.Text);
 
                 // ( rd F[ou]rth)
                 textBox.SelectionStart = 5;
                 textBox.SelectionEnd = 7;
 
-                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
                 Assert.Equal(" rd Frth", textBox.Text);
 
                 // ( |rd Frth)
                 textBox.CaretIndex = 1;
-                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
                 Assert.Equal("rd Frth", textBox.Text);
             }
         }
@@ -176,30 +172,30 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 // (First Second Third |Fourth)
-                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
                 Assert.Equal("First Second Third ", textBox.Text);
 
                 // (First Second |Third )
                 textBox.CaretIndex = 13;
-                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
                 Assert.Equal("First Second ", textBox.Text);
 
                 // (First Sec|ond )
                 textBox.CaretIndex = 9;
-                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
                 Assert.Equal("First Sec", textBox.Text);
 
                 // (Fi[rs]t Sec )
                 textBox.SelectionStart = 2;
                 textBox.SelectionEnd = 4;
 
-                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
                 Assert.Equal("Fit Sec", textBox.Text);
 
                 // (Fit Sec| )
                 textBox.Text += " ";
                 textBox.CaretIndex = 7;
-                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
                 Assert.Equal("Fit Sec", textBox.Text);
             }
         }
@@ -322,12 +318,219 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void SelectionEnd_Doesnt_Cause_Exception()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123456789"
+                };
+
+                target.SelectionStart = 0;
+                target.SelectionEnd = 9;
+
+                target.Text = "123";
+
+                RaiseTextEvent(target, "456");
+
+                Assert.True(true);
+            }
+        }
+
+        [Fact]
+        public void SelectionStart_Doesnt_Cause_Exception()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123456789"
+                };
+
+                target.SelectionStart = 8;
+                target.SelectionEnd = 9;
+
+                target.Text = "123";
+
+                RaiseTextEvent(target, "456");
+
+                Assert.True(true);
+            }
+        }
+
+        [Fact]
+        public void SelectionStartEnd_Are_Valid_AterTextChange()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123456789"
+                };
+
+                target.SelectionStart = 8;
+                target.SelectionEnd = 9;
+
+                target.Text = "123";
+
+                Assert.True(target.SelectionStart <= "123".Length);
+                Assert.True(target.SelectionEnd <= "123".Length);
+            }
+        }
+
+        [Fact]
+        public void SelectedText_Changes_OnSelectionChange()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123456789"
+                };
+
+                Assert.True(target.SelectedText == "");
+
+                target.SelectionStart = 2;
+                target.SelectionEnd = 4;
+
+                Assert.True(target.SelectedText == "23");
+            }
+        }
+
+        [Fact]
+        public void SelectedText_EditsText()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123"
+                };
+
+                target.SelectedText = "AA";
+                Assert.True(target.Text == "AA0123");
+
+                target.SelectionStart = 1;
+                target.SelectionEnd = 3;
+                target.SelectedText = "BB";
+
+                Assert.True(target.Text == "ABB123");
+            }
+        }
+
+        [Fact]
+        public void CoerceCaretIndex_Doesnt_Cause_Exception_with_malformed_line_ending()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123456789\r"
+                };
+                target.CaretIndex = 11;
+
+                Assert.True(true);
+            }
+        }
+
+        [Fact]
+        public void TextBox_GotFocus_And_LostFocus_Work_Properly()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234"
+                };
+                var target2 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "5678"
+                };
+                var sp = new StackPanel();
+                sp.Children.Add(target1);
+                sp.Children.Add(target2);
+
+                target1.ApplyTemplate();
+                target2.ApplyTemplate();
+                
+                var root = new TestRoot { Child = sp };
+
+                var gfcount = 0;
+                var lfcount = 0;
+
+                target1.GotFocus += (s, e) => gfcount++;
+                target2.LostFocus += (s, e) => lfcount++;
+
+                target2.Focus();
+                Assert.False(target1.IsFocused);
+                Assert.True(target2.IsFocused);
+
+                target1.Focus();
+                Assert.False(target2.IsFocused);
+                Assert.True(target1.IsFocused);
+
+                Assert.Equal(1, gfcount);
+                Assert.Equal(1, lfcount);
+            }
+        }
+
+        [Fact]
+        public void Setting_Bound_Text_To_Null_Works()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var source = new Class1 { Bar = "bar" };
+                var target = new TextBox { DataContext = source };
+
+                target.Bind(TextBox.TextProperty, new Binding("Bar"));
+
+                Assert.Equal("bar", target.Text);
+                source.Bar = null;
+                Assert.Null(target.Text);
+            }
+        }
+
+        [Fact]
+        public void Text_Box_MaxLength_Work_Properly()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "abc",
+                    MaxLength = 3,
+                };
+
+                RaiseKeyEvent(target, Key.D, KeyModifiers.None);
+
+                Assert.Equal("abc", target.Text);
+            }
+        }
+
+        private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
+            focusManager: new FocusManager(),
+            keyboardDevice: () => new KeyboardDevice(),
+            keyboardNavigation: new KeyboardNavigationHandler(),
+            inputManager: new InputManager(),
+            standardCursorFactory: Mock.Of<IStandardCursorFactory>());
+
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<IStandardCursorFactory>());
 
         private IControlTemplate CreateTemplate()
         {
-            return new FuncControlTemplate<TextBox>(control =>
+            return new FuncControlTemplate<TextBox>((control, scope) =>
                 new TextPresenter
                 {
                     Name = "PART_TextPresenter",
@@ -338,27 +541,43 @@ namespace Avalonia.Controls.UnitTests
                         Priority = BindingPriority.TemplatedParent,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
-                });
+                }.RegisterInNameScope(scope));
         }
 
-        private void RaiseKeyEvent(TextBox textBox, Key key, InputModifiers inputModifiers)
+        private void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
         {
             textBox.RaiseEvent(new KeyEventArgs
             {
                 RoutedEvent = InputElement.KeyDownEvent,
-                Modifiers = inputModifiers,
+                KeyModifiers = inputModifiers,
                 Key = key
+            });
+        }
+
+        private void RaiseTextEvent(TextBox textBox, string text)
+        {
+            textBox.RaiseEvent(new TextInputEventArgs
+            {
+                RoutedEvent = InputElement.TextInputEvent,
+                Text = text
             });
         }
 
         private class Class1 : NotifyingBase
         {
             private int _foo;
+            private string _bar;
 
             public int Foo
             {
                 get { return _foo; }
                 set { _foo = value; RaisePropertyChanged(); }
+            }
+
+            public string Bar
+            {
+                get { return _bar; }
+                set { _bar = value; RaisePropertyChanged(); }
             }
         }
     }

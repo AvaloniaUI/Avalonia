@@ -19,11 +19,30 @@ namespace Avalonia.Data.Core
             {
                 return false;
             }
+
+            if (LastValue == null)
+            {
+                return false;
+            }
+
+            bool isLastValueAlive = LastValue.TryGetTarget(out object lastValue);
+
+            if (!isLastValueAlive)
+            {
+                if (value == null && LastValue == NullReference)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
             if (PropertyType.IsValueType)
             {
-                return LastValue?.Target != null && LastValue.Target.Equals(value);
+                return lastValue.Equals(value);
             }
-            return LastValue != null && Object.ReferenceEquals(LastValue?.Target, value);
+
+            return ReferenceEquals(lastValue, value);
         }
 
         protected abstract bool SetTargetValueCore(object value, BindingPriority priority);

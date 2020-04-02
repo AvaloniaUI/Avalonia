@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Platform;
 
 namespace Avalonia.Media
@@ -15,12 +12,6 @@ namespace Avalonia.Media
         /// </summary>
         public static readonly StyledProperty<Rect> RectProperty =
             AvaloniaProperty.Register<RectangleGeometry, Rect>(nameof(Rect));
-
-        public Rect Rect
-        {
-            get => GetValue(RectProperty);
-            set => SetValue(RectProperty, value);
-        }
 
         static RectangleGeometry()
         {
@@ -43,25 +34,23 @@ namespace Avalonia.Media
             Rect = rect;
         }
 
+        /// <summary>
+        /// Gets or sets the bounds of the rectangle.
+        /// </summary>
+        public Rect Rect
+        {
+            get => GetValue(RectProperty);
+            set => SetValue(RectProperty, value);
+        }
+
         /// <inheritdoc/>
         public override Geometry Clone() => new RectangleGeometry(Rect);
 
         protected override IGeometryImpl CreateDefiningGeometry()
         {
             var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            var geometry = factory.CreateStreamGeometry();
 
-            using (var context = geometry.Open())
-            {
-                var rect = Rect;
-                context.BeginFigure(rect.TopLeft, true);
-                context.LineTo(rect.TopRight);
-                context.LineTo(rect.BottomRight);
-                context.LineTo(rect.BottomLeft);
-                context.EndFigure(true);
-            }
-
-            return geometry;
+            return factory.CreateRectangleGeometry(Rect);
         }
     }
 }

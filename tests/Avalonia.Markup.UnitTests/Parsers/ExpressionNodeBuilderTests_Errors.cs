@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers;
 using Xunit;
@@ -28,6 +25,13 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             Assert.Throws<ExpressionParseException>(
                 () => ExpressionObserverBuilder.Parse("Foo.Bar."));
+        }
+
+        [Fact]
+        public void Expression_Cannot_Start_With_Period_Then_Token()
+        {
+            Assert.Throws<ExpressionParseException>(
+                () => ExpressionObserverBuilder.Parse(".Bar"));
         }
 
         [Fact]

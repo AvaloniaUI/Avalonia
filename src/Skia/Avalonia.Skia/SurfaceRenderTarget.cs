@@ -1,8 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.IO;
+using System.Reactive.Disposables;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Skia.Helpers;
@@ -13,12 +11,12 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that writes to a surface.
     /// </summary>
-    public class SurfaceRenderTarget : IRenderTargetBitmapImpl, IDrawableBitmapImpl
+    internal class SurfaceRenderTarget : IRenderTargetBitmapImpl, IDrawableBitmapImpl
     {
-        private readonly Vector _dpi;
         private readonly SKSurface _surface;
         private readonly SKCanvas _canvas;
         private readonly bool _disableLcdRendering;
+        private readonly GRContext _grContext;
         
         /// <summary>
         /// Create new surface render target.
@@ -26,12 +24,12 @@ namespace Avalonia.Skia
         /// <param name="createInfo">Create info.</param>
         public SurfaceRenderTarget(CreateInfo createInfo)
         {
-            PixelWidth = createInfo.Width;
-            PixelHeight = createInfo.Height;
-            _dpi = createInfo.Dpi;
-            _disableLcdRendering = createInfo.DisableTextLcdRendering;
+            PixelSize = new PixelSize(createInfo.Width, createInfo.Height);
+            Dpi = createInfo.Dpi;
 
-            _surface = CreateSurface(PixelWidth, PixelHeight, createInfo.Format);
+            _disableLcdRendering = createInfo.DisableTextLcdRendering;
+            _grContext = createInfo.GrContext;
+            _surface = CreateSurface(createInfo.GrContext, PixelSize.Width, PixelSize.Height, createInfo.Format);
 
             _canvas = _surface?.Canvas;
 
@@ -44,14 +42,16 @@ namespace Avalonia.Skia
         /// <summary>
         /// Create backing Skia surface.
         /// </summary>
+        /// <param name="gpu">GPU.</param>
         /// <param name="width">Width.</param>
         /// <param name="height">Height.</param>
         /// <param name="format">Format.</param>
         /// <returns></returns>
-        private static SKSurface CreateSurface(int width, int height, PixelFormat? format)
+        private static SKSurface CreateSurface(GRContext gpu, int width, int height, PixelFormat? format)
         {
             var imageInfo = MakeImageInfo(width, height, format);
-
+            if (gpu != null)
+                return SKSurface.Create(gpu, false, imageInfo);
             return SKSurface.Create(imageInfo);
         }
 
@@ -71,19 +71,22 @@ namespace Avalonia.Skia
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Canvas = _canvas,
-                Dpi = _dpi,
+                Dpi = Dpi,
                 VisualBrushRenderer = visualBrushRenderer,
-                DisableTextLcdRendering = _disableLcdRendering
+                DisableTextLcdRendering = _disableLcdRendering,
+                GrContext = _grContext
             };
 
-            return new DrawingContextImpl(createInfo);
+            return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));
         }
 
         /// <inheritdoc />
-        public int PixelWidth { get; }
+        public Vector Dpi { get; }
 
         /// <inheritdoc />
-        public int PixelHeight { get; }
+        public PixelSize PixelSize { get; }
+
+        public int Version { get; private set; } = 1;
 
         /// <inheritdoc />
         public void Save(string fileName)
@@ -132,7 +135,7 @@ namespace Avalonia.Skia
         {
             var colorType = PixelFormatHelper.ResolveColorType(format);
 
-            return new SKImageInfo(width, height, colorType, SKAlphaType.Premul);
+            return new SKImageInfo(Math.Max(width, 1), Math.Max(height, 1), colorType, SKAlphaType.Premul);
         }
 
         /// <summary>
@@ -164,6 +167,11 @@ namespace Avalonia.Skia
             /// Render text without Lcd rendering.
             /// </summary>
             public bool DisableTextLcdRendering;
+
+            /// <summary>
+            /// GPU-accelerated context (optional)
+            /// </summary>
+            public GRContext GrContext;
         }
     }
 }

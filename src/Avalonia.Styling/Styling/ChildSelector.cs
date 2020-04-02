@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.LogicalTree;
 
@@ -25,6 +22,9 @@ namespace Avalonia.Styling
         public override bool InTemplate => _parent.InTemplate;
 
         /// <inheritdoc/>
+        public override bool IsCombinator => true;
+
+        /// <inheritdoc/>
         public override Type TargetType => null;
 
         public override string ToString()
@@ -43,11 +43,24 @@ namespace Avalonia.Styling
 
             if (controlParent != null)
             {
-                return _parent.Match((IStyleable)controlParent, subscribe);
+                var parentMatch = _parent.Match((IStyleable)controlParent, subscribe);
+
+                if (parentMatch.Result == SelectorMatchResult.Sometimes)
+                {
+                    return parentMatch;
+                }
+                else if (parentMatch.IsMatch)
+                {
+                    return SelectorMatch.AlwaysThisInstance;
+                }
+                else
+                {
+                    return SelectorMatch.NeverThisInstance;
+                }
             }
             else
             {
-                return SelectorMatch.False;
+                return SelectorMatch.NeverThisInstance;
             }
         }
 

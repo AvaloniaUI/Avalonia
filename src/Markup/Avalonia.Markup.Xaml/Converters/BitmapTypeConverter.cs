@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using Avalonia.Media.Imaging;
@@ -8,8 +5,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-    using Portable.Xaml.ComponentModel;
-	using System.ComponentModel;
+    using System.ComponentModel;
 
     public class BitmapTypeConverter : TypeConverter
     {
@@ -20,18 +16,16 @@ namespace Avalonia.Markup.Xaml.Converters
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            var uri = new Uri((string)value, UriKind.RelativeOrAbsolute);
-            var scheme = uri.IsAbsoluteUri ? uri.Scheme : "file";
+            var s = (string)value;
+            var uri = s.StartsWith("/")
+                ? new Uri(s, UriKind.Relative)
+                : new Uri(s, UriKind.RelativeOrAbsolute);
 
-            switch (scheme)
-            {
-                case "file":
-                    return new Bitmap((string)value);
+            if(uri.IsAbsoluteUri && uri.IsFile)
+                return new Bitmap(uri.LocalPath);
 
-                default:
-                    var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-                    return new Bitmap(assets.Open(uri, context.GetBaseUri()));
-            }
+            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            return new Bitmap(assets.Open(uri, context.GetContextBaseUri()));
         }
     }
 }

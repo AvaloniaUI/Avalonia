@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,7 +31,12 @@ namespace Avalonia.Controls.Generators
         /// <summary>
         /// Gets the currently materialized containers.
         /// </summary>
-        public IEnumerable<IControl> Items => _containerToItem.Keys;
+        public IEnumerable<IControl> Containers => _containerToItem.Keys;
+
+        /// <summary>
+        /// Gets the items of currently materialized containers.
+        /// </summary>
+        public IEnumerable<object> Items => _containerToItem.Values;
 
         /// <summary>
         /// Adds an entry to the index.

@@ -1,0 +1,80 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_AvaloniaUseExternalMSBuild>$(AvaloniaUseExternalMSBuild)</_AvaloniaUseExternalMSBuild>
+    <_AvaloniaUseExternalMSBuild Condition="'$(_AvaloniaForceInternalMSBuild)' == 'true'">false</_AvaloniaUseExternalMSBuild>
+  </PropertyGroup>
+  
+  <UsingTask TaskName="GenerateAvaloniaResourcesTask"
+             AssemblyFile="$(AvaloniaBuildTasksLocation)"
+             />
+
+  <UsingTask TaskName="CompileAvaloniaXamlTask"
+             AssemblyFile="$(AvaloniaBuildTasksLocation)"
+             />
+
+
+  <Target Name="AddAvaloniaResources" BeforeTargets="ResolveReferences">
+    <PropertyGroup>
+      <AvaloniaResourcesTemporaryFilePath Condition="'$(AvaloniaResourcesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/resources</AvaloniaResourcesTemporaryFilePath>
+    </PropertyGroup>
+    <ItemGroup>
+      <EmbeddedResource Include="$(AvaloniaResourcesTemporaryFilePath)">
+        <LogicalName>!AvaloniaResources</LogicalName>
+      </EmbeddedResource>
+    </ItemGroup>
+  </Target>
+  
+  <PropertyGroup>
+    <BuildAvaloniaResourcesDependsOn>$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources;ResolveReferences</BuildAvaloniaResourcesDependsOn>
+  </PropertyGroup>
+  
+  <Target Name="GenerateAvaloniaResources" 
+          BeforeTargets="CoreCompile;CoreResGen"
+          Inputs="@(AvaloniaResource);$(MSBuildAllProjects)"
+          Outputs="$(AvaloniaResourcesTemporaryFilePath)"
+          DependsOnTargets="$(BuildAvaloniaResourcesDependsOn)">
+    <GenerateAvaloniaResourcesTask
+      Condition="'$(_AvaloniaUseExternalMSBuild)' != 'true'"
+      Output="$(AvaloniaResourcesTemporaryFilePath)"
+      Root="$(MSBuildProjectDirectory)"
+      Resources="@(AvaloniaResource)"
+      EmbeddedResources="@(EmbeddedResources)"/>
+    <Exec 
+      Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
+      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:GenerateAvaloniaResources /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:BuildProjectReferences=false"/>
+
+  </Target>
+
+  <Target
+    Name="CompileAvaloniaXaml"
+    AfterTargets="AfterCompile"
+    Condition="Exists('@(IntermediateAssembly)') And $(DesignTimeBuild) != true And $(EnableAvaloniaXamlCompilation) != false"
+    >
+    <PropertyGroup>
+      <AvaloniaXamlReferencesTemporaryFilePath Condition="'$(AvaloniaXamlReferencesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/references</AvaloniaXamlReferencesTemporaryFilePath>
+      <AvaloniaXamlOriginalCopyFilePath Condition="'$(AvaloniaXamlOriginalCopyFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/original.dll</AvaloniaXamlOriginalCopyFilePath>
+      <AvaloniaXamlIlVerifyIl Condition="'$(AvaloniaXamlIlVerifyIl)' == ''">false</AvaloniaXamlIlVerifyIl>
+    </PropertyGroup>
+    <WriteLinesToFile
+      Condition="'$(_AvaloniaForceInternalMSBuild)' != 'true'"
+      File="$(AvaloniaXamlReferencesTemporaryFilePath)"
+      Lines="@(ReferencePathWithRefAssemblies)"
+      Overwrite="true" />
+    <CompileAvaloniaXamlTask
+      Condition="'$(_AvaloniaUseExternalMSBuild)' != 'true'"
+      AssemblyFile="@(IntermediateAssembly)"
+      ReferencesFilePath="$(AvaloniaXamlReferencesTemporaryFilePath)"
+      OriginalCopyPath="$(AvaloniaXamlOriginalCopyFilePath)"
+      ProjectDirectory="$(MSBuildProjectDirectory)"
+      VerifyIl="$(AvaloniaXamlIlVerifyIl)"
+    />
+    <Exec
+      Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
+      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:CompileAvaloniaXaml /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:BuildProjectReferences=false"/>
+  </Target>
+
+  
+  <ItemGroup>
+    <UpToDateCheckInput Include="@(AvaloniaResource)" />
+  </ItemGroup>
+</Project>

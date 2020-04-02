@@ -1,17 +1,12 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.Reactive.Subjects;
-using Moq;
-using Avalonia.Controls;
-using Avalonia.Data;
-using Xunit;
 using System;
-using Avalonia.Controls.Templates;
-using Avalonia.Markup.Data;
-using Avalonia.Markup;
 using System.Globalization;
+using System.Reactive.Subjects;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Moq;
+using Xunit;
 
 namespace Avalonia.Styling.UnitTests
 {
@@ -22,7 +17,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var target = new Setter();
 
-            Assert.Throws<ArgumentException>(() => target.Value = new Border());
+            Assert.Throws<InvalidOperationException>(() => target.Value = new Border());
         }
 
         [Fact]
@@ -35,7 +30,7 @@ namespace Avalonia.Styling.UnitTests
             var style = Mock.Of<IStyle>();
             var setter = new Setter(TextBlock.TextProperty, binding);
 
-            setter.Apply(style, control, null);
+            setter.Instance(control).Start(false);
 
             Assert.Equal("foo", control.Text);
         }
@@ -48,22 +43,9 @@ namespace Avalonia.Styling.UnitTests
             var style = Mock.Of<IStyle>();
             var setter = new Setter(Decorator.ChildProperty, template);
 
-            setter.Apply(style, control, null);
+            setter.Instance(control).Start(false);
 
             Assert.IsType<Canvas>(control.Child);
-        }
-
-        [Fact]
-        public void Materializes_Template_Should_Be_NameScope()
-        {
-            var control = new Decorator();
-            var template = new FuncTemplate<Canvas>(() => new Canvas());
-            var style = Mock.Of<IStyle>();
-            var setter = new Setter(Decorator.ChildProperty, template);
-
-            setter.Apply(style, control, null);
-
-            Assert.NotNull(NameScope.GetNameScope((Control)control.Child));
         }
 
         [Fact]
@@ -77,13 +59,15 @@ namespace Avalonia.Styling.UnitTests
                 RelativeSource = new RelativeSource(RelativeSourceMode.Self),
             };
             var setter = new Setter(Decorator.TagProperty, binding);
-            var activator = new BehaviorSubject<bool>(true);
 
-            setter.Apply(style, control, activator);
+            var instance = setter.Instance(control);
+            instance.Start(true);
+            instance.Activate();
+
             Assert.Equal("foobar", control.Tag);
 
             // Issue #1218 caused TestConverter.ConvertBack to throw here.
-            activator.OnNext(false);
+            instance.Deactivate();
             Assert.Null(control.Tag);
         }
 
@@ -92,29 +76,31 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Mock<IStyleable>();
             var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TextProperty, "foo");
+            var setter = new Setter(TextBlock.TagProperty, "foo");
 
-            setter.Apply(style, control.Object, null);
+            setter.Instance(control.Object).Start(false);
 
-            control.Verify(x => x.Bind(
-                TextBlock.TextProperty,
-                It.IsAny<IObservable<object>>(),
+            control.Verify(x => x.SetValue(
+                TextBlock.TagProperty,
+                "foo",
                 BindingPriority.Style));
         }
 
         [Fact]
-        public void Setter_Should_Apply_Value_With_Activator_With_StyleTrigger_Priority()
+        public void Setter_Should_Apply_Value_With_Activator_As_Binding_With_StyleTrigger_Priority()
         {
             var control = new Mock<IStyleable>();
             var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TextProperty, "foo");
+            var setter = new Setter(TextBlock.TagProperty, "foo");
             var activator = new Subject<bool>();
 
-            setter.Apply(style, control.Object, activator);
+            var instance = setter.Instance(control.Object);
+            instance.Start(true);
+            instance.Activate();
 
             control.Verify(x => x.Bind(
-                TextBlock.TextProperty,
-                It.IsAny<IObservable<object>>(),
+                TextBlock.TagProperty,
+                It.IsAny<IObservable<BindingValue<object>>>(),
                 BindingPriority.StyleTrigger));
         }
 
@@ -123,13 +109,13 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Mock<IStyleable>();
             var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TextProperty, CreateMockBinding(TextBlock.TextProperty));
+            var setter = new Setter(TextBlock.TagProperty, CreateMockBinding(TextBlock.TagProperty));
 
-            setter.Apply(style, control.Object, null);
+            setter.Instance(control.Object).Start(false);
 
             control.Verify(x => x.Bind(
-                TextBlock.TextProperty,
-                It.IsAny<IObservable<object>>(),
+                TextBlock.TagProperty,
+                It.IsAny<PropertySetterBindingInstance<object>>(),
                 BindingPriority.Style));
         }
 
@@ -138,14 +124,15 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Mock<IStyleable>();
             var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TextProperty, CreateMockBinding(TextBlock.TextProperty));
-            var activator = new Subject<bool>();
+            var setter = new Setter(TextBlock.TagProperty, CreateMockBinding(TextBlock.TagProperty));
 
-            setter.Apply(style, control.Object, activator);
+            var instance = setter.Instance(control.Object);
+            instance.Start(true);
+            instance.Activate();
 
             control.Verify(x => x.Bind(
-                TextBlock.TextProperty,
-                It.IsAny<IObservable<object>>(),
+                TextBlock.TagProperty,
+                It.IsAny<IObservable<BindingValue<object>>>(),
                 BindingPriority.StyleTrigger));
         }
 

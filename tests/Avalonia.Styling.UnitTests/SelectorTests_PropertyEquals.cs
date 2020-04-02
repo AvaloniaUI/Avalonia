@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -16,13 +13,22 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new TextBlock();
             var target = default(Selector).PropertyEquals(TextBlock.TextProperty, "foo");
-            var activator = target.Match(control).ObservableResult;
+            var activator = target.Match(control).Activator.ToObservable();
 
             Assert.False(await activator.Take(1));
             control.Text = "foo";
             Assert.True(await activator.Take(1));
             control.Text = null;
             Assert.False(await activator.Take(1));
+        }
+
+        [Fact]
+        public void OfType_PropertyEquals_Doesnt_Match_Control_Of_Wrong_Type()
+        {
+            var control = new TextBlock();
+            var target = default(Selector).OfType<Border>().PropertyEquals(TextBlock.TextProperty, "foo");
+
+            Assert.Equal(SelectorMatchResult.NeverThisType, target.Match(control).Result);
         }
 
         [Fact]

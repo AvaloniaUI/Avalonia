@@ -1,12 +1,8 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using System.Reactive;
-using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Input;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -54,11 +50,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static ScrollBar()
         {
-            PseudoClass(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
-            PseudoClass(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
-
-            Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>(o => o.OnThumbDragDelta, RoutingStrategies.Bubble);
-            Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>(o => o.OnThumbDragComplete, RoutingStrategies.Bubble);
+            Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
+            Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragComplete(e), RoutingStrategies.Bubble);
         }
 
         /// <summary>
@@ -66,13 +59,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public ScrollBar()
         {
-            var isVisible = Observable.Merge(
-                this.GetObservable(MinimumProperty).Select(_ => Unit.Default),
-                this.GetObservable(MaximumProperty).Select(_ => Unit.Default),
-                this.GetObservable(ViewportSizeProperty).Select(_ => Unit.Default),
-                this.GetObservable(VisibilityProperty).Select(_ => Unit.Default))
-                .Select(_ => CalculateIsVisible());
-            Bind(IsVisibleProperty, isVisible, BindingPriority.Style);
+            UpdatePseudoClasses(Orientation);
         }
 
         /// <summary>
@@ -106,25 +93,57 @@ namespace Avalonia.Controls.Primitives
         public event EventHandler<ScrollEventArgs> Scroll;
 
         /// <summary>
-        /// Calculates whether the scrollbar should be visible.
+        /// Calculates and updates whether the scrollbar should be visible.
         /// </summary>
-        /// <returns>The scrollbar's visibility.</returns>
-        private bool CalculateIsVisible()
+        private void UpdateIsVisible()
         {
-            switch (Visibility)
+            var isVisible = Visibility switch
             {
-                case ScrollBarVisibility.Visible:
-                    return true;
+                ScrollBarVisibility.Visible => true,
+                ScrollBarVisibility.Disabled => false,
+                ScrollBarVisibility.Hidden => false,
+                ScrollBarVisibility.Auto => (double.IsNaN(ViewportSize) || Maximum > 0),
+                _ => throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.")
+            };
 
-                case ScrollBarVisibility.Disabled:
-                case ScrollBarVisibility.Hidden:
-                    return false;
+            SetValue(IsVisibleProperty, isVisible, BindingPriority.Style);
+        }
 
-                case ScrollBarVisibility.Auto:
-                    return double.IsNaN(ViewportSize) || Maximum > 0;
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.PageUp)
+            {
+                LargeDecrement();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.PageDown)
+            {
+                LargeIncrement();
+                e.Handled = true;
+            }
+        }
 
-                default:
-                    throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.");
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
+        {
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
+
+            if (property == OrientationProperty)
+            {
+                UpdatePseudoClasses(newValue.GetValueOrDefault<Orientation>());
+            }
+            else
+            {
+                if (property == MinimumProperty ||
+                    property == MaximumProperty || 
+                    property == ViewportSizeProperty ||
+                    property == VisibilityProperty)
+                {
+                    UpdateIsVisible();
+                }
             }
         }
 
@@ -202,25 +221,25 @@ namespace Avalonia.Controls.Primitives
 
         private void SmallDecrement()
         {
-            Value = Math.Max(Value - SmallChange * ViewportSize, Minimum);
+            Value = Math.Max(Value - SmallChange, Minimum);
             OnScroll(ScrollEventType.SmallDecrement);
         }
 
         private void SmallIncrement()
         {
-            Value = Math.Min(Value + SmallChange * ViewportSize, Maximum);
+            Value = Math.Min(Value + SmallChange, Maximum);
             OnScroll(ScrollEventType.SmallIncrement);
         }
 
         private void LargeDecrement()
         {
-            Value = Math.Max(Value - LargeChange * ViewportSize, Minimum);
+            Value = Math.Max(Value - LargeChange, Minimum);
             OnScroll(ScrollEventType.LargeDecrement);
         }
 
         private void LargeIncrement()
         {
-            Value = Math.Min(Value + LargeChange * ViewportSize, Maximum);
+            Value = Math.Min(Value + LargeChange, Maximum);
             OnScroll(ScrollEventType.LargeIncrement);
         }
 
@@ -236,6 +255,12 @@ namespace Avalonia.Controls.Primitives
         protected void OnScroll(ScrollEventType scrollEventType)
         {
             Scroll?.Invoke(this, new ScrollEventArgs(scrollEventType, Value));
+        }
+
+        private void UpdatePseudoClasses(Orientation o)
+        {
+            PseudoClasses.Set(":vertical", o == Orientation.Vertical);
+            PseudoClasses.Set(":horizontal", o == Orientation.Horizontal);
         }
     }
 }

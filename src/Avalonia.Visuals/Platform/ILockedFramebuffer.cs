@@ -10,14 +10,9 @@ namespace Avalonia.Platform
         IntPtr Address { get; }
 
         /// <summary>
-        /// Framebuffer width
+        /// Gets the framebuffer size in device pixels.
         /// </summary>
-        int Width { get; }
-        
-        /// <summary>
-        /// Framebuffer height
-        /// </summary>
-        int Height { get; }
+        PixelSize Size{ get; }
         
         /// <summary>
         /// Number of bytes per row

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls;
 using Avalonia.Skia;
 
@@ -20,8 +17,9 @@ namespace Avalonia
         /// <returns>Configure builder.</returns>
         public static T UseSkia<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.UseRenderingSubsystem(() => SkiaPlatform.Initialize(), "Skia");
-            return builder;
+            return builder.UseRenderingSubsystem(() => SkiaPlatform.Initialize(
+                AvaloniaLocator.Current.GetService<SkiaOptions>() ?? new SkiaOptions()),
+                "Skia");
         }
     }
 }

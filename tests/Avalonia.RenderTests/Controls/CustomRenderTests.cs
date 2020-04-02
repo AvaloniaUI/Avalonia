@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -36,7 +33,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                         new Rect(control.Bounds.Size),
                         4);
 
-                    using (context.PushClip(new Rect(control.Bounds.Size).Deflate(20)))
+                    using (context.PushClip(new Rect(control.Bounds.Size).Deflate(10)))
                     {
                         context.FillRectangle(
                             Brushes.Blue,
@@ -100,7 +97,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         context.FillRectangle(
                             Brushes.Blue,
-                            new Rect(control.Bounds.Size).Deflate(20),
+                            new Rect(control.Bounds.Size).Deflate(10),
                             4);
                     }
                 }),
@@ -124,7 +121,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
                         EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-                        GradientStops = new[]
+                        GradientStops =
                         {
                             new GradientStop(Color.FromUInt32(0xffffffff), 0),
                             new GradientStop(Color.FromUInt32(0x00ffffff), 1)
@@ -140,7 +137,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         context.FillRectangle(
                             Brushes.Blue,
-                            new Rect(control.Bounds.Size).Deflate(20),
+                            new Rect(control.Bounds.Size).Deflate(10),
                             4);
                     }
                 }),

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Input.Navigation
 {
     /// <summary>
@@ -13,13 +10,13 @@ namespace Avalonia.Input.Navigation
         /// </summary>
         /// <param name="e">The element.</param>
         /// <returns>True if the element can be focused.</returns>
-        public static bool CanFocus(this IInputElement e) => e.Focusable && e.IsEnabledCore && e.IsVisible;
+        public static bool CanFocus(this IInputElement e) => e.Focusable && e.IsEffectivelyEnabled && e.IsVisible;
 
         /// <summary>
         /// Checks if descendants of the specified element can be focused.
         /// </summary>
         /// <param name="e">The element.</param>
         /// <returns>True if descendants of the element can be focused.</returns>
-        public static bool CanFocusDescendants(this IInputElement e) => e.IsEnabledCore && e.IsVisible;
+        public static bool CanFocusDescendants(this IInputElement e) => e.IsEffectivelyEnabled && e.IsVisible;
     }
 }

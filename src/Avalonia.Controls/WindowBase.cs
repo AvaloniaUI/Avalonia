@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -46,12 +47,8 @@ namespace Avalonia.Controls
         static WindowBase()
         {
             IsVisibleProperty.OverrideDefaultValue<WindowBase>(false);
-            IsVisibleProperty.Changed.AddClassHandler<WindowBase>(x => x.IsVisibleChanged);
+            IsVisibleProperty.Changed.AddClassHandler<WindowBase>((x,e) => x.IsVisibleChanged(e));
 
-            MinWidthProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size((double)e.NewValue, w.MinHeight), new Size(w.MaxWidth, w.MaxHeight)));
-            MinHeightProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue), new Size(w.MaxWidth, w.MaxHeight)));
-            MaxWidthProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size((double)e.NewValue, w.MaxHeight)));
-            MaxHeightProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size(w.MaxWidth, (double)e.NewValue)));
             
             TopmostProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetTopmost((bool)e.NewValue));
         }
@@ -62,10 +59,10 @@ namespace Avalonia.Controls
 
         public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver dependencyResolver) : base(impl, dependencyResolver)
         {
+            Screens = new Screens(PlatformImpl?.Screen);
             impl.Activated = HandleActivated;
             impl.Deactivated = HandleDeactivated;
             impl.PositionChanged = HandlePositionChanged;
-            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
         }
 
         /// <summary>
@@ -81,7 +78,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired when the window position is changed.
         /// </summary>
-        public event EventHandler<PointEventArgs> PositionChanged;
+        public event EventHandler<PixelPointEventArgs> PositionChanged;
 
         [CanBeNull]
         public new IWindowBaseImpl PlatformImpl => (IWindowBaseImpl) base.PlatformImpl;
@@ -94,19 +91,8 @@ namespace Avalonia.Controls
             get { return _isActive; }
             private set { SetAndRaise(IsActiveProperty, ref _isActive, value); }
         }
-
-        /// <summary>
-        /// Gets or sets the window position in screen coordinates.
-        /// </summary>
-        public Point Position
-        {
-            get { return PlatformImpl?.Position ?? default(Point); }
-            set
-            {
-                if (PlatformImpl is IWindowBaseImpl impl)
-                    impl.Position = value;
-            }
-        }
+        
+        public Screens Screens { get; private set; }
 
         /// <summary>
         /// Whether an auto-size operation is in progress.
@@ -163,7 +149,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Shows the popup.
+        /// Shows the window.
         /// </summary>
         public virtual void Show()
         {
@@ -181,6 +167,7 @@ namespace Avalonia.Controls
                 }
                 PlatformImpl?.Show();
                 Renderer?.Start();
+                OnOpened(EventArgs.Empty);
             }
             finally
             {
@@ -201,21 +188,6 @@ namespace Avalonia.Controls
         {
             AutoSizing = true;
             return Disposable.Create(() => AutoSizing = false);
-        }
-
-        /// <summary>
-        /// Carries out the arrange pass of the window.
-        /// </summary>
-        /// <param name="finalSize">The final window size.</param>
-        /// <returns>The <paramref name="finalSize"/> parameter unchanged.</returns>
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            using (BeginAutoSizing())
-            {
-                PlatformImpl?.Resize(finalSize);
-            }
-
-            return base.ArrangeOverride(PlatformImpl?.ClientSize ?? default(Size));
         }
 
         /// <summary>
@@ -267,9 +239,9 @@ namespace Avalonia.Controls
         /// <see cref="IWindowBaseImpl.PositionChanged"/>.
         /// </summary>
         /// <param name="pos">The window position.</param>
-        private void HandlePositionChanged(Point pos)
+        private void HandlePositionChanged(PixelPoint pos)
         {
-            PositionChanged?.Invoke(this, new PointEventArgs(pos));
+            PositionChanged?.Invoke(this, new PixelPointEventArgs(pos));
         }
 
         /// <summary>
@@ -313,16 +285,5 @@ namespace Avalonia.Controls
                 }
             }
         }
-
-        /// <summary>
-        /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
-        /// </summary>
-        public void BeginMoveDrag() => PlatformImpl?.BeginMoveDrag();
-
-        /// <summary>
-        /// Starts resizing a window. This function is used if an application has window resizing controls. 
-        /// Should be called from left mouse button press event handler
-        /// </summary>
-        public void BeginResizeDrag(WindowEdge edge) => PlatformImpl?.BeginResizeDrag(edge);
     }
 }

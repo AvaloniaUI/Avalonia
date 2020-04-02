@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -56,12 +53,12 @@ namespace Avalonia.Controls
         {
             if (value < 0 || double.IsNaN(value) || double.IsInfinity(value))
             {
-                throw new ArgumentException("Invalid value", "value");
+                throw new ArgumentException("Invalid value", nameof(value));
             }
 
             if (type < GridUnitType.Auto || type > GridUnitType.Star)
             {
-                throw new ArgumentException("Invalid value", "type");
+                throw new ArgumentException("Invalid value", nameof(type));
             }
 
             _type = type;

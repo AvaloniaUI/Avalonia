@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Media;
 
 namespace Avalonia.Platform
@@ -20,7 +17,7 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="pen">The pen to use. May be null.</param>
         /// <returns>The bounding rectangle.</returns>
-        Rect GetRenderBounds(Pen pen);
+        Rect GetRenderBounds(IPen pen);
 
         /// <summary>
         /// Indicates whether the geometry's fill contains the specified point.
@@ -42,7 +39,7 @@ namespace Avalonia.Platform
         /// <param name="pen">The stroke to use.</param>
         /// <param name="point">The point.</param>
         /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
-        bool StrokeContains(Pen pen, Point point);
+        bool StrokeContains(IPen pen, Point point);
 
         /// <summary>
         /// Makes a clone of the geometry with the specified transform.

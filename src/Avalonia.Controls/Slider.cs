@@ -1,10 +1,9 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -42,11 +41,9 @@ namespace Avalonia.Controls
         static Slider()
         {
             OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
-            Thumb.DragStartedEvent.AddClassHandler<Slider>(x => x.OnThumbDragStarted, RoutingStrategies.Bubble);
-            Thumb.DragDeltaEvent.AddClassHandler<Slider>(x => x.OnThumbDragDelta, RoutingStrategies.Bubble);
-            Thumb.DragCompletedEvent.AddClassHandler<Slider>(x => x.OnThumbDragCompleted, RoutingStrategies.Bubble);
-            SmallChangeProperty.OverrideDefaultValue<Slider>(1);
-            LargeChangeProperty.OverrideDefaultValue<Slider>(10);
+            Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
+            Thumb.DragDeltaEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
+            Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e), RoutingStrategies.Bubble);
         }
 
         /// <summary>
@@ -54,6 +51,7 @@ namespace Avalonia.Controls
         /// </summary>
         public Slider()
         {
+            UpdatePseudoClasses(Orientation);
         }
 
         /// <summary>
@@ -136,6 +134,20 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
+        {
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
+
+            if (property == OrientationProperty)
+            {
+                UpdatePseudoClasses(newValue.GetValueOrDefault<Orientation>());
+            }
+        }
+
         /// <summary>
         /// Called when user start dragging the <see cref="Thumb"/>.
         /// </summary>
@@ -188,6 +200,12 @@ namespace Avalonia.Controls
             }
 
             return value;
+        }
+
+        private void UpdatePseudoClasses(Orientation o)
+        {
+            PseudoClasses.Set(":vertical", o == Orientation.Vertical);
+            PseudoClasses.Set(":horizontal", o == Orientation.Horizontal);
         }
     }
 }

@@ -58,8 +58,7 @@ namespace Avalonia.Win32.Interop.Wpf
             }
 
             public IntPtr Address => _bitmap.BackBuffer;
-            public int Width => _bitmap.PixelWidth;
-            public int Height => _bitmap.PixelHeight;
+            public PixelSize Size => new PixelSize(_bitmap.PixelWidth, _bitmap.PixelHeight);
             public int RowBytes => _bitmap.BackBufferStride;
             public Vector Dpi { get; }
             public PixelFormat Format => PixelFormat.Bgra8888;

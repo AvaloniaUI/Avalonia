@@ -30,7 +30,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Parses a string to a <see cref="Cue"/> object.
         /// </summary>
-        public static object Parse(string value, CultureInfo culture)
+        public static Cue Parse(string value, CultureInfo culture)
         {
             string v = value;
 
@@ -70,7 +70,7 @@ namespace Avalonia.Animation
         }
     }
 
-    public class CueTypeConverter : TypeConverter 
+    public class CueTypeConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {

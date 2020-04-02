@@ -1,11 +1,9 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -64,7 +62,31 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Vector(10, 10), target.Offset);
         }
 
-        private Control CreateTemplate(ScrollViewer control)
+        [Fact]
+        public void Test_ScrollToHome()
+        {
+            var target = new ScrollViewer();
+            target.SetValue(ScrollViewer.ExtentProperty, new Size(50, 50));
+            target.SetValue(ScrollViewer.ViewportProperty, new Size(10, 10));
+            target.Offset = new Vector(25, 25);
+            target.ScrollToHome();
+
+            Assert.Equal(new Vector(0, 0), target.Offset);
+        }
+
+        [Fact]
+        public void Test_ScrollToEnd()
+        {
+            var target = new ScrollViewer();
+            target.SetValue(ScrollViewer.ExtentProperty, new Size(50, 50));
+            target.SetValue(ScrollViewer.ViewportProperty, new Size(10, 10));
+            target.Offset = new Vector(25, 25);
+            target.ScrollToEnd();
+
+            Assert.Equal(new Vector(0, 40), target.Offset);
+        }
+
+        private Control CreateTemplate(ScrollViewer control, INameScope scope)
         {
             return new Grid
             {
@@ -88,7 +110,7 @@ namespace Avalonia.Controls.UnitTests
                         [~~ScrollContentPresenter.OffsetProperty] = control[~~ScrollViewer.OffsetProperty],
                         [~~ScrollContentPresenter.ViewportProperty] = control[~~ScrollViewer.ViewportProperty],
                         [~ScrollContentPresenter.CanHorizontallyScrollProperty] = control[~ScrollViewer.CanHorizontallyScrollProperty],
-                    },
+                    }.RegisterInNameScope(scope),
                     new ScrollBar
                     {
                         Name = "horizontalScrollBar",
@@ -98,7 +120,7 @@ namespace Avalonia.Controls.UnitTests
                         [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.HorizontalScrollBarViewportSizeProperty],
                         [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
                         [Grid.RowProperty] = 1,
-                    },
+                    }.RegisterInNameScope(scope),
                     new ScrollBar
                     {
                         Name = "verticalScrollBar",
@@ -108,7 +130,7 @@ namespace Avalonia.Controls.UnitTests
                         [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.VerticalScrollBarViewportSizeProperty],
                         [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
                         [Grid.ColumnProperty] = 1,
-                    },
+                    }.RegisterInNameScope(scope),
                 },
             };
         }

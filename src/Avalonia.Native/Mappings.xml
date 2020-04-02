@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config id="AvaloniaNative" xmlns="urn:SharpGen.Config">
+    <assembly>Avalonia.Native</assembly>
+    <namespace>Avalonia.Native.Interop</namespace>
+    <depends>SharpGen.Runtime.COM</depends>
+    <include-dir>$(THIS_CONFIG_PATH)/../../native/Avalonia.Native/inc</include-dir>
+    <include file="avalonia-native.h" 
+             namespace="Avalonia.Native.Interop"
+             attach="true"
+             pre="#define COM_GUIDS_MATERIALIZE\n"/>
+    <include file="com.h" 
+             namespace="Avalonia.Native.Interop"
+             attach="true"
+             pre="#define COM_GUIDS_MATERIALIZE\n"/>
+    <mapping>
+        <remove function=".*" />
+        <map interface="*.Events" callback="true" autogen-shadow="true"/>
+        <map interface="*.Callback" callback="true" autogen-shadow="true"/>
+        <map param=".*::.*::ppv" return="true"/>
+        <map param=".*::.*::ret" return="true"/>
+        <map param=".*::.*::retOut" attribute="out" return="true"/>
+    </mapping>
+</config>

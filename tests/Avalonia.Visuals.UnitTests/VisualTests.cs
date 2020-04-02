@@ -1,10 +1,9 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -191,6 +190,141 @@ namespace Avalonia.Visuals.UnitTests
 
             Assert.Throws<InvalidOperationException>(() => root2.Child = child);
             Assert.Empty(root2.GetVisualChildren());
+        }
+
+        [Fact]
+        public void TransformToVisual_Should_Work()
+        {
+            var child = new Decorator { Width = 100, Height = 100 };
+            var root = new TestRoot() { Child = child, Width = 400, Height = 400 };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(new Point(), root.DesiredSize));
+
+            var tr = child.TransformToVisual(root);
+
+            Assert.NotNull(tr);
+
+            var point = root.Bounds.TopLeft * tr;
+
+            //child is centered (400 - 100)/2
+            Assert.Equal(new Point(150, 150), point);
+        }
+
+        [Fact]
+        public void TransformToVisual_With_RenderTransform_Should_Work()
+        {
+            var child = new Decorator
+            {
+                Width = 100,
+                Height = 100,
+                RenderTransform = new ScaleTransform() { ScaleX = 2, ScaleY = 2 }
+            };
+            var root = new TestRoot() { Child = child, Width = 400, Height = 400 };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(new Point(), root.DesiredSize));
+
+            var tr = child.TransformToVisual(root);
+
+            Assert.NotNull(tr);
+
+            var point = root.Bounds.TopLeft * tr;
+
+            //child is centered (400 - 100*2 scale)/2
+            Assert.Equal(new Point(100, 100), point);
+        }
+
+        [Fact]
+        public void Should_Not_Log_Binding_Error_When_Not_Attached_To_Logical_Tree()
+        {
+            var target = new Decorator { DataContext = "foo" };
+            var called = false;
+
+            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
+            {
+                if (level >= Logging.LogEventLevel.Warning)
+                {
+                    called = true;
+                }
+            };
+
+            using (TestLogSink.Start(checkLogMessage))
+            {
+                target.Bind(Decorator.TagProperty, new Binding("Foo"));
+            }
+
+            Assert.False(called);
+        }
+
+        [Fact]
+        public void Should_Log_Binding_Error_When_Attached_To_Logical_Tree()
+        {
+            var target = new Decorator();
+            var root = new TestRoot { Child = target, DataContext = "foo" };
+            var called = false;
+
+            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
+            {
+                if (level >= Logging.LogEventLevel.Warning)
+                {
+                    called = true;
+                }
+            };
+
+            using (TestLogSink.Start(checkLogMessage))
+            {
+                target.Bind(Decorator.TagProperty, new Binding("Foo"));
+            }
+
+            Assert.True(called);
+        }
+
+        [Fact]
+        public void Changing_ZIndex_Should_InvalidateVisual()
+        {
+            Canvas canvas1;
+            var renderer = new Mock<IRenderer>();
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (canvas1 = new Canvas()),
+                        new Canvas(),
+                    },
+                },
+            };
+
+            root.Renderer = renderer.Object;
+            canvas1.ZIndex = 10;
+
+            renderer.Verify(x => x.AddDirty(canvas1));
+        }
+
+        [Fact]
+        public void Changing_ZIndex_Should_Recalculate_Parent_Children()
+        {
+            Canvas canvas1;
+            StackPanel stackPanel;
+            var renderer = new Mock<IRenderer>();
+            var root = new TestRoot
+            {
+                Child = stackPanel = new StackPanel
+                {
+                    Children =
+                    {
+                        (canvas1 = new Canvas()),
+                        new Canvas(),
+                    },
+                },
+            };
+
+            root.Renderer = renderer.Object;
+            canvas1.ZIndex = 10;
+
+            renderer.Verify(x => x.RecalculateChildren(stackPanel));
         }
     }
 }

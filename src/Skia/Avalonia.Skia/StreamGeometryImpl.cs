@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -10,7 +7,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// A Skia implementation of a <see cref="IStreamGeometryImpl"/>.
     /// </summary>
-    public class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
+    internal class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
     {
         private Rect _bounds;
         private readonly SKPath _effectivePath;

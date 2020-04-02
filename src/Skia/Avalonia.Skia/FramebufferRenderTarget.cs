@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
@@ -13,7 +10,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that renders to a framebuffer surface. No gpu acceleration available.
     /// </summary>
-    public class FramebufferRenderTarget : IRenderTarget
+    internal class FramebufferRenderTarget : IRenderTarget
     {
         private readonly IFramebufferPlatformSurface _platformSurface;
         private SKImageInfo _currentImageInfo;
@@ -41,8 +38,9 @@ namespace Avalonia.Skia
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             var framebuffer = _platformSurface.Lock();
-            var framebufferImageInfo = new SKImageInfo(framebuffer.Width, framebuffer.Height,
-                framebuffer.Format.ToSkColorType(), SKAlphaType.Premul);
+            var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
+                framebuffer.Format.ToSkColorType(),
+                framebuffer.Format == PixelFormat.Rgb565 ? SKAlphaType.Opaque : SKAlphaType.Premul);
 
             CreateSurface(framebufferImageInfo, framebuffer);
 
@@ -60,7 +58,7 @@ namespace Avalonia.Skia
                 DisableTextLcdRendering = true
             };
 
-            return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, framebuffer);
+            return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
         }
 
         /// <summary>
@@ -118,11 +116,7 @@ namespace Avalonia.Skia
             _conversionShim = null;
             _preFramebufferCopyHandler = null;
 
-            if (_conversionShim != null)
-            {
-                _framebufferSurface?.Dispose();
-            }
-
+            _framebufferSurface?.Dispose();
             _framebufferSurface = null;
             _currentFramebufferAddress = IntPtr.Zero;
         }
@@ -143,23 +137,26 @@ namespace Avalonia.Skia
 
                 // Create bitmap using default platform settings
                 _bitmap = new SKBitmap(destinationInfo.Width, destinationInfo.Height);
+                SKColorType bitmapColorType;
 
                 if (!_bitmap.CanCopyTo(destinationInfo.ColorType))
                 {
+                    bitmapColorType = _bitmap.ColorType;
                     _bitmap.Dispose();
 
                     throw new Exception(
-                        $"Unable to create pixel format shim for conversion from {_bitmap.ColorType} to {destinationInfo.ColorType}");
+                        $"Unable to create pixel format shim for conversion from {bitmapColorType} to {destinationInfo.ColorType}");
                 }
 
                 Surface = SKSurface.Create(_bitmap.Info, _bitmap.GetPixels(), _bitmap.RowBytes);
 
                 if (Surface == null)
                 {
+                    bitmapColorType = _bitmap.ColorType;
                     _bitmap.Dispose();
 
                     throw new Exception(
-                        $"Unable to create pixel format shim surface for conversion from {_bitmap.ColorType} to {destinationInfo.ColorType}");
+                        $"Unable to create pixel format shim surface for conversion from {bitmapColorType} to {destinationInfo.ColorType}");
                 }
 
                 SurfaceCopyHandler = Disposable.Create(CopySurface);

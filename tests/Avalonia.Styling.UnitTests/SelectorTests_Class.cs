@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using System.Reactive.Linq;
@@ -36,13 +33,14 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1
             {
-                Classes = new Classes { "foo" },
+                Classes = { "foo" },
             };
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).ObservableResult;
+            var match = target.Match(control);
 
-            Assert.True(await activator.Take(1));
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.True(await match.Activator.Take(1));
         }
 
         [Fact]
@@ -50,13 +48,14 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1
             {
-                Classes = new Classes { "bar" },
+                Classes = { "bar" },
             };
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).ObservableResult;
+            var match = target.Match(control);
 
-            Assert.False(await activator.Take(1));
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.False(await match.Activator.Take(1));
         }
 
         [Fact]
@@ -64,14 +63,15 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1
             {
-                Classes = new Classes { "foo" },
+                Classes = { "foo" },
                 TemplatedParent = new Mock<ITemplatedControl>().Object,
             };
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).ObservableResult;
+            var match = target.Match(control);
 
-            Assert.True(await activator.Take(1));
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.True(await match.Activator.Take(1));
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace Avalonia.Styling.UnitTests
             var control = new Control1();
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).ObservableResult;
+            var activator = target.Match(control).Activator.ToObservable();
 
             Assert.False(await activator.Take(1));
             control.Classes.Add("foo");
@@ -92,11 +92,11 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1
             {
-                Classes = new Classes { "foo" },
+                Classes = { "foo" },
             };
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).ObservableResult;
+            var activator = target.Match(control).Activator.ToObservable();
 
             Assert.True(await activator.Take(1));
             control.Classes.Remove("foo");
@@ -108,7 +108,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1();
             var target = default(Selector).Class("foo").Class("bar");
-            var activator = target.Match(control).ObservableResult;
+            var activator = target.Match(control).Activator.ToObservable();
 
             Assert.False(await activator.Take(1));
             control.Classes.Add("foo");
@@ -125,11 +125,11 @@ namespace Avalonia.Styling.UnitTests
             // Test for #1698
             var control = new Control1
             {
-                Classes = new Classes { "foo" },
+                Classes = { "foo" },
             };
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).ObservableResult;
+            var activator = target.Match(control).Activator;
             var result = new List<bool>();
 
             using (activator.Subscribe(x => result.Add(x)))
@@ -141,7 +141,7 @@ namespace Avalonia.Styling.UnitTests
             Assert.Equal(new[] { true, false }, result);
         }
 
-        public class Control1 : TestControlBase
+        public class Control1 : Control
         {
         }
     }

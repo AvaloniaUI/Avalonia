@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,6 +6,7 @@ using System.IO;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -18,20 +16,29 @@ using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia
 {
     public static class Win32ApplicationExtensions
     {
         public static T UseWin32<T>(
-            this T builder,
-            bool deferredRendering = true) 
+            this T builder) 
                 where T : AppBuilderBase<T>, new()
         {
             return builder.UseWindowingSubsystem(
-                () => Win32.Win32Platform.Initialize(deferredRendering),
+                () => Win32.Win32Platform.Initialize(
+                    AvaloniaLocator.Current.GetService<Win32PlatformOptions>() ?? new Win32PlatformOptions()),
                 "Win32");
         }
+    }
+
+    public class Win32PlatformOptions
+    {
+        public bool UseDeferredRendering { get; set; } = true;
+        public bool AllowEglInitialization { get; set; }
+        public bool? EnableMultitouch { get; set; }
+        public bool OverlayPopups { get; set; }
     }
 }
 
@@ -40,28 +47,20 @@ namespace Avalonia.Win32
     class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
-        private static uint _uiThread;
+        private static Thread _uiThread;
         private UnmanagedMethods.WndProc _wndProcDelegate;
         private IntPtr _hwnd;
         private readonly List<Delegate> _delegates = new List<Delegate>();
 
         public Win32Platform()
         {
-            // Declare that this process is aware of per monitor DPI
-            if (UnmanagedMethods.ShCoreAvailable)
-            {
-                var osVersion = Environment.OSVersion.Version;
-                if (osVersion.Major > 6 || (osVersion.Major == 6 && osVersion.Minor > 2))
-                {
-                    UnmanagedMethods.SetProcessDpiAwareness(UnmanagedMethods.PROCESS_DPI_AWARENESS
-                        .PROCESS_PER_MONITOR_DPI_AWARE);
-                }
-            }
-
+            SetDpiAwareness();
             CreateMessageWindow();
         }
 
-        public static bool UseDeferredRendering { get; set; }
+        public static bool UseDeferredRendering => Options.UseDeferredRendering;
+        internal static bool UseOverlayPopups => Options.OverlayPopups;
+        public static Win32PlatformOptions Options { get; private set; }
 
         public Size DoubleClickSize => new Size(
             UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
@@ -71,24 +70,30 @@ namespace Avalonia.Win32
 
         public static void Initialize()
         {
-            Initialize(true);
+            Initialize(new Win32PlatformOptions());
         }
 
-        public static void Initialize(bool deferredRendering = true)
+        public static void Initialize(Win32PlatformOptions options)
         {
+            Options = options;
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop(60))
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
+                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
-                .Bind<IPlatformIconLoader>().ToConstant(s_instance);
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+                .Bind<IPlatformIconLoader>().ToConstant(s_instance)
+                .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider());
 
-            UseDeferredRendering = deferredRendering;
-            _uiThread = UnmanagedMethods.GetCurrentThreadId();
+            if (options.AllowEglInitialization)
+                Win32GlManager.Initialize();
+            
+            _uiThread = Thread.CurrentThread;
 
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
@@ -152,7 +157,7 @@ namespace Avalonia.Win32
                 new IntPtr(SignalL));
         }
 
-        public bool CurrentThreadIsLoopThread => _uiThread == UnmanagedMethods.GetCurrentThreadId();
+        public bool CurrentThreadIsLoopThread => _uiThread == Thread.CurrentThread;
 
         public event Action<DispatcherPriority?> Signaled;
 
@@ -206,11 +211,6 @@ namespace Avalonia.Win32
             return embedded;
         }
 
-        public IPopupImpl CreatePopup()
-        {
-            return new PopupImpl();
-        }
-
         public IWindowIconImpl LoadIcon(string fileName)
         {
             using (var stream = File.OpenRead(fileName))
@@ -245,5 +245,33 @@ namespace Avalonia.Win32
             }
         }
 
+        private static void SetDpiAwareness()
+        {
+            // Ideally we'd set DPI awareness in the manifest but this doesn't work for netcoreapp2.0
+            // apps as they are actually dlls run by a console loader. Instead we have to do it in code,
+            // but there are various ways to do this depending on the OS version.
+            var user32 = LoadLibrary("user32.dll");
+            var method = GetProcAddress(user32, nameof(SetProcessDpiAwarenessContext));
+
+            if (method != IntPtr.Zero)
+            {
+                if (SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) ||
+                    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE))
+                {
+                    return;
+                }
+            }
+
+            var shcore = LoadLibrary("shcore.dll");
+            method = GetProcAddress(shcore, nameof(SetProcessDpiAwareness));
+
+            if (method != IntPtr.Zero)
+            {
+                SetProcessDpiAwareness(PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
+                return;
+            }
+
+            SetProcessDPIAware();
+        }
     }
 }

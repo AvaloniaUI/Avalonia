@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -23,9 +20,9 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Styles =
                     {
-                        new Style(x => x.OfType<ContentControl>())
+                        new Style(x => x.OfType<UserControl>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(TemplatedControl.TemplateProperty, GetTemplate())
                             }
@@ -40,7 +37,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<ContentControl>(parent =>
+            return new FuncControlTemplate<UserControl>((parent, scope) =>
             {
                 return new Border
                 {
@@ -49,7 +46,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Name = "PART_ContentPresenter",
                         [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
-                    }
+                    }.RegisterInNameScope(scope)
                 };
             });
         }

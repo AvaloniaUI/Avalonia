@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -309,7 +306,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
         private static IDataTemplate ItemTemplate()
         {
-            return new FuncDataTemplate<string>(x => new Canvas
+            return new FuncDataTemplate<string>((x, _) => new Canvas
             {
                 Width = 10,
                 Height = 10,
@@ -336,25 +333,11 @@ namespace Avalonia.Controls.UnitTests.Presenters
             public double LayoutScaling => 1;
 
             public ILayoutManager LayoutManager { get; } = new LayoutManager();
-            public IRenderTarget CreateRenderTarget()
-            {
-                throw new NotImplementedException();
-            }
 
-            public void Invalidate(Rect rect)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Point PointToClient(Point point)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Point PointToScreen(Point point)
-            {
-                throw new NotImplementedException();
-            }
+            public IRenderTarget CreateRenderTarget() => throw new NotImplementedException();
+            public void Invalidate(Rect rect) => throw new NotImplementedException();
+            public Point PointToClient(PixelPoint p) => throw new NotImplementedException();
+            public PixelPoint PointToScreen(Point p) => throw new NotImplementedException();
         }
 
         private class TestItemsPresenter : ItemsPresenter

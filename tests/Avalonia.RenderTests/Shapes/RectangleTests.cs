@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -18,6 +15,26 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
         public RectangleTests()
             : base(@"Shapes\Rectangle")
         {
+        }
+
+        [Fact]
+        public async Task Rectangle_0px_Stroke()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Fill = Brushes.Transparent,
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 0
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]

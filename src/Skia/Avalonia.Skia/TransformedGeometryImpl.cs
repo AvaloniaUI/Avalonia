@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Platform;
 using SkiaSharp;
 
@@ -9,7 +6,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// A Skia implementation of a <see cref="ITransformedGeometryImpl"/>.
     /// </summary>
-    public class TransformedGeometryImpl : GeometryImpl, ITransformedGeometryImpl
+    internal class TransformedGeometryImpl : GeometryImpl, ITransformedGeometryImpl
     {
         /// <summary>
         ///  Initializes a new instance of the <see cref="TransformedGeometryImpl"/> class.

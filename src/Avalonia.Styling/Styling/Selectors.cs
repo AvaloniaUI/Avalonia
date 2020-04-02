@@ -1,7 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Styling
 {
@@ -28,6 +27,9 @@ namespace Avalonia.Styling
         /// <returns>The selector.</returns>
         public static Selector Class(this Selector previous, string name)
         {
+            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.Requires<ArgumentException>(!string.IsNullOrWhiteSpace(name));
+
             var tac = previous as TypeNameAndClassSelector;
 
             if (tac != null)
@@ -59,6 +61,8 @@ namespace Avalonia.Styling
         /// <returns>The selector.</returns>
         public static Selector Is(this Selector previous, Type type)
         {
+            Contract.Requires<ArgumentNullException>(type != null);
+
             return TypeNameAndClassSelector.Is(previous, type);
         }
 
@@ -81,6 +85,9 @@ namespace Avalonia.Styling
         /// <returns>The selector.</returns>
         public static Selector Name(this Selector previous, string name)
         {
+            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.Requires<ArgumentException>(!string.IsNullOrWhiteSpace(name));
+
             var tac = previous as TypeNameAndClassSelector;
 
             if (tac != null)
@@ -95,6 +102,28 @@ namespace Avalonia.Styling
         }
 
         /// <summary>
+        /// Returns a selector which inverts the results of selector argument.
+        /// </summary>
+        /// <param name="previous">The previous selector.</param>
+        /// <param name="argument">The selector to be not-ed.</param>
+        /// <returns>The selector.</returns>
+        public static Selector Not(this Selector previous, Func<Selector, Selector> argument)
+        {
+            return new NotSelector(previous, argument(null));
+        }
+        
+        /// <summary>
+        /// Returns a selector which inverts the results of selector argument.
+        /// </summary>
+        /// <param name="previous">The previous selector.</param>
+        /// <param name="argument">The selector to be not-ed.</param>
+        /// <returns>The selector.</returns>
+        public static Selector Not(this Selector previous, Selector argument)
+        {
+            return new NotSelector(previous, argument);
+        }
+
+        /// <summary>
         /// Returns a selector which matches a type.
         /// </summary>
         /// <param name="previous">The previous selector.</param>
@@ -102,6 +131,8 @@ namespace Avalonia.Styling
         /// <returns>The selector.</returns>
         public static Selector OfType(this Selector previous, Type type)
         {
+            Contract.Requires<ArgumentNullException>(type != null);
+
             return TypeNameAndClassSelector.OfType(previous, type);
         }
 
@@ -117,6 +148,26 @@ namespace Avalonia.Styling
         }
 
         /// <summary>
+        /// Returns a selector which ORs selectors.
+        /// </summary>
+        /// <param name="selectors">The selectors to be OR'd.</param>
+        /// <returns>The selector.</returns>
+        public static Selector Or(params Selector[] selectors)
+        {
+            return new OrSelector(selectors);
+        }
+
+        /// <summary>
+        /// Returns a selector which ORs selectors.
+        /// </summary>
+        /// <param name="selectors">The selectors to be OR'd.</param>
+        /// <returns>The selector.</returns>
+        public static Selector Or(IReadOnlyList<Selector> selectors)
+        {
+            return new OrSelector(selectors);
+        }
+
+        /// <summary>
         /// Returns a selector which matches a control with the specified property value.
         /// </summary>
         /// <typeparam name="T">The property type.</typeparam>
@@ -126,6 +177,8 @@ namespace Avalonia.Styling
         /// <returns>The selector.</returns>
         public static Selector PropertyEquals<T>(this Selector previous, AvaloniaProperty<T> property, object value)
         {
+            Contract.Requires<ArgumentNullException>(property != null);
+
             return new PropertyEqualsSelector(previous, property, value);
         }
 
@@ -138,6 +191,8 @@ namespace Avalonia.Styling
         /// <returns>The selector.</returns>
         public static Selector PropertyEquals(this Selector previous, AvaloniaProperty property, object value)
         {
+            Contract.Requires<ArgumentNullException>(property != null);
+
             return new PropertyEqualsSelector(previous, property, value);
         }
 

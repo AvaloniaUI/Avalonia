@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using Avalonia.Platform;
 
@@ -16,9 +13,10 @@ namespace Avalonia.Media
         private IFormattedTextImpl _platformImpl;
         private IReadOnlyList<FormattedTextStyleSpan> _spans;
         private Typeface _typeface;
+        private double _fontSize;
         private string _text;
         private TextAlignment _textAlignment;
-        private TextWrapping _wrapping;
+        private TextWrapping _textWrapping;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FormattedText"/> class.
@@ -38,6 +36,37 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="typeface"></param>
+        /// <param name="fontSize"></param>
+        /// <param name="textAlignment"></param>
+        /// <param name="textWrapping"></param>
+        /// <param name="constraint"></param>
+        public FormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment,
+            TextWrapping textWrapping, Size constraint)
+        {
+            _text = text;
+
+            _typeface = typeface;
+
+            _fontSize = fontSize;
+
+            _textAlignment = textAlignment;
+
+            _textWrapping = textWrapping;
+
+            _constraint = constraint;
+        }
+
+        /// <summary>
+        /// Gets the bounds of the text within the <see cref="Constraint"/>.
+        /// </summary>
+        /// <returns>The bounds of the text.</returns>
+        public Rect Bounds => PlatformImpl.Bounds;
+
+        /// <summary>
         /// Gets or sets the constraint of the text.
         /// </summary>
         public Size Constraint
@@ -53,6 +82,16 @@ namespace Avalonia.Media
         {
             get => _typeface;
             set => Set(ref _typeface, value);
+        }
+
+
+        /// <summary>
+        /// Gets or sets the font size.
+        /// </summary>
+        public double FontSize
+        {
+            get => _fontSize;
+            set => Set(ref _fontSize, value);
         }
 
         /// <summary>
@@ -86,10 +125,10 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the text wrapping.
         /// </summary>
-        public TextWrapping Wrapping
+        public TextWrapping TextWrapping
         {
-            get => _wrapping;
-            set => Set(ref _wrapping, value);
+            get => _textWrapping;
+            set => Set(ref _textWrapping, value);
         }
 
         /// <summary>
@@ -104,8 +143,9 @@ namespace Avalonia.Media
                     _platformImpl = _platform.CreateFormattedText(
                         _text,
                         _typeface,
+                        _fontSize,
                         _textAlignment,
-                        _wrapping,
+                        _textWrapping,
                         _constraint,
                         _spans);
                 }
@@ -156,15 +196,6 @@ namespace Avalonia.Media
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
             return PlatformImpl.HitTestTextRange(index, length);
-        }
-
-        /// <summary>
-        /// Gets the size of the text, taking <see cref="Constraint"/> into account.
-        /// </summary>
-        /// <returns>The bounds box of the text.</returns>
-        public Size Measure()
-        {
-            return PlatformImpl.Size;
         }
 
         private void Set<T>(ref T field, T value)

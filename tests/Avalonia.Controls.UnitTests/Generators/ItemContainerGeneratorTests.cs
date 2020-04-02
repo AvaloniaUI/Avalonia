@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
@@ -118,7 +115,7 @@ namespace Avalonia.Controls.UnitTests.Generators
         {
             var owner = new Decorator();
             var target = new ItemContainerGenerator(owner);
-            var container = (ContentPresenter)target.Materialize(0, "foo", null).ContainerControl;
+            var container = (ContentPresenter)target.Materialize(0, "foo").ContainerControl;
 
             Assert.Equal("foo", container.Content);
 
@@ -135,7 +132,7 @@ namespace Avalonia.Controls.UnitTests.Generators
         {
             var owner = new Decorator();
             var target = new ItemContainerGenerator<ListBoxItem>(owner, ListBoxItem.ContentProperty, null);
-            var container = (ListBoxItem)target.Materialize(0, "foo", null).ContainerControl;
+            var container = (ListBoxItem)target.Materialize(0, "foo").ContainerControl;
 
             Assert.Equal("foo", container.Content);
 
@@ -156,7 +153,7 @@ namespace Avalonia.Controls.UnitTests.Generators
 
             foreach (var item in items)
             {
-                var container = generator.Materialize(index++, item, null);
+                var container = generator.Materialize(index++, item);
                 result.Add(container);
             }
 

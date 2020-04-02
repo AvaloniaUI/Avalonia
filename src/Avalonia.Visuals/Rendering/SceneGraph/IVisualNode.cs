@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -30,18 +27,19 @@ namespace Avalonia.Rendering.SceneGraph
         Matrix Transform { get; }
 
         /// <summary>
-        /// Gets the bounds for the node's geometry in global coordinates.
+        /// Gets the bounds of the node's geometry in global coordinates.
         /// </summary>
         Rect Bounds { get; }
 
         /// <summary>
         /// Gets the clip bounds for the node in global coordinates.
         /// </summary>
-        /// <remarks>
-        /// This clip does not take into account parent clips, to find the absolute clip bounds
-        /// it is necessary to traverse the tree.
-        /// </remarks>
         Rect ClipBounds { get; }
+
+        /// <summary>
+        /// Gets the layout bounds for the node in global coordinates.
+        /// </summary>
+        Rect LayoutBounds { get; }
 
         /// <summary>
         /// Whether the node is clipped to <see cref="ClipBounds"/>.

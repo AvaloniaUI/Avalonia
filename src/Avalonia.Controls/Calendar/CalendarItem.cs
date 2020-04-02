@@ -4,6 +4,7 @@
 // All other rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Data;
@@ -52,7 +53,7 @@ namespace Avalonia.Controls.Primitives
         internal Calendar Owner { get; set; }
         internal CalendarDayButton CurrentButton { get; set; }
 
-        public static StyledProperty<IBrush> HeaderBackgroundProperty = Calendar.HeaderBackgroundProperty.AddOwner<CalendarItem>();
+        public static readonly StyledProperty<IBrush> HeaderBackgroundProperty = Calendar.HeaderBackgroundProperty.AddOwner<CalendarItem>();
         public IBrush HeaderBackground
         {
             get { return GetValue(HeaderBackgroundProperty); }
@@ -193,6 +194,9 @@ namespace Avalonia.Controls.Primitives
         {
             if (MonthView != null)
             {
+                var childCount = Calendar.RowsPerMonth + Calendar.RowsPerMonth * Calendar.ColumnsPerMonth;
+                var children = new List<IControl>(childCount);
+
                 for (int i = 0; i < Calendar.RowsPerMonth; i++)
                 {
                     if (_dayTitleTemplate != null)
@@ -201,7 +205,7 @@ namespace Avalonia.Controls.Primitives
                         cell.DataContext = string.Empty;
                         cell.SetValue(Grid.RowProperty, 0);
                         cell.SetValue(Grid.ColumnProperty, i);
-                        MonthView.Children.Add(cell);
+                        children.Add(cell);
                     }
                 }
 
@@ -222,13 +226,18 @@ namespace Avalonia.Controls.Primitives
                         cell.PointerEnter += Cell_MouseEnter;
                         cell.PointerLeave += Cell_MouseLeave;
                         cell.Click += Cell_Click;
-                        MonthView.Children.Add(cell);
+                        children.Add(cell);
                     }
                 }
+                
+                MonthView.Children.AddRange(children);
             }
 
             if (YearView != null)
             {
+                var childCount = Calendar.RowsPerYear * Calendar.ColumnsPerYear;
+                var children = new List<IControl>(childCount);
+
                 CalendarButton month;
                 for (int i = 0; i < Calendar.RowsPerYear; i++)
                 {
@@ -246,9 +255,11 @@ namespace Avalonia.Controls.Primitives
                         month.CalendarLeftMouseButtonUp += Month_CalendarButtonMouseUp;
                         month.PointerEnter += Month_MouseEnter;
                         month.PointerLeave += Month_MouseLeave;
-                        YearView.Children.Add(month);
+                        children.Add(month);
                     }
                 }
+
+                YearView.Children.AddRange(children);
             }
         }
 
@@ -932,24 +943,8 @@ namespace Avalonia.Controls.Primitives
             {
                 CalendarDayButton b = (CalendarDayButton)sender;
                 // The button is in Pressed state. Change the state to normal.
-                if (e.Device.Captured == b)
-                    e.Device.Capture(null);
-                // null check is added for unit tests
-                if (_downEventArg != null)
-                {
-                    var arg =
-                        new PointerReleasedEventArgs()
-                        {
-                            Device = _downEventArg.Device,
-                            MouseButton = _downEventArg.MouseButton,
-                            Handled = _downEventArg.Handled,
-                            InputModifiers = _downEventArg.InputModifiers,
-                            Route = _downEventArg.Route,
-                            Source = _downEventArg.Source
-                        };
-
-                    b.SendMouseLeftButtonUp(arg);
-                }
+                if (e.Pointer.Captured == b)
+                    e.Pointer.Capture(null);
                 _lastCalendarDayButton = b;
             }
         }
@@ -963,7 +958,7 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 bool ctrl, shift;
-                CalendarExtensions.GetMetaKeyState(e.InputModifiers, out ctrl, out shift);
+                CalendarExtensions.GetMetaKeyState(e.KeyModifiers, out ctrl, out shift);
                 CalendarDayButton b = sender as CalendarDayButton;
 
                 if (b != null)
@@ -1218,24 +1213,10 @@ namespace Avalonia.Controls.Primitives
             {
                 CalendarButton b = (CalendarButton)sender;
                 // The button is in Pressed state. Change the state to normal.
-                if (e.Device.Captured == b)
-                    e.Device.Capture(null);
+                if (e.Pointer.Captured == b)
+                    e.Pointer.Capture(null);
                 //b.ReleaseMouseCapture();
-                if (_downEventArgYearView != null)
-                {
-                    var args =
-                        new PointerReleasedEventArgs()
-                        {
-                            Device = _downEventArgYearView.Device,
-                            MouseButton = _downEventArgYearView.MouseButton,
-                            Handled = _downEventArgYearView.Handled,
-                            InputModifiers = _downEventArgYearView.InputModifiers,
-                            Route = _downEventArgYearView.Route,
-                            Source = _downEventArgYearView.Source
-                        };
 
-                    b.SendMouseLeftButtonUp(args);
-                }
                 _lastCalendarButton = b;
             }
         }
@@ -1243,7 +1224,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_lastCalendarDayButton != null)
             {
-                e.Device.Capture(_lastCalendarDayButton);
+                e.Pointer.Capture(_lastCalendarDayButton);
             }
         }
 
@@ -1251,7 +1232,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_lastCalendarButton != null)
             {
-                e.Device.Capture(_lastCalendarButton);
+                e.Pointer.Capture(_lastCalendarButton);
             }
         }
         

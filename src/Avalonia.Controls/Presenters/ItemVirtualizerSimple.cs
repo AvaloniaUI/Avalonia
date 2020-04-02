@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
@@ -20,6 +17,8 @@ namespace Avalonia.Controls.Presenters
     /// </summary>
     internal class ItemVirtualizerSimple : ItemVirtualizer
     {
+        private int _anchor;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemVirtualizerSimple"/> class.
         /// </summary>
@@ -76,9 +75,23 @@ namespace Avalonia.Controls.Presenters
                         var firstIndex = ItemCount - panel.Children.Count;
                         RecycleContainersForMove(firstIndex - FirstIndex);
 
-                        panel.PixelOffset = VirtualizingPanel.ScrollDirection == Orientation.Vertical ?
-                            panel.Children[0].Bounds.Height :
-                            panel.Children[0].Bounds.Width;
+                        double pixelOffset;
+                        var child = panel.Children[0];
+
+                        if (child.IsArrangeValid)
+                        {
+                            pixelOffset = VirtualizingPanel.ScrollDirection == Orientation.Vertical ?
+                                                    child.Bounds.Height :
+                                                    child.Bounds.Width;
+                        }
+                        else
+                        {
+                            pixelOffset = VirtualizingPanel.ScrollDirection == Orientation.Vertical ?
+                                                    child.DesiredSize.Height :
+                                                    child.DesiredSize.Width;
+                        }
+
+                        panel.PixelOffset = pixelOffset;
                     }
                 }
             }
@@ -172,8 +185,8 @@ namespace Avalonia.Controls.Presenters
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
-                        if (e.OldStartingIndex >= FirstIndex &&
-                            e.OldStartingIndex < NextIndex)
+                        if ((e.OldStartingIndex >= FirstIndex && e.OldStartingIndex < NextIndex) ||
+                            panel.Children.Count > ItemCount)
                         {
                             RecycleContainersOnRemove();
                         }
@@ -279,11 +292,14 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         public override void ScrollIntoView(object item)
         {
-            var index = Items.IndexOf(item);
-
-            if (index != -1)
+            if (Items != null)
             {
-                ScrollIntoView(index);
+                var index = Items.IndexOf(item);
+
+                if (index != -1)
+                {
+                    ScrollIntoView(index);
+                }
             }
         }
 
@@ -298,7 +314,6 @@ namespace Avalonia.Controls.Presenters
 
             if (!panel.IsFull && Items != null && panel.IsAttachedToVisualTree)
             {
-                var memberSelector = Owner.MemberSelector;
                 var index = NextIndex;
                 var step = 1;
 
@@ -321,7 +336,7 @@ namespace Avalonia.Controls.Presenters
                         }
                     }
 
-                    var materialized = generator.Materialize(index, Items.ElementAt(index), memberSelector);
+                    var materialized = generator.Materialize(index, Items.ElementAt(index));
 
                     if (step == 1)
                     {
@@ -348,7 +363,10 @@ namespace Avalonia.Controls.Presenters
 
             if (panel.OverflowCount > 0)
             {
-                RemoveContainers(panel.OverflowCount);
+                if (_anchor <= FirstIndex)
+                {
+                    RemoveContainers(panel.OverflowCount);
+                }
             }
         }
 
@@ -364,7 +382,6 @@ namespace Avalonia.Controls.Presenters
         {
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;
-            var selector = Owner.MemberSelector;
             var containers = generator.Containers.ToList();
             var itemIndex = FirstIndex;
 
@@ -374,7 +391,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (!object.Equals(container.Item, item))
                 {
-                    if (!generator.TryRecycle(itemIndex, itemIndex, item, selector))
+                    if (!generator.TryRecycle(itemIndex, itemIndex, item))
                     {
                         throw new NotImplementedException();
                     }
@@ -401,7 +418,10 @@ namespace Avalonia.Controls.Presenters
         {
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;
-            var selector = Owner.MemberSelector;
+
+            //validate delta it should never overflow last index or generate index < 0 
+            delta = MathUtilities.Clamp(delta, -FirstIndex, ItemCount - FirstIndex - panel.Children.Count);
+
             var sign = delta < 0 ? -1 : 1;
             var count = Math.Min(Math.Abs(delta), panel.Children.Count);
             var move = count < panel.Children.Count;
@@ -414,7 +434,7 @@ namespace Avalonia.Controls.Presenters
 
                 var item = Items.ElementAt(newItemIndex);
 
-                if (!generator.TryRecycle(oldItemIndex, newItemIndex, item, selector))
+                if (!generator.TryRecycle(oldItemIndex, newItemIndex, item))
                 {
                     throw new NotImplementedException();
                 }
@@ -499,17 +519,13 @@ namespace Avalonia.Controls.Presenters
 
             if (index >= 0 && index < ItemCount)
             {
-                if (index < FirstIndex)
+                if (index <= FirstIndex)
                 {
                     newOffset = index;
                 }
                 else if (index >= NextIndex)
                 {
                     newOffset = index - Math.Ceiling(ViewportValue - 1);
-                }
-                else if (OffsetValue + ViewportValue >= ItemCount)
-                {
-                    newOffset = OffsetValue - 1;
                 }
 
                 if (newOffset != -1)
@@ -526,7 +542,14 @@ namespace Avalonia.Controls.Presenters
                 // it means we're running a unit test.
                 if (container != null && layoutManager != null)
                 {
+                    _anchor = index;
                     layoutManager.ExecuteLayoutPass();
+                    _anchor = -1;
+
+                    if (newOffset != -1 && newOffset != OffsetValue)
+                    {
+                        OffsetValue = newOffset;
+                    }
 
                     if (panel.ScrollDirection == Orientation.Vertical)
                     {

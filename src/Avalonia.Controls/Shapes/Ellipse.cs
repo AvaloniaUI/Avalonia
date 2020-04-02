@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Shapes
@@ -14,7 +11,7 @@ namespace Avalonia.Controls.Shapes
 
         protected override Geometry CreateDefiningGeometry()
         {
-            var rect = new Rect(Bounds.Size).Deflate(StrokeThickness);
+            var rect = new Rect(Bounds.Size).Deflate(StrokeThickness / 2);
             return new EllipseGeometry(rect);
         }
 

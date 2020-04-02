@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media
@@ -79,6 +76,13 @@ namespace Avalonia.Media
 
         static TileBrush()
         {
+            AffectsRender<TileBrush>(
+                AlignmentXProperty,
+                AlignmentYProperty,
+                DestinationRectProperty,
+                SourceRectProperty,
+                StretchProperty,
+                TileModeProperty);
             RenderOptions.BitmapInterpolationModeProperty.OverrideDefaultValue<TileBrush>(BitmapInterpolationMode.Default);
         }
 

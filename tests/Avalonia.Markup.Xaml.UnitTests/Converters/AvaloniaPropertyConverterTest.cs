@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Moq;
 using Avalonia.Collections;
@@ -8,9 +5,8 @@ using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Styling;
 using Xunit;
 using System.ComponentModel;
-using Portable.Xaml;
-using Portable.Xaml.Markup;
-using Avalonia.Controls;
+using Avalonia.Markup.Xaml.XamlIl.Runtime;
+using System.Collections.Generic;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
@@ -91,27 +87,23 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
             Assert.Equal("Could not find property 'AttachedOwner.NonExistent'.", ex.Message);
         }
 
+
+        
         private ITypeDescriptorContext CreateContext(Style style = null)
         {
             var tdMock = new Mock<ITypeDescriptorContext>();
-            var xsc = new Mock<IXamlSchemaContextProvider>();
-            var sc = Mock.Of<XamlSchemaContext>();
-            var amb = new Mock<IAmbientProvider>();
             var tr = new Mock<IXamlTypeResolver>();
+            var ps = new Mock<IAvaloniaXamlIlParentStackProvider>();
 
-            tdMock.Setup(d => d.GetService(typeof(IAmbientProvider)))
-                .Returns(amb.Object);
-            tdMock.Setup(d => d.GetService(typeof(IXamlSchemaContextProvider)))
-                .Returns(xsc.Object);
             tdMock.Setup(d => d.GetService(typeof(IXamlTypeResolver)))
                 .Returns(tr.Object);
 
-            xsc.SetupGet(v => v.SchemaContext)
-                .Returns(sc);
-            amb.Setup(v => v.GetFirstAmbientValue(It.IsAny<Portable.Xaml.XamlType>()))
-                .Returns(style);
-            amb.Setup(v => v.GetAllAmbientValues(It.IsAny<Portable.Xaml.XamlType>()))
-                .Returns(new object[] { style });
+            tdMock.Setup(d => d.GetService(typeof(IAvaloniaXamlIlParentStackProvider)))
+                .Returns(ps.Object);
+
+            ps.SetupGet(v => v.Parents)
+                .Returns(new object[] {style});
+            
             tr.Setup(v => v.Resolve(nameof(Class1)))
                 .Returns(typeof(Class1));
             tr.Setup(v => v.Resolve(nameof(AttachedOwner)))
@@ -145,7 +137,25 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
                 get { throw new NotImplementedException(); }
             }
 
-            IObservable<IStyleable> IStyleable.StyleDetach { get; }
+            public void DetachStyles()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void DetachStyles(IReadOnlyList<IStyle> styles)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void InvalidateStyles()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void StyleApplied(IStyleInstance instance)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class AttachedOwner

@@ -1,4 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="RenderDemo.MainWindow"
         Title="AvaloniaUI Rendering Test"
         xmlns:pages="clr-namespace:RenderDemo.Pages"
         Width="800"
@@ -8,12 +10,13 @@
       <MenuItem Header="Rendering">
         <MenuItem Header="Draw Dirty Rects" Command="{Binding ToggleDrawDirtyRects}">
           <MenuItem.Icon>
-            <CheckBox BorderThickness="0" 
+            <CheckBox BorderThickness="0"
                       IsHitTestVisible="False"
                       IsChecked="{Binding DrawDirtyRects}"/>
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Header="Draw FPS" Command="{Binding ToggleDrawFps}">
+        <MenuItem Header="Draw FPS"
+                  Command="{Binding ToggleDrawFps}">
           <MenuItem.Icon>
             <CheckBox BorderThickness="0"
                       IsHitTestVisible="False"
@@ -22,14 +25,25 @@
         </MenuItem>
       </MenuItem>
     </Menu>
-    
     <TabControl Classes="sidebar">
-      <TabControl.PageTransition>
-        <CrossFade Duration="0.25"/>
-      </TabControl.PageTransition>
-      <TabItem Header="Animations"><pages:AnimationsPage/></TabItem>
-      <TabItem Header="Clipping"><pages:ClippingPage/></TabItem>
-      <TabItem Header="Drawing"><pages:DrawingPage/></TabItem>
+      <TabItem Header="Animations">
+        <pages:AnimationsPage/>
+      </TabItem>
+      <TabItem Header="Clipping">
+        <pages:ClippingPage/>
+      </TabItem>
+      <TabItem Header="Drawing">
+        <pages:DrawingPage/>
+      </TabItem>
+      <TabItem Header="SkCanvas">
+        <pages:CustomSkiaPage/>
+      </TabItem>
+      <TabItem Header="RenderTargetBitmap">
+        <pages:RenderTargetBitmapPage/>
+      </TabItem>
+      <TabItem Header="GlyphRun">
+        <pages:GlyphRunPage/>
+      </TabItem>
     </TabControl>
   </DockPanel>
 </Window>

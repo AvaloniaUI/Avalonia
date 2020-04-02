@@ -9,7 +9,7 @@
   <Style Selector="Calendar">
     <!--<Setter Property="Focusable" Value="False" />-->
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}" />
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="HeaderBackground" Value="{DynamicResource ThemeAccentBrush2}" />
     <Setter Property="Template">

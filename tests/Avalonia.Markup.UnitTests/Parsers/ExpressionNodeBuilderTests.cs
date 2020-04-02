@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Data.Core;
@@ -34,6 +31,15 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = ToList(ExpressionObserverBuilder.Parse("F0o"));
 
             AssertIsProperty(result[0], "F0o");
+        }
+
+        [Fact]
+        public void Should_Build_Dot()
+        {
+            var result = ToList(ExpressionObserverBuilder.Parse("."));
+
+            Assert.Equal(1, result.Count);
+            Assert.IsType<EmptyExpressionNode>(result[0]);
         }
 
         [Fact]

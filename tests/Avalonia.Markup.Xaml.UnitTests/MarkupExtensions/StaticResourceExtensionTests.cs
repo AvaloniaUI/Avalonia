@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -14,7 +11,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
-    public class StaticResourceExtensionTests
+    public class StaticResourceExtensionTests : XamlTestBase
     {
         [Fact]
         public void StaticResource_Can_Be_Assigned_To_Property()
@@ -534,12 +531,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 {
                     new Setter(
                         Window.TemplateProperty,
-                        new FuncControlTemplate<Window>(x =>
+                        new FuncControlTemplate<Window>((x, scope) =>
                             new ContentPresenter
                             {
                                 Name = "PART_ContentPresenter",
                                 [!ContentPresenter.ContentProperty] = x[!Window.ContentProperty],
-                            }))
+                            }.RegisterInNameScope(scope)))
                 }
             };
         }

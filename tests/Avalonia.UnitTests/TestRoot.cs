@@ -1,41 +1,42 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, INameScope, IRenderRoot, IStyleRoot
+    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, IRenderRoot, IStyleHost, ILogicalRoot
     {
         private readonly NameScope _nameScope = new NameScope();
 
         public TestRoot()
         {
+            Renderer = Mock.Of<IRenderer>();
         }
 
-        event EventHandler<NameScopeEventArgs> INameScope.Registered
+        public TestRoot(IControl child)
+            : this(false, child)
         {
-            add { _nameScope.Registered += value; ++NameScopeRegisteredSubscribers; }
-            remove { _nameScope.Registered -= value; --NameScopeRegisteredSubscribers; }
+            Child = child;
         }
 
-        public event EventHandler<NameScopeEventArgs> Unregistered
+        public TestRoot(bool useGlobalStyles, IControl child)
+            : this()
         {
-            add { _nameScope.Unregistered += value; ++NameScopeUnregisteredSubscribers; }
-            remove { _nameScope.Unregistered -= value; --NameScopeUnregisteredSubscribers; }
+            if (useGlobalStyles)
+            {
+                StylingParent = UnitTestApplication.Current;
+            }
+
+            Child = child;
         }
-
-        public int NameScopeRegisteredSubscribers { get; private set; }
-
-        public int NameScopeUnregisteredSubscribers { get; private set; }
 
         public Size ClientSize { get; set; } = new Size(100, 100);
 
@@ -83,23 +84,28 @@ namespace Avalonia.UnitTests
         {
         }
 
-        public Point PointToClient(Point p) => p;
+        public Point PointToClient(PixelPoint p) => p.ToPoint(1);
 
-        public Point PointToScreen(Point p) => p;
+        public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
 
-        void INameScope.Register(string name, object element)
+        public void RegisterChildrenNames()
         {
-            _nameScope.Register(name, element);
-        }
+            var scope = NameScope.GetNameScope(this) ?? new NameScope();
+            NameScope.SetNameScope(this, scope);
+            void Visit(StyledElement element, bool force = false)
+            {
+                if (element.Name != null)
+                {
+                    if (scope.Find(element.Name) != element)
+                        scope.Register(element.Name, element);
+                }
 
-        object INameScope.Find(string name)
-        {
-            return _nameScope.Find(name);
-        }
-
-        void INameScope.Unregister(string name)
-        {
-            _nameScope.Unregister(name);
+                if(element is IVisual visual && (force || NameScope.GetNameScope(element) == null))
+                    foreach(var child in visual.GetVisualChildren())
+                        if (child is StyledElement styledChild)
+                            Visit(styledChild);
+            }
+            Visit(this, true);
         }
     }
 }

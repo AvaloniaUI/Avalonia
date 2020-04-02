@@ -4,7 +4,7 @@
     <Setter Property="MinHeight" Value="20"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid>
+        <Grid Name="grid">
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto" MinHeight="20"/>
@@ -20,7 +20,7 @@
                <RepeatButton Name="PART_IncreaseButton"
                              Classes="repeattrack" />
             </Track.IncreaseButton>
-            <Thumb MinWidth="20" MinHeight="20">
+            <Thumb Name="thumb" MinWidth="20" MinHeight="20">
               <Thumb.Template>
                 <ControlTemplate>
                   <Grid>
@@ -46,7 +46,7 @@
             <ColumnDefinition Width="Auto"/>
           </Grid.ColumnDefinitions>
           <Border Name="TrackBackground" Grid.Column="1" Width="4" Margin="0,6" HorizontalAlignment="Center"/>
-          <Track Name="PART_Track" Grid.Column="1" Orientation="Vertical">
+          <Track Name="PART_Track" Grid.Column="1" Orientation="Vertical" IsDirectionReversed="True">
             <Track.DecreaseButton>
                <RepeatButton Name="PART_DecreaseButton"
                              Classes="repeattrack" />
@@ -55,7 +55,7 @@
                <RepeatButton Name="PART_IncreaseButton"
                              Classes="repeattrack" />
             </Track.IncreaseButton>
-            <Thumb MinWidth="20" MinHeight="20">
+            <Thumb Name="thumb" MinWidth="20" MinHeight="20">
               <Thumb.Template>
                 <ControlTemplate>
                   <Grid>
@@ -76,15 +76,18 @@
   </Style>
   <Style Selector="Slider /template/ Border#TrackBackground">
     <Setter Property="BorderThickness" Value="2"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowBrush}"/>
   </Style>
   <Style Selector="Slider /template/ RepeatButton.repeattrack">
     <Setter Property="Background" Value="Transparent"/>
-    <Setter Property="Foreground" Value="{DynamicResource ThemeBorderLightBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource ThemeBorderLowBrush}"/>
     <Setter Property="Template">
         <ControlTemplate>
             <Border Background="{TemplateBinding Background}" />
         </ControlTemplate>
     </Setter>
   </Style>
+    <Style Selector="Slider:disabled /template/ Grid#grid">
+        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
 </Styles>

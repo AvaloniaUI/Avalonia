@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using Avalonia.Media;
+﻿using Avalonia.Media;
 
 namespace Avalonia.Rendering.Utilities
 {
@@ -116,8 +113,8 @@ namespace Avalonia.Rendering.Utilities
                     return true;
                 if (SourceRect.Size.AspectRatio == _imageSize.AspectRatio)
                     return false;
-                if ((int)SourceRect.Width != _imageSize.Width ||
-                    (int)SourceRect.Height != _imageSize.Height)
+                if (SourceRect.Width != _imageSize.Width ||
+                    SourceRect.Height != _imageSize.Height)
                     return true;
                 return false;
             }

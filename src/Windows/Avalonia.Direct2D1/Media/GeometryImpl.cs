@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Platform;
 using SharpDX.Direct2D1;
 
@@ -22,7 +19,7 @@ namespace Avalonia.Direct2D1.Media
         public Geometry Geometry { get; }
 
         /// <inheritdoc/>
-        public Rect GetRenderBounds(Avalonia.Media.Pen pen)
+        public Rect GetRenderBounds(Avalonia.Media.IPen pen)
         {
             return Geometry.GetWidenedBounds((float)(pen?.Thickness ?? 0)).ToAvalonia();
         }
@@ -46,17 +43,16 @@ namespace Avalonia.Direct2D1.Media
         }
 
         /// <inheritdoc/>
-        public bool StrokeContains(Avalonia.Media.Pen pen, Point point)
+        public bool StrokeContains(Avalonia.Media.IPen pen, Point point)
         {
             return Geometry.StrokeContainsPoint(point.ToSharpDX(), (float)(pen?.Thickness ?? 0));
         }
 
         public ITransformedGeometryImpl WithTransform(Matrix transform)
         {
-            var factory = AvaloniaLocator.Current.GetService<Factory>();
             return new TransformedGeometryImpl(
                 new TransformedGeometry(
-                    factory,
+                    Direct2D1Platform.Direct2D1Factory,
                     GetSourceGeometry(),
                     transform.ToDirect2D()),
                 this);

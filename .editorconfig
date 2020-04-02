@@ -131,10 +131,14 @@ csharp_space_between_method_declaration_name_and_open_parenthesis = false
 csharp_space_between_method_declaration_parameter_list_parentheses = false
 csharp_space_between_parentheses = false
 csharp_space_between_square_brackets = false
+space_within_single_line_array_initializer_braces = true
+
+# Wrapping preferences
+csharp_wrap_before_ternary_opsigns = false
 
 # Xaml files
 [*.xaml]
-indent_size = 4
+indent_size = 2
 
 # Xml project files
 [*.{csproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
@@ -19,8 +16,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new ExceptionValidationPlugin();
             var data = new Data();
-            var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive));
-            var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive), accessor);
+            var accessor = inpcAccessorPlugin.Start(new WeakReference<object>(data), nameof(data.MustBePositive));
+            var validator = validatorPlugin.Start(new WeakReference<object>(data), nameof(data.MustBePositive), accessor);
             var result = new List<object>();
 
             validator.Subscribe(x => result.Add(x));

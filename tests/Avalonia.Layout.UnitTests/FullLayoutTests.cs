@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -21,6 +18,7 @@ using Xunit;
 using Avalonia.Media;
 using System;
 using System.Collections.Generic;
+using Avalonia.Controls.UnitTests;
 using Avalonia.UnitTests;
 
 namespace Avalonia.Layout.UnitTests
@@ -98,6 +96,8 @@ namespace Avalonia.Layout.UnitTests
                     }
                 };
 
+                window.Resources["ScrollBarThickness"] = 10.0;
+
                 window.Show();
                 window.LayoutManager.ExecuteInitialLayoutPass(window);
 
@@ -143,7 +143,7 @@ namespace Avalonia.Layout.UnitTests
 
             public string Text { get; }
 
-            public Size Size => new Size();
+            public Rect Bounds => Rect.Empty;
 
             public void Dispose()
             {
@@ -172,6 +172,7 @@ namespace Avalonia.Layout.UnitTests
                 x.CreateFormattedText(
                     It.IsAny<string>(),
                     It.IsAny<Typeface>(),
+                    It.IsAny<double>(),
                     It.IsAny<TextAlignment>(),
                     It.IsAny<TextWrapping>(),
                     It.IsAny<Size>(),
@@ -197,12 +198,15 @@ namespace Avalonia.Layout.UnitTests
             windowImpl.SetupGet(x => x.Scaling).Returns(1);
 
             AvaloniaLocator.CurrentMutable
+                .Bind<IStandardCursorFactory>().ToConstant(new CursorFactoryMock())
                 .Bind<IAssetLoader>().ToConstant(new AssetLoader())
                 .Bind<IInputManager>().ToConstant(new Mock<IInputManager>().Object)
                 .Bind<IGlobalStyles>().ToConstant(globalStyles.Object)
                 .Bind<IRuntimePlatform>().ToConstant(new AppBuilder().RuntimePlatform)
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface.Object)
                 .Bind<IStyler>().ToConstant(new Styler())
+                .Bind<IFontManagerImpl>().ToConstant(new MockFontManagerImpl())
+                .Bind<ITextShaperImpl>().ToConstant(new MockTextShaperImpl())
                 .Bind<IWindowingPlatform>().ToConstant(new Avalonia.Controls.UnitTests.WindowingPlatformMock(() => windowImpl.Object));
 
             var theme = new DefaultTheme();

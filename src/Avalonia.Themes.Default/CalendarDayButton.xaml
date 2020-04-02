@@ -100,10 +100,10 @@
 
 
   <Style Selector="CalendarDayButton:inactive /template/ ContentControl#Content">
-    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLightBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}"/>
   </Style>
   <Style Selector="CalendarDayButton:today /template/ ContentControl#Content">
-    <Setter Property="Foreground" Value="{DynamicResource ThemeControlLightBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource ThemeControlLowBrush}"/>
   </Style>
 
   <Style Selector="CalendarDayButton /template/ Path#BlackoutVisual">

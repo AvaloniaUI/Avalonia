@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Media.Immutable;
 
 namespace Avalonia.Media
 {
@@ -23,29 +24,33 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Converts a pen to a pen with an immutable brush
+        /// Converts a dash style to an immutable dash style.
+        /// </summary>
+        /// <param name="style">The dash style.</param>
+        /// <returns>
+        /// The result of calling <see cref="DashStyle.ToImmutable"/> if the style is mutable,
+        /// otherwise <paramref name="style"/>.
+        /// </returns>
+        public static ImmutableDashStyle ToImmutable(this IDashStyle style)
+        {
+            Contract.Requires<ArgumentNullException>(style != null);
+
+            return style as ImmutableDashStyle ?? ((DashStyle)style).ToImmutable();
+        }
+
+        /// <summary>
+        /// Converts a pen to an immutable pen.
         /// </summary>
         /// <param name="pen">The pen.</param>
         /// <returns>
-        /// A copy of the pen with an immutable brush, or <paramref name="pen"/> if the pen's brush
-        /// is already immutable or null.
+        /// The result of calling <see cref="Pen.ToImmutable"/> if the brush is mutable,
+        /// otherwise <paramref name="pen"/>.
         /// </returns>
-        public static Pen ToImmutable(this Pen pen)
+        public static ImmutablePen ToImmutable(this IPen pen)
         {
             Contract.Requires<ArgumentNullException>(pen != null);
 
-            var brush = pen?.Brush?.ToImmutable();
-            return pen == null || ReferenceEquals(pen?.Brush, brush) ?
-                pen :
-                new Pen(
-                    brush,
-                    thickness: pen.Thickness,
-                    dashStyle: pen.DashStyle,
-                    dashCap: pen.DashCap,
-                    startLineCap: pen.StartLineCap,
-                    endLineCap: pen.EndLineCap,
-                    lineJoin: pen.LineJoin,
-                    miterLimit: pen.MiterLimit);
+            return pen as ImmutablePen ?? ((Pen)pen).ToImmutable();
         }
     }
 }

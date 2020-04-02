@@ -1,6 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using Avalonia.Platform;
 using System;
 using System.Collections.Generic;
@@ -53,7 +51,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
             var r = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             return r.CreateFormattedText(text,
-                new Typeface(fontFamily, fontSize, fontStyle, fontWeight),
+                FontManager.Current.GetOrAddTypeface(fontFamily, fontWeight, fontStyle),
+                fontSize,
                 textAlignment,
                 wrapping,
                 widthConstraint == -1 ? Size.Infinity : new Size(widthConstraint, double.PositiveInfinity),
@@ -100,7 +99,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         public void Should_Measure_String_Correctly(string input, double fontSize, double expWidth, double expHeight)
         {
             var fmt = Create(input, fontSize);
-            var size = fmt.Size;
+            var size = fmt.Bounds.Size;
 
             Assert.Equal(expWidth, size.Width, 2);
             Assert.Equal(expHeight, size.Height, 2);

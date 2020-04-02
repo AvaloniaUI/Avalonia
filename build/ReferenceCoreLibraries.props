@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+      <ProjectReference Include="$(MSBuildThisFileDirectory)../packages/Avalonia/Avalonia.csproj" />
+  </ItemGroup>
+</Project>

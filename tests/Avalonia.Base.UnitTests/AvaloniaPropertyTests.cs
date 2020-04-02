@@ -1,8 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Data;
+using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -79,24 +77,6 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Initialized_Observable_Fired()
-        {
-            bool invoked = false;
-
-            Class1.FooProperty.Initialized.Subscribe(x =>
-            {
-                Assert.Equal(AvaloniaProperty.UnsetValue, x.OldValue);
-                Assert.Equal("default", x.NewValue);
-                Assert.Equal(BindingPriority.Unset, x.Priority);
-                invoked = true;
-            });
-
-            var target = new Class1();
-
-            Assert.True(invoked);
-        }
-
-        [Fact]
         public void Changed_Observable_Fired()
         {
             var target = new Class1();
@@ -139,6 +119,42 @@ namespace Avalonia.Base.UnitTests
             public void OverrideMetadata<T>(PropertyMetadata metadata)
             {
                 OverrideMetadata(typeof(T), metadata);
+            }
+
+            public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override IDisposable RouteBind(
+                IAvaloniaObject o,
+                IObservable<BindingValue<object>> source,
+                BindingPriority priority)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override void RouteClearValue(IAvaloniaObject o)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override object RouteGetValue(IAvaloniaObject o)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject oldParent)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override IDisposable RouteSetValue(
+                IAvaloniaObject o,
+                object value,
+                BindingPriority priority)
+            {
+                throw new NotImplementedException();
             }
         }
 

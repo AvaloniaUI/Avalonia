@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,12 +21,14 @@ namespace Avalonia.Controls.Templates
         {
             foreach (IControl child in control.GetVisualChildren())
             {
-                if (child.TemplatedParent == templatedParent)
+                var childTemplatedParent = child.TemplatedParent;
+
+                if (childTemplatedParent == templatedParent)
                 {
                     yield return child;
                 }
 
-                if (child.TemplatedParent != null)
+                if (childTemplatedParent != null)
                 {
                     foreach (var descendant in GetTemplateChildren(child, templatedParent))
                     {

@@ -1,5 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
 using System;
 using System.Collections.Generic;
 using Avalonia.Interactivity;
@@ -63,7 +61,7 @@ namespace Avalonia.Input
         event EventHandler<PointerReleasedEventArgs> PointerReleased;
 
         /// <summary>
-        /// Occurs when the mouse wheen is scrolled over the control.
+        /// Occurs when the mouse wheel is scrolled over the control.
         /// </summary>
         event EventHandler<PointerWheelEventArgs> PointerWheelChanged;
 
@@ -83,14 +81,14 @@ namespace Avalonia.Input
         Cursor Cursor { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the control is effectively enabled for user interaction.
+        /// Gets a value indicating whether this control and all its parents are enabled.
         /// </summary>
         /// <remarks>
         /// The <see cref="IsEnabled"/> property is used to toggle the enabled state for individual
-        /// controls. The <see cref="IsEnabledCore"/> property takes into account the
+        /// controls. The <see cref="IsEffectivelyEnabled"/> property takes into account the
         /// <see cref="IsEnabled"/> value of this control and its parent controls.
         /// </remarks>
-        bool IsEnabledCore { get; }
+        bool IsEffectivelyEnabled { get; }
 
         /// <summary>
         /// Gets a value indicating whether the control is focused.

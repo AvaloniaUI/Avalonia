@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +12,7 @@ namespace Avalonia.Controls.Generators
     /// </summary>
     public class ItemContainerGenerator : IItemContainerGenerator
     {
-        private Dictionary<int, ItemContainerInfo> _containers = new Dictionary<int, ItemContainerInfo>();
+        private SortedDictionary<int, ItemContainerInfo> _containers = new SortedDictionary<int, ItemContainerInfo>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemContainerGenerator"/> class.
@@ -54,13 +51,9 @@ namespace Avalonia.Controls.Generators
         public virtual Type ContainerType => null;
 
         /// <inheritdoc/>
-        public ItemContainerInfo Materialize(
-            int index,
-            object item,
-            IMemberSelector selector)
+        public ItemContainerInfo Materialize(int index, object item)
         {
-            var i = selector != null ? selector.Select(item) : item;
-            var container = new ItemContainerInfo(CreateContainer(i), item, index);
+            var container = new ItemContainerInfo(CreateContainer(item), item, index);
 
             _containers.Add(container.Index, container);
             Materialized?.Invoke(this, new ItemContainerEventArgs(container));
@@ -132,20 +125,19 @@ namespace Avalonia.Controls.Generators
                 }
 
                 Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
+
+                if (toMove.Count > 0)
+                {
+                    var containers = toMove.Select(x => x.Value).ToList();
+                    Recycled?.Invoke(this, new ItemContainerEventArgs(containers[0].Index, containers));
+                }
             }
 
             return result;
         }
 
         /// <inheritdoc/>
-        public virtual bool TryRecycle(
-            int oldIndex,
-            int newIndex,
-            object item,
-            IMemberSelector selector)
-        {
-            return false;
-        }
+        public virtual bool TryRecycle(int oldIndex, int newIndex, object item) => false;
 
         /// <inheritdoc/>
         public virtual IEnumerable<ItemContainerInfo> Clear()

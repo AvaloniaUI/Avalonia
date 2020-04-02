@@ -1,9 +1,7 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -22,7 +20,7 @@ namespace Avalonia.Controls.UnitTests
             TabItem selected;
             var target = new TabControl
             {
-                Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
+                Template = TabControlTemplate(),
                 Items = new[]
                 {
                     (selected = new TabItem
@@ -45,6 +43,29 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Pre_Selecting_TabItem_Should_Set_SelectedContent_After_It_Was_Added()
+        {
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+            };
+
+            const string secondContent = "Second";
+
+            var items = new AvaloniaList<object>
+            {
+                new TabItem { Header = "First"},
+                new TabItem { Header = "Second", Content = secondContent, IsSelected = true }
+            };
+
+            target.Items = items;
+
+            ApplyTemplate(target);
+
+            Assert.Equal(secondContent, target.SelectedContent);
+        }
+
+        [Fact]
         public void Logical_Children_Should_Be_TabItems()
         {
             var items = new[]
@@ -61,7 +82,7 @@ namespace Avalonia.Controls.UnitTests
 
             var target = new TabControl
             {
-                Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
+                Template = TabControlTemplate(),
                 Items = items,
             };
 
@@ -94,7 +115,7 @@ namespace Avalonia.Controls.UnitTests
 
             var target = new TabControl
             {
-                Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
+                Template = TabControlTemplate(),
                 Items = collection,
             };
 
@@ -129,7 +150,7 @@ namespace Avalonia.Controls.UnitTests
                 },
             };
 
-            var template = new FuncControlTemplate<TabItem>(x => new Decorator());
+            var template = new FuncControlTemplate<TabItem>((x, __) => new Decorator());
 
             using (UnitTestApplication.Start(TestServices.RealStyler))
             {
@@ -139,7 +160,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         new Style(x => x.OfType<TabItem>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(TemplatedControl.TemplateProperty, template)
                             }
@@ -147,7 +168,7 @@ namespace Avalonia.Controls.UnitTests
                     },
                     Child = new TabControl
                     {
-                        Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
+                        Template = TabControlTemplate(),
                         Items = collection,
                     }
                 };
@@ -172,51 +193,49 @@ namespace Avalonia.Controls.UnitTests
 
             var target = new TabControl
             {
-                Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
+                Template = TabControlTemplate(),
                 DataContext = "Base",
                 DataTemplates =
                 {
-                    new FuncDataTemplate<Item>(x => new Button { Content = x })
+                    new FuncDataTemplate<Item>((x, __) => new Button { Content = x })
                 },
                 Items = items,
             };
 
             ApplyTemplate(target);
-            var carousel = (Carousel)target.Pages;
 
-            var container = (ContentPresenter)carousel.Presenter.Panel.Children.Single();
-            container.UpdateChild();
-            var dataContext = ((TextBlock)container.Child).DataContext;
+            ((ContentPresenter)target.ContentPart).UpdateChild();
+            var dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
-            container = (ContentPresenter)carousel.Presenter.Panel.Children.Single();
-            container.UpdateChild();
-            dataContext = ((Button)container.Child).DataContext;
+            ((ContentPresenter)target.ContentPart).UpdateChild();
+            dataContext = ((Button)target.ContentPart.Child).DataContext;
             Assert.Equal(items[1], dataContext);
 
             target.SelectedIndex = 2;
-            dataContext = ((TextBlock)carousel.Presenter.Panel.Children.Single()).DataContext;
+            ((ContentPresenter)target.ContentPart).UpdateChild();
+            dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Base", dataContext);
 
             target.SelectedIndex = 3;
-            container = (ContentPresenter)carousel.Presenter.Panel.Children[0];
-            container.UpdateChild();
-            dataContext = ((TextBlock)container.Child).DataContext;
+            ((ContentPresenter)target.ContentPart).UpdateChild();
+            dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Qux", dataContext);
 
             target.SelectedIndex = 4;
-            dataContext = ((TextBlock)carousel.Presenter.Panel.Children.Single()).DataContext;
+            ((ContentPresenter)target.ContentPart).UpdateChild();
+            dataContext = target.ContentPart.DataContext;
             Assert.Equal("Base", dataContext);
         }
 
         /// <summary>
-        /// Non-headered control items should result in TabStripItems with empty content.
+        /// Non-headered control items should result in TabItems with empty header.
         /// </summary>
         /// <remarks>
-        /// If a TabStrip is created with non IHeadered controls as its items, don't try to
-        /// display the control in the TabStripItem: if the TabStrip is part of a TabControl
-        /// then *that* will also try to display the control, resulting in dual-parentage 
+        /// If a TabControl is created with non IHeadered controls as its items, don't try to
+        /// display the control in the header: if the control is part of the header then
+        /// *that* control would also end up in the content region, resulting in dual-parentage 
         /// breakage.
         /// </remarks>
         [Fact]
@@ -230,18 +249,20 @@ namespace Avalonia.Controls.UnitTests
 
             var target = new TabControl
             {
-                Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
+                Template = TabControlTemplate(),
                 Items = items,
             };
 
             ApplyTemplate(target);
 
-            var result = target.TabStrip.GetLogicalChildren()
-                .OfType<TabStripItem>()
-                .Select(x => x.Content)
+            var logicalChildren = target.ItemsPresenterPart.Panel.GetLogicalChildren();
+
+            var result = logicalChildren
+                .OfType<TabItem>()
+                .Select(x => x.Header)
                 .ToList();
 
-            Assert.Equal(new object[] { string.Empty, string.Empty }, result);
+            Assert.Equal(new object[] { null, null }, result);
         }
 
         [Fact]
@@ -249,7 +270,7 @@ namespace Avalonia.Controls.UnitTests
         {
             TabControl target = new TabControl
             {
-                Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
+                Template = TabControlTemplate(),
                 Items = new[]
                 {
                     new TabItem { Header = "Foo" },
@@ -262,70 +283,100 @@ namespace Avalonia.Controls.UnitTests
 
             target.SelectedIndex = 2;
 
-            var carousel = (Carousel)target.Pages;
-            var page = (TabItem)carousel.SelectedItem;
+            var page = (TabItem)target.SelectedItem;
 
             Assert.Null(page.Content);
         }
 
-        private Control CreateTabControlTemplate(TabControl parent)
+        [Fact]
+        public void DataTemplate_Created_Content_Should_Be_Logical_Child_After_ApplyTemplate()
         {
-            return new StackPanel
+            TabControl target = new TabControl
             {
-                Children =
+                Template = TabControlTemplate(),
+                ContentTemplate = new FuncDataTemplate<string>((x, _) =>
+                    new TextBlock { Tag = "bar", Text = x }),
+                Items = new[] { "Foo" },
+            };
+
+            ApplyTemplate(target);
+            ((ContentPresenter)target.ContentPart).UpdateChild();
+
+            var content = Assert.IsType<TextBlock>(target.ContentPart.Child);
+            Assert.Equal("bar", content.Tag);
+            Assert.Same(target, content.GetLogicalParent());
+            Assert.Single(target.GetLogicalChildren(), content);
+        }
+
+        [Fact]
+        public void Should_Not_Propagate_DataContext_To_TabItem_Content()
+        {
+            var dataContext = "DataContext";
+
+            var tabItem = new TabItem();
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = dataContext,
+                Items = new AvaloniaList<object> { tabItem }
+            };
+
+            ApplyTemplate(target);
+
+            Assert.NotEqual(dataContext, tabItem.Content);
+        }
+
+        private IControlTemplate TabControlTemplate()
+        {
+            return new FuncControlTemplate<TabControl>((parent, scope) =>
+                new StackPanel
                 {
-                    new TabStrip
+                    Children =
                     {
-                        Name = "PART_TabStrip",
-                        Template = new FuncControlTemplate<TabStrip>(CreateTabStripTemplate),
-                        MemberSelector = TabControl.HeaderSelector,
-                        [!TabStrip.ItemsProperty] = parent[!TabControl.ItemsProperty],
-                        [!!TabStrip.SelectedIndexProperty] = parent[!!TabControl.SelectedIndexProperty]
-                    },
-                    new Carousel
-                    {
-                        Name = "PART_Content",
-                        Template = new FuncControlTemplate<Carousel>(CreateCarouselTemplate),
-                        MemberSelector = TabControl.ContentSelector,
-                        [!Carousel.ItemsProperty] = parent[!TabControl.ItemsProperty],
-                        [!Carousel.SelectedItemProperty] = parent[!TabControl.SelectedItemProperty],
+                        new ItemsPresenter
+                        {
+                            Name = "PART_ItemsPresenter",
+                            [!TabStrip.ItemsProperty] = parent[!TabControl.ItemsProperty],
+                            [!TabStrip.ItemTemplateProperty] = parent[!TabControl.ItemTemplateProperty],
+                        }.RegisterInNameScope(scope),
+                        new ContentPresenter
+                        {
+                            Name = "PART_SelectedContentHost",
+                            [!ContentPresenter.ContentProperty] = parent[!TabControl.SelectedContentProperty],
+                            [!ContentPresenter.ContentTemplateProperty] = parent[!TabControl.SelectedContentTemplateProperty],
+                        }.RegisterInNameScope(scope)
                     }
-                }
-            };
+                });
         }
 
-        private Control CreateTabStripTemplate(TabStrip parent)
+        private IControlTemplate TabItemTemplate()
         {
-            return new ItemsPresenter
-            {
-                Name = "PART_ItemsPresenter",
-                [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
-                [!CarouselPresenter.MemberSelectorProperty] = parent[!ItemsControl.MemberSelectorProperty],
-            };
-        }
-
-        private Control CreateCarouselTemplate(Carousel control)
-        {
-            return new CarouselPresenter
-            {
-                Name = "PART_ItemsPresenter",
-                [!CarouselPresenter.ItemsProperty] = control[!ItemsControl.ItemsProperty],
-                [!CarouselPresenter.ItemsPanelProperty] = control[!ItemsControl.ItemsPanelProperty],
-                [!CarouselPresenter.MemberSelectorProperty] = control[!ItemsControl.MemberSelectorProperty],
-                [!CarouselPresenter.SelectedIndexProperty] = control[!SelectingItemsControl.SelectedIndexProperty],
-                [~CarouselPresenter.PageTransitionProperty] = control[~Carousel.PageTransitionProperty],
-            };
+            return new FuncControlTemplate<TabItem>((parent, scope) =>
+                new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [!ContentPresenter.ContentProperty] = parent[!TabItem.HeaderProperty],
+                    [!ContentPresenter.ContentTemplateProperty] = parent[!TabItem.HeaderTemplateProperty]
+                }.RegisterInNameScope(scope));
         }
 
         private void ApplyTemplate(TabControl target)
         {
             target.ApplyTemplate();
-            var carousel = (Carousel)target.Pages;
-            carousel.ApplyTemplate();
-            carousel.Presenter.ApplyTemplate();
-            var tabStrip = (TabStrip)target.TabStrip;
-            tabStrip.ApplyTemplate();
-            tabStrip.Presenter.ApplyTemplate();
+
+            target.Presenter.ApplyTemplate();
+
+            foreach (var tabItem in target.GetLogicalChildren().OfType<TabItem>())
+            {
+                tabItem.Template = TabItemTemplate();
+
+                tabItem.ApplyTemplate();
+
+                ((ContentPresenter)tabItem.Presenter).UpdateChild();
+            }
+
+            target.ContentPart.ApplyTemplate();
         }
 
         private class Item

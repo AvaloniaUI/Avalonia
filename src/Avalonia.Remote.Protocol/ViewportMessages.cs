@@ -37,6 +37,13 @@
         public PixelFormat[] Formats { get; set; }
     }
 
+    [AvaloniaRemoteMessageGuid("7A3c25d3-3652-438D-8EF1-86E942CC96C0")]
+    public class ClientRenderInfoMessage
+    {
+        public double DpiX { get; set; }
+        public double DpiY { get; set; }
+    }
+
     [AvaloniaRemoteMessageGuid("68014F8A-289D-4851-8D34-5367EDA7F827")]
     public class FrameReceivedMessage
     {

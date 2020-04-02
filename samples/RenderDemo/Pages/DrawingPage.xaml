@@ -1,5 +1,7 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<UserControl 
+    xmlns="https://github.com/avaloniaui" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="RenderDemo.Pages.DrawingPage">
     <UserControl.Styles>
         <Style>
             <Style.Resources>
@@ -98,7 +100,7 @@
         </Border>
 
         <!-- For comparison -->
-        
+
         <Ellipse Grid.Row="2"
                  Grid.Column="0"
                  Width="100"
@@ -127,6 +129,6 @@
                  Stretch="UniformToFill"
                  Fill="Blue"
                  Margin="5" />
-        
+
     </Grid>
 </UserControl>

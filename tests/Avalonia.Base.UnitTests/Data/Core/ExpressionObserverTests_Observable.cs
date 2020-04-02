@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
@@ -145,6 +142,26 @@ namespace Avalonia.Base.UnitTests.Data.Core
                     result);
 
                 sub.Dispose();
+
+                GC.KeepAlive(data);
+            }
+        }
+
+        [Fact]
+        public void Should_Work_With_Value_Type()
+        {
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var source = new BehaviorSubject<int>(1);
+                var data = new { Foo = source };
+                var target = ExpressionObserver.Create(data, o => o.Foo.StreamBinding());
+                var result = new List<int>();
+
+                var sub = target.Subscribe(x => result.Add((int)x));
+                source.OnNext(42);
+                sync.ExecutePostedCallbacks();
+
+                Assert.Equal(new[] { 1, 42 }, result);
 
                 GC.KeepAlive(data);
             }

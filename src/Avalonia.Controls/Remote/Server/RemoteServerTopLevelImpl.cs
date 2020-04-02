@@ -4,11 +4,15 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls.Embedding.Offscreen;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Remote.Protocol;
+using Avalonia.Remote.Protocol.Input;
 using Avalonia.Remote.Protocol.Viewport;
 using Avalonia.Threading;
+using InputModifiers = Avalonia.Input.InputModifiers;
+using Key = Avalonia.Input.Key;
 using PixelFormat = Avalonia.Platform.PixelFormat;
 using ProtocolPixelFormat = Avalonia.Remote.Protocol.Viewport.PixelFormat;
 
@@ -31,6 +35,76 @@ namespace Avalonia.Controls.Remote.Server
         {
             _transport = transport;
             _transport.OnMessage += OnMessage;
+
+            KeyboardDevice = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+        }
+
+        private static RawPointerEventType GetAvaloniaEventType (Avalonia.Remote.Protocol.Input.MouseButton button, bool pressed)
+        {
+            switch (button)
+            {
+                case Avalonia.Remote.Protocol.Input.MouseButton.Left:
+                    return pressed ? RawPointerEventType.LeftButtonDown : RawPointerEventType.LeftButtonUp;
+
+                case Avalonia.Remote.Protocol.Input.MouseButton.Middle:
+                    return pressed ? RawPointerEventType.MiddleButtonDown : RawPointerEventType.MiddleButtonUp;
+
+                case Avalonia.Remote.Protocol.Input.MouseButton.Right:
+                    return pressed ? RawPointerEventType.RightButtonDown : RawPointerEventType.RightButtonUp;
+
+                default:
+                    return RawPointerEventType.Move;
+            }
+        }
+
+        private static RawInputModifiers GetAvaloniaRawInputModifiers(
+            Avalonia.Remote.Protocol.Input.InputModifiers[] modifiers)
+            => (RawInputModifiers)GetAvaloniaInputModifiers(modifiers);
+        
+        private static RawInputModifiers GetAvaloniaInputModifiers (Avalonia.Remote.Protocol.Input.InputModifiers[] modifiers)
+        {
+            var result = RawInputModifiers.None;
+
+            if (modifiers == null)
+            {
+                return result;
+            }
+
+            foreach(var modifier in modifiers)
+            {
+                switch (modifier)
+                {
+                    case Avalonia.Remote.Protocol.Input.InputModifiers.Control:
+                        result |= RawInputModifiers.Control;
+                        break;
+
+                    case Avalonia.Remote.Protocol.Input.InputModifiers.Alt:
+                        result |= RawInputModifiers.Alt;
+                        break;
+
+                    case Avalonia.Remote.Protocol.Input.InputModifiers.Shift:
+                        result |= RawInputModifiers.Shift;
+                        break;
+
+                    case Avalonia.Remote.Protocol.Input.InputModifiers.Windows:
+                        result |= RawInputModifiers.Meta;
+                        break;
+
+                    case Avalonia.Remote.Protocol.Input.InputModifiers.LeftMouseButton:
+                        result |= RawInputModifiers.LeftMouseButton;
+                        break;
+
+                    case Avalonia.Remote.Protocol.Input.InputModifiers.MiddleMouseButton:
+                        result |= RawInputModifiers.MiddleMouseButton;
+                        break;
+
+                    case Avalonia.Remote.Protocol.Input.InputModifiers.RightMouseButton:
+                        result |= RawInputModifiers.RightMouseButton;
+                        break;
+                }
+            }
+
+            return result;
         }
 
         protected virtual void OnMessage(IAvaloniaRemoteTransportConnection transport, object obj)
@@ -43,6 +117,16 @@ namespace Avalonia.Controls.Remote.Server
                     {
                         _lastReceivedFrame = lastFrame.SequenceId;
                     }
+                    Dispatcher.UIThread.Post(RenderIfNeeded);
+                }
+                if(obj is ClientRenderInfoMessage renderInfo)
+                {
+                    lock(_lock)
+                    {
+                        _dpi = new Vector(renderInfo.DpiX, renderInfo.DpiY);
+                        _invalidated = true;
+                    }
+                    
                     Dispatcher.UIThread.Post(RenderIfNeeded);
                 }
                 if (obj is ClientSupportedPixelFormatsMessage supportedFormats)
@@ -82,6 +166,86 @@ namespace Avalonia.Controls.Remote.Server
                         _pendingAllocation = allocated;
                     }
                 }
+                if(obj is PointerMovedEventMessage pointer)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        Input?.Invoke(new RawPointerEventArgs(
+                            MouseDevice, 
+                            0, 
+                            InputRoot, 
+                            RawPointerEventType.Move, 
+                            new Point(pointer.X, pointer.Y), 
+                            GetAvaloniaInputModifiers(pointer.Modifiers)));
+                    }, DispatcherPriority.Input);
+                }
+                if(obj is PointerPressedEventMessage pressed)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        Input?.Invoke(new RawPointerEventArgs(
+                            MouseDevice,
+                            0,
+                            InputRoot,
+                            GetAvaloniaEventType(pressed.Button, true),
+                            new Point(pressed.X, pressed.Y),
+                            GetAvaloniaInputModifiers(pressed.Modifiers)));
+                    }, DispatcherPriority.Input);
+                }
+                if (obj is PointerPressedEventMessage released)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        Input?.Invoke(new RawPointerEventArgs(
+                            MouseDevice,
+                            0,
+                            InputRoot,
+                            GetAvaloniaEventType(released.Button, false),
+                            new Point(released.X, released.Y),
+                            GetAvaloniaInputModifiers(released.Modifiers)));
+                    }, DispatcherPriority.Input);
+                }
+                if(obj is ScrollEventMessage scroll)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        Input?.Invoke(new RawMouseWheelEventArgs(
+                            MouseDevice,
+                            0,
+                            InputRoot,
+                            new Point(scroll.X, scroll.Y),
+                            new Vector(scroll.DeltaX, scroll.DeltaY),
+                            GetAvaloniaInputModifiers(scroll.Modifiers)));
+                    }, DispatcherPriority.Input);
+                }
+                if(obj is KeyEventMessage key)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+
+                        Input?.Invoke(new RawKeyEventArgs(
+                            KeyboardDevice,
+                            0,
+                            InputRoot,
+                            key.IsDown ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
+                            (Key)key.Key,
+                            GetAvaloniaRawInputModifiers(key.Modifiers)));
+                    }, DispatcherPriority.Input);
+                }
+                if(obj is TextInputEventMessage text)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+
+                        Input?.Invoke(new RawTextInputEventArgs(
+                            KeyboardDevice,
+                            0,
+                            InputRoot,
+                            text.Text));
+                    }, DispatcherPriority.Input);
+                }
             }
         }
 
@@ -102,15 +266,25 @@ namespace Avalonia.Controls.Remote.Server
         
         FrameMessage RenderFrame(int width, int height, ProtocolPixelFormat? format)
         {
+            var scalingX = _dpi.X / 96.0;
+            var scalingY = _dpi.Y / 96.0;
+
+            width = (int)(width * scalingX);
+            height = (int)(height * scalingY);
+
             var fmt = format ?? ProtocolPixelFormat.Rgba8888;
             var bpp = fmt == ProtocolPixelFormat.Rgb565 ? 2 : 4;
             var data = new byte[width * height * bpp];
             var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+
             try
             {
-                _framebuffer = new LockedFramebuffer(handle.AddrOfPinnedObject(), width, height, width * bpp, _dpi, (PixelFormat)fmt,
-                    null);
-                Paint?.Invoke(new Rect(0, 0, width, height));
+                if (width > 0 && height > 0)
+                {
+                    _framebuffer = new LockedFramebuffer(handle.AddrOfPinnedObject(), new PixelSize(width, height), width * bpp, _dpi, (PixelFormat)fmt,
+                        null);
+                    Paint?.Invoke(new Rect(0, 0, width, height));
+                }
             }
             finally
             {
@@ -142,8 +316,7 @@ namespace Avalonia.Controls.Remote.Server
                     return;
 
             }
-            if (ClientSize.Width < 1 || ClientSize.Height < 1)
-                return;
+
             var format = ProtocolPixelFormat.Rgba8888;
             foreach(var fmt in _supportedFormats)
                 if (fmt <= ProtocolPixelFormat.MaxValue)
@@ -164,10 +337,15 @@ namespace Avalonia.Controls.Remote.Server
 
         public override void Invalidate(Rect rect)
         {
-            _invalidated = true;
-            Dispatcher.UIThread.Post(RenderIfNeeded);
+            if (!IsDisposed)
+            {
+                _invalidated = true;
+                Dispatcher.UIThread.Post(RenderIfNeeded);
+            }
         }
 
         public override IMouseDevice MouseDevice { get; } = new MouseDevice();
+
+        public IKeyboardDevice KeyboardDevice { get; }
     }
 }

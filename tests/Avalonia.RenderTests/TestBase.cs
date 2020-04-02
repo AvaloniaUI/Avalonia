@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.IO;
 using System.Runtime.CompilerServices;
 using ImageMagick;
@@ -13,6 +10,7 @@ using Avalonia.Platform;
 using System.Threading.Tasks;
 using System;
 using System.Threading;
+using Avalonia.Media;
 using Avalonia.Threading;
 #if AVALONIA_SKIA
 using Avalonia.Skia;
@@ -26,10 +24,21 @@ namespace Avalonia.Skia.RenderTests
 namespace Avalonia.Direct2D1.RenderTests
 #endif
 {
+    using Avalonia.Shared.PlatformSupport;
+
     public class TestBase
     {
+#if AVALONIA_SKIA
+        private static string s_fontUri = "resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests#Noto Mono";
+#else
+        private static string s_fontUri = "resm:Avalonia.Direct2D1.RenderTests.Assets?assembly=Avalonia.Direct2D1.RenderTests#Noto Mono";
+#endif
+        public static FontFamily TestFontFamily = new FontFamily(s_fontUri);
+
         private static readonly TestThreadingInterface threadingInterface =
             new TestThreadingInterface();
+
+        private static readonly IAssetLoader assetLoader = new AssetLoader();
 
         static TestBase()
         {
@@ -42,10 +51,14 @@ namespace Avalonia.Direct2D1.RenderTests
                 .Bind<IPlatformThreadingInterface>()
                 .ToConstant(threadingInterface);
 
+            AvaloniaLocator.CurrentMutable
+                .Bind<IAssetLoader>()
+                .ToConstant(assetLoader);
         }
 
         public TestBase(string outputPath)
         {
+            outputPath = outputPath.Replace('\\', Path.DirectorySeparatorChar);
             var testPath = GetTestsDirectory();
             var testFiles = Path.Combine(testPath, "TestFiles");
 #if AVALONIA_SKIA
@@ -63,7 +76,7 @@ namespace Avalonia.Direct2D1.RenderTests
             get;
         }
 
-        protected async Task RenderToFile(Control target, [CallerMemberName] string testName = "")
+        protected async Task RenderToFile(Control target, [CallerMemberName] string testName = "", double dpi = 96)
         {
             if (!Directory.Exists(OutputPath))
             {
@@ -73,22 +86,21 @@ namespace Avalonia.Direct2D1.RenderTests
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
             var deferredPath = Path.Combine(OutputPath, testName + ".deferred.out.png");
             var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
+            var size = new Size(target.Width, target.Height);
+            var dpiVector = new Vector(dpi, dpi);
 
-            using (RenderTargetBitmap bitmap = new RenderTargetBitmap(
-                (int)target.Width,
-                (int)target.Height))
+            using (RenderTargetBitmap bitmap = new RenderTargetBitmap(pixelSize, dpiVector))
             {
-                Size size = new Size(target.Width, target.Height);
                 target.Measure(size);
                 target.Arrange(new Rect(size));
                 bitmap.Render(target);
                 bitmap.Save(immediatePath);
             }
 
-            using (var rtb = factory.CreateRenderTargetBitmap((int)target.Width, (int)target.Height, 96, 96))
+            using (var rtb = factory.CreateRenderTargetBitmap(pixelSize, dpiVector))
             using (var renderer = new DeferredRenderer(target, rtb))
             {
-                Size size = new Size(target.Width, target.Height);
                 target.Measure(size);
                 target.Arrange(new Rect(size));
                 renderer.UnitTestUpdateScene();

@@ -1,18 +1,18 @@
 <Style xmlns="https://github.com/avaloniaui" Selector="Window">
   <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
-  <Setter Property="FontFamily" Value="Segoe UI"/>
+  <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
   <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}"/>
   <Setter Property="Template">
     <ControlTemplate>
       <Border Background="{TemplateBinding Background}">
-        <AdornerDecorator>
+        <VisualLayerManager>
           <ContentPresenter Name="PART_ContentPresenter"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
                             Content="{TemplateBinding Content}"
                             Margin="{TemplateBinding Padding}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>           
-        </AdornerDecorator>
+        </VisualLayerManager>
       </Border>
     </ControlTemplate>
   </Setter>

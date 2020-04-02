@@ -178,7 +178,7 @@ namespace Avalonia.Controls.Utils
         /// <param name="e">The event data.</param>
         private void OnSelectorPointerReleased(object sender, PointerReleasedEventArgs e)
         {
-            if (e.MouseButton == MouseButton.Left)
+            if (e.InitialPressMouseButton == MouseButton.Left)
             {
                 OnCommit();
             }
@@ -261,7 +261,7 @@ namespace Avalonia.Controls.Utils
                     break;
 
                 case Key.Down:
-                    if ((e.Modifiers & InputModifiers.Alt) == InputModifiers.None)
+                    if ((e.KeyModifiers & KeyModifiers.Alt) == KeyModifiers.None)
                     {
                         SelectedIndexIncrement();
                         e.Handled = true;

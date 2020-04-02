@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +35,25 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Finds a named element in an <see cref="INameScope"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="anchor">The control to take the name scope from.</param>
+        /// <param name="name">The name.</param>
+        /// <returns>The named element or null if not found.</returns>
+        public static T Find<T>(this ILogical anchor, string name)
+            where T : class
+        {
+            Contract.Requires<ArgumentNullException>(anchor != null);
+            Contract.Requires<ArgumentNullException>(name != null);
+            var styledAnchor = anchor as StyledElement;
+            if (styledAnchor == null)
+                return null;
+            var nameScope = (anchor as INameScope) ?? NameScope.GetNameScope(styledAnchor);
+            return nameScope?.Find<T>(name);
+        }
+
+        /// <summary>
         /// Gets a named element from an <see cref="INameScope"/> or throws if no element of the
         /// requested name was found.
         /// </summary>
@@ -67,14 +83,37 @@ namespace Avalonia.Controls
             return (T)result;
         }
 
+        /// <summary>
+        /// Gets a named element from an <see cref="INameScope"/> or throws if no element of the
+        /// requested name was found.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="anchor">The control to take the name scope from.</param>
+        /// <param name="name">The name.</param>
+        /// <returns>The named element.</returns>
+        public static T Get<T>(this ILogical anchor, string name)
+            where T : class
+        {
+            Contract.Requires<ArgumentNullException>(anchor != null);
+            Contract.Requires<ArgumentNullException>(name != null);
+               
+            var nameScope = (anchor as INameScope) ?? NameScope.GetNameScope((StyledElement)anchor);
+            if (nameScope == null)
+                throw new InvalidOperationException(
+                    "The control doesn't have an associated name scope, probably no registrations has been done yet");
+            
+            return nameScope.Get<T>(name);
+        }
+        
         public static INameScope FindNameScope(this ILogical control)
         {
             Contract.Requires<ArgumentNullException>(control != null);
 
-            return control.GetSelfAndLogicalAncestors()
+            var scope = control.GetSelfAndLogicalAncestors()
                 .OfType<StyledElement>()
                 .Select(x => (x as INameScope) ?? NameScope.GetNameScope(x))
                 .FirstOrDefault(x => x != null);
+            return scope;
         }
     }
 }

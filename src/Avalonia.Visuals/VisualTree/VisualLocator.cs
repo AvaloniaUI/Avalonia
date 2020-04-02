@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Reactive.Linq;
-using System.Reflection;
 using Avalonia.Reactive;
 
 namespace Avalonia.VisualTree
@@ -50,7 +48,7 @@ namespace Avalonia.VisualTree
                 if (_relativeTo.IsAttachedToVisualTree)
                 {
                     return _relativeTo.GetVisualAncestors()
-                        .Where(x => _ancestorType?.GetTypeInfo().IsAssignableFrom(x.GetType().GetTypeInfo()) ?? true)
+                        .Where(x => _ancestorType?.IsAssignableFrom(x.GetType()) ?? true)
                         .ElementAtOrDefault(_ancestorLevel);
                 }
                 else

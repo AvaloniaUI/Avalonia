@@ -6,6 +6,8 @@ using Avalonia.LogicalTree;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
+#nullable enable
+
 namespace Avalonia.Controls.Platform
 {
     /// <summary>
@@ -13,18 +15,23 @@ namespace Avalonia.Controls.Platform
     /// </summary>
     public class DefaultMenuInteractionHandler : IMenuInteractionHandler
     {
-        private IDisposable _inputManagerSubscription;
-        private IRenderRoot _root;
+        private readonly bool _isContextMenu;
+        private IDisposable? _inputManagerSubscription;
+        private IRenderRoot? _root;
 
-        public DefaultMenuInteractionHandler()
-            : this(Input.InputManager.Instance, DefaultDelayRun)
+        public DefaultMenuInteractionHandler(bool isContextMenu)
+            : this(isContextMenu, Input.InputManager.Instance, DefaultDelayRun)
         {
         }
 
         public DefaultMenuInteractionHandler(
-            IInputManager inputManager,
+            bool isContextMenu,
+            IInputManager? inputManager,
             Action<Action, TimeSpan> delayRun)
         {
+            delayRun = delayRun ?? throw new ArgumentNullException(nameof(delayRun));
+
+            _isContextMenu = isContextMenu;
             InputManager = inputManager;
             DelayRun = delayRun;
         }
@@ -59,7 +66,7 @@ namespace Avalonia.Controls.Platform
                 window.Deactivated += WindowDeactivated;
             }
 
-            _inputManagerSubscription = InputManager.Process.Subscribe(RawInput);
+            _inputManagerSubscription = InputManager?.Process.Subscribe(RawInput);
         }
 
         public virtual void Detach(IMenu menu)
@@ -89,7 +96,7 @@ namespace Avalonia.Controls.Platform
                 root.Deactivated -= WindowDeactivated;
             }
 
-            _inputManagerSubscription.Dispose();
+            _inputManagerSubscription!.Dispose();
 
             Menu = null;
             _root = null;
@@ -97,9 +104,9 @@ namespace Avalonia.Controls.Platform
 
         protected Action<Action, TimeSpan> DelayRun { get; }
 
-        protected IInputManager InputManager { get; }
+        protected IInputManager? InputManager { get; }
 
-        protected IMenu Menu { get; private set; }
+        protected IMenu? Menu { get; private set; }
 
         protected static TimeSpan MenuShowDelay { get; } = TimeSpan.FromMilliseconds(400);
 
@@ -125,23 +132,16 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void KeyDown(object sender, KeyEventArgs e)
         {
-            var item = GetMenuItem(e.Source as IControl);
-
-            if (item != null)
-            {
-                KeyDown(item, e);
-            }
+            KeyDown(GetMenuItem(e.Source as IControl), e);
         }
 
-        protected internal virtual void KeyDown(IMenuItem item, KeyEventArgs e)
+        protected internal virtual void KeyDown(IMenuItem? item, KeyEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(item != null);
-
             switch (e.Key)
             {
                 case Key.Up:
                 case Key.Down:
-                    if (item.IsTopLevel)
+                    if (item?.IsTopLevel == true)
                     {
                         if (item.HasSubMenu && !item.IsSubMenuOpen)
                         {
@@ -156,7 +156,7 @@ namespace Avalonia.Controls.Platform
                     break;
 
                 case Key.Left:
-                    if (item.Parent is IMenuItem parent && !parent.IsTopLevel && parent.IsSubMenuOpen)
+                    if (item?.Parent is IMenuItem parent && !parent.IsTopLevel && parent.IsSubMenuOpen)
                     {
                         parent.Close();
                         parent.Focus();
@@ -169,7 +169,7 @@ namespace Avalonia.Controls.Platform
                     break;
 
                 case Key.Right:
-                    if (!item.IsTopLevel && item.HasSubMenu)
+                    if (item != null && !item.IsTopLevel && item.HasSubMenu)
                     {
                         Open(item, true);
                         e.Handled = true;
@@ -181,47 +181,65 @@ namespace Avalonia.Controls.Platform
                     break;
 
                 case Key.Enter:
-                    if (!item.HasSubMenu)
+                    if (item != null)
                     {
-                        Click(item);
+                        if (!item.HasSubMenu)
+                        {
+                            Click(item);
+                        }
+                        else
+                        {
+                            Open(item, true);
+                        }
+
+                        e.Handled = true;
+                    }
+                    break;
+
+                case Key.Escape:
+                    if (item?.Parent != null)
+                    {
+                        item.Parent.Close();
+                        item.Parent.Focus();
                     }
                     else
                     {
-                        Open(item, true);
+                        Menu!.Close();
                     }
 
                     e.Handled = true;
                     break;
 
-                case Key.Escape:
-                    if (item.Parent != null)
-                    {
-                        item.Parent.Close();
-                        item.Parent.Focus();
-                        e.Handled = true;
-                    }
-                    break;
-
                 default:
                     var direction = e.Key.ToNavigationDirection();
 
-                    if (direction.HasValue && item.Parent?.MoveSelection(direction.Value, true) == true)
+                    if (direction.HasValue)
                     {
-                        // If the the parent is an IMenu which successfully moved its selection,
-                        // and the current menu is open then close the current menu and open the
-                        // new menu.
-                        if (item.IsSubMenuOpen && item.Parent is IMenu)
+                        if (item == null && _isContextMenu)
                         {
-                            item.Close();
-                            Open(item.Parent.SelectedItem, true);
+                            if (Menu!.MoveSelection(direction.Value, true) == true)
+                            {
+                                e.Handled = true;
+                            }
                         }
-                        e.Handled = true;
+                        else if (item?.Parent?.MoveSelection(direction.Value, true) == true)
+                        {
+                            // If the the parent is an IMenu which successfully moved its selection,
+                            // and the current menu is open then close the current menu and open the
+                            // new menu.
+                            if (item.IsSubMenuOpen && item.Parent is IMenu)
+                            {
+                                item.Close();
+                                Open(item.Parent.SelectedItem, true);
+                            }
+                            e.Handled = true;
+                        }
                     }
 
                     break;
             }
 
-            if (!e.Handled && item.Parent is IMenuItem parentItem)
+            if (!e.Handled && item?.Parent is IMenuItem parentItem)
             {
                 KeyDown(parentItem, e);
             }
@@ -259,7 +277,8 @@ namespace Avalonia.Controls.Platform
 
             if (item.IsTopLevel)
             {
-                if (item.Parent.SelectedItem?.IsSubMenuOpen == true)
+                if (item != item.Parent.SelectedItem &&
+                    item.Parent.SelectedItem?.IsSubMenuOpen == true)
                 {
                     item.Parent.SelectedItem.Close();
                     SelectItemAndAncestors(item);
@@ -322,7 +341,18 @@ namespace Avalonia.Controls.Platform
 
             if (e.MouseButton == MouseButton.Left && item?.HasSubMenu == true)
             {
-                Open(item, false);
+                if (item.IsSubMenuOpen)
+                {
+                    if (item.IsTopLevel)
+                    {
+                        CloseMenu(item);
+                    }
+                }
+                else
+                {
+                    Open(item, false);
+                }
+
                 e.Handled = true;
             }
         }
@@ -331,7 +361,7 @@ namespace Avalonia.Controls.Platform
         {
             var item = GetMenuItem(e.Source as IControl);
 
-            if (e.MouseButton == MouseButton.Left && item.HasSubMenu == false)
+            if (e.InitialPressMouseButton == MouseButton.Left && item?.HasSubMenu == false)
             {
                 Click(item);
                 e.Handled = true;
@@ -348,11 +378,11 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void RawInput(RawInputEventArgs e)
         {
-            var mouse = e as RawMouseEventArgs;
+            var mouse = e as RawPointerEventArgs;
 
-            if (mouse?.Type == RawMouseEventType.NonClientLeftButtonDown)
+            if (mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
             {
-                Menu.Close();
+                Menu?.Close();
             }
         }
 
@@ -371,7 +401,7 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void WindowDeactivated(object sender, EventArgs e)
         {
-            Menu.Close();
+            Menu?.Close();
         }
 
         protected void Click(IMenuItem item)
@@ -382,7 +412,7 @@ namespace Avalonia.Controls.Platform
 
         protected void CloseMenu(IMenuItem item)
         {
-            var current = (IMenuElement)item;
+            var current = (IMenuElement?)item;
 
             while (current != null && !(current is IMenu))
             {
@@ -430,7 +460,7 @@ namespace Avalonia.Controls.Platform
 
         protected void SelectItemAndAncestors(IMenuItem item)
         {
-            var current = item;
+            var current = (IMenuItem?)item;
 
             while (current?.Parent != null)
             {
@@ -439,7 +469,7 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected static IMenuItem GetMenuItem(IControl item)
+        protected static IMenuItem? GetMenuItem(IControl? item)
         {
             while (true)
             {

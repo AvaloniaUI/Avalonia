@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -29,14 +26,13 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
         class Framebuffer : ILockedFramebuffer, IFramebufferPlatformSurface
         {
-            public Framebuffer(PixelFormat fmt, int width, int height)
+            public Framebuffer(PixelFormat fmt, PixelSize size)
             {
                 Format = fmt;
                 var bpp = fmt == PixelFormat.Rgb565 ? 2 : 4;
-                Width = width;
-                Height = height;
-                RowBytes = bpp * width;
-                Address = Marshal.AllocHGlobal(Height * RowBytes);
+                Size = size;
+                RowBytes = bpp * size.Width;
+                Address = Marshal.AllocHGlobal(size.Height * RowBytes);
             }
 
             public IntPtr Address { get; }
@@ -45,11 +41,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
             public PixelFormat Format { get; }
 
-            public int Height { get; }
+            public PixelSize Size { get; }
 
             public int RowBytes { get; }
-
-            public int Width { get; }
 
             public void Dispose()
             {
@@ -74,30 +68,30 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         public void FramebufferRenderResultsShouldBeUsableAsBitmap(PixelFormat fmt)
         {
             var testName = nameof(FramebufferRenderResultsShouldBeUsableAsBitmap) + "_" + fmt;
-            var fb = new Framebuffer(fmt, 80, 80);
+            var fb = new Framebuffer(fmt, new PixelSize(80, 80));
             var r = Avalonia.AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             using (var target = r.CreateRenderTarget(new object[] { fb }))
             using (var ctx = target.CreateDrawingContext(null))
             {
                 ctx.Clear(Colors.Transparent);
                 ctx.PushOpacity(0.8);
-                ctx.FillRectangle(Brushes.Chartreuse, new Rect(0, 0, 20, 100));
-                ctx.FillRectangle(Brushes.Crimson, new Rect(20, 0, 20, 100));
-                ctx.FillRectangle(Brushes.Gold, new Rect(40, 0, 20, 100));
+                ctx.DrawRectangle(Brushes.Chartreuse, null, new Rect(0, 0, 20, 100));
+                ctx.DrawRectangle(Brushes.Crimson, null, new Rect(20, 0, 20, 100));
+                ctx.DrawRectangle(Brushes.Gold,null, new Rect(40, 0, 20, 100));
                 ctx.PopOpacity();
             }
 
-            var bmp = new Bitmap(fmt, fb.Address, fb.Width, fb.Height, fb.RowBytes);
+            var bmp = new Bitmap(fmt, fb.Address, fb.Size, new Vector(96, 96), fb.RowBytes);
             fb.Deallocate();
-            using (var rtb = new RenderTargetBitmap(100, 100))
+            using (var rtb = new RenderTargetBitmap(new PixelSize(100, 100), new Vector(96, 96)))
             {
                 using (var ctx = rtb.CreateDrawingContext(null))
                 {
-                    ctx.FillRectangle(Brushes.Blue, new Rect(0, 0, 100, 100));
-                    ctx.FillRectangle(Brushes.Pink, new Rect(0, 20, 100, 10));
+                    ctx.DrawRectangle(Brushes.Blue, null, new Rect(0, 0, 100, 100));
+                    ctx.DrawRectangle(Brushes.Pink, null, new Rect(0, 20, 100, 10));
 
                     var rc = new Rect(0, 0, 60, 60);
-                    ctx.DrawImage(bmp.PlatformImpl, 1, rc, rc);
+                    ctx.DrawBitmap(bmp.PlatformImpl, 1, rc, rc);
                 }
                 rtb.Save(System.IO.Path.Combine(OutputPath, testName + ".out.png"));
             }
@@ -108,7 +102,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData(PixelFormat.Bgra8888), InlineData(PixelFormat.Rgba8888)]
         public void WriteableBitmapShouldBeUsable(PixelFormat fmt)
         {
-            var writeableBitmap = new WriteableBitmap(256, 256, fmt);
+            var writeableBitmap = new WriteableBitmap(new PixelSize(256, 256), new Vector(96, 96), fmt);
 
             var data = new int[256 * 256];
             for (int y = 0; y < 256; y++)

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using Avalonia.Input;
@@ -82,14 +79,14 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="point">The point in screen coordinates.</param>
         /// <returns>The point in client coordinates.</returns>
-        Point PointToClient(Point point);
+        Point PointToClient(PixelPoint point);
 
         /// <summary>
         /// Converts a point from client to screen coordinates.
         /// </summary>
         /// <param name="point">The point in client coordinates.</param>
         /// <returns>The point in screen coordinates.</returns>
-        Point PointToScreen(Point point);
+        PixelPoint PointToScreen(Point point);
 
         /// <summary>
         /// Sets the cursor associated with the toplevel.
@@ -107,5 +104,7 @@ namespace Avalonia.Platform
         /// </summary>
         [CanBeNull]
         IMouseDevice MouseDevice { get; }
+
+        IPopupImpl CreatePopup();
     }
 }

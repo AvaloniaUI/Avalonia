@@ -9,22 +9,32 @@ namespace Avalonia.Win32.Interop.Wpf
     {
         private readonly WpfTopLevelImpl _impl;
 
-        public WpfMouseDevice(WpfTopLevelImpl impl)
+        public WpfMouseDevice(WpfTopLevelImpl impl) : base(new WpfMousePointer(impl))
         {
             _impl = impl;
         }
 
-        public override void Capture(IInputElement control)
+        class WpfMousePointer : Pointer
         {
-            if (control == null)
+            private readonly WpfTopLevelImpl _impl;
+
+            public WpfMousePointer(WpfTopLevelImpl impl) : base(Pointer.GetNextFreeId(), PointerType.Mouse, true)
             {
-                System.Windows.Input.Mouse.Capture(null);
+                _impl = impl;
             }
-            else if ((control.GetVisualRoot() as EmbeddableControlRoot)?.PlatformImpl != _impl)
-                throw new ArgumentException("Visual belongs to unknown toplevel");
-            else
-                System.Windows.Input.Mouse.Capture(_impl);
-            base.Capture(control);
+
+            protected override void PlatformCapture(IInputElement control)
+            {
+                if (control == null)
+                {
+                    System.Windows.Input.Mouse.Capture(null);
+                }
+                else if ((control.GetVisualRoot() as EmbeddableControlRoot)?.PlatformImpl != _impl)
+                    throw new ArgumentException("Visual belongs to unknown toplevel");
+                else
+                    System.Windows.Input.Mouse.Capture(_impl);
+            }
         }
+        
     }
 }

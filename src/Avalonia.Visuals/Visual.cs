@@ -1,15 +1,13 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Logging;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Rendering;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia
@@ -23,6 +21,7 @@ namespace Avalonia
     /// <see cref="IRenderer"/> to render the control. To traverse the visual tree, use the
     /// extension methods defined in <see cref="VisualExtensions"/>.
     /// </remarks>
+    [UsableDuringInitialization]
     public class Visual : StyledElement, IVisual
     {
         /// <summary>
@@ -100,13 +99,14 @@ namespace Avalonia
         /// </summary>
         static Visual()
         {
-            AffectsRender(
+            AffectsRender<Visual>(
                 BoundsProperty,
                 ClipProperty,
                 ClipToBoundsProperty,
                 IsVisibleProperty,
                 OpacityProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
+            ZIndexProperty.Changed.Subscribe(ZIndexChanged);
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Avalonia
         {
             var visualChildren = new AvaloniaList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
-            visualChildren.Validate = ValidateVisualChild;
+            visualChildren.Validate = visual => ValidateVisualChild(visual);
             visualChildren.CollectionChanged += VisualChildrenChanged;
             VisualChildren = visualChildren;
         }
@@ -168,7 +168,22 @@ namespace Avalonia
         /// </summary>
         public bool IsEffectivelyVisible
         {
-            get { return this.GetSelfAndVisualAncestors().All(x => x.IsVisible); }
+            get
+            {
+                IVisual node = this;
+
+                while (node != null)
+                {
+                    if (!node.IsVisible)
+                    {
+                        return false;
+                    }
+
+                    node = node.VisualParent;
+                }
+
+                return true;
+            }
         }
 
         /// <summary>
@@ -288,29 +303,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Returns a transform that transforms the visual's coordinates into the coordinates
-        /// of the specified <paramref name="visual"/>.
-        /// </summary>
-        /// <param name="visual">The visual to translate the coordinates to.</param>
-        /// <returns>
-        /// A <see cref="Matrix"/> containing the transform or null if the visuals don't share a
-        /// common ancestor.
-        /// </returns>
-        public Matrix? TransformToVisual(IVisual visual)
-        {
-            var common = this.FindCommonVisualAncestor(visual);
-
-            if (common != null)
-            {
-                var thisOffset = GetOffsetFrom(common, this);
-                var thatOffset = GetOffsetFrom(common, visual);
-                return Matrix.CreateTranslation(-thatOffset) * Matrix.CreateTranslation(thisOffset);
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Indicates that a property change should cause <see cref="InvalidateVisual"/> to be
         /// called.
         /// </summary>
@@ -320,12 +312,69 @@ namespace Avalonia
         /// on the control which when changed should cause a redraw. This is similar to WPF's
         /// FrameworkPropertyMetadata.AffectsRender flag.
         /// </remarks>
+        [Obsolete("Use AffectsRender<T> and specify the control type.")]
         protected static void AffectsRender(params AvaloniaProperty[] properties)
         {
+            AffectsRender<Visual>(properties);
+        }
+
+        /// <summary>
+        /// Indicates that a property change should cause <see cref="InvalidateVisual"/> to be
+        /// called.
+        /// </summary>
+        /// <typeparam name="T">The control which the property affects.</typeparam>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// This method should be called in a control's static constructor with each property
+        /// on the control which when changed should cause a redraw. This is similar to WPF's
+        /// FrameworkPropertyMetadata.AffectsRender flag.
+        /// </remarks>
+        protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
+            where T : Visual
+        {
+            static void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Sender is T sender)
+                {
+                    sender.InvalidateVisual();
+                }
+            }
+
+            static void InvalidateAndSubscribe(AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Sender is T sender)
+                {
+                    if (e.OldValue is IAffectsRender oldValue)
+                    {
+                        WeakEventHandlerManager.Unsubscribe<EventArgs, T>(oldValue, nameof(oldValue.Invalidated), sender.AffectsRenderInvalidated);
+                    }
+
+                    if (e.NewValue is IAffectsRender newValue)
+                    {
+                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);
+                    }
+
+                    sender.InvalidateVisual();
+                }
+            }
+
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsRenderInvalidate);
+                if (property.CanValueAffectRender())
+                {
+                    property.Changed.Subscribe(e => InvalidateAndSubscribe(e));
+                }
+                else
+                {
+                    property.Changed.Subscribe(e => Invalidate(e));
+                }
             }
+        }
+
+        protected override void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            base.LogicalChildrenCollectionChanged(sender, e);
+            VisualRoot?.Renderer?.RecalculateChildren(this);
         }
 
         /// <summary>
@@ -335,7 +384,7 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            Logger.Verbose(LogArea.Visual, this, "Attached to visual tree");
+            Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Visual, this, "Attached to visual tree");
 
             _visualRoot = e.Root;
 
@@ -348,11 +397,18 @@ namespace Avalonia
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
 
-            if (VisualChildren != null)
+            var visualChildren = VisualChildren;
+
+            if (visualChildren != null)
             {
-                foreach (Visual child in VisualChildren.OfType<Visual>())
+                var visualChildrenCount = visualChildren.Count;
+
+                for (var i = 0; i < visualChildrenCount; i++)
                 {
-                    child.OnAttachedToVisualTreeCore(e);
+                    if (visualChildren[i] is Visual child)
+                    {
+                        child.OnAttachedToVisualTreeCore(e);
+                    }
                 }
             }
         }
@@ -364,7 +420,7 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            Logger.Verbose(LogArea.Visual, this, "Detached from visual tree");
+            Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Visual, this, "Detached from visual tree");
 
             _visualRoot = null;
 
@@ -377,11 +433,18 @@ namespace Avalonia
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root?.Renderer?.AddDirty(this);
 
-            if (VisualChildren != null)
+            var visualChildren = VisualChildren;
+
+            if (visualChildren != null)
             {
-                foreach (Visual child in VisualChildren.OfType<Visual>())
+                var visualChildrenCount = visualChildren.Count;
+
+                for (var i = 0; i < visualChildrenCount; i++)
                 {
-                    child.OnDetachedFromVisualTreeCore(e);
+                    if (visualChildren[i] is Visual child)
+                    {
+                        child.OnDetachedFromVisualTreeCore(e);
+                    }
                 }
             }
         }
@@ -409,40 +472,38 @@ namespace Avalonia
         /// <param name="newParent">The new visual parent.</param>
         protected virtual void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            RaisePropertyChanged(VisualParentProperty, oldParent, newParent, BindingPriority.LocalValue);
+            RaisePropertyChanged(
+                VisualParentProperty,
+                new Optional<IVisual>(oldParent),
+                new BindingValue<IVisual>(newParent),
+                BindingPriority.LocalValue);
         }
 
-        /// <summary>
-        /// Called when a property changes that should invalidate the visual.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void AffectsRenderInvalidate(AvaloniaPropertyChangedEventArgs e)
+        protected override sealed void LogBindingError(AvaloniaProperty property, Exception e)
         {
-            (e.Sender as Visual)?.InvalidateVisual();
-        }
-
-        /// <summary>
-        /// Gets the visual offset from the specified ancestor.
-        /// </summary>
-        /// <param name="ancestor">The ancestor visual.</param>
-        /// <param name="visual">The visual.</param>
-        /// <returns>The visual offset.</returns>
-        private static Vector GetOffsetFrom(IVisual ancestor, IVisual visual)
-        {
-            var result = new Vector();
-
-            while (visual != ancestor)
+            // Don't log a binding error unless the control is attached to a logical or visual tree.
+            // In theory this should only need to check for logical tree attachment, but in practise
+            // due to ContentControlMixin only taking effect when the template has finished being
+            // applied, some controls are attached to the visual tree before the logical tree.
+            if (((ILogical)this).IsAttachedToLogicalTree || ((IVisual)this).IsAttachedToVisualTree)
             {
-                result = new Vector(result.X + visual.Bounds.X, result.Y + visual.Bounds.Y);
-                visual = visual.VisualParent;
-
-                if (visual == null)
+                if (e is BindingChainException b &&
+                    string.IsNullOrEmpty(b.ExpressionErrorPoint) &&
+                    DataContext == null)
                 {
-                    throw new ArgumentException("'visual' is not a descendant of 'ancestor'.");
+                    // The error occurred at the root of the binding chain and DataContext is null;
+                    // don't log this - the DataContext probably hasn't been set up yet.
+                    return;
                 }
-            }
 
-            return result;
+                Logger.TryGet(LogEventLevel.Warning)?.Log(
+                    LogArea.Binding,
+                    this,
+                    "Error in binding to {Target}.{Property}: {Message}",
+                    this,
+                    property,
+                    e.Message);
+            }
         }
 
         /// <summary>
@@ -480,13 +541,25 @@ namespace Avalonia
         {
             if (c == null)
             {
-                throw new ArgumentNullException("Cannot add null to VisualChildren.");
+                throw new ArgumentNullException(nameof(c), "Cannot add null to VisualChildren.");
             }
 
             if (c.VisualParent != null)
             {
                 throw new InvalidOperationException("The control already has a visual parent.");
             }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="ZIndex"/> property changes on any control.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void ZIndexChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var sender = e.Sender as IVisual;
+            var parent = sender?.VisualParent;
+            sender?.InvalidateVisual();
+            parent?.VisualRoot?.Renderer?.RecalculateChildren(parent);
         }
 
         /// <summary>
@@ -522,13 +595,15 @@ namespace Avalonia
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
             {
-                var root = this.GetVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
+                var root = this.FindAncestorOfType<IRenderRoot>();
                 var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
                 OnAttachedToVisualTreeCore(e);
             }
 
             OnVisualParentChanged(old, value);
         }
+
+        private void AffectsRenderInvalidated(object sender, EventArgs e) => InvalidateVisual();
 
         /// <summary>
         /// Called when the <see cref="VisualChildren"/> collection changes.

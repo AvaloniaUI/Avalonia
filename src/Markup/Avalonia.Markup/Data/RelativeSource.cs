@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia.Data
@@ -85,9 +82,9 @@ namespace Avalonia.Data
             get { return _ancestorLevel; }
             set
             {
-                if (_ancestorLevel <= 0)
+                if (value <= 0)
                 {
-                    throw new ArgumentOutOfRangeException("AncestorLevel may not be set to less than 1.");
+                    throw new ArgumentOutOfRangeException(nameof(value), "AncestorLevel may not be set to less than 1.");
                 }
 
                 _ancestorLevel = value;

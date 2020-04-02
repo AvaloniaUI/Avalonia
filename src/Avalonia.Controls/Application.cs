@@ -1,15 +1,16 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.Collections.Generic;
 using System.Reactive.Concurrency;
 using System.Threading;
+using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Threading;
 
@@ -29,7 +30,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IApplicationLifecycle, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IResourceNode
     {
         /// <summary>
         /// The application-global data templates.
@@ -41,21 +42,39 @@ namespace Avalonia
         private readonly Styler _styler = new Styler();
         private Styles _styles;
         private IResourceDictionary _resources;
-
-        private CancellationTokenSource _mainLoopCancellationTokenSource;
+        private bool _notifyingResourcesChanged;
+        private Action<IReadOnlyList<IStyle>> _stylesAdded;
+        private Action<IReadOnlyList<IStyle>> _stylesRemoved;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Application"/> class.
+        /// Defines the <see cref="DataContext"/> property.
         /// </summary>
-        public Application()
-        {
-            Windows = new WindowCollection(this);
-
-            OnExit += OnExiting;
-        }
+        public static readonly StyledProperty<object> DataContextProperty =
+            StyledElement.DataContextProperty.AddOwner<Application>();
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
+        /// <summary>
+        /// Creates an instance of the <see cref="Application"/> class.
+        /// </summary>
+        public Application()
+        {
+            Name = "Avalonia Application";
+        }
+
+        /// <summary>
+        /// Gets or sets the Applications's data context.
+        /// </summary>
+        /// <remarks>
+        /// The data context property specifies the default object that will
+        /// be used for data binding.
+        /// </remarks>
+        public object DataContext
+        {
+            get { return GetValue(DataContextProperty); }
+            set { SetValue(DataContextProperty, value); }
+        }
 
         /// <summary>
         /// Gets the current instance of the <see cref="Application"/> class.
@@ -120,11 +139,11 @@ namespace Avalonia
                 if (_resources != null)
                 {
                     hadResources = _resources.Count > 0;
-                    _resources.ResourcesChanged -= ResourcesChanged;
+                    _resources.ResourcesChanged -= ThisResourcesChanged;
                 }
 
                 _resources = value;
-                _resources.ResourcesChanged += ResourcesChanged;
+                _resources.ResourcesChanged += ThisResourcesChanged;
 
                 if (hadResources || _resources.Count > 0)
                 {
@@ -142,7 +161,19 @@ namespace Avalonia
         /// <remarks>
         /// Global styles apply to all windows in the application.
         /// </remarks>
-        public Styles Styles => _styles ?? (_styles = new Styles());
+        public Styles Styles
+        {
+            get
+            {
+                if (_styles == null)
+                {
+                    _styles = new Styles(this);
+                    _styles.ResourcesChanged += ThisResourcesChanged;
+                }
+
+                return _styles;
+            }
+        }
 
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
@@ -160,158 +191,49 @@ namespace Avalonia
 
         /// <inheritdoc/>
         IResourceNode IResourceNode.ResourceParent => null;
-
+        
         /// <summary>
-        /// Gets or sets the <see cref="ExitMode"/>. This property indicates whether the application exits explicitly or implicitly. 
-        /// If <see cref="ExitMode"/> is set to OnExplicitExit the application is only closes if Exit is called.
-        /// The default is OnLastWindowClose
+        /// Application lifetime, use it for things like setting the main window and exiting the app from code
+        /// Currently supported lifetimes are:
+        /// - <see cref="IClassicDesktopStyleApplicationLifetime"/>
+        /// - <see cref="ISingleViewApplicationLifetime"/>
+        /// - <see cref="IControlledApplicationLifetime"/> 
         /// </summary>
-        /// <value>
-        /// The shutdown mode.
-        /// </value>
-        public ExitMode ExitMode { get; set; }
+        public IApplicationLifetime ApplicationLifetime { get; set; }
 
-        /// <summary>
-        /// Gets or sets the main window of the application.
-        /// </summary>
-        /// <value>
-        /// The main window.
-        /// </value>
-        public Window MainWindow { get; set; }
+        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesAdded
+        {
+            add => _stylesAdded += value;
+            remove => _stylesAdded -= value;
+        }
 
-        /// <summary>
-        /// Gets the open windows of the application.
-        /// </summary>
-        /// <value>
-        /// The windows.
-        /// </value>
-        public WindowCollection Windows { get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is existing.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is existing; otherwise, <c>false</c>.
-        /// </value>
-        internal bool IsExiting { get; set; }
+        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesRemoved
+        {
+            add => _stylesRemoved += value;
+            remove => _stylesRemoved -= value;
+        }
 
         /// <summary>
         /// Initializes the application by loading XAML etc.
         /// </summary>
-        public virtual void Initialize()
-        {
-        }
-
-        /// <summary>
-        /// Runs the application's main loop until the <see cref="ICloseable"/> is closed.
-        /// </summary>
-        /// <param name="closable">The closable to track</param>
-        public void Run(ICloseable closable)
-        {
-            if (_mainLoopCancellationTokenSource != null)
-            {
-                throw new Exception("Run should only called once");
-            }
-
-            closable.Closed += (s, e) => Exit();
-
-            _mainLoopCancellationTokenSource = new CancellationTokenSource();
-
-            Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
-
-            // Make sure we call OnExit in case an error happened and Exit() wasn't called explicitly
-            if (!IsExiting)
-            {
-                OnExit?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// Runs the application's main loop until some condition occurs that is specified by ExitMode.
-        /// </summary>
-        /// <param name="mainWindow">The main window</param>
-        public void Run(Window mainWindow)
-        {
-            if (_mainLoopCancellationTokenSource != null)
-            {
-                throw new Exception("Run should only called once");
-            }
-
-            _mainLoopCancellationTokenSource = new CancellationTokenSource();
-
-            if (MainWindow == null)
-            {
-                if (mainWindow == null)
-                {
-                    throw new ArgumentNullException(nameof(mainWindow));
-                }
-
-                if (!mainWindow.IsVisible)
-                {
-                    mainWindow.Show();
-                }
-
-                MainWindow = mainWindow;
-            }           
-
-            Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
-
-            // Make sure we call OnExit in case an error happened and Exit() wasn't called explicitly
-            if (!IsExiting)
-            {
-                OnExit?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// Runs the application's main loop until the <see cref="CancellationToken"/> is canceled.
-        /// </summary>
-        /// <param name="token">The token to track</param>
-        public void Run(CancellationToken token)
-        {
-            Dispatcher.UIThread.MainLoop(token);
-
-            // Make sure we call OnExit in case an error happened and Exit() wasn't called explicitly
-            if (!IsExiting)
-            {
-                OnExit?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// Exits the application
-        /// </summary>
-        public void Exit()
-        {
-            IsExiting = true;
-
-            Windows.Clear();
-
-            OnExit?.Invoke(this, EventArgs.Empty);
-
-            _mainLoopCancellationTokenSource?.Cancel();
-        }
+        public virtual void Initialize() { }
 
         /// <inheritdoc/>
-        bool IResourceProvider.TryGetResource(string key, out object value)
+        bool IResourceProvider.TryGetResource(object key, out object value)
         {
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||
                    Styles.TryGetResource(key, out value);
         }
 
-        /// <summary>
-        /// Sent when the application is exiting.
-        /// </summary>
-        public event EventHandler OnExit;
-
-        /// <summary>
-        /// Called when the application is exiting.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected virtual void OnExiting(object sender, EventArgs e)
+        void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
         {
+            _stylesAdded?.Invoke(styles);
+        }
+
+        void IStyleHost.StylesRemoved(IReadOnlyList<IStyle> styles)
+        {
+            _stylesRemoved?.Invoke(styles);
         }
 
         /// <summary>
@@ -331,10 +253,60 @@ namespace Avalonia
                 .Bind<IInputManager>().ToConstant(InputManager)
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IStyler>().ToConstant(_styler)
-                .Bind<IApplicationLifecycle>().ToConstant(this)
                 .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance)
                 .Bind<IPlatformDragSource>().ToTransient<InProcessDragSource>();
+
+            var clock = new RenderLoopClock();
+            AvaloniaLocator.CurrentMutable
+                .Bind<IGlobalClock>().ToConstant(clock)
+                .GetService<IRenderLoop>()?.Add(clock);
+        }
+
+        public virtual void OnFrameworkInitializationCompleted()
+        {
+            
+        }
+
+        private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            if (_notifyingResourcesChanged)
+            {
+                return;
+            }
+
+            try
+            {
+                _notifyingResourcesChanged = true;
+                (_resources as ISetResourceParent)?.ParentResourcesChanged(e);
+                (_styles as ISetResourceParent)?.ParentResourcesChanged(e);
+                ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+            }
+            finally
+            {
+                _notifyingResourcesChanged = false;
+            }
+        }
+
+        private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
+        {
+            NotifyResourcesChanged(e);
+        }
+
+        private string _name;
+        /// <summary>
+        /// Defines Name property
+        /// </summary>
+        public static readonly DirectProperty<Application, string> NameProperty =
+            AvaloniaProperty.RegisterDirect<Application, string>("Name", o => o.Name, (o, v) => o.Name = v);
+
+        /// <summary>
+        /// Application name to be used for various platform-specific purposes
+        /// </summary>
+        public string Name
+        {
+            get => _name;
+            set => SetAndRaise(NameProperty, ref _name, value);
         }
     }
 }

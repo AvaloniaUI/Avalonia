@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
@@ -13,14 +14,14 @@ using Avalonia.Rendering;
 
 namespace Avalonia.DesignerSupport.Remote
 {
-    class WindowStub : IPopupImpl, IWindowImpl
+    class WindowStub : IWindowImpl, IPopupImpl
     {
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
         public IPlatformHandle Handle { get; }
         public Size MaxClientSize { get; }
         public Size ClientSize { get; }
-        public double Scaling { get; }
+        public double Scaling { get; } = 1.0;
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
@@ -29,10 +30,23 @@ namespace Avalonia.DesignerSupport.Remote
         public Func<bool> Closing { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
-        public Point Position { get; set; }
-        public Action<Point> PositionChanged { get; set; }
+        public IPopupImpl CreatePopup() => new WindowStub(this);
+
+        public PixelPoint Position { get; set; }
+        public Action<PixelPoint> PositionChanged { get; set; }
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
+
+        public WindowStub(IWindowImpl parent = null)
+        {
+            if (parent != null)
+                PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent,
+                    (_, size, __) =>
+                    {
+                        Resize(size);
+                    }));
+        }
+
         public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
         public void Dispose()
         {
@@ -45,9 +59,9 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public Point PointToClient(Point point) => point;
+        public Point PointToClient(PixelPoint p) => p.ToPoint(1);
 
-        public Point PointToScreen(Point point) => point;
+        public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
 
         public void SetCursor(IPlatformHandle cursor)
         {
@@ -61,11 +75,11 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void BeginMoveDrag()
+        public void BeginMoveDrag(PointerPressedEventArgs e)
         {
         }
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
         }
 
@@ -75,6 +89,11 @@ namespace Avalonia.DesignerSupport.Remote
 
         public void Resize(Size clientSize)
         {
+        }
+
+        public void Move(PixelPoint point)
+        {
+
         }
 
         public IScreenImpl Screen { get; } = new ScreenStub();
@@ -87,9 +106,11 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public IDisposable ShowDialog() => Disposable.Empty;
+        public void ShowDialog(IWindowImpl parent)
+        {
+        }
 
-        public void SetSystemDecorations(bool enabled)
+        public void SetSystemDecorations(SystemDecorations enabled)
         {
         }
 
@@ -108,6 +129,8 @@ namespace Avalonia.DesignerSupport.Remote
         public void SetTopmost(bool value)
         {
         }
+
+        public IPopupPositioner PopupPositioner { get; }
     }
 
     class ClipboardStub : IClipboard
@@ -130,7 +153,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
             public void Save(Stream outputStream)
             {
-                
+
             }
         }
 
@@ -144,17 +167,17 @@ namespace Avalonia.DesignerSupport.Remote
     class SystemDialogsStub : ISystemDialogImpl
     {
         public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent) =>
-            Task.FromResult((string[]) null);
+            Task.FromResult((string[])null);
 
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent) =>
-            Task.FromResult((string) null);
+            Task.FromResult((string)null);
     }
 
     class ScreenStub : IScreenImpl
     {
         public int ScreenCount => 1;
 
-        public Screen[] AllScreens { get; } =
-            {new Screen(new Rect(0, 0, 4000, 4000), new Rect(0, 0, 4000, 4000), true)};
+        public IReadOnlyList<Screen> AllScreens { get; } =
+            new Screen[] { new Screen(1, new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true) };
     }
 }

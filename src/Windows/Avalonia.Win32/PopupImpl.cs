@@ -1,7 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 
@@ -24,7 +22,7 @@ namespace Avalonia.Win32
                 UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW |
                 UnmanagedMethods.WindowStyles.WS_EX_TOPMOST;
 
-            return UnmanagedMethods.CreateWindowEx(
+            var result = UnmanagedMethods.CreateWindowEx(
                 (int)exStyle,
                 atom,
                 null,
@@ -37,6 +35,14 @@ namespace Avalonia.Win32
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
+
+            var classes = (int)UnmanagedMethods.GetClassLongPtr(result, (int)UnmanagedMethods.ClassLongIndex.GCL_STYLE);
+
+            classes |= (int)UnmanagedMethods.ClassStyles.CS_DROPSHADOW;
+
+            UnmanagedMethods.SetClassLong(result, UnmanagedMethods.ClassLongIndex.GCL_STYLE, new IntPtr(classes));
+
+            return result;
         }
 
         protected override IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
@@ -49,5 +55,19 @@ namespace Avalonia.Win32
                     return base.WndProc(hWnd, msg, wParam, lParam);
             }
         }
+
+        public PopupImpl(IWindowBaseImpl parent)
+        {
+            PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
+        }
+
+        private void MoveResize(PixelPoint position, Size size, double scaling)
+        {
+            Move(position);
+            Resize(size);
+            //TODO: We ignore the scaling override for now
+        }
+
+        public IPopupPositioner PopupPositioner { get; }
     }
 }

@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 
@@ -12,7 +9,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// </summary>
     internal abstract class BrushDrawOperation : DrawOperation
     {
-        public BrushDrawOperation(Rect bounds, Matrix transform, Pen pen)
+        public BrushDrawOperation(Rect bounds, Matrix transform, IPen pen)
             : base(bounds, transform, pen)
         {
         }

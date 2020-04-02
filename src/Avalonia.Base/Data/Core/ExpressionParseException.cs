@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia.Data.Core
@@ -9,7 +6,10 @@ namespace Avalonia.Data.Core
     /// Exception thrown when <see cref="ExpressionObserver"/> could not parse the provided
     /// expression string.
     /// </summary>
-    public class ExpressionParseException : Exception
+#if !BUILDTASK
+    public
+#endif
+    class ExpressionParseException : Exception
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionParseException"/> class.

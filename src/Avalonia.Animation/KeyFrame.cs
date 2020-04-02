@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Collections;
+using Avalonia.Metadata;
 
 namespace Avalonia.Animation
 {
@@ -14,7 +15,7 @@ namespace Avalonia.Animation
     /// Stores data regarding a specific key
     /// point and value in an animation.
     /// </summary>
-    public class KeyFrame : AvaloniaList<IAnimationSetter>
+    public class KeyFrame : AvaloniaObject
     {
         private TimeSpan _ktimeSpan;
         private Cue _kCue;
@@ -23,13 +24,11 @@ namespace Avalonia.Animation
         {
         }
 
-        public KeyFrame(IEnumerable<IAnimationSetter> items) : base(items)
-        {
-        }
-
-        public KeyFrame(params IAnimationSetter[] items) : base(items)
-        {
-        }
+        /// <summary>
+        /// Gets the setters of <see cref="KeyFrame"/>.
+        /// </summary>
+        [Content]
+        public AvaloniaList<IAnimationSetter> Setters { get; } = new AvaloniaList<IAnimationSetter>();
 
         internal KeyFrameTimingMode TimingMode { get; private set; }
 

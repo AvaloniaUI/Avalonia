@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 
 namespace Avalonia.Data.Converters
 {
@@ -12,13 +9,13 @@ namespace Avalonia.Data.Converters
         /// <summary>
         /// A value converter that returns true if the input string is null or an empty string.
         /// </summary>
-        public static readonly IValueConverter NullOrEmpty =
+        public static readonly IValueConverter IsNullOrEmpty =
             new FuncValueConverter<string, bool>(string.IsNullOrEmpty);
 
         /// <summary>
         /// A value converter that returns true if the input string is not null or empty.
         /// </summary>
-        public static readonly IValueConverter NotNullOrEmpty =
+        public static readonly IValueConverter IsNotNullOrEmpty =
             new FuncValueConverter<string, bool>(x => !string.IsNullOrEmpty(x));
     }
 }

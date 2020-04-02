@@ -1,3 +1,6 @@
-[submodule "src/Markup/Avalonia.Markup.Xaml/PortableXaml/portable.xaml.github"]
-	path = src/Markup/Avalonia.Markup.Xaml/PortableXaml/portable.xaml.github
-	url = https://github.com/AvaloniaUI/Portable.Xaml.git
+[submodule "nukebuild/Numerge"]
+	path = nukebuild/Numerge
+	url = https://github.com/kekekeks/Numerge.git
+[submodule "src/Markup/Avalonia.Markup.Xaml/XamlIl/xamlil.github"]
+	path = src/Markup/Avalonia.Markup.Xaml/XamlIl/xamlil.github
+	url = https://github.com/kekekeks/XamlIl.git

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Layout;
 using Avalonia.Metadata;
 
@@ -28,8 +25,8 @@ namespace Avalonia.Controls
         /// </summary>
         static Decorator()
         {
-            AffectsMeasure(ChildProperty, PaddingProperty);
-            ChildProperty.Changed.AddClassHandler<Decorator>(x => x.ChildChanged);
+            AffectsMeasure<Decorator>(ChildProperty, PaddingProperty);
+            ChildProperty.Changed.AddClassHandler<Decorator>((x, e) => x.ChildChanged(e));
         }
 
         /// <summary>

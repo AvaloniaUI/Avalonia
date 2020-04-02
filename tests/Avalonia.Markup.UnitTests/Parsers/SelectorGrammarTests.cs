@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Linq;
 using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers;
@@ -201,6 +198,83 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public void Not_OfType()
+        {
+            var result = SelectorGrammar.Parse(":not(Button)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.NotSyntax
+                    {
+                        Argument = new SelectorGrammar.ISyntax[]
+                        {
+                            new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                        },
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_Not_Class()
+        {
+            var result = SelectorGrammar.Parse("Button:not(.foo)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.NotSyntax
+                    {
+                        Argument = new SelectorGrammar.ISyntax[]
+                        {
+                            new SelectorGrammar.ClassSyntax { Class = "foo" },
+                        },
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void Is_Descendent_Not_OfType_Class()
+        {
+            var result = SelectorGrammar.Parse(":is(Control) :not(Button.foo)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.IsSyntax { TypeName = "Control" },
+                    new SelectorGrammar.DescendantSyntax { },
+                    new SelectorGrammar.NotSyntax
+                    {
+                        Argument = new SelectorGrammar.ISyntax[]
+                        {
+                            new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                            new SelectorGrammar.ClassSyntax { Class = "foo" },
+                        },
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_Comma_Is_Class()
+        {
+            var result = SelectorGrammar.Parse("TextBlock, :is(Button).foo");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "TextBlock" },
+                    new SelectorGrammar.CommaSyntax(),
+                    new SelectorGrammar.IsSyntax { TypeName = "Button" },
+                    new SelectorGrammar.ClassSyntax { Class = "foo" },
+                },
+                result);
+        }
+
+        [Fact]
         public void Namespace_Alone_Fails()
         {
             Assert.Throws<ExpressionParseException>(() => SelectorGrammar.Parse("ns|"));
@@ -222,6 +296,18 @@ namespace Avalonia.Markup.UnitTests.Parsers
         public void Invalid_Class_Fails()
         {
             Assert.Throws<ExpressionParseException>(() => SelectorGrammar.Parse(".%foo"));
+        }
+
+        [Fact]
+        public void Not_Without_Argument_Fails()
+        {
+            Assert.Throws<ExpressionParseException>(() => SelectorGrammar.Parse(":not()"));
+        }
+
+        [Fact]
+        public void Not_Without_Closing_Parenthesis_Fails()
+        {
+            Assert.Throws<ExpressionParseException>(() => SelectorGrammar.Parse(":not(Button"));
         }
     }
 }

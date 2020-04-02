@@ -1,9 +1,3 @@
-// -----------------------------------------------------------------------
-// <copyright file="WindowTests.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
-
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -62,9 +56,11 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
+                var parent = new Window();
+                parent.Show();
                 var window = new Window();
 
-                var task = window.ShowDialog();
+                var task = window.ShowDialog(parent);
 
                 Assert.True(window.IsVisible);
             }
@@ -120,75 +116,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Show_Should_Add_Window_To_OpenWindows()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                ClearOpenWindows();
-                var window = new Window();
-
-                window.Show();
-
-                Assert.Equal(new[] { window }, Application.Current.Windows);
-            }
-        }
-
-        [Fact]
-        public void Window_Should_Be_Added_To_OpenWindows_Only_Once()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                ClearOpenWindows();
-                var window = new Window();
-
-                window.Show();
-                window.Show();
-                window.IsVisible = true;
-
-                Assert.Equal(new[] { window }, Application.Current.Windows);
-
-                window.Close();
-            }
-        }
-
-        [Fact]
-        public void Close_Should_Remove_Window_From_OpenWindows()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                ClearOpenWindows();
-                var window = new Window();
-
-                window.Show();
-                window.Close();
-
-                Assert.Empty(Application.Current.Windows);
-            }
-        }
-
-        [Fact]
-        public void Impl_Closing_Should_Remove_Window_From_OpenWindows()
-        {
-            var windowImpl = new Mock<IWindowImpl>();
-            windowImpl.SetupProperty(x => x.Closed);
-            windowImpl.Setup(x => x.Scaling).Returns(1);
-
-            var services = TestServices.StyledWindow.With(
-                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
-
-            using (UnitTestApplication.Start(services))
-            {
-                ClearOpenWindows();
-                var window = new Window();
-
-                window.Show();
-                windowImpl.Object.Closed();
-
-                Assert.Empty(Application.Current.Windows);
-            }
-        }
-
-        [Fact]
         public void Closing_Should_Only_Be_Invoked_Once()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -226,15 +153,32 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void ShowDialog_Should_Start_Renderer()
         {
-
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
+                var parent = Mock.Of<IWindowImpl>();
                 var renderer = new Mock<IRenderer>();
                 var target = new Window(CreateImpl(renderer));
 
-                target.Show();
+                target.ShowDialog<object>(parent);
 
                 renderer.Verify(x => x.Start(), Times.Once);
+            }
+        }
+
+        [Fact]
+        public void ShowDialog_Should_Raise_Opened()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parent = Mock.Of<IWindowImpl>();
+                var target = new Window();
+                var raised = false;
+
+                target.Opened += (s, e) => raised = true;
+
+                target.ShowDialog<object>(parent);
+
+                Assert.True(raised);
             }
         }
 
@@ -258,12 +202,13 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
+                var parent = new Mock<IWindowImpl>();
                 var windowImpl = new Mock<IWindowImpl>();
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.Scaling).Returns(1);
 
                 var target = new Window(windowImpl.Object);
-                var task = target.ShowDialog<bool>();
+                var task = target.ShowDialog<bool>(parent.Object);
 
                 windowImpl.Object.Closed();
 
@@ -273,16 +218,59 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Calling_Show_On_Closed_Window_Should_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new Window();
+
+                target.Show();
+                target.Close();
+
+                var openedRaised = false;
+                target.Opened += (s, e) => openedRaised = true;
+
+                var ex = Assert.Throws<InvalidOperationException>(() => target.Show());
+                Assert.Equal("Cannot re-show a closed window.", ex.Message);
+                Assert.False(openedRaised);
+            }
+        }
+
+        [Fact]
+        public async Task Calling_ShowDialog_On_Closed_Window_Should_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parent = new Mock<IWindowImpl>();
+                var windowImpl = new Mock<IWindowImpl>();
+                windowImpl.SetupProperty(x => x.Closed);
+                windowImpl.Setup(x => x.Scaling).Returns(1);
+
+                var target = new Window(windowImpl.Object);
+                var task = target.ShowDialog<bool>(parent.Object);
+
+                windowImpl.Object.Closed();
+                await task;
+
+                var openedRaised = false;
+                target.Opened += (s, e) => openedRaised = true;
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => target.ShowDialog<bool>(parent.Object));
+                Assert.Equal("Cannot re-show a closed window.", ex.Message);
+                Assert.False(openedRaised);
+            }
+        }
+
+        [Fact]
         public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen()
         {
-            var screen1 = new Mock<Screen>(new Rect(new Size(1920, 1080)), new Rect(new Size(1920, 1040)), true);
-            var screen2 = new Mock<Screen>(new Rect(new Size(1366, 768)), new Rect(new Size(1366, 728)), false);
+            var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
+            var screen2 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1366, 768)), new PixelRect(new PixelSize(1366, 728)), false);
 
             var screens = new Mock<IScreenImpl>();
             screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object, screen2.Object });
 
-            var windowImpl = new Mock<IWindowImpl>();
-            windowImpl.SetupProperty(x => x.Position);
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
             windowImpl.Setup(x => x.Scaling).Returns(1);
             windowImpl.Setup(x => x.Screen).Returns(screens.Object);
@@ -291,13 +279,13 @@ namespace Avalonia.Controls.UnitTests
             {
                 var window = new Window(windowImpl.Object);
                 window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                window.Position = new Point(60, 40);
+                window.Position = new PixelPoint(60, 40);
 
                 window.Show();
 
-                var expectedPosition = new Point(
-                    screen1.Object.WorkingArea.Size.Width / 2 - window.ClientSize.Width / 2,
-                    screen1.Object.WorkingArea.Size.Height / 2 - window.ClientSize.Height / 2);
+                var expectedPosition = new PixelPoint(
+                    (int)(screen1.Object.WorkingArea.Size.Width / 2 - window.ClientSize.Width / 2),
+                    (int)(screen1.Object.WorkingArea.Size.Height / 2 - window.ClientSize.Height / 2));
 
                 Assert.Equal(window.Position, expectedPosition);
             }
@@ -306,14 +294,12 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Be_Centered_Relative_To_Owner_When_WindowStartupLocation_Is_CenterOwner()
         {
-            var parentWindowImpl = new Mock<IWindowImpl>();
-            parentWindowImpl.SetupProperty(x => x.Position);
+            var parentWindowImpl = MockWindowingPlatform.CreateWindowMock();
             parentWindowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
             parentWindowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1920, 1080));
             parentWindowImpl.Setup(x => x.Scaling).Returns(1);
 
-            var windowImpl = new Mock<IWindowImpl>();
-            windowImpl.SetupProperty(x => x.Position);
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(320, 200));
             windowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1920, 1080));
             windowImpl.Setup(x => x.Scaling).Returns(1);
@@ -327,7 +313,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(parentWindowServices))
             {
                 var parentWindow = new Window();
-                parentWindow.Position = new Point(60, 40);
+                parentWindow.Position = new PixelPoint(60, 40);
 
                 parentWindow.Show();
 
@@ -335,17 +321,57 @@ namespace Avalonia.Controls.UnitTests
                 {
                     var window = new Window();
                     window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                    window.Position = new Point(60, 40);
+                    window.Position = new PixelPoint(60, 40);
                     window.Owner = parentWindow;
 
                     window.Show();
 
-                    var expectedPosition = new Point(
-                        parentWindow.Position.X + parentWindow.ClientSize.Width / 2 - window.ClientSize.Width / 2,
-                        parentWindow.Position.Y + parentWindow.ClientSize.Height / 2 - window.ClientSize.Height / 2);
+                    var expectedPosition = new PixelPoint(
+                        (int)(parentWindow.Position.X + parentWindow.ClientSize.Width / 2 - window.ClientSize.Width / 2),
+                        (int)(parentWindow.Position.Y + parentWindow.ClientSize.Height / 2 - window.ClientSize.Height / 2));
 
                     Assert.Equal(window.Position, expectedPosition);
                 }
+            }
+        }
+
+        [Fact]
+        public void Child_Should_Be_Measured_With_Width_And_Height_If_SizeToContent_Is_Manual()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new ChildControl();
+                var target = new Window 
+                { 
+                    Width = 100,
+                    Height = 50,
+                    SizeToContent = SizeToContent.Manual,
+                    Content = child 
+                };
+
+                target.Show();
+
+                Assert.Equal(new Size(100, 50), child.MeasureSize);
+            }
+        }
+
+        [Fact]
+        public void Child_Should_Be_Measured_With_Infinity_If_SizeToContent_Is_WidthAndHeight()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new ChildControl();
+                var target = new Window
+                {
+                    Width = 100,
+                    Height = 50,
+                    SizeToContent = SizeToContent.WidthAndHeight,
+                    Content = child
+                };
+
+                target.Show();
+
+                Assert.Equal(Size.Infinity, child.MeasureSize);
             }
         }
 
@@ -356,11 +382,15 @@ namespace Avalonia.Controls.UnitTests
                 x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer.Object);
         }
 
-        private void ClearOpenWindows()
+        private class ChildControl : Control
         {
-            // HACK: We really need a decent way to have "statics" that can be scoped to
-            // AvaloniaLocator scopes.
-            Application.Current.Windows.Clear();
+            public Size MeasureSize { get; private set; }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                MeasureSize = availableSize;
+                return base.MeasureOverride(availableSize);
+            }
         }
     }
 }

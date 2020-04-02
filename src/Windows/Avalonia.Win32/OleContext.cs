@@ -7,9 +7,9 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    class OleContext
+    internal class OleContext
     {
-        private static OleContext fCurrent;
+        private static OleContext s_current;
 
         internal static OleContext Current
         {
@@ -18,12 +18,11 @@ namespace Avalonia.Win32
                 if (!IsValidOleThread())
                     return null;
 
-                if (fCurrent == null)
-                    fCurrent = new OleContext();
-                return fCurrent;
+                if (s_current == null)
+                    s_current = new OleContext();
+                return s_current;
             }
         }
-
 
         private OleContext()
         {
@@ -43,9 +42,21 @@ namespace Avalonia.Win32
         internal bool RegisterDragDrop(IPlatformHandle hwnd, IDropTarget target)
         {
             if (hwnd?.HandleDescriptor != "HWND" || target == null)
+            {
                 return false;
+            }
 
             return UnmanagedMethods.RegisterDragDrop(hwnd.Handle, target) == UnmanagedMethods.HRESULT.S_OK;
+        }
+
+        internal bool UnregisterDragDrop(IPlatformHandle hwnd)
+        {
+            if (hwnd?.HandleDescriptor != "HWND")
+            {
+                return false;
+            }
+
+            return UnmanagedMethods.RevokeDragDrop(hwnd.Handle) == UnmanagedMethods.HRESULT.S_OK;
         }
     }
 }

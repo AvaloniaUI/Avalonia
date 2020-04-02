@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Platform;
@@ -7,7 +8,7 @@ using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Embedding
 {
-    public class EmbeddableControlRoot : TopLevel, IStyleable, IFocusScope, INameScope, IDisposable
+    public class EmbeddableControlRoot : TopLevel, IStyleable, IFocusScope, IDisposable
     {
         public EmbeddableControlRoot(IEmbeddableWindowImpl impl) : base(impl)
         {
@@ -44,27 +45,11 @@ namespace Avalonia.Controls.Embedding
         {
             if (EnforceClientSize)
                 availableSize = PlatformImpl?.ClientSize ?? default(Size);
-            return base.MeasureOverride(availableSize);
+            var rv = base.MeasureOverride(availableSize);
+            if (EnforceClientSize)
+                return availableSize;
+            return rv;
         }
-
-        private readonly NameScope _nameScope = new NameScope();
-        public event EventHandler<NameScopeEventArgs> Registered
-        {
-            add { _nameScope.Registered += value; }
-            remove { _nameScope.Registered -= value; }
-        }
-
-        public event EventHandler<NameScopeEventArgs> Unregistered
-        {
-            add { _nameScope.Unregistered += value; }
-            remove { _nameScope.Unregistered -= value; }
-        }
-
-        public void Register(string name, object element) => _nameScope.Register(name, element);
-
-        public object Find(string name) => _nameScope.Find(name);
-
-        public void Unregister(string name) => _nameScope.Unregister(name);
 
         Type IStyleable.StyleKey => typeof(EmbeddableControlRoot);
         public void Dispose() => PlatformImpl?.Dispose();

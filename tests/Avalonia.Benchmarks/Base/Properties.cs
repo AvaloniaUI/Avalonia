@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reactive.Subjects;
+﻿using System.Reactive.Subjects;
 using BenchmarkDotNet.Attributes;
 
 namespace Avalonia.Benchmarks.Base
@@ -36,7 +35,7 @@ namespace Avalonia.Benchmarks.Base
 
         class Class1 : AvaloniaObject
         {
-            public static readonly AvaloniaProperty<int> IntProperty =
+            public static readonly StyledProperty<int> IntProperty =
                 AvaloniaProperty.Register<Class1, int>("Int");
         }
     }

@@ -1,15 +1,17 @@
-﻿using Avalonia.Controls.Shapes;
+﻿using System;
+using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
+    [Obsolete("Use Image control with DrawingImage source")]
     public class DrawingPresenter : Control
     {
         static DrawingPresenter()
         {
-            AffectsMeasure(DrawingProperty);
-            AffectsRender(DrawingProperty);
+            AffectsMeasure<DrawingPresenter>(DrawingProperty);
+            AffectsRender<DrawingPresenter>(DrawingProperty);
         }
 
         public static readonly StyledProperty<Drawing> DrawingProperty =
@@ -49,7 +51,7 @@ namespace Avalonia.Controls
             if (Drawing != null)
             {
                 using (context.PushPreTransform(_transform))
-                using (context.PushClip(Bounds))
+                using (context.PushClip(new Rect(Bounds.Size)))
                 {
                     Drawing.Draw(context);
                 }

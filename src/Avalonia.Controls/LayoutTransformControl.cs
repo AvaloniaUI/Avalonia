@@ -1,32 +1,37 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-//
 // Idea got from and adapted to work in avalonia
 // http://silverlight.codeplex.com/SourceControl/changeset/view/74775#Release/Silverlight4/Source/Controls.Layout.Toolkit/LayoutTransformer/LayoutTransformer.cs
 //
 
-using Avalonia.Controls.Primitives;
-using Avalonia.Media;
-using Avalonia.VisualTree;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reactive.Linq;
+using Avalonia.Media;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Control that implements support for transformations as if applied by LayoutTransform.
     /// </summary>
-    public class LayoutTransformControl : ContentControl
+    public class LayoutTransformControl : Decorator
     {
-        public static readonly AvaloniaProperty<Transform> LayoutTransformProperty =
+        public static readonly StyledProperty<Transform> LayoutTransformProperty =
             AvaloniaProperty.Register<LayoutTransformControl, Transform>(nameof(LayoutTransform));
+
+        public static readonly StyledProperty<bool> UseRenderTransformProperty =
+            AvaloniaProperty.Register<LayoutTransformControl, bool>(nameof(LayoutTransform));
 
         static LayoutTransformControl()
         {
+            ClipToBoundsProperty.OverrideDefaultValue<LayoutTransformControl>(true);
+
             LayoutTransformProperty.Changed
-                .AddClassHandler<LayoutTransformControl>(x => x.OnLayoutTransformChanged);
+                .AddClassHandler<LayoutTransformControl>((x, e) => x.OnLayoutTransformChanged(e));
+
+            ChildProperty.Changed
+                .AddClassHandler<LayoutTransformControl>((x, e) => x.OnChildChanged(e));
+
+            UseRenderTransformProperty.Changed
+                .AddClassHandler<LayoutTransformControl>((x, e) => x.OnUseRenderTransformPropertyChanged(e));
         }
 
         /// <summary>
@@ -38,8 +43,16 @@ namespace Avalonia.Controls
             set { SetValue(LayoutTransformProperty, value); }
         }
 
-        public Control TransformRoot => _transformRoot ??
-                            (_transformRoot = this.GetVisualChildren().OfType<Control>().FirstOrDefault());
+        /// <summary>
+        /// Utilize the <see cref="Visual.RenderTransformProperty"/> for layout transforms.
+        /// </summary>
+        public bool UseRenderTransform
+        {
+            get { return GetValue(UseRenderTransformProperty); }
+            set { SetValue(UseRenderTransformProperty, value); }
+        }
+
+        public IControl TransformRoot => Child;
 
         /// <summary>
         /// Provides the behavior for the "Arrange" pass of layout.
@@ -50,6 +63,7 @@ namespace Avalonia.Controls
         {
             if (TransformRoot == null || LayoutTransform == null)
             {
+                LayoutTransform = RenderTransform;
                 return base.ArrangeOverride(finalSize);
             }
 
@@ -132,16 +146,44 @@ namespace Avalonia.Controls
             return transformedDesiredSize;
         }
 
-        /// <summary>
-        /// Builds the visual tree for the LayoutTransformerControl when a new
-        /// template is applied.
-        /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        IDisposable _renderTransformChangedEvent;
+
+        private void OnUseRenderTransformPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            base.OnTemplateApplied(e);
+            // HACK: In theory, this method and the UseRenderTransform shouldn't exist but
+            //       it's hard to animate this particular control with style animations without
+            //       PropertyPaths.
+            //
+            //       So until we get that implemented, we'll stick on this not-so-good
+            //       workaround.
 
-            _matrixTransform = new MatrixTransform();
+            var target = e.Sender as LayoutTransformControl;
+            var shouldUseRenderTransform = (bool)e.NewValue;
+            if (target != null)
+            {
+                if (shouldUseRenderTransform)
+                {
+                    _renderTransformChangedEvent = RenderTransformProperty.Changed
+                            .Subscribe(
+                                (x) =>
+                                {
+                                    var target2 = x.Sender as LayoutTransformControl;
+                                    if (target2 != null)
+                                    {
+                                        target2.LayoutTransform = target2.RenderTransform;
+                                    }
+                                });
+                }
+                else
+                {
+                    _renderTransformChangedEvent?.Dispose();
+                    LayoutTransform = null;
+                }
+            }
+        }
 
+        private void OnChildChanged(AvaloniaPropertyChangedEventArgs e)
+        {
             if (null != TransformRoot)
             {
                 TransformRoot.RenderTransform = _matrixTransform;
@@ -169,14 +211,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// RenderTransform/MatrixTransform applied to TransformRoot.
         /// </summary>
-        private MatrixTransform _matrixTransform;
+        private MatrixTransform _matrixTransform = new MatrixTransform();
 
         /// <summary>
         /// Transformation matrix corresponding to _matrixTransform.
         /// </summary>
         private Matrix _transformation;
         private IDisposable _transformChangedEvent = null;
-        private Control _transformRoot;
+
         /// <summary>
         /// Returns true if Size a is smaller than Size b in either dimension.
         /// </summary>
@@ -215,7 +257,8 @@ namespace Avalonia.Controls
         /// </remarks>
         private void ApplyLayoutTransform()
         {
-            if (LayoutTransform == null) return;
+            if (LayoutTransform == null)
+                return;
 
             // Get the transform matrix and apply it
             _transformation = RoundMatrix(LayoutTransform.Value, DecimalsAfterRound);
@@ -376,11 +419,8 @@ namespace Avalonia.Controls
         {
             var newTransform = e.NewValue as Transform;
 
-            if (_transformChangedEvent != null)
-            {
-                _transformChangedEvent.Dispose();
-                _transformChangedEvent = null;
-            }
+            _transformChangedEvent?.Dispose();
+            _transformChangedEvent = null;
 
             if (newTransform != null)
             {

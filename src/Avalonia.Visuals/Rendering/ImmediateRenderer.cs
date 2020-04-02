@@ -1,9 +1,7 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
@@ -43,6 +41,9 @@ namespace Avalonia.Rendering
         public bool DrawDirtyRects { get; set; }
 
         /// <inheritdoc/>
+        public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
+
+        /// <inheritdoc/>
         public void Paint(Rect rect)
         {
             if (_renderTarget == null)
@@ -77,10 +78,12 @@ namespace Avalonia.Rendering
             }
             catch (RenderTargetCorruptedException ex)
             {
-                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                Logger.TryGet(LogEventLevel.Information)?.Log("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
                 _renderTarget.Dispose();
                 _renderTarget = null;
             }
+
+            SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
         }
 
         /// <inheritdoc/>
@@ -125,6 +128,20 @@ namespace Avalonia.Rendering
                 if (m.HasValue)
                 {
                     var bounds = new Rect(visual.Bounds.Size).TransformToAABB(m.Value);
+
+                    //use transformedbounds as previous render state of the visual bounds
+                    //so we can invalidate old and new bounds of a control in case it moved/shrinked
+                    if (visual.TransformedBounds.HasValue)
+                    {
+                        var trb = visual.TransformedBounds.Value;
+                        var trBounds = trb.Bounds.TransformToAABB(trb.Transform);
+
+                        if (trBounds != bounds)
+                        {
+                            _renderRoot?.Invalidate(trBounds);
+                        }
+                    }
+
                     _renderRoot?.Invalidate(bounds);
                 }
             }
@@ -143,6 +160,14 @@ namespace Avalonia.Rendering
         {
             return HitTest(root, p, filter);
         }
+
+        public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter)
+        {
+            return HitTest(root, p, filter).FirstOrDefault();
+        }
+
+        /// <inheritdoc/>
+        public void RecalculateChildren(IVisual visual) => AddDirty(visual);
 
         /// <inheritdoc/>
         public void Start()
@@ -191,7 +216,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        static IEnumerable<IVisual> HitTest(
+        private static IEnumerable<IVisual> HitTest(
            IVisual visual,
            Point p,
            Func<IVisual, bool> filter)
@@ -200,7 +225,16 @@ namespace Avalonia.Rendering
 
             if (filter?.Invoke(visual) != false)
             {
-                bool containsPoint = visual.TransformedBounds?.Contains(p) == true;
+                bool containsPoint = false;
+
+                if (visual is ICustomSimpleHitTest custom)
+                {
+                    containsPoint = custom.HitTest(p);
+                }
+                else
+                {
+                    containsPoint = visual.TransformedBounds?.Contains(p) == true;
+                }
 
                 if ((containsPoint || !visual.ClipToBounds) && visual.VisualChildren.Count > 0)
                 {
@@ -243,7 +277,14 @@ namespace Avalonia.Rendering
 
                 if (clipToBounds)
                 {
-                    clipRect = clipRect.Intersect(new Rect(visual.Bounds.Size));
+                    if (visual.RenderTransform != null)
+                    {
+                        clipRect = new Rect(visual.Bounds.Size);
+                    }
+                    else
+                    {
+                        clipRect = clipRect.Intersect(new Rect(visual.Bounds.Size));
+                    }
                 }
 
                 using (context.PushPostTransform(m))
@@ -268,7 +309,9 @@ namespace Avalonia.Rendering
 
                         if (!child.ClipToBounds || clipRect.Intersects(childBounds))
                         {
-                            var childClipRect = clipRect.Translate(-childBounds.Position);
+                            var childClipRect = child.RenderTransform == null
+                                ? clipRect.Translate(-childBounds.Position)
+                                : clipRect;
                             Render(context, child, childClipRect);
                         }
                         else

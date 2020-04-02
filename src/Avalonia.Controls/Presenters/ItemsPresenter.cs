@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Specialized;
 using Avalonia.Controls.Primitives;
@@ -35,7 +32,7 @@ namespace Avalonia.Controls.Presenters
                 KeyboardNavigationMode.Once);
 
             VirtualizationModeProperty.Changed
-                .AddClassHandler<ItemsPresenter>(x => x.VirtualizationModeChanged);
+                .AddClassHandler<ItemsPresenter>((x, e) => x.VirtualizationModeChanged(e));
         }
 
         /// <summary>

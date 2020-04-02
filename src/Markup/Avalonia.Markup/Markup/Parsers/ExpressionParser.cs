@@ -1,12 +1,10 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers.Nodes;
 using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls;
 
 namespace Avalonia.Markup.Parsers
 {
@@ -20,10 +18,12 @@ namespace Avalonia.Markup.Parsers
     {
         private readonly bool _enableValidation;
         private readonly Func<string, string, Type> _typeResolver;
+        private readonly INameScope _nameScope;
 
-        public ExpressionParser(bool enableValidation, Func<string, string, Type> typeResolver)
+        public ExpressionParser(bool enableValidation, Func<string, string, Type> typeResolver, INameScope nameScope)
         {
             _typeResolver = typeResolver;
+            _nameScope = nameScope;
             _enableValidation = enableValidation;
         }
 
@@ -105,6 +105,11 @@ namespace Avalonia.Markup.Parsers
             else if (PeekOpenBracket(ref r))
             {
                 return State.Indexer;
+            }
+            else if (ParseDot(ref r))
+            {
+                nodes.Add(new EmptyExpressionNode());
+                return State.End;
             }
             else
             {
@@ -208,7 +213,7 @@ namespace Avalonia.Markup.Parsers
                 throw new ExpressionParseException(r.Position, "Element name expected after '#'.");
             }
 
-            nodes.Add(new ElementNameNode(name.ToString()));
+            nodes.Add(new ElementNameNode(_nameScope, name.ToString()));
             return State.AfterMember;
         }
 
@@ -315,6 +320,11 @@ namespace Avalonia.Markup.Parsers
         private static bool ParseSharp(ref CharacterReader r)
         {
             return !r.End && r.TakeIf('#');
+        }
+
+        private static bool ParseDot(ref CharacterReader r)
+        {
+            return !r.End && r.TakeIf('.');
         }
 
         private enum State

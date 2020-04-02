@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -20,7 +17,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         {
         }
 
-        [Fact]
+        [Win32Fact("Has text")]
         public async Task Wrapping_NoWrap()
         {
             Decorator target = new Decorator
@@ -30,6 +27,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Height = 200,
                 Child = new TextBlock
                 {
+                    FontFamily = new FontFamily("Courier New"),
                     Background = Brushes.Red,
                     FontSize = 12,
                     Foreground = Brushes.Black,

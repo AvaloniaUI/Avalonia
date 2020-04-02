@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Visuals.UnitTests.VisualTree
 {
@@ -11,6 +12,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -24,7 +26,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height, double dpiX, double dpiY)
+        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
             throw new NotImplementedException();
         }
@@ -44,12 +46,37 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             throw new NotImplementedException();
         }
 
-        public IWriteableBitmapImpl CreateWriteableBitmap(int width, int height, PixelFormat? fmt)
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IFontManagerImpl CreateFontManager()
+        {
+            return new MockFontManagerImpl();
+        }
+
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? fmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGeometryImpl CreateEllipseGeometry(Rect rect)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGeometryImpl CreateLineGeometry(Point p1, Point p2)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGeometryImpl CreateRectangleGeometry(Rect rect)
         {
             throw new NotImplementedException();
         }
@@ -79,7 +106,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 return _impl.FillContains(point);
             }
 
-            public Rect GetRenderBounds(Pen pen)
+            public Rect GetRenderBounds(IPen pen)
             {
                 throw new NotImplementedException();
             }
@@ -94,7 +121,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 return _impl;
             }
 
-            public bool StrokeContains(Pen pen, Point point)
+            public bool StrokeContains(IPen pen, Point point)
             {
                 throw new NotImplementedException();
             }

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia.Styling
@@ -24,6 +21,9 @@ namespace Avalonia.Styling
         public override bool InTemplate => true;
 
         /// <inheritdoc/>
+        public override bool IsCombinator => true;
+
+        /// <inheritdoc/>
         public override Type TargetType => null;
 
         public override string ToString()
@@ -38,15 +38,14 @@ namespace Avalonia.Styling
 
         protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
         {
-            IStyleable templatedParent = control.TemplatedParent as IStyleable;
+            var templatedParent = control.TemplatedParent as IStyleable;
 
             if (templatedParent == null)
             {
-                throw new InvalidOperationException(
-                    "Cannot call Template selector on control with null TemplatedParent.");
+                return SelectorMatch.NeverThisInstance;
             }
 
-            return _parent.Match(templatedParent, subscribe) ?? SelectorMatch.True;
+            return _parent.Match(templatedParent, subscribe);
         }
 
         protected override Selector MovePrevious() => null;

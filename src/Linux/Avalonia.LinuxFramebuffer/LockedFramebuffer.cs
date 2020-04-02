@@ -19,7 +19,7 @@ namespace Avalonia.LinuxFramebuffer
             _address = address;
             Dpi = dpi;
             //Use double buffering to avoid flicker
-            Address = Marshal.AllocHGlobal(RowBytes * Height);
+            Address = Marshal.AllocHGlobal(RowBytes * Size.Height);
         }
 
 
@@ -31,15 +31,14 @@ namespace Avalonia.LinuxFramebuffer
         public void Dispose()
         {
             VSync();
-            NativeUnsafeMethods.memcpy(_address, Address, new IntPtr(RowBytes * Height));
+            NativeUnsafeMethods.memcpy(_address, Address, new IntPtr(RowBytes * Size.Height));
 
             Marshal.FreeHGlobal(Address);
             Address = IntPtr.Zero;
         }
 
         public IntPtr Address { get; private set; }
-        public int Width => (int)_varInfo.xres;
-        public int Height => (int) _varInfo.yres;
+        public PixelSize Size => new PixelSize((int)_varInfo.xres, (int) _varInfo.yres);
         public int RowBytes => (int) _fixedInfo.line_length;
         public Vector Dpi { get; }
         public PixelFormat Format => _varInfo.blue.offset == 16 ? PixelFormat.Rgba8888 : PixelFormat.Bgra8888;

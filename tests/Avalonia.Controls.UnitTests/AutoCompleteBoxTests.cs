@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -982,6 +979,9 @@ namespace Avalonia.Controls.UnitTests
                 AutoCompleteBox control = CreateControl();
                 control.Items = CreateSimpleStringArray();
                 TextBox textBox = GetTextBox(control);
+                var window = new Window {Content = control};
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
                 Dispatcher.UIThread.RunJobs();
                 test.Invoke(control, textBox);
             }
@@ -1012,23 +1012,24 @@ namespace Avalonia.Controls.UnitTests
         }
         private IControlTemplate CreateTemplate()
         {
-            return new FuncControlTemplate<AutoCompleteBox>(control =>
+            return new FuncControlTemplate<AutoCompleteBox>((control, scope) =>
             {
                 var textBox =
                     new TextBox
                     {
                         Name = "PART_TextBox"
-                    };
+                    }.RegisterInNameScope(scope);
                 var listbox =
                     new ListBox
                     {
                         Name = "PART_SelectingItemsControl"
-                    };
+                    }.RegisterInNameScope(scope);
                 var popup =
                     new Popup
                     {
-                        Name = "PART_Popup"
-                    };
+                        Name = "PART_Popup",
+                        PlacementTarget = control
+                    }.RegisterInNameScope(scope);
 
                 var panel = new Panel();
                 panel.Children.Add(textBox);

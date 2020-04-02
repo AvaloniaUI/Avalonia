@@ -1,18 +1,16 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Specialized;
 using System.Linq;
-using Avalonia.VisualTree;
 using Avalonia.Media;
+using Avalonia.Rendering;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
     // TODO: Need to track position of adorned elements and move the adorner if they move.
-    public class AdornerLayer : Panel
+    public class AdornerLayer : Canvas, ICustomSimpleHitTest
     {
-        public static AttachedProperty<Visual> AdornedElementProperty =
+        public static readonly AttachedProperty<Visual> AdornedElementProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, Visual>("AdornedElement");
 
         private static readonly AttachedProperty<AdornedElementInfo> s_adornedElementInfoProperty =
@@ -41,7 +39,7 @@ namespace Avalonia.Controls.Primitives
         public static AdornerLayer GetAdornerLayer(IVisual visual)
         {
             return visual.GetVisualAncestors()
-                .OfType<AdornerDecorator>()
+                .OfType<VisualLayerManager>()
                 .FirstOrDefault()
                 ?.AdornerLayer;
         }
@@ -63,7 +61,7 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    child.Arrange(new Rect(child.DesiredSize));
+                    child.Arrange(new Rect(finalSize));
                 }
             }
 
@@ -88,7 +86,7 @@ namespace Avalonia.Controls.Primitives
                 control.Clip = clip;
             }
 
-            clip.Rect = bounds.Clip.TransformToAABB(-bounds.Transform);
+            clip.Rect = bounds.Bounds;
         }
 
         private void ChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -136,6 +134,8 @@ namespace Avalonia.Controls.Primitives
                 });
             }
         }
+
+        public bool HitTest(Point point) => Children.HitTestCustom(point);
 
         private class AdornedElementInfo
         {

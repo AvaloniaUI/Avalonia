@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -22,14 +19,14 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var target = new Binding(nameof(Class1.Foo))
             {
-                Converter = StringConverters.NullOrEmpty,
+                Converter = StringConverters.IsNullOrEmpty,
             };
 
             var expressionObserver = (BindingExpression)target.Initiate(
                 textBlock, 
                 TextBlock.TextProperty).Observable;
 
-            Assert.Same(StringConverters.NullOrEmpty, expressionObserver.Converter);
+            Assert.Same(StringConverters.IsNullOrEmpty, expressionObserver.Converter);
         }
 
         public class When_Binding_To_String
@@ -129,7 +126,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var target = new Binding(nameof(Class1.Foo))
             {
-                Converter = StringConverters.NotNullOrEmpty,
+                Converter = StringConverters.IsNotNullOrEmpty,
                 StringFormat = "Hello {0}",
             };
 

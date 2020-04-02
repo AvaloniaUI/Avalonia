@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -30,7 +27,7 @@ namespace Avalonia.Controls
         /// </summary>
         static Panel()
         {
-            ClipToBoundsProperty.OverrideDefaultValue<Panel>(true);
+            AffectsRender<Panel>(BackgroundProperty);
         }
 
         /// <summary>
@@ -112,7 +109,7 @@ namespace Avalonia.Controls
                 case NotifyCollectionChangedAction.Add:
                     controls = e.NewItems.OfType<Control>().ToList();
                     LogicalChildren.InsertRange(e.NewStartingIndex, controls);
-                    VisualChildren.AddRange(e.NewItems.OfType<Visual>());
+                    VisualChildren.InsertRange(e.NewStartingIndex, e.NewItems.OfType<Visual>());
                     break;
 
                 case NotifyCollectionChangedAction.Move:

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.ComponentModel;
 using Avalonia.Controls;
-using Portable.Xaml.ComponentModel;
-using Portable.Xaml.Markup;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     /// <summary>
     /// Loads a resource dictionary from a specified URL.
     /// </summary>
-    public class ResourceInclude : MarkupExtension, IResourceProvider
+    public class ResourceInclude : IResourceNode, ISetResourceParent
     {
+        private IResourceNode _parent;
         private Uri _baseUri;
         private IResourceDictionary _loaded;
 
@@ -27,6 +26,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 {
                     var loader = new AvaloniaXamlLoader();
                     _loaded = (IResourceDictionary)loader.Load(Source, _baseUri);
+
+                    (_loaded as ISetResourceParent)?.SetParent(this);
+                    _loaded.ResourcesChanged += ResourcesChanged;
 
                     if (_loaded.HasResources)
                     {
@@ -47,16 +49,35 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         bool IResourceProvider.HasResources => Loaded.HasResources;
 
         /// <inhertidoc/>
-        bool IResourceProvider.TryGetResource(string key, out object value)
+        IResourceNode IResourceNode.ResourceParent => _parent;
+
+        /// <inhertidoc/>
+        bool IResourceProvider.TryGetResource(object key, out object value)
         {
             return Loaded.TryGetResource(key, out value);
         }
 
         /// <inhertidoc/>
-        public override object ProvideValue(IServiceProvider serviceProvider)
+        void ISetResourceParent.SetParent(IResourceNode parent)
+        {
+            if (_parent != null && parent != null)
+            {
+                throw new InvalidOperationException("The ResourceInclude already has a parent.");
+            }
+
+            _parent = parent;
+        }
+
+        /// <inhertidoc/>
+        void ISetResourceParent.ParentResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            (_loaded as ISetResourceParent)?.ParentResourcesChanged(e);
+        }
+
+        public ResourceInclude ProvideValue(IServiceProvider serviceProvider)
         {
             var tdc = (ITypeDescriptorContext)serviceProvider;
-            _baseUri = tdc?.GetBaseUri();
+            _baseUri = tdc?.GetContextBaseUri();
             return this;
         }
     }

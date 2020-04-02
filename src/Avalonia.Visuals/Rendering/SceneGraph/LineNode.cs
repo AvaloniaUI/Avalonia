@@ -1,8 +1,6 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 
@@ -23,7 +21,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public LineNode(
             Matrix transform,
-            Pen pen,
+            IPen pen,
             Point p1,
             Point p2,
             IDictionary<IVisual, Scene> childScenes = null)
@@ -44,7 +42,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the stroke pen.
         /// </summary>
-        public Pen Pen { get; }
+        public ImmutablePen Pen { get; }
 
         /// <summary>
         /// Gets the start point of the line.
@@ -71,9 +69,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, Pen pen, Point p1, Point p2)
+        public bool Equals(Matrix transform, IPen pen, Point p1, Point p2)
         {
-            return transform == Transform && pen == Pen && p1 == P1 && p2 == P2;
+            return transform == Transform && Equals(Pen, pen) && p1 == P1 && p2 == P2;
         }
 
         public override void Render(IDrawingContextImpl context)
