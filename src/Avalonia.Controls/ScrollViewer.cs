@@ -2,6 +2,7 @@ using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -167,6 +168,14 @@ namespace Avalonia.Controls
                 nameof(VerticalScrollBarVisibility),
                 ScrollBarVisibility.Auto);
 
+        /// <summary>
+        /// Defines the <see cref="ScrollChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<ScrollChangedEventArgs> ScrollChangedEvent =
+            RoutedEvent.Register<ScrollViewer, ScrollChangedEventArgs>(
+                nameof(ScrollChanged),
+                RoutingStrategies.Bubble);
+
         private IDisposable _childSubscription;
         private ILogicalScrollable _logicalScrollable;
         private Size _extent;
@@ -192,6 +201,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Occurs when changes are detected to the scroll position, extent, or viewport size.
+        /// </summary>
+        public event EventHandler<ScrollChangedEventArgs> ScrollChanged
+        {
+            add => AddHandler(ScrollChangedEvent, value);
+            remove => RemoveHandler(ScrollChangedEvent, value);
+        }
+
+        /// <summary>
         /// Gets the extent of the scrollable content.
         /// </summary>
         public Size Extent
@@ -203,9 +221,11 @@ namespace Avalonia.Controls
 
             private set
             {
+                var old = _extent;
+
                 if (SetAndRaise(ExtentProperty, ref _extent, value))
                 {
-                    CalculatedPropertiesChanged();
+                    CalculatedPropertiesChanged(extentDelta: value - old);
                 }
             }
         }
@@ -222,11 +242,13 @@ namespace Avalonia.Controls
 
             set
             {
+                var old = _offset;
+
                 value = ValidateOffset(this, value);
 
                 if (SetAndRaise(OffsetProperty, ref _offset, value))
                 {
-                    CalculatedPropertiesChanged();
+                    CalculatedPropertiesChanged(offsetDelta: value - old);
                 }
             }
         }
@@ -243,9 +265,11 @@ namespace Avalonia.Controls
 
             private set
             {
+                var old = _viewport;
+
                 if (SetAndRaise(ViewportProperty, ref _viewport, value))
                 {
-                    CalculatedPropertiesChanged();
+                    CalculatedPropertiesChanged(viewportDelta: value - old);
                 }
             }
         }
@@ -525,7 +549,10 @@ namespace Avalonia.Controls
             }
         }
 
-        private void CalculatedPropertiesChanged()
+        private void CalculatedPropertiesChanged(
+            Size extentDelta = default,
+            Vector offsetDelta = default,
+            Size viewportDelta = default)
         {
             // Pass old values of 0 here because we don't have the old values at this point,
             // and it shouldn't matter as only the template uses these properies.
@@ -545,6 +572,20 @@ namespace Avalonia.Controls
             {
                 SetAndRaise(SmallChangeProperty, ref _smallChange, s_defaultSmallChange);
                 SetAndRaise(LargeChangeProperty, ref _largeChange, Viewport);
+            }
+
+            if (extentDelta != default || offsetDelta != default || viewportDelta != default)
+            {
+                using var route = BuildEventRoute(ScrollChangedEvent);
+
+                if (route.HasHandlers)
+                {
+                    var e = new ScrollChangedEventArgs(
+                        new Vector(extentDelta.Width, extentDelta.Height),
+                        offsetDelta,
+                        new Vector(viewportDelta.Width, viewportDelta.Height));
+                    route.RaiseEvent(this, e);
+                }
             }
         }
 
