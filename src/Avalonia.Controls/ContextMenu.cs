@@ -21,6 +21,7 @@ namespace Avalonia.Controls
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup _popup;
         private bool _attachedToControl;
+        private IInputElement _previousFocus;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContextMenu"/> class.
@@ -150,6 +151,7 @@ namespace Avalonia.Controls
 
         private void PopupOpened(object sender, EventArgs e)
         {
+            _previousFocus = FocusManager.Instance?.Current;
             Focus();
         }
 
@@ -170,6 +172,9 @@ namespace Avalonia.Controls
             {
                 ((ISetLogicalParent)_popup).SetParent(null);
             }
+
+            // HACK: Reset the focus when the popup is closed. We need to fix this so it's automatic.
+            FocusManager.Instance?.Focus(_previousFocus);
 
             RaiseEvent(new RoutedEventArgs
             {
