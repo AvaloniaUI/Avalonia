@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Diagnostics;
@@ -416,6 +417,37 @@ namespace Avalonia.LeakTests
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
+            }
+        }
+
+        [Fact]
+        public void Context_MenuItems_Are_Freed()
+        {
+            using (Start())
+            {
+                void BuildAndShowContextMenu(Control control)
+                {
+                    var contextMenu = new ContextMenu
+                    {
+                        Items = new[]
+                        {
+                            new MenuItem { Header = "Foo" },
+                            new MenuItem { Header = "Foo" },
+                        }
+                    };
+
+                    contextMenu.Open(control);
+                    contextMenu.Close();
+                }
+
+                var window = new Window();
+                BuildAndShowContextMenu(window);
+                BuildAndShowContextMenu(window);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
             }
         }
 
