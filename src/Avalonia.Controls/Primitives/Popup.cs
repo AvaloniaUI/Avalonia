@@ -303,6 +303,10 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 _popupRoot.Hide();
+                _popupRoot.Content = null;
+                ((ISetLogicalParent)_popupRoot).SetParent(this);
+                _popupRoot.Dispose();
+                _popupRoot = null;
             }
 
             IsOpen = false;
