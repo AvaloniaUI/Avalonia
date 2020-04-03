@@ -5,6 +5,7 @@ using System.Runtime.Remoting.Contexts;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Diagnostics;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -441,6 +442,10 @@ namespace Avalonia.LeakTests
                 }
 
                 var window = new Window();
+                window.Show();
+
+                Assert.Same(window, FocusManager.Instance.Current);
+
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
 
@@ -453,7 +458,10 @@ namespace Avalonia.LeakTests
 
         private IDisposable Start()
         {
-            return UnitTestApplication.Start(TestServices.StyledWindow);
+            return UnitTestApplication.Start(TestServices.StyledWindow.With(
+                focusManager: new FocusManager(),
+                keyboardDevice: () => new KeyboardDevice(),
+                inputManager: new InputManager()));
         }
 
         private class Node
