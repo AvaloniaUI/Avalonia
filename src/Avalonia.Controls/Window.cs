@@ -529,7 +529,7 @@ namespace Avalonia.Controls
         {
             var sizeToContent = SizeToContent;
             var clientSize = ClientSize;
-            var constraint = availableSize;
+            Size constraint = clientSize;
 
             if ((sizeToContent & SizeToContent.Width) != 0)
             {
