@@ -20,6 +20,7 @@ namespace Avalonia.Controls
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup _popup;
+        private bool _attachedToControl;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContextMenu"/> class.
@@ -69,13 +70,15 @@ namespace Avalonia.Controls
         {
             var control = (Control)e.Sender;
 
-            if (e.OldValue != null)
+            if (e.OldValue is ContextMenu oldMenu)
             {
                 control.PointerReleased -= ControlPointerReleased;
+                oldMenu._attachedToControl = false;
             }
 
-            if (e.NewValue != null)
+            if (e.NewValue is ContextMenu newMenu)
             {
+                newMenu._attachedToControl = true;
                 control.PointerReleased += ControlPointerReleased;
             }
         }
@@ -145,18 +148,6 @@ namespace Avalonia.Controls
             return new MenuItemContainerGenerator(this);
         }
 
-        private void CloseCore()
-        {
-            SelectedIndex = -1;
-            IsOpen = false;
-
-            RaiseEvent(new RoutedEventArgs
-            {
-                RoutedEvent = MenuClosedEvent,
-                Source = this,
-            });
-        }
-
         private void PopupOpened(object sender, EventArgs e)
         {
             Focus();
@@ -164,17 +155,27 @@ namespace Avalonia.Controls
 
         private void PopupClosed(object sender, EventArgs e)
         {
-            var contextMenu = (sender as Popup)?.Child as ContextMenu;
-
-            if (contextMenu != null)
+            foreach (var i in LogicalChildren)
             {
-                foreach (var i in contextMenu.GetLogicalChildren().OfType<MenuItem>())
+                if (i is MenuItem menuItem)
                 {
-                    i.IsSubMenuOpen = false;
+                    menuItem.IsSubMenuOpen = false;
                 }
-
-                contextMenu.CloseCore();
             }
+
+            SelectedIndex = -1;
+            IsOpen = false;
+
+            if (!_attachedToControl)
+            {
+                ((ISetLogicalParent)_popup).SetParent(null);
+            }
+
+            RaiseEvent(new RoutedEventArgs
+            {
+                RoutedEvent = MenuClosedEvent,
+                Source = this,
+            });
         }
 
         private static void ControlPointerReleased(object sender, PointerReleasedEventArgs e)
