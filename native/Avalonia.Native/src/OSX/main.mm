@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 //This file will contain actual IID structures
 #define COM_GUIDS_MATERIALIZE
 #include "common.h"
