@@ -75,7 +75,11 @@ namespace Avalonia.Controls.Remote
                 var fmt = (PixelFormat) _lastFrame.Format;
                 if (_bitmap == null || _bitmap.PixelSize.Width != _lastFrame.Width ||
                     _bitmap.PixelSize.Height != _lastFrame.Height)
-                    _bitmap = new WriteableBitmap(new PixelSize(_lastFrame.Width, _lastFrame.Height), new Vector(96, 96), fmt);
+                {
+                    _bitmap?.Dispose();
+                    _bitmap = new WriteableBitmap(new PixelSize(_lastFrame.Width, _lastFrame.Height),
+                        new Vector(96, 96), fmt);
+                }
                 using (var l = _bitmap.Lock())
                 {
                     var lineLen = (fmt == PixelFormat.Rgb565 ? 2 : 4) * _lastFrame.Width;
