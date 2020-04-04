@@ -546,14 +546,14 @@ namespace Avalonia.X11
                 }
                 else if (value == WindowState.Maximized)
                 {
-                    SendNetWMMessage(_x11.Atoms._NET_WM_STATE, (IntPtr)0, _x11.Atoms._NET_WM_STATE_HIDDEN, IntPtr.Zero);
-                    SendNetWMMessage(_x11.Atoms._NET_WM_STATE, (IntPtr)1, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
+                    ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_HIDDEN);
+                    ChangeWMAtoms(true, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
                 }
                 else
                 {
-                    SendNetWMMessage(_x11.Atoms._NET_WM_STATE, (IntPtr)0, _x11.Atoms._NET_WM_STATE_HIDDEN, IntPtr.Zero);
-                    SendNetWMMessage(_x11.Atoms._NET_WM_STATE, (IntPtr)0, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
+                    ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_HIDDEN);
+                    ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
                 }
             }
@@ -758,7 +758,15 @@ namespace Avalonia.X11
             _transientParent = window;
             _transientParent?._transientChildren.Add(this);
             if (informServer)
-                XSetTransientForHint(_x11.Display, _handle, _transientParent?._handle ?? IntPtr.Zero);
+                SetTransientForHint(_transientParent?._handle);
+        }
+
+        void SetTransientForHint(IntPtr? parent)
+        {
+            if (parent == null || parent == IntPtr.Zero)
+                XDeleteProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_TRANSIENT_FOR);
+            else
+                XSetTransientForHint(_x11.Display, _handle, parent.Value);
         }
 
         public void Show()
@@ -989,8 +997,7 @@ namespace Avalonia.X11
 
         public void SetTopmost(bool value)
         {
-            SendNetWMMessage(_x11.Atoms._NET_WM_STATE,
-                (IntPtr)(value ? 1 : 0), _x11.Atoms._NET_WM_STATE_ABOVE, IntPtr.Zero);
+            ChangeWMAtoms(value, _x11.Atoms._NET_WM_STATE_ABOVE);
         }
 
         public void ShowDialog(IWindowImpl parent)
@@ -1017,8 +1024,41 @@ namespace Avalonia.X11
 
         public void ShowTaskbarIcon(bool value)
         {
+            ChangeWMAtoms(!value, _x11.Atoms._NET_WM_STATE_SKIP_TASKBAR);
+        }
+
+        void ChangeWMAtoms(bool enable, params IntPtr[] atoms)
+        {
+            if (atoms.Length < 1 || atoms.Length > 4)
+                throw new ArgumentException();
+
+            if (!_mapped)
+            {
+                XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_STATE, IntPtr.Zero, new IntPtr(256),
+                    false, (IntPtr)Atom.XA_ATOM, out _, out _, out var nitems, out _,
+                    out var prop);
+                var ptr = (IntPtr*)prop.ToPointer();
+                var newAtoms = new HashSet<IntPtr>();
+                for (var c = 0; c < nitems.ToInt64(); c++) 
+                    newAtoms.Add(*ptr);
+                XFree(prop);
+                foreach(var atom in atoms)
+                    if (enable)
+                        newAtoms.Add(atom);
+                    else
+                        newAtoms.Remove(atom);
+
+                XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_STATE, (IntPtr)Atom.XA_ATOM, 32,
+                    PropertyMode.Replace, newAtoms.ToArray(), newAtoms.Count);
+            }
+            
             SendNetWMMessage(_x11.Atoms._NET_WM_STATE,
-                (IntPtr)(value ? 0 : 1), _x11.Atoms._NET_WM_STATE_SKIP_TASKBAR, IntPtr.Zero);
+                (IntPtr)(enable ? 1 : 0),
+                atoms[0],
+                atoms.Length > 1 ? atoms[1] : IntPtr.Zero,
+                atoms.Length > 2 ? atoms[2] : IntPtr.Zero,
+                atoms.Length > 3 ? atoms[3] : IntPtr.Zero
+            );
         }
 
         public IPopupPositioner PopupPositioner { get; }
