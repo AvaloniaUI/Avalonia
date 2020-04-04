@@ -27,7 +27,6 @@ namespace Avalonia.X11
         private readonly IWindowImpl _popupParent;
         private readonly bool _popup;
         private readonly X11Info _x11;
-        private bool _invalidated;
         private XConfigureEvent? _configure;
         private PixelPoint? _configurePoint;
         private bool _triggeredExpose;
@@ -309,8 +308,13 @@ namespace Avalonia.X11
         public Action Closed { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
 
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+            return _platform.Options.UseDeferredRendering ?
+                new DeferredRenderer(root, loop) :
+                (IRenderer)new X11ImmediateRendererProxy(root, loop);
+        }
 
         void OnEvent(XEvent ev)
         {
@@ -684,20 +688,12 @@ namespace Avalonia.X11
 
         void DoPaint()
         {
-            _invalidated = false;
             Paint?.Invoke(new Rect());
         }
         
         public void Invalidate(Rect rect)
         {
-            if(_invalidated)
-                return;
-            _invalidated = true;
-            Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                if (_mapped)
-                    DoPaint();
-            });
+
         }
 
         public IInputRoot InputRoot => _inputRoot;
