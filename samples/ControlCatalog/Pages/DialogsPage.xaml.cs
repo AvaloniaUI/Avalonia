@@ -42,14 +42,15 @@ namespace ControlCatalog.Pages
                 new SaveFileDialog()
                 {
                     Title = "Save file",
-                    Filters = GetFilters()
+                    Filters = GetFilters(),
+                    InitialFileName = "test.txt"
                 }.ShowAsync(GetWindow());
             };
             this.FindControl<Button>("SelectFolder").Click += delegate
             {
                 new OpenFolderDialog()
                 {
-                    Title = "Select folder"
+                    Title = "Select folder",
                 }.ShowAsync(GetWindow());
             };
             this.FindControl<Button>("DecoratedWindow").Click += delegate

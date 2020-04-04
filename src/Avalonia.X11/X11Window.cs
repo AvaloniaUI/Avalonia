@@ -759,7 +759,15 @@ namespace Avalonia.X11
             _transientParent = window;
             _transientParent?._transientChildren.Add(this);
             if (informServer)
-                XSetTransientForHint(_x11.Display, _handle, _transientParent?._handle ?? IntPtr.Zero);
+                SetTransientForHint(_transientParent?._handle);
+        }
+
+        void SetTransientForHint(IntPtr? parent)
+        {
+            if (parent == null || parent == IntPtr.Zero)
+                XDeleteProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_TRANSIENT_FOR);
+            else
+                XSetTransientForHint(_x11.Display, _handle, parent.Value);
         }
 
         public void Show()
