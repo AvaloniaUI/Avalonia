@@ -20,7 +20,7 @@ namespace Avalonia.Controls
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup _popup;
-        private bool _attachedToControl;
+        private Control _attachedControl;
         private IInputElement _previousFocus;
 
         /// <summary>
@@ -74,12 +74,13 @@ namespace Avalonia.Controls
             if (e.OldValue is ContextMenu oldMenu)
             {
                 control.PointerReleased -= ControlPointerReleased;
-                oldMenu._attachedToControl = false;
+                oldMenu._attachedControl = null;
+                ((ISetLogicalParent)oldMenu._popup).SetParent(null);
             }
 
             if (e.NewValue is ContextMenu newMenu)
             {
-                newMenu._attachedToControl = true;
+                newMenu._attachedControl = control;
                 control.PointerReleased += ControlPointerReleased;
             }
         }
@@ -95,8 +96,18 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         public void Open(Control control)
         {
-            if (control == null)
+            if (control is null && _attachedControl is null)
+            {
                 throw new ArgumentNullException(nameof(control));
+            }
+
+            if (control is object && _attachedControl is object && control != _attachedControl)
+            {
+                throw new ArgumentException(
+                    "Cannot show ContentMenu on a different control to the one it is attached to.",
+                    nameof(control));
+            }
+
             if (IsOpen)
             {
                 return;
@@ -168,7 +179,7 @@ namespace Avalonia.Controls
             SelectedIndex = -1;
             IsOpen = false;
 
-            if (!_attachedToControl)
+            if (_attachedControl is null)
             {
                 ((ISetLogicalParent)_popup).SetParent(null);
             }
