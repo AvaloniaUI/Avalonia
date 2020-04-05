@@ -75,7 +75,7 @@ namespace Avalonia.Controls
             {
                 control.PointerReleased -= ControlPointerReleased;
                 oldMenu._attachedControl = null;
-                ((ISetLogicalParent)oldMenu._popup).SetParent(null);
+                ((ISetLogicalParent)oldMenu._popup)?.SetParent(null);
             }
 
             if (e.NewValue is ContextMenu newMenu)
