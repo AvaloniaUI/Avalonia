@@ -426,6 +426,24 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void SelectedText_CanClearText()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123"
+                };
+                target.SelectionStart = 1;
+                target.SelectionEnd = 3;
+                target.SelectedText = "";
+
+                Assert.True(target.Text == "03");
+            }
+        }
+
+        [Fact]
         public void CoerceCaretIndex_Doesnt_Cause_Exception_with_malformed_line_ending()
         {
             using (UnitTestApplication.Start(Services))
