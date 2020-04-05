@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Windows.Input;
-using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Markup.Data;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
@@ -156,6 +152,19 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(eventCalled);
                 Assert.False(sut.IsOpen);
                 popupImpl.Verify(x => x.Show(), Times.Never);
+            }
+        }
+
+        [Fact]
+        public void Can_Set_Clear_ContextMenu_Property()
+        {
+            using (Application())
+            {
+                var target = new ContextMenu();
+                var control = new Panel();
+
+                control.ContextMenu = target;
+                control.ContextMenu = null;
             }
         }
 
