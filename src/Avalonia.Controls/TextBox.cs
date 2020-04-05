@@ -283,7 +283,14 @@ namespace Avalonia.Controls
                 }
 
                 _undoRedoHelper.Snapshot();
-                HandleTextInput(value);
+                if (value != "")
+                {
+                    HandleTextInput(value);
+                }
+                else
+                {
+                    DeleteSelection();
+                } 
                 _undoRedoHelper.Snapshot();
             }
         }
