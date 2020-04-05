@@ -20,6 +20,8 @@ namespace Avalonia.Controls
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup _popup;
+        private Control _attachedControl;
+        private IInputElement _previousFocus;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContextMenu"/> class.
@@ -69,13 +71,16 @@ namespace Avalonia.Controls
         {
             var control = (Control)e.Sender;
 
-            if (e.OldValue != null)
+            if (e.OldValue is ContextMenu oldMenu)
             {
                 control.PointerReleased -= ControlPointerReleased;
+                oldMenu._attachedControl = null;
+                ((ISetLogicalParent)oldMenu._popup).SetParent(null);
             }
 
-            if (e.NewValue != null)
+            if (e.NewValue is ContextMenu newMenu)
             {
+                newMenu._attachedControl = control;
                 control.PointerReleased += ControlPointerReleased;
             }
         }
@@ -91,8 +96,18 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         public void Open(Control control)
         {
-            if (control == null)
+            if (control is null && _attachedControl is null)
+            {
                 throw new ArgumentNullException(nameof(control));
+            }
+
+            if (control is object && _attachedControl is object && control != _attachedControl)
+            {
+                throw new ArgumentException(
+                    "Cannot show ContentMenu on a different control to the one it is attached to.",
+                    nameof(control));
+            }
+
             if (IsOpen)
             {
                 return;
@@ -145,36 +160,38 @@ namespace Avalonia.Controls
             return new MenuItemContainerGenerator(this);
         }
 
-        private void CloseCore()
+        private void PopupOpened(object sender, EventArgs e)
         {
+            _previousFocus = FocusManager.Instance?.Current;
+            Focus();
+        }
+
+        private void PopupClosed(object sender, EventArgs e)
+        {
+            foreach (var i in LogicalChildren)
+            {
+                if (i is MenuItem menuItem)
+                {
+                    menuItem.IsSubMenuOpen = false;
+                }
+            }
+
             SelectedIndex = -1;
             IsOpen = false;
+
+            if (_attachedControl is null)
+            {
+                ((ISetLogicalParent)_popup).SetParent(null);
+            }
+
+            // HACK: Reset the focus when the popup is closed. We need to fix this so it's automatic.
+            FocusManager.Instance?.Focus(_previousFocus);
 
             RaiseEvent(new RoutedEventArgs
             {
                 RoutedEvent = MenuClosedEvent,
                 Source = this,
             });
-        }
-
-        private void PopupOpened(object sender, EventArgs e)
-        {
-            Focus();
-        }
-
-        private void PopupClosed(object sender, EventArgs e)
-        {
-            var contextMenu = (sender as Popup)?.Child as ContextMenu;
-
-            if (contextMenu != null)
-            {
-                foreach (var i in contextMenu.GetLogicalChildren().OfType<MenuItem>())
-                {
-                    i.IsSubMenuOpen = false;
-                }
-
-                contextMenu.CloseCore();
-            }
         }
 
         private static void ControlPointerReleased(object sender, PointerReleasedEventArgs e)
