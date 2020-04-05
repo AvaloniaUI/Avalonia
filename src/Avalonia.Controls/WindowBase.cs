@@ -304,7 +304,7 @@ namespace Avalonia.Controls
 
             if (scope != null)
             {
-                FocusManager.Instance.SetFocusScope(scope);
+                FocusManager.Instance?.SetFocusScope(scope);
             }
 
             IsActive = true;

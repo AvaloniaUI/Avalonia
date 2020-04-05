@@ -22,23 +22,13 @@ namespace Avalonia.UnitTests
 
         public static Mock<IWindowImpl> CreateWindowMock()
         {
-            var windowImpl = new Mock<IWindowImpl>();
-            var position = new PixelPoint();
-            var clientSize = new Size(800, 600);
-
-            windowImpl.SetupAllProperties();
-            windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
-            windowImpl.Setup(x => x.Scaling).Returns(1);
-            windowImpl.Setup(x => x.Screen).Returns(CreateScreenMock().Object);
-            windowImpl.Setup(x => x.Position).Returns(() => position);
-            SetupToplevel(windowImpl);
-
-            windowImpl.Setup(x => x.CreatePopup()).Returns(() =>
+            var win = Mock.Of<IWindowImpl>(x => x.Scaling == 1);
+            var mock = Mock.Get(win);
+            mock.Setup(x => x.Show()).Callback(() =>
             {
-                return CreatePopupMock(windowImpl.Object).Object;
+                mock.Object.Activated?.Invoke();
             });
-
-            windowImpl.Setup(x => x.Dispose()).Callback(() =>
+            mock.Setup(x => x.CreatePopup()).Returns(() =>
             {
                 windowImpl.Object.Closed?.Invoke();
             });
