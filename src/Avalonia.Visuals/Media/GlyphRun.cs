@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
 using Avalonia.Utility;
@@ -274,27 +271,39 @@ namespace Avalonia.Media
             var currentX = 0.0;
             var index = 0;
 
-            for (; index < GlyphIndices.Length; index++)
+            if (GlyphTypeface.IsFixedPitch)
             {
-                double advance;
+                var glyph = GlyphIndices[index];
 
-                if (GlyphAdvances.IsEmpty)
+                var advance = GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
+
+                index = Math.Min(GlyphIndices.Length - 1,
+                    (int)Math.Round(distance / advance, MidpointRounding.AwayFromZero));
+            }
+            else
+            {
+                for (; index < GlyphIndices.Length; index++)
                 {
-                    var glyph = GlyphIndices[index];
+                    double advance;
 
-                    advance = GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
-                }
-                else
-                {
-                    advance = GlyphAdvances[index];
-                }
+                    if (GlyphAdvances.IsEmpty)
+                    {
+                        var glyph = GlyphIndices[index];
 
-                if (currentX + advance >= distance)
-                {
-                    break;
-                }
+                        advance = GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
+                    }
+                    else
+                    {
+                        advance = GlyphAdvances[index];
+                    }
 
-                currentX += advance;
+                    if (currentX + advance >= distance)
+                    {
+                        break;
+                    }
+
+                    currentX += advance;
+                }
             }
 
             var characterHit = FindNearestCharacterHit(GlyphClusters[index], out var width);
@@ -473,9 +482,7 @@ namespace Avalonia.Media
         /// </returns>
         private Rect CalculateBounds()
         {
-            var scale = FontRenderingEmSize / GlyphTypeface.DesignEmHeight;
-
-            var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * scale;
+            var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * Scale;
 
             var width = 0.0;
 

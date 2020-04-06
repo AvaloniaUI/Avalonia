@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
@@ -701,7 +698,8 @@ namespace Avalonia.Controls
         {
             var text = Text;
 
-            if (text != null && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            var clickInfo = e.GetCurrentPoint(this);
+            if (text != null && clickInfo.Properties.IsLeftButtonPressed && !(clickInfo.Pointer?.Captured is Border))
             {
                 var point = e.GetPosition(_presenter);
                 var index = CaretIndex = _presenter.GetCaretIndex(point);

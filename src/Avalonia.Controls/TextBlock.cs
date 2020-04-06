@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Reactive.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -117,28 +114,18 @@ namespace Avalonia.Controls
         {
             ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
 
-            AffectsRender<TextBlock>(
-                BackgroundProperty, ForegroundProperty, FontSizeProperty, 
-                FontWeightProperty, FontStyleProperty, TextWrappingProperty, 
-                TextTrimmingProperty, TextAlignmentProperty, FontFamilyProperty, 
-                TextDecorationsProperty, TextProperty, PaddingProperty);
+            AffectsRender<TextBlock>(BackgroundProperty, ForegroundProperty, 
+                TextAlignmentProperty, TextDecorationsProperty);
 
-            AffectsMeasure<TextBlock>(
-                FontSizeProperty, FontWeightProperty, FontStyleProperty, 
-                FontFamilyProperty, TextTrimmingProperty, TextProperty,
-                PaddingProperty);
+            AffectsMeasure<TextBlock>(FontSizeProperty, FontWeightProperty, 
+                FontStyleProperty, TextWrappingProperty, FontFamilyProperty, 
+                TextTrimmingProperty, TextProperty, PaddingProperty);
 
-            Observable.Merge(
-                TextProperty.Changed,
-                ForegroundProperty.Changed,
-                TextAlignmentProperty.Changed,
-                TextWrappingProperty.Changed,
-                TextTrimmingProperty.Changed,
-                FontSizeProperty.Changed,
-                FontStyleProperty.Changed,
-                FontWeightProperty.Changed,
-                FontFamilyProperty.Changed,
-                TextDecorationsProperty.Changed,
+            Observable.Merge(TextProperty.Changed, ForegroundProperty.Changed,
+                TextAlignmentProperty.Changed, TextWrappingProperty.Changed,
+                TextTrimmingProperty.Changed, FontSizeProperty.Changed,
+                FontStyleProperty.Changed, FontWeightProperty.Changed,
+                FontFamilyProperty.Changed, TextDecorationsProperty.Changed,
                 PaddingProperty.Changed
             ).AddClassHandler<TextBlock>((x, _) => x.InvalidateTextLayout());
         }
