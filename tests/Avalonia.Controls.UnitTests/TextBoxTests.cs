@@ -556,25 +556,29 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-
-        [Fact]
-        public void Cut_Allows_Undo()
+        [Theory]
+        [InlineData(Key.X, KeyModifiers.Control)]
+        [InlineData(Key.Back, KeyModifiers.None)]
+        [InlineData(Key.Delete, KeyModifiers.None)]
+        [InlineData(Key.Tab, KeyModifiers.None)]
+        [InlineData(Key.Enter, KeyModifiers.None)]
+        public void Keys_Allow_Undo(Key key, KeyModifiers modifiers)
         {
             using (UnitTestApplication.Start(Services))
             {
                 var target = new TextBox
                 {
                     Template = CreateTemplate(),
-                    Text = "0123"
+                    Text = "0123",
+                    AcceptsReturn = true,
+                    AcceptsTab = true
                 };
                 target.SelectionStart = 1;
                 target.SelectionEnd = 3;
                 AvaloniaLocator.CurrentMutable
                     .Bind<Input.Platform.IClipboard>().ToSingleton<ClipboardStub>();
 
-                RaiseKeyEvent(target, Key.X, KeyModifiers.Control); // cut
-                Assert.True(target.Text == "03");
-
+                RaiseKeyEvent(target, key, modifiers);
                 RaiseKeyEvent(target, Key.Z, KeyModifiers.Control); // undo
                 Assert.True(target.Text == "0123");
             }
