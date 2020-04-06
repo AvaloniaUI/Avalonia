@@ -9,5 +9,6 @@
       <Button Name="DecoratedWindow">Decorated window</Button>
       <Button Name="DecoratedWindowDialog">Decorated window (dialog)</Button>
       <Button Name="Dialog">Dialog</Button>
+      <Button Name="DialogNoTaskbar">Dialog (No taskbar icon)</Button>
   </StackPanel>
 </UserControl>

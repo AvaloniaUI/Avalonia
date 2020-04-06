@@ -168,7 +168,7 @@ namespace Avalonia.Input
             {
                 var scope = control as IFocusScope;
 
-                if (scope != null)
+                if (scope != null && control.VisualRoot?.IsVisible == true)
                 {
                     yield return scope;
                 }

@@ -19,6 +19,11 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         public event EventHandler Invalidated;
 
+        static Brush()
+        {
+            AffectsRender<Brush>(OpacityProperty);
+        }
+
         /// <summary>
         /// Gets or sets the opacity of the brush.
         /// </summary>
