@@ -11,8 +11,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
-        private static readonly Size s_defaultSmallChange = new Size(16, 16);
-
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
         /// </summary>
@@ -176,13 +174,15 @@ namespace Avalonia.Controls
                 nameof(ScrollChanged),
                 RoutingStrategies.Bubble);
 
+        internal const double DefaultSmallChange = 16;
+
         private IDisposable _childSubscription;
         private ILogicalScrollable _logicalScrollable;
         private Size _extent;
         private Vector _offset;
         private Size _viewport;
         private Size _largeChange;
-        private Size _smallChange = s_defaultSmallChange;
+        private Size _smallChange = new Size(DefaultSmallChange, DefaultSmallChange);
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollViewer"/> class.
@@ -570,7 +570,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                SetAndRaise(SmallChangeProperty, ref _smallChange, s_defaultSmallChange);
+                SetAndRaise(SmallChangeProperty, ref _smallChange, new Size(DefaultSmallChange, DefaultSmallChange));
                 SetAndRaise(LargeChangeProperty, ref _largeChange, Viewport);
             }
 

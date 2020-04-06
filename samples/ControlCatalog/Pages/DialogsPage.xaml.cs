@@ -42,14 +42,15 @@ namespace ControlCatalog.Pages
                 new SaveFileDialog()
                 {
                     Title = "Save file",
-                    Filters = GetFilters()
+                    Filters = GetFilters(),
+                    InitialFileName = "test.txt"
                 }.ShowAsync(GetWindow());
             };
             this.FindControl<Button>("SelectFolder").Click += delegate
             {
                 new OpenFolderDialog()
                 {
-                    Title = "Select folder"
+                    Title = "Select folder",
                 }.ShowAsync(GetWindow());
             };
             this.FindControl<Button>("DecoratedWindow").Click += delegate
@@ -61,14 +62,29 @@ namespace ControlCatalog.Pages
                 new DecoratedWindow().ShowDialog(GetWindow());
             };
             this.FindControl<Button>("Dialog").Click += delegate
-                {
-                    var window = new Window();
-                    window.Height = 200;
-                    window.Width = 200;
-                    window.Content = new TextBlock { Text = "Hello world!" };
-                    window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                    window.ShowDialog(GetWindow());
-                };
+            {
+                var window = CreateSampleWindow();
+                window.Height = 200;
+                window.ShowDialog(GetWindow());
+            };
+            this.FindControl<Button>("DialogNoTaskbar").Click += delegate
+            {
+                var window = CreateSampleWindow();
+                window.Height = 200;
+                window.ShowInTaskbar = false;
+                window.ShowDialog(GetWindow());
+            };
+        }
+
+        private Window CreateSampleWindow()
+        {
+            var window = new Window();
+            window.Height = 200;
+            window.Width = 200;
+            window.Content = new TextBlock { Text = "Hello world!" };
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+            return window;
         }
 
         Window GetWindow() => (Window)this.VisualRoot;
