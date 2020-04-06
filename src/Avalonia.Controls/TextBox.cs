@@ -277,19 +277,14 @@ namespace Avalonia.Controls
             get { return GetSelection(); }
             set
             {
-                if (value == null)
-                {
-                    return;
-                }
-
                 _undoRedoHelper.Snapshot();
-                if (value != "")
+                if (string.IsNullOrEmpty(value))
                 {
-                    HandleTextInput(value);
+                    DeleteSelection();
                 }
                 else
                 {
-                    DeleteSelection();
+                    HandleTextInput(value);
                 } 
                 _undoRedoHelper.Snapshot();
             }
