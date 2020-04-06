@@ -27,7 +27,6 @@ namespace Avalonia.X11
         private readonly IWindowImpl _popupParent;
         private readonly bool _popup;
         private readonly X11Info _x11;
-        private bool _invalidated;
         private XConfigureEvent? _configure;
         private PixelPoint? _configurePoint;
         private bool _triggeredExpose;
@@ -41,6 +40,7 @@ namespace Avalonia.X11
         private IntPtr _xic;
         private IntPtr _renderHandle;
         private bool _mapped;
+        private bool _wasMappedAtLeastOnce = false;
         private HashSet<X11Window> _transientChildren = new HashSet<X11Window>();
         private X11Window _transientParent;
         private double? _scalingOverride;
@@ -308,8 +308,13 @@ namespace Avalonia.X11
         public Action Closed { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
 
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+            return _platform.Options.UseDeferredRendering ?
+                new DeferredRenderer(root, loop) :
+                (IRenderer)new X11ImmediateRendererProxy(root, loop);
+        }
 
         void OnEvent(XEvent ev)
         {
@@ -683,20 +688,12 @@ namespace Avalonia.X11
 
         void DoPaint()
         {
-            _invalidated = false;
             Paint?.Invoke(new Rect());
         }
         
         public void Invalidate(Rect rect)
         {
-            if(_invalidated)
-                return;
-            _invalidated = true;
-            Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                if (_mapped)
-                    DoPaint();
-            });
+
         }
 
         public IInputRoot InputRoot => _inputRoot;
@@ -777,6 +774,7 @@ namespace Avalonia.X11
         
         void ShowCore()
         {
+            _wasMappedAtLeastOnce = true;
             XMapWindow(_x11.Display, _handle);
             XFlush(_x11.Display);
         }
@@ -824,7 +822,7 @@ namespace Avalonia.X11
                 XConfigureResizeWindow(_x11.Display, _renderHandle, pixelSize);
             XFlush(_x11.Display);
 
-            if (force || (_popup && needImmediatePopupResize))
+            if (force || !_wasMappedAtLeastOnce || (_popup && needImmediatePopupResize))
             {
                 _realSize = pixelSize;
                 Resized?.Invoke(ClientSize);
@@ -865,6 +863,11 @@ namespace Avalonia.X11
                 XConfigureWindow(_x11.Display, _handle, ChangeWindowFlags.CWX | ChangeWindowFlags.CWY,
                     ref changes);
                 XFlush(_x11.Display);
+                if (!_wasMappedAtLeastOnce)
+                {
+                    _position = value;
+                    PositionChanged?.Invoke(value);
+                }
 
             }
         }
