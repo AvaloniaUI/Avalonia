@@ -473,8 +473,10 @@ namespace Avalonia.Controls
             {
                 if (!IsPasswordBox)
                 {
+                    _undoRedoHelper.Snapshot();
                     Copy();
                     DeleteSelection();
+                    _undoRedoHelper.Snapshot();
                 }
 
                 handled = true;
