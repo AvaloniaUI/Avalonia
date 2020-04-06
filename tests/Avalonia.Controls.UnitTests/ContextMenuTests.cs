@@ -1,7 +1,10 @@
 ﻿using System;
 using Avalonia.Input;
+using Avalonia.Markup.Xaml;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Castle.DynamicProxy.Generators;
 using Moq;
 using Xunit;
 
@@ -165,6 +168,90 @@ namespace Avalonia.Controls.UnitTests
 
                 control.ContextMenu = target;
                 control.ContextMenu = null;
+            }
+        }
+
+        [Fact]
+        public void Context_Menu_In_Resources_Can_Be_Shared()
+        {
+            using (Application())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <ContextMenu x:Key='contextMenu'>
+            <MenuItem>Foo</MenuItem>
+        </ContextMenu>
+	</Window.Resources>
+
+    <StackPanel>
+        <TextBlock Name='target1' ContextMenu='{StaticResource contextMenu}'/>
+        <TextBlock Name='target2' ContextMenu='{StaticResource contextMenu}'/>
+    </StackPanel>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var target1 = window.Find<TextBlock>("target1");
+                var target2 = window.Find<TextBlock>("target2");
+                var mouse = new MouseTestHelper();
+
+                Assert.NotNull(target1.ContextMenu);
+                Assert.NotNull(target2.ContextMenu);
+                Assert.Same(target1.ContextMenu, target2.ContextMenu);
+
+                window.Show();
+
+                var menu = target1.ContextMenu;
+                mouse.Click(target1, MouseButton.Right);
+                Assert.True(menu.IsOpen);
+                mouse.Click(target2, MouseButton.Right);
+                Assert.True(menu.IsOpen);
+            }
+        }
+
+        [Fact]
+        public void Context_Menu_Can_Be_Set_In_Style()
+        {
+            using (Application())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='TextBlock'>
+            <Setter Property='ContextMenu'>
+                <ContextMenu>
+                    <MenuItem>Foo</MenuItem>
+                </ContextMenu>
+            </Setter>
+        </Style>
+	</Window.Styles>
+
+    <StackPanel>
+        <TextBlock Name='target1'/>
+        <TextBlock Name='target2'/>
+    </StackPanel>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var target1 = window.Find<TextBlock>("target1");
+                var target2 = window.Find<TextBlock>("target2");
+                var mouse = new MouseTestHelper();
+
+                Assert.NotNull(target1.ContextMenu);
+                Assert.NotNull(target2.ContextMenu);
+                Assert.Same(target1.ContextMenu, target2.ContextMenu);
+
+                window.Show();
+
+                var menu = target1.ContextMenu;
+                mouse.Click(target1, MouseButton.Right);
+                Assert.True(menu.IsOpen);
+                mouse.Click(target2, MouseButton.Right);
+                Assert.True(menu.IsOpen);
             }
         }
 
