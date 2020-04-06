@@ -574,19 +574,36 @@ namespace Avalonia.Controls
         {
             var sizeToContent = SizeToContent;
             var clientSize = ClientSize;
-            var constraint = availableSize;
+            double constraintWidth;
+            double constraintHeight;
 
-            if ((sizeToContent & SizeToContent.Width) != 0)
+            if (sizeToContent.HasFlagCustom(SizeToContent.Width))
             {
-                constraint = constraint.WithWidth(double.PositiveInfinity);
+                constraintWidth = double.PositiveInfinity;
+            }
+            else if (!double.IsInfinity(availableSize.Width))
+            {
+                constraintWidth = availableSize.Width;
+            }
+            else
+            {
+                constraintWidth = clientSize.Width;
             }
 
-            if ((sizeToContent & SizeToContent.Height) != 0)
+            if (sizeToContent.HasFlagCustom(SizeToContent.Height))
             {
-                constraint = constraint.WithHeight(double.PositiveInfinity);
+                constraintHeight = double.PositiveInfinity;
+            }
+            else if (!double.IsInfinity(availableSize.Height))
+            {
+                constraintHeight = availableSize.Height;
+            }
+            else
+            {
+                constraintHeight = clientSize.Height;
             }
 
-            var result = base.MeasureOverride(constraint);
+            var result = base.MeasureOverride(new Size(constraintWidth, constraintHeight));
 
             if ((sizeToContent & SizeToContent.Width) == 0)
             {
