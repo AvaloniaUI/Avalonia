@@ -103,7 +103,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        Size ILogicalScrollable.ScrollSize => new Size(16, 1);
+        Size ILogicalScrollable.ScrollSize => new Size(ScrollViewer.DefaultSmallChange, 1);
 
         /// <inheritdoc/>
         Size ILogicalScrollable.PageScrollSize => Virtualizer?.Viewport ?? new Size(16, 16);
