@@ -21,7 +21,7 @@ namespace Avalonia.Controls.Presenters
 
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
-        EventHandler _scrollInvalidated;
+        private EventHandler _scrollInvalidated;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsPresenter"/> class.
