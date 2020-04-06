@@ -4,6 +4,8 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -84,6 +86,65 @@ namespace Avalonia.Controls.UnitTests
             target.ScrollToEnd();
 
             Assert.Equal(new Vector(0, 40), target.Offset);
+        }
+
+        [Fact]
+        public void SmallChange_Should_Be_16()
+        {
+            var target = new ScrollViewer();
+
+            Assert.Equal(new Size(16, 16), target.SmallChange);
+        }
+
+        [Fact]
+        public void LargeChange_Should_Be_Viewport()
+        {
+            var target = new ScrollViewer();
+
+            target.SetValue(ScrollViewer.ViewportProperty, new Size(104, 143));
+            Assert.Equal(new Size(104, 143), target.LargeChange);
+        }
+
+        [Fact]
+        public void SmallChange_Should_Come_From_ILogicalScrollable_If_Present()
+        {
+            var child = new Mock<Control>();
+            var logicalScroll = child.As<ILogicalScrollable>();
+
+            logicalScroll.Setup(x => x.IsLogicalScrollEnabled).Returns(true);
+            logicalScroll.Setup(x => x.ScrollSize).Returns(new Size(12, 43));
+
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = child.Object,
+            };
+
+            target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
+
+            Assert.Equal(new Size(12, 43), target.SmallChange);
+        }
+
+        [Fact]
+        public void LargeChange_Should_Come_From_ILogicalScrollable_If_Present()
+        {
+            var child = new Mock<Control>();
+            var logicalScroll = child.As<ILogicalScrollable>();
+
+            logicalScroll.Setup(x => x.IsLogicalScrollEnabled).Returns(true);
+            logicalScroll.Setup(x => x.PageScrollSize).Returns(new Size(45, 67));
+
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = child.Object,
+            };
+
+            target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
+
+            Assert.Equal(new Size(45, 67), target.LargeChange);
         }
 
         private Control CreateTemplate(ScrollViewer control, INameScope scope)
