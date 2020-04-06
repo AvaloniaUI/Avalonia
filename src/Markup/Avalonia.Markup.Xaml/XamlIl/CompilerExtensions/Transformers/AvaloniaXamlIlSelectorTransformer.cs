@@ -311,8 +311,35 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             _selectors.Add(node);
         }
         
-        //TODO: actually find the type
-        public override IXamlIlType TargetType => _selectors.FirstOrDefault()?.TargetType;
+        public override IXamlIlType TargetType
+        {
+            get
+            {
+                IXamlIlType result = null;
+
+                foreach (var selector in _selectors)
+                {
+                    if (selector.TargetType == null)
+                    {
+                        return null;
+                    }
+                    else if (result == null)
+                    {
+                        result = selector.TargetType;
+                    }
+                    else
+                    {
+                        while (!result.IsAssignableFrom(selector.TargetType))
+                        {
+                            result = result.BaseType;
+                        }
+                    }
+                }
+
+                return result;
+            }
+        }
+
         protected override void DoEmit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
         {
             if (_selectors.Count == 0)

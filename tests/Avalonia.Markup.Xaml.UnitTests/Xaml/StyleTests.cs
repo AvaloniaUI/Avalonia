@@ -316,24 +316,24 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <Window xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Styles>
-        <Style Selector='Border,Canvas,ListBox'>
+        <Style Selector='Button,Carousel,ListBox'>
             <Setter Property='Background' Value='Red'/>
         </Style>
     </Window.Styles>
     <StackPanel>
-        <Border Name='border'/>
-        <Canvas Name='canvas'/>
+        <Button Name='button'/>
+        <Carousel Name='carousel'/>
         <ListBox Name='listBox'/>
     </StackPanel>
 </Window>";
                 var loader = new AvaloniaXamlLoader();
                 var window = (Window)loader.Load(xaml);
-                var border = window.FindControl<Border>("border");
-                var canvas = window.FindControl<Canvas>("canvas");
+                var button = window.FindControl<Button>("button");
+                var carousel = window.FindControl<Carousel>("carousel");
                 var listBox = window.FindControl<ListBox>("listBox");
 
-                Assert.Equal(Brushes.Red, border.Background);
-                Assert.Equal(Brushes.Red, canvas.Background);
+                Assert.Equal(Brushes.Red, button.Background);
+                Assert.Equal(Brushes.Red, carousel.Background);
                 Assert.Equal(Brushes.Red, listBox.Background);
             }
         }
