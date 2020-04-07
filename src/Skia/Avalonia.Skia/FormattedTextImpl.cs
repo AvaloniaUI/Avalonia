@@ -142,21 +142,16 @@ namespace Avalonia.Skia
         {
             var rects = GetRects();
 
+            if (rects.Count == 0)
+            {
+                var x = TransformX(0, 0, _paint.TextAlign);
+                return new Rect(x, 0, 0, _lineHeight);
+            }
+
             if (index < 0 || index >= rects.Count)
             {
                 var r = rects.LastOrDefault();
                 return new Rect(r.X + r.Width, r.Y, 0, _lineHeight);
-            }
-
-            if (rects.Count == 0)
-            {
-                return new Rect(0, 0, 1, _lineHeight);
-            }
-
-            if (index == rects.Count)
-            {
-                var lr = rects[rects.Count - 1];
-                return new Rect(new Point(lr.X + lr.Width, lr.Y), rects[index - 1].Size);
             }
 
             return rects[index];
