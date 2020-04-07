@@ -140,20 +140,20 @@ namespace Avalonia.Skia
 
         public Rect HitTestTextPosition(int index)
         {
+            var lineWidth = (float)_bounds.Width;
+            var alignmentOffset = TransformX(0, lineWidth, _paint.TextAlign);
+
+            if (string.IsNullOrEmpty(Text) || index < 0)
+            {
+                return new Rect(alignmentOffset, 0, 0, _lineHeight);
+            }
+
+            if (index >= Text.Length)
+            {
+                return new Rect(lineWidth + alignmentOffset, 0, 0, _lineHeight);
+            }
+
             var rects = GetRects();
-
-            if (rects.Count == 0)
-            {
-                var x = TransformX(0, 0, _paint.TextAlign);
-                return new Rect(x, 0, 0, _lineHeight);
-            }
-
-            if (index < 0 || index >= rects.Count)
-            {
-                var r = rects.LastOrDefault();
-                return new Rect(r.X + r.Width, r.Y, 0, _lineHeight);
-            }
-
             return rects[index];
         }
 
