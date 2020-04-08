@@ -81,7 +81,10 @@ namespace Avalonia.Native
             }
             else
             {
-                SetMenu(_nativeWindow, _menu);
+                if(_menu != null)
+                {
+                    SetMenu(_nativeWindow, _menu);
+                }
             }
 
             _exported = true;
