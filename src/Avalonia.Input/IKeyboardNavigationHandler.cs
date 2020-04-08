@@ -19,10 +19,10 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="element">The current element.</param>
         /// <param name="direction">The direction to move.</param>
-        /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
+        /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
         void Move(
             IInputElement element, 
             NavigationDirection direction,
-            InputModifiers modifiers = InputModifiers.None);
+            KeyModifiers keyModifiers = KeyModifiers.None);
     }
 }
