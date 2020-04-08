@@ -358,18 +358,39 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.Open();
 
-                var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
-                var e = new PointerPressedEventArgs(
-                    window,
-                    pointer,
-                    window,
-                    default,
-                    0,
-                    new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
-                    KeyModifiers.None);
+                var e = CreatePointerPressedEventArgs(window);
                 window.RaiseEvent(e);
 
                 Assert.False(e.Handled);
+            }
+        }
+
+        [Fact]
+        public void Should_Pass_Closing_Click_To_Closed_Event()
+        {
+            using (CreateServices())
+            {
+                var window = PreparedWindow();
+                var target = new Popup()
+                {
+                    PlacementTarget = window,
+                    StaysOpen = false,
+                };
+
+                target.Open();
+
+                var press = CreatePointerPressedEventArgs(window);
+                var raised = 0;
+
+                target.Closed += (s, e) =>
+                {
+                    Assert.Same(press, e.CloseEvent);
+                    ++raised;
+                };
+
+                window.RaiseEvent(press);
+
+                Assert.Equal(1, raised);
             }
         }
 
@@ -383,6 +404,19 @@ namespace Avalonia.Controls.UnitTests.Primitives
                             return null;
                         return MockWindowingPlatform.CreatePopupMock().Object;
                     })));
+        }
+
+        private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source)
+        {
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            return new PointerPressedEventArgs(
+                source,
+                pointer,
+                source,
+                default,
+                0,
+                new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
+                KeyModifiers.None);
         }
 
         private Window PreparedWindow(object content = null)
