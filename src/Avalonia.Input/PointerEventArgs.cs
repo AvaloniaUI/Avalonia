@@ -7,9 +7,7 @@ namespace Avalonia.Input
 {
     public class PointerEventArgs : RoutedEventArgs
     {
-        private readonly IVisual _rootVisual;
-        private readonly Point _rootVisualPosition;
-        private readonly PointerPointProperties _properties;
+        public PointerPointProperties _properties;
 
         public PointerEventArgs(RoutedEvent routedEvent,
             IInteractive source,
@@ -21,8 +19,8 @@ namespace Avalonia.Input
            : base(routedEvent)
         {
             Source = source;
-            _rootVisual = rootVisual;
-            _rootVisualPosition = rootVisualPosition;
+            RootVisual = rootVisual;
+            RootVisualPosition = rootVisualPosition;
             _properties = properties;
             Pointer = pointer;
             Timestamp = timestamp;
@@ -51,6 +49,8 @@ namespace Avalonia.Input
 
         public IPointer Pointer { get; }
         public ulong Timestamp { get; }
+        public IVisual RootVisual { get; }
+        public Point RootVisualPosition { get; }
 
         private IPointerDevice _device;
 
@@ -78,11 +78,11 @@ namespace Avalonia.Input
 
         public Point GetPosition(IVisual relativeTo)
         {
-            if (_rootVisual == null)
+            if (RootVisual == null)
                 return default;
             if (relativeTo == null)
-                return _rootVisualPosition;
-            return _rootVisualPosition * _rootVisual.TransformToVisual(relativeTo) ?? default;
+                return RootVisualPosition;
+            return RootVisualPosition * RootVisual.TransformToVisual(relativeTo) ?? default;
         }
 
         [Obsolete("Use GetCurrentPoint")]
@@ -99,7 +99,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Returns the current pointer point properties
         /// </summary>
-        protected PointerPointProperties Properties => _properties;
+        public PointerPointProperties Properties => _properties;
     }
     
     public enum MouseButton

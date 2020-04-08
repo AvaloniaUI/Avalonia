@@ -5,17 +5,17 @@ namespace Avalonia.Input
 {
     public static class Gestures
     {
-        public static readonly RoutedEvent<RoutedEventArgs> TappedEvent = RoutedEvent.Register<RoutedEventArgs>(
+        public static readonly RoutedEvent<PointerEventArgs> TappedEvent = RoutedEvent.Register<PointerEventArgs>(
             "Tapped",
             RoutingStrategies.Bubble,
             typeof(Gestures));
 
-        public static readonly RoutedEvent<RoutedEventArgs> DoubleTappedEvent = RoutedEvent.Register<RoutedEventArgs>(
+        public static readonly RoutedEvent<PointerEventArgs> DoubleTappedEvent = RoutedEvent.Register<PointerEventArgs>(
             "DoubleTapped",
             RoutingStrategies.Bubble,
             typeof(Gestures));
 
-        public static readonly RoutedEvent<RoutedEventArgs> RightTappedEvent = RoutedEvent.Register<RoutedEventArgs>(
+        public static readonly RoutedEvent<PointerEventArgs> RightTappedEvent = RoutedEvent.Register<PointerEventArgs>(
             "RightTapped",
             RoutingStrategies.Bubble,
             typeof(Gestures));
@@ -80,7 +80,8 @@ namespace Avalonia.Input
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {
-                        e.Source.RaiseEvent(new RoutedEventArgs(DoubleTappedEvent));
+                        e.Source.RaiseEvent(new PointerEventArgs(DoubleTappedEvent, e.Source, e.Pointer, e.RootVisual,
+                            e.RootVisualPosition, e.Timestamp, e.Properties, e.KeyModifiers));
                     }
                 }
             }
@@ -95,7 +96,8 @@ namespace Avalonia.Input
                 if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                 {
                     var et = e.InitialPressMouseButton != MouseButton.Right ? TappedEvent : RightTappedEvent;
-                    e.Source.RaiseEvent(new RoutedEventArgs(et));
+                    e.Source.RaiseEvent(new PointerEventArgs(et, e.Source, e.Pointer, e.RootVisual,
+                        e.RootVisualPosition, e.Timestamp, e.Properties, e.KeyModifiers));
                 }
             }
         }

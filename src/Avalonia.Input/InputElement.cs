@@ -149,12 +149,12 @@ namespace Avalonia.Input
         /// <summary>
         /// Defines the <see cref="Tapped"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> TappedEvent = Gestures.TappedEvent;
+        public static readonly RoutedEvent<PointerEventArgs> TappedEvent = Gestures.TappedEvent;
 
         /// <summary>
         /// Defines the <see cref="DoubleTapped"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
+        public static readonly RoutedEvent<PointerEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
 
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
