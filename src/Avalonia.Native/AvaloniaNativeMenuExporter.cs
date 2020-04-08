@@ -14,11 +14,18 @@ namespace Avalonia.Native.Interop
     public partial class IAvnAppMenuItem
     {
         private IAvnAppMenu _subMenu;
+        private AvaloniaNativeMenuExporter _exporter;
 
         public NativeMenuItemBase Managed { get; set; }
 
-        public void Update(IAvaloniaNativeFactory factory, NativeMenuItem item)
+        internal void Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenuItem item)
         {
+            _exporter = exporter;
+
+            Managed = item;
+
+            Managed.PropertyChanged += Item_PropertyChanged;
+
             using (var buffer = new Utf8Buffer(item.Header))
             {
                 Title = buffer.DangerousGetHandle();
@@ -49,20 +56,35 @@ namespace Avalonia.Native.Interop
                     _subMenu = factory.CreateMenu();
                 }
 
-                _subMenu.Update(factory, item.Menu);
+                _subMenu.Update(exporter, factory, item.Menu);
             }
 
             if (item.Menu == null && _subMenu != null)
             {
+                _subMenu.Remove();
+
                 // todo remove submenu.
 
                 // needs implementing on native side also.
             }
         }
+
+        private void Item_PropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            _exporter.QueueReset();
+        }
+
+        internal void Remove()
+        {
+            _exporter = null;
+            Managed = null;
+            Managed.PropertyChanged -= Item_PropertyChanged;
+        }
     }
 
     public partial class IAvnAppMenu
     {
+        private AvaloniaNativeMenuExporter _exporter;
         private NativeMenu _menu;
         private List<IAvnAppMenuItem> _menuItems = new List<IAvnAppMenuItem>();
         private Dictionary<NativeMenuItemBase, IAvnAppMenuItem> _menuItemLookup = new Dictionary<NativeMenuItemBase, IAvnAppMenuItem>();
@@ -71,8 +93,16 @@ namespace Avalonia.Native.Interop
         {
             _menuItemLookup.Remove(item.Managed);
             _menuItems.Remove(item);
+            item.Remove();
 
             RemoveItem(item);
+        }
+
+        internal void Remove()
+        {
+            ((INotifyCollectionChanged)_menu.Items).CollectionChanged -= IAvnAppMenu_CollectionChanged;
+            _exporter = null;
+            _menu = null;
         }
 
         private void InsertAt(int index, IAvnAppMenuItem item)
@@ -96,7 +126,7 @@ namespace Avalonia.Native.Interop
             return nativeItem;
         }
 
-        public void Update(IAvaloniaNativeFactory factory, NativeMenu menu, string title = "")
+        internal void Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenu menu, string title = "")
         {
             if (_menu == null)
             {
@@ -106,6 +136,10 @@ namespace Avalonia.Native.Interop
             {
                 throw new Exception("Cannot update a menu from another instance");
             }
+
+            _exporter = exporter;
+
+            ((INotifyCollectionChanged)_menu.Items).CollectionChanged += IAvnAppMenu_CollectionChanged;
 
             if (!string.IsNullOrWhiteSpace(title))
             {
@@ -134,7 +168,7 @@ namespace Avalonia.Native.Interop
 
                 if (menu.Items[i] is NativeMenuItem nmi)
                 {
-                    nativeItem.Update(factory, nmi);
+                    nativeItem.Update(exporter, factory, nmi);
                 }
             }
 
@@ -142,6 +176,11 @@ namespace Avalonia.Native.Interop
             {
                 _menuItems.Remove(_menuItems[i]);
             }
+        }
+
+        private void IAvnAppMenu_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            _exporter.QueueReset();
         }
     }
 }
@@ -181,11 +220,10 @@ namespace Avalonia.Native
     class AvaloniaNativeMenuExporter : ITopLevelNativeMenuExporter
     {
         private IAvaloniaNativeFactory _factory;
-        private NativeMenu _menu;
         private bool _resetQueued;
         private bool _exported = false;
         private IAvnWindow _nativeWindow;
-        private List<NativeMenuItem> _menuItems = new List<NativeMenuItem>();
+        private NativeMenu _menu;
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
         {
@@ -199,8 +237,6 @@ namespace Avalonia.Native
         {
             _factory = factory;
 
-            _menu = NativeMenu.GetMenu(Application.Current);
-
             DoLayoutReset();
         }
 
@@ -210,13 +246,8 @@ namespace Avalonia.Native
 
         public void SetNativeMenu(NativeMenu menu)
         {
-            if (menu == null)
-                menu = new NativeMenu();
-
-            if (_menu != null)
-                ((INotifyCollectionChanged)_menu.Items).CollectionChanged -= OnMenuItemsChanged;
-            _menu = menu;
-            ((INotifyCollectionChanged)_menu.Items).CollectionChanged += OnMenuItemsChanged;
+            if (_menu == null)
+                _menu = new NativeMenu();
 
             DoLayoutReset();
         }
@@ -244,77 +275,35 @@ namespace Avalonia.Native
             return result;
         }
 
-        private void OnItemPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
-        {
-            QueueReset();
-        }
-
-        private void OnMenuItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            QueueReset();
-        }
-
         void DoLayoutReset()
         {
             _resetQueued = false;
-            foreach (var i in _menuItems)
-            {
-                i.PropertyChanged -= OnItemPropertyChanged;
-                if (i.Menu != null)
-                    ((INotifyCollectionChanged)i.Menu.Items).CollectionChanged -= OnMenuItemsChanged;
-            }            
-
-            _menuItems.Clear();
 
             if (_nativeWindow is null)
             {
-                _menu = NativeMenu.GetMenu(Application.Current);
+                var appMenu = NativeMenu.GetMenu(Application.Current);
 
-                if (_menu != null)
+                if (appMenu == null)
                 {
-                    SetMenu(_menu);
-                }
-                else
-                {
-                    SetMenu(CreateDefaultAppMenu());
+                    appMenu = CreateDefaultAppMenu();
+                    SetMenu(appMenu);
                 }
             }
             else
             {
-                SetMenu(_nativeWindow, _menu?.Items);
+                SetMenu(_nativeWindow, _menu);
             }
 
             _exported = true;
         }
 
-        private void QueueReset()
+        internal void QueueReset()
         {
             if (_resetQueued)
                 return;
             _resetQueued = true;
             Dispatcher.UIThread.Post(DoLayoutReset, DispatcherPriority.Background);
         }
-
-        private IAvnAppMenu CreateSubmenu(ICollection<NativeMenuItemBase> children)
-        {
-            var menu = _factory.CreateMenu();
-
-            //SetChildren(menu, children);
-
-            return menu;
-        }
-
-        private void AddMenuItem(NativeMenuItem item)
-        {
-            if (item.Menu?.Items != null)
-            {
-                ((INotifyCollectionChanged)item.Menu.Items).CollectionChanged += OnMenuItemsChanged;
-            }
-        }
-
-
-
-
 
         private void SetMenu(NativeMenu menu)
         {
@@ -323,41 +312,23 @@ namespace Avalonia.Native
             if (appMenu is null)
             {
                 appMenu = _factory.CreateMenu();
+                _factory.SetAppMenu(appMenu);
             }
 
-            var menuItem = menu.Parent;
-
-            if (menu.Parent is null)
-            {
-                menuItem = new NativeMenuItem();
-            }
-
-            menuItem.Menu = menu;
-
-            //appMenu.Clear();
-            //AddItemsToMenu(appMenu, new List<NativeMenuItemBase> { menuItem });
-
-            _factory.SetAppMenu(appMenu);
+            appMenu.Update(this, _factory, menu);
         }
 
-        private void SetMenu(IAvnWindow avnWindow, ICollection<NativeMenuItemBase> menuItems)
+        private void SetMenu(IAvnWindow avnWindow, NativeMenu menu)
         {
-            if (menuItems is null)
-            {
-                menuItems = new List<NativeMenuItemBase>();
-            }
-
             var appMenu = avnWindow.ObtainMainMenu();
 
             if (appMenu is null)
             {
                 appMenu = _factory.CreateMenu();
+                avnWindow.SetMainMenu(appMenu);
             }
 
-            //appMenu.Clear();
-            //AddItemsToMenu(appMenu, menuItems);
-
-            avnWindow.SetMainMenu(appMenu);
+            appMenu.Update(this, _factory, menu);
         }
     }
 }
