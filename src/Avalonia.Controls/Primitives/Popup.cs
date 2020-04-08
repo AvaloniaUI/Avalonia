@@ -404,7 +404,6 @@ namespace Avalonia.Controls.Primitives
             if (!StaysOpen && !IsChildOrThis((IVisual)e.Source))
             {
                 Close();
-                e.Handled = true;
             }
         }
 
