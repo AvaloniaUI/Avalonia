@@ -59,10 +59,17 @@
       <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
       <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
       <TabControl.Tag>
-        <ComboBox x:Name="Themes" SelectedIndex="0" Width="100" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        <StackPanel Width="115" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+          <ComboBox x:Name="Decorations" SelectedIndex="0" Margin="0,0,0,8">
+            <ComboBoxItem>No Decorations</ComboBoxItem>
+            <ComboBoxItem>Border Only</ComboBoxItem>
+            <ComboBoxItem>Full Decorations</ComboBoxItem>
+          </ComboBox>
+          <ComboBox x:Name="Themes" SelectedIndex="0">
             <ComboBoxItem>Light</ComboBoxItem>
             <ComboBoxItem>Dark</ComboBoxItem>
-        </ComboBox>
+          </ComboBox>
+        </StackPanel>
       </TabControl.Tag>
     </TabControl>
   </Grid>

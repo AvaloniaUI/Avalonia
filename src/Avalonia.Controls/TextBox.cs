@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
@@ -272,6 +269,24 @@ namespace Avalonia.Controls
                         _undoRedoHelper.Clear();
                     }
                 }
+            }
+        }
+
+        public string SelectedText
+        {
+            get { return GetSelection(); }
+            set
+            {
+                _undoRedoHelper.Snapshot();
+                if (string.IsNullOrEmpty(value))
+                {
+                    DeleteSelection();
+                }
+                else
+                {
+                    HandleTextInput(value);
+                } 
+                _undoRedoHelper.Snapshot();
             }
         }
 
@@ -683,12 +698,13 @@ namespace Avalonia.Controls
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            var point = e.GetPosition(_presenter);
-            var index = CaretIndex = _presenter.GetCaretIndex(point);
             var text = Text;
 
-            if (text != null && e.MouseButton == MouseButton.Left)
+            var clickInfo = e.GetCurrentPoint(this);
+            if (text != null && clickInfo.Properties.IsLeftButtonPressed && !(clickInfo.Pointer?.Captured is Border))
             {
+                var point = e.GetPosition(_presenter);
+                var index = CaretIndex = _presenter.GetCaretIndex(point);
                 switch (e.ClickCount)
                 {
                     case 1:
@@ -714,7 +730,8 @@ namespace Avalonia.Controls
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (_presenter != null && e.Pointer.Captured == _presenter)
+            // selection should not change during pointer move if the user right clicks
+            if (_presenter != null && e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 var point = e.GetPosition(_presenter);
 
@@ -727,6 +744,22 @@ namespace Avalonia.Controls
         {
             if (_presenter != null && e.Pointer.Captured == _presenter)
             {
+                if (e.InitialPressMouseButton == MouseButton.Right)
+                {
+                    var point = e.GetPosition(_presenter);
+                    var caretIndex = _presenter.GetCaretIndex(point);
+
+                    // see if mouse clicked inside current selection
+                    // if it did not, we change the selection to where the user clicked
+                    var firstSelection = Math.Min(SelectionStart, SelectionEnd);
+                    var lastSelection = Math.Max(SelectionStart, SelectionEnd);
+                    var didClickInSelection = SelectionStart != SelectionEnd && 
+                        caretIndex >= firstSelection && caretIndex <= lastSelection;
+                    if (!didClickInSelection)
+                    {
+                        CaretIndex = SelectionEnd = SelectionStart = caretIndex;
+                    }
+                }
                 e.Pointer.Capture(null);
             }
         }

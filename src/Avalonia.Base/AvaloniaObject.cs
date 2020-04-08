@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -80,8 +77,12 @@ namespace Avalonia
                     _inheritanceParent?.RemoveInheritanceChild(this);
                     _inheritanceParent = value;
 
-                    foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegisteredInherited(GetType()))
+                    var properties = AvaloniaPropertyRegistry.Instance.GetRegisteredInherited(GetType());
+                    var propertiesCount = properties.Count;
+
+                    for (var i = 0; i < propertiesCount; i++)
                     {
+                        var property = properties[i];
                         if (valuestore?.IsSet(property) == true)
                         {
                             // If local value set there can be no change.

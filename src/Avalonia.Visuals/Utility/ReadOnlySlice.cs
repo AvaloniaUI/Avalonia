@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -69,6 +66,11 @@ namespace Avalonia.Utility
         /// <returns>A <see cref="ReadOnlySlice{T}"/> that contains the specified number of elements from the specified start.</returns>
         public ReadOnlySlice<T> AsSlice(int start, int length)
         {
+            if (IsEmpty)
+            {
+                return this;
+            }
+
             if (start < Start || start > End)
             {
                 throw new ArgumentOutOfRangeException(nameof(start));
@@ -91,6 +93,11 @@ namespace Avalonia.Utility
         /// <returns>A <see cref="ReadOnlySlice{T}"/> that contains the specified number of elements from the start of this slice.</returns>
         public ReadOnlySlice<T> Take(int length)
         {
+            if (IsEmpty)
+            {
+                return this;
+            }
+
             if (length > Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(length));
@@ -106,6 +113,11 @@ namespace Avalonia.Utility
         /// <returns>A <see cref="ReadOnlySlice{T}"/> that contains the elements that occur after the specified index in this slice.</returns>
         public ReadOnlySlice<T> Skip(int length)
         {
+            if (IsEmpty)
+            {
+                return this;
+            }
+
             if (length > Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(length));

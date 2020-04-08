@@ -7,12 +7,12 @@ using BenchmarkDotNet.Attributes;
 namespace Avalonia.Benchmarks.Layout
 {
     [MemoryDiagnoser]
-    public class CalendarBenchmark : IDisposable
+    public class ControlsBenchmark : IDisposable
     {
         private readonly IDisposable _app;
         private readonly TestRoot _root;
 
-        public CalendarBenchmark()
+        public ControlsBenchmark()
         {
             _app = UnitTestApplication.Start(
                 TestServices.StyledWindow.With(
@@ -34,6 +34,28 @@ namespace Avalonia.Benchmarks.Layout
             var calendar = new Calendar();
 
             _root.Child = calendar;
+
+            _root.LayoutManager.ExecuteLayoutPass();
+        }
+
+        [Benchmark]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public void CreateButton()
+        {
+            var button = new Button();
+
+            _root.Child = button;
+
+            _root.LayoutManager.ExecuteLayoutPass();
+        }
+
+        [Benchmark]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public void CreateTextBox()
+        {
+            var textBox = new TextBox();
+
+            _root.Child = textBox;
 
             _root.LayoutManager.ExecuteLayoutPass();
         }

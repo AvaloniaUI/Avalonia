@@ -21,6 +21,10 @@ namespace Avalonia.UnitTests
         {
             var win = Mock.Of<IWindowImpl>(x => x.Scaling == 1);
             var mock = Mock.Get(win);
+            mock.Setup(x => x.Show()).Callback(() =>
+            {
+                mock.Object.Activated?.Invoke();
+            });
             mock.Setup(x => x.CreatePopup()).Returns(() =>
             {
                 if (popupImpl != null)
