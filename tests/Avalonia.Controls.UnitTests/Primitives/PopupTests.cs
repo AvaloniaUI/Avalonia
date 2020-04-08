@@ -298,13 +298,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
-        Window PreparedWindow(object content = null)
-        {
-            var w = new Window {Content = content};
-            w.ApplyTemplate();
-            return w;
-        }
-
         [Fact]
         public void DataContextBeginUpdate_Should_Not_Be_Called_For_Controls_That_Dont_Inherit()
         {
@@ -351,6 +344,35 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void StaysOpen_False_Should_Not_Handle_Closing_Click()
+        {
+            using (CreateServices())
+            {
+                var window = PreparedWindow();
+                var target = new Popup() 
+                { 
+                    PlacementTarget = window ,
+                    StaysOpen = false,
+                };
+
+                target.Open();
+
+                var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+                var e = new PointerPressedEventArgs(
+                    window,
+                    pointer,
+                    window,
+                    default,
+                    0,
+                    new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
+                    KeyModifiers.None);
+                window.RaiseEvent(e);
+
+                Assert.False(e.Handled);
+            }
+        }
+
         private IDisposable CreateServices()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
@@ -361,6 +383,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
                             return null;
                         return MockWindowingPlatform.CreatePopupMock().Object;
                     })));
+        }
+
+        private Window PreparedWindow(object content = null)
+        {
+            var w = new Window { Content = content };
+            w.ApplyTemplate();
+            return w;
         }
 
         private static IControl PopupContentControlTemplate(PopupContentControl control, INameScope scope)
