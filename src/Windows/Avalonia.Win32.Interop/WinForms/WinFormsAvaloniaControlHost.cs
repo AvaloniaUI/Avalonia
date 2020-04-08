@@ -45,7 +45,7 @@ namespace Avalonia.Win32.Embedding
                 focused = focused.VisualParent;
 
             if (focused == _root)
-                KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, InputModifiers.None);
+                KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
         }
 
         private void PlatformImpl_LostFocus()
