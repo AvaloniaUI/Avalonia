@@ -107,7 +107,6 @@ namespace Avalonia.Native
                 appMenu = _factory.CreateMenu();
             }
 
-            
             var menuItem = menu.Parent;
 
             var appMenuHolder = menuItem?.Parent;
