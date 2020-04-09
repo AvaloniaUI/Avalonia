@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Collections;
-using Avalonia.Data;
-using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
