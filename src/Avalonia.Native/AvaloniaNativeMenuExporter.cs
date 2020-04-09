@@ -105,10 +105,22 @@ namespace Avalonia.Native
             if (appMenu is null)
             {
                 appMenu = _factory.CreateMenu();
+
                 _factory.SetAppMenu(appMenu);
             }
 
-            appMenu.Update(this, _factory, menu);
+            var menuItem = menu.Parent;
+
+            if (menu.Parent is null)
+            {
+                menuItem = new NativeMenuItem();
+
+                menuItem.Parent = new NativeMenu();
+            }
+
+            menuItem.Menu = menu;
+
+            appMenu.Update(this, _factory, menuItem.Parent);
         }
 
         private void SetMenu(IAvnWindow avnWindow, NativeMenu menu)
