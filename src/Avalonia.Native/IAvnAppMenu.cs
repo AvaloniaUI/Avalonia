@@ -71,13 +71,11 @@ namespace Avalonia.Native.Interop
                 }
             }
 
-            var menuItems = _menuItems.ToList();
-
             for (int i = 0; i < menu.Items.Count; i++)
             {
                 IAvnAppMenuItem nativeItem = null;
 
-                if (i >= menuItems.Count || menu.Items[i] != menuItems[i].ManagedMenuItem)
+                if (i >= _menuItems.Count || menu.Items[i] != _menuItems[i].ManagedMenuItem)
                 {
                     if (_menuItemLookup.TryGetValue(menu.Items[i], out nativeItem))
                     {
@@ -90,7 +88,7 @@ namespace Avalonia.Native.Interop
                 }
                 else
                 {
-                    nativeItem = menuItems[i];
+                    nativeItem = _menuItems[i];
                     Remove(nativeItem);
                 }
 
@@ -102,9 +100,9 @@ namespace Avalonia.Native.Interop
                 InsertAt(i, nativeItem);
             }
 
-            for (int i = menu.Items.Count; i < menuItems.Count; i++)
+            for (int i = menu.Items.Count; i < _menuItems.Count; i++)
             {
-                Remove(menuItems[i]);
+                Remove(_menuItems[i]);
             }
 
             return disposables;
