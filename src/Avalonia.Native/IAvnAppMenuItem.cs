@@ -57,8 +57,6 @@ namespace Avalonia.Native.Interop
 
             if (item.Menu == null && _subMenu != null)
             {
-                _subMenu.Cleanup();
-
                 // todo remove submenu.
 
                 // needs implementing on native side also.
@@ -68,20 +66,6 @@ namespace Avalonia.Native.Interop
         private void Item_PropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
         {
             _exporter.QueueReset();
-        }
-
-        internal void Cleanup()
-        {
-            Managed.PropertyChanged -= Item_PropertyChanged;
-
-            if (_subMenu != null)
-            {
-                _subMenu.Cleanup();
-            }
-
-            _subMenu = null;
-            _exporter = null;
-            Managed = null;            
         }
     }
 }

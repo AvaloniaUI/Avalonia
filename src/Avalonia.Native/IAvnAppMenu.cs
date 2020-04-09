@@ -21,18 +21,6 @@ namespace Avalonia.Native.Interop
             RemoveItem(item);
         }
 
-        internal void Cleanup()
-        {           
-            foreach(var item in _menuItems)
-            {
-                item.Cleanup();
-            }
-
-            ((INotifyCollectionChanged)_menu.Items).CollectionChanged -= IAvnAppMenu_CollectionChanged;
-            _exporter = null;
-            _menu = null;
-        }
-
         private void InsertAt(int index, IAvnAppMenuItem item)
         {
             if (item.Managed == null)
@@ -61,8 +49,7 @@ namespace Avalonia.Native.Interop
                 _menu = menu;
             }
             else if (_menu != menu)
-            {
-                Cleanup();
+            {                
                 _menu = menu;
             }
 
@@ -110,8 +97,6 @@ namespace Avalonia.Native.Interop
             for (int i = menu.Items.Count; i < _menuItems.Count; i++)
             {
                 Remove(_menuItems[i]);
-
-                _menuItems[i].Cleanup();
             }
         }
 
