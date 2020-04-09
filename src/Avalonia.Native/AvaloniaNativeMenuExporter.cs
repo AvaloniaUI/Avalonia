@@ -153,15 +153,10 @@ namespace Avalonia.Native
                 }
             }
 
-            var setMenu = _nativeMenu.ManagedMenu != menu;
-
             _disposable?.Dispose();
             _disposable = _nativeMenu.Update(this, _factory, menu);
 
-            if (setMenu)
-            {
-                avnWindow.SetMainMenu(_nativeMenu);
-            }
+            avnWindow.SetMainMenu(_nativeMenu);
         }
     }
 }
