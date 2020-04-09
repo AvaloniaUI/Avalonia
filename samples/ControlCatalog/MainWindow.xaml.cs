@@ -13,6 +13,7 @@ namespace ControlCatalog
     {
         private WindowNotificationManager _notificationArea;
         private NativeMenu _recentMenu;
+
         public MainWindow()
         {
             this.InitializeComponent();
