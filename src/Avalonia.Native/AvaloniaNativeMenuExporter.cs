@@ -15,6 +15,7 @@ namespace Avalonia.Native
         private bool _exported = false;
         private IAvnWindow _nativeWindow;
         private NativeMenu _menu;
+        private IAvnAppMenu _nativeMenu;
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
         {
@@ -81,7 +82,7 @@ namespace Avalonia.Native
             }
             else
             {
-                if(_menu != null)
+                if (_menu != null)
                 {
                     SetMenu(_nativeWindow, _menu);
                 }
@@ -100,11 +101,14 @@ namespace Avalonia.Native
 
         private void SetMenu(NativeMenu menu)
         {
-            var appMenu = _factory.ObtainAppMenu();
-
-            if (appMenu is null)
+            if (_nativeMenu is null)
             {
-                appMenu = _factory.CreateMenu();
+                _nativeMenu = _factory.ObtainAppMenu();
+
+                if (_nativeMenu is null)
+                {
+                    _nativeMenu = _factory.CreateMenu();
+                }
             }
 
             var menuItem = menu.Parent;
@@ -116,7 +120,7 @@ namespace Avalonia.Native
                 menuItem = new NativeMenuItem();
             }
 
-            if(appMenuHolder is null)
+            if (appMenuHolder is null)
             {
                 appMenuHolder = new NativeMenu();
 
@@ -125,24 +129,26 @@ namespace Avalonia.Native
 
             menuItem.Menu = menu;
 
-            appMenu.Update(this, _factory, appMenuHolder);
+            _nativeMenu.Update(this, _factory, appMenuHolder);
 
-            _factory.SetAppMenu(appMenu);
+            _factory.SetAppMenu(_nativeMenu);
         }
 
         private void SetMenu(IAvnWindow avnWindow, NativeMenu menu)
         {
-            var appMenu = avnWindow.ObtainMainMenu();
-
-            if (appMenu is null)
+            if (_nativeMenu is null)
             {
-                appMenu = _factory.CreateMenu();
-                
+                _nativeMenu = avnWindow.ObtainMainMenu();
+
+                if (_nativeMenu is null)
+                {
+                    _nativeMenu = _factory.CreateMenu();
+                }
             }
 
-            appMenu.Update(this, _factory, menu);
+            _nativeMenu.Update(this, _factory, menu);
 
-            avnWindow.SetMainMenu(appMenu);
+            avnWindow.SetMainMenu(_nativeMenu);
         }
     }
 }
