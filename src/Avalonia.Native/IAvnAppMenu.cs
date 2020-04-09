@@ -9,27 +9,34 @@ namespace Avalonia.Native.Interop
 {
     public partial class IAvnAppMenu
     {
-        private AvaloniaNativeMenuExporter _exporter;        
+        private AvaloniaNativeMenuExporter _exporter;
         private List<IAvnAppMenuItem> _menuItems = new List<IAvnAppMenuItem>();
         private Dictionary<NativeMenuItemBase, IAvnAppMenuItem> _menuItemLookup = new Dictionary<NativeMenuItemBase, IAvnAppMenuItem>();
 
         internal NativeMenu ManagedMenu { get; private set; }
 
-        private void Remove(IAvnAppMenuItem item)
+        private void RemoveAndDispose(IAvnAppMenuItem item)
         {
             _menuItemLookup.Remove(item.ManagedMenuItem);
-            _menuItems.Remove(item);            
+            _menuItems.Remove(item);
 
+            item.Update(null, null, null);
             RemoveItem(item);
+
+            item.Dispose();
         }
 
-        private void InsertAt(int index, IAvnAppMenuItem item)
+        private void MoveExistingTo(int index, IAvnAppMenuItem item)
         {
-            if (item.ManagedMenuItem == null)
-            {
-                throw new InvalidOperationException("Cannot insert item that with Managed link null");
-            }
+            _menuItems.Remove(item);
+            _menuItems.Insert(index, item);
 
+            RemoveItem(item);
+            InsertItem(index, item);
+        }
+
+        private void InsertNewAt(int index, IAvnAppMenuItem item)
+        {
             _menuItemLookup.Add(item.ManagedMenuItem, item);
             _menuItems.Insert(index, item);
 
@@ -53,7 +60,7 @@ namespace Avalonia.Native.Interop
                 ManagedMenu = menu;
             }
             else if (ManagedMenu != menu)
-            {                
+            {
                 ManagedMenu = menu;
             }
 
@@ -75,34 +82,36 @@ namespace Avalonia.Native.Interop
             {
                 IAvnAppMenuItem nativeItem = null;
 
-                if (i >= _menuItems.Count || menu.Items[i] != _menuItems[i].ManagedMenuItem)
+                if (i >= _menuItems.Count)
                 {
-                    if (_menuItemLookup.TryGetValue(menu.Items[i], out nativeItem))
-                    {
-                        Remove(nativeItem);
-                    }
-                    else
-                    {
-                        nativeItem = CreateNew(factory, menu.Items[i]);
-                    }
+                    nativeItem = CreateNew(factory, menu.Items[i]);
+
+                    InsertNewAt(i, nativeItem);
+                }
+                else if (menu.Items[i] == _menuItems[i].ManagedMenuItem)
+                {
+                    nativeItem = _menuItems[i];
+                }
+                else if (_menuItemLookup.TryGetValue(menu.Items[i], out nativeItem))
+                {
+                    MoveExistingTo(i, nativeItem);
                 }
                 else
                 {
-                    nativeItem = _menuItems[i];
-                    Remove(nativeItem);
+                    nativeItem = CreateNew(factory, menu.Items[i]);
+
+                    InsertNewAt(i, nativeItem);
                 }
 
                 if (menu.Items[i] is NativeMenuItem nmi)
                 {
                     disposables.Add(nativeItem.Update(exporter, factory, nmi));
                 }
-                        
-                InsertAt(i, nativeItem);
             }
 
-            for (int i = menu.Items.Count; i < _menuItems.Count; i++)
+            while (_menuItems.Count > menu.Items.Count)
             {
-                Remove(_menuItems[i]);
+                RemoveAndDispose(_menuItems[_menuItems.Count - 1]);
             }
 
             return disposables;
