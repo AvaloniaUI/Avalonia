@@ -43,7 +43,7 @@ namespace Avalonia.Native.Interop
             _menuItemLookup.Add(item.Managed, item);
             _menuItems.Insert(index, item);
 
-            AddItem(item); // todo change to insertatimpl
+            InsertItem(index, item); // todo change to insertatimpl
         }
 
         private IAvnAppMenuItem CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
@@ -87,12 +87,10 @@ namespace Avalonia.Native.Interop
                     if (_menuItemLookup.TryGetValue(menu.Items[i], out nativeItem))
                     {
                         Remove(nativeItem);
-                        InsertAt(i, nativeItem);
                     }
                     else
                     {
                         nativeItem = CreateNew(factory, menu.Items[i]);
-                        InsertAt(i, nativeItem);
                     }
                 }
 
@@ -100,6 +98,8 @@ namespace Avalonia.Native.Interop
                 {
                     nativeItem.Update(exporter, factory, nmi);
                 }
+                        
+                InsertAt(i, nativeItem);
             }
 
             for (int i = menu.Items.Count; i < _menuItems.Count; i++)

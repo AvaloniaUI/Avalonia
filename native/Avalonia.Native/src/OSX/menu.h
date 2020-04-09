@@ -66,7 +66,7 @@ public:
     
     AvnMenu* GetNative();
     
-    virtual HRESULT AddItem (IAvnAppMenuItem* item) override;
+    virtual HRESULT InsertItem (int index, IAvnAppMenuItem* item) override;
     
     virtual HRESULT RemoveItem (IAvnAppMenuItem* item) override;
     

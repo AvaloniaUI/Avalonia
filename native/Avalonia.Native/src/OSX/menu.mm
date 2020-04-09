@@ -145,13 +145,13 @@ AvnMenu* AvnAppMenu::GetNative()
     return _native;
 }
 
-HRESULT AvnAppMenu::AddItem (IAvnAppMenuItem* item)
+HRESULT AvnAppMenu::InsertItem(int index, IAvnAppMenuItem *item)
 {
     auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
     
     if(avnMenuItem != nullptr)
     {
-        [_native addItem: avnMenuItem->GetNative()];
+        [_native insertItem: avnMenuItem->GetNative() atIndex:index];
     }
     
     return S_OK;
