@@ -85,11 +85,13 @@ namespace Avalonia.Controls
         {
             get => _gesture;
             set => SetAndRaise(GestureProperty, ref _gesture, value);
-        }        
+        }                
 
         public static readonly DirectProperty<NativeMenuItem, ICommand> CommandProperty =
-           AvaloniaProperty.RegisterDirect<NativeMenuItem, ICommand>(nameof(Command),
-               o => o.Command, (o, v) => o.Command = v);
+            Button.CommandProperty.AddOwner<NativeMenuItem>(
+                menuItem => menuItem.Command,
+                (menuItem, command) => menuItem.Command = command,
+                enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="CommandParameter"/> property.
