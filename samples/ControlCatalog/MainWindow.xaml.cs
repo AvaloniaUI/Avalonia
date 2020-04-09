@@ -5,7 +5,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
@@ -14,7 +13,6 @@ namespace ControlCatalog
     {
         private WindowNotificationManager _notificationArea;
         private NativeMenu _recentMenu;
-        private int seconds = 0;
         public MainWindow()
         {
             this.InitializeComponent();
@@ -31,13 +29,6 @@ namespace ControlCatalog
             DataContext = new MainWindowViewModel(_notificationArea);
             _recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[2] as NativeMenuItem).Menu;
 
-            var timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += (sender, e) =>
-            {                
-                ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[2] as NativeMenuItem).Header = $"Recent {seconds++}";
-            };
-            timer.Start();
             var mainMenu = this.FindControl<Menu>("MainMenu");
             mainMenu.AttachedToVisualTree += MenuAttached;
         }
