@@ -33,7 +33,7 @@ namespace Avalonia.Native.Interop
             _menuItemLookup.Add(item.ManagedMenuItem, item);
             _menuItems.Insert(index, item);
 
-            InsertItem(index, item); // todo change to insertatimpl
+            InsertItem(index, item);
         }
 
         private IAvnAppMenuItem CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
