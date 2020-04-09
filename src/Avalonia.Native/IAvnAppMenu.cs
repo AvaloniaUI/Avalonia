@@ -93,6 +93,10 @@ namespace Avalonia.Native.Interop
                         nativeItem = CreateNew(factory, menu.Items[i]);
                     }
                 }
+                else
+                {
+                    nativeItem = _menuItems[i];
+                }
 
                 if (menu.Items[i] is NativeMenuItem nmi)
                 {
