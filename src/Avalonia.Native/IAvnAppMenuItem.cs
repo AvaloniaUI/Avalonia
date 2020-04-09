@@ -10,7 +10,7 @@ namespace Avalonia.Native.Interop
         private IAvnAppMenu _subMenu;
         private AvaloniaNativeMenuExporter _exporter;
 
-        public NativeMenuItemBase Managed { get; set; }
+        public NativeMenuItemBase ManagedMenuItem { get; set; }
 
         internal IDisposable Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenuItem item)
         {
@@ -18,11 +18,11 @@ namespace Avalonia.Native.Interop
 
             _exporter = exporter;
 
-            Managed = item;
+            ManagedMenuItem = item;
 
-            Managed.PropertyChanged += Item_PropertyChanged;
+            ManagedMenuItem.PropertyChanged += OnMenuItemPropertyChanged;
 
-            disposables.Add(Disposable.Create(() => Managed.PropertyChanged -= Item_PropertyChanged));
+            disposables.Add(Disposable.Create(() => ManagedMenuItem.PropertyChanged -= OnMenuItemPropertyChanged));
 
             if(!string.IsNullOrWhiteSpace(item.Header))
             {
@@ -72,7 +72,7 @@ namespace Avalonia.Native.Interop
             return disposables;
         }
 
-        private void Item_PropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void OnMenuItemPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
         {
             _exporter.QueueReset();
         }

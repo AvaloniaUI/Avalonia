@@ -9,14 +9,15 @@ namespace Avalonia.Native.Interop
 {
     public partial class IAvnAppMenu
     {
-        private AvaloniaNativeMenuExporter _exporter;
-        private NativeMenu _menu;
+        private AvaloniaNativeMenuExporter _exporter;        
         private List<IAvnAppMenuItem> _menuItems = new List<IAvnAppMenuItem>();
         private Dictionary<NativeMenuItemBase, IAvnAppMenuItem> _menuItemLookup = new Dictionary<NativeMenuItemBase, IAvnAppMenuItem>();
 
+        internal NativeMenu ManagedMenu { get; private set; }
+
         private void Remove(IAvnAppMenuItem item)
         {
-            _menuItemLookup.Remove(item.Managed);
+            _menuItemLookup.Remove(item.ManagedMenuItem);
             _menuItems.Remove(item);            
 
             RemoveItem(item);
@@ -24,12 +25,12 @@ namespace Avalonia.Native.Interop
 
         private void InsertAt(int index, IAvnAppMenuItem item)
         {
-            if (item.Managed == null)
+            if (item.ManagedMenuItem == null)
             {
                 throw new InvalidOperationException("Cannot insert item that with Managed link null");
             }
 
-            _menuItemLookup.Add(item.Managed, item);
+            _menuItemLookup.Add(item.ManagedMenuItem, item);
             _menuItems.Insert(index, item);
 
             InsertItem(index, item); // todo change to insertatimpl
@@ -38,7 +39,7 @@ namespace Avalonia.Native.Interop
         private IAvnAppMenuItem CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
         {
             var nativeItem = item is NativeMenuItemSeperator ? factory.CreateMenuItemSeperator() : factory.CreateMenuItem();
-            nativeItem.Managed = item;
+            nativeItem.ManagedMenuItem = item;
 
             return nativeItem;
         }
@@ -47,20 +48,20 @@ namespace Avalonia.Native.Interop
         {
             var disposables = new CompositeDisposable();
 
-            if (_menu == null)
+            if (ManagedMenu == null)
             {
-                _menu = menu;
+                ManagedMenu = menu;
             }
-            else if (_menu != menu)
+            else if (ManagedMenu != menu)
             {                
-                _menu = menu;
+                ManagedMenu = menu;
             }
 
             _exporter = exporter;
 
-            ((INotifyCollectionChanged)_menu.Items).CollectionChanged += IAvnAppMenu_CollectionChanged;
+            ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged += OnMenuItemsChanged;
 
-            disposables.Add(Disposable.Create(() => ((INotifyCollectionChanged)_menu.Items).CollectionChanged -= IAvnAppMenu_CollectionChanged));
+            disposables.Add(Disposable.Create(() => ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged -= OnMenuItemsChanged));
 
             if (!string.IsNullOrWhiteSpace(title))
             {
@@ -74,7 +75,7 @@ namespace Avalonia.Native.Interop
             {
                 IAvnAppMenuItem nativeItem = null;
 
-                if (i >= _menuItems.Count || menu.Items[i] != _menuItems[i].Managed)
+                if (i >= _menuItems.Count || menu.Items[i] != _menuItems[i].ManagedMenuItem)
                 {
                     if (_menuItemLookup.TryGetValue(menu.Items[i], out nativeItem))
                     {
@@ -107,7 +108,7 @@ namespace Avalonia.Native.Interop
             return disposables;
         }
 
-        private void IAvnAppMenu_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnMenuItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             _exporter.QueueReset();
         }
