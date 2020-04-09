@@ -18,9 +18,12 @@ namespace Avalonia.Native.Interop
 
             Managed.PropertyChanged += Item_PropertyChanged;
 
-            using (var buffer = new Utf8Buffer(item.Header))
+            if(!string.IsNullOrWhiteSpace(item.Header))
             {
-                Title = buffer.DangerousGetHandle();
+                using (var buffer = new Utf8Buffer(item.Header))
+                {
+                    Title = buffer.DangerousGetHandle();
+                }
             }
 
             if (item.Gesture != null)
@@ -48,7 +51,8 @@ namespace Avalonia.Native.Interop
                     _subMenu = factory.CreateMenu();
                 }
 
-                _subMenu.Update(exporter, factory, item.Menu);
+                SetSubMenu(_subMenu);
+                _subMenu.Update(exporter, factory, item.Menu, item.Header);
             }
 
             if (item.Menu == null && _subMenu != null)

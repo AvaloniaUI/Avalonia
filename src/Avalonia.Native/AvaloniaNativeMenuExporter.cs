@@ -105,22 +105,30 @@ namespace Avalonia.Native
             if (appMenu is null)
             {
                 appMenu = _factory.CreateMenu();
-
-                _factory.SetAppMenu(appMenu);
             }
 
+            
             var menuItem = menu.Parent;
+
+            var appMenuHolder = menuItem?.Parent;
 
             if (menu.Parent is null)
             {
                 menuItem = new NativeMenuItem();
+            }
 
-                menuItem.Parent = new NativeMenu();
+            if(appMenuHolder is null)
+            {
+                appMenuHolder = new NativeMenu();
+
+                appMenuHolder.Add(menuItem);
             }
 
             menuItem.Menu = menu;
 
-            appMenu.Update(this, _factory, menuItem.Parent);
+            appMenu.Update(this, _factory, appMenuHolder);
+
+            _factory.SetAppMenu(appMenu);
         }
 
         private void SetMenu(IAvnWindow avnWindow, NativeMenu menu)
@@ -130,10 +138,12 @@ namespace Avalonia.Native
             if (appMenu is null)
             {
                 appMenu = _factory.CreateMenu();
-                avnWindow.SetMainMenu(appMenu);
+                
             }
 
             appMenu.Update(this, _factory, menu);
+
+            avnWindow.SetMainMenu(appMenu);
         }
     }
 }
