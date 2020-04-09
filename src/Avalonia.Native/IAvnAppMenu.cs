@@ -96,6 +96,7 @@ namespace Avalonia.Native.Interop
                 else
                 {
                     nativeItem = _menuItems[i];
+                    Remove(nativeItem);
                 }
 
                 if (menu.Items[i] is NativeMenuItem nmi)
