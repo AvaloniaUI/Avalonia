@@ -17,7 +17,7 @@ namespace Avalonia.Threading
         SystemIdle = 1,
 
         /// <summary>
-        /// The job will be processed when the application sis idle.
+        /// The job will be processed when the application is idle.
         /// </summary>
         ApplicationIdle = 2,
 
