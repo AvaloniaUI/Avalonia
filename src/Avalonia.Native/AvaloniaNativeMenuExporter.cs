@@ -16,6 +16,7 @@ namespace Avalonia.Native
         private IAvnWindow _nativeWindow;
         private NativeMenu _menu;
         private IAvnAppMenu _nativeMenu;
+        private IDisposable _disposable;
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
         {
@@ -129,7 +130,8 @@ namespace Avalonia.Native
 
             menuItem.Menu = menu;
 
-            _nativeMenu.Update(this, _factory, appMenuHolder);
+            _disposable?.Dispose();
+            _disposable = _nativeMenu.Update(this, _factory, appMenuHolder);
 
             _factory.SetAppMenu(_nativeMenu);
         }
@@ -146,7 +148,8 @@ namespace Avalonia.Native
                 }
             }
 
-            _nativeMenu.Update(this, _factory, menu);
+            _disposable?.Dispose();
+            _disposable = _nativeMenu.Update(this, _factory, menu);
 
             avnWindow.SetMainMenu(_nativeMenu);
         }

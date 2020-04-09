@@ -1,4 +1,6 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using System.Reactive.Disposables;
+using Avalonia.Controls;
 using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native.Interop
@@ -10,13 +12,17 @@ namespace Avalonia.Native.Interop
 
         public NativeMenuItemBase Managed { get; set; }
 
-        internal void Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenuItem item)
+        internal IDisposable Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenuItem item)
         {
+            var disposables = new CompositeDisposable();
+
             _exporter = exporter;
 
             Managed = item;
 
             Managed.PropertyChanged += Item_PropertyChanged;
+
+            disposables.Add(Disposable.Create(() => Managed.PropertyChanged -= Item_PropertyChanged));
 
             if(!string.IsNullOrWhiteSpace(item.Header))
             {
@@ -52,7 +58,8 @@ namespace Avalonia.Native.Interop
                 }
 
                 SetSubMenu(_subMenu);
-                _subMenu.Update(exporter, factory, item.Menu, item.Header);
+                
+                disposables.Add(_subMenu.Update(exporter, factory, item.Menu, item.Header));
             }
 
             if (item.Menu == null && _subMenu != null)
@@ -61,6 +68,8 @@ namespace Avalonia.Native.Interop
 
                 // needs implementing on native side also.
             }
+
+            return disposables;
         }
 
         private void Item_PropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)

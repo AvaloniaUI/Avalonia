@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Platform.Interop;
 
@@ -42,8 +43,10 @@ namespace Avalonia.Native.Interop
             return nativeItem;
         }
 
-        internal void Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenu menu, string title = "")
+        internal IDisposable Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenu menu, string title = "")
         {
+            var disposables = new CompositeDisposable();
+
             if (_menu == null)
             {
                 _menu = menu;
@@ -56,6 +59,8 @@ namespace Avalonia.Native.Interop
             _exporter = exporter;
 
             ((INotifyCollectionChanged)_menu.Items).CollectionChanged += IAvnAppMenu_CollectionChanged;
+
+            disposables.Add(Disposable.Create(() => ((INotifyCollectionChanged)_menu.Items).CollectionChanged -= IAvnAppMenu_CollectionChanged));
 
             if (!string.IsNullOrWhiteSpace(title))
             {
@@ -88,7 +93,7 @@ namespace Avalonia.Native.Interop
 
                 if (menu.Items[i] is NativeMenuItem nmi)
                 {
-                    nativeItem.Update(exporter, factory, nmi);
+                    disposables.Add(nativeItem.Update(exporter, factory, nmi));
                 }
                         
                 InsertAt(i, nativeItem);
@@ -98,6 +103,8 @@ namespace Avalonia.Native.Interop
             {
                 Remove(_menuItems[i]);
             }
+
+            return disposables;
         }
 
         private void IAvnAppMenu_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
