@@ -130,10 +130,15 @@ namespace Avalonia.Native
 
             menuItem.Menu = menu;
 
+            var setMenu = _nativeMenu.ManagedMenu != appMenuHolder;
+
             _disposable?.Dispose();
             _disposable = _nativeMenu.Update(this, _factory, appMenuHolder);
 
-            _factory.SetAppMenu(_nativeMenu);
+            if (setMenu)
+            {
+                _factory.SetAppMenu(_nativeMenu);
+            }
         }
 
         private void SetMenu(IAvnWindow avnWindow, NativeMenu menu)
@@ -148,10 +153,15 @@ namespace Avalonia.Native
                 }
             }
 
+            var setMenu = _nativeMenu.ManagedMenu != menu;
+
             _disposable?.Dispose();
             _disposable = _nativeMenu.Update(this, _factory, menu);
 
-            avnWindow.SetMainMenu(_nativeMenu);
+            if (setMenu)
+            {
+                avnWindow.SetMainMenu(_nativeMenu);
+            }
         }
     }
 }
