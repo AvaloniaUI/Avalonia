@@ -23,6 +23,8 @@ namespace Avalonia.Native.Interop
             item.Update(null, null, null);
             RemoveItem(item);
 
+            item.Deinitialise();
+
             item.Dispose();
         }
 
@@ -35,12 +37,18 @@ namespace Avalonia.Native.Interop
             InsertItem(index, item);
         }
 
-        private void InsertNewAt(int index, IAvnAppMenuItem item)
+        private IAvnAppMenuItem CreateNewAt(IAvaloniaNativeFactory factory, int index, NativeMenuItemBase item)
         {
-            _menuItemLookup.Add(item.ManagedMenuItem, item);
-            _menuItems.Insert(index, item);
+            var result = CreateNew(factory, item);
 
-            InsertItem(index, item);
+            result.Initialise();
+
+            _menuItemLookup.Add(result.ManagedMenuItem, result);
+            _menuItems.Insert(index, result);
+
+            InsertItem(index, result);
+
+            return result;
         }
 
         private IAvnAppMenuItem CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
@@ -84,9 +92,7 @@ namespace Avalonia.Native.Interop
 
                 if (i >= _menuItems.Count)
                 {
-                    nativeItem = CreateNew(factory, menu.Items[i]);
-
-                    InsertNewAt(i, nativeItem);
+                    nativeItem = CreateNewAt(factory, i, menu.Items[i]);
                 }
                 else if (menu.Items[i] == _menuItems[i].ManagedMenuItem)
                 {
@@ -98,9 +104,7 @@ namespace Avalonia.Native.Interop
                 }
                 else
                 {
-                    nativeItem = CreateNew(factory, menu.Items[i]);
-
-                    InsertNewAt(i, nativeItem);
+                    nativeItem = CreateNewAt(factory, i, menu.Items[i]);
                 }
 
                 if (menu.Items[i] is NativeMenuItem nmi)

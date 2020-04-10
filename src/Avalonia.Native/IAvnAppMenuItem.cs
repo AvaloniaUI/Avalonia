@@ -10,7 +10,7 @@ namespace Avalonia.Native.Interop
         private IAvnAppMenu _subMenu;
         private AvaloniaNativeMenuExporter _exporter;
         private CompositeDisposable _propertyDisposables = new CompositeDisposable();
-        private PredicateCallback _currentAction;
+        private IDisposable _currentActionDisposable;
 
         public NativeMenuItemBase ManagedMenuItem { get; set; }
 
@@ -33,9 +33,9 @@ namespace Avalonia.Native.Interop
 
         private void UpdateAction (NativeMenuItem item)
         {
-            _currentAction?.Dispose();
+            _currentActionDisposable?.Dispose();
 
-            SetAction(new PredicateCallback(() =>
+            var action = new PredicateCallback(() =>
             {
                 if (item.Command != null || item.HasClickHandlers)
                 {
@@ -43,7 +43,41 @@ namespace Avalonia.Native.Interop
                 }
 
                 return false;
-            }), new MenuActionCallback(() => { item.RaiseClick(); }));
+            });
+
+            var callback = new MenuActionCallback(() => { item.RaiseClick(); });
+
+            _currentActionDisposable = Disposable.Create(() =>
+            {
+                action.Dispose();
+                callback.Dispose();
+            });
+
+            SetAction(action, callback);
+        }
+
+        internal void Initialise()
+        {
+            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.HeaderProperty)
+                .Subscribe(x => UpdateTitle(x))));
+
+            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.GestureProperty)
+                .Subscribe(x => UpdateGesture(x))));
+
+            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.CommandProperty)
+                .Subscribe(x => UpdateAction(ManagedMenuItem as NativeMenuItem))));
+        }
+
+        internal void Deinitialise ()
+        {
+            if(_subMenu != null)
+            {
+                _subMenu.Update(null, null, null);
+                _subMenu = null;
+            }
+
+            _propertyDisposables?.Dispose();
+            _currentActionDisposable?.Dispose();
         }
 
         internal IDisposable Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenuItem item)
@@ -54,18 +88,9 @@ namespace Avalonia.Native.Interop
 
             ManagedMenuItem = item;
 
-            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.HeaderProperty)
-                .Subscribe(x => UpdateTitle(x))));
-
             UpdateTitle(item.Header);
 
-            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.GestureProperty)
-                .Subscribe(x => UpdateGesture(x))));
-
             UpdateGesture(item.Gesture);
-
-            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.CommandProperty)
-                .Subscribe(x => UpdateAction(ManagedMenuItem as NativeMenuItem))));
 
             UpdateAction(ManagedMenuItem as NativeMenuItem);
 
