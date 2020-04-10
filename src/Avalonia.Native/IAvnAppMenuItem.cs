@@ -9,36 +9,31 @@ namespace Avalonia.Native.Interop
     {
         private IAvnAppMenu _subMenu;
         private AvaloniaNativeMenuExporter _exporter;
+        private CompositeDisposable _propertyDisposables = new CompositeDisposable();
+        private PredicateCallback _currentAction;
 
         public NativeMenuItemBase ManagedMenuItem { get; set; }
 
-        internal IDisposable Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenuItem item)
+        private void UpdateTitle(string title)
         {
-            var disposables = new CompositeDisposable();
-
-            _exporter = exporter;
-
-            ManagedMenuItem = item;
-
-            ManagedMenuItem.PropertyChanged += OnMenuItemPropertyChanged;
-
-            disposables.Add(Disposable.Create(() => ManagedMenuItem.PropertyChanged -= OnMenuItemPropertyChanged));
-
-            if(!string.IsNullOrWhiteSpace(item.Header))
+            using (var buffer = new Utf8Buffer(string.IsNullOrWhiteSpace(title) ? "" : title))
             {
-                using (var buffer = new Utf8Buffer(item.Header))
-                {
-                    Title = buffer.DangerousGetHandle();
-                }
+                Title = buffer.DangerousGetHandle();
             }
+        }
 
-            if (item.Gesture != null)
+        private void UpdateGesture(Input.KeyGesture gesture)
+        {
+            // todo ensure backend can cope with setting null gesture.
+            using (var buffer = new Utf8Buffer(gesture == null ? "" : OsxUnicodeKeys.ConvertOSXSpecialKeyCodes(gesture.Key)))
             {
-                using (var buffer = new Utf8Buffer(OsxUnicodeKeys.ConvertOSXSpecialKeyCodes(item.Gesture.Key)))
-                {
-                    SetGesture(buffer.DangerousGetHandle(), (AvnInputModifiers)item.Gesture.KeyModifiers);
-                }
-            }
+                SetGesture(buffer.DangerousGetHandle(), (AvnInputModifiers)gesture.KeyModifiers);
+            }            
+        }
+
+        private void UpdateAction (NativeMenuItem item)
+        {
+            _currentAction?.Dispose();
 
             SetAction(new PredicateCallback(() =>
             {
@@ -49,6 +44,30 @@ namespace Avalonia.Native.Interop
 
                 return false;
             }), new MenuActionCallback(() => { item.RaiseClick(); }));
+        }
+
+        internal IDisposable Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenuItem item)
+        {
+            var disposables = new CompositeDisposable();
+
+            _exporter = exporter;
+
+            ManagedMenuItem = item;
+
+            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.HeaderProperty)
+                .Subscribe(x => UpdateTitle(x))));
+
+            UpdateTitle(item.Header);
+
+            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.GestureProperty)
+                .Subscribe(x => UpdateGesture(x))));
+
+            UpdateGesture(item.Gesture);
+
+            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.CommandProperty)
+                .Subscribe(x => UpdateAction(ManagedMenuItem as NativeMenuItem))));
+
+            UpdateAction(ManagedMenuItem as NativeMenuItem);
 
             if (item.Menu != null)
             {
@@ -58,7 +77,7 @@ namespace Avalonia.Native.Interop
                 }
 
                 SetSubMenu(_subMenu);
-                
+
                 disposables.Add(_subMenu.Update(exporter, factory, item.Menu, item.Header));
             }
 
@@ -70,11 +89,6 @@ namespace Avalonia.Native.Interop
             }
 
             return disposables;
-        }
-
-        private void OnMenuItemPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
-        {
-            _exporter.QueueReset();
         }
     }
 }
