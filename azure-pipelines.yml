@@ -10,10 +10,10 @@ jobs:
       version: 3.1.101
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core Runtime 3.1.x'
+    displayName: 'Use .NET Core Runtime 3.1.2'
     inputs:
       packageType: runtime
-      version: 3.1.101
+      version: 3.1.2
 
   - task: CmdLine@2
     displayName: 'Install CastXML'
@@ -53,10 +53,11 @@ jobs:
       version: 3.1.101
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core Runtime 3.1.x'
+    displayName: 'Use .NET Core Runtime 3.1.2'
     inputs:
       packageType: runtime
-      version: 3.1.101
+      version: 3.1.2
+
 
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -134,7 +135,8 @@ jobs:
     displayName: 'Use .NET Core Runtime 3.1.x'
     inputs:
       packageType: runtime
-      version: 3.1.101
+      version: 3.1.2
+
   - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:
