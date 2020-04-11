@@ -3,6 +3,18 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 3.1.x'
+    inputs:
+      packageType: sdk
+      version: 3.1.101
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core Runtime 3.1.x'
+    inputs:
+      packageType: runtime
+      version: 3.1.101
+
   - task: CmdLine@2
     displayName: 'Install CastXML'
     inputs:
@@ -34,9 +46,17 @@ jobs:
   pool:
     vmImage: 'macOS-10.14'
   steps:
-  - task: DotNetCoreInstaller@0
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 3.1.x'
     inputs:
-      version: '2.1.403'
+      packageType: sdk
+      version: 3.1.101
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core Runtime 3.1.x'
+    inputs:
+      packageType: runtime
+      version: 3.1.101
 
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -104,6 +124,17 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 3.1.x'
+    inputs:
+      packageType: sdk
+      version: 3.1.101
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core Runtime 3.1.x'
+    inputs:
+      packageType: runtime
+      version: 3.1.101
   - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:
