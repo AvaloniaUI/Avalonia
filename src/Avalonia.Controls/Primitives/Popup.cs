@@ -223,7 +223,6 @@ namespace Avalonia.Controls.Primitives
             {
                 _popupRoot = new PopupRoot(DependencyResolver)
                 {
-                    [~ContentControl.ContentProperty] = this[~ChildProperty],
                     [~WidthProperty] = this[~WidthProperty],
                     [~HeightProperty] = this[~HeightProperty],
                     [~MinWidthProperty] = this[~MinWidthProperty],
@@ -231,8 +230,9 @@ namespace Avalonia.Controls.Primitives
                     [~MinHeightProperty] = this[~MinHeightProperty],
                     [~MaxHeightProperty] = this[~MaxHeightProperty],
                 };
-
+                
                 ((ISetLogicalParent)_popupRoot).SetParent(this);
+                _popupRoot.Content = this.Child;
             }
 
             _popupRoot.Position = GetPosition();
@@ -304,7 +304,7 @@ namespace Avalonia.Controls.Primitives
 
                 _popupRoot.Hide();
                 _popupRoot.Content = null;
-                ((ISetLogicalParent)_popupRoot).SetParent(this);
+                ((ISetLogicalParent)_popupRoot).SetParent(null);
                 _popupRoot.Dispose();
                 _popupRoot = null;
             }
