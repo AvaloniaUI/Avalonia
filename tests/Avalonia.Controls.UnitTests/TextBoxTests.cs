@@ -1,10 +1,12 @@
 using System;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -554,6 +556,34 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Theory]
+        [InlineData(Key.X, KeyModifiers.Control)]
+        [InlineData(Key.Back, KeyModifiers.None)]
+        [InlineData(Key.Delete, KeyModifiers.None)]
+        [InlineData(Key.Tab, KeyModifiers.None)]
+        [InlineData(Key.Enter, KeyModifiers.None)]
+        public void Keys_Allow_Undo(Key key, KeyModifiers modifiers)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123",
+                    AcceptsReturn = true,
+                    AcceptsTab = true
+                };
+                target.SelectionStart = 1;
+                target.SelectionEnd = 3;
+                AvaloniaLocator.CurrentMutable
+                    .Bind<Input.Platform.IClipboard>().ToSingleton<ClipboardStub>();
+
+                RaiseKeyEvent(target, key, modifiers);
+                RaiseKeyEvent(target, Key.Z, KeyModifiers.Control); // undo
+                Assert.True(target.Text == "0123");
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
@@ -615,6 +645,15 @@ namespace Avalonia.Controls.UnitTests
                 get { return _bar; }
                 set { _bar = value; RaisePropertyChanged(); }
             }
+        }
+
+        private class ClipboardStub : IClipboard // in order to get tests working that use the clipboard
+        {
+            public Task<string> GetTextAsync() => Task.FromResult("");
+
+            public Task SetTextAsync(string text) => Task.CompletedTask;
+
+            public Task ClearAsync() => Task.CompletedTask;
         }
     }
 }
