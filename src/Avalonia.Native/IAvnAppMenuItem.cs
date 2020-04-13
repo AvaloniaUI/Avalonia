@@ -31,7 +31,8 @@ namespace Avalonia.Native.Interop
             // todo ensure backend can cope with setting null gesture.
             using (var buffer = new Utf8Buffer(gesture == null ? "" : OsxUnicodeKeys.ConvertOSXSpecialKeyCodes(gesture.Key)))
             {
-                SetGesture(buffer.DangerousGetHandle(), (AvnInputModifiers)gesture.KeyModifiers);
+                var modifiers = gesture == null ? AvnInputModifiers.AvnInputModifiersNone : (AvnInputModifiers)gesture.KeyModifiers;
+                SetGesture(buffer.DangerousGetHandle(), modifiers);
             }
         }
 
