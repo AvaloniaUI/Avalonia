@@ -101,7 +101,7 @@ namespace Avalonia.Native.Interop
             _currentActionDisposable?.Dispose();
         }
 
-        internal void Update(IAvaloniaNativeFactory factory, NativeMenuItem item)
+        internal void Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenuItem item)
         {                        
             if(item != ManagedMenuItem)
             {
@@ -114,7 +114,7 @@ namespace Avalonia.Native.Interop
                 {
                     _subMenu = factory.CreateMenu();
 
-                    _subMenu.Initialise(item.Menu, item.Header);
+                    _subMenu.Initialise(exporter, item.Menu, item.Header);
                 }
 
                 SetSubMenu(_subMenu);

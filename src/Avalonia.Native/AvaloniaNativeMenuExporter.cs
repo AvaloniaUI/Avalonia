@@ -109,7 +109,7 @@ namespace Avalonia.Native
                 {
                     _nativeMenu = _factory.CreateMenu();
 
-                    _nativeMenu.Initialise(menu, "");
+                    _nativeMenu.Initialise(this, menu, "");
                 }
             }
 
@@ -151,7 +151,7 @@ namespace Avalonia.Native
                 {
                     _nativeMenu = _factory.CreateMenu();
 
-                    _nativeMenu.Initialise(menu, "");
+                    _nativeMenu.Initialise(this, menu, "");
                 }
             }
             

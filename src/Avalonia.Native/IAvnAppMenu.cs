@@ -9,6 +9,7 @@ namespace Avalonia.Native.Interop
 {
     public partial class IAvnAppMenu
     {
+        private AvaloniaNativeMenuExporter _exporter;
         private List<IAvnAppMenuItem> _menuItems = new List<IAvnAppMenuItem>();
         private Dictionary<NativeMenuItemBase, IAvnAppMenuItem> _menuItemLookup = new Dictionary<NativeMenuItemBase, IAvnAppMenuItem>();
         private CompositeDisposable _propertyDisposables = new CompositeDisposable();
@@ -56,8 +57,9 @@ namespace Avalonia.Native.Interop
             return nativeItem;
         }
 
-        internal void Initialise(NativeMenu managedMenu, string title)
+        internal void Initialise(AvaloniaNativeMenuExporter exporter, NativeMenu managedMenu, string title)
         {
+            _exporter = exporter;
             ManagedMenu = managedMenu;
 
             ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged += OnMenuItemsChanged;
@@ -75,7 +77,7 @@ namespace Avalonia.Native.Interop
         {
             ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged -= OnMenuItemsChanged;
 
-            foreach(var item in _menuItems)
+            foreach (var item in _menuItems)
             {
                 item.Deinitialise();
                 item.Dispose();
@@ -84,7 +86,7 @@ namespace Avalonia.Native.Interop
 
         internal void Update(IAvaloniaNativeFactory factory, NativeMenu menu)
         {
-            if(menu != ManagedMenu)
+            if (menu != ManagedMenu)
             {
                 throw new ArgumentException("The menu being updated does not match.", nameof(menu));
             }
@@ -112,7 +114,7 @@ namespace Avalonia.Native.Interop
 
                 if (menu.Items[i] is NativeMenuItem nmi)
                 {
-                    nativeItem.Update(factory, nmi);
+                    nativeItem.Update(_exporter, factory, nmi);
                 }
             }
 
@@ -124,7 +126,7 @@ namespace Avalonia.Native.Interop
 
         private void OnMenuItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            // update menu items.
+            _exporter.QueueReset();
         }
     }
 }
