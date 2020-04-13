@@ -93,6 +93,7 @@ namespace Avalonia.Native.Interop
         {
             if (_subMenu != null)
             {
+                SetSubMenu(null);
                 _subMenu.Deinitialise();
                 _subMenu.Dispose();
                 _subMenu = null;
