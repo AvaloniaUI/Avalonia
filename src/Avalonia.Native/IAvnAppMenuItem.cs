@@ -117,9 +117,9 @@ namespace Avalonia.Native.Interop
                     _subMenu = factory.CreateMenu();
 
                     _subMenu.Initialise(exporter, item.Menu, item.Header);
-                }
 
-                SetSubMenu(_subMenu);
+                    SetSubMenu(_subMenu);
+                }
 
                 _subMenu.Update(factory, item.Menu);
             }
