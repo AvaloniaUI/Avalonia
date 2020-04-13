@@ -7,8 +7,7 @@ namespace Avalonia.Native.Interop
 {
     public partial class IAvnAppMenuItem
     {
-        private IAvnAppMenu _subMenu;
-        private AvaloniaNativeMenuExporter _exporter;
+        private IAvnAppMenu _subMenu;        
         private CompositeDisposable _propertyDisposables = new CompositeDisposable();
         private IDisposable _currentActionDisposable;
 
@@ -22,7 +21,7 @@ namespace Avalonia.Native.Interop
             }
         }
 
-        private void UpdateIsChecked (bool isChecked)
+        private void UpdateIsChecked(bool isChecked)
         {
             IsChecked = isChecked;
         }
@@ -33,10 +32,10 @@ namespace Avalonia.Native.Interop
             using (var buffer = new Utf8Buffer(gesture == null ? "" : OsxUnicodeKeys.ConvertOSXSpecialKeyCodes(gesture.Key)))
             {
                 SetGesture(buffer.DangerousGetHandle(), (AvnInputModifiers)gesture.KeyModifiers);
-            }            
+            }
         }
 
-        private void UpdateAction (NativeMenuItem item)
+        private void UpdateAction(NativeMenuItem item)
         {
             _currentActionDisposable?.Dispose();
 
@@ -61,26 +60,40 @@ namespace Avalonia.Native.Interop
             SetAction(action, callback);
         }
 
-        internal void Initialise()
+        internal void Initialise(NativeMenuItemBase nativeMenuItem)
         {
-            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.HeaderProperty)
-                .Subscribe(x => UpdateTitle(x))));
+            ManagedMenuItem = nativeMenuItem;
 
-            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.GestureProperty)
-                .Subscribe(x => UpdateGesture(x))));
+            if (ManagedMenuItem is NativeMenuItem item)
+            {
+                UpdateTitle(item.Header);
 
-            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.CommandProperty)
-                .Subscribe(x => UpdateAction(ManagedMenuItem as NativeMenuItem))));
+                UpdateGesture(item.Gesture);
 
-            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.IsCheckedProperty)
-                .Subscribe(x => UpdateIsChecked(x))));
+                UpdateAction(ManagedMenuItem as NativeMenuItem);
+
+                UpdateIsChecked(item.IsChecked);
+
+                _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.HeaderProperty)
+                    .Subscribe(x => UpdateTitle(x))));
+
+                _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.GestureProperty)
+                    .Subscribe(x => UpdateGesture(x))));
+
+                _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.CommandProperty)
+                    .Subscribe(x => UpdateAction(ManagedMenuItem as NativeMenuItem))));
+
+                _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.IsCheckedProperty)
+                    .Subscribe(x => UpdateIsChecked(x))));
+            }
         }
 
-        internal void Deinitialise ()
+        internal void Deinitialise()
         {
-            if(_subMenu != null)
+            if (_subMenu != null)
             {
-                _subMenu.Update(null, null, null);
+                _subMenu.Deinitialise();
+                _subMenu.Dispose();
                 _subMenu = null;
             }
 
@@ -88,42 +101,34 @@ namespace Avalonia.Native.Interop
             _currentActionDisposable?.Dispose();
         }
 
-        internal IDisposable Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenuItem item)
-        {
-            var disposables = new CompositeDisposable();
-
-            _exporter = exporter;
-
-            ManagedMenuItem = item;
-
-            UpdateTitle(item.Header);
-
-            UpdateGesture(item.Gesture);
-
-            UpdateAction(ManagedMenuItem as NativeMenuItem);
-
-            UpdateIsChecked(item.IsChecked);
+        internal void Update(IAvaloniaNativeFactory factory, NativeMenuItem item)
+        {                        
+            if(item != ManagedMenuItem)
+            {
+                throw new ArgumentException("The item does not match the menuitem being updated.", nameof(item));
+            }
 
             if (item.Menu != null)
             {
                 if (_subMenu == null)
                 {
                     _subMenu = factory.CreateMenu();
+
+                    _subMenu.Initialise(item.Menu, item.Header);
                 }
 
                 SetSubMenu(_subMenu);
 
-                disposables.Add(_subMenu.Update(exporter, factory, item.Menu, item.Header));
+                _subMenu.Update(factory, item.Menu);
             }
 
             if (item.Menu == null && _subMenu != null)
             {
-                // todo remove submenu.
+                _subMenu.Deinitialise();
+                _subMenu.Dispose();
 
-                // needs implementing on native side also.
+                SetSubMenu(null);
             }
-
-            return disposables;
         }
     }
 }

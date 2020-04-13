@@ -9,9 +9,9 @@ namespace Avalonia.Native.Interop
 {
     public partial class IAvnAppMenu
     {
-        private AvaloniaNativeMenuExporter _exporter;
         private List<IAvnAppMenuItem> _menuItems = new List<IAvnAppMenuItem>();
         private Dictionary<NativeMenuItemBase, IAvnAppMenuItem> _menuItemLookup = new Dictionary<NativeMenuItemBase, IAvnAppMenuItem>();
+        private CompositeDisposable _propertyDisposables = new CompositeDisposable();
 
         internal NativeMenu ManagedMenu { get; private set; }
 
@@ -19,12 +19,9 @@ namespace Avalonia.Native.Interop
         {
             _menuItemLookup.Remove(item.ManagedMenuItem);
             _menuItems.Remove(item);
-
-            item.Update(null, null, null);
             RemoveItem(item);
 
             item.Deinitialise();
-
             item.Dispose();
         }
 
@@ -41,7 +38,7 @@ namespace Avalonia.Native.Interop
         {
             var result = CreateNew(factory, item);
 
-            result.Initialise();
+            result.Initialise(item);
 
             _menuItemLookup.Add(result.ManagedMenuItem, result);
             _menuItems.Insert(index, result);
@@ -59,24 +56,11 @@ namespace Avalonia.Native.Interop
             return nativeItem;
         }
 
-        internal IDisposable Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenu menu, string title = "")
+        internal void Initialise(NativeMenu managedMenu, string title)
         {
-            var disposables = new CompositeDisposable();
-
-            if (ManagedMenu == null)
-            {
-                ManagedMenu = menu;
-            }
-            else if (ManagedMenu != menu)
-            {
-                ManagedMenu = menu;
-            }
-
-            _exporter = exporter;
+            ManagedMenu = managedMenu;
 
             ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged += OnMenuItemsChanged;
-
-            disposables.Add(Disposable.Create(() => ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged -= OnMenuItemsChanged));
 
             if (!string.IsNullOrWhiteSpace(title))
             {
@@ -85,10 +69,29 @@ namespace Avalonia.Native.Interop
                     Title = buffer.DangerousGetHandle();
                 }
             }
+        }
+
+        internal void Deinitialise()
+        {
+            ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged -= OnMenuItemsChanged;
+
+            foreach(var item in _menuItems)
+            {
+                item.Deinitialise();
+                item.Dispose();
+            }
+        }
+
+        internal void Update(IAvaloniaNativeFactory factory, NativeMenu menu)
+        {
+            if(menu != ManagedMenu)
+            {
+                throw new ArgumentException("The menu being updated does not match.", nameof(menu));
+            }
 
             for (int i = 0; i < menu.Items.Count; i++)
             {
-                IAvnAppMenuItem nativeItem = null;
+                IAvnAppMenuItem nativeItem;
 
                 if (i >= _menuItems.Count)
                 {
@@ -109,7 +112,7 @@ namespace Avalonia.Native.Interop
 
                 if (menu.Items[i] is NativeMenuItem nmi)
                 {
-                    disposables.Add(nativeItem.Update(exporter, factory, nmi));
+                    nativeItem.Update(factory, nmi);
                 }
             }
 
@@ -117,13 +120,11 @@ namespace Avalonia.Native.Interop
             {
                 RemoveAndDispose(_menuItems[_menuItems.Count - 1]);
             }
-
-            return disposables;
         }
 
         private void OnMenuItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            _exporter.QueueReset();
+            // update menu items.
         }
     }
 }
