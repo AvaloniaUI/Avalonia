@@ -101,18 +101,6 @@ namespace Avalonia.Native
 
         private void SetMenu(NativeMenu menu)
         {
-            if (_nativeMenu is null)
-            {
-                _nativeMenu = _factory.ObtainAppMenu();
-
-                if (_nativeMenu is null)
-                {
-                    _nativeMenu = _factory.CreateMenu();
-
-                    _nativeMenu.Initialise(this, menu, "");
-                }
-            }
-
             var menuItem = menu.Parent;
 
             var appMenuHolder = menuItem?.Parent;
@@ -130,6 +118,18 @@ namespace Avalonia.Native
             }
 
             menuItem.Menu = menu;
+
+            if (_nativeMenu is null)
+            {
+                _nativeMenu = _factory.ObtainAppMenu();
+
+                if (_nativeMenu is null)
+                {
+                    _nativeMenu = _factory.CreateMenu();
+
+                    _nativeMenu.Initialise(this, appMenuHolder, "");
+                }
+            }
 
             var setMenu = _nativeMenu.ManagedMenu != appMenuHolder;
             
