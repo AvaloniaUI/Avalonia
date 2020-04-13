@@ -4,6 +4,20 @@
 #include "window.h"
 
 @implementation AvnMenu
+- (void)menuNeedsUpdate:(NSMenu *)menu
+{
+    printf("TEST");
+}
+
+- (void)menuWillOpen:(NSMenu *)menu
+{
+    
+}
+
+- (void)menuDidClose:(NSMenu *)menu
+{
+    
+}
 @end
 
 @implementation AvnMenuItem
@@ -146,11 +160,13 @@ void AvnAppMenuItem::RaiseOnClicked()
 AvnAppMenu::AvnAppMenu()
 {
     _native = [AvnMenu new];
+    [_native setDelegate:_native];
 }
 
 AvnAppMenu::AvnAppMenu(AvnMenu* native)
 {
     _native = native;
+    [_native setDelegate:_native];
 }
 
 AvnMenu* AvnAppMenu::GetNative()
