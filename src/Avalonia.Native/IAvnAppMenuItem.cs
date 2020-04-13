@@ -75,17 +75,17 @@ namespace Avalonia.Native.Interop
 
                 UpdateIsChecked(item.IsChecked);
 
-                _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.HeaderProperty)
-                    .Subscribe(x => UpdateTitle(x))));
+                _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.HeaderProperty)
+                    .Subscribe(x => UpdateTitle(x)));
 
-                _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.GestureProperty)
-                    .Subscribe(x => UpdateGesture(x))));
+                _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.GestureProperty)
+                    .Subscribe(x => UpdateGesture(x)));
 
-                _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.CommandProperty)
-                    .Subscribe(x => UpdateAction(ManagedMenuItem as NativeMenuItem))));
+                _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.CommandProperty)
+                    .Subscribe(x => UpdateAction(ManagedMenuItem as NativeMenuItem)));
 
-                _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.IsCheckedProperty)
-                    .Subscribe(x => UpdateIsChecked(x))));
+                _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.IsCheckedProperty)
+                    .Subscribe(x => UpdateIsChecked(x)));
             }
         }
 
