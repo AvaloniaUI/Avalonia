@@ -22,6 +22,11 @@ namespace Avalonia.Native.Interop
             }
         }
 
+        private void UpdateIsChecked (bool isChecked)
+        {
+            IsChecked = isChecked;
+        }
+
         private void UpdateGesture(Input.KeyGesture gesture)
         {
             // todo ensure backend can cope with setting null gesture.
@@ -66,6 +71,9 @@ namespace Avalonia.Native.Interop
 
             _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.CommandProperty)
                 .Subscribe(x => UpdateAction(ManagedMenuItem as NativeMenuItem))));
+
+            _propertyDisposables.Add(Disposable.Create(() => ManagedMenuItem.GetObservable(NativeMenuItem.IsCheckedProperty)
+                .Subscribe(x => UpdateIsChecked(x))));
         }
 
         internal void Deinitialise ()
@@ -93,6 +101,8 @@ namespace Avalonia.Native.Interop
             UpdateGesture(item.Gesture);
 
             UpdateAction(ManagedMenuItem as NativeMenuItem);
+
+            UpdateIsChecked(item.IsChecked);
 
             if (item.Menu != null)
             {
