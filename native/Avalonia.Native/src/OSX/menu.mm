@@ -67,9 +67,16 @@ NSMenuItem* AvnAppMenuItem::GetNative()
 
 HRESULT AvnAppMenuItem::SetSubMenu (IAvnAppMenu* menu)
 {
-    auto nsMenu = dynamic_cast<AvnAppMenu*>(menu)->GetNative();
-    
-    [_native setSubmenu: nsMenu];
+    if(menu != nullptr)
+    {
+        auto nsMenu = dynamic_cast<AvnAppMenu*>(menu)->GetNative();
+        
+        [_native setSubmenu: nsMenu];
+    }
+    else
+    {
+        [_native setSubmenu: nullptr];
+    }
     
     return S_OK;
 }
