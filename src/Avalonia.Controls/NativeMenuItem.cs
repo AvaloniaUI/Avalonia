@@ -86,25 +86,19 @@ namespace Avalonia.Controls
         {
             get => _gesture;
             set => SetAndRaise(GestureProperty, ref _gesture, value);
-        }                
-            get => GetValue(GestureProperty);
-            set => SetValue(GestureProperty, value);
         }
 
         public static readonly DirectProperty<NativeMenuItem, bool> IsCheckedProperty =
             AvaloniaProperty.RegisterDirect<NativeMenuItem, bool>(
                 nameof(IsChecked),
-                o => o._isChecked,
-                (o, v) => o._isChecked = v,
-                defaultBindingMode: Data.BindingMode.TwoWay);
+                o => o.IsChecked,
+                (o, v) => o.IsChecked = v);
 
         public bool IsChecked
         {
-            get => GetValue(IsCheckedProperty);
-            set => SetValue(IsCheckedProperty, value);
-        }
-
-        private ICommand _command;
+            get => _isChecked;
+            set => SetAndRaise(IsCheckedProperty, ref _isChecked, value);
+        }        
 
         public static readonly DirectProperty<NativeMenuItem, ICommand> CommandProperty =
             Button.CommandProperty.AddOwner<NativeMenuItem>(
