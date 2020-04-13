@@ -119,6 +119,8 @@ namespace Avalonia.Native
 
             menuItem.Menu = menu;
 
+            var setMenu = false;
+
             if (_nativeMenu is null)
             {
                 _nativeMenu = _factory.ObtainAppMenu();
@@ -128,10 +130,10 @@ namespace Avalonia.Native
                     _nativeMenu = _factory.CreateMenu();
 
                     _nativeMenu.Initialise(this, appMenuHolder, "");
+
+                    setMenu = true;
                 }
             }
-
-            var setMenu = _nativeMenu.ManagedMenu != appMenuHolder;
             
             _nativeMenu.Update(_factory, appMenuHolder);
 
