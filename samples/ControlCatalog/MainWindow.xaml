@@ -8,18 +8,10 @@
         xmlns:vm="clr-namespace:ControlCatalog.ViewModels"
         xmlns:v="clr-namespace:ControlCatalog.Views"
         xmlns:idc="clr-namespace:ControlCatalog.ProportionalStackPanel"
-        x:Class="ControlCatalog.MainWindow" SizeToContent="Manual">
-  <Grid MinWidth="10" MinHeight="10">
-    <Grid.Styles>
-      <Style Selector="idc|ProportionalStackPanelSplitter">
-        <Setter Property="Background" Value="LightGray" />
-      </Style>
-    </Grid.Styles>
-
+        x:Class="ControlCatalog.MainWindow" SizeToContent="WidthAndHeight">  
     <idc:ProportionalStackPanel Orientation="Horizontal">
       <ScrollViewer>
         <Grid Height="12000" Width="20" Background="Red" />
       </ScrollViewer>
-    </idc:ProportionalStackPanel>
-  </Grid>  
+    </idc:ProportionalStackPanel>  
 </Window>
