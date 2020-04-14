@@ -34,6 +34,13 @@ jobs:
   pool:
     vmImage: 'macOS-10.14'
   steps:
+  - task: CmdLine@2
+    displayName: 'Install CastXML'
+    inputs:
+      script: |
+        brew update
+        brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/8a004a91a7fcd3f6620d5b01b6541ff0a640ffba/Formula/castxml.rb
+
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 3.1.101'
     inputs:
@@ -62,13 +69,6 @@ jobs:
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
       xcodeVersion: '10' # Options: 8, 9, default, specifyPath
       args: '-derivedDataPath ./'
-
-  - task: CmdLine@2
-    displayName: 'Install CastXML'
-    inputs:
-      script: |
-        brew update
-        brew install castxml
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
