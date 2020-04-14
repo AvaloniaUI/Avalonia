@@ -1,15 +1,10 @@
-﻿<Window xmlns="https://github.com/avaloniaui" MinWidth="500" MinHeight="300"
-        Width="1024" Height="800"
-        xmlns:pages="clr-namespace:ControlCatalog.Pages"
-        Title="Avalonia Control Gallery"
-        Icon="/Assets/test_icon.ico"
-        xmlns:local="clr-namespace:ControlCatalog"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="clr-namespace:ControlCatalog.ViewModels"
-        xmlns:v="clr-namespace:ControlCatalog.Views"
+﻿<Window xmlns="https://github.com/avaloniaui"                               
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"        
         xmlns:idc="clr-namespace:ControlCatalog.ProportionalStackPanel"
-        x:Class="ControlCatalog.MainWindow" SizeToContent="WidthAndHeight">  
-    <idc:ProportionalStackPanel Orientation="Horizontal">
+        x:Class="ControlCatalog.MainWindow" 
+        Height="400" Width="400"
+        SizeToContent="WidthAndHeight">  
+    <idc:ProportionalStackPanel>
       <ScrollViewer>
         <Grid Height="12000" Width="20" Background="Red" />
       </ScrollViewer>
