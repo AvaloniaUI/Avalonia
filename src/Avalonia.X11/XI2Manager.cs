@@ -191,10 +191,10 @@ namespace Avalonia.X11
                 }
 
                 if (scrollDelta != default)
-                    client.ScheduleInput(new RawMouseWheelEventArgs(_platform.MouseDevice, ev.Timestamp,
+                    client.ScheduleXI2Input(new RawMouseWheelEventArgs(_platform.MouseDevice, ev.Timestamp,
                         client.InputRoot, ev.Position, scrollDelta, ev.Modifiers));
                 if (_pointerDevice.HasMotion(ev))
-                    client.ScheduleInput(new RawMouseEventArgs(_platform.MouseDevice, ev.Timestamp, client.InputRoot,
+                    client.ScheduleXI2Input(new RawMouseEventArgs(_platform.MouseDevice, ev.Timestamp, client.InputRoot,
                         RawMouseEventType.Move, ev.Position, ev.Modifiers));
             }
 
@@ -207,7 +207,7 @@ namespace Avalonia.X11
                     : ev.Button == 3 ? (down ? RawMouseEventType.RightButtonDown : RawMouseEventType.RightButtonUp)
                     : (RawMouseEventType?)null;
                 if (type.HasValue)
-                    client.ScheduleInput(new RawMouseEventArgs(_platform.MouseDevice, ev.Timestamp, client.InputRoot,
+                    client.ScheduleXI2Input(new RawMouseEventArgs(_platform.MouseDevice, ev.Timestamp, client.InputRoot,
                         type.Value, ev.Position, ev.Modifiers));
             }
 
@@ -264,6 +264,6 @@ namespace Avalonia.X11
     interface IXI2Client
     {
         IInputRoot InputRoot { get; }
-        void ScheduleInput(RawInputEventArgs args);
+        void ScheduleXI2Input(RawInputEventArgs args);
     }
 }
