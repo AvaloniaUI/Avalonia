@@ -63,7 +63,7 @@ namespace Avalonia.Input.Raw
         /// <summary>
         /// Gets the type of the event.
         /// </summary>
-        public RawPointerEventType Type { get; private set; }
+        public RawPointerEventType Type { get; set; }
 
         /// <summary>
         /// Gets the input modifiers.
