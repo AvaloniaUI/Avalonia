@@ -7,52 +7,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:ControlCatalog.ViewModels"
         xmlns:v="clr-namespace:ControlCatalog.Views"
-        x:Class="ControlCatalog.MainWindow">
+        xmlns:idc="clr-namespace:ControlCatalog.ProportionalStackPanel"
+        x:Class="ControlCatalog.MainWindow" SizeToContent="Manual">
+  <Grid MinWidth="10" MinHeight="10">
+    <Grid.Styles>
+      <Style Selector="idc|ProportionalStackPanelSplitter">
+        <Setter Property="Background" Value="LightGray" />
+      </Style>
+    </Grid.Styles>
 
-  <NativeMenu.Menu>
-    <NativeMenu>
-      <NativeMenuItem Header="File">
-        <NativeMenuItem.Menu>
-          <NativeMenu>
-            <NativeMenuItem Header="Open" Clicked="OnOpenClicked" Gesture="Ctrl+O"/>
-            <NativeMenuItemSeperator/>
-            <NativeMenuItem Header="Recent">
-              <NativeMenuItem.Menu>
-                <NativeMenu/>
-              </NativeMenuItem.Menu>
-            </NativeMenuItem>
-            <NativeMenuItemSeperator/>
-            <NativeMenuItem Header="{x:Static local:MainWindow.MenuQuitHeader}"
-                            Gesture="{x:Static local:MainWindow.MenuQuitGesture}"
-                            Clicked="OnCloseClicked" />
-          </NativeMenu>
-        </NativeMenuItem.Menu>
-      </NativeMenuItem>
-      <NativeMenuItem Header="Edit">
-        <NativeMenuItem.Menu>
-          <NativeMenu>
-            <NativeMenuItem Header="Copy"/>
-            <NativeMenuItem Header="Paste"/>
-          </NativeMenu>
-        </NativeMenuItem.Menu>
-      </NativeMenuItem>
-    </NativeMenu>
-  </NativeMenu.Menu>
-
- <Window.DataTemplates>
-    <DataTemplate DataType="vm:NotificationViewModel">
-      <v:CustomNotificationView />
-    </DataTemplate>
-  </Window.DataTemplates>
-  <DockPanel LastChildFill="True">
-    <Menu Name="MainMenu" DockPanel.Dock="Top">
-      <MenuItem Header="File">
-        <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
-      </MenuItem>
-      <MenuItem Header="Help">
-        <MenuItem Header="About" Command="{Binding AboutCommand}" />
-      </MenuItem>
-    </Menu>
-    <local:MainView />
-  </DockPanel>
+    <idc:ProportionalStackPanel Orientation="Horizontal">
+      <ScrollViewer>
+        <Grid Height="12000" Width="20" Background="Red" />
+      </ScrollViewer>
+    </idc:ProportionalStackPanel>
+  </Grid>  
 </Window>
