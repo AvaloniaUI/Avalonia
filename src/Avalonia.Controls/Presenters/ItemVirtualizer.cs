@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Reactive.Linq;
@@ -9,6 +6,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -102,9 +100,14 @@ namespace Avalonia.Controls.Presenters
         {
             get
             {
-                return Vertical ?
-                    new Size(Owner.Panel.DesiredSize.Width, ExtentValue) :
-                    new Size(ExtentValue, Owner.Panel.DesiredSize.Height);
+                if (IsLogicalScrollEnabled)
+                {
+                    return Vertical ?
+                        new Size(Owner.Panel.DesiredSize.Width, ExtentValue) :
+                        new Size(ExtentValue, Owner.Panel.DesiredSize.Height);
+                }
+
+                return default;
             }
         }
 
@@ -115,9 +118,14 @@ namespace Avalonia.Controls.Presenters
         {
             get
             {
-                return Vertical ? 
-                    new Size(Owner.Panel.Bounds.Width, ViewportValue) :
-                    new Size(ViewportValue, Owner.Panel.Bounds.Height);
+                if (IsLogicalScrollEnabled)
+                {
+                    return Vertical ?
+                        new Size(Owner.Panel.Bounds.Width, ViewportValue) :
+                        new Size(ViewportValue, Owner.Panel.Bounds.Height);
+                }
+
+                return default;
             }
         }
 
@@ -128,11 +136,21 @@ namespace Avalonia.Controls.Presenters
         {
             get
             {
-                return Vertical ? new Vector(_crossAxisOffset, OffsetValue) : new Vector(OffsetValue, _crossAxisOffset);
+                if (IsLogicalScrollEnabled)
+                {
+                    return Vertical ? new Vector(_crossAxisOffset, OffsetValue) : new Vector(OffsetValue, _crossAxisOffset);
+                }
+
+                return default;
             }
 
             set
             {
+                if (!IsLogicalScrollEnabled)
+                {
+                    throw new NotSupportedException("Logical scrolling disabled.");
+                }
+
                 var oldCrossAxisOffset = _crossAxisOffset;
 
                 if (Vertical)
@@ -167,10 +185,10 @@ namespace Avalonia.Controls.Presenters
             }
 
             var virtualizingPanel = owner.Panel as IVirtualizingPanel;
-            var scrollable = (ILogicalScrollable)owner;
+            var scrollContentPresenter = owner.Parent as IScrollable;
             ItemVirtualizer result = null;
 
-            if (virtualizingPanel != null && scrollable.InvalidateScroll != null)
+            if (virtualizingPanel != null && scrollContentPresenter is object)
             {
                 switch (owner.VirtualizationMode)
                 {
@@ -280,6 +298,6 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Invalidates the current scroll.
         /// </summary>
-        protected void InvalidateScroll() => ((ILogicalScrollable)Owner).InvalidateScroll?.Invoke();
+        protected void InvalidateScroll() => ((ILogicalScrollable)Owner).RaiseScrollInvalidated(EventArgs.Empty);
     }
 }

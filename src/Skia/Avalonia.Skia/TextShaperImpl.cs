@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using System;
+using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
@@ -72,36 +73,32 @@ namespace Avalonia.Skia
 
                 var textScale = textFormat.FontRenderingEmSize / scaleX;
 
-                var len = buffer.Length;
+                var bufferLength = buffer.Length;
 
-                var info = buffer.GetGlyphInfoSpan();
+                var glyphInfos = buffer.GetGlyphInfoSpan();
 
-                var pos = buffer.GetGlyphPositionSpan();
+                var glyphPositions = buffer.GetGlyphPositionSpan();
 
-                var glyphIndices = new ushort[len];
+                var glyphIndices = new ushort[bufferLength];
 
-                var clusters = new ushort[len];
+                var clusters = new ushort[bufferLength];
 
-                var glyphAdvances = new double[len];
+                double[] glyphAdvances = null;
 
-                var glyphOffsets = new Vector[len];
+                Vector[] glyphOffsets = null;
 
-                for (var i = 0; i < len; i++)
+                for (var i = 0; i < bufferLength; i++)
                 {
-                    glyphIndices[i] = (ushort)info[i].Codepoint;
+                    glyphIndices[i] = (ushort)glyphInfos[i].Codepoint;
 
-                    clusters[i] = (ushort)(text.Start + info[i].Cluster);
+                    clusters[i] = (ushort)(text.Start + glyphInfos[i].Cluster);
 
-                    var advanceX = pos[i].XAdvance * textScale;
-                    // Depends on direction of layout
-                    //var advanceY = pos[i].YAdvance * textScale;
+                    if (!glyphTypeface.IsFixedPitch)
+                    {
+                        SetAdvance(glyphPositions, i, textScale, ref glyphAdvances);
+                    }
 
-                    glyphAdvances[i] = advanceX;
-
-                    var offsetX = pos[i].XOffset * textScale;
-                    var offsetY = pos[i].YOffset * textScale;
-
-                    glyphOffsets[i] = new Vector(offsetX, offsetY);
+                    SetOffset(glyphPositions, i, textScale, ref glyphOffsets);
                 }
 
                 return new GlyphRun(glyphTypeface, textFormat.FontRenderingEmSize,
@@ -111,6 +108,41 @@ namespace Avalonia.Skia
                     text,
                     new ReadOnlySlice<ushort>(clusters));
             }
+        }
+
+        private static void SetOffset(ReadOnlySpan<GlyphPosition> glyphPositions, int index, double textScale,
+            ref Vector[] offsetBuffer)
+        {
+            var position = glyphPositions[index];
+
+            if (position.XOffset == 0 && position.YOffset == 0)
+            {
+                return;
+            }
+
+            if (offsetBuffer == null)
+            {
+                offsetBuffer = new Vector[glyphPositions.Length];
+            }
+
+            var offsetX = position.XOffset * textScale;
+
+            var offsetY = position.YOffset * textScale;
+
+            offsetBuffer[index] = new Vector(offsetX, offsetY);
+        }
+
+        private static void SetAdvance(ReadOnlySpan<GlyphPosition> glyphPositions, int index, double textScale,
+            ref double[] advanceBuffer)
+        {
+            if (advanceBuffer == null)
+            {
+                advanceBuffer = new double[glyphPositions.Length];
+            }
+
+            // Depends on direction of layout
+            // advanceBuffer[index] = buffer.GlyphPositions[index].YAdvance * textScale;
+            advanceBuffer[index] = glyphPositions[index].XAdvance * textScale;
         }
     }
 }

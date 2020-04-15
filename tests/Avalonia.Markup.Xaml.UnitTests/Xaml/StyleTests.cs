@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Markup.Data;
@@ -276,6 +273,68 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 Assert.Null(foo.Background);
                 Assert.Equal(Colors.Red, ((ISolidColorBrush)notFoo.Background).Color);
+            }
+        }
+
+        [Fact]
+        public void Style_Can_Use_Or_Selector_1()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='Border.foo, Border.bar'>
+            <Setter Property='Background' Value='Red'/>
+        </Style>
+    </Window.Styles>
+    <StackPanel>
+        <Border Name='foo' Classes='foo'/>
+        <Border Name='bar' Classes='bar'/>
+        <Border Name='baz' Classes='baz'/>
+    </StackPanel>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var foo = window.FindControl<Border>("foo");
+                var bar = window.FindControl<Border>("bar");
+                var baz = window.FindControl<Border>("baz");
+
+                Assert.Equal(Brushes.Red, foo.Background);
+                Assert.Equal(Brushes.Red, bar.Background);
+                Assert.Null(baz.Background);
+            }
+        }
+
+        [Fact]
+        public void Style_Can_Use_Or_Selector_2()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='Button,Carousel,ListBox'>
+            <Setter Property='Background' Value='Red'/>
+        </Style>
+    </Window.Styles>
+    <StackPanel>
+        <Button Name='button'/>
+        <Carousel Name='carousel'/>
+        <ListBox Name='listBox'/>
+    </StackPanel>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+                var carousel = window.FindControl<Carousel>("carousel");
+                var listBox = window.FindControl<ListBox>("listBox");
+
+                Assert.Equal(Brushes.Red, button.Background);
+                Assert.Equal(Brushes.Red, carousel.Background);
+                Assert.Equal(Brushes.Red, listBox.Background);
             }
         }
     }

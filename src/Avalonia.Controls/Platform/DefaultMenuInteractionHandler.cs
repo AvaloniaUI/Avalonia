@@ -96,7 +96,7 @@ namespace Avalonia.Controls.Platform
                 root.Deactivated -= WindowDeactivated;
             }
 
-            _inputManagerSubscription!.Dispose();
+            _inputManagerSubscription?.Dispose();
 
             Menu = null;
             _root = null;

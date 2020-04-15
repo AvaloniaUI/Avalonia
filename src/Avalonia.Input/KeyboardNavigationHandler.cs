@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using Avalonia.Input.Navigation;
@@ -94,11 +91,11 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="element">The current element.</param>
         /// <param name="direction">The direction to move.</param>
-        /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
+        /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
         public void Move(
             IInputElement element, 
             NavigationDirection direction,
-            InputModifiers modifiers = InputModifiers.None)
+            KeyModifiers keyModifiers = KeyModifiers.None)
         {
             Contract.Requires<ArgumentNullException>(element != null);
 
@@ -109,7 +106,7 @@ namespace Avalonia.Input
                 var method = direction == NavigationDirection.Next ||
                              direction == NavigationDirection.Previous ?
                              NavigationMethod.Tab : NavigationMethod.Directional;
-                FocusManager.Instance.Focus(next, method, modifiers);
+                FocusManager.Instance.Focus(next, method, keyModifiers);
             }
         }
 
@@ -126,7 +123,7 @@ namespace Avalonia.Input
             {
                 var direction = (e.KeyModifiers & KeyModifiers.Shift) == 0 ?
                     NavigationDirection.Next : NavigationDirection.Previous;
-                Move(current, direction, e.Modifiers);
+                Move(current, direction, e.KeyModifiers);
                 e.Handled = true;
             }
         }
