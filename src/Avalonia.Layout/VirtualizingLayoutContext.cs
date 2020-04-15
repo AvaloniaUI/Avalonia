@@ -43,6 +43,8 @@ namespace Avalonia.Layout
     /// </summary>
     public abstract class VirtualizingLayoutContext : LayoutContext
     {
+        private NonVirtualizingLayoutContext _contextAdapter;
+
         /// <summary>
         /// Gets the number of items in the data.
         /// </summary>
@@ -186,5 +188,8 @@ namespace Avalonia.Layout
         /// </summary>
         /// <param name="element">The element to clear.</param>
         protected abstract void RecycleElementCore(ILayoutable element);
+
+        internal NonVirtualizingLayoutContext GetNonVirtualizingContextAdapter() =>
+            _contextAdapter ?? (_contextAdapter = new VirtualLayoutContextAdapter(this));
     }
 }

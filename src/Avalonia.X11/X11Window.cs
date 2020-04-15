@@ -649,7 +649,27 @@ namespace Avalonia.X11
             ScheduleInput(args);
         }
 
-        public void ScheduleInput(RawInputEventArgs args)
+        public void ScheduleXI2Input(RawInputEventArgs args)
+        {
+            if (args is RawPointerEventArgs pargs)
+            {
+                if ((pargs.Type == RawPointerEventType.TouchBegin
+                     || pargs.Type == RawPointerEventType.TouchUpdate
+                     || pargs.Type == RawPointerEventType.LeftButtonDown
+                     || pargs.Type == RawPointerEventType.RightButtonDown
+                     || pargs.Type == RawPointerEventType.MiddleButtonDown
+                     || pargs.Type == RawPointerEventType.NonClientLeftButtonDown)
+                    && ActivateTransientChildIfNeeded())
+                    return;
+                if (pargs.Type == RawPointerEventType.TouchEnd
+                    && ActivateTransientChildIfNeeded())
+                    pargs.Type = RawPointerEventType.TouchCancel;
+            }
+
+            ScheduleInput(args);
+        }
+        
+        private void ScheduleInput(RawInputEventArgs args)
         {
             if (args is RawPointerEventArgs mouse)
                 mouse.Position = mouse.Position / Scaling;
