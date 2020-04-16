@@ -357,6 +357,27 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Child_Should_Be_Measured_With_ClientSize_If_SizeToContent_Is_Manual_And_No_Width_Height_Specified()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var windowImpl = MockWindowingPlatform.CreateWindowMock();
+                windowImpl.Setup(x => x.ClientSize).Returns(new Size(550, 450));
+
+                var child = new ChildControl();
+                var target = new Window(windowImpl.Object)
+                {
+                    SizeToContent = SizeToContent.Manual,
+                    Content = child
+                };
+
+                target.Show();
+
+                Assert.Equal(new Size(550, 450), child.MeasureSize);
+            }
+        }
+
+        [Fact]
         public void Child_Should_Be_Measured_With_Infinity_If_SizeToContent_Is_WidthAndHeight()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
