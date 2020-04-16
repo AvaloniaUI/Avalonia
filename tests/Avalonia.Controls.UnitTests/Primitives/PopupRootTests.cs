@@ -4,6 +4,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -172,9 +173,75 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
-        private PopupRoot CreateTarget(TopLevel popupParent)
+        [Fact]
+        public void Child_Should_Be_Measured_With_Infinity()
         {
-            var result = new PopupRoot(popupParent, popupParent.PlatformImpl.CreatePopup())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new ChildControl();
+                var window = new Window();
+                var target = CreateTarget(window);
+                
+                target.Content = child;
+                target.Show();
+
+                Assert.Equal(Size.Infinity, child.MeasureSize);
+            }
+        }
+
+        [Fact]
+        public void Child_Should_Be_Measured_With_Width_Height_When_Set()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new ChildControl();
+                var window = new Window();
+                var target = CreateTarget(window);
+
+                target.Width = 500;
+                target.Height = 600;
+                target.Content = child;
+                target.Show();
+
+                Assert.Equal(new Size(500, 600), child.MeasureSize);
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Have_Offset_On_Bounds_When_Content_Larger_Than_Max_Window_Size()
+        {
+            // Issue #3784.
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl);
+
+                popupImpl.Setup(x => x.ClientSize).Returns(new Size(400, 480));
+
+                var child = new Canvas
+                {
+                    Width = 400,
+                    Height = 800,
+                };
+
+                var target = CreateTarget(window, popupImpl.Object);
+                target.Content = child;
+
+                target.Show();
+
+                Assert.Equal(new Size(400, 480), target.Bounds.Size);
+
+                // Issue #3784 causes this to be (0, 160) which makes no sense as Window has no
+                // parent control to be offset against.
+                Assert.Equal(new Point(0, 0), target.Bounds.Position);
+            }
+        }
+
+        private PopupRoot CreateTarget(TopLevel popupParent, IPopupImpl impl = null)
+        {
+            impl ??= popupParent.PlatformImpl.CreatePopup();
+
+            var result = new PopupRoot(popupParent, impl)
             {
                 Template = new FuncControlTemplate<PopupRoot>((parent, scope) =>
                     new ContentPresenter
@@ -215,6 +282,17 @@ namespace Avalonia.Controls.UnitTests.Primitives
             protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
             {
                 Popup = (Popup)this.GetVisualChildren().Single();
+            }
+        }
+
+        private class ChildControl : Control
+        {
+            public Size MeasureSize { get; private set; }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                MeasureSize = availableSize;
+                return base.MeasureOverride(availableSize);
             }
         }
     }

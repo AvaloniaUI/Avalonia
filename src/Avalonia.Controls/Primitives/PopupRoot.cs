@@ -117,20 +117,14 @@ namespace Avalonia.Controls.Primitives
             });
         }
 
-        /// <summary>
-        /// Carries out the arrange pass of the window.
-        /// </summary>
-        /// <param name="finalSize">The final window size.</param>
-        /// <returns>The <paramref name="finalSize"/> parameter unchanged.</returns>
-        protected override Size ArrangeOverride(Size finalSize)
+        protected override sealed Size ArrangeSetBounds(Size size)
         {
             using (BeginAutoSizing())
             {
-                _positionerParameters.Size = finalSize;
+                _positionerParameters.Size = size;
                 UpdatePosition();
+                return ClientSize;
             }
-
-            return base.ArrangeOverride(PlatformImpl?.ClientSize ?? default(Size));
         }
     }
 }
