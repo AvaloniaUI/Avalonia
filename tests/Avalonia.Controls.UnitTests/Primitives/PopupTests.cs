@@ -355,11 +355,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
                 new MockWindowingPlatform(null,
-                    () =>
+                    x =>
                     {
                         if(UsePopupHost)
                             return null;
-                        return MockWindowingPlatform.CreatePopupMock().Object;
+                        return MockWindowingPlatform.CreatePopupMock(x).Object;
                     })));
         }
 

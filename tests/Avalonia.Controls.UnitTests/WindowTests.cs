@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
@@ -372,6 +373,123 @@ namespace Avalonia.Controls.UnitTests
                 target.Show();
 
                 Assert.Equal(Size.Infinity, child.MeasureSize);
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Have_Offset_On_Bounds_When_Content_Larger_Than_Max_Window_Size()
+        {
+            // Issue #3784.
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var windowImpl = MockWindowingPlatform.CreateWindowMock();
+                var clientSize = new Size(200, 200);
+                var maxClientSize = new Size(480, 480);
+
+                windowImpl.Setup(x => x.Resize(It.IsAny<Size>())).Callback<Size>(size =>
+                {
+                    clientSize = size.Constrain(maxClientSize);
+                    windowImpl.Object.Resized?.Invoke(clientSize);
+                });
+
+                windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
+
+                var child = new Canvas
+                {
+                    Width = 400,
+                    Height = 800,
+                };
+                var target = new Window(windowImpl.Object)
+                {
+                    SizeToContent = SizeToContent.WidthAndHeight,
+                    Content = child
+                };
+
+                target.Show();
+
+                Assert.Equal(new Size(400, 480), target.Bounds.Size);
+
+                // Issue #3784 causes this to be (0, 160) which makes no sense as Window has no
+                // parent control to be offset against.
+                Assert.Equal(new Point(0, 0), target.Bounds.Position);
+            }
+        }
+
+        [Fact]
+        public void Width_Height_Should_Not_Be_NaN_After_Show_With_SizeToContent_WidthAndHeight()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new Canvas
+                {
+                    Width = 400,
+                    Height = 800,
+                };
+
+                var target = new Window()
+                {
+                    SizeToContent = SizeToContent.WidthAndHeight,
+                    Content = child
+                };
+
+                target.Show();
+
+                Assert.Equal(400, target.Width);
+                Assert.Equal(800, target.Height);
+            }
+        }
+
+        [Fact]
+        public void SizeToContent_Should_Not_Be_Lost_On_Show()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new Canvas
+                {
+                    Width = 400,
+                    Height = 800,
+                };
+
+                var target = new Window()
+                {
+                    SizeToContent = SizeToContent.WidthAndHeight,
+                    Content = child
+                };
+
+                target.Show();
+
+                Assert.Equal(SizeToContent.WidthAndHeight, target.SizeToContent);
+            }
+        }
+
+        [Fact]
+        public void Width_Height_Should_Be_Updated_When_SizeToContent_Is_WidthAndHeight()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new Canvas
+                {
+                    Width = 400,
+                    Height = 800,
+                };
+
+                var target = new Window()
+                {
+                    SizeToContent = SizeToContent.WidthAndHeight,
+                    Content = child
+                };
+
+                target.Show();
+
+                Assert.Equal(400, target.Width);
+                Assert.Equal(800, target.Height);
+
+                child.Width = 410;
+                target.LayoutManager.ExecuteLayoutPass();
+
+                Assert.Equal(410, target.Width);
+                Assert.Equal(800, target.Height);
+                Assert.Equal(SizeToContent.WidthAndHeight, target.SizeToContent);
             }
         }
 
