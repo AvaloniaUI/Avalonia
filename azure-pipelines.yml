@@ -34,6 +34,10 @@ jobs:
   pool:
     vmImage: 'macOS-10.14'
   steps:
+  - task: DotNetCoreInstaller@0
+    inputs:
+      version: '2.1.403'
+      
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 3.1.101'
     inputs:
