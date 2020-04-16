@@ -526,5 +526,16 @@ namespace Avalonia.Controls.UnitTests
                 x.Scaling == 1 &&
                 x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer.Object);
         }
+
+        private class ChildControl : Control
+        {
+            public Size MeasureSize { get; private set; }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                MeasureSize = availableSize;
+                return base.MeasureOverride(availableSize);
+            }
+        }
     }
 }
