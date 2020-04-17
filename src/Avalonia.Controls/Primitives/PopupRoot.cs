@@ -117,6 +117,33 @@ namespace Avalonia.Controls.Primitives
             });
         }
 
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var measured = base.MeasureOverride(availableSize);
+            var width = measured.Width;
+            var height = measured.Height;
+            var widthCache = Width;
+            var heightCache = Height;
+
+            if (!double.IsNaN(widthCache))
+            {
+                width = widthCache;
+            }
+
+            width = Math.Min(width, MaxWidth);
+            width = Math.Max(width, MinWidth);
+
+            if (!double.IsNaN(heightCache))
+            {
+                height = heightCache;
+            }
+
+            height = Math.Min(height, MaxHeight);
+            height = Math.Max(height, MinHeight);
+
+            return new Size(width, height);
+        }
+
         protected override sealed Size ArrangeSetBounds(Size size)
         {
             using (BeginAutoSizing())

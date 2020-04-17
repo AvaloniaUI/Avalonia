@@ -224,8 +224,6 @@ namespace Avalonia.Controls
         /// <param name="clientSize">The new client size.</param>
         protected override void HandleResized(Size clientSize)
         {
-            Width = clientSize.Width;
-            Height = clientSize.Height;
             ClientSize = clientSize;
             LayoutManager.ExecuteLayoutPass();
             Renderer?.Resized(clientSize);
