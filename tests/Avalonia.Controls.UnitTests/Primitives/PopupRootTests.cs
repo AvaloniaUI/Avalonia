@@ -210,6 +210,24 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Child_Should_Be_Measured_With_MaxWidth_MaxHeight_When_Set()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new ChildControl();
+                var window = new Window();
+                var target = CreateTarget(window);
+
+                target.MaxWidth = 500;
+                target.MaxHeight = 600;
+                target.Content = child;
+                target.Show();
+
+                Assert.Equal(new Size(500, 600), child.MeasureSize);
+            }
+        }
+
+        [Fact]
         public void Should_Not_Have_Offset_On_Bounds_When_Content_Larger_Than_Max_Window_Size()
         {
             // Issue #3784.
