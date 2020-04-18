@@ -244,17 +244,7 @@ namespace Avalonia.Controls
             ApplyStyling();
             ApplyTemplate();
 
-            var constraint = availableSize;
-
-            if (!double.IsNaN(Width))
-            {
-                constraint = constraint.WithWidth(Width);
-            }
-
-            if (!double.IsNaN(Height))
-            {
-                constraint = constraint.WithHeight(Height);
-            }
+            var constraint = LayoutHelper.ApplyLayoutConstraints(this, availableSize);
 
             return MeasureOverride(constraint);
         }
