@@ -14,7 +14,8 @@
 class AvnAppMenuItem;
 class AvnAppMenu;
 
-@interface AvnMenu : NSMenu<NSMenuDelegate>
+@interface AvnMenu : NSMenu
+- (id) initWithDelegate: (NSObject<NSMenuDelegate>*) del;
 @end
 
 @interface AvnMenuItem : NSMenuItem
@@ -62,9 +63,7 @@ public:
     FORWARD_IUNKNOWN()
     
     AvnAppMenu();
-    
-    AvnAppMenu(AvnMenu* native);
-    
+        
     AvnMenu* GetNative();
     
     virtual HRESULT InsertItem (int index, IAvnAppMenuItem* item) override;
@@ -76,6 +75,10 @@ public:
     virtual HRESULT Clear () override;
 };
 
+
+@interface AvnMenuDelegate : NSObject<NSMenuDelegate>
+- (id) initWithParent: (AvnAppMenu*) parent;
+@end
 
 #endif
 

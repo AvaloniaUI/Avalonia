@@ -4,20 +4,17 @@
 #include "window.h"
 
 @implementation AvnMenu
-- (void)menuNeedsUpdate:(NSMenu *)menu
 {
-    printf("TEST");
+    NSObject<NSMenuDelegate>* _wtf;
+}
+- (id) initWithDelegate: (NSObject<NSMenuDelegate>*)del
+{
+    self = [super init];
+    self.delegate = del;
+    _wtf = del;
+    return self;
 }
 
-- (void)menuWillOpen:(NSMenu *)menu
-{
-    
-}
-
-- (void)menuDidClose:(NSMenu *)menu
-{
-    
-}
 @end
 
 @implementation AvnMenuItem
@@ -159,15 +156,10 @@ void AvnAppMenuItem::RaiseOnClicked()
 
 AvnAppMenu::AvnAppMenu()
 {
-    _native = [AvnMenu new];
-    [_native setDelegate:_native];
+    id del = [[AvnMenuDelegate alloc] initWithParent: this];
+    _native = [[AvnMenu alloc] initWithDelegate: del];
 }
 
-AvnAppMenu::AvnAppMenu(AvnMenu* native)
-{
-    _native = native;
-    [_native setDelegate:_native];
-}
 
 AvnMenu* AvnAppMenu::GetNative()
 {
@@ -214,12 +206,41 @@ HRESULT AvnAppMenu::Clear()
     return S_OK;
 }
 
+@implementation AvnMenuDelegate
+{
+    ComPtr<AvnAppMenu> _parent;
+}
+- (id) initWithParent:(AvnAppMenu *)parent
+{
+    self = [super init];
+    _parent = parent;
+    return self;
+}
+- (BOOL)menu:(NSMenu *)menu updateItem:(NSMenuItem *)item atIndex:(NSInteger)index shouldCancel:(BOOL)shouldCancel
+{
+    if(shouldCancel)
+        return NO;
+    return YES;
+}
+
+- (NSInteger)numberOfItemsInMenu:(NSMenu *)menu
+{
+    return [menu numberOfItems];
+}
+
+- (void)menuNeedsUpdate:(NSMenu *)menu
+{
+    printf("NEEDSUPDATE\n");
+}
+
+
+@end
+
 extern IAvnAppMenu* CreateAppMenu()
 {
     @autoreleasepool
     {
-        id menuBar = [NSMenu new];
-        return new AvnAppMenu(menuBar);
+        return new AvnAppMenu();
     }
 }
 
