@@ -58,7 +58,7 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
                 <StackPanel.Styles>
                     <Style Selector="Button">
-                        <Setter Property="Margin">4</Setter>
+                        <Setter Property="Margin" Value="4"/>
                     </Style>
                 </StackPanel.Styles>
                 <Button Command="{Binding Ok}">OK</Button>
