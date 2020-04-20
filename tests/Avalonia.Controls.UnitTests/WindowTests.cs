@@ -358,7 +358,8 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Show();
 
-                Assert.Equal(new Size(100, 50), child.MeasureSize);
+                Assert.Equal(1, child.MeasureSizes.Count);
+                Assert.Equal(new Size(100, 50), child.MeasureSizes[0]);
             }
         }
 
@@ -379,7 +380,8 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Show();
 
-                Assert.Equal(new Size(550, 450), child.MeasureSize);
+                Assert.Equal(1, child.MeasureSizes.Count);
+                Assert.Equal(new Size(550, 450), child.MeasureSizes[0]);
             }
         }
 
@@ -399,7 +401,8 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Show();
 
-                Assert.Equal(Size.Infinity, child.MeasureSize);
+                Assert.Equal(1, child.MeasureSizes.Count);
+                Assert.Equal(Size.Infinity, child.MeasureSizes[0]);
             }
         }
 
@@ -555,11 +558,11 @@ namespace Avalonia.Controls.UnitTests
 
         private class ChildControl : Control
         {
-            public Size MeasureSize { get; private set; }
+            public List<Size> MeasureSizes { get; } = new List<Size>();
 
             protected override Size MeasureOverride(Size availableSize)
             {
-                MeasureSize = availableSize;
+                MeasureSizes.Add(availableSize);
                 return base.MeasureOverride(availableSize);
             }
         }
