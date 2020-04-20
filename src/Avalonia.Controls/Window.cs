@@ -570,8 +570,8 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size availableSize)
         {
             var sizeToContent = SizeToContent;
-            var constraint = availableSize;
             var clientSize = ClientSize;
+            var constraint = clientSize;
 
             if (sizeToContent.HasFlagCustom(SizeToContent.Width))
             {
