@@ -224,15 +224,53 @@ namespace Avalonia.Controls
         /// <param name="clientSize">The new client size.</param>
         protected override void HandleResized(Size clientSize)
         {
-            if (!AutoSizing)
-            {
-                Width = clientSize.Width;
-                Height = clientSize.Height;
-            }
             ClientSize = clientSize;
             LayoutManager.ExecuteLayoutPass();
             Renderer?.Resized(clientSize);
         }
+
+        /// <summary>
+        /// Overrides the core measure logic for windows.
+        /// </summary>
+        /// <param name="availableSize">The available size.</param>
+        /// <returns>The measured size.</returns>
+        /// <remarks>
+        /// The layout logic for top-level windows is different than for other controls because
+        /// they don't have a parent, meaning that many layout properties handled by the default
+        /// MeasureCore (such as margins and alignment) make no sense.
+        /// </remarks>
+        protected override Size MeasureCore(Size availableSize)
+        {
+            ApplyStyling();
+            ApplyTemplate();
+
+            var constraint = LayoutHelper.ApplyLayoutConstraints(this, availableSize);
+
+            return MeasureOverride(constraint);
+        }
+
+        /// <summary>
+        /// Overrides the core arrange logic for windows.
+        /// </summary>
+        /// <param name="finalRect">The final arrange rect.</param>
+        /// <remarks>
+        /// The layout logic for top-level windows is different than for other controls because
+        /// they don't have a parent, meaning that many layout properties handled by the default
+        /// ArrangeCore (such as margins and alignment) make no sense.
+        /// </remarks>
+        protected override void ArrangeCore(Rect finalRect)
+        {
+            var constraint = ArrangeSetBounds(finalRect.Size);
+            var arrangeSize = ArrangeOverride(constraint);
+            Bounds = new Rect(arrangeSize);
+        }
+
+        /// <summary>
+        /// Called durung the arrange pass to set the size of the window.
+        /// </summary>
+        /// <param name="size">The requested size of the window.</param>
+        /// <returns>The actual size of the window.</returns>
+        protected virtual Size ArrangeSetBounds(Size size) => size;
 
         /// <summary>
         /// Handles a window position change notification from 
