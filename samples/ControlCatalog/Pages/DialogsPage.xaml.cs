@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 #pragma warning disable 4014
@@ -34,7 +37,9 @@ namespace ControlCatalog.Pages
                 new OpenFileDialog()
                 {
                     Title = "Open file",
-                    Filters = GetFilters()
+                    Filters = GetFilters(),
+                    // Almost guaranteed to exist
+                    InitialFileName = Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName
                 }.ShowAsync(GetWindow());
             };
             this.FindControl<Button>("SaveFile").Click += delegate
