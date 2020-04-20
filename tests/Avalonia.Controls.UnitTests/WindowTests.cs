@@ -514,6 +514,32 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Setting_Width_Should_Resize_WindowImpl()
+        {
+            // Issue #3796
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new Window()
+                {
+                    Width = 400,
+                    Height = 800,
+                };
+
+                target.Show();
+
+                Assert.Equal(400, target.Width);
+                Assert.Equal(800, target.Height);
+
+                target.Width = 410;
+                target.LayoutManager.ExecuteLayoutPass();
+
+                var windowImpl = Mock.Get(target.PlatformImpl);
+                windowImpl.Verify(x => x.Resize(new Size(410, 800)));
+                Assert.Equal(410, target.Width);
+            }
+        }
+
         private IWindowImpl CreateImpl(Mock<IRenderer> renderer)
         {
             return Mock.Of<IWindowImpl>(x =>

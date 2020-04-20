@@ -224,8 +224,6 @@ namespace Avalonia.Controls
         /// <param name="clientSize">The new client size.</param>
         protected override void HandleResized(Size clientSize)
         {
-            Width = clientSize.Width;
-            Height = clientSize.Height;
             ClientSize = clientSize;
             LayoutManager.ExecuteLayoutPass();
             Renderer?.Resized(clientSize);
@@ -246,17 +244,7 @@ namespace Avalonia.Controls
             ApplyStyling();
             ApplyTemplate();
 
-            var constraint = availableSize;
-
-            if (!double.IsNaN(Width))
-            {
-                constraint = constraint.WithWidth(Width);
-            }
-
-            if (!double.IsNaN(Height))
-            {
-                constraint = constraint.WithHeight(Height);
-            }
+            var constraint = LayoutHelper.ApplyLayoutConstraints(this, availableSize);
 
             return MeasureOverride(constraint);
         }

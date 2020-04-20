@@ -66,15 +66,19 @@ namespace Avalonia.UnitTests
         public static Mock<IPopupImpl> CreatePopupMock(IWindowBaseImpl parent)
         {
             var popupImpl = new Mock<IPopupImpl>();
+            var clientSize = new Size();
 
             var positionerHelper = new ManagedPopupPositionerPopupImplHelper(parent, (pos, size, scale) =>
             {
+                clientSize = size.Constrain(s_screenSize);
                 popupImpl.Object.PositionChanged?.Invoke(pos);
-                popupImpl.Object.Resized?.Invoke(size);
+                popupImpl.Object.Resized?.Invoke(clientSize);
             });
             
             var positioner = new ManagedPopupPositioner(positionerHelper);
 
+            popupImpl.SetupAllProperties();
+            popupImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
             popupImpl.Setup(x => x.Scaling).Returns(1);
             popupImpl.Setup(x => x.PopupPositioner).Returns(positioner);
             

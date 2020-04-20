@@ -570,8 +570,8 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size availableSize)
         {
             var sizeToContent = SizeToContent;
+            var constraint = availableSize;
             var clientSize = ClientSize;
-            var constraint = clientSize;
 
             if (sizeToContent.HasFlagCustom(SizeToContent.Width))
             {
@@ -587,12 +587,26 @@ namespace Avalonia.Controls
 
             if (!sizeToContent.HasFlagCustom(SizeToContent.Width))
             {
-                result = result.WithWidth(clientSize.Width);
+                if (!double.IsInfinity(availableSize.Width))
+                {
+                    result = result.WithWidth(availableSize.Width);
+                }
+                else
+                {
+                    result = result.WithWidth(clientSize.Width);
+                }
             }
 
             if (!sizeToContent.HasFlagCustom(SizeToContent.Height))
             {
-                result = result.WithHeight(clientSize.Height);
+                if (!double.IsInfinity(availableSize.Height))
+                {
+                    result = result.WithHeight(availableSize.Height);
+                }
+                else
+                {
+                    result = result.WithHeight(clientSize.Height);
+                }
             }
 
             return result;
@@ -621,6 +635,9 @@ namespace Avalonia.Controls
             {
                 SizeToContent = SizeToContent.Manual;
             }
+
+            Width = clientSize.Width;
+            Height = clientSize.Height;
 
             base.HandleResized(clientSize);
         }
