@@ -442,7 +442,7 @@ namespace Avalonia.X11
                             updatedSizeViaScaling = UpdateScaling();
                         }
 
-                        if (changedSize && !updatedSizeViaScaling)
+                        if (changedSize && !updatedSizeViaScaling && !_popup)
                             Resized?.Invoke(ClientSize);
 
                         Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
