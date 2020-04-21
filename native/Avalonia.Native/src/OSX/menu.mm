@@ -154,8 +154,9 @@ void AvnAppMenuItem::RaiseOnClicked()
     }
 }
 
-AvnAppMenu::AvnAppMenu()
+AvnAppMenu::AvnAppMenu(IAvnMenuEvents* events)
 {
+    _baseEvents = events;
     id del = [[AvnMenuDelegate alloc] initWithParent: this];
     _native = [[AvnMenu alloc] initWithDelegate: del];
 }
@@ -240,7 +241,7 @@ extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* cb)
 {
     @autoreleasepool
     {
-        return new AvnAppMenu();
+        return new AvnAppMenu(cb);
     }
 }
 

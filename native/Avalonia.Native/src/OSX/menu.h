@@ -58,11 +58,12 @@ class AvnAppMenu : public ComSingleObject<IAvnMenu, &IID_IAvnMenu>
 {
 private:
     AvnMenu* _native;
+    ComPtr<IAvnMenuEvents> _baseEvents;
     
 public:
     FORWARD_IUNKNOWN()
     
-    AvnAppMenu();
+    AvnAppMenu(IAvnMenuEvents* events);
         
     AvnMenu* GetNative();
     

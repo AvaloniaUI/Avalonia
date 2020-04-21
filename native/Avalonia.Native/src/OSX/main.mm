@@ -229,7 +229,7 @@ public:
     
     virtual HRESULT CreateMenu (IAvnMenuEvents* cb, IAvnMenu** ppv) override
     {
-        *ppv = ::CreateAppMenu();
+        *ppv = ::CreateAppMenu(cb);
         return S_OK;
     }
     
