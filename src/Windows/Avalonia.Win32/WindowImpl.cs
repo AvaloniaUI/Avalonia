@@ -62,6 +62,7 @@ namespace Avalonia.Win32
         private OleDropTarget _dropTarget;
         private Size _minSize;
         private Size _maxSize;
+        private POINT _maxTrackSize;
         private WindowImpl _parent;
 
         public WindowImpl()
@@ -164,16 +165,7 @@ namespace Avalonia.Win32
 
         public IPlatformHandle Handle { get; private set; }
 
-        public Size MaxClientSize
-        {
-            get
-            {
-                return (new Size(
-                            GetSystemMetrics(SystemMetric.SM_CXMAXTRACK),
-                            GetSystemMetrics(SystemMetric.SM_CYMAXTRACK))
-                        - BorderThickness) / Scaling;
-            }
-        }
+        public Size MaxAutoSizeHint => new Size(_maxTrackSize.X / Scaling, _maxTrackSize.Y / Scaling);
 
         public IMouseDevice MouseDevice => _mouseDevice;
 

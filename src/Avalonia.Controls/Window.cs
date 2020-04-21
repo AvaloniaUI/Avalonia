@@ -184,7 +184,7 @@ namespace Avalonia.Controls
         {
             impl.Closing = HandleClosing;
             impl.WindowStateChanged = HandleWindowStateChanged;
-            _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
+            _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
 
             PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
@@ -313,9 +313,6 @@ namespace Avalonia.Controls
         /// Should be called from left mouse button press event handler
         /// </summary>
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e) => PlatformImpl?.BeginResizeDrag(edge, e);
-
-        /// <inheritdoc/>
-        Size ILayoutRoot.MaxClientSize => _maxPlatformClientSize;
 
         /// <inheritdoc/>
         Type IStyleable.StyleKey => typeof(Window);
@@ -572,15 +569,16 @@ namespace Avalonia.Controls
             var sizeToContent = SizeToContent;
             var clientSize = ClientSize;
             var constraint = clientSize;
+            var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
 
             if (sizeToContent.HasFlagCustom(SizeToContent.Width))
             {
-                constraint = constraint.WithWidth(double.PositiveInfinity);
+                constraint = constraint.WithWidth(maxAutoSize.Width);
             }
 
             if (sizeToContent.HasFlagCustom(SizeToContent.Height))
             {
-                constraint = constraint.WithHeight(double.PositiveInfinity);
+                constraint = constraint.WithHeight(maxAutoSize.Height);
             }
 
             var result = base.MeasureOverride(constraint);

@@ -213,9 +213,6 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        Size ILayoutRoot.MaxClientSize => Size.Infinity;
-
-        /// <inheritdoc/>
         double ILayoutRoot.LayoutScaling => PlatformImpl?.Scaling ?? 1;
 
         /// <inheritdoc/>

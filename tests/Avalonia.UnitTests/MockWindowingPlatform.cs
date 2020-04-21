@@ -28,6 +28,7 @@ namespace Avalonia.UnitTests
 
             windowImpl.SetupAllProperties();
             windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
+            windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             windowImpl.Setup(x => x.Scaling).Returns(1);
             windowImpl.Setup(x => x.Screen).Returns(CreateScreenMock().Object);
             windowImpl.Setup(x => x.Position).Returns(() => position);
