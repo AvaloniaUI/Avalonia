@@ -76,7 +76,7 @@ NSMenuItem* AvnAppMenuItem::GetNative()
     return _native;
 }
 
-HRESULT AvnAppMenuItem::SetSubMenu (IAvnAppMenu* menu)
+HRESULT AvnAppMenuItem::SetSubMenu (IAvnMenu* menu)
 {
     if(menu != nullptr)
     {
@@ -166,7 +166,7 @@ AvnMenu* AvnAppMenu::GetNative()
     return _native;
 }
 
-HRESULT AvnAppMenu::InsertItem(int index, IAvnAppMenuItem *item)
+HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 {
     auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
     
@@ -178,7 +178,7 @@ HRESULT AvnAppMenu::InsertItem(int index, IAvnAppMenuItem *item)
     return S_OK;
 }
 
-HRESULT AvnAppMenu::RemoveItem (IAvnAppMenuItem* item)
+HRESULT AvnAppMenu::RemoveItem (IAvnMenuItem* item)
 {
     auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
     
@@ -236,7 +236,7 @@ HRESULT AvnAppMenu::Clear()
 
 @end
 
-extern IAvnAppMenu* CreateAppMenu()
+extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* cb)
 {
     @autoreleasepool
     {
@@ -244,7 +244,7 @@ extern IAvnAppMenu* CreateAppMenu()
     }
 }
 
-extern IAvnAppMenuItem* CreateAppMenuItem()
+extern IAvnMenuItem* CreateAppMenuItem()
 {
     @autoreleasepool
     {
@@ -252,7 +252,7 @@ extern IAvnAppMenuItem* CreateAppMenuItem()
     }
 }
 
-extern IAvnAppMenuItem* CreateAppMenuItemSeperator()
+extern IAvnMenuItem* CreateAppMenuItemSeperator()
 {
     @autoreleasepool
     {
@@ -260,10 +260,10 @@ extern IAvnAppMenuItem* CreateAppMenuItemSeperator()
     }
 }
 
-static IAvnAppMenu* s_appMenu = nullptr;
+static IAvnMenu* s_appMenu = nullptr;
 static NSMenuItem* s_appMenuItem = nullptr;
 
-extern void SetAppMenu (NSString* appName, IAvnAppMenu* menu)
+extern void SetAppMenu (NSString* appName, IAvnMenu* menu)
 {
     s_appMenu = menu;
     
@@ -344,7 +344,7 @@ extern void SetAppMenu (NSString* appName, IAvnAppMenu* menu)
     }
 }
 
-extern IAvnAppMenu* GetAppMenu ()
+extern IAvnMenu* GetAppMenu ()
 {
     return s_appMenu;
 }

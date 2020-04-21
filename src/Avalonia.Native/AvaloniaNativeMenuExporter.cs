@@ -15,7 +15,7 @@ namespace Avalonia.Native
         private bool _exported = false;
         private IAvnWindow _nativeWindow;
         private NativeMenu _menu;
-        private IAvnAppMenu _nativeMenu;        
+        private IAvnMenu _nativeMenu;        
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
         {

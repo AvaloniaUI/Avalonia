@@ -23,7 +23,7 @@ class AvnAppMenu;
 - (void)didSelectItem:(id)sender;
 @end
 
-class AvnAppMenuItem : public ComSingleObject<IAvnAppMenuItem, &IID_IAvnAppMenuItem>
+class AvnAppMenuItem : public ComSingleObject<IAvnMenuItem, &IID_IAvnMenuItem>
 {
 private:
     NSMenuItem* _native; // here we hold a pointer to an AvnMenuItem
@@ -38,7 +38,7 @@ public:
     
     NSMenuItem* GetNative();
     
-    virtual HRESULT SetSubMenu (IAvnAppMenu* menu) override;
+    virtual HRESULT SetSubMenu (IAvnMenu* menu) override;
     
     virtual HRESULT SetTitle (void* utf8String) override;
     
@@ -54,7 +54,7 @@ public:
 };
 
 
-class AvnAppMenu : public ComSingleObject<IAvnAppMenu, &IID_IAvnAppMenu>
+class AvnAppMenu : public ComSingleObject<IAvnMenu, &IID_IAvnMenu>
 {
 private:
     AvnMenu* _native;
@@ -66,9 +66,9 @@ public:
         
     AvnMenu* GetNative();
     
-    virtual HRESULT InsertItem (int index, IAvnAppMenuItem* item) override;
+    virtual HRESULT InsertItem (int index, IAvnMenuItem* item) override;
     
-    virtual HRESULT RemoveItem (IAvnAppMenuItem* item) override;
+    virtual HRESULT RemoveItem (IAvnMenuItem* item) override;
     
     virtual HRESULT SetTitle (void* utf8String) override;
     

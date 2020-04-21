@@ -5,9 +5,9 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native.Interop
 {
-    public partial class IAvnAppMenuItem
+    public partial class IAvnMenuItem
     {
-        private IAvnAppMenu _subMenu;        
+        private IAvnMenu _subMenu;        
         private CompositeDisposable _propertyDisposables = new CompositeDisposable();
         private IDisposable _currentActionDisposable;
 

@@ -7,16 +7,16 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native.Interop
 {
-    public partial class IAvnAppMenu
+    public partial class IAvnMenu
     {
         private AvaloniaNativeMenuExporter _exporter;
-        private List<IAvnAppMenuItem> _menuItems = new List<IAvnAppMenuItem>();
-        private Dictionary<NativeMenuItemBase, IAvnAppMenuItem> _menuItemLookup = new Dictionary<NativeMenuItemBase, IAvnAppMenuItem>();
+        private List<IAvnMenuItem> _menuItems = new List<IAvnMenuItem>();
+        private Dictionary<NativeMenuItemBase, IAvnMenuItem> _menuItemLookup = new Dictionary<NativeMenuItemBase, IAvnMenuItem>();
         private CompositeDisposable _propertyDisposables = new CompositeDisposable();
 
         internal NativeMenu ManagedMenu { get; private set; }
 
-        private void RemoveAndDispose(IAvnAppMenuItem item)
+        private void RemoveAndDispose(IAvnMenuItem item)
         {
             _menuItemLookup.Remove(item.ManagedMenuItem);
             _menuItems.Remove(item);
@@ -26,7 +26,7 @@ namespace Avalonia.Native.Interop
             item.Dispose();
         }
 
-        private void MoveExistingTo(int index, IAvnAppMenuItem item)
+        private void MoveExistingTo(int index, IAvnMenuItem item)
         {
             _menuItems.Remove(item);
             _menuItems.Insert(index, item);
@@ -35,7 +35,7 @@ namespace Avalonia.Native.Interop
             InsertItem(index, item);
         }
 
-        private IAvnAppMenuItem CreateNewAt(IAvaloniaNativeFactory factory, int index, NativeMenuItemBase item)
+        private IAvnMenuItem CreateNewAt(IAvaloniaNativeFactory factory, int index, NativeMenuItemBase item)
         {
             var result = CreateNew(factory, item);
 
@@ -49,7 +49,7 @@ namespace Avalonia.Native.Interop
             return result;
         }
 
-        private IAvnAppMenuItem CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
+        private IAvnMenuItem CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
         {
             var nativeItem = item is NativeMenuItemSeperator ? factory.CreateMenuItemSeperator() : factory.CreateMenuItem();
             nativeItem.ManagedMenuItem = item;
@@ -93,7 +93,7 @@ namespace Avalonia.Native.Interop
 
             for (int i = 0; i < menu.Items.Count; i++)
             {
-                IAvnAppMenuItem nativeItem;
+                IAvnMenuItem nativeItem;
 
                 if (i >= _menuItems.Count)
                 {

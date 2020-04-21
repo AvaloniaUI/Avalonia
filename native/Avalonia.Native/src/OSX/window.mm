@@ -27,7 +27,7 @@ public:
     NSObject<IRenderTarget>* renderTarget;
     AvnPoint lastPositionSet;
     NSString* _lastTitle;
-    IAvnAppMenu* _mainMenu;
+    IAvnMenu* _mainMenu;
     bool _shown;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events, IAvnGlContext* gl)
@@ -234,7 +234,7 @@ public:
         }
     }
     
-    virtual HRESULT SetMainMenu(IAvnAppMenu* menu) override
+    virtual HRESULT SetMainMenu(IAvnMenu* menu) override
     {
         _mainMenu = menu;
         
@@ -247,7 +247,7 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT ObtainMainMenu(IAvnAppMenu** ret) override
+    virtual HRESULT ObtainMainMenu(IAvnMenu** ret) override
     {
         if(ret == nullptr)
         {
