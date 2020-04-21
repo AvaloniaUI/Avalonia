@@ -26,7 +26,7 @@ namespace Avalonia.Controls
             _items.CollectionChanged += ItemsChanged;
         }
 
-        void INativeMenuExporterEventsImplBridge.RaiseNeedsUpdate ()
+        void INativeMenuExporterEventsImplBridge.RaiseNeedsUpdate()
         {
             Opening?.Invoke(this, EventArgs.Empty);
         }
@@ -39,10 +39,10 @@ namespace Avalonia.Controls
 
         private void ItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if(e.OldItems!=null)
+            if (e.OldItems != null)
                 foreach (NativeMenuItemBase i in e.OldItems)
                     i.Parent = null;
-            if(e.NewItems!=null)
+            if (e.NewItems != null)
                 foreach (NativeMenuItemBase i in e.NewItems)
                     i.Parent = this;
         }
@@ -57,7 +57,7 @@ namespace Avalonia.Controls
         }
 
         public void Add(NativeMenuItemBase item) => _items.Add(item);
-        
+
         public IEnumerator<NativeMenuItemBase> GetEnumerator() => _items.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()

@@ -98,7 +98,7 @@ namespace Avalonia.Controls
         {
             get => _isChecked;
             set => SetAndRaise(IsCheckedProperty, ref _isChecked, value);
-        }        
+        }
 
         public static readonly DirectProperty<NativeMenuItem, ICommand> CommandProperty =
             Button.CommandProperty.AddOwner<NativeMenuItem>(
@@ -138,12 +138,12 @@ namespace Avalonia.Controls
                         nameof(ICommand.CanExecuteChanged), _canExecuteChangedSubscriber);
 
                 SetAndRaise(CommandProperty, ref _command, value);
-                
+
                 if (_command != null)
                     WeakSubscriptionManager.Subscribe(_command,
                         nameof(ICommand.CanExecuteChanged), _canExecuteChangedSubscriber);
-                
-                CanExecuteChanged();                
+
+                CanExecuteChanged();
             }
         }
 

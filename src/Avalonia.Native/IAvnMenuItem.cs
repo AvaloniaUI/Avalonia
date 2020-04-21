@@ -7,7 +7,7 @@ namespace Avalonia.Native.Interop
 {
     public partial class IAvnMenuItem
     {
-        private IAvnMenu _subMenu;        
+        private IAvnMenu _subMenu;
         private CompositeDisposable _propertyDisposables = new CompositeDisposable();
         private IDisposable _currentActionDisposable;
 
@@ -104,8 +104,8 @@ namespace Avalonia.Native.Interop
         }
 
         internal void Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenuItem item)
-        {                        
-            if(item != ManagedMenuItem)
+        {
+            if (item != ManagedMenuItem)
             {
                 throw new ArgumentException("The item does not match the menuitem being updated.", nameof(item));
             }

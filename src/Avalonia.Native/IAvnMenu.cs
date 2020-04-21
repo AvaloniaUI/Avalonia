@@ -30,7 +30,7 @@ namespace Avalonia.Native.Interop
         private Dictionary<NativeMenuItemBase, IAvnMenuItem> _menuItemLookup = new Dictionary<NativeMenuItemBase, IAvnMenuItem>();
         private CompositeDisposable _propertyDisposables = new CompositeDisposable();
 
-        internal void RaiseNeedsUpdate ()
+        internal void RaiseNeedsUpdate()
         {
             (ManagedMenu as INativeMenuExporterEventsImplBridge).RaiseNeedsUpdate();
 
@@ -39,7 +39,7 @@ namespace Avalonia.Native.Interop
 
         internal NativeMenu ManagedMenu { get; private set; }
 
-        public static IAvnMenu Create (IAvaloniaNativeFactory factory)
+        public static IAvnMenu Create(IAvaloniaNativeFactory factory)
         {
             var events = new MenuEvents();
 
@@ -54,7 +54,7 @@ namespace Avalonia.Native.Interop
 
         protected override void Dispose(bool disposing)
         {
-            if(disposing)
+            if (disposing)
             {
                 _events.Dispose();
             }

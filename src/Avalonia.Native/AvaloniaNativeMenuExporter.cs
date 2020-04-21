@@ -15,7 +15,7 @@ namespace Avalonia.Native
         private bool _exported = false;
         private IAvnWindow _nativeWindow;
         private NativeMenu _menu;
-        private IAvnMenu _nativeMenu;        
+        private IAvnMenu _nativeMenu;
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
         {
@@ -43,9 +43,9 @@ namespace Avalonia.Native
             DoLayoutReset();
         }
 
-        internal void InvalidateMenu ()
+        internal void InvalidateMenu()
         {
-            if(_resetQueued)
+            if (_resetQueued)
             {
                 DoLayoutReset();
             }
@@ -142,7 +142,7 @@ namespace Avalonia.Native
                     setMenu = true;
                 }
             }
-            
+
             _nativeMenu.Update(_factory, appMenuHolder);
 
             if (setMenu)
@@ -164,7 +164,7 @@ namespace Avalonia.Native
                     _nativeMenu.Initialise(this, menu, "");
                 }
             }
-            
+
             _nativeMenu.Update(_factory, menu);
 
             avnWindow.SetMainMenu(_nativeMenu);
