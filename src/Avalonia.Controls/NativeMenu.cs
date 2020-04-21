@@ -18,7 +18,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the user clicks the menu and before its opened. Use this event to update the menu dynamically.
         /// </summary>
-        public event EventHandler<EventArgs> NeedsUpdate;
+        public event EventHandler<EventArgs> Opening;
 
         public NativeMenu()
         {
@@ -28,7 +28,7 @@ namespace Avalonia.Controls
 
         void INativeMenuExporterEventsImplBridge.RaiseNeedsUpdate ()
         {
-            NeedsUpdate?.Invoke(this, EventArgs.Empty);
+            Opening?.Invoke(this, EventArgs.Empty);
         }
 
         private void Validator(NativeMenuItemBase obj)

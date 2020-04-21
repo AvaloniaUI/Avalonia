@@ -32,7 +32,7 @@ namespace ControlCatalog
 
             var fileMenu = (NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu;
             
-            fileMenu.NeedsUpdate += (sender, e)=>
+            fileMenu.Opening += (sender, e)=>
             {
                 fileMenu.Items.Clear();
                 fileMenu.Items.Add(new NativeMenuItem("Test 1"));

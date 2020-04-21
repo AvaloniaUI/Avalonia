@@ -44,7 +44,7 @@ namespace Avalonia.Native.Interop
             {
                 if (item.Command != null || item.HasClickHandlers)
                 {
-                    return item.Enabled;
+                    return item.IsEnabled;
                 }
 
                 return false;

@@ -9,7 +9,7 @@ namespace Avalonia.Controls
     {
         private string _header;
         private KeyGesture _gesture;
-        private bool _enabled = true;
+        private bool _isEnabled = true;
         private ICommand _command;
         private bool _isChecked = false;
 
@@ -112,18 +112,18 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<object> CommandParameterProperty =
             Button.CommandParameterProperty.AddOwner<MenuItem>();
 
-        public static readonly DirectProperty<NativeMenuItem, bool> EnabledProperty =
-           AvaloniaProperty.RegisterDirect<NativeMenuItem, bool>(nameof(Enabled), o => o.Enabled, (o, v) => o.Enabled = v, true);
+        public static readonly DirectProperty<NativeMenuItem, bool> IsEnabledProperty =
+           AvaloniaProperty.RegisterDirect<NativeMenuItem, bool>(nameof(IsEnabled), o => o.IsEnabled, (o, v) => o.IsEnabled = v, true);
 
-        public bool Enabled
+        public bool IsEnabled
         {
-            get => _enabled;
-            set => SetAndRaise(EnabledProperty, ref _enabled, value);
+            get => _isEnabled;
+            set => SetAndRaise(IsEnabledProperty, ref _isEnabled, value);
         }
 
         void CanExecuteChanged()
         {
-            Enabled = _command?.CanExecute(null) ?? true;
+            IsEnabled = _command?.CanExecute(null) ?? true;
         }
 
         public bool HasClickHandlers => Clicked != null;
