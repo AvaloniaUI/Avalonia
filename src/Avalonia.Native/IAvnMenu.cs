@@ -47,6 +47,8 @@ namespace Avalonia.Native.Interop
 
             events.Initialise(menu);
 
+            menu._events = events;
+
             return menu;
         }
 

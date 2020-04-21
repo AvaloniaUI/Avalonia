@@ -34,6 +34,7 @@ namespace ControlCatalog
             
             fileMenu.NeedsUpdate += (sender, e)=>
             {
+                fileMenu.Items.Clear();
                 fileMenu.Items.Add(new NativeMenuItem("Test 1"));
             };
 
