@@ -7,7 +7,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
-    public partial class NativeMenu : AvaloniaObject, IEnumerable<NativeMenuItemBase>
+    public partial class NativeMenu : AvaloniaObject, IEnumerable<NativeMenuItemBase>, INativeMenuExporterEventsImplBridge
     {
         private readonly AvaloniaList<NativeMenuItemBase> _items =
             new AvaloniaList<NativeMenuItemBase> { ResetBehavior = ResetBehavior.Remove };
@@ -23,7 +23,7 @@ namespace Avalonia.Controls
             _items.CollectionChanged += ItemsChanged;
         }
 
-        public void RaiseNeedsUpdate ()
+        void INativeMenuExporterEventsImplBridge.RaiseNeedsUpdate ()
         {
             NeedsUpdate?.Invoke(this, EventArgs.Empty);
         }

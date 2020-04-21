@@ -32,7 +32,7 @@ namespace Avalonia.Native.Interop
 
         internal void RaiseNeedsUpdate ()
         {
-            ManagedMenu.RaiseNeedsUpdate();
+            (ManagedMenu as INativeMenuExporterEventsImplBridge).RaiseNeedsUpdate();
 
             _exporter.InvalidateMenu();
         }
