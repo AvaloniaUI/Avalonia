@@ -43,6 +43,14 @@ namespace Avalonia.Native
             DoLayoutReset();
         }
 
+        internal void InvalidateMenu ()
+        {
+            if(_resetQueued)
+            {
+                DoLayoutReset();
+            }
+        }
+
         private static NativeMenu CreateDefaultAppMenu()
         {
             var result = new NativeMenu();
@@ -127,7 +135,7 @@ namespace Avalonia.Native
 
                 if (_nativeMenu is null)
                 {
-                    _nativeMenu = _factory.CreateMenu();
+                    _nativeMenu = IAvnMenu.Create(_factory);
 
                     _nativeMenu.Initialise(this, appMenuHolder, "");
 
@@ -151,7 +159,7 @@ namespace Avalonia.Native
 
                 if (_nativeMenu is null)
                 {
-                    _nativeMenu = _factory.CreateMenu();
+                    _nativeMenu = IAvnMenu.Create(_factory);
 
                     _nativeMenu.Initialise(this, menu, "");
                 }

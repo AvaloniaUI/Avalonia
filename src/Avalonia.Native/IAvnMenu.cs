@@ -7,14 +7,56 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native.Interop
 {
+    class MenuEvents : CallbackBase, IAvnMenuEvents
+    {
+        private IAvnMenu _parent;
+
+        public void Initialise(IAvnMenu parent)
+        {
+            _parent = parent;
+        }
+
+        public void NeedsUpdate()
+        {
+            _parent?.RaiseNeedsUpdate();
+        }
+    }
+
     public partial class IAvnMenu
     {
+        private MenuEvents _events;
         private AvaloniaNativeMenuExporter _exporter;
         private List<IAvnMenuItem> _menuItems = new List<IAvnMenuItem>();
         private Dictionary<NativeMenuItemBase, IAvnMenuItem> _menuItemLookup = new Dictionary<NativeMenuItemBase, IAvnMenuItem>();
         private CompositeDisposable _propertyDisposables = new CompositeDisposable();
 
+        internal void RaiseNeedsUpdate ()
+        {
+            ManagedMenu.RaiseNeedsUpdate();
+
+            _exporter.InvalidateMenu();
+        }
+
         internal NativeMenu ManagedMenu { get; private set; }
+
+        public static IAvnMenu Create (IAvaloniaNativeFactory factory)
+        {
+            var events = new MenuEvents();
+
+            var menu = factory.CreateMenu(events);
+
+            events.Initialise(menu);
+
+            return menu;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if(disposing)
+            {
+                _events.Dispose();
+            }
+        }
 
         private void RemoveAndDispose(IAvnMenuItem item)
         {

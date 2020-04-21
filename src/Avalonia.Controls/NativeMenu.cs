@@ -15,10 +15,17 @@ namespace Avalonia.Controls
         [Content]
         public IList<NativeMenuItemBase> Items => _items;
 
+        public event EventHandler<EventArgs> NeedsUpdate;
+
         public NativeMenu()
         {
             _items.Validate = Validator;
             _items.CollectionChanged += ItemsChanged;
+        }
+
+        public void RaiseNeedsUpdate ()
+        {
+            NeedsUpdate?.Invoke(this, EventArgs.Empty);
         }
 
         private void Validator(NativeMenuItemBase obj)

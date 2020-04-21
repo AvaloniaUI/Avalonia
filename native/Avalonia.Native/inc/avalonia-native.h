@@ -416,7 +416,7 @@ AVNCOM(IAvnMenuEvents, 1A) : IUnknown
     /**
      * NeedsUpdate
      */
-    virtual bool NeedUpdate () = 0;
+    virtual void NeedsUpdate () = 0;
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();

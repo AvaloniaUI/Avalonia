@@ -167,6 +167,14 @@ AvnMenu* AvnAppMenu::GetNative()
     return _native;
 }
 
+void AvnAppMenu::RaiseNeedsUpdate()
+{
+    if(_baseEvents != nullptr)
+    {
+        _baseEvents->NeedsUpdate();
+    }
+}
+
 HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 {
     auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
@@ -231,7 +239,7 @@ HRESULT AvnAppMenu::Clear()
 
 - (void)menuNeedsUpdate:(NSMenu *)menu
 {
-    printf("NEEDSUPDATE\n");
+    _parent->RaiseNeedsUpdate();
 }
 
 

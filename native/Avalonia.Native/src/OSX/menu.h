@@ -67,6 +67,8 @@ public:
         
     AvnMenu* GetNative();
     
+    void RaiseNeedsUpdate ();
+    
     virtual HRESULT InsertItem (int index, IAvnMenuItem* item) override;
     
     virtual HRESULT RemoveItem (IAvnMenuItem* item) override;
