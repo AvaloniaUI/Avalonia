@@ -78,60 +78,75 @@ NSMenuItem* AvnAppMenuItem::GetNative()
 
 HRESULT AvnAppMenuItem::SetSubMenu (IAvnMenu* menu)
 {
-    if(menu != nullptr)
+    @autoreleasepool
     {
-        auto nsMenu = dynamic_cast<AvnAppMenu*>(menu)->GetNative();
+        if(menu != nullptr)
+        {
+            auto nsMenu = dynamic_cast<AvnAppMenu*>(menu)->GetNative();
+            
+            [_native setSubmenu: nsMenu];
+        }
+        else
+        {
+            [_native setSubmenu: nullptr];
+        }
         
-        [_native setSubmenu: nsMenu];
+        return S_OK;
     }
-    else
-    {
-        [_native setSubmenu: nullptr];
-    }
-    
-    return S_OK;
 }
 
 HRESULT AvnAppMenuItem::SetTitle (void* utf8String)
 {
-    if (utf8String != nullptr)
+    @autoreleasepool
     {
-        [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+        if (utf8String != nullptr)
+        {
+            [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+        }
+        
+        return S_OK;
     }
-    
-    return S_OK;
 }
 
 HRESULT AvnAppMenuItem::SetGesture (void* key, AvnInputModifiers modifiers)
 {
-    NSEventModifierFlags flags = 0;
-    
-    if (modifiers & Control)
-        flags |= NSEventModifierFlagControl;
-    if (modifiers & Shift)
-        flags |= NSEventModifierFlagShift;
-    if (modifiers & Alt)
-        flags |= NSEventModifierFlagOption;
-    if (modifiers & Windows)
-        flags |= NSEventModifierFlagCommand;
-    
-    [_native setKeyEquivalent:[NSString stringWithUTF8String:(const char*)key]];
-    [_native setKeyEquivalentModifierMask:flags];
-    
-    return S_OK;
+    @autoreleasepool
+    {
+        NSEventModifierFlags flags = 0;
+        
+        if (modifiers & Control)
+            flags |= NSEventModifierFlagControl;
+        if (modifiers & Shift)
+            flags |= NSEventModifierFlagShift;
+        if (modifiers & Alt)
+            flags |= NSEventModifierFlagOption;
+        if (modifiers & Windows)
+            flags |= NSEventModifierFlagCommand;
+        
+        [_native setKeyEquivalent:[NSString stringWithUTF8String:(const char*)key]];
+        [_native setKeyEquivalentModifierMask:flags];
+        
+        return S_OK;
+    }
 }
 
 HRESULT AvnAppMenuItem::SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback)
 {
-    _predicate = predicate;
-    _callback = callback;
-    return S_OK;
+    @autoreleasepool
+    {
+        _predicate = predicate;
+        _callback = callback;
+        return S_OK;
+    }
 }
 
 HRESULT AvnAppMenuItem::SetIsChecked (bool isChecked)
 {
-    [_native setState:(isChecked ? NSOnState : NSOffState)];
-    return S_OK;
+    @autoreleasepool
+    {
+        [_native setState:(isChecked ? NSOnState : NSOffState)];
+        return S_OK;
+    }
 }
 
 bool AvnAppMenuItem::EvaluateItemEnabled()
@@ -177,42 +192,54 @@ void AvnAppMenu::RaiseNeedsUpdate()
 
 HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 {
-    auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
-    
-    if(avnMenuItem != nullptr)
+    @autoreleasepool
     {
-        [_native insertItem: avnMenuItem->GetNative() atIndex:index];
+        auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
+        
+        if(avnMenuItem != nullptr)
+        {
+            [_native insertItem: avnMenuItem->GetNative() atIndex:index];
+        }
+        
+        return S_OK;
     }
-    
-    return S_OK;
 }
 
 HRESULT AvnAppMenu::RemoveItem (IAvnMenuItem* item)
 {
-    auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
-    
-    if(avnMenuItem != nullptr)
+    @autoreleasepool
     {
-        [_native removeItem:avnMenuItem->GetNative()];
+        auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
+        
+        if(avnMenuItem != nullptr)
+        {
+            [_native removeItem:avnMenuItem->GetNative()];
+        }
+        
+        return S_OK;
     }
-    
-    return S_OK;
 }
 
 HRESULT AvnAppMenu::SetTitle (void* utf8String)
 {
-    if (utf8String != nullptr)
+    @autoreleasepool
     {
-        [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+        if (utf8String != nullptr)
+        {
+            [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+        }
+        
+        return S_OK;
     }
-    
-    return S_OK;
 }
 
 HRESULT AvnAppMenu::Clear()
 {
-    [_native removeAllItems];
-    return S_OK;
+    @autoreleasepool
+    {
+        [_native removeAllItems];
+        return S_OK;
+    }
 }
 
 @implementation AvnMenuDelegate
