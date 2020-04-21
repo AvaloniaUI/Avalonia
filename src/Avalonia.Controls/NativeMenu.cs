@@ -15,6 +15,9 @@ namespace Avalonia.Controls
         [Content]
         public IList<NativeMenuItemBase> Items => _items;
 
+        /// <summary>
+        /// Raised when the user clicks the menu and before its opened. Use this event to update the menu dynamically.
+        /// </summary>
         public event EventHandler<EventArgs> NeedsUpdate;
 
         public NativeMenu()
