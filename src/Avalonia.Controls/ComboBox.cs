@@ -242,10 +242,15 @@ namespace Avalonia.Controls
             }
         }
 
-        private void PopupClosed(object sender, EventArgs e)
+        private void PopupClosed(object sender, PopupClosedEventArgs e)
         {
             _subscriptionsOnOpen?.Dispose();
             _subscriptionsOnOpen = null;
+
+            if (e.CloseEvent is PointerEventArgs pointerEvent)
+            {
+                pointerEvent.Handled = true;
+            }
 
             if (CanFocus(this))
             {
