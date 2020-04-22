@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
+using Avalonia.Collections.Pooled;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -19,8 +20,8 @@ namespace Avalonia.Rendering.SceneGraph
 
         private Rect? _bounds;
         private double _opacity;
-        private List<IVisualNode> _children;
-        private List<IRef<IDrawOperation>> _drawOperations;
+        private PooledList<IVisualNode> _children;
+        private PooledList<IRef<IDrawOperation>> _drawOperations;
         private IRef<IDisposable> _drawOperationsRefCounter;
         private bool _drawOperationsCloned;
         private Matrix transformRestore;
@@ -349,6 +350,18 @@ namespace Avalonia.Rendering.SceneGraph
             context.Transform = transformRestore;
         }
 
+        /// <summary>
+        /// Inserts default constructed children into collection and returns a span for the newly created range.
+        /// </summary>
+        /// <param name="count">Count of children that will be added.</param>
+        /// <returns></returns>
+        internal Span<IVisualNode> AddChildrenSpan(int count)
+        {
+            EnsureChildrenCreated(count);
+
+            return _children.AddSpan(count);
+        }
+
         private Rect CalculateBounds()
         {
             var result = new Rect();
@@ -362,11 +375,11 @@ namespace Avalonia.Rendering.SceneGraph
             return result;
         }
 
-        private void EnsureChildrenCreated()
+        private void EnsureChildrenCreated(int capacity = 0)
         {
             if (_children == null)
             {
-                _children = new List<IVisualNode>();
+                _children = new PooledList<IVisualNode>(capacity);
             }
         }
 
@@ -377,13 +390,21 @@ namespace Avalonia.Rendering.SceneGraph
         {
             if (_drawOperations == null)
             {
-                _drawOperations = new List<IRef<IDrawOperation>>();
+                _drawOperations = new PooledList<IRef<IDrawOperation>>();
                 _drawOperationsRefCounter = RefCountable.Create(CreateDisposeDrawOperations(_drawOperations));
                 _drawOperationsCloned = false;
             }
             else if (_drawOperationsCloned)
             {
-                _drawOperations = new List<IRef<IDrawOperation>>(_drawOperations.Select(op => op.Clone()));
+                var oldDrawOperations = _drawOperations;
+
+                _drawOperations = new PooledList<IRef<IDrawOperation>>(oldDrawOperations.Count);
+
+                foreach (var drawOperation in oldDrawOperations)
+                {
+                    _drawOperations.Add(drawOperation.Clone());
+                }
+
                 _drawOperationsRefCounter.Dispose();
                 _drawOperationsRefCounter = RefCountable.Create(CreateDisposeDrawOperations(_drawOperations));
                 _drawOperationsCloned = false;
@@ -397,14 +418,16 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="drawOperations">Draw operations that need to be disposed.</param>
         /// <returns>Disposable for given draw operations.</returns>
-        private static IDisposable CreateDisposeDrawOperations(List<IRef<IDrawOperation>> drawOperations)
+        private static IDisposable CreateDisposeDrawOperations(PooledList<IRef<IDrawOperation>> drawOperations)
         {
-            return Disposable.Create(() =>
+            return Disposable.Create(drawOperations, operations =>
             {
-                foreach (var operation in drawOperations)
+                foreach (var operation in operations)
                 {
                     operation.Dispose();
                 }
+
+                operations.Dispose();
             });
         }
 
@@ -413,6 +436,8 @@ namespace Avalonia.Rendering.SceneGraph
         public void Dispose()
         {
             _drawOperationsRefCounter?.Dispose();
+
+            _children?.Dispose();
 
             Disposed = true;
         }

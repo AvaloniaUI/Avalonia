@@ -91,7 +91,13 @@ namespace Avalonia.X11.NativeDialogs
                 gtk_dialog_add_button(dlg, open, GtkResponseType.Cancel);
             if (initialFileName != null)
                 using (var fn = new Utf8Buffer(initialFileName))
-                    gtk_file_chooser_set_current_name(dlg, fn);
+                {
+                    if (action == GtkFileChooserAction.Save)
+                        gtk_file_chooser_set_current_name(dlg, fn);
+                    else
+                        gtk_file_chooser_set_filename(dlg, fn);
+                }
+
             gtk_window_present(dlg);
             return tcs.Task;
         }

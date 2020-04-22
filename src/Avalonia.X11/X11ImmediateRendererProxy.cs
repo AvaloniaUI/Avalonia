@@ -11,6 +11,7 @@ namespace Avalonia.X11
         private readonly IRenderLoop _loop;
         private ImmediateRenderer _renderer;
         private bool _invalidated;
+        private bool _running;
         private object _lock = new object();
 
         public X11ImmediateRendererProxy(IVisual root, IRenderLoop loop)
@@ -22,6 +23,7 @@ namespace Avalonia.X11
 
         public void Dispose()
         {
+            _running = false;
             _renderer.Dispose();
         }
 
@@ -78,12 +80,14 @@ namespace Avalonia.X11
 
         public void Start()
         {
+            _running = true;
             _loop.Add(this);
             _renderer.Start();
         }
 
         public void Stop()
         {
+            _running = false;
             _loop.Remove(this);
             _renderer.Stop();
         }
@@ -100,7 +104,11 @@ namespace Avalonia.X11
             {
                 lock (_lock)
                     _invalidated = false;
-                Dispatcher.UIThread.Post(() => Paint(new Rect(0, 0, 100000, 100000)));
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (_running)
+                        Paint(new Rect(0, 0, 100000, 100000));
+                });
             }
         }
     }
