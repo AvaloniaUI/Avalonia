@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-	using System.ComponentModel;
+    using System.ComponentModel;
 
     public class PointsListTypeConverter : TypeConverter
     {
@@ -19,11 +19,11 @@ namespace Avalonia.Markup.Xaml.Converters
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             string strValue = (string)value;
-            string[] pointStrs = strValue.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            var result = new List<Point>(pointStrs.Length);
-            foreach (var pointStr in pointStrs)
+            string[] pointStrs = strValue.Split(new[] { ' ', '\t', '\r', '\n', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var result = new List<Point>(pointStrs.Length / 2);
+            for (int i = 0; i < pointStrs.Length; i += 2)
             {
-                result.Add(Point.Parse(pointStr));
+                result.Add(Point.Parse($"{pointStrs[i]} {pointStrs[i + 1]}"));
             }
 
             return result;
