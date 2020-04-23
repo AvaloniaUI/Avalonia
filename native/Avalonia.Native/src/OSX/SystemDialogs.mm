@@ -20,7 +20,7 @@ public:
             
             if(title != nullptr)
             {
-				panel.message = [NSString stringWithUTF8String:title];
+			    panel.message = [NSString stringWithUTF8String:title];
                 panel.title = [NSString stringWithUTF8String:title];
             }
             
@@ -95,7 +95,7 @@ public:
             
             if(title != nullptr)
             {
-				panel.message = [NSString stringWithUTF8String:title];
+			    panel.message = [NSString stringWithUTF8String:title];
                 panel.title = [NSString stringWithUTF8String:title];
             }
             
@@ -184,7 +184,7 @@ public:
             
             if(title != nullptr)
             {
-				panel.message = [NSString stringWithUTF8String:title];
+			    panel.message = [NSString stringWithUTF8String:title];
                 panel.title = [NSString stringWithUTF8String:title];
             }
             
