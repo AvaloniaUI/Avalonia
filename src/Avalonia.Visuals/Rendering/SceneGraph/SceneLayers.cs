@@ -11,28 +11,16 @@ namespace Avalonia.Rendering.SceneGraph
     public class SceneLayers : IEnumerable<SceneLayer>
     {
         private readonly IVisual _root;
-        private readonly List<SceneLayer> _inner;
-        private readonly Dictionary<IVisual, SceneLayer> _index;
+        private readonly List<SceneLayer> _inner = new List<SceneLayer>();
+        private readonly Dictionary<IVisual, SceneLayer> _index = new Dictionary<IVisual, SceneLayer>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SceneLayers"/> class.
         /// </summary>
         /// <param name="root">The scene's root visual.</param>
-        public SceneLayers(IVisual root) : this(root, 0)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SceneLayers"/> class.
-        /// </summary>
-        /// <param name="root">The scene's root visual.</param>
-        /// <param name="capacity">Initial layer capacity.</param>
-        public SceneLayers(IVisual root, int capacity)
+        public SceneLayers(IVisual root)
         {
             _root = root;
-
-            _inner = new List<SceneLayer>(capacity);
-            _index = new Dictionary<IVisual, SceneLayer>(capacity);
         }
 
         /// <summary>
@@ -96,7 +84,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>The cloned layers.</returns>
         public SceneLayers Clone()
         {
-            var result = new SceneLayers(_root, Count);
+            var result = new SceneLayers(_root);
 
             foreach (var src in _inner)
             {
