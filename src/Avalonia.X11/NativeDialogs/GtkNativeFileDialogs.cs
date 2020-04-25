@@ -105,8 +105,11 @@ namespace Avalonia.X11.NativeDialogs
         public async Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent)
         {
             await EnsureInitialized();
+
+            var platformImpl = parent?.PlatformImpl;
+
             return await await RunOnGlibThread(
-                () => ShowDialog(dialog.Title, parent?.PlatformImpl,
+                () => ShowDialog(dialog.Title, platformImpl,
                     dialog is OpenFileDialog ? GtkFileChooserAction.Open : GtkFileChooserAction.Save,
                     (dialog as OpenFileDialog)?.AllowMultiple ?? false,
                     Path.Combine(string.IsNullOrEmpty(dialog.InitialDirectory) ? "" : dialog.InitialDirectory,
@@ -116,9 +119,12 @@ namespace Avalonia.X11.NativeDialogs
         public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
         {
             await EnsureInitialized();
+
+            var platformImpl = parent?.PlatformImpl;
+
             return await await RunOnGlibThread(async () =>
             {
-                var res = await ShowDialog(dialog.Title, parent?.PlatformImpl,
+                var res = await ShowDialog(dialog.Title, platformImpl,
                     GtkFileChooserAction.SelectFolder, false, dialog.InitialDirectory, null);
                 return res?.FirstOrDefault();
             });
