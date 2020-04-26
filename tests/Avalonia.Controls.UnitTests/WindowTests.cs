@@ -156,7 +156,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parent = Mock.Of<IWindowImpl>();
+                var parent = Mock.Of<Window>();
                 var renderer = new Mock<IRenderer>();
                 var target = new Window(CreateImpl(renderer));
 
@@ -171,7 +171,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parent = Mock.Of<IWindowImpl>();
+                var parent = Mock.Of<Window>();
                 var target = new Window();
                 var raised = false;
 
@@ -203,7 +203,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parent = new Mock<IWindowImpl>();
+                var parent = new Mock<Window>();
                 var windowImpl = new Mock<IWindowImpl>();
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.Scaling).Returns(1);
@@ -242,7 +242,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parent = new Mock<IWindowImpl>();
+                var parent = new Mock<Window>();
                 var windowImpl = new Mock<IWindowImpl>();
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.Scaling).Returns(1);
