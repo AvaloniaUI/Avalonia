@@ -67,6 +67,9 @@
       OriginalCopyPath="$(AvaloniaXamlOriginalCopyFilePath)"
       ProjectDirectory="$(MSBuildProjectDirectory)"
       VerifyIl="$(AvaloniaXamlIlVerifyIl)"
+      AssemblyOriginatorKeyFile="$(AssemblyOriginatorKeyFile)"
+      SignAssembly="$(SignAssembly)"
+      DelaySign="$(DelaySign)"
     />
     <Exec
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"

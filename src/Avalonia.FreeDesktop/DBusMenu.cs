@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Tmds.DBus;
 
-[assembly: InternalsVisibleTo(Tmds.DBus.Connection.DynamicAssemblyName)]
+    //[assembly: InternalsVisibleTo(Tmds.DBus.Connection.DynamicAssemblyName)]
 namespace Avalonia.FreeDesktop.DBusMenu
 {
 

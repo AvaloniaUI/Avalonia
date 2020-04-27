@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tmds.DBus" Version="0.7.0" />
+    <PackageReference Include="Tmds.DBus" Version="0.8.0" />
   </ItemGroup>
 
 </Project>

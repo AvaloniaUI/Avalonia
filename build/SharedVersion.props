@@ -15,5 +15,7 @@
     <PackageTags>avalonia;avaloniaui;mvvm;rx;reactive extensions;android;ios;mac;forms;wpf;net;netstandard;net461;uwp;xamarin</PackageTags>
     <PackageReleaseNotes>https://github.com/AvaloniaUI/Avalonia/releases</PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\avalonia.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>True</SignAssembly>
   </PropertyGroup>
 </Project>

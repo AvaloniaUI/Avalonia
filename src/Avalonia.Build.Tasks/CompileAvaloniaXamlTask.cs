@@ -34,7 +34,9 @@ namespace Avalonia.Build.Tasks
 
             var res = XamlCompilerTaskExecutor.Compile(BuildEngine, input,
                 File.ReadAllLines(ReferencesFilePath).Where(l => !string.IsNullOrWhiteSpace(l)).ToArray(),
-                ProjectDirectory, OutputPath, VerifyIl);
+                ProjectDirectory, OutputPath, VerifyIl,
+                (SignAssembly && !DelaySign) ? AssemblyOriginatorKeyFile : null
+                );
             if (!res.Success)
                 return false;
             if (!res.WrittenFile)
@@ -68,6 +70,10 @@ namespace Avalonia.Build.Tasks
         public string OutputPath { get; set; }
 
         public bool VerifyIl { get; set; }
+        
+        public string AssemblyOriginatorKeyFile { get; set; }
+        public bool SignAssembly { get; set; }
+        public bool DelaySign { get; set; }
         
         public IBuildEngine BuildEngine { get; set; }
         public ITaskHost HostObject { get; set; }
