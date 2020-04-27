@@ -62,29 +62,33 @@ namespace Avalonia.Animation
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected sealed override void OnPropertyChangedCore<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (_transitions is null || _previousTransitions is null || change.Priority == BindingPriority.Animation)
-                return;
-
-            // PERF-SENSITIVE: Called on every property change. Don't use LINQ here (too many allocations).
-            foreach (var transition in _transitions)
+            if ((_transitions is object || _previousTransitions is object) &&
+                change.Priority > BindingPriority.Animation &&
+                !change.IsOutdated)
             {
-                if (transition.Property == change.Property)
+                // PERF-SENSITIVE: Called on every property change. Don't use LINQ here (too many allocations).
+                foreach (var transition in _transitions)
                 {
-                    if (_previousTransitions.TryGetValue(change.Property, out var dispose))
-                        dispose.Dispose();
+                    if (transition.Property == change.Property)
+                    {
+                        if (_previousTransitions.TryGetValue(change.Property, out var dispose))
+                            dispose.Dispose();
 
-                    var instance = transition.Apply(
-                        this,
-                        Clock ?? Avalonia.Animation.Clock.GlobalClock,
-                        change.OldValue.GetValueOrDefault(),
-                        change.NewValue.GetValueOrDefault());
+                        var instance = transition.Apply(
+                            this,
+                            Clock ?? Avalonia.Animation.Clock.GlobalClock,
+                            change.OldValue.GetValueOrDefault(),
+                            change.NewValue.GetValueOrDefault());
 
-                    _previousTransitions[change.Property] = instance;
-                    return;
+                        _previousTransitions[change.Property] = instance;
+                        return;
+                    }
                 }
             }
+
+            base.OnPropertyChangedCore(change);
         }
     }
 }

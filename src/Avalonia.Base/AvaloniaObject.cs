@@ -659,6 +659,18 @@ namespace Avalonia
         /// Called when a avalonia property changes on the object.
         /// </summary>
         /// <param name="change">The property change details.</param>
+        protected virtual void OnPropertyChangedCore<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            if (change.IsActiveValueChange && !change.IsOutdated)
+            {
+                OnPropertyChanged(change);
+            }
+        }
+
+        /// <summary>
+        /// Called when a avalonia property changes on the object.
+        /// </summary>
+        /// <param name="change">The property change details.</param>
         protected virtual void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
         }
@@ -756,7 +768,7 @@ namespace Avalonia
 
             try
             {
-                OnPropertyChanged(change);
+                OnPropertyChangedCore(change);
                 change.Property.NotifyChanged(change);
 
                 if (_listeners is object && _listeners.TryGetValue(change.Property, out var listener))
