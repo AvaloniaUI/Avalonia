@@ -244,6 +244,11 @@ public:
         
         [Window applyMenu:nsmenu];
         
+        if ([Window isKeyWindow])
+        {
+            [Window reparentMenu];
+        }
+        
         return S_OK;
     }
     
@@ -1140,7 +1145,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _canBecomeKeyAndMain;
     bool _closed;
     NSMenu* _menu;
-    bool _isAppMenuApplied;
     double _lastScaling;
 }
 
@@ -1177,6 +1181,23 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
 }
 
+-(void) reparentMenu
+{
+    auto appMenuItem = ::GetAppMenuItem();
+    
+    if(appMenuItem != nullptr)
+    {
+        auto appMenu = [appMenuItem menu];
+        
+        [appMenu removeItem:appMenuItem];
+        
+        [[_menu itemAtIndex:0] setSubmenu:appMenu];
+        //[_menu insertItem:appMenuItem atIndex:0];
+    }
+    
+    [NSApp setMenu:_menu];
+}
+
 -(void) applyMenu:(NSMenu *)menu
 {
     if(menu == nullptr)
@@ -1185,22 +1206,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
     
     _menu = menu;
-    
-    if ([self isKeyWindow])
-    {
-        auto appMenu = ::GetAppMenuItem();
-        
-        if(appMenu != nullptr)
-        {
-            [[appMenu menu] removeItem:appMenu];
-            
-            [_menu insertItem:appMenu atIndex:0];
-            
-            _isAppMenuApplied = true;
-        }
-        
-        [NSApp setMenu:menu];
-    }
 }
 
 -(void) setCanBecomeKeyAndMain
@@ -1303,23 +1308,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     if([self activateAppropriateChild: true])
     {
-        if(_menu == nullptr)
-        {
-            _menu = [NSMenu new];
-        }
-        
-        auto appMenu = ::GetAppMenuItem();
-        
-        if(appMenu != nullptr)
-        {
-            [[appMenu menu] removeItem:appMenu];
-            
-            [_menu insertItem:appMenu atIndex:0];
-            
-            _isAppMenuApplied = true;
-        }
-        
-        [NSApp setMenu:_menu];
+        [self reparentMenu];
         
         _parent->BaseEvents->Activated();
         [super becomeKeyWindow];
@@ -1379,9 +1368,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         
         auto nativeAppMenu = dynamic_cast<AvnAppMenu*>(appMenu);
         
-        [[appMenuItem menu] removeItem:appMenuItem];
+        //[[appMenuItem menu] removeItem::appMenuItem];
         
-        [nativeAppMenu->GetNative() addItem:appMenuItem];
+        //[nativeAppMenu->GetNative() addItem:appMenuItem];
         
         [NSApp setMenu:nativeAppMenu->GetNative()];
     }
@@ -1389,8 +1378,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         [NSApp setMenu:nullptr];
     }
-    
-    // remove window menu items from appmenu?
     
     [super resignKeyWindow];
 }
