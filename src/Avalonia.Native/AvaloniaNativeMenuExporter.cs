@@ -150,16 +150,23 @@ namespace Avalonia.Native
 
         private void SetMenu(IAvnWindow avnWindow, NativeMenu menu)
         {
+            var setMenu = false;
+
             if (_nativeMenu is null)
             {
                 _nativeMenu = IAvnMenu.Create(_factory, true);
 
-                _nativeMenu.Initialise(this, menu, "");                
+                _nativeMenu.Initialise(this, menu, "");     
+
+                setMenu = true;           
             }
 
             _nativeMenu.Update(_factory, menu);
 
-            avnWindow.SetMainMenu(_nativeMenu);
+            if(setMenu)
+            {
+                avnWindow.SetMainMenu(_nativeMenu);
+            }
         }
     }
 }
