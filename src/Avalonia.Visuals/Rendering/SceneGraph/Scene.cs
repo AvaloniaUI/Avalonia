@@ -12,7 +12,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// </summary>
     public class Scene : IDisposable
     {
-        private readonly Dictionary<IVisual, IVisualNode> _index;
+        private Dictionary<IVisual, IVisualNode> _index;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Scene"/> class.
@@ -83,7 +83,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>The cloned scene.</returns>
         public Scene CloneScene()
         {
-            var index = new Dictionary<IVisual, IVisualNode>(_index.Count);
+            var index = new Dictionary<IVisual, IVisualNode>();
             var root = Clone((VisualNode)Root, null, index);
 
             var result = new Scene(root, index, Layers.Clone(), Generation + 1)
@@ -162,18 +162,9 @@ namespace Avalonia.Rendering.SceneGraph
 
             index.Add(result.Visual, result);
 
-            int childCount = source.Children.Count;
-
-            if (childCount > 0)
+            foreach (var child in source.Children)
             {
-                Span<IVisualNode> children = result.AddChildrenSpan(childCount);
-
-                for (var i = 0; i < childCount; i++)
-                {
-                    var child = source.Children[i];
-
-                    children[i] = Clone((VisualNode)child, result, index);
-                }
+                result.AddChild(Clone((VisualNode)child, result, index));
             }
 
             return result;
