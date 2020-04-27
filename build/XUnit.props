@@ -10,7 +10,9 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.0" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.3.6" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
+  </ItemGroup>
+  <PropertyGroup>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\avalonia.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>True</SignAssembly>
-  </ItemGroup>
+  </PropertyGroup>
 </Project>
