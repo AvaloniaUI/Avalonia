@@ -84,9 +84,11 @@ namespace Avalonia.Native
 
                 if (appMenu == null)
                 {
-                    appMenu = CreateDefaultAppMenu();
-                    SetMenu(appMenu);
+                    appMenu = CreateDefaultAppMenu();           
+                    NativeMenu.SetMenu(Application.Current, appMenu);         
                 }
+
+                SetMenu(appMenu);
             }
             else
             {
@@ -131,7 +133,7 @@ namespace Avalonia.Native
 
             if (_nativeMenu is null)
             {
-                _nativeMenu = IAvnMenu.Create(_factory);
+                _nativeMenu = IAvnMenu.Create(_factory, false);
 
                 _nativeMenu.Initialise(this, appMenuHolder, "");
 
@@ -150,7 +152,7 @@ namespace Avalonia.Native
         {
             if (_nativeMenu is null)
             {
-                _nativeMenu = IAvnMenu.Create(_factory);
+                _nativeMenu = IAvnMenu.Create(_factory, true);
 
                 _nativeMenu.Initialise(this, menu, "");                
             }

@@ -190,7 +190,7 @@ public:
     virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) = 0;
     virtual HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv) = 0;
     virtual HRESULT SetAppMenu(IAvnMenu* menu) = 0;
-    virtual HRESULT CreateMenu (IAvnMenuEvents* cb, IAvnMenu** ppv) = 0;
+    virtual HRESULT CreateMenu (IAvnMenuEvents* cb, IAvnMenu** ppv, bool isTopLevel) = 0;
     virtual HRESULT CreateMenuItem (IAvnMenuItem** ppv) = 0;
     virtual HRESULT CreateMenuItemSeperator (IAvnMenuItem** ppv) = 0;
 };

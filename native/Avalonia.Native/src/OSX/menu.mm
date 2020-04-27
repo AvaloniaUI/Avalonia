@@ -169,11 +169,18 @@ void AvnAppMenuItem::RaiseOnClicked()
     }
 }
 
-AvnAppMenu::AvnAppMenu(IAvnMenuEvents* events)
+AvnAppMenu::AvnAppMenu(IAvnMenuEvents* events, bool isTopLevel)
 {
+    _isTopLevel = isTopLevel;
     _baseEvents = events;
     id del = [[AvnMenuDelegate alloc] initWithParent: this];
     _native = [[AvnMenu alloc] initWithDelegate: del];
+    
+    
+    if(_isTopLevel)
+    {
+        [_native insertItem: [NSMenuItem new] atIndex:0];
+    }
 }
 
 
@@ -194,6 +201,11 @@ HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 {
     @autoreleasepool
     {
+        if(_isTopLevel)
+        {
+            index++;
+        }
+        
         auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
         
         if(avnMenuItem != nullptr)
@@ -272,11 +284,11 @@ HRESULT AvnAppMenu::Clear()
 
 @end
 
-extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* cb)
+extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* cb, bool isTopLevel)
 {
     @autoreleasepool
     {
-        return new AvnAppMenu(cb);
+        return new AvnAppMenu(cb, isTopLevel);
     }
 }
 
