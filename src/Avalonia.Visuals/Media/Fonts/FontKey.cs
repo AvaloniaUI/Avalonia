@@ -4,20 +4,20 @@ namespace Avalonia.Media.Fonts
 {
     public readonly struct FontKey : IEquatable<FontKey>
     {
-        public readonly FontFamily FontFamily;
+        public readonly string FamilyName;
         public readonly FontStyle Style;
         public readonly FontWeight Weight;
 
-        public FontKey(FontFamily fontFamily, FontWeight weight, FontStyle style)
+        public FontKey(string familyName, FontWeight weight, FontStyle style)
         {
-            FontFamily = fontFamily;
+            FamilyName = familyName;
             Style = style;
             Weight = weight;
         }
 
         public override int GetHashCode()
         {
-            var hash = FontFamily.GetHashCode();
+            var hash = FamilyName.GetHashCode();
 
             hash = hash * 31 + (int)Style;
             hash = hash * 31 + (int)Weight;
@@ -32,7 +32,7 @@ namespace Avalonia.Media.Fonts
 
         public bool Equals(FontKey other)
         {
-            return FontFamily == other.FontFamily &&
+            return FamilyName == other.FamilyName &&
                 Style == other.Style &&
                    Weight == other.Weight;
         }
