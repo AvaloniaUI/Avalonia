@@ -131,16 +131,11 @@ namespace Avalonia.Native
 
             if (_nativeMenu is null)
             {
-                _nativeMenu = _factory.ObtainAppMenu();
+                _nativeMenu = IAvnMenu.Create(_factory);
 
-                if (_nativeMenu is null)
-                {
-                    _nativeMenu = IAvnMenu.Create(_factory);
+                _nativeMenu.Initialise(this, appMenuHolder, "");
 
-                    _nativeMenu.Initialise(this, appMenuHolder, "");
-
-                    setMenu = true;
-                }
+                setMenu = true;
             }
 
             _nativeMenu.Update(_factory, appMenuHolder);
@@ -155,14 +150,9 @@ namespace Avalonia.Native
         {
             if (_nativeMenu is null)
             {
-                _nativeMenu = avnWindow.ObtainMainMenu();
+                _nativeMenu = IAvnMenu.Create(_factory);
 
-                if (_nativeMenu is null)
-                {
-                    _nativeMenu = IAvnMenu.Create(_factory);
-
-                    _nativeMenu.Initialise(this, menu, "");
-                }
+                _nativeMenu.Initialise(this, menu, "");                
             }
 
             _nativeMenu.Update(_factory, menu);

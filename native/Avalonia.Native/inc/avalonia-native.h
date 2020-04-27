@@ -189,7 +189,6 @@ public:
     virtual HRESULT CreateClipboard(IAvnClipboard** ppv) = 0;
     virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) = 0;
     virtual HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv) = 0;
-    virtual HRESULT ObtainAppMenu(IAvnMenu** retOut) = 0;
     virtual HRESULT SetAppMenu(IAvnMenu* menu) = 0;
     virtual HRESULT CreateMenu (IAvnMenuEvents* cb, IAvnMenu** ppv) = 0;
     virtual HRESULT CreateMenuItem (IAvnMenuItem** ppv) = 0;
@@ -224,7 +223,6 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT SetCursor(IAvnCursor* cursor) = 0;
     virtual HRESULT CreateGlRenderTarget(IAvnGlSurfaceRenderTarget** ret) = 0;
     virtual HRESULT SetMainMenu(IAvnMenu* menu) = 0;
-    virtual HRESULT ObtainMainMenu(IAvnMenu** retOut) = 0;
     virtual HRESULT ObtainNSWindowHandle(void** retOut) = 0;
     virtual HRESULT ObtainNSWindowHandleRetained(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandle(void** retOut) = 0;

@@ -247,18 +247,6 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT ObtainMainMenu(IAvnMenu** ret) override
-    {
-        if(ret == nullptr)
-        {
-            return E_POINTER;
-        }
-        
-        *ret = _mainMenu;
-        
-        return S_OK;
-    }
-    
     virtual HRESULT BeginMoveDrag () override
     {
         @autoreleasepool

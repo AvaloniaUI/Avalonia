@@ -250,18 +250,6 @@ public:
         ::SetAppMenu(s_appTitle, appMenu);
         return S_OK;
     }
-    
-    virtual HRESULT ObtainAppMenu(IAvnMenu** retOut) override
-    {
-        if(retOut == nullptr)
-        {
-            return E_POINTER;
-        }
-        
-        *retOut = ::GetAppMenu();
-        
-        return S_OK;
-    }
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
