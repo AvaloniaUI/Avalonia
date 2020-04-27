@@ -34,7 +34,7 @@ namespace Avalonia.Native.Interop
         {
             (ManagedMenu as INativeMenuExporterEventsImplBridge).RaiseNeedsUpdate();
 
-            _exporter.InvalidateMenu();
+            _exporter.UpdateIfNeeded();
         }
 
         internal NativeMenu ManagedMenu { get; private set; }

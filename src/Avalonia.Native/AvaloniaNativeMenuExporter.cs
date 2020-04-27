@@ -43,7 +43,7 @@ namespace Avalonia.Native
             DoLayoutReset();
         }
 
-        internal void InvalidateMenu()
+        internal void UpdateIfNeeded()
         {
             if (_resetQueued)
             {
