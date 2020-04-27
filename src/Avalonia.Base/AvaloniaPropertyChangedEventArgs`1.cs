@@ -1,4 +1,3 @@
-using System;
 using Avalonia.Data;
 
 #nullable enable
@@ -6,7 +5,7 @@ using Avalonia.Data;
 namespace Avalonia
 {
     /// <summary>
-    /// Provides information for a avalonia property change.
+    /// Provides information for an Avalonia property change.
     /// </summary>
     public class AvaloniaPropertyChangedEventArgs<T> : AvaloniaPropertyChangedEventArgs
     {
@@ -29,6 +28,8 @@ namespace Avalonia
             Property = property;
             OldValue = oldValue;
             NewValue = newValue;
+            IsActiveValueChange = true;
+            IsOutdated = false;
         }
 
         /// <summary>
@@ -42,18 +43,44 @@ namespace Avalonia
         /// <summary>
         /// Gets the old value of the property.
         /// </summary>
-        /// <value>
-        /// The old value of the property.
-        /// </value>
+        /// <remarks>
+        /// When <see cref="IsActiveValueChange"/> is true, returns the old value of the property on the
+        /// object. When <see cref="IsActiveValueChange"/> is false, returns <see cref="Optional{T}.Empty"/>.
+        /// </remarks>
         public new Optional<T> OldValue { get; private set; }
 
         /// <summary>
         /// Gets the new value of the property.
         /// </summary>
-        /// <value>
-        /// The new value of the property.
-        /// </value>
+        /// <remarks>
+        /// When <see cref="IsActiveValueChange"/> is true, returns the value of the property on the
+        /// object. When <see cref="IsActiveValueChange"/> is false returns the changed value, or
+        /// <see cref="Optional{T}.Empty"/> if the value was removed.
+        /// </remarks>
         public new BindingValue<T> NewValue { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the change represents a change to the active value of
+        /// the property.
+        /// </summary>
+        /// <remarks>
+        /// A property listener created via <see cref="IAvaloniaObject.Listen{T}(StyledPropertyBase{T})"/>
+        /// signals all property changes, regardless of whether a value with a higer priority is present.
+        /// When this property is false, the change that is being signalled has not resulted in a change
+        /// to the property value on the object.
+        /// </remarks>
+        public bool IsActiveValueChange { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the value of the property on the object has already
+        /// changed since this change began notifying.
+        /// </summary>
+        public bool IsOutdated { get; private set; }
+
+        internal void MarkOutdated() => IsOutdated = true;
+        internal void MarkInactiveValue() => IsActiveValueChange = false;
+        internal void SetOldValue(Optional<T> value) => OldValue = value;
+        internal void SetNewValue(BindingValue<T> value) => NewValue = value;
 
         protected override AvaloniaProperty GetProperty() => Property;
 

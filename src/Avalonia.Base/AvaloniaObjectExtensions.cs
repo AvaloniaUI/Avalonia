@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Reactive;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -41,7 +42,7 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(o != null);
             Contract.Requires<ArgumentNullException>(property != null);
 
-            return new AvaloniaPropertyObservable<object>(o, property);
+            return GetObservableRouter.Instance.Route(o, property);
         }
 
         /// <summary>
@@ -59,32 +60,26 @@ namespace Avalonia
         /// </remarks>
         public static IObservable<T> GetObservable<T>(this IAvaloniaObject o, AvaloniaProperty<T> property)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
+            o = o ?? throw new ArgumentNullException(nameof(o));
+            property = property ?? throw new ArgumentNullException(nameof(property));
 
-            return new AvaloniaPropertyObservable<T>(o, property);
-        }
+            var listener = property switch
+            {
+                StyledPropertyBase<T> s => o.Listen(s),
+                DirectPropertyBase<T> d => o.Listen(d),
+                _ => throw new NotSupportedException("Unexpected AvaloniaProperty type."),
+            };
 
-        /// <summary>
-        /// Gets an observable for a <see cref="AvaloniaProperty"/>.
-        /// </summary>
-        /// <param name="o">The object.</param>
-        /// <param name="property">The property.</param>
-        /// <returns>
-        /// An observable which fires immediately with the current value of the property on the
-        /// object and subsequently each time the property value changes.
-        /// </returns>
-        /// <remarks>
-        /// The subscription to <paramref name="o"/> is created using a weak reference.
-        /// </remarks>
-        public static IObservable<BindingValue<object>> GetBindingObservable(
-            this IAvaloniaObject o,
-            AvaloniaProperty property)
-        {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            return new AvaloniaPropertyBindingObservable<object>(o, property);
+            if (listener is AvaloniaPropertyObservable<T> apo)
+            {
+                return apo.ValueAdapter;
+            }
+            else
+            {
+                return listener.Where(x => x.IsActiveValueChange && !x.IsOutdated)
+                    .Select(x => x.NewValue.Value)
+                    .StartWith(o.GetValue(property));
+            }
         }
 
         /// <summary>
@@ -104,31 +99,26 @@ namespace Avalonia
             this IAvaloniaObject o,
             AvaloniaProperty<T> property)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
+            o = o ?? throw new ArgumentNullException(nameof(o));
+            property = property ?? throw new ArgumentNullException(nameof(property));
 
-            return new AvaloniaPropertyBindingObservable<T>(o, property);
-        }
+            var listener = property switch
+            {
+                StyledPropertyBase<T> s => o.Listen(s),
+                DirectPropertyBase<T> d => o.Listen(d),
+                _ => throw new NotSupportedException("Unexpected AvaloniaProperty type."),
+            };
 
-        /// <summary>
-        /// Gets an observable that listens for property changed events for an
-        /// <see cref="AvaloniaProperty"/>.
-        /// </summary>
-        /// <param name="o">The object.</param>
-        /// <param name="property">The property.</param>
-        /// <returns>
-        /// An observable which when subscribed pushes the property changed event args
-        /// each time a <see cref="IAvaloniaObject.PropertyChanged"/> event is raised
-        /// for the specified property.
-        /// </returns>
-        public static IObservable<AvaloniaPropertyChangedEventArgs> GetPropertyChangedObservable(
-            this IAvaloniaObject o,
-            AvaloniaProperty property)
-        {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            return new AvaloniaPropertyChangedObservable(o, property);
+            if (listener is AvaloniaPropertyObservable<T> apo)
+            {
+                return apo.BindingValueAdapter;
+            }
+            else
+            {
+                return listener.Where(x => x.IsActiveValueChange && !x.IsOutdated)
+                    .Select(x => x.NewValue)
+                    .StartWith(o.GetValue(property));
+            }
         }
 
         /// <summary>
@@ -174,86 +164,6 @@ namespace Avalonia
             return Subject.Create<T>(
                 Observer.Create<T>(x => o.SetValue(property, x, priority)),
                 o.GetObservable(property));
-        }
-
-        /// <summary>
-        /// Gets a subject for a <see cref="AvaloniaProperty"/>.
-        /// </summary>
-        /// <param name="o">The object.</param>
-        /// <param name="property">The property.</param>
-        /// <param name="priority">
-        /// The priority with which binding values are written to the object.
-        /// </param>
-        /// <returns>
-        /// An <see cref="ISubject{Object}"/> which can be used for two-way binding to/from the 
-        /// property.
-        /// </returns>
-        public static ISubject<BindingValue<object>> GetBindingSubject(
-            this IAvaloniaObject o,
-            AvaloniaProperty property,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            return Subject.Create<BindingValue<object>>(
-                Observer.Create<BindingValue<object>>(x =>
-                {
-                    if (x.HasValue)
-                    {
-                        o.SetValue(property, x.Value, priority);
-                    }
-                }),
-                o.GetBindingObservable(property));
-        }
-
-        /// <summary>
-        /// Gets a subject for a <see cref="AvaloniaProperty"/>.
-        /// </summary>
-        /// <typeparam name="T">The property type.</typeparam>
-        /// <param name="o">The object.</param>
-        /// <param name="property">The property.</param>
-        /// <param name="priority">
-        /// The priority with which binding values are written to the object.
-        /// </param>
-        /// <returns>
-        /// An <see cref="ISubject{T}"/> which can be used for two-way binding to/from the 
-        /// property.
-        /// </returns>
-        public static ISubject<BindingValue<T>> GetBindingSubject<T>(
-            this IAvaloniaObject o,
-            AvaloniaProperty<T> property,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            return Subject.Create<BindingValue<T>>(
-                Observer.Create<BindingValue<T>>(x =>
-                {
-                    if (x.HasValue)
-                    {
-                        o.SetValue(property, x.Value, priority);
-                    }
-                }),
-                o.GetBindingObservable(property));
-        }
-
-        /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
-        /// </summary>
-        /// <param name="target">The object.</param>
-        /// <param name="property">The property.</param>
-        /// <param name="source">The observable.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        public static IDisposable Bind(
-            this IAvaloniaObject target,
-            AvaloniaProperty property,
-            IObservable<BindingValue<object>> source,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            source = source ?? throw new ArgumentNullException(nameof(source));
-
-            return property.RouteBind(target, source, priority);
         }
 
         /// <summary>
@@ -305,10 +215,7 @@ namespace Avalonia
             property = property ?? throw new ArgumentNullException(nameof(property));
             source = source ?? throw new ArgumentNullException(nameof(source));
 
-            return target.Bind(
-                property,
-                source.ToBindingValue(),
-                priority);
+            return property.RouteBind(target, source, priority);
         }
 
         /// <summary>
@@ -534,7 +441,7 @@ namespace Avalonia
         /// <param name="observable">The property changed observable.</param>
         /// <param name="handler">Given a TTarget, returns the handler.</param>
         /// <returns>A disposable that can be used to terminate the subscription.</returns>
-        [Obsolete("Use overload taking Action<TTarget, AvaloniaPropertyChangedEventArgs>.")]
+        [Obsolete("Use overload taking Action<TTarget, AvaloniaPropertyChangedEventArgsdEventArgs>.")]
         public static IDisposable AddClassHandler<TTarget>(
             this IObservable<AvaloniaPropertyChangedEventArgs> observable,
             Func<TTarget, Action<AvaloniaPropertyChangedEventArgs>> handler)
@@ -588,6 +495,58 @@ namespace Avalonia
                 bool enableDataValidation = false)
             {
                 return InstancedBinding.OneWay(_source);
+            }
+        }
+
+        private class GetObservableRouter : IAvaloniaPropertyVisitor<GetObservableRouter.Data>
+        {
+            public static readonly GetObservableRouter Instance = new GetObservableRouter();
+
+            public IObservable<object> Route(IAvaloniaObject o, AvaloniaProperty p)
+            {
+                var data = new Data { Source = o };
+                p.Accept(this, ref data);
+                return data.Result;
+            }
+
+            public void Visit<T>(StyledPropertyBase<T> property, ref Data data)
+            {
+                var listener = data.Source.Listen(property);
+
+                if (listener is AvaloniaPropertyObservable<T> apo)
+                {
+                    data.Result = apo.UntypedValueAdapter;
+                }
+                else
+                {
+                    data.Result = listener.Where(x => x.IsActiveValueChange && !x.IsOutdated)
+                        .Select(x => x.NewValue.ToUntyped())
+                        .StartWith(data.Source.GetValue(property));
+
+                }
+            }
+
+            public void Visit<T>(DirectPropertyBase<T> property, ref Data data)
+            {
+                var listener = data.Source.Listen(property);
+
+                if (listener is AvaloniaPropertyObservable<T> apo)
+                {
+                    data.Result = apo.UntypedValueAdapter;
+                }
+                else
+                {
+                    data.Result = listener.Where(x => x.IsActiveValueChange && !x.IsOutdated)
+                        .Select(x => x.NewValue.ToUntyped())
+                        .StartWith(data.Source.GetValue(property));
+
+                }
+            }
+
+            public struct Data
+            {
+                public IAvaloniaObject Source;
+                public IObservable<object> Result;
             }
         }
     }

@@ -645,19 +645,15 @@ namespace Avalonia.Controls
         /// </remarks>
         protected virtual void OnClosing(CancelEventArgs e) => Closing?.Invoke(this, e);
 
-        protected override void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (property == SystemDecorationsProperty)
+            if (change.Property == SystemDecorationsProperty)
             {
-                var typedNewValue = newValue.GetValueOrDefault<SystemDecorations>();
+                var typedNewValue = change.NewValue.GetValueOrDefault<SystemDecorations>();
 
                 PlatformImpl?.SetSystemDecorations(typedNewValue);
 
-                var o = oldValue.GetValueOrDefault<SystemDecorations>() == SystemDecorations.Full;
+                var o = change.OldValue.GetValueOrDefault<SystemDecorations>() == SystemDecorations.Full;
                 var n = typedNewValue == SystemDecorations.Full;
 
                 if (o != n)

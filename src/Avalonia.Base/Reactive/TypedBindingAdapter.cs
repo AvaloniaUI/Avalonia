@@ -7,28 +7,28 @@ using Avalonia.Logging;
 namespace Avalonia.Reactive
 {
     internal class TypedBindingAdapter<T> : SingleSubscriberObservableBase<BindingValue<T>>,
-        IObserver<BindingValue<object>>
+        IObserver<object>
     {
         private readonly IAvaloniaObject _target;
         private readonly AvaloniaProperty<T> _property;
-        private readonly IObservable<BindingValue<object>> _source;
+        private readonly IObservable<object> _source;
         private IDisposable? _subscription;
 
         public TypedBindingAdapter(
             IAvaloniaObject target,
             AvaloniaProperty<T> property,
-            IObservable<BindingValue<object>> source)
+            IObservable<object> source)
         {
             _target = target;
             _property = property;
             _source = source;
         }
 
-        public void OnNext(BindingValue<object> value)
+        public void OnNext(object value)
         {
             try
             {
-                PublishNext(value.Convert<T>());
+                PublishNext(BindingValue<T>.FromUntyped(value));
             }
             catch (InvalidCastException e)
             {
@@ -38,8 +38,8 @@ namespace Avalonia.Reactive
                     "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
                     _property.Name,
                     _property.PropertyType,
-                    value.Value,
-                    value.Value?.GetType());
+                    value,
+                    value?.GetType());
                 PublishNext(BindingValue<T>.BindingError(e));
             }
         }
@@ -50,7 +50,7 @@ namespace Avalonia.Reactive
         public static IObservable<BindingValue<T>> Create(
             IAvaloniaObject target,
             AvaloniaProperty<T> property,
-            IObservable<BindingValue<object>> source)
+            IObservable<object> source)
         {
             return source is IObservable<BindingValue<T>> result ?
                 result :

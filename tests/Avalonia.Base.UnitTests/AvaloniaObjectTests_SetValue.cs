@@ -160,7 +160,7 @@ namespace Avalonia.Base.UnitTests
         {
             Class1 target = new Class1();
 
-            Assert.Throws<ArgumentException>(() =>
+            Assert.Throws<InvalidCastException>(() =>
             {
                 target.SetValue(Class1.FooProperty, 123);
             });

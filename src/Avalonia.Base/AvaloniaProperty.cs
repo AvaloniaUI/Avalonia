@@ -518,7 +518,7 @@ namespace Avalonia
         /// <param name="priority">The priority.</param>
         internal abstract IDisposable RouteBind(
             IAvaloniaObject o,
-            IObservable<BindingValue<object>> source,
+            IObservable<object> source,
             BindingPriority priority);
 
         internal abstract void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject oldParent);

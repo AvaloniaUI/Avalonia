@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using Avalonia.Utilities;
 
 namespace Avalonia.Data
 {
@@ -239,24 +240,18 @@ namespace Avalonia.Data
             _value = value;
         }
 
-        public BindingValue<object> ToBindingValue()
+        public BindingValue<T> ToBindingValue<T>()
         {
-            if (ErrorType == BindingErrorType.None)
+            var value = HasValue ?
+                TypeUtilities.ConvertImplicit<T>(Value) :
+                Optional<T>.Empty;
+
+            return ErrorType switch
             {
-                return HasValue ? new BindingValue<object>(Value) : BindingValue<object>.Unset;
-            }
-            else if (ErrorType == BindingErrorType.Error)
-            {
-                return BindingValue<object>.BindingError(
-                    Error,
-                    HasValue ? new Optional<object>(Value) : Optional<object>.Empty);
-            }
-            else
-            {
-                return BindingValue<object>.DataValidationError(
-                    Error,
-                    HasValue ? new Optional<object>(Value) : Optional<object>.Empty);
-            }
+                BindingErrorType.None => value,
+                BindingErrorType.Error => BindingValue<T>.BindingError(Error, value),
+                BindingErrorType.DataValidationError => BindingValue<T>.DataValidationError(Error, value),
+            };
         }
 
         /// <inheritdoc/>

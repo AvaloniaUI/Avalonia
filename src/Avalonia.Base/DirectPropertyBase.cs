@@ -126,11 +126,11 @@ namespace Avalonia
             object value,
             BindingPriority priority)
         {
-            var v = TryConvert(value);
+            var v = BindingValue<TValue>.FromUntyped(value);
 
             if (v.HasValue)
             {
-                o.SetValue<TValue>(this, (TValue)v.Value);
+                o.SetValue<TValue>(this, v.Value);
             }
             else if (v.Type == BindingValueType.UnsetValue)
             {
@@ -147,7 +147,7 @@ namespace Avalonia
         /// <inheritdoc/>
         internal override IDisposable RouteBind(
             IAvaloniaObject o,
-            IObservable<BindingValue<object>> source,
+            IObservable<object> source,
             BindingPriority priority)
         {
             var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);

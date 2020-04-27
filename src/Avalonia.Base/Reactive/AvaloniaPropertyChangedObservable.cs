@@ -2,14 +2,14 @@
 
 namespace Avalonia.Reactive
 {
-    internal class AvaloniaPropertyChangedObservable : 
+    internal class AvaloniaPropertyChangedEventArgsdObservable : 
         LightweightObservableBase<AvaloniaPropertyChangedEventArgs>,
         IDescription
     {
         private readonly WeakReference<IAvaloniaObject> _target;
         private readonly AvaloniaProperty _property;
 
-        public AvaloniaPropertyChangedObservable(
+        public AvaloniaPropertyChangedEventArgsdObservable(
             IAvaloniaObject target,
             AvaloniaProperty property)
         {

@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
@@ -203,11 +204,11 @@ namespace Avalonia
             object value,
             BindingPriority priority)
         {
-            var v = TryConvert(value);
+            var v = BindingValue<TValue>.FromUntyped(value);
 
             if (v.HasValue)
             {
-                return o.SetValue<TValue>(this, (TValue)v.Value, priority);
+                return o.SetValue<TValue>(this, v.Value, priority);
             }
             else if (v.Type == BindingValueType.UnsetValue)
             {
@@ -224,7 +225,7 @@ namespace Avalonia
         /// <inheritdoc/>
         internal override IDisposable RouteBind(
             IAvaloniaObject o,
-            IObservable<BindingValue<object>> source,
+            IObservable<object> source,
             BindingPriority priority)
         {
             var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);

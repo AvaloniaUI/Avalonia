@@ -528,7 +528,7 @@ namespace Avalonia.Base.UnitTests
         {
             Class1 target = new Class1();
 
-            Assert.Throws<ArgumentException>(() =>
+            Assert.Throws<InvalidCastException>(() =>
             {
                 target[Class1.FooProperty] = Observable.Return("newvalue");
             });

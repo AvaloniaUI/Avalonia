@@ -241,8 +241,8 @@ namespace Avalonia.Data
             {
                 UnsetValueType _ => Unset,
                 DoNothingType _ => DoNothing,
-                BindingNotification n => n.ToBindingValue().Cast<T>(),
-                _ => (T)value
+                BindingNotification n => n.ToBindingValue<T>(),
+                _ => TypeUtilities.ConvertImplicit<T>(value),
             };
         }
 
@@ -348,85 +348,35 @@ namespace Avalonia.Data
 
             return new BindingValue<T>(
                 fallbackValue.HasValue ?
-                    BindingValueType.DataValidationError :
-                    BindingValueType.DataValidationErrorWithFallback,
+                    BindingValueType.DataValidationErrorWithFallback :
+                    BindingValueType.DataValidationError,
                 fallbackValue.HasValue ? fallbackValue.Value : default,
                 e);
         }
 
         private static void ValidateValue(T value)
         {
-            if (value is UnsetValueType)
+            if (value is null)
+            {
+                return;
+            }
+
+            var type = value.GetType();
+
+            if (type == typeof(UnsetValueType))
             {
                 throw new InvalidOperationException("AvaloniaValue.UnsetValue is not a valid value for BindingValue<>.");
             }
 
-            if (value is DoNothingType)
+            if (type == typeof(DoNothingType))
             {
                 throw new InvalidOperationException("BindingOperations.DoNothing is not a valid value for BindingValue<>.");
             }
 
-            if (value is BindingValue<object>)
+            if (type.IsGenericType == true && type.GetGenericTypeDefinition() == typeof(BindingValue<>))
             {
-                throw new InvalidOperationException("BindingValue<object> cannot be wrapped in a BindingValue<>.");
+                throw new InvalidOperationException("BindingValue<> cannot be wrapped in a BindingValue<>.");
             }
-        }
-    }
-
-    public static class BindingValueExtensions
-    {
-        /// <summary>
-        /// Casts the type of a <see cref="BindingValue{T}"/> using only the C# cast operator.
-        /// </summary>
-        /// <typeparam name="T">The target type.</typeparam>
-        /// <param name="value">The binding value.</param>
-        /// <returns>The cast value.</returns>
-        public static BindingValue<T> Cast<T>(this BindingValue<object> value)
-        {
-            return value.Type switch
-            {
-                BindingValueType.DoNothing => BindingValue<T>.DoNothing,
-                BindingValueType.UnsetValue => BindingValue<T>.Unset,
-                BindingValueType.Value => new BindingValue<T>((T)value.Value),
-                BindingValueType.BindingError => BindingValue<T>.BindingError(value.Error!),
-                BindingValueType.BindingErrorWithFallback => BindingValue<T>.BindingError(
-                        value.Error!,
-                        (T)value.Value),
-                BindingValueType.DataValidationError => BindingValue<T>.DataValidationError(value.Error!),
-                BindingValueType.DataValidationErrorWithFallback => BindingValue<T>.DataValidationError(
-                        value.Error!,
-                        (T)value.Value),
-                _ => throw new NotSupportedException("Invalid BindingValue type."),
-            };
-        }
-
-        /// <summary>
-        /// Casts the type of a <see cref="BindingValue{T}"/> using the implicit conversions
-        /// allowed by the C# language.
-        /// </summary>
-        /// <typeparam name="T">The target type.</typeparam>
-        /// <param name="value">The binding value.</param>
-        /// <returns>The cast value.</returns>
-        /// <remarks>
-        /// Note that this method uses reflection and as such may be slow.
-        /// </remarks>
-        public static BindingValue<T> Convert<T>(this BindingValue<object> value)
-        {
-            return value.Type switch
-            {
-                BindingValueType.DoNothing => BindingValue<T>.DoNothing,
-                BindingValueType.UnsetValue => BindingValue<T>.Unset,
-                BindingValueType.Value => new BindingValue<T>(TypeUtilities.ConvertImplicit<T>(value.Value)),
-                BindingValueType.BindingError => BindingValue<T>.BindingError(value.Error!),
-                BindingValueType.BindingErrorWithFallback => BindingValue<T>.BindingError(
-                        value.Error!,
-                        TypeUtilities.ConvertImplicit<T>(value.Value)),
-                BindingValueType.DataValidationError => BindingValue<T>.DataValidationError(value.Error!),
-                BindingValueType.DataValidationErrorWithFallback => BindingValue<T>.DataValidationError(
-                        value.Error!,
-                        TypeUtilities.ConvertImplicit<T>(value.Value)),
-                _ => throw new NotSupportedException("Invalid BindingValue type."),
-            };
         }
     }
 }

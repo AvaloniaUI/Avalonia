@@ -1,16 +1,15 @@
 using System;
+using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Moq;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Styling;
-using Xunit;
-using System.Reactive.Disposables;
-using Avalonia.UnitTests;
 using Avalonia.VisualTree;
-using System.Linq;
-using Avalonia.Markup.Data;
+using Moq;
+using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
@@ -19,53 +18,64 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public void OneWay_Binding_Should_Be_Set_Up()
         {
-            var target = CreateTarget();
-            var binding = new Binding
+            var target = new Button
             {
-                Mode = BindingMode.OneWay,
-                RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
-                Priority = BindingPriority.TemplatedParent,
-                Path = "Foo",
+                Template = new FuncControlTemplate<Button>((_, __) =>
+                    new ContentPresenter
+                    {
+                        [!ContentPresenter.ContentProperty] = new Binding
+                        {
+                            Mode = BindingMode.OneWay,
+                            RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
+                            Priority = BindingPriority.TemplatedParent,
+                            Path = "Content",
+                        },
+                    }),
+                Content = "foo",
             };
 
-            target.Object.Bind(TextBox.TextProperty, binding);
+            target.Measure(Size.Infinity);
 
-            target.Verify(x => x.Bind(
-                TextBox.TextProperty, 
-                It.IsAny<IObservable<BindingValue<string>>>()));
+            var contentPresenter = Assert.IsType<ContentPresenter>(target.GetVisualChildren().Single());
+            Assert.Equal("foo", contentPresenter.Content);
+
+            target.Content = "bar";
+            Assert.Equal("bar", contentPresenter.Content);
+
+            contentPresenter.Content = "baz";
+            Assert.Equal("bar", target.Content);
         }
 
         [Fact]
         public void TwoWay_Binding_Should_Be_Set_Up()
         {
-            var target = CreateTarget();
-            var binding = new Binding
+            var target = new Button
             {
-                Mode = BindingMode.TwoWay,
-                RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
-                Priority = BindingPriority.TemplatedParent,
-                Path = "Foo",
+                Template = new FuncControlTemplate<Button>((_, __) =>
+                    new ContentPresenter
+                    {
+                        [!ContentPresenter.ContentProperty] = new Binding
+                        {
+                            Mode = BindingMode.TwoWay,
+                            RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
+                            Priority = BindingPriority.TemplatedParent,
+                            Path = "Content",
+                        },
+                    }),
+                Content = "foo",
             };
 
-            target.Object.Bind(TextBox.TextProperty, binding);
+            target.Measure(Size.Infinity);
 
-            target.Verify(x => x.Bind(
-                TextBox.TextProperty,
-                It.IsAny<IObservable<BindingValue<string>>>()));
-        }
+            var contentPresenter = Assert.IsType<ContentPresenter>(target.GetVisualChildren().Single());
+            Assert.Equal("foo", contentPresenter.Content);
 
-        private Mock<IControl> CreateTarget(
-            ITemplatedControl templatedParent = null,
-            string text = null)
-        {
-            var result = new Mock<IControl>();
+            target.Content = "bar";
+            Assert.Equal("bar", contentPresenter.Content);
 
-            result.Setup(x => x.GetValue(Control.TemplatedParentProperty)).Returns(templatedParent);
-            result.Setup(x => x.GetValue(Control.TemplatedParentProperty)).Returns(templatedParent);
-            result.Setup(x => x.GetValue(TextBox.TextProperty)).Returns(text);
-            result.Setup(x => x.Bind(It.IsAny<DirectPropertyBase<string>>(), It.IsAny<IObservable<BindingValue<string>>>()))
-                .Returns(Disposable.Empty);
-            return result;
+            target.ClearValue(Button.ContentProperty);
+            contentPresenter.Content = "baz";
+            Assert.Equal("baz", target.Content);
         }
     }
 }
