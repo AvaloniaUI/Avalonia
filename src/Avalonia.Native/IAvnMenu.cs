@@ -39,11 +39,11 @@ namespace Avalonia.Native.Interop
 
         internal NativeMenu ManagedMenu { get; private set; }
 
-        public static IAvnMenu Create(IAvaloniaNativeFactory factory, bool isTopLevel)
+        public static IAvnMenu Create(IAvaloniaNativeFactory factory)
         {
             var events = new MenuEvents();
 
-            var menu = factory.CreateMenu(events, isTopLevel);
+            var menu = factory.CreateMenu(events);
 
             events.Initialise(menu);
 

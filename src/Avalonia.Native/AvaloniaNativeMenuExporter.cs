@@ -133,7 +133,7 @@ namespace Avalonia.Native
 
             if (_nativeMenu is null)
             {
-                _nativeMenu = IAvnMenu.Create(_factory, false);
+                _nativeMenu = IAvnMenu.Create(_factory);
 
                 _nativeMenu.Initialise(this, appMenuHolder, "");
 
@@ -154,7 +154,7 @@ namespace Avalonia.Native
 
             if (_nativeMenu is null)
             {
-                _nativeMenu = IAvnMenu.Create(_factory, true);
+                _nativeMenu = IAvnMenu.Create(_factory);
 
                 _nativeMenu.Initialise(this, menu, "");     
 
