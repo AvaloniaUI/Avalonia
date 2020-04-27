@@ -319,10 +319,10 @@ namespace Avalonia.FreeDesktop
                 {
                     var item = GetMenu(id).item;
 
-                    if (item is NativeMenuItem menuItem)
+                    if (item is NativeMenuItem menuItem && item is INativeMenuItemExporterEventsImplBridge bridge)
                     {
                         if (menuItem?.IsEnabled == true)
-                            menuItem.RaiseClick();
+                            bridge?.RaiseClicked();
                     }
                 }
             }

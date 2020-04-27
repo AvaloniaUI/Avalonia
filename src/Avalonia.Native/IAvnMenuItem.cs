@@ -50,7 +50,7 @@ namespace Avalonia.Native.Interop
                 return false;
             });
 
-            var callback = new MenuActionCallback(() => { item.RaiseClick(); });
+            var callback = new MenuActionCallback(() => { (item as INativeMenuItemExporterEventsImplBridge)?.RaiseClicked(); });
 
             _currentActionDisposable = Disposable.Create(() =>
             {

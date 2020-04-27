@@ -5,7 +5,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
-    public class NativeMenuItem : NativeMenuItemBase
+    public class NativeMenuItem : NativeMenuItemBase, INativeMenuItemExporterEventsImplBridge
     {
         private string _header;
         private KeyGesture _gesture;
@@ -159,7 +159,7 @@ namespace Avalonia.Controls
 
         public event EventHandler Clicked;
 
-        public void RaiseClick()
+        void INativeMenuItemExporterEventsImplBridge.RaiseClicked()
         {
             Clicked?.Invoke(this, new EventArgs());
 
