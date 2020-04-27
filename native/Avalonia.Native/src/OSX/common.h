@@ -15,7 +15,7 @@ extern IAvnScreens* CreateScreens();
 extern IAvnClipboard* CreateClipboard();
 extern IAvnCursorFactory* CreateCursorFactory();
 extern IAvnGlDisplay* GetGlDisplay();
-extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* events, bool isTopLevel);
+extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* events);
 extern IAvnMenuItem* CreateAppMenuItem();
 extern IAvnMenuItem* CreateAppMenuItemSeperator();
 extern void SetAppMenu (NSString* appName, IAvnMenu* appMenu);

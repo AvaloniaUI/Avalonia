@@ -227,9 +227,9 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT CreateMenu (IAvnMenuEvents* cb, IAvnMenu** ppv, bool isTopLevel) override
+    virtual HRESULT CreateMenu (IAvnMenuEvents* cb, IAvnMenu** ppv) override
     {
-        *ppv = ::CreateAppMenu(cb, isTopLevel);
+        *ppv = ::CreateAppMenu(cb);
         return S_OK;
     }
     

@@ -5,14 +5,27 @@
 
 @implementation AvnMenu
 {
+    bool _isReparented;
     NSObject<NSMenuDelegate>* _wtf;
 }
+
 - (id) initWithDelegate: (NSObject<NSMenuDelegate>*)del
 {
     self = [super init];
     self.delegate = del;
     _wtf = del;
+    _isReparented = false;
     return self;
+}
+
+- (bool)isReparented
+{
+    return _isReparented;
+}
+
+- (void)setIsReparented:(bool)value
+{
+    _isReparented = value;
 }
 
 @end
@@ -169,18 +182,11 @@ void AvnAppMenuItem::RaiseOnClicked()
     }
 }
 
-AvnAppMenu::AvnAppMenu(IAvnMenuEvents* events, bool isTopLevel)
+AvnAppMenu::AvnAppMenu(IAvnMenuEvents* events)
 {
-    _isTopLevel = isTopLevel;
     _baseEvents = events;
     id del = [[AvnMenuDelegate alloc] initWithParent: this];
     _native = [[AvnMenu alloc] initWithDelegate: del];
-    
-    
-    if(_isTopLevel)
-    {
-        [_native insertItem: [NSMenuItem new] atIndex:0];
-    }
 }
 
 
@@ -201,7 +207,7 @@ HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 {
     @autoreleasepool
     {
-        if(_isTopLevel)
+        if([_native isReparented])
         {
             index++;
         }
@@ -284,11 +290,11 @@ HRESULT AvnAppMenu::Clear()
 
 @end
 
-extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* cb, bool isTopLevel)
+extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* cb)
 {
     @autoreleasepool
     {
-        return new AvnAppMenu(cb, isTopLevel);
+        return new AvnAppMenu(cb);
     }
 }
 

@@ -16,6 +16,8 @@ class AvnAppMenu;
 
 @interface AvnMenu : NSMenu
 - (id) initWithDelegate: (NSObject<NSMenuDelegate>*) del;
+- (void) setIsReparented: (bool) value;
+- (bool) isReparented;
 @end
 
 @interface AvnMenuItem : NSMenuItem
@@ -59,12 +61,11 @@ class AvnAppMenu : public ComSingleObject<IAvnMenu, &IID_IAvnMenu>
 private:
     AvnMenu* _native;
     ComPtr<IAvnMenuEvents> _baseEvents;
-    bool _isTopLevel;
     
 public:
     FORWARD_IUNKNOWN()
     
-    AvnAppMenu(IAvnMenuEvents* events, bool isTopLevel);
+    AvnAppMenu(IAvnMenuEvents* events);
         
     AvnMenu* GetNative();
     

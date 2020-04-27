@@ -1144,7 +1144,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     ComPtr<WindowBaseImpl> _parent;
     bool _canBecomeKeyAndMain;
     bool _closed;
-    NSMenu* _menu;
+    AvnMenu* _menu;
     double _lastScaling;
 }
 
@@ -1194,6 +1194,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
             [appMenu removeItem:appMenuItem];
             
             [_menu insertItem:appMenuItem atIndex:0];
+            
+            [_menu setIsReparented:true];
         }
         
         [NSApp setMenu:_menu];
@@ -1212,6 +1214,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         
         [[appMenuItem menu] removeItem:appMenuItem];
         
+        if(_menu != nullptr)
+        {
+            [_menu setIsReparented:false];
+        }
+        
         [nativeAppMenu->GetNative() addItem:appMenuItem];
         
         [NSApp setMenu:nativeAppMenu->GetNative()];
@@ -1222,11 +1229,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
 }
 
--(void) applyMenu:(NSMenu *)menu
+-(void) applyMenu:(AvnMenu *)menu
 {
     if(menu == nullptr)
     {
-        menu = [NSMenu new];
+        menu = [AvnMenu new];
     }
     
     _menu = menu;
