@@ -192,6 +192,34 @@ HRESULT AvnAppMenuItem::SetToggleType(AvnMenuItemToggleType toggleType)
     }
 }
 
+HRESULT AvnAppMenuItem::SetIcon(void *data, size_t length)
+{
+    @autoreleasepool
+    {
+        if(data != nullptr)
+        {
+            NSData *imageData = [NSData dataWithBytes:data length:length];
+            NSImage *image = [[NSImage alloc] initWithData:imageData];
+            
+            NSSize originalSize = [image size];
+             
+            NSSize size;
+            size.height = [[NSFont menuFontOfSize:0] pointSize] * 1.333333;
+            
+            auto scaleFactor = size.height / originalSize.height;
+            size.width = originalSize.width * scaleFactor;
+            
+            [image setSize: size];
+            [_native setImage:image];
+        }
+        else
+        {
+            [_native setImage:nullptr];
+        }
+        return S_OK;
+    }
+}
+
 bool AvnAppMenuItem::EvaluateItemEnabled()
 {
     if(_predicate != nullptr)
