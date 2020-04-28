@@ -12,6 +12,7 @@ namespace Avalonia.Controls
         private bool _isEnabled = true;
         private ICommand _command;
         private bool _isChecked = false;
+        private NativeMenuItemToggleType _toggleType;
 
         private NativeMenu _menu;
 
@@ -99,6 +100,18 @@ namespace Avalonia.Controls
             get => _isChecked;
             set => SetAndRaise(IsCheckedProperty, ref _isChecked, value);
         }
+        
+        public static readonly DirectProperty<NativeMenuItem, NativeMenuItemToggleType> ToggleTypeProperty =
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, NativeMenuItemToggleType>(
+                nameof(ToggleType),
+                o => o.ToggleType,
+                (o, v) => o.ToggleType = v);
+
+        public NativeMenuItemToggleType ToggleType
+        {
+            get => _toggleType;
+            set => SetAndRaise(ToggleTypeProperty, ref _toggleType, value);
+        }
 
         public static readonly DirectProperty<NativeMenuItem, ICommand> CommandProperty =
             Button.CommandProperty.AddOwner<NativeMenuItem>(
@@ -168,5 +181,12 @@ namespace Avalonia.Controls
                 Command.Execute(CommandParameter);
             }
         }
+    }
+    
+    public enum NativeMenuItemToggleType
+    {
+        None,
+        CheckBox,
+        Radio
     }
 }
