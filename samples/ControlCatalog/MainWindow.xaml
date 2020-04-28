@@ -14,9 +14,9 @@
       <NativeMenuItem Header="File">
         <NativeMenuItem.Menu>
           <NativeMenu>
-            <NativeMenuItem Header="Open" Clicked="OnOpenClicked" Gesture="Ctrl+O"/>
+            <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Open" Clicked="OnOpenClicked" Gesture="Ctrl+O"/>
             <NativeMenuItemSeperator/>
-            <NativeMenuItem Header="Recent">
+            <NativeMenuItem Icon="/Assets/github_icon.png" Header="Recent">
               <NativeMenuItem.Menu>
                 <NativeMenu/>
               </NativeMenuItem.Menu>
