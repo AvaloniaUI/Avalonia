@@ -250,7 +250,7 @@ namespace Avalonia.PropertyStore
             }
             else if (change is object)
             {
-                change.MarkInactiveValue();
+                change.MarkNonEffectiveValue();
                 change.SetOldValue(default);
                 _sink.ValueChanged(change);
             }

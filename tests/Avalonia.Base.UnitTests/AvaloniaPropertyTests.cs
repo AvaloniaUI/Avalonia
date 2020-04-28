@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Data;
 using Avalonia.Utilities;
 using Xunit;
@@ -86,6 +87,19 @@ namespace Avalonia.Base.UnitTests
             target.SetValue(Class1.FooProperty, "newvalue");
 
             Assert.Equal("newvalue", value);
+        }
+
+        [Fact]
+        public void Changed_Observable_Fired_Only_On_Effective_Value_Change()
+        {
+            var target = new Class1();
+            var result = new List<string>();
+
+            Class1.FooProperty.Changed.Subscribe(x => result.Add((string)x.NewValue));
+            target.SetValue(Class1.FooProperty, "animated", BindingPriority.Animation);
+            target.SetValue(Class1.FooProperty, "local");
+
+            Assert.Equal(new[] { "animated" }, result);
         }
 
         [Fact]

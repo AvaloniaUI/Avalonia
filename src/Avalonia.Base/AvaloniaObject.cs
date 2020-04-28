@@ -769,7 +769,11 @@ namespace Avalonia
             try
             {
                 OnPropertyChangedCore(change);
-                change.Property.NotifyChanged(change);
+
+                if (change.IsEffectiveValueChange && !change.IsOutdated)
+                {
+                    change.Property.NotifyChanged(change);
+                }
 
                 if (_listeners is object && _listeners.TryGetValue(change.Property, out var listener))
                 {

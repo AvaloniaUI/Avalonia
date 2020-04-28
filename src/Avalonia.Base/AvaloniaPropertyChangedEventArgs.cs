@@ -80,7 +80,7 @@ namespace Avalonia
         public bool IsOutdated { get; private set; }
 
         internal void MarkOutdated() => IsOutdated = true;
-        internal void MarkInactiveValue() => IsEffectiveValueChange = false;
+        internal void MarkNonEffectiveValue() => IsEffectiveValueChange = false;
         protected abstract AvaloniaProperty GetProperty();
         protected abstract object? GetOldValue();
         protected abstract object? GetNewValue();
