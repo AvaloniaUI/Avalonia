@@ -210,7 +210,7 @@ namespace Avalonia.FreeDesktop
                             return null;
                         if (item.Menu != null && item.Menu.Items.Count == 0)
                             return false;
-                        if (item.Enabled == false)
+                        if (item.IsEnabled == false)
                             return false;
                         return null;
                     }
@@ -319,10 +319,10 @@ namespace Avalonia.FreeDesktop
                 {
                     var item = GetMenu(id).item;
 
-                    if (item is NativeMenuItem menuItem)
+                    if (item is NativeMenuItem menuItem && item is INativeMenuItemExporterEventsImplBridge bridge)
                     {
-                        if (menuItem?.Enabled == true)
-                            menuItem.RaiseClick();
+                        if (menuItem?.IsEnabled == true)
+                            bridge?.RaiseClicked();
                     }
                 }
             }
