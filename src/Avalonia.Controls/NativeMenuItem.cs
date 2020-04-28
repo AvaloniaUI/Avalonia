@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Input;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -12,6 +13,8 @@ namespace Avalonia.Controls
         private bool _isEnabled = true;
         private ICommand _command;
         private bool _isChecked = false;
+        private NativeMenuItemToggleType _toggleType;
+        private IBitmap _icon;
 
         private NativeMenu _menu;
 
@@ -70,6 +73,16 @@ namespace Avalonia.Controls
             }
         }
 
+        public static readonly DirectProperty<NativeMenuItem, IBitmap> IconProperty =
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, IBitmap>(nameof(Icon), o => o.Icon, (o, v) => o.Icon = v);
+
+
+        public IBitmap Icon
+        {
+            get => _icon;
+            set => SetAndRaise(IconProperty, ref _icon, value);
+        }  
+
         public static readonly DirectProperty<NativeMenuItem, string> HeaderProperty =
             AvaloniaProperty.RegisterDirect<NativeMenuItem, string>(nameof(Header), o => o.Header, (o, v) => o.Header = v);
 
@@ -98,6 +111,18 @@ namespace Avalonia.Controls
         {
             get => _isChecked;
             set => SetAndRaise(IsCheckedProperty, ref _isChecked, value);
+        }
+        
+        public static readonly DirectProperty<NativeMenuItem, NativeMenuItemToggleType> ToggleTypeProperty =
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, NativeMenuItemToggleType>(
+                nameof(ToggleType),
+                o => o.ToggleType,
+                (o, v) => o.ToggleType = v);
+
+        public NativeMenuItemToggleType ToggleType
+        {
+            get => _toggleType;
+            set => SetAndRaise(ToggleTypeProperty, ref _toggleType, value);
         }
 
         public static readonly DirectProperty<NativeMenuItem, ICommand> CommandProperty =
@@ -168,5 +193,12 @@ namespace Avalonia.Controls
                 Command.Execute(CommandParameter);
             }
         }
+    }
+    
+    public enum NativeMenuItemToggleType
+    {
+        None,
+        CheckBox,
+        Radio
     }
 }

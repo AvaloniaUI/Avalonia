@@ -70,6 +70,7 @@
 
 AvnAppMenuItem::AvnAppMenuItem(bool isSeperator)
 {
+    _isCheckable = false;
     _isSeperator = isSeperator;
     
     if(isSeperator)
@@ -157,7 +158,64 @@ HRESULT AvnAppMenuItem::SetIsChecked (bool isChecked)
 {
     @autoreleasepool
     {
-        [_native setState:(isChecked ? NSOnState : NSOffState)];
+        [_native setState:(isChecked && _isCheckable ? NSOnState : NSOffState)];
+        return S_OK;
+    }
+}
+
+HRESULT AvnAppMenuItem::SetToggleType(AvnMenuItemToggleType toggleType)
+{
+    @autoreleasepool
+    {
+        switch(toggleType)
+        {
+            case AvnMenuItemToggleType::None:
+                [_native setOnStateImage: [NSImage imageNamed:@"NSMenuCheckmark"]];
+                
+                _isCheckable = false;
+                break;
+                
+            case AvnMenuItemToggleType::CheckMark:
+                [_native setOnStateImage: [NSImage imageNamed:@"NSMenuCheckmark"]];
+                
+                _isCheckable = true;
+                break;
+                
+            case AvnMenuItemToggleType::Radio:
+                [_native setOnStateImage: [NSImage imageNamed:@"NSMenuItemBullet"]];
+                
+                _isCheckable = true;
+                break;
+        }
+        
+        return S_OK;
+    }
+}
+
+HRESULT AvnAppMenuItem::SetIcon(void *data, size_t length)
+{
+    @autoreleasepool
+    {
+        if(data != nullptr)
+        {
+            NSData *imageData = [NSData dataWithBytes:data length:length];
+            NSImage *image = [[NSImage alloc] initWithData:imageData];
+            
+            NSSize originalSize = [image size];
+             
+            NSSize size;
+            size.height = [[NSFont menuFontOfSize:0] pointSize] * 1.333333;
+            
+            auto scaleFactor = size.height / originalSize.height;
+            size.width = originalSize.width * scaleFactor;
+            
+            [image setSize: size];
+            [_native setImage:image];
+        }
+        else
+        {
+            [_native setImage:nullptr];
+        }
         return S_OK;
     }
 }

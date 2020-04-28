@@ -32,6 +32,7 @@ private:
     IAvnActionCallback* _callback;
     IAvnPredicateCallback* _predicate;
     bool _isSeperator;
+    bool _isCheckable;
     
 public:
     FORWARD_IUNKNOWN()
@@ -49,6 +50,10 @@ public:
     virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) override;
     
     virtual HRESULT SetIsChecked (bool isChecked) override;
+    
+    virtual HRESULT SetToggleType (AvnMenuItemToggleType toggleType) override;
+    
+    virtual HRESULT SetIcon (void* data, size_t length) override;
     
     bool EvaluateItemEnabled();
     
