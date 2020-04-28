@@ -144,6 +144,11 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
+            internal override object RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
+            {
+                throw new NotImplementedException();
+            }
+
             internal override void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject oldParent)
             {
                 throw new NotImplementedException();
@@ -153,6 +158,11 @@ namespace Avalonia.Base.UnitTests
                 IAvaloniaObject o,
                 object value,
                 BindingPriority priority)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override IObservable<AvaloniaPropertyChangedEventArgs> RouteListen(IAvaloniaObject o)
             {
                 throw new NotImplementedException();
             }

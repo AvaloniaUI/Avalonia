@@ -1,9 +1,10 @@
 using System;
 using System.Diagnostics;
-using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
+
+#nullable enable
 
 namespace Avalonia
 {
@@ -28,12 +29,12 @@ namespace Avalonia
             Type ownerType,            
             StyledPropertyMetadata<TValue> metadata,
             bool inherits = false,
-            Func<TValue, bool> validate = null,
-            Action<IAvaloniaObject, bool> notifying = null)
+            Func<TValue, bool>? validate = null,
+            Action<IAvaloniaObject, bool>? notifying = null)
                 : base(name, ownerType, metadata, notifying)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
+            name = name ?? throw new ArgumentNullException(nameof(name));
+            ownerType = ownerType ?? throw new ArgumentNullException(nameof(ownerType));
 
             if (name.Contains("."))
             {
@@ -73,7 +74,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the value validation callback for the property.
         /// </summary>
-        public Func<TValue, bool> ValidateValue { get; }
+        public Func<TValue, bool>? ValidateValue { get; }
 
         /// <summary>
         /// Gets a value indicating whether this property has any value coercion callbacks defined
@@ -100,7 +101,7 @@ namespace Avalonia
         /// <returns>The default value.</returns>
         public TValue GetDefaultValue(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type = type ?? throw new ArgumentNullException(nameof(type));
 
             return GetMetadata(type).DefaultValue;
         }
@@ -184,7 +185,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        object IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
+        object? IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
 
         /// <inheritdoc/>
         internal override void RouteClearValue(IAvaloniaObject o)
@@ -193,15 +194,22 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        internal override object RouteGetValue(IAvaloniaObject o)
+        internal override object? RouteGetValue(IAvaloniaObject o)
         {
             return o.GetValue<TValue>(this);
         }
 
         /// <inheritdoc/>
-        internal override IDisposable RouteSetValue(
+        internal override object? RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
+        {
+            var result = o.GetBaseValue(this, maxPriority);
+            return result.HasValue ? result.Value : UnsetValue;
+        }
+
+        /// <inheritdoc/>
+        internal override IDisposable? RouteSetValue(
             IAvaloniaObject o,
-            object value,
+            object? value,
             BindingPriority priority)
         {
             var v = BindingValue<TValue>.FromUntyped(value);
@@ -216,7 +224,7 @@ namespace Avalonia
             }
             else if (v.HasError)
             {
-                throw v.Error;
+                throw v.Error!;
             }
 
             return null;
@@ -225,11 +233,17 @@ namespace Avalonia
         /// <inheritdoc/>
         internal override IDisposable RouteBind(
             IAvaloniaObject o,
-            IObservable<object> source,
+            IObservable<object?> source,
             BindingPriority priority)
         {
             var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);
             return o.Bind<TValue>(this, adapter, priority);
+        }
+
+        /// <inheritdoc/>
+        internal override IObservable<AvaloniaPropertyChangedEventArgs> RouteListen(IAvaloniaObject o)
+        {
+            return o.Listen(this);
         }
 
         /// <inheritdoc/>
@@ -240,9 +254,9 @@ namespace Avalonia
             o.InheritanceParentChanged(this, oldParent);
         }
 
-        private object GetDefaultBoxedValue(Type type)
+        private object? GetDefaultBoxedValue(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type = type ?? throw new ArgumentNullException(nameof(type));
 
             return GetMetadata(type).DefaultValue;
         }

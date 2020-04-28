@@ -5,7 +5,6 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Reactive;
-using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -26,6 +25,61 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Listens to changes in an <see cref="AvaloniaProperty"/> an <see cref="IAvaloniaObject"/>.
+        /// </summary>
+        /// <param name="o">The object.</param>
+        /// <param name="property">The property.</param>
+        /// <returns>The listener observable.</returns>
+        /// <remarks>
+        /// A listener observable fires for each change to the requested property, and can fire even
+        /// when the change did not result in a change to the final value of the property because
+        /// a value with a higher priority is present. 
+        ///
+        /// This is a low-level API intended for use in advanced scenarios. For most cases, you will
+        /// want to instead call the <see cref="GetObservable(IAvaloniaObject, AvaloniaProperty)"/>
+        /// extension method.
+        /// </remarks>
+        public static IObservable<AvaloniaPropertyChangedEventArgs> Listen(
+            this IAvaloniaObject o,
+            AvaloniaProperty property)
+        {
+            o = o ?? throw new ArgumentNullException(nameof(o));
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
+            return property.RouteListen(o);
+        }
+
+        /// <summary>
+        /// Listens to changes in an <see cref="AvaloniaProperty"/> an <see cref="IAvaloniaObject"/>.
+        /// </summary>
+        /// <param name="o">The object.</param>
+        /// <param name="property">The property.</param>
+        /// <returns>The listener observable.</returns>
+        /// <remarks>
+        /// A listener observable fires for each change to the requested property, and can fire even
+        /// when the change did not result in a change to the final value of the property because
+        /// a value with a higher priority is present. 
+        ///
+        /// This is a low-level API intended for use in advanced scenarios. For most cases, you will
+        /// want to instead call the <see cref="GetObservable{T}(IAvaloniaObject, AvaloniaProperty{T})"/>
+        /// extension method.
+        /// </remarks>
+        public static IObservable<AvaloniaPropertyChangedEventArgs<T>> Listen<T>(
+            this IAvaloniaObject o,
+            AvaloniaProperty<T> property)
+        {
+            o = o ?? throw new ArgumentNullException(nameof(o));
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
+            return property switch
+            {
+                StyledPropertyBase<T> s => o.Listen(s),
+                DirectPropertyBase<T> d => o.Listen(d),
+                _ => throw new NotSupportedException("Unexpected AvaloniaProperty type."),
+            };
+        }
+
+        /// <summary>
         /// Gets an observable for a <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="o">The object.</param>
@@ -39,10 +93,21 @@ namespace Avalonia
         /// </remarks>
         public static IObservable<object> GetObservable(this IAvaloniaObject o, AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
+            o = o ?? throw new ArgumentNullException(nameof(o));
+            property = property ?? throw new ArgumentNullException(nameof(property));
 
-            return GetObservableRouter.Instance.Route(o, property);
+            var listener = o.Listen(property);
+
+            if (listener is AvaloniaPropertyObservable apo)
+            {
+                return apo.UntypedValueAdapter;
+            }
+            else
+            {
+                return listener.Where(x => x.IsEffectiveValueChange && !x.IsOutdated)
+                    .Select(x => x.NewValue)
+                    .StartWith(o.GetValue(property));
+            }
         }
 
         /// <summary>
@@ -76,7 +141,7 @@ namespace Avalonia
             }
             else
             {
-                return listener.Where(x => x.IsActiveValueChange && !x.IsOutdated)
+                return listener.Where(x => x.IsEffectiveValueChange && !x.IsOutdated)
                     .Select(x => x.NewValue.Value)
                     .StartWith(o.GetValue(property));
             }
@@ -115,7 +180,7 @@ namespace Avalonia
             }
             else
             {
-                return listener.Where(x => x.IsActiveValueChange && !x.IsOutdated)
+                return listener.Where(x => x.IsEffectiveValueChange && !x.IsOutdated)
                     .Select(x => x.NewValue)
                     .StartWith(o.GetValue(property));
             }
@@ -356,6 +421,56 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets an <see cref="AvaloniaProperty"/> base value.
+        /// </summary>
+        /// <param name="o">The object.</param>
+        /// <param name="property">The property.</param>
+        /// <param name="maxPriority">The maximum priority for the value.</param>
+        /// <remarks>
+        /// Gets the value of the property, if set on this object with a priority equal or lower to
+        /// <paramref name="maxPriority"/>, otherwise <see cref="AvaloniaProperty.UnsetValue"/>. Note that
+        /// this method does not return property values that come from inherited or default values.
+        /// </remarks>
+        public static object GetBaseValue(
+            this IAvaloniaObject o,
+            AvaloniaProperty property,
+            BindingPriority maxPriority)
+        {
+            o = o ?? throw new ArgumentNullException(nameof(o));
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
+            return property.RouteGetBaseValue(o, maxPriority);
+        }
+
+        /// <summary>
+        /// Gets an <see cref="AvaloniaProperty"/> base value.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="o">The object.</param>
+        /// <param name="property">The property.</param>
+        /// <param name="maxPriority">The maximum priority for the value.</param>
+        /// <remarks>
+        /// Gets the value of the property, if set on this object with a priority equal or lower to
+        /// <paramref name="maxPriority"/>, otherwise <see cref="Optional{T}.Empty"/>. Note that
+        /// this method does not return property values that come from inherited or default values.
+        /// </remarks>
+        public static Optional<T> GetBaseValue<T>(
+            this IAvaloniaObject o,
+            AvaloniaProperty<T> property,
+            BindingPriority maxPriority)
+        {
+            o = o ?? throw new ArgumentNullException(nameof(o));
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
+            return property switch
+            {
+                StyledPropertyBase<T> styled => o.GetBaseValue(styled, maxPriority),
+                DirectPropertyBase<T> direct => o.GetBaseValue(direct, maxPriority),
+                _ => throw new NotSupportedException("Unsupported AvaloniaProperty type.")
+            };
+        }
+
+        /// <summary>
         /// Sets a <see cref="AvaloniaProperty"/> value.
         /// </summary>
         /// <param name="target">The object.</param>
@@ -495,58 +610,6 @@ namespace Avalonia
                 bool enableDataValidation = false)
             {
                 return InstancedBinding.OneWay(_source);
-            }
-        }
-
-        private class GetObservableRouter : IAvaloniaPropertyVisitor<GetObservableRouter.Data>
-        {
-            public static readonly GetObservableRouter Instance = new GetObservableRouter();
-
-            public IObservable<object> Route(IAvaloniaObject o, AvaloniaProperty p)
-            {
-                var data = new Data { Source = o };
-                p.Accept(this, ref data);
-                return data.Result;
-            }
-
-            public void Visit<T>(StyledPropertyBase<T> property, ref Data data)
-            {
-                var listener = data.Source.Listen(property);
-
-                if (listener is AvaloniaPropertyObservable<T> apo)
-                {
-                    data.Result = apo.UntypedValueAdapter;
-                }
-                else
-                {
-                    data.Result = listener.Where(x => x.IsActiveValueChange && !x.IsOutdated)
-                        .Select(x => x.NewValue.ToUntyped())
-                        .StartWith(data.Source.GetValue(property));
-
-                }
-            }
-
-            public void Visit<T>(DirectPropertyBase<T> property, ref Data data)
-            {
-                var listener = data.Source.Listen(property);
-
-                if (listener is AvaloniaPropertyObservable<T> apo)
-                {
-                    data.Result = apo.UntypedValueAdapter;
-                }
-                else
-                {
-                    data.Result = listener.Where(x => x.IsActiveValueChange && !x.IsOutdated)
-                        .Select(x => x.NewValue.ToUntyped())
-                        .StartWith(data.Source.GetValue(property));
-
-                }
-            }
-
-            public struct Data
-            {
-                public IAvaloniaObject Source;
-                public IObservable<object> Result;
             }
         }
     }

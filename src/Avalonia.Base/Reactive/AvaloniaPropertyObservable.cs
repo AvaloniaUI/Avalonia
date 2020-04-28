@@ -8,7 +8,12 @@ using Avalonia.Threading;
 
 namespace Avalonia.Reactive
 {
-    internal abstract class AvaloniaPropertyObservable<T> :
+    internal abstract class AvaloniaPropertyObservable
+    {
+        public abstract IObservable<object?> UntypedValueAdapter { get; }
+    }
+
+    internal abstract class AvaloniaPropertyObservable<T> : AvaloniaPropertyObservable,
         IObservable<AvaloniaPropertyChangedEventArgs<T>>,
         IDescription
     {
@@ -53,7 +58,7 @@ namespace Avalonia.Reactive
             get => _bindingValueAdapter ??= new BindingValueSelector(this);
         }
 
-        public IObservable<object?> UntypedValueAdapter
+        public override IObservable<object?> UntypedValueAdapter
         {
             get => _untypedValueAdapter ??= new UntypedValueSelector(this);
         }
@@ -171,7 +176,7 @@ namespace Avalonia.Reactive
             {
                 ((IObserver<AvaloniaPropertyChangedEventArgs<T>>)entry.Observer).OnNext(change);
             }
-            else if (!change.IsOutdated && change.IsActiveValueChange)
+            else if (!change.IsOutdated && change.IsEffectiveValueChange)
             {
                 switch (entry.Type)
                 {

@@ -532,22 +532,22 @@ namespace Avalonia
 
             LogIfError(property, change.NewValue);
 
-            if (change.IsActiveValueChange && !change.OldValue.HasValue)
+            if (change.IsEffectiveValueChange && !change.OldValue.HasValue)
             {
                 change.SetOldValue(GetInheritedOrDefault<T>(property));
             }
 
-            if (change.IsActiveValueChange && !change.NewValue.HasValue)
+            if (change.IsEffectiveValueChange && !change.NewValue.HasValue)
             {
                 change.SetNewValue(GetInheritedOrDefault(property));
             }
 
-            if (!change.IsActiveValueChange ||
+            if (!change.IsEffectiveValueChange ||
                 !EqualityComparer<T>.Default.Equals(change.OldValue.Value, change.NewValue.Value))
             {
                 RaisePropertyChanged(change);
 
-                if (change.IsActiveValueChange && !change.IsOutdated)
+                if (change.IsEffectiveValueChange && !change.IsOutdated)
                 {
                     Logger.TryGet(LogEventLevel.Verbose)?.Log(
                         LogArea.Property,
@@ -661,7 +661,7 @@ namespace Avalonia
         /// <param name="change">The property change details.</param>
         protected virtual void OnPropertyChangedCore<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (change.IsActiveValueChange && !change.IsOutdated)
+            if (change.IsEffectiveValueChange && !change.IsOutdated)
             {
                 OnPropertyChanged(change);
             }
@@ -784,7 +784,7 @@ namespace Avalonia
                     }
                 }
 
-                if (change.IsActiveValueChange && !change.IsOutdated)
+                if (change.IsEffectiveValueChange && !change.IsOutdated)
                 {
                     _propertyChanged?.Invoke(this, change);
 

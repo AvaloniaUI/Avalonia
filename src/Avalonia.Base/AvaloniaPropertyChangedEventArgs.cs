@@ -16,6 +16,7 @@ namespace Avalonia
         {
             Sender = sender;
             Priority = priority;
+            IsEffectiveValueChange = true;
         }
 
         /// <summary>
@@ -35,19 +36,21 @@ namespace Avalonia
         /// <summary>
         /// Gets the old value of the property.
         /// </summary>
-        /// <value>
-        /// The old value of the property or <see cref="AvaloniaProperty.UnsetValue"/> if the
-        /// property previously had no value.
-        /// </value>
+        /// <remarks>
+        /// When <see cref="IsEffectiveValueChange"/> is true, returns the old value of the property on
+        /// the object. When <see cref="IsEffectiveValueChange"/> is false, returns
+        /// <see cref="AvaloniaProperty.UnsetValue"/>.
+        /// </remarks>
         public object? OldValue => GetOldValue();
 
         /// <summary>
         /// Gets the new value of the property.
         /// </summary>
-        /// <value>
-        /// The new value of the property or <see cref="AvaloniaProperty.UnsetValue"/> if the
-        /// property previously had no value.
-        /// </value>
+        /// <remarks>
+        /// When <see cref="IsEffectiveValueChange"/> is true, returns the value of the property on the object.
+        /// When <see cref="IsEffectiveValueChange"/> is false returns the changed value, or
+        /// <see cref="AvaloniaProperty.UnsetValue"/> if the value was removed.
+        /// </remarks>
         public object? NewValue => GetNewValue();
 
         /// <summary>
@@ -58,6 +61,26 @@ namespace Avalonia
         /// </value>
         public BindingPriority Priority { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether the change represents a change to the effective value of
+        /// the property.
+        /// </summary>
+        /// <remarks>
+        /// A property listener created via <see cref="IAvaloniaObject.Listen{T}(StyledPropertyBase{T})"/>
+        /// signals all property changes, regardless of whether a value with a higer priority is present.
+        /// When this property is false, the change that is being signalled has not resulted in a change
+        /// to the property value on the object.
+        /// </remarks>
+        public bool IsEffectiveValueChange { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the value of the property on the object has already
+        /// changed since this change began notifying.
+        /// </summary>
+        public bool IsOutdated { get; private set; }
+
+        internal void MarkOutdated() => IsOutdated = true;
+        internal void MarkInactiveValue() => IsEffectiveValueChange = false;
         protected abstract AvaloniaProperty GetProperty();
         protected abstract object? GetOldValue();
         protected abstract object? GetNewValue();

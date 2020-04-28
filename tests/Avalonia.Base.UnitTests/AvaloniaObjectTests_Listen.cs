@@ -35,7 +35,7 @@ namespace Avalonia.Base.UnitTests
                 Assert.Equal("newvalue", x.NewValue.Value);
                 Assert.Equal("foodefault", x.OldValue.Value);
                 Assert.Equal(BindingPriority.LocalValue, x.Priority);
-                Assert.True(x.IsActiveValueChange);
+                Assert.True(x.IsEffectiveValueChange);
                 Assert.False(x.IsOutdated);
                 ++raised;
             });
@@ -56,7 +56,7 @@ namespace Avalonia.Base.UnitTests
                 Assert.Equal("styled", x.NewValue.Value);
                 Assert.False(x.OldValue.HasValue);
                 Assert.Equal(BindingPriority.Style, x.Priority);
-                Assert.False(x.IsActiveValueChange);
+                Assert.False(x.IsEffectiveValueChange);
                 Assert.False(x.IsOutdated);
                 ++raised;
             });
@@ -94,7 +94,7 @@ namespace Avalonia.Base.UnitTests
 
             Assert.Equal(
                 new[] { true, true, true, false, false, true, false, false, true },
-                changes.Select(x => x.IsActiveValueChange).ToList());
+                changes.Select(x => x.IsEffectiveValueChange).ToList());
             Assert.Equal(
                 new[] { "style1", "tp1", "a1", "tp2", "$unset", "a2", "style2", "$unset", "foodefault" },
                 changes.Select(x => x.NewValue.GetValueOrDefault("$unset")).ToList());
@@ -198,14 +198,14 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("newvalue", change.NewValue.Value);
             Assert.Equal("foodefault", change.OldValue.Value);
             Assert.Equal(BindingPriority.LocalValue, change.Priority);
-            Assert.True(change.IsActiveValueChange);
+            Assert.True(change.IsEffectiveValueChange);
             Assert.False(change.IsOutdated);
 
             change = Assert.IsType<AvaloniaPropertyChangedEventArgs<string>>(listener.Received[1]);
             Assert.Equal("baaa", change.NewValue.Value);
             Assert.Equal("bardefault", change.OldValue.Value);
             Assert.Equal(BindingPriority.Style, change.Priority);
-            Assert.True(change.IsActiveValueChange);
+            Assert.True(change.IsEffectiveValueChange);
             Assert.False(change.IsOutdated);
         }
 

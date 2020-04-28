@@ -4,6 +4,8 @@ using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Utilities;
 
+#nullable enable
+
 namespace Avalonia
 {
     /// <summary>
@@ -37,12 +39,12 @@ namespace Avalonia
             Type valueType,
             Type ownerType,
             PropertyMetadata metadata,
-            Action<IAvaloniaObject, bool> notifying = null)
+            Action<IAvaloniaObject, bool>? notifying = null)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(valueType != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
-            Contract.Requires<ArgumentNullException>(metadata != null);
+            name = name ?? throw new ArgumentNullException(nameof(name));
+            valueType = valueType ?? throw new ArgumentNullException(nameof(valueType));
+            ownerType = ownerType ?? throw new ArgumentNullException(nameof(ownerType));
+            metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
 
             if (name.Contains("."))
             {
@@ -71,10 +73,10 @@ namespace Avalonia
         protected AvaloniaProperty(
             AvaloniaProperty source,
             Type ownerType,
-            PropertyMetadata metadata)
+            PropertyMetadata? metadata)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
+            source = source ?? throw new ArgumentNullException(nameof(source));
+            ownerType = ownerType ?? throw new ArgumentNullException(nameof(ownerType));
 
             _changed = source._changed;
             _metadata = new Dictionary<Type, PropertyMetadata>();
@@ -152,7 +154,7 @@ namespace Avalonia
         /// will be true before the property change notifications are sent and false afterwards. This
         /// callback is intended to support Control.IsDataContextChanging.
         /// </remarks>
-        public Action<IAvaloniaObject, bool> Notifying { get; }
+        public Action<IAvaloniaObject, bool>? Notifying { get; }
 
         /// <summary>
         /// Gets the integer ID that represents this property.
@@ -246,9 +248,9 @@ namespace Avalonia
             TValue defaultValue = default(TValue),
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
-            Func<TValue, bool> validate = null,
-            Func<IAvaloniaObject, TValue, TValue> coerce = null,
-            Action<IAvaloniaObject, bool> notifying = null)
+            Func<TValue, bool>? validate = null,
+            Func<IAvaloniaObject, TValue, TValue>? coerce = null,
+            Action<IAvaloniaObject, bool>? notifying = null)
                 where TOwner : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
@@ -287,8 +289,8 @@ namespace Avalonia
             TValue defaultValue = default(TValue),
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
-            Func<TValue, bool> validate = null,
-            Func<IAvaloniaObject, TValue, TValue> coerce = null)
+            Func<TValue, bool>? validate = null,
+            Func<IAvaloniaObject, TValue, TValue>? coerce = null)
                 where THost : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
@@ -324,8 +326,8 @@ namespace Avalonia
             TValue defaultValue = default(TValue),
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
-            Func<TValue, bool> validate = null,
-            Func<IAvaloniaObject, TValue, TValue> coerce = null)
+            Func<TValue, bool>? validate = null,
+            Func<IAvaloniaObject, TValue, TValue>? coerce = null)
                 where THost : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
@@ -359,7 +361,7 @@ namespace Avalonia
         public static DirectProperty<TOwner, TValue> RegisterDirect<TOwner, TValue>(
             string name,
             Func<TOwner, TValue> getter,
-            Action<TOwner, TValue> setter = null,
+            Action<TOwner, TValue>? setter = null,
             TValue unsetValue = default(TValue),
             BindingMode defaultBindingMode = BindingMode.OneWay,
             bool enableDataValidation = false)
@@ -399,23 +401,16 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj) => obj is AvaloniaProperty p && Equals(p);
+
+        /// <inheritdoc/>
+        public bool Equals(AvaloniaProperty? other)
         {
-            var p = obj as AvaloniaProperty;
-            return p != null && Equals(p);
+            return other is AvaloniaProperty && Id == other.Id;
         }
 
         /// <inheritdoc/>
-        public bool Equals(AvaloniaProperty other)
-        {
-            return other != null && Id == other.Id;
-        }
-
-        /// <inheritdoc/>
-        public override int GetHashCode()
-        {
-            return Id;
-        }
+        public override int GetHashCode() => Id;
 
         /// <summary>
         /// Gets the property metadata for the specified type.
@@ -494,7 +489,14 @@ namespace Avalonia
         /// Routes an untyped GetValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
-        internal abstract object RouteGetValue(IAvaloniaObject o);
+        internal abstract object? RouteGetValue(IAvaloniaObject o);
+
+        /// <summary>
+        /// Routes an untyped GetBaseValue call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        /// <param name="maxPriority">The maximum priority for the value.</param>
+        internal abstract object? RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority);
 
         /// <summary>
         /// Routes an untyped SetValue call to a typed call.
@@ -507,7 +509,7 @@ namespace Avalonia
         /// </returns>
         internal abstract IDisposable? RouteSetValue(
             IAvaloniaObject o,
-            object value,
+            object? value,
             BindingPriority priority);
 
         /// <summary>
@@ -518,9 +520,20 @@ namespace Avalonia
         /// <param name="priority">The priority.</param>
         internal abstract IDisposable RouteBind(
             IAvaloniaObject o,
-            IObservable<object> source,
+            IObservable<object?> source,
             BindingPriority priority);
 
+        /// <summary>
+        /// Routes an untyped Listen call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        internal abstract IObservable<AvaloniaPropertyChangedEventArgs> RouteListen(IAvaloniaObject o);
+
+        /// <summary>
+        /// Routes an untyped InheritanceParentChanged call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        /// <param name="oldParent">The old inheritance parent.</param>
         internal abstract void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject oldParent);
 
         /// <summary>
@@ -530,8 +543,8 @@ namespace Avalonia
         /// <param name="metadata">The metadata.</param>
         protected void OverrideMetadata(Type type, PropertyMetadata metadata)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(metadata != null);
+            type = type ?? throw new ArgumentNullException(nameof(type));
+            metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
 
             if (_metadata.ContainsKey(type))
             {
