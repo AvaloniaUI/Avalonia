@@ -18,12 +18,12 @@
     return self;
 }
 
-- (bool)isReparented
+- (bool)hasGlobalMenuItem
 {
     return _isReparented;
 }
 
-- (void)setIsReparented:(bool)value
+- (void)setHasGlobalMenuItem:(bool)value
 {
     _isReparented = value;
 }
@@ -207,7 +207,7 @@ HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 {
     @autoreleasepool
     {
-        if([_native isReparented])
+        if([_native hasGlobalMenuItem])
         {
             index++;
         }

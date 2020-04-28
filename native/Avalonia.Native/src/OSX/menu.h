@@ -16,8 +16,8 @@ class AvnAppMenu;
 
 @interface AvnMenu : NSMenu
 - (id) initWithDelegate: (NSObject<NSMenuDelegate>*) del;
-- (void) setIsReparented: (bool) value;
-- (bool) isReparented;
+- (void) setHasGlobalMenuItem: (bool) value;
+- (bool) hasGlobalMenuItem;
 @end
 
 @interface AvnMenuItem : NSMenuItem

@@ -1195,7 +1195,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
             
             [_menu insertItem:appMenuItem atIndex:0];
             
-            [_menu setIsReparented:true];
+            [_menu setHasGlobalMenuItem:true];
         }
         
         [NSApp setMenu:_menu];
@@ -1216,7 +1216,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         
         if(_menu != nullptr)
         {
-            [_menu setIsReparented:false];
+            [_menu setHasGlobalMenuItem:false];
         }
         
         [nativeAppMenu->GetNative() addItem:appMenuItem];
