@@ -53,6 +53,8 @@ public:
     
     virtual HRESULT SetToggleType (AvnMenuItemToggleType toggleType) override;
     
+    virtual HRESULT SetIcon (void* data, size_t length) override;
+    
     bool EvaluateItemEnabled();
     
     void RaiseOnClicked();
