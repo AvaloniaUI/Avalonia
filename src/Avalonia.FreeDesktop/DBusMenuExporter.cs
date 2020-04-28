@@ -244,10 +244,8 @@ namespace Avalonia.FreeDesktop
 
                     if (name == "toggle-state")
                     {
-                        if (item.IsChecked)
-                            return 1;
                         if (item.ToggleType != NativeMenuItemToggleType.None)
-                            return 0;
+                            return item.IsChecked ? 1 : 0;
                     }
 
                     if (name == "children-display")
