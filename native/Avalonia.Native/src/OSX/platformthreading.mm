@@ -54,9 +54,11 @@ private:
     {
     public:
         FORWARD_IUNKNOWN()
+        
         bool Running = false;
         bool Cancelled = false;
-        virtual void Cancel()
+        
+        virtual void Cancel() override
         {
             Cancelled = true;
             if(Running)
