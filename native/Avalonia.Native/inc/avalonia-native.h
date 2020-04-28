@@ -176,6 +176,13 @@ enum AvnWindowEdge
     WindowEdgeSouthEast
 };
 
+enum AvnMenuItemToggleType
+{
+    None,
+    CheckMark,
+    Radio
+};
+
 AVNCOM(IAvaloniaNativeFactory, 01) : IUnknown
 {
 public:
@@ -407,6 +414,7 @@ AVNCOM(IAvnMenuItem, 19) : IUnknown
     virtual HRESULT SetGesture (void* utf8String, AvnInputModifiers modifiers) = 0;
     virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) = 0;
     virtual HRESULT SetIsChecked (bool isChecked) = 0;
+    virtual HRESULT SetToggleType (AvnMenuItemToggleType toggleType) = 0;
 };
 
 AVNCOM(IAvnMenuEvents, 1A) : IUnknown

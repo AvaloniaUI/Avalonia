@@ -26,6 +26,11 @@ namespace Avalonia.Native.Interop
             IsChecked = isChecked;
         }
 
+        private void UpdateToggleType(NativeMenuItemToggleType toggleType)
+        {
+            ToggleType = (AvnMenuItemToggleType)toggleType;
+        }
+
         private void UpdateGesture(Input.KeyGesture gesture)
         {
             // todo ensure backend can cope with setting null gesture.
@@ -73,6 +78,8 @@ namespace Avalonia.Native.Interop
 
                 UpdateAction(ManagedMenuItem as NativeMenuItem);
 
+                UpdateToggleType(item.ToggleType);
+
                 UpdateIsChecked(item.IsChecked);
 
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.HeaderProperty)
@@ -83,6 +90,9 @@ namespace Avalonia.Native.Interop
 
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.CommandProperty)
                     .Subscribe(x => UpdateAction(ManagedMenuItem as NativeMenuItem)));
+
+                _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.ToggleTypeProperty)
+                    .Subscribe(x => UpdateToggleType(x)));
 
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.IsCheckedProperty)
                     .Subscribe(x => UpdateIsChecked(x)));

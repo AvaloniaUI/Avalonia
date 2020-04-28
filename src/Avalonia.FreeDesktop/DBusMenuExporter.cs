@@ -240,9 +240,6 @@ namespace Avalonia.FreeDesktop
                             return "checkmark";
                         if (item.ToggleType == NativeMenuItemToggleType.Radio)
                             return "radio";
-                        // Someone has forgot to set the style
-                        if (item.IsChecked)
-                            return "checkmark";
                     }
 
                     if (name == "toggle-state")
