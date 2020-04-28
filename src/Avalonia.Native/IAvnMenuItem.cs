@@ -26,6 +26,11 @@ namespace Avalonia.Native.Interop
             IsChecked = isChecked;
         }
 
+        private void UpdateToggleType(NativeMenuItemToggleType toggleType)
+        {
+            
+        }
+
         private void UpdateGesture(Input.KeyGesture gesture)
         {
             // todo ensure backend can cope with setting null gesture.
