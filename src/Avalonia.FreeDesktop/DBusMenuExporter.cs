@@ -184,7 +184,7 @@ namespace Avalonia.FreeDesktop
 
             private static string[] AllProperties = new[]
             {
-                "type", "label", "enabled", "visible", "shortcut", "toggle-type", "children-display"
+                "type", "label", "enabled", "visible", "shortcut", "toggle-type", "children-display", "toggle-state"
             };
             
             object GetProperty((NativeMenuItemBase item, NativeMenu menu) i, string name)
@@ -232,6 +232,25 @@ namespace Avalonia.FreeDesktop
                             lst.Add("Super");
                         lst.Add(item.Gesture.Key.ToString());
                         return new[] { lst.ToArray() };
+                    }
+
+                    if (name == "toggle-type")
+                    {
+                        if (item.ToggleType == NativeMenuItemToggleType.CheckBox)
+                            return "checkmark";
+                        if (item.ToggleType == NativeMenuItemToggleType.Radio)
+                            return "radio";
+                        // Someone has forgot to set the style
+                        if (item.IsChecked)
+                            return "checkmark";
+                    }
+
+                    if (name == "toggle-state")
+                    {
+                        if (item.IsChecked)
+                            return 1;
+                        if (item.ToggleType != NativeMenuItemToggleType.None)
+                            return 0;
                     }
 
                     if (name == "children-display")

@@ -41,6 +41,7 @@
           <NativeMenu>
             <NativeMenuItem Header="Check Me Out" 
                             Command="{Binding ToggleMenuItemCheckedCommand}"
+                            ToggleType="CheckBox"
                             IsChecked="{Binding IsMenuItemChecked}"  />
           </NativeMenu>
         </NativeMenuItem.Menu>
