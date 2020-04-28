@@ -32,6 +32,7 @@ private:
     IAvnActionCallback* _callback;
     IAvnPredicateCallback* _predicate;
     bool _isSeperator;
+    bool _isCheckable;
     
 public:
     FORWARD_IUNKNOWN()
