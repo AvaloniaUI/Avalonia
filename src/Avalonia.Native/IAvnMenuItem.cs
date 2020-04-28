@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Reactive.Disposables;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native.Interop
@@ -29,6 +31,28 @@ namespace Avalonia.Native.Interop
         private void UpdateToggleType(NativeMenuItemToggleType toggleType)
         {
             ToggleType = (AvnMenuItemToggleType)toggleType;
+        }
+
+        private unsafe void UpdateIcon (IBitmap icon)
+        {
+            if(icon is null)
+            {
+                SetIcon(IntPtr.Zero, 0);
+            }
+            else
+            {
+                using(var ms = new MemoryStream())
+                {
+                    icon.Save(ms);
+
+                    var imageData = ms.ToArray();
+
+                    fixed(void* ptr = imageData)
+                    {
+                        SetIcon(new IntPtr(ptr), imageData.Length);
+                    }
+                }
+            }
         }
 
         private void UpdateGesture(Input.KeyGesture gesture)
@@ -80,6 +104,8 @@ namespace Avalonia.Native.Interop
 
                 UpdateToggleType(item.ToggleType);
 
+                UpdateIcon(item.Icon);
+
                 UpdateIsChecked(item.IsChecked);
 
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.HeaderProperty)
@@ -96,6 +122,9 @@ namespace Avalonia.Native.Interop
 
                 _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.IsCheckedProperty)
                     .Subscribe(x => UpdateIsChecked(x)));
+
+                _propertyDisposables.Add(ManagedMenuItem.GetObservable(NativeMenuItem.IconProperty)
+                    .Subscribe(x => UpdateIcon(x)));
             }
         }
 

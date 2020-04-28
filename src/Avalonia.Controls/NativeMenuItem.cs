@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Input;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -13,6 +14,7 @@ namespace Avalonia.Controls
         private ICommand _command;
         private bool _isChecked = false;
         private NativeMenuItemToggleType _toggleType;
+        private IBitmap _icon;
 
         private NativeMenu _menu;
 
@@ -70,6 +72,16 @@ namespace Avalonia.Controls
                 SetAndRaise(MenuProperty, ref _menu, value);
             }
         }
+
+        public static readonly DirectProperty<NativeMenuItem, IBitmap> IconProperty =
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, IBitmap>(nameof(Icon), o => o.Icon, (o, v) => o.Icon = v);
+
+
+        public IBitmap Icon
+        {
+            get => _icon;
+            set => SetAndRaise(IconProperty, ref _icon, value);
+        }  
 
         public static readonly DirectProperty<NativeMenuItem, string> HeaderProperty =
             AvaloniaProperty.RegisterDirect<NativeMenuItem, string>(nameof(Header), o => o.Header, (o, v) => o.Header = v);
