@@ -169,9 +169,6 @@ HRESULT AvnAppMenuItem::SetToggleType(AvnMenuItemToggleType toggleType)
         switch(toggleType)
         {
             case AvnMenuItemToggleType::None:
-                [_native setOnStateImage:nullptr];
-                break;
-                
             case AvnMenuItemToggleType::CheckMark:
                 [_native setOnStateImage: [NSImage imageNamed:@"NSMenuCheckmark"]];
                 break;
