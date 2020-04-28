@@ -70,7 +70,6 @@
 
 AvnAppMenuItem::AvnAppMenuItem(bool isSeperator)
 {
-    _isCheckable = false;
     _isSeperator = isSeperator;
     
     if(isSeperator)
@@ -158,7 +157,7 @@ HRESULT AvnAppMenuItem::SetIsChecked (bool isChecked)
 {
     @autoreleasepool
     {
-        [_native setState:(isChecked && _isCheckable ? NSOnState : NSOffState)];
+        [_native setState:(isChecked ? NSOnState : NSOffState)];
         return S_OK;
     }
 }
@@ -171,16 +170,14 @@ HRESULT AvnAppMenuItem::SetToggleType(AvnMenuItemToggleType toggleType)
         {
             case AvnMenuItemToggleType::None:
                 [_native setOnStateImage:nullptr];
-                _isCheckable = false;
                 break;
                 
             case AvnMenuItemToggleType::CheckMark:
-                [_native setOnStateImage:nullptr];
-                _isCheckable = true;
+                [_native setOnStateImage: [NSImage imageNamed:@"NSMenuCheckmark"]];
                 break;
                 
             case AvnMenuItemToggleType::Radio:
-                [_native setOnStateImage: [NSImage imageNamed:@"NSMenuRadio"]];
+                [_native setOnStateImage: [NSImage imageNamed:@"NSMenuItemBullet"]];
                 break;
         }
         
