@@ -89,6 +89,9 @@ namespace Avalonia.Animation.Animators
             else
                 newValue = (T)lastKeyframe.Value;
 
+            if (lastKeyframe.KeySpline != null) // TODO: do we use firstKeyFrame or lastKeyframe?!
+                progress = lastKeyframe.KeySpline.GetSplineProgress(progress);
+
             return Interpolate(progress, oldValue, newValue);
         }
 

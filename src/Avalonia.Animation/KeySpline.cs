@@ -66,7 +66,17 @@ namespace Avalonia.Animation
         public double ControlPointX1
         {
             get => _controlPointX1;
-            set => _controlPointX1 = value;
+            set
+            {
+                if (IsValidXValue(value))
+                {
+                    _controlPointX1 = value;
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid KeySpline X1 value. Must be >= 0.0 and <= 1.0.");
+                }
+            }
         }
 
         public double ControlPointY1
@@ -78,7 +88,17 @@ namespace Avalonia.Animation
         public double ControlPointX2
         {
             get => _controlPointX2;
-            set => _controlPointX2 = value;
+            set
+            {
+                if (IsValidXValue(value))
+                {
+                    _controlPointX2 = value;
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid KeySpline X2 value. Must be >= 0.0 and <= 1.0.");
+                }
+            }
         }
 
         public double ControlPointY2
@@ -94,8 +114,6 @@ namespace Avalonia.Animation
         /// <returns>the spline progress</returns>
         public double GetSplineProgress(double linearProgress)
         {
-            //ReadPreamble();
-
             if (_isDirty)
             {
                 Build();
@@ -111,6 +129,16 @@ namespace Avalonia.Animation
 
                 return GetBezierValue(_By, _Cy, _parameter);
             }
+        }
+
+        public bool IsValid()
+        {
+            return IsValidXValue(_controlPointX1) && IsValidXValue(_controlPointX2);
+        }
+
+        private bool IsValidXValue(double value)
+        {
+            return value >= 0.0 && value <= 1.0;
         }
 
         /// <summary>
