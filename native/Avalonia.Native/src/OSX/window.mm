@@ -461,7 +461,12 @@ private:
     {
         AvnWindowState state;
         GetWindowState(&state);
-        WindowEvents->WindowStateChanged(state);
+        
+        if(_lastWindowState != state)
+        {
+            _lastWindowState = state;
+            WindowEvents->WindowStateChanged(state);
+        }
     }
     
     bool UndecoratedIsMaximized ()
@@ -598,6 +603,12 @@ private:
                 return S_OK;
             }
             
+            if(([Window styleMask] & NSFullScreenWindowMask) == NSFullScreenWindowMask)
+            {
+                *ret = FullScreen;
+                return S_OK;
+            }
+            
             *ret = Normal;
             
             return S_OK;
@@ -608,12 +619,25 @@ private:
     {
         @autoreleasepool
         {
+            auto currentState = _lastWindowState;
             _lastWindowState = state;
             
             if(_shown)
             {
                 switch (state) {
+                    case FullScreen:
+                        if(currentState != FullScreen)
+                        {
+                            [Window toggleFullScreen:nullptr];
+                        }
+                        break;
+                        
                     case Maximized:
+                        if(currentState == FullScreen)
+                        {
+                            [Window toggleFullScreen:nullptr];
+                        }
+                        
                         lastPositionSet.X = 0;
                         lastPositionSet.Y = 0;
                         
@@ -654,14 +678,9 @@ private:
     {
         if(_shown)
         {
-            auto windowState = [Window isMiniaturized] ? Minimized
-            : (IsZoomed() ? Maximized : Normal);
-            
-            if (windowState != _lastWindowState)
+            if(_lastWindowState != FullScreen)
             {
-                _lastWindowState = windowState;
-                
-                WindowEvents->WindowStateChanged(windowState);
+                WindowStateChanged();
             }
         }
     }
@@ -1357,6 +1376,26 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 }
 
 - (void)windowDidMiniaturize:(NSNotification *)notification
+{
+    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    
+    if(parent != nullptr)
+    {
+        parent->WindowStateChanged();
+    }
+}
+
+- (void)windowDidEnterFullScreen:(NSNotification *)notification
+{
+    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    
+    if(parent != nullptr)
+    {
+        parent->WindowStateChanged();
+    }
+}
+
+- (void)windowDidExitFullScreen:(NSNotification *)notification
 {
     auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
     
