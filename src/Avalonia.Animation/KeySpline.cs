@@ -331,6 +331,9 @@ namespace Avalonia.Animation
         }
     }
 
+    /// <summary>
+    /// Converts string values to <see cref="KeySpline"/> values
+    /// </summary>
     public class KeySplineTypeConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
