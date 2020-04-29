@@ -6,10 +6,16 @@ using System.Text;
 using Avalonia;
 using Avalonia.Utilities;
 
-// From: https://github.com/dotnet/wpf/blob/ae1790531c3b993b56eba8b1f0dd395a3ed7de75/src/Microsoft.DotNet.Wpf/src/PresentationCore/System/Windows/Media/Animation/KeySpline.cs
+// Ported from WPF open-source code.
+// https://github.com/dotnet/wpf/blob/ae1790531c3b993b56eba8b1f0dd395a3ed7de75/src/Microsoft.DotNet.Wpf/src/PresentationCore/System/Windows/Media/Animation/KeySpline.cs
 
 namespace Avalonia.Animation
 {
+    /// <summary>
+    /// Determines how an animation is used based on a cubic bezier curve.
+    /// X1 and X2 must be between 0.0 and 1.0, inclusive.
+    /// See https://docs.microsoft.com/en-us/dotnet/api/system.windows.media.animation.keyspline
+    /// </summary>
     [TypeConverter(typeof(KeySplineTypeConverter))]
     public class KeySpline : AvaloniaObject
     {
@@ -37,6 +43,9 @@ namespace Avalonia.Animation
         private const double _accuracy = .001;   // 1/3 the desired accuracy in X
         private const double _fuzz = .000001;    // computational zero
 
+        /// <summary>
+        /// Create a <see cref="KeySpline"/> with X1 = Y1 = 0 and X2 = Y2 = 1.
+        /// </summary>
         public KeySpline()
         {
             _controlPointX1 = 0.0;
@@ -46,6 +55,13 @@ namespace Avalonia.Animation
             _isDirty = true;
         }
 
+        /// <summary>
+        /// Create a <see cref="KeySpline"/> with the given parameters
+        /// </summary>
+        /// <param name="x1">X coordinate for the first control point</param>
+        /// <param name="y1">Y coordinate for the first control point</param>
+        /// <param name="x2">X coordinate for the second control point</param>
+        /// <param name="y2">Y coordinate for the second control point</param>
         public KeySpline(double x1, double y1, double x2, double y2)
         {
             _controlPointX1 = x1;
@@ -55,6 +71,14 @@ namespace Avalonia.Animation
             _isDirty = true;
         }
 
+        /// <summary>
+        /// Parse a <see cref="KeySpline"/> from a string. The string
+        /// needs to contain 4 values in it for the 2 control points.
+        /// </summary>
+        /// <param name="value">string with 4 values in it</param>
+        /// <param name="culture">culture of the string</param>
+        /// <exception cref="FormatException">Thrown if the string does not have 4 values</exception>
+        /// <returns>A <see cref="KeySpline"/> with the appropriate values set</returns>
         public static KeySpline Parse(string value, CultureInfo culture)
         {
             using (var tokenizer = new StringTokenizer((string)value, CultureInfo.InvariantCulture, exceptionMessage: "Invalid KeySpline."))
@@ -63,6 +87,9 @@ namespace Avalonia.Animation
             }
         }
 
+        /// <summary>
+        /// X coordinate of the first control point
+        /// </summary>
         public double ControlPointX1
         {
             get => _controlPointX1;
@@ -79,12 +106,18 @@ namespace Avalonia.Animation
             }
         }
 
+        /// <summary>
+        /// Y coordinate of the first control point
+        /// </summary>
         public double ControlPointY1
         {
             get => _controlPointY1;
             set => _controlPointY1 = value;
         }
 
+        /// <summary>
+        /// X coordinate of the second control point
+        /// </summary>
         public double ControlPointX2
         {
             get => _controlPointX2;
@@ -101,6 +134,9 @@ namespace Avalonia.Animation
             }
         }
 
+        /// <summary>
+        /// Y coordinate of the second control point
+        /// </summary>
         public double ControlPointY2
         {
             get => _controlPointY2;
@@ -131,11 +167,22 @@ namespace Avalonia.Animation
             }
         }
 
+        /// <summary>
+        /// Check to see whether the <see cref="KeySpline"/> is valid by looking
+        /// at its X values.
+        /// </summary>
+        /// <returns>true if the X values for this <see cref="KeySpline"/> fall in 
+        /// acceptable range; false otherwise.</returns>
         public bool IsValid()
         {
             return IsValidXValue(_controlPointX1) && IsValidXValue(_controlPointX2);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         private bool IsValidXValue(double value)
         {
             return value >= 0.0 && value <= 1.0;
