@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -179,6 +180,13 @@ namespace Avalonia.Rendering.SceneGraph
                     var origin = visual.RenderTransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
                     var offset = Matrix.CreateTranslation(origin);
                     renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
+
+                    var det = renderTransform.GetDeterminant();
+                    if (double.IsNaN(det) || double.IsInfinity(det))
+                    {
+                        Logger.TryGet(LogEventLevel.Error)?.Log(LogArea.Visual, renderTransform, "Render transform matrix contains NaN or Infinities.");
+                        return;
+                    }
                 }
 
                 m = renderTransform * m;
