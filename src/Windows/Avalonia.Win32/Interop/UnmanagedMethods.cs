@@ -460,6 +460,7 @@ namespace Avalonia.Win32.Interop
             WS_SIZEFRAME = 0x40000,
             WS_SYSMENU = 0x80000,
             WS_TABSTOP = 0x10000,
+            WS_THICKFRAME = 0x40000,
             WS_VISIBLE = 0x10000000,
             WS_VSCROLL = 0x200000,
             WS_EX_DLGMODALFRAME = 0x00000001,
