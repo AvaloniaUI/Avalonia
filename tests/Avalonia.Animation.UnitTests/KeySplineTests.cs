@@ -1,6 +1,7 @@
 using System;
-using Avalonia.Controls;
-using Avalonia.UnitTests;
+using Avalonia.Controls.Shapes;
+using Avalonia.Media;
+using Avalonia.Styling;
 using Xunit;
 
 namespace Avalonia.Animation.UnitTests
@@ -43,6 +44,77 @@ namespace Avalonia.Animation.UnitTests
             var keySpline = new KeySpline();
             Assert.Throws<ArgumentException>(() => keySpline.ControlPointX1 = input);
             Assert.Throws<ArgumentException>(() => keySpline.ControlPointX2 = input);
+        }
+
+        [Fact]
+        public void Check_KeySpline_Handled_properly()
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(RotateTransform.AngleProperty, -2.5d),
+                },
+                KeyTime = TimeSpan.FromSeconds(0)
+            };
+
+            var keyframe2 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(RotateTransform.AngleProperty, 2.5d),
+                },
+                KeyTime = TimeSpan.FromSeconds(5),
+                KeySpline = new KeySpline(0.1123555056179775,
+                                          0.657303370786517,
+                                          0.8370786516853934,
+                                          0.499999999999999999)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(5),
+                Children =
+                {
+                    keyframe1,
+                    keyframe2
+                },
+                IterationCount = new IterationCount(5),
+                PlaybackDirection = PlaybackDirection.Alternate
+            };
+
+            var rotateTransform = new RotateTransform(-2.5);
+            var rect = new Rectangle()
+            {
+                RenderTransform = rotateTransform
+            };
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(rect, clock);
+
+            // position is what you'd expect at end and beginning
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(rotateTransform.Angle, -2.5);
+            clock.Step(TimeSpan.FromSeconds(5));
+            Assert.Equal(rotateTransform.Angle, 2.5);
+
+            // test some points in between end and beginning
+            var tolerance = 0.01;
+            clock.Step(TimeSpan.Parse("00:00:10.0153932"));
+            var expected = -2.4122350198982545;
+            Assert.True(Math.Abs(rotateTransform.Angle - expected) <= tolerance);
+
+            clock.Step(TimeSpan.Parse("00:00:11.2655407"));
+            expected = -0.37153223002125113;
+            Assert.True(Math.Abs(rotateTransform.Angle - expected) <= tolerance);
+
+            clock.Step(TimeSpan.Parse("00:00:12.6158773"));
+            expected = 0.3967885416786294;
+            Assert.True(Math.Abs(rotateTransform.Angle - expected) <= tolerance);
+
+            clock.Step(TimeSpan.Parse("00:00:14.6495256"));
+            expected = 1.8016358493761722;
+            Assert.True(Math.Abs(rotateTransform.Angle - expected) <= tolerance);
         }
     }
 }
