@@ -580,23 +580,19 @@ namespace Avalonia.Win32
 
         /// <summary>
         /// Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
+        /// Method must only be called from inside UpdateWindowProperties.
         /// </summary>
         /// <param name="fullscreen"></param>
         private void SetFullScreen(bool fullscreen)
         {
-            // Save current window state if not already fullscreen.
-            if (!_windowProperties.IsFullScreen)
+            if (fullscreen)
             {
+                // Save current window state if not already fullscreen.               
                 _savedWindowInfo.Style = GetStyle();
                 _savedWindowInfo.ExStyle = GetExtendedStyle();
                 GetWindowRect(_hwnd, out var windowRect);
                 _savedWindowInfo.WindowRect = windowRect;
-            }
 
-            _windowProperties.IsFullScreen = fullscreen;
-
-            if (_windowProperties.IsFullScreen)
-            {
                 // Set new window style and size.
                 SetStyle(_savedWindowInfo.Style & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME));
                 SetExtendedStyle(_savedWindowInfo.ExStyle & ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE));
@@ -635,40 +631,38 @@ namespace Avalonia.Win32
         {
             ShowWindowCommand command;
 
+            var newWindowProperties = _windowProperties;
+
             switch (state)
             {
                 case WindowState.Minimized:
-                    if (_windowProperties.IsFullScreen)
-                    {
-                        SetFullScreen(false);
-                    }
-
+                    newWindowProperties.IsFullScreen = false;
                     command = ShowWindowCommand.Minimize;
                     break;
                 case WindowState.Maximized:
-                    if (_windowProperties.IsFullScreen)
-                    {
-                        SetFullScreen(false);
-                    }
-
+                    newWindowProperties.IsFullScreen = false;
                     command = ShowWindowCommand.Maximize;
                     break;
 
                 case WindowState.Normal:
-                    if (_windowProperties.IsFullScreen)
-                    {
-                        SetFullScreen(false);
-                    }
-
+                    newWindowProperties.IsFullScreen = false;
                     command = ShowWindowCommand.Restore;
                     break;
 
                 case WindowState.FullScreen:
-                    SetFullScreen(true);
-                    return;
+                    newWindowProperties.IsFullScreen = true;
+                    command = ShowWindowCommand.Maximize;
+                    break;
 
                 default:
                     throw new ArgumentException("Invalid WindowState.");
+            }
+
+            UpdateWindowProperties(newWindowProperties);
+
+            if (newWindowProperties.IsFullScreen)
+            {
+                return;
             }
 
             UnmanagedMethods.ShowWindow(_hwnd, command);
@@ -799,6 +793,11 @@ namespace Avalonia.Win32
                 SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
                     SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
                     SetWindowPosFlags.SWP_FRAMECHANGED);
+            }
+
+            if (oldProperties.IsFullScreen != newProperties.IsFullScreen)
+            {
+                SetFullScreen(newProperties.IsFullScreen);
             }
         }
 
