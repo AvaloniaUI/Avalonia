@@ -103,6 +103,17 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Notify_Fired_Only_On_Effective_Value_Change()
+        {
+            var target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "animated", BindingPriority.Animation);
+            target.SetValue(Class1.FooProperty, "local");
+
+            Assert.Equal(2, target.NotifyCount);
+        }
+
+        [Fact]
         public void Property_Equals_Should_Handle_Null()
         {
             var p1 = new TestProperty<string>("p1", typeof(Class1));
@@ -180,7 +191,14 @@ namespace Avalonia.Base.UnitTests
         private class Class1 : AvaloniaObject
         {
             public static readonly StyledProperty<string> FooProperty =
-                AvaloniaProperty.Register<Class1, string>("Foo", "default");
+                AvaloniaProperty.Register<Class1, string>("Foo", "default", notifying: FooNotifying);
+
+            public int NotifyCount { get; private set; }
+
+            private static void FooNotifying(IAvaloniaObject o, bool n)
+            {
+                ++((Class1)o).NotifyCount;
+            }
         }
 
         private class Class2 : Class1

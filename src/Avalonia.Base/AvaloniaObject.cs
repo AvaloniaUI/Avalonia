@@ -716,7 +716,10 @@ namespace Avalonia
         {
             VerifyAccess();
 
-            change.Property.Notifying?.Invoke(this, true);
+            if (change.IsEffectiveValueChange)
+            {
+                change.Property.Notifying?.Invoke(this, true);
+            }
 
             try
             {
@@ -747,7 +750,10 @@ namespace Avalonia
             }
             finally
             {
-                change.Property.Notifying?.Invoke(this, false);
+                if (change.IsEffectiveValueChange)
+                {
+                    change.Property.Notifying?.Invoke(this, false);
+                }
             }
         }
 
