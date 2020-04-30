@@ -46,6 +46,31 @@ namespace Avalonia.Animation.UnitTests
             Assert.Throws<ArgumentException>(() => keySpline.ControlPointX2 = input);
         }
 
+        /*
+          To get the test values for the KeySpline test, you can:
+          1) Grab the WPF sample for KeySpline animations from https://github.com/microsoft/WPF-Samples/tree/master/Animation/KeySplineAnimations
+          2) Add the following xaml somewhere:
+            <Button Content="Capture"
+                    Click="Button_Click"/>
+            <ScrollViewer VerticalScrollBarVisibility="Visible">
+                <TextBlock Name="CaptureData"
+                           Text="---"
+                           TextWrapping="Wrap" />
+            </ScrollViewer>
+          3) Add the following code to the code behind:
+            private void Button_Click(object sender, RoutedEventArgs e)
+            {
+                CaptureData.Text += string.Format("\n{0} | {1}", myTranslateTransform3D.OffsetX, (TimeSpan)ExampleStoryboard.GetCurrentTime(this));
+                CaptureData.Text +=
+                    "\nKeySpline=\"" + mySplineKeyFrame.KeySpline.ControlPoint1.X.ToString() + "," +
+                    mySplineKeyFrame.KeySpline.ControlPoint1.Y.ToString() + " " +
+                    mySplineKeyFrame.KeySpline.ControlPoint2.X.ToString() + "," +
+                    mySplineKeyFrame.KeySpline.ControlPoint2.Y.ToString() + "\"";
+                CaptureData.Text += "\n-----";
+            }
+          4) Run the app, mess with the slider values, then click the button to capture output values
+         **/
+
         [Fact]
         public void Check_KeySpline_Handled_properly()
         {
