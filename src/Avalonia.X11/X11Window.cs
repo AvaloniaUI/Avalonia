@@ -555,6 +555,11 @@ namespace Avalonia.X11
                     ChangeWMAtoms(true, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
                 }
+                else if (value == WindowState.FullScreen)
+                {
+                    ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_HIDDEN);
+                    ChangeWMAtoms(true, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
+                }
                 else
                 {
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_HIDDEN);
@@ -582,6 +587,12 @@ namespace Avalonia.X11
                         if (pitems[c] == _x11.Atoms._NET_WM_STATE_HIDDEN)
                         {
                             state = WindowState.Minimized;
+                            break;
+                        }
+
+                        if(pitems[c] == _x11.Atoms._NET_WM_STATE_FULLSCREEN)
+                        {
+                            state = WindowState.FullScreen;
                             break;
                         }
 
