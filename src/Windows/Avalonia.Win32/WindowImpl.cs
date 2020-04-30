@@ -46,6 +46,7 @@ namespace Avalonia.Win32
 
         private SavedWindowInfo _savedWindowInfo;
         private bool _fullScreen;
+        private IntPtr _taskBarList;
 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
@@ -218,39 +219,46 @@ namespace Avalonia.Win32
             }
         }
 
-        private void MarkFullscreen(bool fullscreen)
+        /// <summary>
+        /// Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
+        /// </summary>
+        /// <param name="fullscreen">Fullscreen state.</param>
+        private unsafe void MarkFullscreen(bool fullscreen)
         {
-            //if (!task_bar_list_)
-            //{
-            //    HRESULT hr =
+            if (_taskBarList == IntPtr.Zero)
+            {
+                Guid clsid = ShellIds.TaskBarList;
+                Guid iid = ShellIds.ITaskBarList2;
 
+                int result = CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out _taskBarList);
 
-            //        ::CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER,
-            //                           IID_PPV_ARGS(&task_bar_list_));
-            //    if (SUCCEEDED(hr) && FAILED(task_bar_list_->HrInit()))
-            //        task_bar_list_ = nullptr;
-            //}
+                if (_taskBarList != IntPtr.Zero)
+                {
+                    var ptr = (ITaskBarList2VTable**)_taskBarList.ToPointer();
 
-            //// As per MSDN marking the window as fullscreen should ensure that the
-            //// taskbar is moved to the bottom of the Z-order when the fullscreen window
-            //// is activated. If the window is not fullscreen, the Shell falls back to
-            //// heuristics to determine how the window should be treated, which means
-            //// that it could still consider the window as fullscreen. :(
-            //if (task_bar_list_)
-            //    task_bar_list_->MarkFullscreenWindow(hwnd_, !!fullscreen);
+                    var hrInit = Marshal.GetDelegateForFunctionPointer<HrInit>((*ptr)->HrInit);
+
+                    if (hrInit(_taskBarList) != HRESULT.S_OK)
+                    {
+                        _taskBarList = IntPtr.Zero;
+                    }
+                }
+            }
+
+            if (_taskBarList != IntPtr.Zero)
+            {
+                var ptr = (ITaskBarList2VTable**)_taskBarList.ToPointer();
+                var markFullscreen = Marshal.GetDelegateForFunctionPointer<MarkFullscreenWindow>((*ptr)->MarkFullscreenWindow);
+                markFullscreen(_taskBarList, _hwnd, fullscreen);
+            }
         }
 
+        /// <summary>
+        /// Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
+        /// </summary>
+        /// <param name="fullscreen"></param>
         private void SetFullScreen(bool fullscreen)
         {
-            // Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
-            //std::unique_ptr<ScopedFullscreenVisibility> visibility;
-
-            // With Aero enabled disabling the visibility causes the window to disappear
-            // for several frames, which looks worse than doing other updates
-            // non-atomically.
-            //if (!ui::win::IsAeroGlassEnabled())
-            //  visibility = std::make_unique<ScopedFullscreenVisibility>(hwnd_);
-
             // Save current window state if not already fullscreen.
             if (!_fullScreen)
             {
