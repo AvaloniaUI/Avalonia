@@ -211,93 +211,6 @@ namespace Avalonia.Win32
             }
         }
 
-        /// <summary>
-        /// Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
-        /// </summary>
-        /// <param name="fullscreen">Fullscreen state.</param>
-        private unsafe void MarkFullscreen(bool fullscreen)
-        {
-            if (_taskBarList == IntPtr.Zero)
-            {
-                Guid clsid = ShellIds.TaskBarList;
-                Guid iid = ShellIds.ITaskBarList2;
-
-                int result = CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out _taskBarList);
-
-                if (_taskBarList != IntPtr.Zero)
-                {
-                    var ptr = (ITaskBarList2VTable**)_taskBarList.ToPointer();
-
-                    var hrInit = Marshal.GetDelegateForFunctionPointer<HrInit>((*ptr)->HrInit);
-
-                    if (hrInit(_taskBarList) != HRESULT.S_OK)
-                    {
-                        _taskBarList = IntPtr.Zero;
-                    }
-                }
-            }
-
-            if (_taskBarList != IntPtr.Zero)
-            {
-                var ptr = (ITaskBarList2VTable**)_taskBarList.ToPointer();
-                var markFullscreen = Marshal.GetDelegateForFunctionPointer<MarkFullscreenWindow>((*ptr)->MarkFullscreenWindow);
-                markFullscreen(_taskBarList, _hwnd, fullscreen);
-            }
-        }
-
-        /// <summary>
-        /// Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
-        /// </summary>
-        /// <param name="fullscreen"></param>
-        private void SetFullScreen(bool fullscreen)
-        {
-            // Save current window state if not already fullscreen.
-            if (!_windowProperties.IsFullScreen)
-            {
-                _savedWindowInfo.Style = GetStyle();
-                _savedWindowInfo.ExStyle = GetExtendedStyle();
-                GetWindowRect(_hwnd, out var windowRect);
-                _savedWindowInfo.WindowRect = windowRect;
-            }
-
-            _windowProperties.IsFullScreen = fullscreen;
-
-            if (_windowProperties.IsFullScreen)
-            {
-                // Set new window style and size.
-                SetStyle(_savedWindowInfo.Style & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME));
-                SetExtendedStyle(_savedWindowInfo.ExStyle & ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE));
-
-                // On expand, if we're given a window_rect, grow to it, otherwise do
-                // not resize.
-                MONITORINFO monitor_info = MONITORINFO.Create();
-                GetMonitorInfo(MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST), ref monitor_info);
-
-                var window_rect = monitor_info.rcMonitor.ToPixelRect();
-
-                SetWindowPos(_hwnd, IntPtr.Zero, window_rect.X, window_rect.Y,
-                             window_rect.Width, window_rect.Height,
-                             SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
-            }
-            else
-            {
-                // Reset original window style and size.  The multiple window size/moves
-                // here are ugly, but if SetWindowPos() doesn't redraw, the taskbar won't be
-                // repainted.  Better-looking methods welcome.
-                SetStyle(_savedWindowInfo.Style);
-                SetExtendedStyle(_savedWindowInfo.ExStyle);
-
-                // On restore, resize to the previous saved rect size.
-                var new_rect = _savedWindowInfo.WindowRect.ToPixelRect();
-
-                SetWindowPos(_hwnd, IntPtr.Zero, new_rect.X, new_rect.Y, new_rect.Width,
-                             new_rect.Height,
-                            SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
-            }
-
-            MarkFullscreen(fullscreen);
-        }
-
         public IEnumerable<object> Surfaces => new object[] { Handle, _gl, _framebuffer };
 
         public PixelPoint Position
@@ -629,6 +542,93 @@ namespace Avalonia.Win32
             {
                 _dropTarget = odt;
             }
+        }
+
+        /// <summary>
+        /// Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
+        /// </summary>
+        /// <param name="fullscreen">Fullscreen state.</param>
+        private unsafe void MarkFullscreen(bool fullscreen)
+        {
+            if (_taskBarList == IntPtr.Zero)
+            {
+                Guid clsid = ShellIds.TaskBarList;
+                Guid iid = ShellIds.ITaskBarList2;
+
+                int result = CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out _taskBarList);
+
+                if (_taskBarList != IntPtr.Zero)
+                {
+                    var ptr = (ITaskBarList2VTable**)_taskBarList.ToPointer();
+
+                    var hrInit = Marshal.GetDelegateForFunctionPointer<HrInit>((*ptr)->HrInit);
+
+                    if (hrInit(_taskBarList) != HRESULT.S_OK)
+                    {
+                        _taskBarList = IntPtr.Zero;
+                    }
+                }
+            }
+
+            if (_taskBarList != IntPtr.Zero)
+            {
+                var ptr = (ITaskBarList2VTable**)_taskBarList.ToPointer();
+                var markFullscreen = Marshal.GetDelegateForFunctionPointer<MarkFullscreenWindow>((*ptr)->MarkFullscreenWindow);
+                markFullscreen(_taskBarList, _hwnd, fullscreen);
+            }
+        }
+
+        /// <summary>
+        /// Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
+        /// </summary>
+        /// <param name="fullscreen"></param>
+        private void SetFullScreen(bool fullscreen)
+        {
+            // Save current window state if not already fullscreen.
+            if (!_windowProperties.IsFullScreen)
+            {
+                _savedWindowInfo.Style = GetStyle();
+                _savedWindowInfo.ExStyle = GetExtendedStyle();
+                GetWindowRect(_hwnd, out var windowRect);
+                _savedWindowInfo.WindowRect = windowRect;
+            }
+
+            _windowProperties.IsFullScreen = fullscreen;
+
+            if (_windowProperties.IsFullScreen)
+            {
+                // Set new window style and size.
+                SetStyle(_savedWindowInfo.Style & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME));
+                SetExtendedStyle(_savedWindowInfo.ExStyle & ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE));
+
+                // On expand, if we're given a window_rect, grow to it, otherwise do
+                // not resize.
+                MONITORINFO monitor_info = MONITORINFO.Create();
+                GetMonitorInfo(MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST), ref monitor_info);
+
+                var window_rect = monitor_info.rcMonitor.ToPixelRect();
+
+                SetWindowPos(_hwnd, IntPtr.Zero, window_rect.X, window_rect.Y,
+                             window_rect.Width, window_rect.Height,
+                             SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+            }
+            else
+            {
+                // Reset original window style and size.  The multiple window size/moves
+                // here are ugly, but if SetWindowPos() doesn't redraw, the taskbar won't be
+                // repainted.  Better-looking methods welcome.
+                SetStyle(_savedWindowInfo.Style);
+                SetExtendedStyle(_savedWindowInfo.ExStyle);
+
+                // On restore, resize to the previous saved rect size.
+                var new_rect = _savedWindowInfo.WindowRect.ToPixelRect();
+
+                SetWindowPos(_hwnd, IntPtr.Zero, new_rect.X, new_rect.Y, new_rect.Width,
+                             new_rect.Height,
+                            SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+            }
+
+            MarkFullscreen(fullscreen);
         }
 
         private void ShowWindow(WindowState state)
