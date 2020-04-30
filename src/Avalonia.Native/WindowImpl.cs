@@ -12,7 +12,10 @@ namespace Avalonia.Native
         private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
         private readonly GlPlatformFeature _glFeature;
-        IAvnWindow _native;
+        private readonly IAvnWindow _native;
+        private bool _isFullScreenActive;
+        private Interop.SystemDecorations _lastDecoration;
+
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             GlPlatformFeature glFeature) : base(opts, glFeature)
         {
@@ -39,7 +42,7 @@ namespace Avalonia.Native
 
             bool IAvnWindowEvents.Closing()
             {
-                if(_parent.Closing != null)
+                if (_parent.Closing != null)
                 {
                     return _parent.Closing();
                 }
@@ -65,12 +68,17 @@ namespace Avalonia.Native
             _native.CanResize = value;
         }
 
-        public void SetSystemDecorations(Controls.SystemDecorations enabled)
+        public void SetSystemDecorations(Controls.SystemDecorations decorations)
         {
-            _native.HasDecorations = (Interop.SystemDecorations)enabled;
+            _lastDecoration = (Interop.SystemDecorations)decorations;
+
+            if (!_isFullScreenActive)
+            {
+                _native.SetHasDecorations(_lastDecoration);
+            }
         }
 
-        public void SetTitleBarColor (Avalonia.Media.Color color)
+        public void SetTitleBarColor(Avalonia.Media.Color color)
         {
             _native.SetTitleBarColor(new AvnColor { Alpha = color.A, Red = color.R, Green = color.G, Blue = color.B });
         }
@@ -92,6 +100,17 @@ namespace Avalonia.Native
             set
             {
                 _native.SetWindowState((AvnWindowState)value);
+
+                if (value == WindowState.FullScreen)
+                {
+                    _isFullScreenActive = true;
+                }
+                else
+                {
+                    _isFullScreenActive = false;
+
+                    _native.SetHasDecorations(_lastDecoration);
+                }
             }
         }
 
