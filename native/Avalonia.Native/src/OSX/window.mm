@@ -408,6 +408,8 @@ private:
     SystemDecorations _hasDecorations = SystemDecorationsFull;
     CGRect _lastUndecoratedFrame;
     AvnWindowState _lastWindowState;
+    bool _inSetWindowState;
+    bool _transitioningWindowState;
     
     FORWARD_IUNKNOWN()
     BEGIN_INTERFACE_MAP()
@@ -421,6 +423,8 @@ private:
     ComPtr<IAvnWindowEvents> WindowEvents;
     WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
+        _transitioningWindowState = false;
+        _inSetWindowState = false;
         _lastWindowState = Normal;
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
@@ -457,11 +461,29 @@ private:
         }
     }
     
+    void StartStateTransition () override
+    {
+        _transitioningWindowState = true;
+    }
+    
+    void EndStateTransition () override
+    {
+        _transitioningWindowState = false;
+    }
+    
     void WindowStateChanged () override
     {
-        AvnWindowState state;
-        GetWindowState(&state);
-        WindowEvents->WindowStateChanged(state);
+        if(!_inSetWindowState && !_transitioningWindowState)
+        {
+            AvnWindowState state;
+            GetWindowState(&state);
+            
+            if(_lastWindowState != state)
+            {
+                _lastWindowState = state;
+                WindowEvents->WindowStateChanged(state);
+            }
+        }
     }
     
     bool UndecoratedIsMaximized ()
@@ -586,6 +608,12 @@ private:
                 return E_POINTER;
             }
             
+            if(([Window styleMask] & NSFullScreenWindowMask) == NSFullScreenWindowMask)
+            {
+                *ret = FullScreen;
+                return S_OK;
+            }
+            
             if([Window isMiniaturized])
             {
                 *ret = Minimized;
@@ -608,12 +636,25 @@ private:
     {
         @autoreleasepool
         {
+            if(_lastWindowState == state)
+            {
+                return S_OK;
+            }
+            
+            _inSetWindowState = true;
+            
+            auto currentState = _lastWindowState;
             _lastWindowState = state;
             
             if(_shown)
             {
                 switch (state) {
                     case Maximized:
+                        if(currentState == FullScreen)
+                        {
+                            [Window toggleFullScreen:nullptr];
+                        }
+                        
                         lastPositionSet.X = 0;
                         lastPositionSet.Y = 0;
                         
@@ -629,13 +670,27 @@ private:
                         break;
                         
                     case Minimized:
+                        if(currentState == FullScreen)
+                        {
+                            [Window toggleFullScreen:nullptr];
+                        }
+                        
                         [Window miniaturize:Window];
                         break;
                         
-                    default:
+                    case FullScreen:
+                        [Window toggleFullScreen:nullptr];
+                        break;
+                        
+                    case Normal:
                         if([Window isMiniaturized])
                         {
                             [Window deminiaturize:Window];
+                        }
+                        
+                        if(currentState == FullScreen)
+                        {
+                            [Window toggleFullScreen:nullptr];
                         }
                         
                         if(IsZoomed())
@@ -646,23 +701,17 @@ private:
                 }
             }
             
+            _inSetWindowState = false;
+            
             return S_OK;
         }
     }
 
     virtual void OnResized () override
     {
-        if(_shown)
+        if(_shown && !_inSetWindowState && !_transitioningWindowState)
         {
-            auto windowState = [Window isMiniaturized] ? Minimized
-            : (IsZoomed() ? Maximized : Normal);
-            
-            if (windowState != _lastWindowState)
-            {
-                _lastWindowState = windowState;
-                
-                WindowEvents->WindowStateChanged(windowState);
-            }
+            WindowStateChanged();
         }
     }
     
@@ -1378,7 +1427,54 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)windowDidResize:(NSNotification *)notification
 {
-    _parent->OnResized();
+    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    
+    if(parent != nullptr)
+    {
+        parent->WindowStateChanged();
+    }
+}
+
+- (void)windowWillExitFullScreen:(NSNotification *)notification
+{
+    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    
+    if(parent != nullptr)
+    {
+        parent->StartStateTransition();
+    }
+}
+
+- (void)windowDidExitFullScreen:(NSNotification *)notification
+{
+    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    
+    if(parent != nullptr)
+    {
+        parent->EndStateTransition();
+        parent->WindowStateChanged();
+    }
+}
+
+- (void)windowWillEnterFullScreen:(NSNotification *)notification
+{
+    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    
+    if(parent != nullptr)
+    {
+        parent->StartStateTransition();
+    }
+}
+
+- (void)windowDidEnterFullScreen:(NSNotification *)notification
+{
+    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    
+    if(parent != nullptr)
+    {
+        parent->EndStateTransition();
+        parent->WindowStateChanged();
+    }
 }
 
 - (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame

@@ -135,6 +135,7 @@ enum AvnWindowState
     Normal,
     Minimized,
     Maximized,
+    FullScreen,
 };
 
 enum AvnStandardCursorType

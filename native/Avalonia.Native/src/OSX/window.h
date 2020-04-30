@@ -33,6 +33,8 @@ struct INSWindowHolder
 struct IWindowStateChanged
 {
     virtual void WindowStateChanged () = 0;
+    virtual void StartStateTransition () = 0;
+    virtual void EndStateTransition () = 0;
 };
 
 #endif /* window_h */
