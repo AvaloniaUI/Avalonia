@@ -679,6 +679,11 @@ private:
                         break;
                         
                     case FullScreen:
+                        if([Window isMiniaturized])
+                        {
+                            [Window deminiaturize:Window];
+                        }
+                        
                         [Window toggleFullScreen:nullptr];
                         break;
                         
