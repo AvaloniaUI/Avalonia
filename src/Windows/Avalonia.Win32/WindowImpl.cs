@@ -37,13 +37,6 @@ namespace Avalonia.Win32
                 { WindowEdge.West, HitTestValues.HTLEFT }
             };
 
-        private struct SavedWindowInfo
-        {
-            public WindowStyles Style { get; set; }
-            public WindowStyles ExStyle { get; set; }
-            public RECT WindowRect { get; set; }
-        };
-
         private SavedWindowInfo _savedWindowInfo;
         private bool _fullScreen;
         private IntPtr _taskBarList;
@@ -832,6 +825,13 @@ namespace Avalonia.Win32
         }
 
         IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
+
+        private struct SavedWindowInfo
+        {
+            public WindowStyles Style { get; set; }
+            public WindowStyles ExStyle { get; set; }
+            public RECT WindowRect { get; set; }
+        };
 
         private struct WindowProperties
         {
