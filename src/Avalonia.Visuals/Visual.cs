@@ -114,6 +114,9 @@ namespace Avalonia
         /// </summary>
         public Visual()
         {
+            // Disable transitions until we're added to the visual tree.
+            DisableTransitions();
+
             var visualChildren = new AvaloniaList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
             visualChildren.Validate = visual => ValidateVisualChild(visual);

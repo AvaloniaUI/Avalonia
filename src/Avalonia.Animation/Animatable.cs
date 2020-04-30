@@ -28,7 +28,7 @@ namespace Avalonia.Animation
                 o => o.Transitions,
                 (o, v) => o.Transitions = v);
 
-        private bool _transitionsEnabled;
+        private bool _transitionsEnabled = true;
         private Transitions? _transitions;
         private Dictionary<ITransition, TransitionState>? _transitionState;
 
