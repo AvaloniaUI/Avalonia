@@ -38,7 +38,6 @@ namespace Avalonia.Win32
             };
 
         private SavedWindowInfo _savedWindowInfo;
-        private bool _fullScreen;
         private IntPtr _taskBarList;
 
 #if USE_MANAGED_DRAG
@@ -253,7 +252,7 @@ namespace Avalonia.Win32
         private void SetFullScreen(bool fullscreen)
         {
             // Save current window state if not already fullscreen.
-            if (!_fullScreen)
+            if (!_windowProperties.IsFullScreen)
             {
                 _savedWindowInfo.Style = GetStyle();
                 _savedWindowInfo.ExStyle = GetExtendedStyle();
@@ -261,9 +260,9 @@ namespace Avalonia.Win32
                 _savedWindowInfo.WindowRect = windowRect;
             }
 
-            _fullScreen = fullscreen;
+            _windowProperties.IsFullScreen = fullscreen;
 
-            if (_fullScreen)
+            if (_windowProperties.IsFullScreen)
             {
                 // Set new window style and size.
                 SetStyle(_savedWindowInfo.Style & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME));
@@ -639,7 +638,7 @@ namespace Avalonia.Win32
             switch (state)
             {
                 case WindowState.Minimized:
-                    if (_fullScreen)
+                    if (_windowProperties.IsFullScreen)
                     {
                         SetFullScreen(false);
                     }
@@ -647,7 +646,7 @@ namespace Avalonia.Win32
                     command = ShowWindowCommand.Minimize;
                     break;
                 case WindowState.Maximized:
-                    if (_fullScreen)
+                    if (_windowProperties.IsFullScreen)
                     {
                         SetFullScreen(false);
                     }
@@ -656,7 +655,7 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowState.Normal:
-                    if (_fullScreen)
+                    if (_windowProperties.IsFullScreen)
                     {
                         SetFullScreen(false);
                     }
@@ -838,6 +837,7 @@ namespace Avalonia.Win32
             public bool ShowInTaskbar;
             public bool IsResizable;
             public SystemDecorations Decorations;
+            public bool IsFullScreen;
         }
     }
 }
