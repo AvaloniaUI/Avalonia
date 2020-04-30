@@ -767,7 +767,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// ItemsProperty property changed handler.
         /// </summary>
-        /// <param name="e">AvaloniaPropertyChangedEventArgs.</param>
+        /// <param name="e">AvaloniaPropertyChangedEventArgsdEventArgs.</param>
         private void OnItemsPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)

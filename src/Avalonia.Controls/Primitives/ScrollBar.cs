@@ -123,24 +123,20 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == OrientationProperty)
+            if (change.Property == OrientationProperty)
             {
-                UpdatePseudoClasses(newValue.GetValueOrDefault<Orientation>());
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Orientation>());
             }
             else
             {
-                if (property == MinimumProperty ||
-                    property == MaximumProperty || 
-                    property == ViewportSizeProperty ||
-                    property == VisibilityProperty)
+                if (change.Property == MinimumProperty ||
+                    change.Property == MaximumProperty ||
+                    change.Property == ViewportSizeProperty ||
+                    change.Property == VisibilityProperty)
                 {
                     UpdateIsVisible();
                 }

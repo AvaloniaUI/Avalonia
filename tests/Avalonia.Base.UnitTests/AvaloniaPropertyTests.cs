@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Data;
 using Avalonia.Utilities;
 using Xunit;
@@ -89,6 +90,19 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Changed_Observable_Fired_Only_On_Effective_Value_Change()
+        {
+            var target = new Class1();
+            var result = new List<string>();
+
+            Class1.FooProperty.Changed.Subscribe(x => result.Add((string)x.NewValue));
+            target.SetValue(Class1.FooProperty, "animated", BindingPriority.Animation);
+            target.SetValue(Class1.FooProperty, "local");
+
+            Assert.Equal(new[] { "animated" }, result);
+        }
+
+        [Fact]
         public void Property_Equals_Should_Handle_Null()
         {
             var p1 = new TestProperty<string>("p1", typeof(Class1));
@@ -140,6 +154,11 @@ namespace Avalonia.Base.UnitTests
             }
 
             internal override object RouteGetValue(IAvaloniaObject o)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override object RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
             {
                 throw new NotImplementedException();
             }
