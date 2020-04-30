@@ -651,19 +651,14 @@ namespace Avalonia.Win32
 
                 case WindowState.FullScreen:
                     newWindowProperties.IsFullScreen = true;
-                    command = ShowWindowCommand.Maximize;
-                    break;
+                    UpdateWindowProperties(newWindowProperties);
+                    return;
 
                 default:
                     throw new ArgumentException("Invalid WindowState.");
             }
 
             UpdateWindowProperties(newWindowProperties);
-
-            if (newWindowProperties.IsFullScreen)
-            {
-                return;
-            }
 
             UnmanagedMethods.ShowWindow(_hwnd, command);
 
