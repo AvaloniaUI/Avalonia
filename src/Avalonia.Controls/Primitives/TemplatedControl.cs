@@ -265,6 +265,7 @@ namespace Avalonia.Controls.Primitives
 
                     var e = new TemplateAppliedEventArgs(nameScope);
                     OnApplyTemplate(e);
+                    OnTemplateApplied(e);
                     RaiseEvent(e);
                 }
 
