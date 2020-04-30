@@ -37,9 +37,20 @@ namespace Avalonia.Win32
                 { WindowEdge.West, HitTestValues.HTLEFT }
             };
 
+        private struct SavedWindowInfo
+        {
+            public WindowStyles Style { get; set; }
+            public WindowStyles ExStyle { get; set; }
+            public RECT WindowRect { get; set; }
+        };
+
+        private SavedWindowInfo _savedWindowInfo;
+        private bool _fullScreen;
+
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
 #endif
+
 
         private readonly List<WindowImpl> _disabledBy;
         private readonly TouchDevice _touchDevice;
@@ -82,7 +93,9 @@ namespace Avalonia.Win32
 
             _windowProperties = new WindowProperties
             {
-                ShowInTaskbar = false, IsResizable = true, Decorations = SystemDecorations.Full
+                ShowInTaskbar = false,
+                IsResizable = true,
+                Decorations = SystemDecorations.Full
             };
             _rendererLock = new ManagedDeferredRendererLock();
 
@@ -203,6 +216,90 @@ namespace Avalonia.Win32
                     _showWindowState = value;
                 }
             }
+        }
+
+        private void MarkFullscreen(bool fullscreen)
+        {
+            //if (!task_bar_list_)
+            //{
+            //    HRESULT hr =
+
+
+            //        ::CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER,
+            //                           IID_PPV_ARGS(&task_bar_list_));
+            //    if (SUCCEEDED(hr) && FAILED(task_bar_list_->HrInit()))
+            //        task_bar_list_ = nullptr;
+            //}
+
+            //// As per MSDN marking the window as fullscreen should ensure that the
+            //// taskbar is moved to the bottom of the Z-order when the fullscreen window
+            //// is activated. If the window is not fullscreen, the Shell falls back to
+            //// heuristics to determine how the window should be treated, which means
+            //// that it could still consider the window as fullscreen. :(
+            //if (task_bar_list_)
+            //    task_bar_list_->MarkFullscreenWindow(hwnd_, !!fullscreen);
+        }
+
+        private void SetFullScreen(bool fullscreen)
+        {
+            // Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
+            //std::unique_ptr<ScopedFullscreenVisibility> visibility;
+
+            // With Aero enabled disabling the visibility causes the window to disappear
+            // for several frames, which looks worse than doing other updates
+            // non-atomically.
+            //if (!ui::win::IsAeroGlassEnabled())
+            //  visibility = std::make_unique<ScopedFullscreenVisibility>(hwnd_);
+
+            // Save current window state if not already fullscreen.
+            if (!_fullScreen)
+            {
+                _savedWindowInfo.Style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
+                _savedWindowInfo.ExStyle = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE);
+                GetWindowRect(_hwnd, out var windowRect);
+                _savedWindowInfo.WindowRect = windowRect;
+            }
+
+            _fullScreen = fullscreen;
+
+            if (_fullScreen)
+            {
+                // Set new window style and size.
+                SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE,
+                              (uint)(_savedWindowInfo.Style & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME)));
+                SetWindowLong(
+                    _hwnd, (int)WindowLongParam.GWL_EXSTYLE,
+                    (uint)(_savedWindowInfo.ExStyle & ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE |
+                                                    WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE)));
+
+                // On expand, if we're given a window_rect, grow to it, otherwise do
+                // not resize.
+                MONITORINFO monitor_info = MONITORINFO.Create();
+                GetMonitorInfo(MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST), ref monitor_info);
+
+                var window_rect = monitor_info.rcMonitor.ToPixelRect();
+
+                SetWindowPos(_hwnd, IntPtr.Zero, window_rect.X, window_rect.Y,
+                             window_rect.Width, window_rect.Height,
+                             SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+            }
+            else
+            {
+                // Reset original window style and size.  The multiple window size/moves
+                // here are ugly, but if SetWindowPos() doesn't redraw, the taskbar won't be
+                // repainted.  Better-looking methods welcome.
+                SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)_savedWindowInfo.Style);
+                SetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE, (uint)_savedWindowInfo.ExStyle);
+
+                // On restore, resize to the previous saved rect size.
+                var new_rect = _savedWindowInfo.WindowRect.ToPixelRect();
+
+                SetWindowPos(_hwnd, IntPtr.Zero, new_rect.X, new_rect.Y, new_rect.Width,
+                             new_rect.Height,
+                            SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+            }
+
+            MarkFullscreen(fullscreen);
         }
 
         public IEnumerable<object> Surfaces => new object[] { Handle, _gl, _framebuffer };
@@ -545,15 +642,34 @@ namespace Avalonia.Win32
             switch (state)
             {
                 case WindowState.Minimized:
+                    if (_fullScreen)
+                    {
+                        SetFullScreen(false);
+                    }
+
                     command = ShowWindowCommand.Minimize;
                     break;
                 case WindowState.Maximized:
+                    if (_fullScreen)
+                    {
+                        SetFullScreen(false);
+                    }
+
                     command = ShowWindowCommand.Maximize;
                     break;
 
                 case WindowState.Normal:
+                    if (_fullScreen)
+                    {
+                        SetFullScreen(false);
+                    }
+
                     command = ShowWindowCommand.Restore;
                     break;
+
+                case WindowState.FullScreen:
+                    SetFullScreen(true);
+                    return;
 
                 default:
                     throw new ArgumentException("Invalid WindowState.");
