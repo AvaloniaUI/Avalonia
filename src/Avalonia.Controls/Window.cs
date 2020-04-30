@@ -500,6 +500,19 @@ namespace Avalonia.Controls
 
             EnsureInitialized();
             IsVisible = true;
+
+            var initialSize = new Size(
+                double.IsNaN(Width) ? ClientSize.Width : Width,
+                double.IsNaN(Height) ? ClientSize.Height : Height);
+
+            if (initialSize != ClientSize)
+            {
+                using (BeginAutoSizing())
+                {
+                    PlatformImpl?.Resize(initialSize);
+                }
+            }
+
             LayoutManager.ExecuteInitialLayoutPass(this);
 
             var result = new TaskCompletionSource<TResult>();
