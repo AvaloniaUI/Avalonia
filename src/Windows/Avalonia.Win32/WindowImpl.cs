@@ -254,8 +254,8 @@ namespace Avalonia.Win32
             // Save current window state if not already fullscreen.
             if (!_fullScreen)
             {
-                _savedWindowInfo.Style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
-                _savedWindowInfo.ExStyle = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE);
+                _savedWindowInfo.Style = GetStyle();
+                _savedWindowInfo.ExStyle = GetExtendedStyle();
                 GetWindowRect(_hwnd, out var windowRect);
                 _savedWindowInfo.WindowRect = windowRect;
             }
@@ -265,12 +265,8 @@ namespace Avalonia.Win32
             if (_fullScreen)
             {
                 // Set new window style and size.
-                SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE,
-                              (uint)(_savedWindowInfo.Style & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME)));
-                SetWindowLong(
-                    _hwnd, (int)WindowLongParam.GWL_EXSTYLE,
-                    (uint)(_savedWindowInfo.ExStyle & ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE |
-                                                    WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE)));
+                SetStyle(_savedWindowInfo.Style & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME));
+                SetExtendedStyle(_savedWindowInfo.ExStyle & ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE));
 
                 // On expand, if we're given a window_rect, grow to it, otherwise do
                 // not resize.
@@ -288,8 +284,8 @@ namespace Avalonia.Win32
                 // Reset original window style and size.  The multiple window size/moves
                 // here are ugly, but if SetWindowPos() doesn't redraw, the taskbar won't be
                 // repainted.  Better-looking methods welcome.
-                SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)_savedWindowInfo.Style);
-                SetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE, (uint)_savedWindowInfo.ExStyle);
+                SetStyle(_savedWindowInfo.Style);
+                SetExtendedStyle(_savedWindowInfo.ExStyle);
 
                 // On restore, resize to the previous saved rect size.
                 var new_rect = _savedWindowInfo.WindowRect.ToPixelRect();
