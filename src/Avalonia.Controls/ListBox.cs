@@ -146,10 +146,9 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             Scroll = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
-            base.OnTemplateApplied(e);
         }
     }
 }

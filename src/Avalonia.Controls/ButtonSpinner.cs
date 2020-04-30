@@ -121,7 +121,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc />
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             IncreaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
             DecreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");

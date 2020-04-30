@@ -77,10 +77,8 @@ namespace Avalonia.Controls.Notifications
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             var itemsControl = e.NameScope.Find<Panel>("PART_Items");
             _items = itemsControl?.Children;
         }

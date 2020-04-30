@@ -263,7 +263,9 @@ namespace Avalonia.Controls.Primitives
                     if (nameScope == null)
                         nameScope = new NameScope();
 
-                    OnTemplateApplied(new TemplateAppliedEventArgs(nameScope));
+                    var e = new TemplateAppliedEventArgs(nameScope);
+                    OnApplyTemplate(e);
+                    RaiseEvent(e);
                 }
 
                 _appliedTemplate = template;
@@ -306,13 +308,17 @@ namespace Avalonia.Controls.Primitives
             base.OnDetachedFromLogicalTree(e);
         }
 
+        protected virtual void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+        }
+
         /// <summary>
         /// Called when the control's template is applied.
         /// </summary>
         /// <param name="e">The event args.</param>
+        [Obsolete("Use OnApplyTemplate")]
         protected virtual void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
-            RaiseEvent(e);
         }
 
         /// <summary>

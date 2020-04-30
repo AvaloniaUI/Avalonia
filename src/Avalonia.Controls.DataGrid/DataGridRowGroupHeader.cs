@@ -168,7 +168,7 @@ namespace Avalonia.Controls
 
         private IDisposable _expanderButtonSubscription;
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _rootElement = e.NameScope.Find<Panel>(DataGridRow.DATAGRIDROW_elementRoot);
 
@@ -199,8 +199,6 @@ namespace Avalonia.Controls
             _itemCountElement = e.NameScope.Find<TextBlock>(DATAGRIDROWGROUPHEADER_itemCountElement);
             _propertyNameElement = e.NameScope.Find<TextBlock>(DATAGRIDROWGROUPHEADER_propertyNameElement);
             UpdateTitleElements();
-
-            base.OnTemplateApplied(e);
         }
 
         internal void ApplyHeaderStatus()

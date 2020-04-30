@@ -413,7 +413,7 @@ namespace Avalonia.Controls
             DisplayDate = DateTime.Today;
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             if (_calendar != null)
             {
@@ -508,8 +508,6 @@ namespace Avalonia.Controls
                     SetSelectedDate();
                 }
             }
-
-            base.OnTemplateApplied(e);
         }
 
         protected override void OnPropertyChanged<T>(
