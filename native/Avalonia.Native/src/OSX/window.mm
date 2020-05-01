@@ -526,7 +526,7 @@ private:
         }
     }
     
-    virtual HRESULT SetHasDecorations(SystemDecorations value) override
+    virtual HRESULT SetDecorations(SystemDecorations value) override
     {
         @autoreleasepool
         {
