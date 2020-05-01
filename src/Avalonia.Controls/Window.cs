@@ -449,13 +449,13 @@ namespace Avalonia.Controls
             }
 
             LayoutManager.ExecuteInitialLayoutPass(this);
+            SetWindowStartupLocation(Owner?.PlatformImpl);
 
             using (BeginAutoSizing())
             {
                 PlatformImpl?.Show();
                 Renderer?.Start();
             }
-            SetWindowStartupLocation(Owner?.PlatformImpl);
             OnOpened(EventArgs.Empty);
         }
 
@@ -514,6 +514,7 @@ namespace Avalonia.Controls
             }
 
             LayoutManager.ExecuteInitialLayoutPass(this);
+            SetWindowStartupLocation(owner.PlatformImpl);
 
             var result = new TaskCompletionSource<TResult>();
 
@@ -535,8 +536,6 @@ namespace Avalonia.Controls
 
                 OnOpened(EventArgs.Empty);
             }
-
-            SetWindowStartupLocation(owner.PlatformImpl);
 
             return result.Task;
         }
