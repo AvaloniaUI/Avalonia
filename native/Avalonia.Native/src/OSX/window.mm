@@ -404,9 +404,9 @@ public:
 class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, public IWindowStateChanged
 {
 private:
-    bool _canResize = true;
-    SystemDecorations _decorations = SystemDecorationsFull;
-    CGRect _lastUndecoratedFrame;
+    bool _canResize;
+    bool _fullScreenActive;
+    SystemDecorations _decorations;
     AvnWindowState _lastWindowState;
     bool _inSetWindowState;
     bool _transitioningWindowState;
@@ -423,6 +423,9 @@ private:
     ComPtr<IAvnWindowEvents> WindowEvents;
     WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
+        _fullScreenActive = false;
+        _canResize = true;
+        _decorations = SystemDecorationsFull;
         _transitioningWindowState = false;
         _inSetWindowState = false;
         _lastWindowState = Normal;
@@ -488,12 +491,14 @@ private:
     
     bool UndecoratedIsMaximized ()
     {
-        return CGRectEqualToRect([Window frame], [Window screen].visibleFrame);
+        auto windowSize = [Window frame];
+        auto available = [Window screen].visibleFrame;
+        return CGRectEqualToRect(windowSize, available);
     }
     
     bool IsZoomed ()
     {
-        return _decorations != SystemDecorationsNone ? [Window isZoomed] : UndecoratedIsMaximized();
+        return _decorations == SystemDecorationsFull ? [Window isZoomed] : UndecoratedIsMaximized();
     }
     
     void DoZoom()
@@ -501,15 +506,11 @@ private:
         switch (_decorations)
         {
             case SystemDecorationsNone:
-                if (!UndecoratedIsMaximized())
-                {
-                    _lastUndecoratedFrame = [Window frame];
-                }
-                
-                [Window zoom:Window];
+            case SystemDecorationsBorderOnly:
+                [Window setFrame:[Window screen].visibleFrame display:true];
                 break;
 
-            case SystemDecorationsBorderOnly:
+            
             case SystemDecorationsFull:
                 [Window performZoom:Window];
                 break;
@@ -530,7 +531,16 @@ private:
     {
         @autoreleasepool
         {
+            auto currentWindowState = _lastWindowState;
             _decorations = value;
+            
+            if(_fullScreenActive)
+            {
+                return S_OK;
+            }
+            
+            auto currentFrame = [Window frame];
+            
             UpdateStyle();
 
             switch (_decorations)
@@ -539,12 +549,28 @@ private:
                     [Window setHasShadow:NO];
                     [Window setTitleVisibility:NSWindowTitleHidden];
                     [Window setTitlebarAppearsTransparent:YES];
+                    
+                    if(currentWindowState == Maximized)
+                    {
+                        if(!UndecoratedIsMaximized())
+                        {
+                            DoZoom();
+                        }
+                    }
                     break;
 
                 case SystemDecorationsBorderOnly:
                     [Window setHasShadow:YES];
                     [Window setTitleVisibility:NSWindowTitleHidden];
                     [Window setTitlebarAppearsTransparent:YES];
+                    
+                    if(currentWindowState == Maximized)
+                    {
+                        if(!UndecoratedIsMaximized())
+                        {
+                            DoZoom();
+                        }
+                    }
                     break;
 
                 case SystemDecorationsFull:
@@ -552,6 +578,13 @@ private:
                     [Window setTitleVisibility:NSWindowTitleVisible];
                     [Window setTitlebarAppearsTransparent:NO];
                     [Window setTitle:_lastTitle];
+                    
+                    if(currentWindowState == Maximized)
+                    {
+                        auto newFrame = [Window contentRectForFrameRect:[Window frame]].size;
+                        
+                        [View setFrameSize:newFrame];
+                    }
                     break;
             }
 
@@ -620,7 +653,7 @@ private:
                 return S_OK;
             }
             
-            if([Window isZoomed])
+            if(IsZoomed())
             {
                 *ret = Maximized;
                 return S_OK;
@@ -630,6 +663,27 @@ private:
             
             return S_OK;
         }
+    }
+    
+    void EnterFullScreenMode ()
+    {
+        _fullScreenActive = true;
+        
+        [Window setHasShadow:YES];
+        [Window setTitleVisibility:NSWindowTitleVisible];
+        [Window setTitlebarAppearsTransparent:NO];
+        [Window setTitle:_lastTitle];
+        
+        [Window toggleFullScreen:nullptr];
+    }
+    
+    void ExitFullScreenMode ()
+    {
+        [Window toggleFullScreen:nullptr];
+        
+        _fullScreenActive = false;
+        
+        SetDecorations(_decorations);
     }
     
     virtual HRESULT SetWindowState (AvnWindowState state) override
@@ -652,7 +706,7 @@ private:
                     case Maximized:
                         if(currentState == FullScreen)
                         {
-                            [Window toggleFullScreen:nullptr];
+                            ExitFullScreenMode();
                         }
                         
                         lastPositionSet.X = 0;
@@ -672,7 +726,7 @@ private:
                     case Minimized:
                         if(currentState == FullScreen)
                         {
-                            [Window toggleFullScreen:nullptr];
+                            ExitFullScreenMode();
                         }
                         
                         [Window miniaturize:Window];
@@ -684,7 +738,7 @@ private:
                             [Window deminiaturize:Window];
                         }
                         
-                        [Window toggleFullScreen:nullptr];
+                        EnterFullScreenMode();
                         break;
                         
                     case Normal:
@@ -695,7 +749,7 @@ private:
                         
                         if(currentState == FullScreen)
                         {
-                            [Window toggleFullScreen:nullptr];
+                            ExitFullScreenMode();
                         }
                         
                         if(IsZoomed())
@@ -728,6 +782,7 @@ protected:
         switch (_decorations)
         {
             case SystemDecorationsNone:
+                s = s | NSWindowStyleMaskFullSizeContentView;
                 break;
 
             case SystemDecorationsBorderOnly:
