@@ -19,6 +19,8 @@ class WindowBaseImpl;
 -(void) pollModalSession: (NSModalSession _Nonnull) session;
 -(void) restoreParentWindow;
 -(bool) shouldTryToHandleEvents;
+-(bool) isModal;
+-(void) setModal: (bool) isModal;
 -(void) showAppMenuOnly;
 -(void) showWindowMenuWithAppMenu;
 -(void) applyMenu:(NSMenu* _Nullable)menu;
