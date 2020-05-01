@@ -10,6 +10,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 using JetBrains.Annotations;
 
 namespace Avalonia.Controls
@@ -134,6 +135,9 @@ namespace Avalonia.Controls
                     nameof(IResourceProvider.ResourcesChanged),
                     this);
             }
+
+            if (impl is IEmbeddableWindowImpl embeddableWindowImpl)
+                embeddableWindowImpl.LostFocus += PlatformImpl_LostFocus;
         }
 
         /// <summary>
@@ -368,6 +372,18 @@ namespace Avalonia.Controls
         private void SceneInvalidated(object sender, SceneInvalidatedEventArgs e)
         {
             (this as IInputRoot).MouseDevice.SceneInvalidated(this, e.DirtyRect);
+        }
+
+        void PlatformImpl_LostFocus()
+        {
+            var focused = (IVisual)FocusManager.Instance.Current;
+            if (focused == null)
+                return;
+            while (focused.VisualParent != null)
+                focused = focused.VisualParent;
+
+            if (focused == this)
+                KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
         }
     }
 }

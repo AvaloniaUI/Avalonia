@@ -21,7 +21,9 @@ using static Avalonia.X11.XLib;
 // ReSharper disable StringLiteralTypo
 namespace Avalonia.X11
 {
-    unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client, ITopLevelImplWithNativeMenuExporter
+    unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
+        ITopLevelImplWithNativeMenuExporter,
+        ITopLevelImplWithNativeControlHost
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IWindowImpl _popupParent;
@@ -181,6 +183,7 @@ namespace Avalonia.X11
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
             if (platform.Options.UseDBusMenu)
                 NativeMenuExporter = DBusMenuExporter.TryCreate(_handle);
+            NativeControlHost = new X11NativeControlHost(_platform, this);
         }
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -1086,5 +1089,6 @@ namespace Avalonia.X11
 
         public IPopupPositioner PopupPositioner { get; }
         public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
+        public INativeControlHostImpl NativeControlHost { get; }
     }
 }

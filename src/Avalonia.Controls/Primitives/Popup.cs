@@ -8,6 +8,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 #nullable enable
@@ -263,6 +264,11 @@ namespace Avalonia.Controls.Primitives
                 DeferCleanup(SubscribeToEventHandler<Window, EventHandler>(window, WindowDeactivated,
                     (x, handler) => x.Deactivated += handler,
                     (x, handler) => x.Deactivated -= handler));
+                
+                if (window.PlatformImpl is IEmbeddableWindowImpl reportsFocus)
+                    DeferCleanup(SubscribeToEventHandler<IEmbeddableWindowImpl, Action>(reportsFocus, WindowLostFocus,
+                        (x, handler) => x.LostFocus += handler,
+                        (x, handler) => x.LostFocus -= handler));
             }
             else
             {
@@ -511,6 +517,12 @@ namespace Avalonia.Controls.Primitives
             {
                 Close();
             }
+        }
+        
+        private void WindowLostFocus()
+        {
+            if(!StaysOpen)
+                Close();
         }
 
         private IgnoreIsOpenScope BeginIgnoringIsOpen()

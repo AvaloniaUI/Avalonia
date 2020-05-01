@@ -7,10 +7,30 @@ namespace Avalonia.Win32
 {
     class PopupImpl : WindowImpl, IPopupImpl
     {
+
+        // This is needed because we are calling virtual methods from constructors
+        // One fabulous design decision leads to another, I guess
+        [ThreadStatic]
+        private static IntPtr s_parentHandle;
+
         public override void Show()
         {
             UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
+            var parent = UnmanagedMethods.GetParent(Handle.Handle);
+            if (parent != IntPtr.Zero)
+            {
+                IntPtr nextParent = parent;
+                while (nextParent != IntPtr.Zero)
+                {
+                    parent = nextParent;
+                    nextParent = UnmanagedMethods.GetParent(parent);
+                }
+
+                UnmanagedMethods.SetFocus(parent);
+            }
         }
+
+        protected override bool ShouldTakeFocusOnClick => false;
 
         protected override IntPtr CreateWindowOverride(ushort atom)
         {
@@ -31,10 +51,11 @@ namespace Avalonia.Win32
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
-                IntPtr.Zero,
+                s_parentHandle,
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
+            s_parentHandle = IntPtr.Zero;
 
             var classes = (int)UnmanagedMethods.GetClassLongPtr(result, (int)UnmanagedMethods.ClassLongIndex.GCL_STYLE);
 
@@ -56,7 +77,22 @@ namespace Avalonia.Win32
             }
         }
 
-        public PopupImpl(IWindowBaseImpl parent)
+        // This is needed because we are calling virtual methods from constructors
+        // One fabulous design decision leads to another, I guess
+        static IWindowBaseImpl SaveParentHandle(IWindowBaseImpl parent)
+        {
+            s_parentHandle = parent.Handle.Handle;
+            return parent;
+        }
+
+        // This is needed because we are calling virtual methods from constructors
+        // One fabulous design decision leads to another, I guess
+        public PopupImpl(IWindowBaseImpl parent) : this(SaveParentHandle(parent), false)
+        {
+
+        }
+
+        private PopupImpl(IWindowBaseImpl parent, bool dummy) : base()
         {
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
         }

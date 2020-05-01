@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
@@ -17,7 +18,9 @@ namespace Avalonia.Win32
     /// <summary>
     /// Window implementation for Win32 platform.
     /// </summary>
-    public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
+    public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
+        ITopLevelImplWithNativeControlHost,
+        IEmbeddableWindowImpl
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -48,6 +51,7 @@ namespace Avalonia.Win32
         private readonly FramebufferManager _framebuffer;
         private readonly IGlPlatformSurface _gl;
 
+        private Win32NativeControlHost _nativeControlHost;
         private WndProc _wndProcDelegate;
         private string _className;
         private IntPtr _hwnd;
@@ -98,6 +102,7 @@ namespace Avalonia.Win32
 
             Screen = new ScreenImpl();
 
+            _nativeControlHost = new Win32NativeControlHost(this);
             s_instances.Add(this);
         }
 
@@ -120,6 +125,8 @@ namespace Avalonia.Win32
         public Action<PixelPoint> PositionChanged { get; set; }
 
         public Action<WindowState> WindowStateChanged { get; set; }
+        
+        public event Action LostFocus;
 
         public Thickness BorderThickness
         {
@@ -456,7 +463,7 @@ namespace Avalonia.Win32
                 0,
                 atom,
                 null,
-                (int)WindowStyles.WS_OVERLAPPEDWINDOW,
+                (int)WindowStyles.WS_OVERLAPPEDWINDOW | (int) WindowStyles.WS_CLIPCHILDREN,
                 CW_USEDEFAULT,
                 CW_USEDEFAULT,
                 CW_USEDEFAULT,

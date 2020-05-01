@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -42,7 +43,8 @@ namespace Avalonia.Native
     }
 
     public abstract class WindowBaseImpl : IWindowBaseImpl,
-        IFramebufferPlatformSurface
+        IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost,
+        IEmbeddableWindowImpl
     {
         IInputRoot _inputRoot;
         IAvnWindowBase _native;
@@ -56,6 +58,7 @@ namespace Avalonia.Native
         private Size _lastRenderedLogicalSize;
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
+        private NativeControlHostImpl _nativeControlHost;
 
         internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, GlPlatformFeature glFeature)
         {
@@ -77,6 +80,7 @@ namespace Avalonia.Native
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
             _savedScaling = Scaling;
+            _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
 
             var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
                     .FirstOrDefault(m => m.Bounds.Contains(Position));
@@ -98,6 +102,8 @@ namespace Avalonia.Native
             this 
         };
 
+        public INativeControlHostImpl NativeControlHost => _nativeControlHost;
+
         public ILockedFramebuffer Lock()
         {
             var w = _savedLogicalSize.Width * _savedScaling;
@@ -116,6 +122,8 @@ namespace Avalonia.Native
             }, (int)w, (int)h, new Vector(dpi, dpi));
         }
 
+        public event Action LostFocus;
+        
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action Closed { get; set; }
@@ -198,6 +206,11 @@ namespace Avalonia.Native
             {
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
             }
+            
+            void IAvnWindowBaseEvents.LostFocus()
+            {
+                _parent.LostFocus?.Invoke();
+            }
         }
 
         public void Activate()
@@ -261,6 +274,9 @@ namespace Avalonia.Native
             _native?.Dispose();
             _native = null;
 
+            _nativeControlHost?.Dispose();
+            _nativeControlHost = null;
+            
             (Screen as ScreenImpl)?.Dispose();
         }
 
