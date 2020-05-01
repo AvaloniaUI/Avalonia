@@ -1,8 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Styling.UnitTests
@@ -76,7 +74,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Adding_Resource_To_Younger_Sibling_Style_Should_Raise_ResourceChanged()
+        public void Adding_Resource_To_Sibling_Style_Should_Raise_ResourceChanged()
         {
             Style style1;
             Style style2;
@@ -95,24 +93,19 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Adding_Resource_To_Older_Sibling_Style_Should_Raise_ResourceChanged()
+        public void ParentResourcesChanged_Should_Be_Propagated_To_Children()
         {
-            Style style1;
-            Style style2;
-            var target = new Styles
-            {
-                (style1 = new Style()),
-                (style2 = new Style()),
-            };
+            var childStyle = new Mock<IStyle>();
+            var setResourceParent = childStyle.As<ISetResourceParent>();
+            var target = new Styles { childStyle.Object };
 
-            var raised = false;
+            setResourceParent.ResetCalls();
+            ((ISetResourceParent)target).ParentResourcesChanged(new ResourcesChangedEventArgs());
 
-            style1.ResourcesChanged += (_, __) => raised = true;
-            style2.Resources.Add("foo", "bar");
-
-            Assert.False(raised);
+            setResourceParent.Verify(x => x.ParentResourcesChanged(
+                It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
         }
-
 
         [Fact]
         public void Finds_Resource_In_Merged_Dictionary()

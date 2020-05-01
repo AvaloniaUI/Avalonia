@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia
@@ -17,14 +14,16 @@ namespace Avalonia
         /// <param name="ownerType">The type of the class that registers the property.</param>
         /// <param name="metadata">The property metadata.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
+        /// <param name="validate">A value validation callback.</param>
         /// <param name="notifying">A <see cref="AvaloniaProperty.Notifying"/> callback.</param>
         public StyledProperty(
             string name,
             Type ownerType,
             StyledPropertyMetadata<TValue> metadata,
             bool inherits = false,
+            Func<TValue, bool> validate = null,
             Action<IAvaloniaObject, bool> notifying = null)
-            : base(name, ownerType, metadata, inherits, notifying)
+            : base(name, ownerType, metadata, inherits, validate, notifying)
         {
         }
 

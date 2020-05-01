@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Data;
 using System;
 
@@ -41,6 +38,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 StringFormat = StringFormat,
                 RelativeSource = RelativeSource,
                 DefaultAnchor = new WeakReference(GetDefaultAnchor(descriptorContext)),
+                TargetNullValue = TargetNullValue,
                 NameScope = new WeakReference<INameScope>(serviceProvider.GetService<INameScope>())
             };
         }
@@ -86,5 +84,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public string StringFormat { get; set; }
 
         public RelativeSource RelativeSource { get; set; }
+
+        public object TargetNullValue { get; set; } = AvaloniaProperty.UnsetValue;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -10,7 +11,7 @@ namespace Avalonia.Skia.UnitTests
 {
     public class FontManagerImplTests
     {
-        private static string s_fontUri = "resm:Avalonia.UnitTests.Assets?assembly=Avalonia.UnitTests#Noto Mono";
+        private static string s_fontUri = "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono";
 
         [Fact]
         public void Should_Create_Typeface_From_Fallback()
@@ -27,6 +28,23 @@ namespace Avalonia.Skia.UnitTests
             Assert.Equal(SKTypeface.Default.FontWeight, skTypeface.FontWeight);
 
             Assert.Equal(SKTypeface.Default.FontSlant, skTypeface.FontSlant);
+        }
+
+        [Fact]
+        public void Should_Create_Typeface_From_Fallback_Bold()
+        {
+            var fontManager = new FontManagerImpl();
+
+            //we need to have a valid font name different from the default one
+            string fontName = fontManager.GetInstalledFontFamilyNames().First();
+
+            var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
+                new Typeface(new FontFamily($"A, B, {fontName}"), FontWeight.Bold));
+
+            var skTypeface = glyphTypeface.Typeface;
+
+            Assert.Equal(fontName, skTypeface.FamilyName);
+            Assert.True(skTypeface.FontWeight >= 600);
         }
 
         [Fact]
@@ -49,18 +67,12 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void Should_Load_Typeface_From_Resource()
         {
-            using (AvaloniaLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var assetLoaderType = typeof(TestRoot).Assembly.GetType("Avalonia.Shared.PlatformSupport.AssetLoader");
-
-                var assetLoader = (IAssetLoader)Activator.CreateInstance(assetLoaderType, (Assembly)null);
-
-                AvaloniaLocator.CurrentMutable.Bind<IAssetLoader>().ToConstant(assetLoader);
-
                 var fontManager = new FontManagerImpl();
 
                 var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                    new Typeface(new FontFamily(s_fontUri)));
+                    new Typeface(s_fontUri));
 
                 var skTypeface = glyphTypeface.Typeface;
 
@@ -71,22 +83,29 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void Should_Load_Nearest_Matching_Font()
         {
-            using (AvaloniaLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var assetLoaderType = typeof(TestRoot).Assembly.GetType("Avalonia.Shared.PlatformSupport.AssetLoader");
-
-                var assetLoader = (IAssetLoader)Activator.CreateInstance(assetLoaderType, (Assembly)null);
-
-                AvaloniaLocator.CurrentMutable.Bind<IAssetLoader>().ToConstant(assetLoader);
-
                 var fontManager = new FontManagerImpl();
 
                 var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                    new Typeface(new FontFamily(s_fontUri), FontWeight.Black, FontStyle.Italic));
+                    new Typeface(s_fontUri, FontWeight.Black, FontStyle.Italic));
 
                 var skTypeface = glyphTypeface.Typeface;
 
                 Assert.Equal("Noto Mono", skTypeface.FamilyName);
+            }
+        }
+
+        [Fact]
+        public void Should_Throw_For_Invalid_Custom_Font()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var fontManager = new FontManagerImpl();
+
+                Assert.Throws<InvalidOperationException>(() =>
+                    fontManager.CreateGlyphTypeface(
+                        new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Unknown")));
             }
         }
     }

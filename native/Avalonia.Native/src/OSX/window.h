@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 #ifndef window_h
 #define window_h
 
@@ -12,6 +9,7 @@ class WindowBaseImpl;
 -(AvnPoint) translateLocalPoint:(AvnPoint)pt;
 -(void) setSwRenderedFrame: (AvnFramebuffer* _Nonnull) fb dispose: (IUnknown* _Nonnull) dispose;
 -(void) onClosed;
+-(AvnPixelSize) getPixelSize;
 @end
 
 @interface AvnWindow : NSWindow <NSWindowDelegate>
@@ -21,7 +19,12 @@ class WindowBaseImpl;
 -(void) pollModalSession: (NSModalSession _Nonnull) session;
 -(void) restoreParentWindow;
 -(bool) shouldTryToHandleEvents;
--(void) applyMenu:(NSMenu *)menu;
+-(bool) isModal;
+-(void) setModal: (bool) isModal;
+-(void) showAppMenuOnly;
+-(void) showWindowMenuWithAppMenu;
+-(void) applyMenu:(NSMenu* _Nullable)menu;
+-(double) getScaling;
 @end
 
 struct INSWindowHolder

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -43,6 +40,7 @@ namespace Avalonia.Skia
                 {
                     GrContext = GRContext.Create(GRBackend.OpenGL, iface);
                 }
+                display.ClearContext();
             }
         }
 
@@ -151,11 +149,15 @@ namespace Avalonia.Skia
             return new WriteableBitmapImpl(size, dpi, format);
         }
 
-        /// <inheritdoc />
-        public IFontManagerImpl CreateFontManager()
+        private static readonly SKPaint s_paint = new SKPaint
         {
-            return new FontManagerImpl();
-        }
+            TextEncoding = SKTextEncoding.GlyphId,
+            IsAntialias = true,
+            IsStroke = false,
+            SubpixelText = true
+        };
+
+        private static readonly SKTextBlobBuilder s_textBlobBuilder = new SKTextBlobBuilder();
 
         /// <inheritdoc />
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
@@ -166,80 +168,84 @@ namespace Avalonia.Skia
 
             var typeface = glyphTypeface.Typeface;
 
-            var paint = new SKPaint
-            {
-                TextSize = (float)glyphRun.FontRenderingEmSize,
-                Typeface = typeface,
-                TextEncoding = SKTextEncoding.GlyphId,
-                IsAntialias = true,
-                IsStroke = false,
-                SubpixelText = true
-            };
+            s_paint.TextSize = (float)glyphRun.FontRenderingEmSize;
+            s_paint.Typeface = typeface;
 
-            using (var textBlobBuilder = new SKTextBlobBuilder())
-            {
-                var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
 
-                if (glyphRun.GlyphOffsets.IsEmpty)
+            SKTextBlob textBlob;
+
+            width = 0;
+
+            var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
+
+            if (glyphRun.GlyphOffsets.IsEmpty)
+            {
+                if (glyphTypeface.IsFixedPitch)
                 {
-                    width = 0;
+                    s_textBlobBuilder.AddRun(s_paint, 0, 0, glyphRun.GlyphIndices.Buffer.Span);
 
-                    var buffer = textBlobBuilder.AllocateHorizontalRun(paint, count, 0);
+                    textBlob = s_textBlobBuilder.Build();
 
-                    if (!glyphTypeface.IsFixedPitch)
-                    {
-                        var positions = buffer.GetPositionSpan();
-
-                        for (var i = 0; i < count; i++)
-                        {
-                            positions[i] = (float)width;
-
-                            if (glyphRun.GlyphAdvances.IsEmpty)
-                            {
-                                width += glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
-                            }
-                            else
-                            {
-                                width += glyphRun.GlyphAdvances[i];
-                            }
-                        }
-                    }
-
-                    buffer.SetGlyphs(glyphRun.GlyphIndices.AsSpan());
+                    width = glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[0]) * scale * glyphRun.GlyphIndices.Length;
                 }
                 else
                 {
-                    var buffer = textBlobBuilder.AllocatePositionedRun(paint, count);
+                    var buffer = s_textBlobBuilder.AllocateHorizontalRun(s_paint, count, 0);
 
-                    var glyphPositions = buffer.GetPositionSpan();
-
-                    var currentX = 0.0;
+                    var positions = buffer.GetPositionSpan();
 
                     for (var i = 0; i < count; i++)
                     {
-                        var glyphOffset = glyphRun.GlyphOffsets[i];
-
-                        glyphPositions[i] = new SKPoint((float)(currentX + glyphOffset.X), (float)glyphOffset.Y);
+                        positions[i] = (float)width;
 
                         if (glyphRun.GlyphAdvances.IsEmpty)
                         {
-                            currentX += glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
+                            width += glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
                         }
                         else
                         {
-                            currentX += glyphRun.GlyphAdvances[i];
+                            width += glyphRun.GlyphAdvances[i];
                         }
                     }
 
-                    buffer.SetGlyphs(glyphRun.GlyphIndices.AsSpan());
+                    buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
 
-                    width = currentX;
+                    textBlob = s_textBlobBuilder.Build();
+                }
+            }
+            else
+            {
+                var buffer = s_textBlobBuilder.AllocatePositionedRun(s_paint, count);
+
+                var glyphPositions = buffer.GetPositionSpan();
+
+                var currentX = 0.0;
+
+                for (var i = 0; i < count; i++)
+                {
+                    var glyphOffset = glyphRun.GlyphOffsets[i];
+
+                    glyphPositions[i] = new SKPoint((float)(currentX + glyphOffset.X), (float)glyphOffset.Y);
+
+                    if (glyphRun.GlyphAdvances.IsEmpty)
+                    {
+                        currentX += glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
+                    }
+                    else
+                    {
+                        currentX += glyphRun.GlyphAdvances[i];
+                    }
                 }
 
-                var textBlob = textBlobBuilder.Build();
+                buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
 
-                return new GlyphRunImpl(paint, textBlob);
+                width = currentX;
+
+                textBlob = s_textBlobBuilder.Build();
             }
+
+            return new GlyphRunImpl(textBlob);
+
         }
     }
 }

@@ -42,5 +42,8 @@ namespace Avalonia.Media
         {
             ctx.QuadraticBezierTo(Point1, Point2);
         }
+
+        public override string ToString()
+            => $"Q {Point1} {Point2}";
     }
 }

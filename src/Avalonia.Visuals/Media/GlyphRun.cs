@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
 using Avalonia.Utility;
@@ -13,13 +10,14 @@ namespace Avalonia.Media
     /// </summary>
     public sealed class GlyphRun : IDisposable
     {
-        private static readonly IPlatformRenderInterface s_platformRenderInterface =
-            AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+        private static readonly IComparer<ushort> s_ascendingComparer = Comparer<ushort>.Default;
+        private static readonly IComparer<ushort> s_descendingComparer = new ReverseComparer<ushort>();
 
         private IGlyphRunImpl _glyphRunImpl;
         private GlyphTypeface _glyphTypeface;
         private double _fontRenderingEmSize;
         private Rect? _bounds;
+        private int _biDiLevel;
 
         private ReadOnlySlice<ushort> _glyphIndices;
         private ReadOnlySlice<double> _glyphAdvances;
@@ -45,7 +43,7 @@ namespace Avalonia.Media
         /// <param name="glyphOffsets">The glyph offsets.</param>
         /// <param name="characters">The characters.</param>
         /// <param name="glyphClusters">The glyph clusters.</param>
-        /// <param name="bidiLevel">The bidi level.</param>
+        /// <param name="biDiLevel">The bidi level.</param>
         /// <param name="bounds">The bound.</param>
         public GlyphRun(
             GlyphTypeface glyphTypeface,
@@ -55,7 +53,7 @@ namespace Avalonia.Media
             ReadOnlySlice<Vector> glyphOffsets = default,
             ReadOnlySlice<char> characters = default,
             ReadOnlySlice<ushort> glyphClusters = default,
-            int bidiLevel = 0,
+            int biDiLevel = 0,
             Rect? bounds = null)
         {
             GlyphTypeface = glyphTypeface;
@@ -72,7 +70,7 @@ namespace Avalonia.Media
 
             GlyphClusters = glyphClusters;
 
-            BidiLevel = bidiLevel;
+            BiDiLevel = biDiLevel;
 
             Initialize(bounds);
         }
@@ -143,21 +141,21 @@ namespace Avalonia.Media
         /// <summary>
         ///     Gets or sets the bidirectional nesting level of the <see cref="GlyphRun"/>.
         /// </summary>
-        public int BidiLevel
+        public int BiDiLevel
         {
-            get;
-            set;
+            get => _biDiLevel;
+            set => Set(ref _biDiLevel, value);
         }
 
         /// <summary>
-        /// 
+        /// Gets the scale of the current <see cref="Media.GlyphTypeface"/>
         /// </summary>
         internal double Scale => FontRenderingEmSize / GlyphTypeface.DesignEmHeight;
 
         /// <summary>
-        ///     
+        /// Returns <c>true</c> if the text direction is left-to-right. Otherwise, returns <c>false</c>.
         /// </summary>
-        internal bool IsLeftToRight => ((BidiLevel & 1) == 0);
+        public bool IsLeftToRight => ((BiDiLevel & 1) == 0);
 
         /// <summary>
         ///     Gets or sets the conservative bounding box of the <see cref="GlyphRun"/>.
@@ -173,9 +171,11 @@ namespace Avalonia.Media
 
                 return _bounds.Value;
             }
-            set => _bounds = value;
         }
 
+        /// <summary>
+        /// The platform implementation of the <see cref="GlyphRun"/>.
+        /// </summary>
         public IGlyphRunImpl GlyphRunImpl
         {
             get
@@ -189,19 +189,38 @@ namespace Avalonia.Media
             }
         }
 
+        /// <summary>
+        /// Retrieves the offset from the leading edge of the <see cref="GlyphRun"/>
+        /// to the leading or trailing edge of a caret stop containing the specified character hit.
+        /// </summary>
+        /// <param name="characterHit">The <see cref="CharacterHit"/> to use for computing the offset.</param>
+        /// <returns>
+        /// A <see cref="double"/> that represents the offset from the leading edge of the <see cref="GlyphRun"/>
+        /// to the leading or trailing edge of a caret stop containing the character hit.
+        /// </returns>
         public double GetDistanceFromCharacterHit(CharacterHit characterHit)
         {
             var distance = 0.0;
 
-            var end = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
-
-            for (var i = 0; i < _glyphClusters.Length; i++)
+            if (characterHit.FirstCharacterIndex + characterHit.TrailingLength > Characters.End)
             {
-                if (_glyphClusters[i] >= end)
-                {
-                    break;
-                }
+                return Bounds.Width;
+            }
 
+            var glyphIndex = FindGlyphIndex(characterHit.FirstCharacterIndex);
+
+            var currentCluster = _glyphClusters[glyphIndex];
+
+            if (characterHit.TrailingLength > 0)
+            {
+                while (glyphIndex < _glyphClusters.Length && _glyphClusters[glyphIndex] == currentCluster)
+                {
+                    glyphIndex++;
+                }
+            }
+
+            for (var i = 0; i < glyphIndex; i++)
+            {
                 if (GlyphAdvances.IsEmpty)
                 {
                     var glyph = GlyphIndices[i];
@@ -217,6 +236,15 @@ namespace Avalonia.Media
             return distance;
         }
 
+        /// <summary>
+        /// Retrieves the <see cref="CharacterHit"/> value that represents the character hit of the caret of the <see cref="GlyphRun"/>.
+        /// </summary>
+        /// <param name="distance">Offset to use for computing the caret character hit.</param>
+        /// <param name="isInside">Determines whether the character hit is inside the <see cref="GlyphRun"/>.</param>
+        /// <returns>
+        /// A <see cref="CharacterHit"/> value that represents the character hit that is closest to the distance value.
+        /// The out parameter <c>isInside</c> returns <c>true</c> if the character hit is inside the <see cref="GlyphRun"/>; otherwise, <c>false</c>.
+        /// </returns>
         public CharacterHit GetCharacterHitFromDistance(double distance, out bool isInside)
         {
             // Before
@@ -243,39 +271,60 @@ namespace Avalonia.Media
             var currentX = 0.0;
             var index = 0;
 
-            for (; index < GlyphIndices.Length; index++)
+            if (GlyphTypeface.IsFixedPitch)
             {
-                if (GlyphAdvances.IsEmpty)
-                {
-                    var glyph = GlyphIndices[index];
+                var glyph = GlyphIndices[index];
 
-                    currentX += GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
-                }
-                else
-                {
-                    currentX += GlyphAdvances[index];
-                }
+                var advance = GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
 
-                if (currentX > distance)
-                {
-                    break;
-                }
+                index = Math.Min(GlyphIndices.Length - 1,
+                    (int)Math.Round(distance / advance, MidpointRounding.AwayFromZero));
             }
-
-            if (index == GlyphIndices.Length)
+            else
             {
-                index--;
+                for (; index < GlyphIndices.Length; index++)
+                {
+                    double advance;
+
+                    if (GlyphAdvances.IsEmpty)
+                    {
+                        var glyph = GlyphIndices[index];
+
+                        advance = GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
+                    }
+                    else
+                    {
+                        advance = GlyphAdvances[index];
+                    }
+
+                    if (currentX + advance >= distance)
+                    {
+                        break;
+                    }
+
+                    currentX += advance;
+                }
             }
 
             var characterHit = FindNearestCharacterHit(GlyphClusters[index], out var width);
 
-            isInside = distance < currentX && width > 0;
+            var offset = GetDistanceFromCharacterHit(new CharacterHit(characterHit.FirstCharacterIndex));
 
-            var isTrailing = distance > currentX - width / 2;
+            isInside = true;
+
+            var isTrailing = distance > offset + width / 2;
 
             return isTrailing ? characterHit : new CharacterHit(characterHit.FirstCharacterIndex);
         }
 
+        /// <summary>
+        /// Retrieves the next valid caret character hit in the logical direction in the <see cref="GlyphRun"/>.
+        /// </summary>
+        /// <param name="characterHit">The <see cref="CharacterHit"/> to use for computing the next hit value.</param>
+        /// <returns>
+        /// A <see cref="CharacterHit"/> that represents the next valid caret character hit in the logical direction.
+        /// If the return value is equal to <c>characterHit</c>, no further navigation is possible in the <see cref="GlyphRun"/>.
+        /// </returns>
         public CharacterHit GetNextCaretCharacterHit(CharacterHit characterHit)
         {
             if (characterHit.TrailingLength == 0)
@@ -288,11 +337,24 @@ namespace Avalonia.Media
             return new CharacterHit(nextCharacterHit.FirstCharacterIndex);
         }
 
+        /// <summary>
+        /// Retrieves the previous valid caret character hit in the logical direction in the <see cref="GlyphRun"/>.
+        /// </summary>
+        /// <param name="characterHit">The <see cref="CharacterHit"/> to use for computing the previous hit value.</param>
+        /// <returns>
+        /// A cref="CharacterHit"/> that represents the previous valid caret character hit in the logical direction.
+        /// If the return value is equal to <c>characterHit</c>, no further navigation is possible in the <see cref="GlyphRun"/>.
+        /// </returns>
         public CharacterHit GetPreviousCaretCharacterHit(CharacterHit characterHit)
         {
-            return characterHit.TrailingLength == 0 ?
-                FindNearestCharacterHit(characterHit.FirstCharacterIndex - 1, out _) :
-                new CharacterHit(characterHit.FirstCharacterIndex);
+            if (characterHit.TrailingLength != 0)
+            {
+                return new CharacterHit(characterHit.FirstCharacterIndex);
+            }
+
+            return characterHit.FirstCharacterIndex == Characters.Start ?
+                new CharacterHit(Characters.Start) :
+                FindNearestCharacterHit(characterHit.FirstCharacterIndex - 1, out _);
         }
 
         private class ReverseComparer<T> : IComparer<T>
@@ -303,88 +365,124 @@ namespace Avalonia.Media
             }
         }
 
-        private static readonly IComparer<ushort> s_ascendingComparer = Comparer<ushort>.Default;
-        private static readonly IComparer<ushort> s_descendingComparer = new ReverseComparer<ushort>();
-
-        internal CharacterHit FindNearestCharacterHit(int index, out double width)
+        /// <summary>
+        /// Finds a glyph index for given character index.
+        /// </summary>
+        /// <param name="characterIndex">The character index.</param>
+        /// <returns>
+        /// The glyph index.
+        /// </returns>
+        public int FindGlyphIndex(int characterIndex)
         {
-            width = 0.0;
-
-            if (index < 0)
+            if (IsLeftToRight)
             {
-                return default;
+                if (characterIndex < _glyphClusters[0])
+                {
+                    return 0;
+                }
+
+                if (characterIndex > _glyphClusters[_glyphClusters.Length - 1])
+                {
+                    return _glyphClusters.End;
+                }
+            }
+            else
+            {
+                if (characterIndex < _glyphClusters[_glyphClusters.Length - 1])
+                {
+                    return _glyphClusters.End;
+                }
+
+                if (characterIndex > _glyphClusters[0])
+                {
+                    return 0;
+                }
             }
 
             var comparer = IsLeftToRight ? s_ascendingComparer : s_descendingComparer;
 
-            var clusters = _glyphClusters.AsSpan();
+            var clusters = _glyphClusters.Buffer.Span;
 
-            int start;
-
-            if (index == 0 && clusters[0] == 0)
-            {
-                start = 0;
-            }
-            else
-            {
-                // Find the start of the cluster at the character index.
-                start = clusters.BinarySearch((ushort)index, comparer);
-            }
+            // Find the start of the cluster at the character index.
+            var start = clusters.BinarySearch((ushort)characterIndex, comparer);
 
             // No cluster found.
             if (start < 0)
             {
-                while (index > 0 && start < 0)
+                while (characterIndex > 0 && start < 0)
                 {
-                    index--;
+                    characterIndex--;
 
-                    start = clusters.BinarySearch((ushort)index, comparer);
+                    start = clusters.BinarySearch((ushort)characterIndex, comparer);
                 }
 
                 if (start < 0)
                 {
-                    return default;
+                    return -1;
                 }
             }
 
-            var trailingLength = 0;
-
-            var currentCluster = clusters[start];
-
-            while (start > 0 && clusters[start - 1] == currentCluster)
+            while (start > 0 && clusters[start - 1] == clusters[start])
             {
                 start--;
             }
 
-            for (var lastIndex = start; lastIndex < _glyphClusters.Length; ++lastIndex)
-            {
-                if (_glyphClusters[lastIndex] != currentCluster)
-                {
-                    break;
-                }
+            return start;
+        }
 
+        /// <summary>
+        /// Finds the nearest <see cref="CharacterHit"/> at given index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="width">The width of found cluster.</param>
+        /// <returns>
+        /// The nearest <see cref="CharacterHit"/>.
+        /// </returns>
+        public CharacterHit FindNearestCharacterHit(int index, out double width)
+        {
+            width = 0.0;
+
+            var start = FindGlyphIndex(index);
+
+            var currentCluster = _glyphClusters[start];
+
+            var trailingLength = 0;
+
+            while (start < _glyphClusters.Length && _glyphClusters[start] == currentCluster)
+            {
                 if (GlyphAdvances.IsEmpty)
                 {
-                    var glyph = GlyphIndices[lastIndex];
+                    var glyph = GlyphIndices[start];
 
                     width += GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
                 }
                 else
                 {
-                    width += GlyphAdvances[lastIndex];
+                    width += GlyphAdvances[start];
                 }
 
                 trailingLength++;
+                start++;
+            }
+
+            if (start == _glyphClusters.Length &&
+                currentCluster + trailingLength != Characters.Start + Characters.Length)
+            {
+                trailingLength = Characters.Start + Characters.Length - currentCluster;
             }
 
             return new CharacterHit(currentCluster, trailingLength);
         }
 
+        /// <summary>
+        /// Calculates the bounds of the <see cref="GlyphRun"/>.
+        /// </summary>
+        /// <returns>
+        /// The calculated bounds.
+        /// </returns>
         private Rect CalculateBounds()
         {
-            var scale = FontRenderingEmSize / GlyphTypeface.DesignEmHeight;
-
-            var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * scale;
+            var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * Scale;
 
             var width = 0.0;
 
@@ -416,6 +514,10 @@ namespace Avalonia.Media
             field = value;
         }
 
+        /// <summary>
+        /// Initializes the <see cref="GlyphRun"/>.
+        /// </summary>
+        /// <param name="bounds">Optional pre computed bounds.</param>
         private void Initialize(Rect? bounds)
         {
             if (GlyphIndices.Length == 0)
@@ -435,7 +537,9 @@ namespace Avalonia.Media
                 throw new InvalidOperationException();
             }
 
-            _glyphRunImpl = s_platformRenderInterface.CreateGlyphRun(this, out var width);
+            var platformRenderInterface = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+
+            _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this, out var width);
 
             if (bounds.HasValue)
             {

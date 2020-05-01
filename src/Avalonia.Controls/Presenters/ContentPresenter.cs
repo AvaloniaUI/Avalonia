@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -28,7 +25,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<IBrush> BorderBrushProperty =
+        public static readonly StyledProperty<IBrush> BorderBrushProperty =
             Border.BorderBrushProperty.AddOwner<ContentPresenter>();
 
         /// <summary>

@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Logging;
@@ -164,6 +161,11 @@ namespace Avalonia.Rendering
             return HitTest(root, p, filter);
         }
 
+        public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter)
+        {
+            return HitTest(root, p, filter).FirstOrDefault();
+        }
+
         /// <inheritdoc/>
         public void RecalculateChildren(IVisual visual) => AddDirty(visual);
 
@@ -307,7 +309,9 @@ namespace Avalonia.Rendering
 
                         if (!child.ClipToBounds || clipRect.Intersects(childBounds))
                         {
-                            var childClipRect = clipRect.Translate(-childBounds.Position);
+                            var childClipRect = child.RenderTransform == null
+                                ? clipRect.Translate(-childBounds.Position)
+                                : clipRect;
                             Render(context, child, childClipRect);
                         }
                         else

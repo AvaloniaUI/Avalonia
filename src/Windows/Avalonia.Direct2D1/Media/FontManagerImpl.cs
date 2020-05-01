@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
@@ -53,7 +50,7 @@ namespace Avalonia.Direct2D1.Media
 
                 var fontFamilyName = font.FontFamily.FamilyNames.GetString(0);
 
-                fontKey = new FontKey(new FontFamily(fontFamilyName), fontWeight, fontStyle);
+                fontKey = new FontKey(fontFamilyName, fontWeight, fontStyle);
 
                 return true;
             }

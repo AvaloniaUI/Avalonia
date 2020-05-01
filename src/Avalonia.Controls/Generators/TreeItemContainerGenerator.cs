@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -127,7 +124,7 @@ namespace Avalonia.Controls.Generators
                 Index = new TreeContainerIndex();
                 _treeView = treeViewOwner;
             }
-            else if (Owner.IsAttachedToLogicalTree)
+            else
             {
                 var treeView = Owner.GetSelfAndLogicalAncestors().OfType<TreeView>().FirstOrDefault();
                 
@@ -137,12 +134,6 @@ namespace Avalonia.Controls.Generators
                     Index = treeView?.ItemContainerGenerator?.Index;
                     _treeView = treeView;
                 }
-            }
-            else
-            {
-                Clear();
-                Index = null;
-                _treeView = null;
             }
         }
 

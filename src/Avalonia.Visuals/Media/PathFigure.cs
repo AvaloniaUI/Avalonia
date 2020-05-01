@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Metadata;
 
 namespace Avalonia.Media
@@ -98,5 +95,8 @@ namespace Avalonia.Media
         }
 
         private PathSegments _segments;
+
+        public override string ToString()
+            => $"M {StartPoint} {string.Join(" ", _segments)}{(IsClosed ? "Z" : "")}";
     }
 }

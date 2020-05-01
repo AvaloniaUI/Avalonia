@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Logging;
 using Avalonia.VisualTree;
@@ -507,6 +504,7 @@ namespace Avalonia.Layout
             {
                 var margin = Margin;
 
+                ApplyStyling();
                 ApplyTemplate();
 
                 var constrained = LayoutHelper.ApplyLayoutConstraints(
@@ -690,6 +688,12 @@ namespace Avalonia.Layout
             }
 
             return finalSize;
+        }
+
+        protected sealed override void InvalidateStyles()
+        {
+            base.InvalidateStyles();
+            InvalidateMeasure();
         }
 
         /// <inheritdoc/>

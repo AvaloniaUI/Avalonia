@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using Avalonia.Media;
@@ -109,7 +106,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
             using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
             {
@@ -149,7 +146,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="opacityMask">The opacity mask to draw with.</param>
         /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             using (var d2dSource = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
             using (var sourceBrush = new BitmapBrush(_deviceContext, d2dSource.Value))

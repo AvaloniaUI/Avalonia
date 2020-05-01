@@ -1,7 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Layout
@@ -22,16 +20,11 @@ namespace Avalonia.Layout
         /// <returns>The control's size.</returns>
         public static Size ApplyLayoutConstraints(ILayoutable control, Size constraints)
         {
-            var controlWidth = control.Width;
-            var controlHeight = control.Height;
+            var minmax = new MinMax(control);
 
-            double width = (controlWidth > 0) ? controlWidth : constraints.Width;
-            double height = (controlHeight > 0) ? controlHeight : constraints.Height;
-            width = Math.Min(width, control.MaxWidth);
-            width = Math.Max(width, control.MinWidth);
-            height = Math.Min(height, control.MaxHeight);
-            height = Math.Max(height, control.MinHeight);
-            return new Size(width, height);
+            return new Size(
+                MathUtilities.Clamp(constraints.Width, minmax.MinWidth, minmax.MaxWidth),
+                MathUtilities.Clamp(constraints.Height, minmax.MinHeight, minmax.MaxHeight));
         }
 
         public static Size MeasureChild(ILayoutable control, Size availableSize, Thickness padding,
@@ -87,6 +80,40 @@ namespace Avalonia.Layout
             }
 
             InnerInvalidateMeasure(control);
+        }
+
+        /// <summary>
+        /// Calculates the min and max height for a control. Ported from WPF.
+        /// </summary>
+        private readonly struct MinMax
+        {
+            public MinMax(ILayoutable e)
+            {
+                MaxHeight = e.MaxHeight;
+                MinHeight = e.MinHeight;
+                double l = e.Height;
+
+                double height = (double.IsNaN(l) ? double.PositiveInfinity : l);
+                MaxHeight = Math.Max(Math.Min(height, MaxHeight), MinHeight);
+
+                height = (double.IsNaN(l) ? 0 : l);
+                MinHeight = Math.Max(Math.Min(MaxHeight, height), MinHeight);
+
+                MaxWidth = e.MaxWidth;
+                MinWidth = e.MinWidth;
+                l = e.Width;
+
+                double width = (double.IsNaN(l) ? double.PositiveInfinity : l);
+                MaxWidth = Math.Max(Math.Min(width, MaxWidth), MinWidth);
+
+                width = (double.IsNaN(l) ? 0 : l);
+                MinWidth = Math.Max(Math.Min(MaxWidth, width), MinWidth);
+            }
+
+            public double MinWidth { get; }
+            public double MaxWidth { get; }
+            public double MinHeight { get; }
+            public double MaxHeight { get; }
         }
     }
 }

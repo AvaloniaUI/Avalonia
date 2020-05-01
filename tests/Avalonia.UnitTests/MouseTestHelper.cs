@@ -56,7 +56,7 @@ namespace Avalonia.UnitTests
             {
                 _pressedButton = mouseButton;
                 _pointer.Capture((IInputElement)target);
-                target.RaiseEvent(new PointerPressedEventArgs(source, _pointer, (IVisual)source, position, Timestamp(), props,
+                source.RaiseEvent(new PointerPressedEventArgs(source, _pointer, (IVisual)source, position, Timestamp(), props,
                     GetModifiers(modifiers), clickCount));
             }
         }

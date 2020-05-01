@@ -1,6 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,11 +17,16 @@ namespace Avalonia.Media
             new ConcurrentDictionary<FontKey, Typeface>();
         private readonly FontFamily _defaultFontFamily;
 
-        private FontManager(IFontManagerImpl platformImpl)
+        public FontManager(IFontManagerImpl platformImpl)
         {
             PlatformImpl = platformImpl;
 
             DefaultFontFamilyName = PlatformImpl.GetDefaultFontFamilyName();
+
+            if (string.IsNullOrEmpty(DefaultFontFamilyName))
+            {
+                throw new InvalidOperationException("Default font family name can't be null or empty.");
+            }
 
             _defaultFontFamily = new FontFamily(DefaultFontFamilyName);
         }
@@ -39,14 +42,10 @@ namespace Avalonia.Media
                     return current;
                 }
 
-                var renderInterface = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-
-                var fontManagerImpl = renderInterface?.CreateFontManager();
+                var fontManagerImpl = AvaloniaLocator.Current.GetService<IFontManagerImpl>();
 
                 if (fontManagerImpl == null)
-                {
-                    return null;
-                }
+                    throw new InvalidOperationException("No font manager implementation was registered.");
 
                 current = new FontManager(fontManagerImpl);
 
@@ -94,7 +93,7 @@ namespace Avalonia.Media
                     fontFamily = _defaultFontFamily;
                 }
 
-                var key = new FontKey(fontFamily, fontWeight, fontStyle);
+                var key = new FontKey(fontFamily.Name, fontWeight, fontStyle);
 
                 if (_typefaceCache.TryGetValue(key, out var typeface))
                 {
@@ -133,9 +132,21 @@ namespace Avalonia.Media
             FontStyle fontStyle = FontStyle.Normal,
             FontFamily fontFamily = null, CultureInfo culture = null)
         {
-            return PlatformImpl.TryMatchCharacter(codepoint, fontWeight, fontStyle, fontFamily, culture, out var key) ?
-                _typefaceCache.GetOrAdd(key, new Typeface(key.FontFamily, key.Weight, key.Style)) :
+            foreach (var cachedTypeface in _typefaceCache.Values)
+            {
+                // First try to find a cached typeface by style and weight to avoid redundant glyph index lookup.
+                if (cachedTypeface.Style == fontStyle && cachedTypeface.Weight == fontWeight
+                                                      && cachedTypeface.GlyphTypeface.GetGlyph((uint)codepoint) != 0)
+                {
+                    return cachedTypeface;
+                }
+            }
+
+            var matchedTypeface = PlatformImpl.TryMatchCharacter(codepoint, fontWeight, fontStyle, fontFamily, culture, out var key) ?
+                _typefaceCache.GetOrAdd(key, new Typeface(key.FamilyName, key.Weight, key.Style)) :
                 null;
+
+            return matchedTypeface;
         }
     }
 }

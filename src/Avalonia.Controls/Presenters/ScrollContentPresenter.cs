@@ -1,13 +1,12 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
@@ -352,7 +351,7 @@ namespace Avalonia.Controls.Presenters
 
             if (scrollable != null)
             {
-                scrollable.InvalidateScroll = () => UpdateFromScrollable(scrollable);
+                scrollable.ScrollInvalidated += ScrollInvalidated;
 
                 if (scrollable.IsLogicalScrollEnabled)
                 {
@@ -363,10 +362,15 @@ namespace Avalonia.Controls.Presenters
                             .Subscribe(x => scrollable.CanVerticallyScroll = x),
                         this.GetObservable(OffsetProperty)
                             .Skip(1).Subscribe(x => scrollable.Offset = x),
-                        Disposable.Create(() => scrollable.InvalidateScroll = null));
+                        Disposable.Create(() => scrollable.ScrollInvalidated -= ScrollInvalidated));
                     UpdateFromScrollable(scrollable);
                 }
             }
+        }
+
+        private void ScrollInvalidated(object sender, EventArgs e)
+        {
+            UpdateFromScrollable((ILogicalScrollable)sender);
         }
 
         private void UpdateFromScrollable(ILogicalScrollable scrollable)

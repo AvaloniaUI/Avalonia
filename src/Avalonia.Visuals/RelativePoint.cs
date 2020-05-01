@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using Avalonia.Utilities;
@@ -176,6 +173,17 @@ namespace Avalonia
                     double.Parse(y, CultureInfo.InvariantCulture) * scale,
                     unit);
             }
+        }
+
+        /// <summary>
+        /// Returns a String representing this RelativePoint instance.
+        /// </summary>
+        /// <returns>The string representation.</returns>
+        public override string ToString()
+        {
+            return _unit == RelativeUnit.Absolute ?
+                _point.ToString() :
+                 string.Format(CultureInfo.InvariantCulture, "{0}%, {1}%", _point.X * 100, _point.Y * 100);
         }
     }
 }

@@ -1,9 +1,8 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Linq;
+using Avalonia.Media;
 using Avalonia.Media.Fonts;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -69,6 +68,28 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
             }
 
             Assert.Equal(2, fontAssets.Length);
+        }
+
+        [Fact]
+        public void Should_Load_Embedded_Font()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+
+                var fontFamily = new FontFamily("resm:Avalonia.Visuals.UnitTests.Assets?assembly=Avalonia.Visuals.UnitTests#Noto Mono");
+
+                var fontAssets = FontFamilyLoader.LoadFontAssets(fontFamily.Key).ToArray();
+
+                Assert.NotEmpty(fontAssets);
+
+                foreach (var fontAsset in fontAssets)
+                {
+                    var stream = assetLoader.Open(fontAsset);
+
+                    Assert.NotNull(stream);
+                }
+            }
         }
 
         private static IDisposable StartWithResources(params (string, string)[] assets)

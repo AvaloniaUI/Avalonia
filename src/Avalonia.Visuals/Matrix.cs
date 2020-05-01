@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using Avalonia.Utilities;
@@ -306,7 +303,7 @@ namespace Avalonia
         /// <summary>
         /// Parses a <see cref="Matrix"/> string.
         /// </summary>
-        /// <param name="s">The string.</param>
+        /// <param name="s">Six comma-delimited double values (m11, m12, m21, m22, offsetX, offsetY) that describe the new <see cref="Matrix"/></param>
         /// <returns>The <see cref="Matrix"/>.</returns>
         public static Matrix Parse(string s)
         {

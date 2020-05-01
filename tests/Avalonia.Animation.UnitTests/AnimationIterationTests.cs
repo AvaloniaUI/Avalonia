@@ -15,6 +15,55 @@ namespace Avalonia.Animation.UnitTests
     public class AnimationIterationTests
     {
         [Fact]
+        public void Check_KeyTime_Correctly_Converted_To_Cue()
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Border.WidthProperty, 100d),
+                },
+                KeyTime = TimeSpan.FromSeconds(0.5)
+            };
+
+            var keyframe2 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Border.WidthProperty, 0d),
+                },
+                KeyTime = TimeSpan.FromSeconds(0)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(1),
+                Children =
+                {
+                    keyframe2,
+                    keyframe1
+                }
+            };
+
+            var border = new Border()
+            {
+                Height = 100d,
+                Width = 100d
+            };
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock);
+
+            clock.Step(TimeSpan.Zero); 
+            Assert.Equal(border.Width, 0d);
+
+            clock.Step(TimeSpan.FromSeconds(1)); 
+            Assert.Equal(border.Width, 100d);
+ 
+        }
+
+
+        [Fact]
         public void Check_Initial_Inter_and_Trailing_Delay_Values()
         {
             var keyframe1 = new KeyFrame()
