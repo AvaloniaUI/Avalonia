@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.ComponentModel;
 using Avalonia.Animation;
@@ -21,6 +18,11 @@ namespace Avalonia.Media
 
         /// <inheritdoc/>
         public event EventHandler Invalidated;
+
+        static Brush()
+        {
+            AffectsRender<Brush>(OpacityProperty);
+        }
 
         /// <summary>
         /// Gets or sets the opacity of the brush.

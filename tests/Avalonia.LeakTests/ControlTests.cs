@@ -1,12 +1,11 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Diagnostics;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -422,9 +421,83 @@ namespace Avalonia.LeakTests
             }
         }
 
+        [Fact]
+        public void Attached_ContextMenu_Is_Freed()
+        {
+            using (Start())
+            {
+                void AttachShowAndDetachContextMenu(Control control)
+                {
+                    var contextMenu = new ContextMenu
+                    {
+                        Items = new[]
+                        {
+                            new MenuItem { Header = "Foo" },
+                            new MenuItem { Header = "Foo" },
+                        }
+                    };
+
+                    control.ContextMenu = contextMenu;
+                    contextMenu.Open(control);
+                    contextMenu.Close();
+                    control.ContextMenu = null;
+                }
+
+                var window = new Window();
+                window.Show();
+
+                Assert.Same(window, FocusManager.Instance.Current);
+
+                AttachShowAndDetachContextMenu(window);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+            }
+        }
+
+        [Fact]
+        public void Standalone_ContextMenu_Is_Freed()
+        {
+            using (Start())
+            {
+                void BuildAndShowContextMenu(Control control)
+                {
+                    var contextMenu = new ContextMenu
+                    {
+                        Items = new[]
+                        {
+                            new MenuItem { Header = "Foo" },
+                            new MenuItem { Header = "Foo" },
+                        }
+                    };
+
+                    contextMenu.Open(control);
+                    contextMenu.Close();
+                }
+
+                var window = new Window();
+                window.Show();
+
+                Assert.Same(window, FocusManager.Instance.Current);
+
+                BuildAndShowContextMenu(window);
+                BuildAndShowContextMenu(window);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+            }
+        }
+
         private IDisposable Start()
         {
-            return UnitTestApplication.Start(TestServices.StyledWindow);
+            return UnitTestApplication.Start(TestServices.StyledWindow.With(
+                focusManager: new FocusManager(),
+                keyboardDevice: () => new KeyboardDevice(),
+                inputManager: new InputManager()));
         }
 
         private class Node

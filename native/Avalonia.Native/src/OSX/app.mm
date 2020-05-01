@@ -2,7 +2,8 @@
 @interface AvnAppDelegate : NSObject<NSApplicationDelegate>
 @end
 
-extern NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationActivationPolicyRegular;
+NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationActivationPolicyRegular;
+
 @implementation AvnAppDelegate
 - (void)applicationWillFinishLaunching:(NSNotification *)notification
 {
@@ -14,6 +15,10 @@ extern NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationA
         }
         
         [[NSApplication sharedApplication] setActivationPolicy: AvnDesiredActivationPolicy];
+        
+        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"NSFullScreenMenuItemEverywhere"];
+        
+        [[NSApplication sharedApplication] setHelpMenu: [[NSMenu new] initWithTitle:@""]];
     }
 }
 

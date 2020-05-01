@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -189,6 +186,8 @@ namespace Avalonia.Controls
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
+
+            PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
         }
 
         /// <summary>
@@ -314,22 +313,7 @@ namespace Avalonia.Controls
         /// Should be called from left mouse button press event handler
         /// </summary>
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e) => PlatformImpl?.BeginResizeDrag(edge, e);
-        
-        /// <summary>
-        /// Carries out the arrange pass of the window.
-        /// </summary>
-        /// <param name="finalSize">The final window size.</param>
-        /// <returns>The <paramref name="finalSize"/> parameter unchanged.</returns>
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            using (BeginAutoSizing())
-            {
-                PlatformImpl?.Resize(finalSize);
-            }
 
-            return base.ArrangeOverride(PlatformImpl?.ClientSize ?? default(Size));
-        }
-        
         /// <inheritdoc/>
         Size ILayoutRoot.MaxClientSize => _maxPlatformClientSize;
 
@@ -451,6 +435,19 @@ namespace Avalonia.Controls
 
             EnsureInitialized();
             IsVisible = true;
+
+            var initialSize = new Size(
+                double.IsNaN(Width) ? ClientSize.Width : Width,
+                double.IsNaN(Height) ? ClientSize.Height : Height);
+
+            if (initialSize != ClientSize)
+            {
+                using (BeginAutoSizing())
+                {
+                    PlatformImpl?.Resize(initialSize);
+                }
+            }
+
             LayoutManager.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
@@ -487,22 +484,12 @@ namespace Avalonia.Controls
         /// <returns>.
         /// A task that can be used to retrieve the result of the dialog when it closes.
         /// </returns>
-        public Task<TResult> ShowDialog<TResult>(Window owner) => ShowDialog<TResult>(owner.PlatformImpl);
-
-        /// <summary>
-        /// Shows the window as a dialog.
-        /// </summary>
-        /// <typeparam name="TResult">
-        /// The type of the result produced by the dialog.
-        /// </typeparam>
-        /// <param name="owner">The dialog's owner window.</param>
-        /// <returns>.
-        /// A task that can be used to retrieve the result of the dialog when it closes.
-        /// </returns>
-        public Task<TResult> ShowDialog<TResult>(IWindowImpl owner)
+        public Task<TResult> ShowDialog<TResult>(Window owner)
         {
             if (owner == null)
+            {
                 throw new ArgumentNullException(nameof(owner));
+            }
 
             if (IsVisible)
             {
@@ -513,29 +500,44 @@ namespace Avalonia.Controls
 
             EnsureInitialized();
             IsVisible = true;
+
+            var initialSize = new Size(
+                double.IsNaN(Width) ? ClientSize.Width : Width,
+                double.IsNaN(Height) ? ClientSize.Height : Height);
+
+            if (initialSize != ClientSize)
+            {
+                using (BeginAutoSizing())
+                {
+                    PlatformImpl?.Resize(initialSize);
+                }
+            }
+
             LayoutManager.ExecuteInitialLayoutPass(this);
 
             var result = new TaskCompletionSource<TResult>();
 
             using (BeginAutoSizing())
             {
-
-                PlatformImpl?.ShowDialog(owner);
+                PlatformImpl?.ShowDialog(owner.PlatformImpl);
 
                 Renderer?.Start();
+
                 Observable.FromEventPattern<EventHandler, EventArgs>(
-                    x => this.Closed += x,
-                    x => this.Closed -= x)
+                        x => Closed += x,
+                        x => Closed -= x)
                     .Take(1)
                     .Subscribe(_ =>
                     {
                         owner.Activate();
                         result.SetResult((TResult)(_dialogResult ?? default(TResult)));
                     });
+
                 OnOpened(EventArgs.Empty);
             }
 
-            SetWindowStartupLocation(owner);
+            SetWindowStartupLocation(owner.PlatformImpl);
+
             return result.Task;
         }
 
@@ -570,36 +572,58 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
             var sizeToContent = SizeToContent;
             var clientSize = ClientSize;
-            var constraint = availableSize;
+            var constraint = clientSize;
 
-            if ((sizeToContent & SizeToContent.Width) != 0)
+            if (sizeToContent.HasFlagCustom(SizeToContent.Width))
             {
                 constraint = constraint.WithWidth(double.PositiveInfinity);
             }
 
-            if ((sizeToContent & SizeToContent.Height) != 0)
+            if (sizeToContent.HasFlagCustom(SizeToContent.Height))
             {
                 constraint = constraint.WithHeight(double.PositiveInfinity);
             }
 
             var result = base.MeasureOverride(constraint);
 
-            if ((sizeToContent & SizeToContent.Width) == 0)
+            if (!sizeToContent.HasFlagCustom(SizeToContent.Width))
             {
-                result = result.WithWidth(clientSize.Width);
+                if (!double.IsInfinity(availableSize.Width))
+                {
+                    result = result.WithWidth(availableSize.Width);
+                }
+                else
+                {
+                    result = result.WithWidth(clientSize.Width);
+                }
             }
 
-            if ((sizeToContent & SizeToContent.Height) == 0)
+            if (!sizeToContent.HasFlagCustom(SizeToContent.Height))
             {
-                result = result.WithHeight(clientSize.Height);
+                if (!double.IsInfinity(availableSize.Height))
+                {
+                    result = result.WithHeight(availableSize.Height);
+                }
+                else
+                {
+                    result = result.WithHeight(clientSize.Height);
+                }
             }
 
             return result;
+        }
+
+        protected sealed override Size ArrangeSetBounds(Size size)
+        {
+            using (BeginAutoSizing())
+            {
+                PlatformImpl?.Resize(size);
+                return ClientSize;
+            }
         }
 
         protected sealed override void HandleClosed()
@@ -616,6 +640,9 @@ namespace Avalonia.Controls
             {
                 SizeToContent = SizeToContent.Manual;
             }
+
+            Width = clientSize.Width;
+            Height = clientSize.Height;
 
             base.HandleResized(clientSize);
         }

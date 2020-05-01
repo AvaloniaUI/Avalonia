@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
@@ -91,6 +88,9 @@ namespace Avalonia.Animation.Animators
                 newValue = neutralValue;
             else
                 newValue = (T)lastKeyframe.Value;
+
+            if (lastKeyframe.KeySpline != null)
+                progress = lastKeyframe.KeySpline.GetSplineProgress(progress);
 
             return Interpolate(progress, oldValue, newValue);
         }

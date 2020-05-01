@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +19,7 @@ namespace Avalonia.Skia
 
         public SKTypeface Get(Typeface typeface)
         {
-            var key = new FontKey(typeface.FontFamily, typeface.Weight, typeface.Style);
+            var key = new FontKey(typeface.FontFamily.Name, typeface.Weight, typeface.Style);
 
             return GetNearestMatch(_typefaces, key);
         }
@@ -52,7 +49,7 @@ namespace Avalonia.Skia
 
             if (keys.Length == 0)
             {
-                return SKTypeface.Default;
+                return null;
             }
 
             key = keys[0];

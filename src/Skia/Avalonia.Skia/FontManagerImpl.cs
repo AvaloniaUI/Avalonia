@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
@@ -35,6 +32,27 @@ namespace Avalonia.Skia
         public bool TryMatchCharacter(int codepoint, FontWeight fontWeight, FontStyle fontStyle,
             FontFamily fontFamily, CultureInfo culture, out FontKey fontKey)
         {
+            SKFontStyle skFontStyle;
+
+            switch (fontWeight)
+            {
+                case FontWeight.Normal when fontStyle == FontStyle.Normal:
+                    skFontStyle = SKFontStyle.Normal;
+                    break;
+                case FontWeight.Normal when fontStyle == FontStyle.Italic:
+                    skFontStyle = SKFontStyle.Italic;
+                    break;
+                case FontWeight.Bold when fontStyle == FontStyle.Normal:
+                    skFontStyle = SKFontStyle.Bold;
+                    break;
+                case FontWeight.Bold when fontStyle == FontStyle.Italic:
+                    skFontStyle = SKFontStyle.BoldItalic;
+                    break;
+                default:
+                    skFontStyle = new SKFontStyle((SKFontStyleWeight)fontWeight, SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle);
+                    break;
+            }
+
             if (culture == null)
             {
                 culture = CultureInfo.CurrentUICulture;
@@ -48,31 +66,32 @@ namespace Avalonia.Skia
             t_languageTagBuffer[0] = culture.TwoLetterISOLanguageName;
             t_languageTagBuffer[1] = culture.ThreeLetterISOLanguageName;
 
-            if (fontFamily != null)
+            if (fontFamily != null && fontFamily.FamilyNames.HasFallbacks)
             {
-                foreach (var familyName in fontFamily.FamilyNames)
+                var familyNames = fontFamily.FamilyNames;
+
+                for (var i = 1; i < familyNames.Count; i++)
                 {
-                    var skTypeface = _skFontManager.MatchCharacter(familyName, (SKFontStyleWeight)fontWeight,
-                        SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle, t_languageTagBuffer, codepoint);
+                    var skTypeface =
+                        _skFontManager.MatchCharacter(familyNames[i], skFontStyle, t_languageTagBuffer, codepoint);
 
                     if (skTypeface == null)
                     {
                         continue;
                     }
 
-                    fontKey = new FontKey(new FontFamily(familyName), fontWeight, fontStyle);
+                    fontKey = new FontKey(skTypeface.FamilyName, fontWeight, fontStyle);
 
                     return true;
                 }
             }
             else
             {
-                var skTypeface = _skFontManager.MatchCharacter(null, (SKFontStyleWeight)fontWeight,
-                    SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle, t_languageTagBuffer, codepoint);
+                var skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
 
                 if (skTypeface != null)
                 {
-                    fontKey = new FontKey(new FontFamily(skTypeface.FamilyName), fontWeight, fontStyle);
+                    fontKey = new FontKey(skTypeface.FamilyName, fontWeight, fontStyle);
 
                     return true;
                 }
@@ -85,7 +104,7 @@ namespace Avalonia.Skia
 
         public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
         {
-            var skTypeface = SKTypeface.Default;
+            SKTypeface skTypeface = null;
 
             if (typeface.FontFamily.Key == null)
             {
@@ -110,6 +129,12 @@ namespace Avalonia.Skia
                 var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
 
                 skTypeface = fontCollection.Get(typeface);
+            }
+
+            if (skTypeface == null)
+            {
+                throw new InvalidOperationException(
+                    $"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
             }
 
             return new GlyphTypefaceImpl(skTypeface);
