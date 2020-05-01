@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using System.Windows.Input;
@@ -91,7 +88,11 @@ namespace Avalonia.Controls
             CommandProperty.Changed.Subscribe(CommandChanged);
             IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
             IsCancelProperty.Changed.Subscribe(IsCancelChanged);
-            PseudoClass<Button>(IsPressedProperty, ":pressed");
+        }
+
+        public Button()
+        {
+            UpdatePseudoClasses(IsPressed);
         }
 
         /// <summary>
@@ -306,18 +307,32 @@ namespace Avalonia.Controls
                 }
             }
         }
-
+        
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
             IsPressed = false;
         }
 
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
         {
-            base.UpdateDataValidation(property, status);
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
+
+            if (property == IsPressedProperty)
+            {
+                UpdatePseudoClasses(newValue.GetValueOrDefault<bool>());
+            }
+        }
+
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        {
+            base.UpdateDataValidation(property, value);
             if (property == CommandProperty)
             {
-                if (status?.ErrorType == BindingErrorType.Error)
+                if (value.Type == BindingValueType.BindingError)
                 {
                     if (_commandCanExecute)
                     {
@@ -473,6 +488,11 @@ namespace Avalonia.Controls
             {
                 OnClick();
             }
+        }
+
+        private void UpdatePseudoClasses(bool isPressed)
+        {
+            PseudoClasses.Set(":pressed", isPressed);
         }
     }
 }

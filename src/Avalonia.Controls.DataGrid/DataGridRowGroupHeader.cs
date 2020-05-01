@@ -68,25 +68,11 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DataGridRowGroupHeader, double>(
                 nameof(SublevelIndent),
                 defaultValue: DataGrid.DATAGRID_defaultRowGroupSublevelIndent,
-                validate: ValidateSublevelIndent);
+                validate: IsValidSublevelIndent);
 
-        private static double ValidateSublevelIndent(DataGridRowGroupHeader header, double value)
+        private static bool IsValidSublevelIndent(double value)
         {
-            // We don't need to revert to the old value if our input is bad because we never read this property value
-            if (double.IsNaN(value))
-            {
-                throw DataGridError.DataGrid.ValueCannotBeSetToNAN(nameof(SublevelIndent));
-            }
-            else if (double.IsInfinity(value))
-            {
-                throw DataGridError.DataGrid.ValueCannotBeSetToInfinity(nameof(SublevelIndent));
-            }
-            else if (value < 0)
-            {
-                throw DataGridError.DataGrid.ValueMustBeGreaterThanOrEqualTo(nameof(value), nameof(SublevelIndent), 0);
-            }
-
-            return value;
+            return !double.IsNaN(value) && !double.IsInfinity(value) && value >= 0;
         }
 
         /// <summary>

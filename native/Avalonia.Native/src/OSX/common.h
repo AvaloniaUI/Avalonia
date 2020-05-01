@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 #ifndef common_h
 #define common_h
 #include "comimpl.h"
@@ -11,19 +8,18 @@
 #include <pthread.h>
 
 extern IAvnPlatformThreadingInterface* CreatePlatformThreading();
-extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events);
-extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events);
+extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl);
+extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events, IAvnGlContext* gl);
 extern IAvnSystemDialogs* CreateSystemDialogs();
 extern IAvnScreens* CreateScreens();
 extern IAvnClipboard* CreateClipboard();
 extern IAvnCursorFactory* CreateCursorFactory();
-extern IAvnGlFeature* GetGlFeature();
-extern IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(NSWindow* window, NSView* view);
-extern IAvnAppMenu* CreateAppMenu();
-extern IAvnAppMenuItem* CreateAppMenuItem();
-extern IAvnAppMenuItem* CreateAppMenuItemSeperator();
-extern void SetAppMenu (NSString* appName, IAvnAppMenu* appMenu);
-extern IAvnAppMenu* GetAppMenu ();
+extern IAvnGlDisplay* GetGlDisplay();
+extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* events);
+extern IAvnMenuItem* CreateAppMenuItem();
+extern IAvnMenuItem* CreateAppMenuItemSeperator();
+extern void SetAppMenu (NSString* appName, IAvnMenu* appMenu);
+extern IAvnMenu* GetAppMenu ();
 extern NSMenuItem* GetAppMenuItem ();
 
 extern void InitializeAvnApp();

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -969,6 +966,69 @@ namespace Avalonia.Controls.UnitTests
                 _mouse.Click(GetItem(target, 0));
                 _mouse.Click(GetItem(target, 1), modifiers: InputModifiers.Shift);
             }
+        }
+
+        [Fact]
+        public void Removing_TreeView_From_Root_Should_Preserve_TreeViewItems()
+        {
+            // Issue #3328
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+            };
+
+            var root = new TestRoot();
+            root.Child = target;
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+            ExpandAll(target);
+
+            Assert.Equal(5, target.ItemContainerGenerator.Index.Containers.Count());
+
+            root.Child = null;
+
+            Assert.Equal(5, target.ItemContainerGenerator.Index.Containers.Count());
+            Assert.Equal(1, target.Presenter.Panel.Children.Count);
+
+            var rootNode = Assert.IsType<TreeViewItem>(target.Presenter.Panel.Children[0]);
+            Assert.Equal(3, rootNode.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(3, rootNode.Presenter.Panel.Children.Count);
+
+            var child2Node = Assert.IsType<TreeViewItem>(rootNode.Presenter.Panel.Children[1]);
+            Assert.Equal(1, child2Node.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(1, child2Node.Presenter.Panel.Children.Count);
+        }
+
+        [Fact]
+        public void Clearing_TreeView_Items_Clears_Index()
+        {
+            // Issue #3551
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+            };
+
+            var root = new TestRoot();
+            root.Child = target;
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+
+            var rootNode = tree[0];
+            var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(rootNode);
+
+            Assert.NotNull(container);
+
+            root.Child = null;
+
+            tree.Clear();
+
+            Assert.Empty(target.ItemContainerGenerator.Index.Containers);
         }
 
         private void ApplyTemplates(TreeView tree)

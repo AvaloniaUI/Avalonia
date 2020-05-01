@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -236,25 +233,7 @@ namespace Avalonia.Controls
                 // it was added to the Items collection.
                 if (container.ContainerControl != null && container.ContainerControl != container.Item)
                 {
-                    if (ItemContainerGenerator.ContainerType == null)
-                    {
-                        var containerControl = container.ContainerControl as ContentPresenter;
-
-                        if (containerControl != null)
-                        {
-                            ((ISetLogicalParent)containerControl).SetParent(this);
-                            containerControl.UpdateChild();
-
-                            if (containerControl.Child != null)
-                            {
-                                LogicalChildren.Add(containerControl.Child);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        LogicalChildren.Add(container.ContainerControl);
-                    }
+                    LogicalChildren.Add(container.ContainerControl);
                 }
             }
         }
@@ -272,24 +251,7 @@ namespace Avalonia.Controls
                 // when it is removed from the Items collection.
                 if (container?.ContainerControl != container?.Item)
                 {
-                    if (ItemContainerGenerator.ContainerType == null)
-                    {
-                        var containerControl = container.ContainerControl as ContentPresenter;
-
-                        if (containerControl != null)
-                        {
-                            ((ISetLogicalParent)containerControl).SetParent(null);
-
-                            if (containerControl.Child != null)
-                            {
-                                LogicalChildren.Remove(containerControl.Child);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        LogicalChildren.Remove(container.ContainerControl);
-                    }
+                    LogicalChildren.Remove(container.ContainerControl);
                 }
             }
         }
@@ -507,7 +469,10 @@ namespace Avalonia.Controls
                 result = container.GetControl(direction, c, wrap);
                 from = from ?? result;
 
-                if (result?.Focusable == true)
+                if (result != null &&
+                    result.Focusable &&
+                    result.IsEffectivelyEnabled &&
+                    result.IsEffectivelyVisible)
                 {
                     return result;
                 }

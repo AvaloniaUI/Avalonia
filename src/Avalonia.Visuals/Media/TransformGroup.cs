@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Collections;
 using Avalonia.Metadata;
 
@@ -11,7 +8,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Children"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<Transforms> ChildrenProperty =
+        public static readonly StyledProperty<Transforms> ChildrenProperty =
             AvaloniaProperty.Register<TransformGroup, Transforms>(nameof(Children));
 
         public TransformGroup()

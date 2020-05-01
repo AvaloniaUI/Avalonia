@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Diagnostics;
 using Avalonia.Logging;
@@ -132,8 +129,16 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         public void ExecuteInitialLayoutPass(ILayoutRoot root)
         {
-            Measure(root);
-            Arrange(root);
+            try
+            {
+                _running = true;
+                Measure(root);
+                Arrange(root);
+            }
+            finally
+            {
+                _running = false;
+            }
 
             // Running the initial layout pass may have caused some control to be invalidated
             // so run a full layout pass now (this usually due to scrollbars; its not known

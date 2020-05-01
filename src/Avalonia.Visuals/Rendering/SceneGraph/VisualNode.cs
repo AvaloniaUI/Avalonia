@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
@@ -280,8 +277,13 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public bool HitTest(Point p)
         {
-            foreach (var operation in DrawOperations)
+            var drawOperations = DrawOperations;
+            var drawOperationsCount = drawOperations.Count;
+
+            for (var i = 0; i < drawOperationsCount; i++)
             {
+                var operation = drawOperations[i];
+
                 if (operation?.Item?.HitTest(p) == true)
                 {
                     return true;

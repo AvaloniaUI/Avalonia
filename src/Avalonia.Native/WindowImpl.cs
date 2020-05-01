@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Native.Interop;
@@ -14,14 +11,18 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
+        private readonly GlPlatformFeature _glFeature;
         IAvnWindow _native;
-        public WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(opts)
+        internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
+            GlPlatformFeature glFeature) : base(opts, glFeature)
         {
             _factory = factory;
             _opts = opts;
+            _glFeature = glFeature;
             using (var e = new WindowEvents(this))
             {
-                Init(_native = factory.CreateWindow(e), factory.CreateScreens());
+                Init(_native = factory.CreateWindow(e,
+                    _opts.UseGpu ? glFeature?.DeferredContext.Context : null), factory.CreateScreens());
             }
 
             NativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
@@ -64,9 +65,9 @@ namespace Avalonia.Native
             _native.CanResize = value;
         }
 
-        public void SetSystemDecorations(bool enabled)
+        public void SetSystemDecorations(Controls.SystemDecorations enabled)
         {
-            _native.HasDecorations = enabled;
+            _native.HasDecorations = (Interop.SystemDecorations)enabled;
         }
 
         public void SetTitleBarColor (Avalonia.Media.Color color)
@@ -113,6 +114,6 @@ namespace Avalonia.Native
         public void Move(PixelPoint point) => Position = point;
 
         public override IPopupImpl CreatePopup() =>
-            _opts.OverlayPopups ? null : new PopupImpl(_factory, _opts, this);
+            _opts.OverlayPopups ? null : new PopupImpl(_factory, _opts, _glFeature, this);
     }
 }

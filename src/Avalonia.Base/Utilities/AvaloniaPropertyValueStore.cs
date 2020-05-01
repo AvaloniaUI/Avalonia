@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Avalonia.Utilities
@@ -127,6 +124,27 @@ namespace Avalonia.Utilities
         public void SetValue(AvaloniaProperty property, TValue value)
         {
             _entries[TryFindEntry(property.Id).Item1].Value = value;
+        }
+
+        public void Remove(AvaloniaProperty property)
+        {
+            var (index, found) = TryFindEntry(property.Id);
+
+            if (found)
+            {
+                Entry[] entries = new Entry[_entries.Length - 1];
+                int ix = 0;
+
+                for (int i = 0; i < _entries.Length; ++i)
+                {
+                    if (i != index)
+                    {
+                        entries[ix++] = _entries[i];
+                    }
+                }
+
+                _entries = entries;
+            }
         }
 
         public Dictionary<AvaloniaProperty, TValue> ToDictionary()

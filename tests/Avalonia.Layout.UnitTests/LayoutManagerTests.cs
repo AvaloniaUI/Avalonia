@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
@@ -373,6 +370,39 @@ namespace Avalonia.Layout.UnitTests
 
             Assert.True(control.Measured);
             Assert.True(control.IsMeasureValid);
+        }
+
+        [Fact]
+        public void Calling_ExecuteLayoutPass_From_ExecuteInitialLayoutPass_Does_Not_Break_Measure()
+        {
+            // Test for issue #3550.
+            var control = new LayoutTestControl();
+            var root = new LayoutTestRoot { Child = control };
+            var count = 0;
+
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
+            control.Measured = false;
+
+            control.DoMeasureOverride = (l, s) =>
+            {
+                if (count++ == 0)
+                {
+                    control.InvalidateMeasure();
+                    root.LayoutManager.ExecuteLayoutPass();
+                    return new Size(100, 100);
+                }
+                else
+                {
+                    return new Size(200, 200);
+                }
+            };
+
+            root.InvalidateMeasure();
+            control.InvalidateMeasure();
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
+
+            Assert.Equal(new Size(200, 200), control.Bounds.Size);
+            Assert.Equal(new Size(200, 200), control.DesiredSize);
         }
     }
 }

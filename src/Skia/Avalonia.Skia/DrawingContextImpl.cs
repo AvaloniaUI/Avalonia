@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,6 +30,10 @@ namespace Avalonia.Skia
         private Matrix _currentTransform;
         private GRContext _grContext;
         private bool _disposed;
+
+        private readonly SKPaint _strokePaint = new SKPaint();
+        private readonly SKPaint _fillPaint = new SKPaint();
+
         /// <summary>
         /// Context create info.
         /// </summary>
@@ -156,7 +157,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawLine(IPen pen, Point p1, Point p2)
         {
-            using (var paint = CreatePaint(pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
+            using (var paint = CreatePaint(_strokePaint, pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
                 Canvas.DrawLine((float) p1.X, (float) p1.Y, (float) p2.X, (float) p2.Y, paint.Paint);
             }
@@ -168,8 +169,8 @@ namespace Avalonia.Skia
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
 
-            using (var fill = brush != null ? CreatePaint(brush, size) : default(PaintWrapper))
-            using (var stroke = pen?.Brush != null ? CreatePaint(pen, size) : default(PaintWrapper))
+            using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default(PaintWrapper))
+            using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, size) : default(PaintWrapper))
             {
                 if (fill.Paint != null)
                 {
@@ -191,7 +192,7 @@ namespace Avalonia.Skia
 
             if (brush != null)
             {
-                using (var paint = CreatePaint(brush, rect.Size))
+                using (var paint = CreatePaint(_fillPaint, brush, rect.Size))
                 {
                     if (isRounded)
                     {
@@ -207,7 +208,7 @@ namespace Avalonia.Skia
 
             if (pen?.Brush != null)
             {
-                using (var paint = CreatePaint(pen, rect.Size))
+                using (var paint = CreatePaint(_strokePaint, pen, rect.Size))
                 {
                     if (isRounded)
                     {
@@ -225,7 +226,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
-            using (var paint = CreatePaint(foreground, text.Bounds.Size))
+            using (var paint = CreatePaint(_fillPaint, foreground, text.Bounds.Size))
             {
                 var textImpl = (FormattedTextImpl) text;
                 textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint, _canTextUseLcdRendering);
@@ -235,14 +236,14 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
         {
-            using (var paint = CreatePaint(foreground, glyphRun.Bounds.Size))
+            using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Bounds.Size))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
 
-                paint.ApplyTo(glyphRunImpl.Paint);
+                ConfigureTextRendering(paintWrapper);
 
                 Canvas.DrawText(glyphRunImpl.TextBlob, (float)baselineOrigin.X,
-                    (float)baselineOrigin.Y, glyphRunImpl.Paint);
+                    (float)baselineOrigin.Y, paintWrapper.Paint);
             }
         }
 
@@ -326,7 +327,7 @@ namespace Avalonia.Skia
             var paint = new SKPaint();
 
             Canvas.SaveLayer(paint);
-            _maskStack.Push(CreatePaint(mask, bounds.Size));
+            _maskStack.Push(CreatePaint(paint, mask, bounds.Size, true));
         }
 
         /// <inheritdoc />
@@ -365,6 +366,15 @@ namespace Avalonia.Skia
 
                 Canvas.SetMatrix(transform.ToSKMatrix());
             }
+        }
+
+        internal void ConfigureTextRendering(PaintWrapper wrapper)
+        {
+            var paint = wrapper.Paint;
+
+            paint.IsEmbeddedBitmapText = true;
+            paint.SubpixelText = true;
+            paint.LcdRenderText = _canTextUseLcdRendering;
         }
 
         /// <summary>
@@ -517,17 +527,16 @@ namespace Avalonia.Skia
         /// <summary>
         /// Creates paint wrapper for given brush.
         /// </summary>
+        /// <param name="paint">The paint to wrap.</param>
         /// <param name="brush">Source brush.</param>
         /// <param name="targetSize">Target size.</param>
+        /// <param name="disposePaint">Optional dispose of the supplied paint.</param>
         /// <returns>Paint wrapper for given brush.</returns>
-        internal PaintWrapper CreatePaint(IBrush brush, Size targetSize)
+        internal PaintWrapper CreatePaint(SKPaint paint, IBrush brush, Size targetSize, bool disposePaint = false)
         {
-            var paint = new SKPaint
-            {
-                IsAntialias = true
-            };
+            var paintWrapper = new PaintWrapper(paint, disposePaint);
 
-            var paintWrapper = new PaintWrapper(paint);
+            paint.IsAntialias = true;
 
             double opacity = brush.Opacity * _currentOpacity;
 
@@ -575,10 +584,12 @@ namespace Avalonia.Skia
         /// <summary>
         /// Creates paint wrapper for given pen.
         /// </summary>
+        /// <param name="paint">The paint to wrap.</param>
         /// <param name="pen">Source pen.</param>
         /// <param name="targetSize">Target size.</param>
+        /// <param name="disposePaint">Optional dispose of the supplied paint.</param>
         /// <returns></returns>
-        private PaintWrapper CreatePaint(IPen pen, Size targetSize)
+        private PaintWrapper CreatePaint(SKPaint paint, IPen pen, Size targetSize, bool disposePaint = false)
         {
             // In Skia 0 thickness means - use hairline rendering
             // and for us it means - there is nothing rendered.
@@ -587,8 +598,7 @@ namespace Avalonia.Skia
                 return default;
             }
 
-            var rv = CreatePaint(pen.Brush, targetSize);
-            var paint = rv.Paint;
+            var rv = CreatePaint(paint, pen.Brush, targetSize, disposePaint);
 
             paint.IsStroke = true;
             paint.StrokeWidth = (float) pen.Thickness;
@@ -671,7 +681,7 @@ namespace Avalonia.Skia
         /// <summary>
         /// Skia cached paint state.
         /// </summary>
-        private struct PaintState : IDisposable
+        private readonly struct PaintState : IDisposable
         {
             private readonly SKColor _color;
             private readonly SKShader _shader;
@@ -699,14 +709,16 @@ namespace Avalonia.Skia
         {
             //We are saving memory allocations there
             public readonly SKPaint Paint;
+            private readonly bool _disposePaint;
 
             private IDisposable _disposable1;
             private IDisposable _disposable2;
             private IDisposable _disposable3;
 
-            public PaintWrapper(SKPaint paint)
+            public PaintWrapper(SKPaint paint, bool disposePaint)
             {
                 Paint = paint;
+                _disposePaint = disposePaint;
 
                 _disposable1 = null;
                 _disposable2 = null;
@@ -754,7 +766,15 @@ namespace Avalonia.Skia
             /// <inheritdoc />
             public void Dispose()
             {
-                Paint?.Dispose();
+                if (_disposePaint)
+                {
+                    Paint?.Dispose();
+                }
+                else
+                {
+                    Paint?.Reset();
+                }
+
                 _disposable1?.Dispose();
                 _disposable2?.Dispose();
                 _disposable3?.Dispose();

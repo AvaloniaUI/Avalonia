@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-//
 // Idea got from and adapted to work in avalonia
 // http://silverlight.codeplex.com/SourceControl/changeset/view/74775#Release/Silverlight4/Source/Controls.Layout.Toolkit/LayoutTransformer/LayoutTransformer.cs
 //
@@ -17,10 +14,10 @@ namespace Avalonia.Controls
     /// </summary>
     public class LayoutTransformControl : Decorator
     {
-        public static readonly AvaloniaProperty<Transform> LayoutTransformProperty =
+        public static readonly StyledProperty<Transform> LayoutTransformProperty =
             AvaloniaProperty.Register<LayoutTransformControl, Transform>(nameof(LayoutTransform));
 
-        public static readonly AvaloniaProperty<bool> UseRenderTransformProperty =
+        public static readonly StyledProperty<bool> UseRenderTransformProperty =
             AvaloniaProperty.Register<LayoutTransformControl, bool>(nameof(LayoutTransform));
 
         static LayoutTransformControl()

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -125,6 +122,23 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Items = items;
             target.Template = Template();
             target.EndInit();
+
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void SelectedIndex_Should_Be_Minus_1_Without_Initialize()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new ListBox();
+            target.Items = items;
+            target.Template = Template();
+            target.DataContext = new object();
 
             Assert.Equal(-1, target.SelectedIndex);
         }
@@ -1183,6 +1197,28 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
             target.MoveSelection(NavigationDirection.Next, true);
+        }
+
+        [Fact]
+        public void MoveSelection_Does_Select_Disabled_Controls()
+        {
+            // Issue #3426.
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem(),
+                    new ListBoxItem { IsEnabled = false },
+                },
+                SelectedIndex = 0,
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.MoveSelection(NavigationDirection.Next, true);
+
+            Assert.Equal(0, target.SelectedIndex);
         }
 
         [Fact]

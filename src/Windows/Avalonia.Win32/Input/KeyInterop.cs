@@ -1,8 +1,4 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
-using System.Text;
 using Avalonia.Input;
 using Avalonia.Win32.Interop;
 
@@ -211,7 +207,7 @@ namespace Avalonia.Win32.Input
             { 31, Key.ImeModeChange },
             { 32, Key.Space },
             { 33, Key.PageUp },
-            { 34, Key.Next },
+            { 34, Key.PageDown },
             { 35, Key.End },
             { 36, Key.Home },
             { 37, Key.Left },
@@ -364,17 +360,80 @@ namespace Avalonia.Win32.Input
             { 254, Key.OemClear },
         };
 
-        public static Key KeyFromVirtualKey(int virtualKey)
+        /// <summary>
+        /// Indicates whether the key is an extended key, such as the right-hand ALT and CTRL keys.
+        /// According to https://docs.microsoft.com/en-us/windows/win32/inputdev/wm-keydown.
+        /// </summary>
+        private static bool IsExtended(int keyData)
         {
-            Key result;
-            s_keyFromVirtualKey.TryGetValue(virtualKey, out result);
+            const int extendedMask = 1 << 24;
+
+            return (keyData & extendedMask) != 0;
+        }
+
+        private static int GetVirtualKey(int virtualKey, int keyData)
+        {
+            // Adapted from https://github.com/dotnet/wpf/blob/master/src/Microsoft.DotNet.Wpf/src/PresentationCore/System/Windows/InterOp/HwndKeyboardInputProvider.cs.
+
+            if (virtualKey == (int)UnmanagedMethods.VirtualKeyStates.VK_SHIFT)
+            {
+                // Bits from 16 to 23 represent scan code.
+                const int scanCodeMask = 0xFF0000;
+
+                var scanCode = (keyData & scanCodeMask) >> 16;
+
+                virtualKey = (int)UnmanagedMethods.MapVirtualKey((uint)scanCode, (uint)UnmanagedMethods.MapVirtualKeyMapTypes.MAPVK_VSC_TO_VK_EX);
+
+                if (virtualKey == 0)
+                {
+                    virtualKey = (int)UnmanagedMethods.VirtualKeyStates.VK_LSHIFT;
+                }
+            }
+
+            if (virtualKey == (int)UnmanagedMethods.VirtualKeyStates.VK_MENU)
+            {
+                bool isRight = IsExtended(keyData);
+
+                if (isRight)
+                {
+                    virtualKey = (int)UnmanagedMethods.VirtualKeyStates.VK_RMENU;
+                }
+                else
+                {
+                    virtualKey = (int)UnmanagedMethods.VirtualKeyStates.VK_LMENU;
+                }
+            }
+            
+            if (virtualKey == (int)UnmanagedMethods.VirtualKeyStates.VK_CONTROL)
+            {
+                bool isRight = IsExtended(keyData);
+
+                if (isRight)
+                {
+                    virtualKey = (int)UnmanagedMethods.VirtualKeyStates.VK_RCONTROL;
+                }
+                else
+                {
+                    virtualKey = (int)UnmanagedMethods.VirtualKeyStates.VK_LCONTROL;
+                }
+            }
+
+            return virtualKey;
+        }
+
+        public static Key KeyFromVirtualKey(int virtualKey, int keyData)
+        {
+            virtualKey = GetVirtualKey(virtualKey, keyData);
+
+            s_keyFromVirtualKey.TryGetValue(virtualKey, out var result);
+
             return result;
         }
 
         public static int VirtualKeyFromKey(Key key)
         {
-            int result;
-            s_virtualKeyFromKey.TryGetValue(key, out result);
+            s_virtualKeyFromKey.TryGetValue(key, out var result);
+
             return result;
         }
     }

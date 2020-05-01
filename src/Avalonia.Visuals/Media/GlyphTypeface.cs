@@ -1,17 +1,13 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
-
+﻿using System;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
     public sealed class GlyphTypeface : IDisposable
     {
-        public GlyphTypeface(Typeface typeface)
-        {
-            PlatformImpl = FontManager.Current?.PlatformImpl.CreateGlyphTypeface(typeface);
+        public GlyphTypeface(Typeface typeface) 
+            : this(FontManager.Current?.PlatformImpl.CreateGlyphTypeface(typeface))
+        { 
         }
 
         public GlyphTypeface(IGlyphTypefaceImpl platformImpl)
@@ -75,13 +71,28 @@ namespace Avalonia.Media
         ///     Returns an glyph index for the specified codepoint.
         /// </summary>
         /// <remarks>
-        ///     Returns <c>0</c> if a glyph isn't found.
+        ///     Returns a replacement glyph if a glyph isn't found.
         /// </remarks>
         /// <param name="codepoint">The codepoint.</param>
         /// <returns>
         ///     A glyph index.
         /// </returns>
         public ushort GetGlyph(uint codepoint) => PlatformImpl.GetGlyph(codepoint);
+
+        /// <summary>
+        ///     Tries to get an glyph index for specified codepoint.
+        /// </summary>
+        /// <param name="codepoint">The codepoint.</param>
+        /// <param name="glyph">A glyph index.</param>
+        /// <returns>
+        ///     <c>true</c> if an glyph index was found, <c>false</c> otherwise.
+        /// </returns>
+        public bool TryGetGlyph(uint codepoint, out ushort glyph)
+        {
+            glyph = PlatformImpl.GetGlyph(codepoint);
+
+            return glyph != 0;
+        }
 
         /// <summary>
         ///     Returns an array of glyph indices. Codepoints that are not represented by the font are returned as <code>0</code>.

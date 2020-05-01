@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
@@ -120,20 +117,41 @@ namespace Avalonia.Controls.Primitives
             });
         }
 
-        /// <summary>
-        /// Carries out the arrange pass of the window.
-        /// </summary>
-        /// <param name="finalSize">The final window size.</param>
-        /// <returns>The <paramref name="finalSize"/> parameter unchanged.</returns>
-        protected override Size ArrangeOverride(Size finalSize)
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var measured = base.MeasureOverride(availableSize);
+            var width = measured.Width;
+            var height = measured.Height;
+            var widthCache = Width;
+            var heightCache = Height;
+
+            if (!double.IsNaN(widthCache))
+            {
+                width = widthCache;
+            }
+
+            width = Math.Min(width, MaxWidth);
+            width = Math.Max(width, MinWidth);
+
+            if (!double.IsNaN(heightCache))
+            {
+                height = heightCache;
+            }
+
+            height = Math.Min(height, MaxHeight);
+            height = Math.Max(height, MinHeight);
+
+            return new Size(width, height);
+        }
+
+        protected override sealed Size ArrangeSetBounds(Size size)
         {
             using (BeginAutoSizing())
             {
-                _positionerParameters.Size = finalSize;
+                _positionerParameters.Size = size;
                 UpdatePosition();
+                return ClientSize;
             }
-
-            return base.ArrangeOverride(PlatformImpl?.ClientSize ?? default(Size));
         }
     }
 }

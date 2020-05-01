@@ -24,11 +24,20 @@ namespace Avalonia.Animation
         {
             AnimatorType = animatorType;
             Cue = cue;
+            KeySpline = null;
+        }
+
+        public AnimatorKeyFrame(Type animatorType, Cue cue, KeySpline keySpline)
+        {
+            AnimatorType = animatorType;
+            Cue = cue;
+            KeySpline = keySpline;
         }
 
         internal bool isNeutral;
         public Type AnimatorType { get; }
         public Cue Cue { get; }
+        public KeySpline KeySpline { get; }
         public AvaloniaProperty Property { get; private set; }
 
         private object _value;

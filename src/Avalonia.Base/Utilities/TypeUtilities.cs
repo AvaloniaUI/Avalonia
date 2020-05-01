@@ -1,7 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -92,8 +90,7 @@ namespace Avalonia.Utilities
         /// <returns>True if the type accepts null values; otherwise false.</returns>
         public static bool AcceptsNull(Type type)
         {
-            var t = type.GetTypeInfo();
-            return !t.IsValueType || (t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(Nullable<>)));
+            return !type.IsValueType || IsNullableType(type);
         }
 
         /// <summary>
@@ -119,10 +116,8 @@ namespace Avalonia.Utilities
             }
 
             var from = value.GetType();
-            var fromTypeInfo = from.GetTypeInfo();
-            var toTypeInfo = to.GetTypeInfo();
 
-            if (toTypeInfo.IsAssignableFrom(fromTypeInfo))
+            if (to.IsAssignableFrom(from))
             {
                 result = value;
                 return true;
@@ -149,7 +144,7 @@ namespace Avalonia.Utilities
                 }
             }
 
-            if (toTypeInfo.IsEnum && from == typeof(string))
+            if (to.IsEnum && from == typeof(string))
             {
                 if (Enum.IsDefined(to, (string)value))
                 {
@@ -158,7 +153,7 @@ namespace Avalonia.Utilities
                 }
             }
 
-            if (!fromTypeInfo.IsEnum && toTypeInfo.IsEnum)
+            if (!from.IsEnum && to.IsEnum)
             {
                 result = null;
 
@@ -169,7 +164,7 @@ namespace Avalonia.Utilities
                 }
             }
 
-            if (fromTypeInfo.IsEnum && IsNumeric(to))
+            if (from.IsEnum && IsNumeric(to))
             {
                 try
                 {
@@ -201,6 +196,14 @@ namespace Avalonia.Utilities
                         return false;
                     }
                 }
+            }
+
+            var typeConverter = TypeDescriptor.GetConverter(to);
+
+            if (typeConverter.CanConvertFrom(from) == true)
+            {
+                result = typeConverter.ConvertFrom(null, culture, value);
+                return true;
             }
 
             var cast = FindTypeConversionOperatorMethod(from, to, OperatorType.Implicit | OperatorType.Explicit);
@@ -238,10 +241,8 @@ namespace Avalonia.Utilities
             }
 
             var from = value.GetType();
-            var fromTypeInfo = from.GetTypeInfo();
-            var toTypeInfo = to.GetTypeInfo();
 
-            if (toTypeInfo.IsAssignableFrom(fromTypeInfo))
+            if (to.IsAssignableFrom(from))
             {
                 result = value;
                 return true;
@@ -304,6 +305,17 @@ namespace Avalonia.Utilities
             return TryConvertImplicit(type, value, out object result) ? result : Default(type);
         }
 
+        public static T ConvertImplicit<T>(object value)
+        {
+            if (TryConvertImplicit(typeof(T), value, out var result))
+            {
+                return (T)result;
+            }
+
+            throw new InvalidCastException(
+                $"Unable to convert object '{value ?? "(null)"}' of type '{value?.GetType()}' to type '{typeof(T)}'.");
+        }
+
         /// <summary>
         /// Gets the default value for the specified type.
         /// </summary>
@@ -311,9 +323,7 @@ namespace Avalonia.Utilities
         /// <returns>The default value.</returns>
         public static object Default(Type type)
         {
-            var typeInfo = type.GetTypeInfo();
-
-            if (typeInfo.IsValueType)
+            if (type.IsValueType)
             {
                 return Activator.CreateInstance(type);
             }
@@ -339,9 +349,11 @@ namespace Avalonia.Utilities
                 return false;
             }
 
-            if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            Type underlyingType = Nullable.GetUnderlyingType(type);
+
+            if (underlyingType != null)
             {
-                return IsNumeric(Nullable.GetUnderlyingType(type));
+                return IsNumeric(underlyingType);
             }
             else
             {
@@ -354,6 +366,11 @@ namespace Avalonia.Utilities
         {
             Implicit = 1,
             Explicit = 2
+        }
+
+        private static bool IsNullableType(Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
         private static MethodInfo FindTypeConversionOperatorMethod(Type fromType, Type toType, OperatorType operatorType)

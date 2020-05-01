@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Primitives;
@@ -30,7 +27,8 @@ namespace Avalonia.Controls
         ILayoutRoot,
         IRenderRoot,
         ICloseable,
-        IStyleRoot,
+        IStyleHost,
+        ILogicalRoot,
         IWeakSubscriber<ResourcesChangedEventArgs>
     {
         /// <summary>
@@ -49,6 +47,7 @@ namespace Avalonia.Controls
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
         private readonly IPlatformRenderInterface _renderInterface;
+        private readonly IGlobalStyles _globalStyles;
         private Size _clientSize;
         private ILayoutManager _layoutManager;
 
@@ -93,6 +92,7 @@ namespace Avalonia.Controls
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
+            _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
 
             Renderer = impl.CreateRenderer(this);
 
@@ -111,6 +111,13 @@ namespace Avalonia.Controls
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
+
+            if (_globalStyles is object)
+            {
+                _globalStyles.GlobalStylesAdded += ((IStyleHost)this).StylesAdded;
+                _globalStyles.GlobalStylesRemoved += ((IStyleHost)this).StylesRemoved;
+            }
+
             styler?.ApplyStyles(this);
 
             ClientSize = impl.ClientSize;
@@ -214,10 +221,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         double IRenderRoot.RenderScaling => PlatformImpl?.Scaling ?? 1;
 
-        IStyleHost IStyleHost.StylingParent
-        {
-            get { return AvaloniaLocator.Current.GetService<IGlobalStyles>(); }
-        }
+        IStyleHost IStyleHost.StylingParent => _globalStyles;
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
 
@@ -266,7 +270,13 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
-            var logicalArgs = new LogicalTreeAttachmentEventArgs(this);
+            if (_globalStyles is object)
+            {
+                _globalStyles.GlobalStylesAdded -= ((IStyleHost)this).StylesAdded;
+                _globalStyles.GlobalStylesRemoved -= ((IStyleHost)this).StylesRemoved;
+            }
+
+            var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
             var visualArgs = new VisualTreeAttachmentEventArgs(this, this);

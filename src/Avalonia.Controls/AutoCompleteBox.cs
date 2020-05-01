@@ -378,7 +378,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<int> MinimumPrefixLengthProperty =
             AvaloniaProperty.Register<AutoCompleteBox, int>(
                 nameof(MinimumPrefixLength), 1,
-                validate: ValidateMinimumPrefixLength);
+                validate: IsValidMinimumPrefixLength);
 
         /// <summary>
         /// Identifies the
@@ -392,7 +392,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<AutoCompleteBox, TimeSpan>(
                 nameof(MinimumPopulateDelay),
                 TimeSpan.Zero,
-                validate: ValidateMinimumPopulateDelay);
+                validate: IsValidMinimumPopulateDelay);
 
         /// <summary>
         /// Identifies the
@@ -406,7 +406,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<AutoCompleteBox, double>(
                 nameof(MaxDropDownHeight),
                 double.PositiveInfinity,
-                validate: ValidateMaxDropDownHeight);
+                validate: IsValidMaxDropDownHeight);
 
         /// <summary>
         /// Identifies the
@@ -495,7 +495,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<AutoCompleteBox, AutoCompleteFilterMode>(
                 nameof(FilterMode),
                 defaultValue: AutoCompleteFilterMode.StartsWith,
-                validate: ValidateFilterMode);
+                validate: IsValidFilterMode);
 
         /// <summary>
         /// Identifies the
@@ -546,26 +546,11 @@ namespace Avalonia.Controls
                 o => o.AsyncPopulator,
                 (o, v) => o.AsyncPopulator = v);
 
-        private static int ValidateMinimumPrefixLength(AutoCompleteBox control, int value)
-        {
-            Contract.Requires<ArgumentOutOfRangeException>(value >= -1);
+        private static bool IsValidMinimumPrefixLength(int value) => value >= -1;
 
-            return value;
-        }
+        private static bool IsValidMinimumPopulateDelay(TimeSpan value) => value.TotalMilliseconds >= 0.0;
 
-        private static TimeSpan ValidateMinimumPopulateDelay(AutoCompleteBox control, TimeSpan value)
-        {
-            Contract.Requires<ArgumentOutOfRangeException>(value.TotalMilliseconds >= 0.0);
-
-            return value;
-        }
-
-        private static double ValidateMaxDropDownHeight(AutoCompleteBox control, double value)
-        {
-            Contract.Requires<ArgumentOutOfRangeException>(value >= 0.0);
-
-            return value;
-        }
+        private static bool IsValidMaxDropDownHeight(double value) => value >= 0.0;
 
         private static bool IsValidFilterMode(AutoCompleteFilterMode mode)
         {
@@ -589,12 +574,6 @@ namespace Avalonia.Controls
                 default:
                     return false;
             }
-        }
-        private static AutoCompleteFilterMode ValidateFilterMode(AutoCompleteBox control, AutoCompleteFilterMode value)
-        {
-            Contract.Requires<ArgumentException>(IsValidFilterMode(value));
-
-            return value;
         }
 
         /// <summary>
@@ -704,7 +683,7 @@ namespace Avalonia.Controls
                 added.Add(e.NewValue);
             }
 
-            OnSelectionChanged(new SelectionChangedEventArgs(SelectionChangedEvent, added, removed));
+            OnSelectionChanged(new SelectionChangedEventArgs(SelectionChangedEvent, removed, added));
         }
 
         /// <summary>
@@ -1651,12 +1630,17 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The source object.</param>
         /// <param name="e">The event data.</param>
-        private void DropDownPopup_Closed(object sender, EventArgs e)
+        private void DropDownPopup_Closed(object sender, PopupClosedEventArgs e)
         {
             // Force the drop down dependency property to be false.
             if (IsDropDownOpen)
             {
                 IsDropDownOpen = false;
+            }
+
+            if (e.CloseEvent is PointerEventArgs pointerEvent)
+            {
+                pointerEvent.Handled = true;
             }
 
             // Fire the DropDownClosed event

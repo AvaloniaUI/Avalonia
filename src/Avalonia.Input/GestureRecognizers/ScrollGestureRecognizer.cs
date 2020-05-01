@@ -116,9 +116,9 @@ namespace Avalonia.Input.GestureRecognizers
             }
         }
 
-        public void PointerCaptureLost(PointerCaptureLostEventArgs e)
+        public void PointerCaptureLost(IPointer pointer)
         {
-            if (e.Pointer == _tracking) EndGesture();
+            if (pointer == _tracking) EndGesture();
         }
 
         void EndGesture()
@@ -148,6 +148,7 @@ namespace Avalonia.Input.GestureRecognizers
                     EndGesture();
                 else
                 {
+                    _tracking = null;
                     var savedGestureId = _gestureId;
                     var st = Stopwatch.StartNew();
                     var lastTime = TimeSpan.Zero;

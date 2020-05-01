@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,26 +62,30 @@ namespace Avalonia.Animation
             }
         }
 
-        /// <summary>
-        /// Reacts to a change in a <see cref="AvaloniaProperty"/> value in 
-        /// order to animate the change if a <see cref="ITransition"/> is set for the property.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
         {
-            if (_transitions is null || _previousTransitions is null || e.Priority == BindingPriority.Animation) return;
+            if (_transitions is null || _previousTransitions is null || priority == BindingPriority.Animation)
+                return;
 
             // PERF-SENSITIVE: Called on every property change. Don't use LINQ here (too many allocations).
             foreach (var transition in _transitions)
             {
-                if (transition.Property == e.Property)
+                if (transition.Property == property)
                 {
-                    if (_previousTransitions.TryGetValue(e.Property, out var dispose))
+                    if (_previousTransitions.TryGetValue(property, out var dispose))
                         dispose.Dispose();
 
-                    var instance = transition.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
+                    var instance = transition.Apply(
+                        this,
+                        Clock ?? Avalonia.Animation.Clock.GlobalClock,
+                        oldValue.GetValueOrDefault(),
+                        newValue.GetValueOrDefault());
 
-                    _previousTransitions[e.Property] = instance;
+                    _previousTransitions[property] = instance;
                     return;
                 }
             }
