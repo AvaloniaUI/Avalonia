@@ -42,7 +42,7 @@ namespace NativeEmbedSample
 
         void DestroyLinux(IPlatformHandle handle)
         {
-            _mplayer.Kill();
+            _mplayer?.Kill();
             _mplayer = null;
             base.DestroyNativeControlCore(handle);
         }
