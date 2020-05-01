@@ -27,7 +27,7 @@ public:
     NSObject<IRenderTarget>* renderTarget;
     AvnPoint lastPositionSet;
     NSString* _lastTitle;
-    IAvnAppMenu* _mainMenu;
+    IAvnMenu* _mainMenu;
     bool _shown;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events, IAvnGlContext* gl)
@@ -234,7 +234,7 @@ public:
         }
     }
     
-    virtual HRESULT SetMainMenu(IAvnAppMenu* menu) override
+    virtual HRESULT SetMainMenu(IAvnMenu* menu) override
     {
         _mainMenu = menu;
         
@@ -244,17 +244,10 @@ public:
         
         [Window applyMenu:nsmenu];
         
-        return S_OK;
-    }
-    
-    virtual HRESULT ObtainMainMenu(IAvnAppMenu** ret) override
-    {
-        if(ret == nullptr)
+        if ([Window isKeyWindow])
         {
-            return E_POINTER;
+            [Window showWindowMenuWithAppMenu];
         }
-        
-        *ret = _mainMenu;
         
         return S_OK;
     }
@@ -1151,8 +1144,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     ComPtr<WindowBaseImpl> _parent;
     bool _canBecomeKeyAndMain;
     bool _closed;
-    NSMenu* _menu;
-    bool _isAppMenuApplied;
+    AvnMenu* _menu;
     double _lastScaling;
 }
 
@@ -1189,30 +1181,62 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
 }
 
--(void) applyMenu:(NSMenu *)menu
+-(void) showWindowMenuWithAppMenu
+{
+    if(_menu != nullptr)
+    {
+        auto appMenuItem = ::GetAppMenuItem();
+        
+        if(appMenuItem != nullptr)
+        {
+            auto appMenu = [appMenuItem menu];
+            
+            [appMenu removeItem:appMenuItem];
+            
+            [_menu insertItem:appMenuItem atIndex:0];
+            
+            [_menu setHasGlobalMenuItem:true];
+        }
+        
+        [NSApp setMenu:_menu];
+    }
+}
+
+-(void) showAppMenuOnly
+{
+    auto appMenuItem = ::GetAppMenuItem();
+    
+    if(appMenuItem != nullptr)
+    {
+        auto appMenu = ::GetAppMenu();
+        
+        auto nativeAppMenu = dynamic_cast<AvnAppMenu*>(appMenu);
+        
+        [[appMenuItem menu] removeItem:appMenuItem];
+        
+        if(_menu != nullptr)
+        {
+            [_menu setHasGlobalMenuItem:false];
+        }
+        
+        [nativeAppMenu->GetNative() addItem:appMenuItem];
+        
+        [NSApp setMenu:nativeAppMenu->GetNative()];
+    }
+    else
+    {
+        [NSApp setMenu:nullptr];
+    }
+}
+
+-(void) applyMenu:(AvnMenu *)menu
 {
     if(menu == nullptr)
     {
-        menu = [NSMenu new];
+        menu = [AvnMenu new];
     }
     
     _menu = menu;
-    
-    if ([self isKeyWindow])
-    {
-        auto appMenu = ::GetAppMenuItem();
-        
-        if(appMenu != nullptr)
-        {
-            [[appMenu menu] removeItem:appMenu];
-            
-            [_menu insertItem:appMenu atIndex:0];
-            
-            _isAppMenuApplied = true;
-        }
-        
-        [NSApp setMenu:menu];
-    }
 }
 
 -(void) setCanBecomeKeyAndMain
@@ -1315,23 +1339,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     if([self activateAppropriateChild: true])
     {
-        if(_menu == nullptr)
-        {
-            _menu = [NSMenu new];
-        }
-        
-        auto appMenu = ::GetAppMenuItem();
-        
-        if(appMenu != nullptr)
-        {
-            [[appMenu menu] removeItem:appMenu];
-            
-            [_menu insertItem:appMenu atIndex:0];
-            
-            _isAppMenuApplied = true;
-        }
-        
-        [NSApp setMenu:_menu];
+        [self showWindowMenuWithAppMenu];
         
         _parent->BaseEvents->Activated();
         [super becomeKeyWindow];
@@ -1383,26 +1391,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     if(_parent)
         _parent->BaseEvents->Deactivated();
     
-    auto appMenuItem = ::GetAppMenuItem();
-    
-    if(appMenuItem != nullptr)
-    {
-        auto appMenu = ::GetAppMenu();
-        
-        auto nativeAppMenu = dynamic_cast<AvnAppMenu*>(appMenu);
-        
-        [[appMenuItem menu] removeItem:appMenuItem];
-        
-        [nativeAppMenu->GetNative() addItem:appMenuItem];
-        
-        [NSApp setMenu:nativeAppMenu->GetNative()];
-    }
-    else
-    {
-        [NSApp setMenu:nullptr];
-    }
-    
-    // remove window menu items from appmenu?
+    [self showAppMenuOnly];
     
     [super resignKeyWindow];
 }
