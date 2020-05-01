@@ -405,7 +405,7 @@ class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, pub
 {
 private:
     bool _canResize = true;
-    SystemDecorations _hasDecorations = SystemDecorationsFull;
+    SystemDecorations _decorations = SystemDecorationsFull;
     CGRect _lastUndecoratedFrame;
     AvnWindowState _lastWindowState;
     bool _inSetWindowState;
@@ -493,12 +493,12 @@ private:
     
     bool IsZoomed ()
     {
-        return _hasDecorations != SystemDecorationsNone ? [Window isZoomed] : UndecoratedIsMaximized();
+        return _decorations != SystemDecorationsNone ? [Window isZoomed] : UndecoratedIsMaximized();
     }
     
     void DoZoom()
     {
-        switch (_hasDecorations)
+        switch (_decorations)
         {
             case SystemDecorationsNone:
                 if (!UndecoratedIsMaximized())
@@ -530,10 +530,10 @@ private:
     {
         @autoreleasepool
         {
-            _hasDecorations = value;
+            _decorations = value;
             UpdateStyle();
 
-            switch (_hasDecorations)
+            switch (_decorations)
             {
                 case SystemDecorationsNone:
                     [Window setHasShadow:NO];
@@ -725,7 +725,7 @@ protected:
     {
         unsigned long s = NSWindowStyleMaskBorderless;
 
-        switch (_hasDecorations)
+        switch (_decorations)
         {
             case SystemDecorationsNone:
                 break;
