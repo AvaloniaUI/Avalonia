@@ -166,10 +166,10 @@ namespace Avalonia.DesignerSupport.Remote
 
     class SystemDialogsStub : ISystemDialogImpl
     {
-        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent) =>
+        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent) =>
             Task.FromResult((string[])null);
 
-        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent) =>
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent) =>
             Task.FromResult((string)null);
     }
 

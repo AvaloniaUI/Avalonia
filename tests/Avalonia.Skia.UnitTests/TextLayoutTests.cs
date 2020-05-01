@@ -332,7 +332,7 @@ namespace Avalonia.Skia.UnitTests
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    maxWidth : 200, 
+                    maxWidth : 200,
                     maxHeight : 125,
                     textStyleOverrides: spans);
 
@@ -506,10 +506,30 @@ namespace Avalonia.Skia.UnitTests
             }
         }
 
+        private const string Text = "日本でTest一番読まれている英字新聞・ジャパンタイムズが発信する国内外ニュースと、様々なジャンルの特集記事。";
+
+        [Fact]
+        public void Should_Wrap()
+        {
+            using (Start())
+            {
+                for (var i = 0; i < 2000; i++)
+                {
+                    var layout = new TextLayout(
+                        Text,
+                        Typeface.Default,
+                        12,
+                        Brushes.Black,
+                        textWrapping: TextWrapping.Wrap,
+                        maxWidth: 50);
+                }
+            }
+        }
+
         public static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(renderInterface: new PlatformRenderInterface(null), 
+                .With(renderInterface: new PlatformRenderInterface(null),
                     textShaperImpl: new TextShaperImpl(),
                     fontManagerImpl : new CustomFontManagerImpl()));
 

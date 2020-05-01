@@ -10,6 +10,8 @@ namespace ControlCatalog.ViewModels
     {
         private IManagedNotificationManager _notificationManager;
 
+        private bool _isMenuItemChecked = true;
+
         public MainWindowViewModel(IManagedNotificationManager notificationManager)
         {
             _notificationManager = notificationManager;
@@ -42,12 +44,23 @@ namespace ControlCatalog.ViewModels
             {
                 (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).Shutdown();
             });
+
+            ToggleMenuItemCheckedCommand = ReactiveCommand.Create(() => 
+            {
+                IsMenuItemChecked = !IsMenuItemChecked;
+            });
         }
 
         public IManagedNotificationManager NotificationManager
         {
             get { return _notificationManager; }
             set { this.RaiseAndSetIfChanged(ref _notificationManager, value); }
+        }
+
+        public bool IsMenuItemChecked
+        {
+            get { return _isMenuItemChecked; }
+            set { this.RaiseAndSetIfChanged(ref _isMenuItemChecked, value); }
         }
 
         public ReactiveCommand<Unit, Unit> ShowCustomManagedNotificationCommand { get; }
@@ -59,5 +72,7 @@ namespace ControlCatalog.ViewModels
         public ReactiveCommand<Unit, Unit> AboutCommand { get; }
 
         public ReactiveCommand<Unit, Unit> ExitCommand { get; }
+
+        public ReactiveCommand<Unit, Unit> ToggleMenuItemCheckedCommand { get; }
     }
 }
