@@ -425,6 +425,7 @@ private:
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
         [Window disableCursorRects];
+        [Window setTabbingMode:NSWindowTabbingModeDisallowed];
     }
     
     virtual HRESULT Show () override
