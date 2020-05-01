@@ -4,16 +4,16 @@ namespace Avalonia.Media.Fonts
 {
     public readonly struct FontKey : IEquatable<FontKey>
     {
-        public readonly string FamilyName;
-        public readonly FontStyle Style;
-        public readonly FontWeight Weight;
-
         public FontKey(string familyName, FontWeight weight, FontStyle style)
         {
             FamilyName = familyName;
             Style = style;
             Weight = weight;
         }
+
+        public string FamilyName { get; }
+        public FontStyle Style { get; }
+        public FontWeight Weight { get; }
 
         public override int GetHashCode()
         {
