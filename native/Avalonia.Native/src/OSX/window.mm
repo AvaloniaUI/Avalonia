@@ -409,6 +409,7 @@ private:
     SystemDecorations _decorations;
     AvnWindowState _lastWindowState;
     bool _inSetWindowState;
+    NSRect _preZoomSize;
     bool _transitioningWindowState;
     
     FORWARD_IUNKNOWN()
@@ -706,6 +707,11 @@ private:
             auto currentState = _lastWindowState;
             _lastWindowState = state;
             
+            if(currentState == Normal)
+            {
+                _preZoomSize = [Window frame];
+            }
+            
             if(_shown)
             {
                 switch (state) {
@@ -760,7 +766,18 @@ private:
                         
                         if(IsZoomed())
                         {
-                            DoZoom();
+                            if(_decorations == SystemDecorationsFull)
+                            {
+                                DoZoom();
+                            }
+                            else
+                            {
+                                [Window setFrame:_preZoomSize display:true];
+                                auto newFrame = [Window contentRectForFrameRect:[Window frame]].size;
+                                
+                                [View setFrameSize:newFrame];
+                            }
+                            
                         }
                         break;
                 }
