@@ -668,7 +668,7 @@ private:
                 return E_POINTER;
             }
             
-            if(([Window styleMask] & NSFullScreenWindowMask) == NSFullScreenWindowMask)
+            if(([Window styleMask] & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen)
             {
                 *ret = FullScreen;
                 return S_OK;
@@ -700,6 +700,8 @@ private:
         [Window setTitleVisibility:NSWindowTitleVisible];
         [Window setTitlebarAppearsTransparent:NO];
         [Window setTitle:_lastTitle];
+        
+        [Window setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskResizable];
         
         [Window toggleFullScreen:nullptr];
     }
