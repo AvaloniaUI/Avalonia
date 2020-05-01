@@ -277,13 +277,15 @@ namespace Avalonia.Controls
             get { return GetSelection(); }
             set
             {
-                if (value == null)
-                {
-                    return;
-                }
-
                 _undoRedoHelper.Snapshot();
-                HandleTextInput(value);
+                if (string.IsNullOrEmpty(value))
+                {
+                    DeleteSelection();
+                }
+                else
+                {
+                    HandleTextInput(value);
+                } 
                 _undoRedoHelper.Snapshot();
             }
         }
@@ -471,8 +473,10 @@ namespace Avalonia.Controls
             {
                 if (!IsPasswordBox)
                 {
+                    _undoRedoHelper.Snapshot();
                     Copy();
                     DeleteSelection();
+                    _undoRedoHelper.Snapshot();
                 }
 
                 handled = true;
@@ -598,6 +602,7 @@ namespace Avalonia.Controls
                         break;
 
                     case Key.Back:
+                        _undoRedoHelper.Snapshot();
                         if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
                         {
                             SetSelectionForControlBackspace();
@@ -621,11 +626,13 @@ namespace Avalonia.Controls
                             CaretIndex -= removedCharacters;
                             SelectionStart = SelectionEnd = CaretIndex;
                         }
+                        _undoRedoHelper.Snapshot();
 
                         handled = true;
                         break;
 
                     case Key.Delete:
+                        _undoRedoHelper.Snapshot();
                         if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
                         {
                             SetSelectionForControlDelete();
@@ -647,6 +654,7 @@ namespace Avalonia.Controls
                             SetTextInternal(text.Substring(0, caretIndex) +
                                             text.Substring(caretIndex + removedCharacters));
                         }
+                        _undoRedoHelper.Snapshot();
 
                         handled = true;
                         break;
@@ -654,7 +662,9 @@ namespace Avalonia.Controls
                     case Key.Enter:
                         if (AcceptsReturn)
                         {
+                            _undoRedoHelper.Snapshot();
                             HandleTextInput(NewLine);
+                            _undoRedoHelper.Snapshot();
                             handled = true;
                         }
 
@@ -663,7 +673,9 @@ namespace Avalonia.Controls
                     case Key.Tab:
                         if (AcceptsTab)
                         {
+                            _undoRedoHelper.Snapshot();
                             HandleTextInput("\t");
+                            _undoRedoHelper.Snapshot();
                             handled = true;
                         }
                         else

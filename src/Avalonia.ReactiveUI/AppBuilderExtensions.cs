@@ -15,7 +15,7 @@ namespace Avalonia.ReactiveUI
         public static TAppBuilder UseReactiveUI<TAppBuilder>(this TAppBuilder builder)
             where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
         {
-            return builder.AfterSetup(_ =>
+            return builder.AfterPlatformServicesSetup(_ =>
             {
                 RxApp.MainThreadScheduler = AvaloniaScheduler.Instance;
                 Locator.CurrentMutable.RegisterConstant(new AvaloniaActivationForViewFetcher(), typeof(IActivationForViewFetcher));
