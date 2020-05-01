@@ -251,10 +251,10 @@ namespace Avalonia.Animation
 
                     if (keyframe.TimingMode == KeyFrameTimingMode.TimeSpan)
                     {
-                        cue = new Cue(keyframe.KeyTime.Ticks / Duration.Ticks);
+                        cue = new Cue(keyframe.KeyTime.TotalSeconds / Duration.TotalSeconds);
                     }
 
-                    var newKF = new AnimatorKeyFrame(handler, cue);
+                    var newKF = new AnimatorKeyFrame(handler, cue, keyframe.KeySpline);
 
                     subscriptions.Add(newKF.BindSetter(setter, control));
 

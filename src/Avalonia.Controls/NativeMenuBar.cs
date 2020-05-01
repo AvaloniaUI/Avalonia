@@ -30,7 +30,7 @@ namespace Avalonia.Controls
 
         private static void OnMenuItemClick(object sender, RoutedEventArgs e)
         {
-            (((MenuItem)sender).DataContext as NativeMenuItem)?.RaiseClick();
+            (((MenuItem)sender).DataContext as INativeMenuItemExporterEventsImplBridge)?.RaiseClicked();
         }
     }
 }

@@ -296,16 +296,17 @@ namespace Avalonia.Controls.UnitTests
             screenImpl.Setup(x => x.ScreenCount).Returns(1);
             screenImpl.Setup(X => X.AllScreens).Returns( new[] { new Screen(1, screen, screen, true) });
 
-            popupImpl = MockWindowingPlatform.CreatePopupMock();
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            popupImpl = MockWindowingPlatform.CreatePopupMock(windowImpl.Object);
             popupImpl.SetupGet(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.CreatePopup()).Returns(popupImpl.Object);
 
-            var windowImpl = MockWindowingPlatform.CreateWindowMock(() => popupImpl.Object);
             windowImpl.Setup(x => x.Screen).Returns(screenImpl.Object);
 
             var services = TestServices.StyledWindow.With(
                                         inputManager: new InputManager(),
                                         windowImpl: windowImpl.Object,
-                                        windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object, () => popupImpl.Object));
+                                        windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object, x => popupImpl.Object));
 
             return UnitTestApplication.Start(services);
         }

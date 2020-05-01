@@ -140,25 +140,17 @@ namespace Avalonia.Skia
 
         public Rect HitTestTextPosition(int index)
         {
+            if (string.IsNullOrEmpty(Text))
+            {
+                var alignmentOffset = TransformX(0, 0, _paint.TextAlign);
+                return new Rect(alignmentOffset, 0, 0, _lineHeight);
+            }
             var rects = GetRects();
-
-            if (index < 0 || index >= rects.Count)
+            if (index >= Text.Length || index < 0)
             {
                 var r = rects.LastOrDefault();
                 return new Rect(r.X + r.Width, r.Y, 0, _lineHeight);
             }
-
-            if (rects.Count == 0)
-            {
-                return new Rect(0, 0, 1, _lineHeight);
-            }
-
-            if (index == rects.Count)
-            {
-                var lr = rects[rects.Count - 1];
-                return new Rect(new Point(lr.X + lr.Width, lr.Y), rects[index - 1].Size);
-            }
-
             return rects[index];
         }
 
@@ -274,7 +266,8 @@ namespace Avalonia.Skia
                                 if (fb != null)
                                 {
                                     //TODO: figure out how to get the brush size
-                                    currentWrapper = context.CreatePaint(fb, new Size());
+                                    currentWrapper = context.CreatePaint(new SKPaint { IsAntialias = true }, fb,
+                                        new Size());
                                 }
                                 else
                                 {
