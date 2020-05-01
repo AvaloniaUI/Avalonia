@@ -391,7 +391,7 @@ protected:
     
     void UpdateStyle()
     {
-        [Window setStyleMask:GetStyle()];
+        [Window setStyleMask: GetStyle()];
     }
     
 public:
@@ -436,6 +436,20 @@ private:
         [Window setTabbingMode:NSWindowTabbingModeDisallowed];
     }
     
+    void HideOrShowTrafficLights ()
+    {
+        for (id subview in Window.contentView.superview.subviews) {
+            if ([subview isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")]) {
+                NSView *titlebarView = [subview subviews][0];
+                for (id button in titlebarView.subviews) {
+                    if ([button isKindOfClass:[NSButton class]]) {
+                        [button setHidden: (_decorations != SystemDecorationsFull)];
+                    }
+                }
+            }
+        }
+    }
+    
     virtual HRESULT Show () override
     {
         @autoreleasepool
@@ -446,6 +460,8 @@ private:
             [Window setModal:FALSE];
             
             WindowBaseImpl::Show();
+            
+            HideOrShowTrafficLights();
             
             return SetWindowState(_lastWindowState);
         }
@@ -466,6 +482,8 @@ private:
             
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
             WindowBaseImpl::Show();
+            
+            HideOrShowTrafficLights();
             
             return S_OK;
         }
@@ -549,6 +567,8 @@ private:
             auto currentFrame = [Window frame];
             
             UpdateStyle();
+            
+            HideOrShowTrafficLights();
 
             switch (_decorations)
             {
@@ -741,6 +761,7 @@ private:
                             ExitFullScreenMode();
                         }
                         
+                        
                         [Window miniaturize:Window];
                         break;
                         
@@ -805,20 +826,20 @@ protected:
         switch (_decorations)
         {
             case SystemDecorationsNone:
-                s = s | NSWindowStyleMaskFullSizeContentView;
+                s = s | NSWindowStyleMaskFullSizeContentView | NSWindowStyleMaskMiniaturizable;
                 break;
 
             case SystemDecorationsBorderOnly:
-                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView;
+                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView | NSWindowStyleMaskMiniaturizable;
                 break;
 
             case SystemDecorationsFull:
                 s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskBorderless;
+                
                 if(_canResize)
                 {
                     s = s | NSWindowStyleMaskResizable;
                 }
-
                 break;
         }
 
