@@ -433,6 +433,9 @@ private:
         {
             if([Window parentWindow] != nil)
                 [[Window parentWindow] removeChildWindow:Window];
+            
+            [Window setModal:FALSE];
+            
             WindowBaseImpl::Show();
             
             return SetWindowState(_lastWindowState);
@@ -449,6 +452,8 @@ private:
             auto cparent = dynamic_cast<WindowImpl*>(parent);
             if(cparent == nullptr)
                 return E_INVALIDARG;
+            
+            [Window setModal:TRUE];
             
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
             WindowBaseImpl::Show();
@@ -1144,6 +1149,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     ComPtr<WindowBaseImpl> _parent;
     bool _canBecomeKeyAndMain;
     bool _closed;
+    bool _isModal;
     AvnMenu* _menu;
     double _lastScaling;
 }
@@ -1322,9 +1328,23 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         auto ch = objc_cast<AvnWindow>(uch);
         if(ch == nil)
             continue;
+        
+        if(![ch isModal])
+            continue;
+        
         return FALSE;
     }
     return TRUE;
+}
+
+-(bool) isModal
+{
+    return _isModal;
+}
+
+-(void) setModal: (bool) isModal
+{
+    _isModal = isModal;
 }
 
 -(void)makeKeyWindow
