@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 #include "common.h"
 
 class PlatformThreadingInterface;
@@ -8,12 +5,6 @@ class PlatformThreadingInterface;
 -(void) setParent: (PlatformThreadingInterface*)parent;
 -(void) signal: (int) priority;
 -(Signaler*) init;
-@end
-
-
-@interface ActionCallback : NSObject
-- (ActionCallback*) initWithCallback: (IAvnActionCallback*) callback;
-- (void) action;
 @end
 
 @implementation ActionCallback
@@ -63,9 +54,11 @@ private:
     {
     public:
         FORWARD_IUNKNOWN()
+        
         bool Running = false;
         bool Cancelled = false;
-        virtual void Cancel()
+        
+        virtual void Cancel() override
         {
             Cancelled = true;
             if(Running)
@@ -163,11 +156,14 @@ NSArray<NSString*>* _modes;
 
 -(void) perform
 {
+    ComPtr<IAvnSignaledCallback> cb;
     @synchronized (self) {
         _signaled  = false;
-        if(_parent != NULL && _parent->SignaledCallback != NULL)
-            _parent->SignaledCallback->Signaled(0, false);
+        if(_parent != NULL)
+            cb = _parent->SignaledCallback;
     }
+    if(cb != nullptr)
+        cb->Signaled(0, false);
 }
 
 -(void) setParent:(PlatformThreadingInterface *)parent

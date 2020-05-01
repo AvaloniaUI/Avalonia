@@ -1,13 +1,9 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Reflection;
 using System.Text;
-using Avalonia.Collections;
-using Avalonia.Reactive;
+using Avalonia.Styling.Activators;
+
+#nullable enable
 
 namespace Avalonia.Styling
 {
@@ -17,42 +13,46 @@ namespace Avalonia.Styling
     /// </summary>
     internal class TypeNameAndClassSelector : Selector
     {
-        private readonly Selector _previous;
-        private Type _targetType;
-        private Lazy<List<string>> _classes = new Lazy<List<string>>(() => new List<string>());
-        private string _selectorString;
+        private readonly Selector? _previous;
+        private readonly Lazy<List<string>> _classes = new Lazy<List<string>>(() => new List<string>());
+        private Type? _targetType;
+        private string? _selectorString;
 
-        public static TypeNameAndClassSelector OfType(Selector previous, Type targetType)
+        public static TypeNameAndClassSelector OfType(Selector? previous, Type targetType)
         {
             var result = new TypeNameAndClassSelector(previous);
             result._targetType = targetType;
             result.IsConcreteType = true;
+
             return result;
         }
 
-        public static TypeNameAndClassSelector Is(Selector previous, Type targetType)
+        public static TypeNameAndClassSelector Is(Selector? previous, Type targetType)
         {
             var result = new TypeNameAndClassSelector(previous);
             result._targetType = targetType;
             result.IsConcreteType = false;
+
             return result;
         }
 
-        public static TypeNameAndClassSelector ForName(Selector previous, string name)
+        public static TypeNameAndClassSelector ForName(Selector? previous, string name)
         {
             var result = new TypeNameAndClassSelector(previous);
             result.Name = name;
+
             return result;
         }
 
-        public static TypeNameAndClassSelector ForClass(Selector previous, string className)
+        public static TypeNameAndClassSelector ForClass(Selector? previous, string className)
         {
             var result = new TypeNameAndClassSelector(previous);
             result.Classes.Add(className);
+
             return result;
         }
 
-        protected TypeNameAndClassSelector(Selector previous)
+        protected TypeNameAndClassSelector(Selector? previous)
         {
             _previous = previous;
         }
@@ -63,10 +63,10 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets the name of the control to match.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <inheritdoc/>
-        public override Type TargetType => _targetType ?? _previous?.TargetType;
+        public override Type? TargetType => _targetType ?? _previous?.TargetType;
 
         /// <inheritdoc/>
         public override bool IsCombinator => false;
@@ -109,7 +109,7 @@ namespace Avalonia.Styling
                 }
                 else
                 {
-                    if (!TargetType.GetTypeInfo().IsAssignableFrom(controlType.GetTypeInfo()))
+                    if (!TargetType.IsAssignableFrom(controlType))
                     {
                         return SelectorMatch.NeverThisType;
                     }
@@ -125,10 +125,12 @@ namespace Avalonia.Styling
             {
                 if (subscribe)
                 {
-                    var observable = new ClassObserver(control.Classes, _classes.Value);
+                    var observable = new StyleClassActivator(control.Classes, _classes.Value);
+
                     return new SelectorMatch(observable);
                 }
-                else if (!Matches(control.Classes))
+
+                if (!StyleClassActivator.AreClassesMatching(control.Classes, Classes))
                 {
                     return SelectorMatch.NeverThisInstance;
                 }
@@ -137,22 +139,7 @@ namespace Avalonia.Styling
             return Name == null ? SelectorMatch.AlwaysThisType : SelectorMatch.AlwaysThisInstance;
         }
 
-        protected override Selector MovePrevious() => _previous;
-
-        private bool Matches(IEnumerable<string> classes)
-        {
-            int remaining = Classes.Count;
-
-            foreach (var c in classes)
-            {
-                if (Classes.Contains(c))
-                {
-                    --remaining;
-                }
-            }
-
-            return remaining == 0;
-        }
+        protected override Selector? MovePrevious() => _previous;
 
         private string BuildSelectorString()
         {
@@ -197,61 +184,6 @@ namespace Avalonia.Styling
             }
 
             return builder.ToString();
-        }
-
-        private class ClassObserver : LightweightObservableBase<bool>
-        {
-            readonly IList<string> _match;
-            IAvaloniaReadOnlyList<string> _classes;
-            bool _value;
-
-            public ClassObserver(IAvaloniaReadOnlyList<string> classes, IList<string> match)
-            {
-                _classes = classes;
-                _match = match;
-            }
-
-            protected override void Deinitialize() => _classes.CollectionChanged -= ClassesChanged;
-
-            protected override void Initialize()
-            {
-                _value = GetResult();
-                _classes.CollectionChanged += ClassesChanged;
-            }
-
-            protected override void Subscribed(IObserver<bool> observer, bool first)
-            {
-                observer.OnNext(_value);
-            }
-
-            private void ClassesChanged(object sender, NotifyCollectionChangedEventArgs e)
-            {
-                if (e.Action != NotifyCollectionChangedAction.Move)
-                {
-                    var value = GetResult();
-
-                    if (value != _value)
-                    {
-                        PublishNext(GetResult());
-                        _value = value;
-                    }
-                }
-            }
-
-            private bool GetResult()
-            {
-                int remaining = _match.Count;
-
-                foreach (var c in _classes)
-                {
-                    if (_match.Contains(c))
-                    {
-                        --remaining;
-                    }
-                }
-
-                return remaining == 0;
-            }
         }
     }
 }

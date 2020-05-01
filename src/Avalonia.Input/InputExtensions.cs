@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,7 +35,9 @@ namespace Avalonia.Input
         /// <returns>The topmost <see cref="IInputElement"/> at the specified position.</returns>
         public static IInputElement InputHitTest(this IInputElement element, Point p)
         {
-            return element.GetInputElementsAt(p).FirstOrDefault();
+            Contract.Requires<ArgumentNullException>(element != null);
+
+            return element.GetVisualAt(p, s_hitTestDelegate) as IInputElement;
         }
 
         private static bool IsHitTestVisible(IVisual visual)

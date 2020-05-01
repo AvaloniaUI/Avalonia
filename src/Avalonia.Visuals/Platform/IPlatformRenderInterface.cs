@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,15 +11,11 @@ namespace Avalonia.Platform
     public interface IPlatformRenderInterface
     {
         /// <summary>
-        /// Get all installed fonts in the system
-        /// </summary>
-        IEnumerable<string> InstalledFontNames { get; }
-
-        /// <summary>
         /// Creates a formatted text implementation.
         /// </summary>
         /// <param name="text">The text.</param>
         /// <param name="typeface">The base typeface.</param>
+        /// <param name="fontSize">The font size.</param>
         /// <param name="textAlignment">The text alignment.</param>
         /// <param name="wrapping">The text wrapping mode.</param>
         /// <param name="constraint">The text layout constraints.</param>
@@ -31,6 +24,7 @@ namespace Avalonia.Platform
         IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -114,5 +108,13 @@ namespace Avalonia.Platform
         /// <param name="stride">The number of bytes per row.</param>
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
         IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride);
+
+        /// <summary>
+        /// Creates a platform implementation of a glyph run.
+        /// </summary>
+        /// <param name="glyphRun">The glyph run.</param>
+        /// <param name="width">The glyph run's width.</param>
+        /// <returns></returns>
+        IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width);
     }
 }

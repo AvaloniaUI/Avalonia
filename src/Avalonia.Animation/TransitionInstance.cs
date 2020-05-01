@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Metadata;
 using System;
 using System.Reactive.Linq;
@@ -28,7 +25,7 @@ namespace Avalonia.Animation
 
         private void TimerTick(TimeSpan t)
         {
-            var interpVal = (double)t.Ticks / _duration.Ticks;
+            var interpVal = _duration.Ticks == 0 ? 1d : (double)t.Ticks / _duration.Ticks;
 
             // Clamp interpolation value.
             if (interpVal >= 1d | interpVal < 0d)

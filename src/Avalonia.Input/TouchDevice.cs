@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Input.Raw;
@@ -11,10 +12,11 @@ namespace Avalonia.Input
     /// This class is supposed to be used on per-toplevel basis, don't use a shared one
     /// </remarks>
     /// </summary>
-    public class TouchDevice : IInputDevice
+    public class TouchDevice : IInputDevice, IDisposable
     {
-        Dictionary<long, Pointer> _pointers = new Dictionary<long, Pointer>();
-
+        private readonly Dictionary<long, Pointer> _pointers = new Dictionary<long, Pointer>();
+        private bool _disposed;
+        
         KeyModifiers GetKeyModifiers(RawInputModifiers modifiers) =>
             (KeyModifiers)(modifiers & RawInputModifiers.KeyboardMask);
 
@@ -28,6 +30,8 @@ namespace Avalonia.Input
         
         public void ProcessRawEvent(RawInputEventArgs ev)
         {
+            if(_disposed)
+                return;
             var args = (RawTouchEventArgs)ev;
             if (!_pointers.TryGetValue(args.TouchPointId, out var pointer))
             {
@@ -60,7 +64,7 @@ namespace Avalonia.Input
                         args.Root, args.Position, ev.Timestamp,
                         new PointerPointProperties(GetModifiers(args.InputModifiers, false),
                             PointerUpdateKind.LeftButtonReleased),
-                        GetKeyModifiers(args.InputModifiers)));
+                        GetKeyModifiers(args.InputModifiers), MouseButton.Left));
                 }
             }
 
@@ -81,6 +85,17 @@ namespace Avalonia.Input
             }
 
             
+        }
+
+        public void Dispose()
+        {
+            if(_disposed)
+                return;
+            var values = _pointers.Values.ToList();
+            _pointers.Clear();
+            _disposed = true;
+            foreach (var p in values)
+                p.Dispose();
         }
         
     }

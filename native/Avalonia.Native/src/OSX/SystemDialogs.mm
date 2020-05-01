@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 #include "common.h"
 #include "window.h"
 
@@ -23,6 +20,7 @@ public:
             
             if(title != nullptr)
             {
+                panel.message = [NSString stringWithUTF8String:title];
                 panel.title = [NSString stringWithUTF8String:title];
             }
             
@@ -97,6 +95,7 @@ public:
             
             if(title != nullptr)
             {
+                panel.message = [NSString stringWithUTF8String:title];
                 panel.title = [NSString stringWithUTF8String:title];
             }
             
@@ -185,6 +184,7 @@ public:
             
             if(title != nullptr)
             {
+                panel.message = [NSString stringWithUTF8String:title];
                 panel.title = [NSString stringWithUTF8String:title];
             }
             

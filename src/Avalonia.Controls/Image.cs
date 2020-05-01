@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 
@@ -14,14 +11,22 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Source"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBitmap> SourceProperty =
-            AvaloniaProperty.Register<Image, IBitmap>(nameof(Source));
+        public static readonly StyledProperty<IImage> SourceProperty =
+            AvaloniaProperty.Register<Image, IImage>(nameof(Source));
 
         /// <summary>
         /// Defines the <see cref="Stretch"/> property.
         /// </summary>
         public static readonly StyledProperty<Stretch> StretchProperty =
             AvaloniaProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
+
+        /// <summary>
+        /// Defines the <see cref="StretchDirection"/> property.
+        /// </summary>
+        public static readonly StyledProperty<StretchDirection> StretchDirectionProperty =
+            AvaloniaProperty.Register<Image, StretchDirection>(
+                nameof(StretchDirection),
+                StretchDirection.Both);
 
         static Image()
         {
@@ -30,9 +35,9 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the bitmap image that will be displayed.
+        /// Gets or sets the image that will be displayed.
         /// </summary>
-        public IBitmap Source
+        public IImage Source
         {
             get { return GetValue(SourceProperty); }
             set { SetValue(SourceProperty, value); }
@@ -43,8 +48,17 @@ namespace Avalonia.Controls
         /// </summary>
         public Stretch Stretch
         {
-            get { return (Stretch)GetValue(StretchProperty); }
+            get { return GetValue(StretchProperty); }
             set { SetValue(StretchProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value controlling in what direction the image will be stretched.
+        /// </summary>
+        public StretchDirection StretchDirection
+        {
+            get { return GetValue(StretchDirectionProperty); }
+            set { SetValue(StretchDirectionProperty, value); }
         }
 
         /// <summary>
@@ -58,8 +72,8 @@ namespace Avalonia.Controls
             if (source != null)
             {
                 Rect viewPort = new Rect(Bounds.Size);
-                Size sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
-                Vector scale = Stretch.CalculateScaling(Bounds.Size, sourceSize);
+                Size sourceSize = source.Size;
+                Vector scale = Stretch.CalculateScaling(Bounds.Size, sourceSize, StretchDirection);
                 Size scaledSize = sourceSize * scale;
                 Rect destRect = viewPort
                     .CenterRect(new Rect(scaledSize))
@@ -69,7 +83,7 @@ namespace Avalonia.Controls
 
                 var interpolationMode = RenderOptions.GetBitmapInterpolationMode(this);
 
-                context.DrawImage(source, 1, sourceRect, destRect, interpolationMode);
+                context.DrawImage(source, sourceRect, destRect, interpolationMode);
             }
         }
 
@@ -85,15 +99,7 @@ namespace Avalonia.Controls
 
             if (source != null)
             {
-                Size sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
-                if (double.IsInfinity(availableSize.Width) || double.IsInfinity(availableSize.Height))
-                {
-                    result = sourceSize;
-                }
-                else
-                {
-                    result = Stretch.CalculateSize(availableSize, sourceSize);
-                }
+                result = Stretch.CalculateSize(availableSize, source.Size, StretchDirection);
             }
 
             return result;
@@ -106,7 +112,7 @@ namespace Avalonia.Controls
 
             if (source != null)
             {
-                var sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
+                var sourceSize = source.Size;
                 var result = Stretch.CalculateSize(finalSize, sourceSize);
                 return result;
             }

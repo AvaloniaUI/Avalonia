@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using Avalonia.Collections;
@@ -23,7 +20,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="IsFilled"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<bool> IsFilledProperty =
+        public static readonly StyledProperty<bool> IsFilledProperty =
             AvaloniaProperty.Register<PolylineGeometry, bool>(nameof(IsFilled));
 
         private Points _points;

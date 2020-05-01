@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Collections;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
@@ -24,7 +21,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static HeaderedItemsControl()
         {
-            HeaderProperty.Changed.AddClassHandler<HeaderedItemsControl>(x => x.HeaderChanged);
+            HeaderProperty.Changed.AddClassHandler<HeaderedItemsControl>((x, e) => x.HeaderChanged(e));
         }
 
         /// <summary>

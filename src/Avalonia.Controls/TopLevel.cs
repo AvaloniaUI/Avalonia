@@ -1,10 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using System.Linq;
 using System.Reactive.Linq;
-using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -15,7 +10,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
-using Avalonia.VisualTree;
 using JetBrains.Annotations;
 
 namespace Avalonia.Controls
@@ -33,7 +27,8 @@ namespace Avalonia.Controls
         ILayoutRoot,
         IRenderRoot,
         ICloseable,
-        IStyleRoot,
+        IStyleHost,
+        ILogicalRoot,
         IWeakSubscriber<ResourcesChangedEventArgs>
     {
         /// <summary>
@@ -52,6 +47,7 @@ namespace Avalonia.Controls
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
         private readonly IPlatformRenderInterface _renderInterface;
+        private readonly IGlobalStyles _globalStyles;
         private Size _clientSize;
         private ILayoutManager _layoutManager;
 
@@ -96,6 +92,7 @@ namespace Avalonia.Controls
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
+            _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
 
             Renderer = impl.CreateRenderer(this);
 
@@ -114,6 +111,13 @@ namespace Avalonia.Controls
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
+
+            if (_globalStyles is object)
+            {
+                _globalStyles.GlobalStylesAdded += ((IStyleHost)this).StylesAdded;
+                _globalStyles.GlobalStylesRemoved += ((IStyleHost)this).StylesRemoved;
+            }
+
             styler?.ApplyStyles(this);
 
             ClientSize = impl.ClientSize;
@@ -217,10 +221,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         double IRenderRoot.RenderScaling => PlatformImpl?.Scaling ?? 1;
 
-        IStyleHost IStyleHost.StylingParent
-        {
-            get { return AvaloniaLocator.Current.GetService<IGlobalStyles>(); }
-        }
+        IStyleHost IStyleHost.StylingParent => _globalStyles;
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
 
@@ -269,9 +270,21 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
+            if (_globalStyles is object)
+            {
+                _globalStyles.GlobalStylesAdded -= ((IStyleHost)this).StylesAdded;
+                _globalStyles.GlobalStylesRemoved -= ((IStyleHost)this).StylesRemoved;
+            }
+
+            var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
+            ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
+
+            var visualArgs = new VisualTreeAttachmentEventArgs(this, this);
+            OnDetachedFromVisualTreeCore(visualArgs);
+
             (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
             PlatformImpl = null;
-            Closed?.Invoke(this, EventArgs.Empty);
+            OnClosed(EventArgs.Empty);
             Renderer?.Dispose();
             Renderer = null;
         }
@@ -296,10 +309,7 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         protected virtual void HandleScalingChanged(double scaling)
         {
-            foreach (ILayoutable control in this.GetSelfAndVisualDescendants())
-            {
-                control.InvalidateMeasure();
-            }
+            LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
         }
 
         /// <inheritdoc/>
@@ -318,6 +328,12 @@ namespace Avalonia.Controls
         protected virtual void OnOpened(EventArgs e) => Opened?.Invoke(this, e);
 
         /// <summary>
+        /// Raises the <see cref="Closed"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnClosed(EventArgs e) => Closed?.Invoke(this, e);
+
+        /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a
         /// warning if not found.
         /// </summary>
@@ -330,7 +346,7 @@ namespace Avalonia.Controls
 
             if (result == null)
             {
-                Logger.Warning(
+                Logger.TryGet(LogEventLevel.Warning)?.Log(
                     LogArea.Control,
                     this,
                     "Could not create {Service} : maybe Application.RegisterServices() wasn't called?",

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Media;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
@@ -107,7 +104,7 @@ namespace Avalonia.Direct2D1.Media
                 context.PushClip(calc.IntermediateClip);
                 context.Transform = calc.IntermediateTransform;
                 
-                context.DrawImage(RefCountable.CreateUnownedNotClonable(bitmap), 1, rect, rect, _bitmapInterpolationMode);
+                context.DrawBitmap(RefCountable.CreateUnownedNotClonable(bitmap), 1, rect, rect, _bitmapInterpolationMode);
                 context.PopClip();
             }
 

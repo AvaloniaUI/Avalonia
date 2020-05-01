@@ -22,6 +22,8 @@
         </ScrollContentPresenter>
         <ScrollBar Name="horizontalScrollBar"
                    Orientation="Horizontal"
+                   LargeChange="{Binding LargeChange.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                   SmallChange="{Binding SmallChange.Width, RelativeSource={RelativeSource TemplatedParent}}"
                    Maximum="{TemplateBinding HorizontalScrollBarMaximum}"
                    Value="{TemplateBinding HorizontalScrollBarValue, Mode=TwoWay}"
                    ViewportSize="{TemplateBinding HorizontalScrollBarViewportSize}"
@@ -30,12 +32,15 @@
                    Focusable="False"/>
         <ScrollBar Name="verticalScrollBar"
                    Orientation="Vertical"
+                   LargeChange="{Binding LargeChange.Height, RelativeSource={RelativeSource TemplatedParent}}"
+                   SmallChange="{Binding SmallChange.Height, RelativeSource={RelativeSource TemplatedParent}}"
                    Maximum="{TemplateBinding VerticalScrollBarMaximum}"
                    Value="{TemplateBinding VerticalScrollBarValue, Mode=TwoWay}"
                    ViewportSize="{TemplateBinding VerticalScrollBarViewportSize}"
                    Visibility="{TemplateBinding VerticalScrollBarVisibility}"
                    Grid.Column="1"
                    Focusable="False"/>
+        <Panel Grid.Row="1" Grid.Column="1" Background="{DynamicResource ThemeControlMidBrush}"/>
       </Grid>
     </ControlTemplate>
   </Setter>

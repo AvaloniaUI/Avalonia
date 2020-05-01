@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
@@ -14,6 +11,7 @@ namespace Avalonia.Direct2D1.Media
         public FormattedTextImpl(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -21,20 +19,26 @@ namespace Avalonia.Direct2D1.Media
         {
             Text = text;
 
-            using (var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface))
+            var font = ((GlyphTypefaceImpl)typeface.GlyphTypeface.PlatformImpl).DWFont;
+            var familyName = font.FontFamily.FamilyNames.GetString(0);
+            using (var textFormat = new DWrite.TextFormat(
+                Direct2D1Platform.DirectWriteFactory, 
+                familyName, 
+                font.FontFamily.FontCollection, 
+                (DWrite.FontWeight)typeface.Weight,
+                (DWrite.FontStyle)typeface.Style, 
+                DWrite.FontStretch.Normal, 
+                (float)fontSize))
             {
                 textFormat.WordWrapping =
                     wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
 
                 TextLayout = new DWrite.TextLayout(
-                                 Direct2D1Platform.DirectWriteFactory,
-                                 Text ?? string.Empty,
-                                 textFormat,
-                                 (float)constraint.Width,
-                                 (float)constraint.Height)
-                             {
-                                 TextAlignment = textAlignment.ToDirect2D()
-                             };
+                    Direct2D1Platform.DirectWriteFactory,
+                    Text ?? string.Empty,
+                    textFormat,
+                    (float)constraint.Width,
+                    (float)constraint.Height) { TextAlignment = textAlignment.ToDirect2D() };
             }
 
             if (spans != null)

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -140,7 +137,7 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.LeftAlt)
+            if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
             {
                 _altIsDown = true;
 
@@ -182,7 +179,7 @@ namespace Avalonia.Input
         {
             bool menuIsOpen = MainMenu?.IsOpen == true;
 
-            if ((e.Modifiers & InputModifiers.Alt) != 0 || menuIsOpen)
+            if ((e.KeyModifiers & KeyModifiers.Alt) != 0 || menuIsOpen)
             {
                 // If any other key is pressed with the Alt key held down, or the main menu is open,
                 // find all controls who have registered that access key.
@@ -218,6 +215,7 @@ namespace Avalonia.Input
             switch (e.Key)
             {
                 case Key.LeftAlt:
+                case Key.RightAlt:
                     _altIsDown = false;
 
                     if (_ignoreAltUp)

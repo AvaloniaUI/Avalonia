@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
@@ -11,6 +8,10 @@ using Xunit;
 using Avalonia.LogicalTree;
 using Avalonia.Controls;
 using System.ComponentModel;
+using Avalonia.Controls.Primitives;
+using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
 
 namespace Avalonia.Styling.UnitTests
 {
@@ -74,6 +75,29 @@ namespace Avalonia.Styling.UnitTests
             parent.Child = null;
 
             Assert.Null(target.InheritanceParent);
+        }
+
+        [Fact]
+        public void Adding_Element_With_Null_Parent_To_Logical_Tree_Should_Throw()
+        {
+            var target = new Border();
+            var visualParent = new Panel();
+            var logicalParent = new Panel();
+            var root = new TestRoot();
+
+            // Set the logical parent...
+            ((ISetLogicalParent)target).SetParent(logicalParent);
+
+            // ...so that when it's added to `visualParent`, the parent won't be set again.
+            visualParent.Children.Add(target);
+
+            // Clear the logical parent. It's now a logical child of `visualParent` but doesn't have
+            // a logical parent itself.
+            ((ISetLogicalParent)target).SetParent(null);
+
+            // In this case, attaching the control to a logical tree should throw.
+            logicalParent.Children.Add(visualParent);
+            Assert.Throws<InvalidOperationException>(() => root.Child = logicalParent);
         }
 
         [Fact]
@@ -145,6 +169,50 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
+        public void AttachedToLogicalParent_Should_Have_Source_Set()
+        {
+            var root = new TestRoot();
+            var canvas = new Canvas();
+            var border = new Border { Child = canvas };
+            var raised = 0;
+
+            void Attached(object sender, LogicalTreeAttachmentEventArgs e)
+            {
+                Assert.Same(border, e.Source);
+                ++raised;
+            }
+
+            border.AttachedToLogicalTree += Attached;
+            canvas.AttachedToLogicalTree += Attached;
+
+            root.Child = border;
+
+            Assert.Equal(2, raised);
+        }
+
+        [Fact]
+        public void AttachedToLogicalParent_Should_Have_Parent_Set()
+        {
+            var root = new TestRoot();
+            var canvas = new Canvas();
+            var border = new Border { Child = canvas };
+            var raised = 0;
+
+            void Attached(object sender, LogicalTreeAttachmentEventArgs e)
+            {
+                Assert.Same(root, e.Parent);
+                ++raised;
+            }
+
+            border.AttachedToLogicalTree += Attached;
+            canvas.AttachedToLogicalTree += Attached;
+
+            root.Child = border;
+
+            Assert.Equal(2, raised);
+        }
+
+        [Fact]
         public void DetachedFromLogicalParent_Should_Be_Called_When_Removed_From_Tree()
         {
             var root = new TestRoot();
@@ -188,6 +256,25 @@ namespace Avalonia.Styling.UnitTests
             root.Child = null;
 
             Assert.True(raised);
+        }
+
+        [Fact]
+        public void Parent_Should_Be_Null_When_DetachedFromLogicalParent_Called()
+        {
+            var target = new TestControl();
+            var root = new TestRoot(target);
+            var called = 0;
+
+            target.DetachedFromLogicalTree += (s, e) =>
+            {
+                Assert.Null(target.Parent);
+                Assert.Null(target.InheritanceParent);
+                ++called;
+            };
+
+            root.Child = null;
+
+            Assert.Equal(1, called);
         }
 
         [Fact]
@@ -266,7 +353,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void StyleDetach_Is_Triggered_When_Control_Removed_From_Logical_Tree()
+        public void StyleInstance_Is_Disposed_When_Control_Removed_From_Logical_Tree()
         {
             using (AvaloniaLocator.EnterScope())
             {
@@ -275,11 +362,12 @@ namespace Avalonia.Styling.UnitTests
 
                 root.Child = child;
 
-                bool styleDetachTriggered = false;
-                ((IStyleable)child).StyleDetach.Subscribe(_ => styleDetachTriggered = true);
+                var styleInstance = new Mock<IStyleInstance>();
+                ((IStyleable)child).StyleApplied(styleInstance.Object);
+
                 root.Child = null;
 
-                Assert.True(styleDetachTriggered);
+                styleInstance.Verify(x => x.Dispose(), Times.Once);
             }
         }
 
@@ -401,6 +489,138 @@ namespace Avalonia.Styling.UnitTests
                     "end root",
                 },
                 called);
+        }
+
+        [Fact]
+        public void Resources_Parent_Is_Set()
+        {
+            var target = new TestControl();
+
+            Assert.Same(target, ((IResourceNode)target.Resources).ResourceParent);
+        }
+
+        [Fact]
+        public void Assigned_Resources_Parent_Is_Set()
+        {
+            var resources = new ResourceDictionary();
+            var target = new TestControl { Resources = resources };
+
+            Assert.Same(target, ((IResourceNode)resources).ResourceParent);
+        }
+
+        [Fact]
+        public void Assigning_Resources_Raises_ResourcesChanged()
+        {
+            var resources = new ResourceDictionary { { "foo", "bar" } };
+            var target = new TestControl();
+            var raised = 0;
+
+            target.ResourcesChanged += (s, e) => ++raised;
+            target.Resources = resources;
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Changing_Parent_Notifies_Resources_ParentResourcesChanged()
+        {
+            var resources = new Mock<IResourceDictionary>();
+            var setResourceParent = resources.As<ISetResourceParent>();
+            var target = new TestControl { Resources = resources.Object };
+            var parent = new Decorator { Resources = { { "foo", "bar" } } };
+
+            setResourceParent.ResetCalls();
+            parent.Child = target;
+
+            setResourceParent.Verify(x =>
+                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void Styles_Parent_Is_Set()
+        {
+            var target = new TestControl();
+
+            Assert.Same(target, ((IResourceNode)target.Styles).ResourceParent);
+        }
+
+        [Fact]
+        public void Changing_Parent_Notifies_Styles_ParentResourcesChanged()
+        {
+            var style = new Mock<IStyle>();
+            var setResourceParent = style.As<ISetResourceParent>();
+            var target = new TestControl { Styles = { style.Object } };
+            var parent = new Decorator { Resources = { { "foo", "bar" } } };
+
+            setResourceParent.ResetCalls();
+            parent.Child = target;
+
+            setResourceParent.Verify(x =>
+                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void Changing_Resources_Notifies_Styles()
+        {
+            var style = new Mock<IStyle>();
+            var setResourceParent = style.As<ISetResourceParent>();
+            var target = new TestControl { Styles = { style.Object } };
+
+            setResourceParent.ResetCalls();
+            target.Resources.Add("foo", "bar");
+
+            setResourceParent.Verify(x =>
+                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void SetParent_Does_Not_Crash_Due_To_Reentrancy()
+        {
+            // Issue #3708
+            var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            ContentControl target;
+            var root = new TestRoot
+            {
+                DataContext = false,
+                Child = target = new ContentControl
+                {
+                    Styles =
+                    {
+                        new Style(x => x.OfType<ContentControl>())
+                        {
+                            Setters =
+                            {
+                                new Setter(
+                                    ContentControl.ContentProperty,
+                                    new FuncTemplate<IControl>(() => new TextBlock { Text = "Enabled" })),
+                            },
+                        },
+                        new Style(x => x.OfType<ContentControl>().Class(":disabled"))
+                        {
+                            Setters =
+                            {
+                                new Setter(
+                                    ContentControl.ContentProperty,
+                                    new FuncTemplate<IControl>(() => new TextBlock { Text = "Disabled" })),
+                            },
+                        },
+                    },
+                    [!ContentControl.IsEnabledProperty] = new Binding(),
+                }
+            };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(0, 0, 100, 100));
+
+            var textBlock = Assert.IsType<TextBlock>(target.Content);
+            Assert.Equal("Disabled", textBlock.Text);
+
+            // #3708 was crashing here with AvaloniaInternalException.
+            root.Child = null;
         }
 
         private interface IDataContextEvents

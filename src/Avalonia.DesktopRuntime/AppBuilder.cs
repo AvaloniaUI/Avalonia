@@ -18,17 +18,8 @@ namespace Avalonia
         /// </summary>
         public AppBuilder()
             : base(new StandardRuntimePlatform(),
-                builder => StandardRuntimePlatformServices.Register(builder.Instance?.GetType()?.Assembly))
+                builder => StandardRuntimePlatformServices.Register(builder.ApplicationType.Assembly))
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AppBuilder"/> class.
-        /// </summary>
-        /// <param name="app">The <see cref="Application"/> instance.</param>
-        public AppBuilder(Application app) : this()
-        {
-            Instance = app;
         }
 
         bool CheckEnvironment(Type checkerType)

@@ -1,5 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
 using System.Collections;
@@ -323,8 +321,8 @@ namespace Avalonia.Controls
             {
                 var changed = new SelectionChangedEventArgs(
                     SelectingItemsControl.SelectionChangedEvent,
-                    added ?? Empty,
-                    removed ?? Empty);
+                    removed ?? Empty,
+                    added ?? Empty);
                 RaiseEvent(changed);
             }
         }
@@ -392,8 +390,7 @@ namespace Avalonia.Controls
                 TreeViewItem.HeaderProperty,
                 TreeViewItem.ItemTemplateProperty,
                 TreeViewItem.ItemsProperty,
-                TreeViewItem.IsExpandedProperty,
-                new TreeContainerIndex());
+                TreeViewItem.IsExpandedProperty);
             result.Index.Materialized += ContainerMaterialized;
             return result;
         }
@@ -406,7 +403,7 @@ namespace Avalonia.Controls
                 e.Handled = UpdateSelectionFromEventSource(
                     e.Source,
                     true,
-                    (e.InputModifiers & InputModifiers.Shift) != 0);
+                    (e.KeyModifiers & KeyModifiers.Shift) != 0);
             }
         }
 
@@ -470,7 +467,7 @@ namespace Avalonia.Controls
                     if (index > 0)
                     {
                         var previous = (TreeViewItem)parentGenerator.ContainerFromIndex(index - 1);
-                        result = previous.IsExpanded ?
+                        result = previous.IsExpanded && previous.ItemCount > 0 ?
                             (TreeViewItem)previous.ItemContainerGenerator.ContainerFromIndex(previous.ItemCount - 1) :
                             previous;
                     }
@@ -482,7 +479,7 @@ namespace Avalonia.Controls
                     break;
 
                 case NavigationDirection.Down:
-                    if (from.IsExpanded && intoChildren)
+                    if (from.IsExpanded && intoChildren && from.ItemCount > 0)
                     {
                         result = (TreeViewItem)from.ItemContainerGenerator.ContainerFromIndex(0);
                     }
@@ -506,14 +503,19 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.MouseButton == MouseButton.Left || e.MouseButton == MouseButton.Right)
+            if (e.Source is IVisual source)
             {
-                e.Handled = UpdateSelectionFromEventSource(
-                    e.Source,
-                    true,
-                    (e.InputModifiers & InputModifiers.Shift) != 0,
-                    (e.InputModifiers & InputModifiers.Control) != 0,
-                    e.MouseButton == MouseButton.Right);
+                var point = e.GetCurrentPoint(source);
+
+                if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
+                {
+                    e.Handled = UpdateSelectionFromEventSource(
+                        e.Source,
+                        true,
+                        (e.KeyModifiers & KeyModifiers.Shift) != 0,
+                        (e.KeyModifiers & KeyModifiers.Control) != 0,
+                        point.Properties.IsRightButtonPressed);
+                }
             }
         }
 

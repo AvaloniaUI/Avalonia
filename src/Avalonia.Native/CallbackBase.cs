@@ -1,12 +1,11 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
+using System.Runtime.ExceptionServices;
 using SharpGen.Runtime;
+using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
-    public class CallbackBase : SharpGen.Runtime.IUnknown
+    public class CallbackBase : SharpGen.Runtime.IUnknown, IExceptionCallback
     {
         private uint _refCount;
         private bool _disposed;
@@ -75,6 +74,16 @@ namespace Avalonia.Native
         protected virtual void Destroyed()
         {
 
+        }
+
+        public void RaiseException(Exception e)
+        {
+            if (AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>() is PlatformThreadingInterface threadingInterface)
+            {
+                threadingInterface.TerminateNativeApp();
+
+                threadingInterface.DispatchException(ExceptionDispatchInfo.Capture(e));
+            }
         }
     }
 }

@@ -9,11 +9,10 @@ namespace Avalonia.UnitTests
 {
     public class MockPlatformRenderInterface : IPlatformRenderInterface
     {
-        public IEnumerable<string> InstalledFontNames => new string[0];
-
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -78,6 +77,12 @@ namespace Avalonia.UnitTests
             int stride)
         {
             throw new NotImplementedException();
+        }
+
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        {
+            width = 0;
+            return Mock.Of<IGlyphRunImpl>();
         }
     }
 }

@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Globalization;
 using Avalonia.Utilities;
 
@@ -10,7 +7,7 @@ namespace Avalonia
     /// <summary>
     /// Represents a point in device pixels.
     /// </summary>
-    public readonly struct PixelPoint
+    public readonly struct PixelPoint : IEquatable<PixelPoint>
     {
         /// <summary>
         /// A point representing 0,0.
@@ -46,7 +43,7 @@ namespace Avalonia
         /// <returns>True if the points are equal; otherwise false.</returns>
         public static bool operator ==(PixelPoint left, PixelPoint right)
         {
-            return left.X == right.X && left.Y == right.Y;
+            return left.Equals(right);
         }
 
         /// <summary>
@@ -120,12 +117,24 @@ namespace Avalonia
         /// <returns>The <see cref="PixelPoint"/>.</returns>
         public static PixelPoint Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelPoint"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelPoint."))
             {
                 return new PixelPoint(
                     tokenizer.ReadInt32(),
                     tokenizer.ReadInt32());
             }
+        }
+
+        /// <summary>
+        /// Returns a boolean indicating whether the point is equal to the other given point.
+        /// </summary>
+        /// <param name="other">The other point to test equality against.</param>
+        /// <returns>True if this point is equal to other; False otherwise.</returns>
+        public bool Equals(PixelPoint other)
+        {
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            return X == other.X && Y == other.Y;
+            // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
         /// <summary>
@@ -135,15 +144,7 @@ namespace Avalonia
         /// <returns>
         /// True if <paramref name="obj"/> is a point that equals the current point.
         /// </returns>
-        public override bool Equals(object obj)
-        {
-            if (obj is PixelPoint other)
-            {
-                return this == other;
-            }
-
-            return false;
-        }
+        public override bool Equals(object obj) => obj is PixelPoint other && Equals(other);
 
         /// <summary>
         /// Returns a hash code for a <see cref="PixelPoint"/>.

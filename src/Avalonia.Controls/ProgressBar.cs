@@ -1,8 +1,7 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-
+using System;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Layout;
 
 namespace Avalonia.Controls
@@ -14,6 +13,9 @@ namespace Avalonia.Controls
     {
         public static readonly StyledProperty<bool> IsIndeterminateProperty =
             AvaloniaProperty.Register<ProgressBar, bool>(nameof(IsIndeterminate));
+
+        public static readonly StyledProperty<bool> ShowProgressTextProperty =
+            AvaloniaProperty.Register<ProgressBar, bool>(nameof(ShowProgressText));
 
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
@@ -34,18 +36,25 @@ namespace Avalonia.Controls
 
         static ProgressBar()
         {
-            PseudoClass<ProgressBar, Orientation>(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
-            PseudoClass<ProgressBar, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
-            PseudoClass<ProgressBar>(IsIndeterminateProperty, ":indeterminate");
+            ValueProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
+            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
+        }
 
-            ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.UpdateIndicatorWhenPropChanged);
-            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>(x => x.UpdateIndicatorWhenPropChanged);
+        public ProgressBar()
+        {
+            UpdatePseudoClasses(IsIndeterminate, Orientation);
         }
 
         public bool IsIndeterminate
         {
             get => GetValue(IsIndeterminateProperty);
             set => SetValue(IsIndeterminateProperty, value);
+        }
+
+        public bool ShowProgressText
+        {
+            get => GetValue(ShowProgressTextProperty);
+            set => SetValue(ShowProgressTextProperty, value);
         }
 
         public Orientation Orientation
@@ -72,6 +81,24 @@ namespace Avalonia.Controls
         {
             UpdateIndicator(finalSize);
             return base.ArrangeOverride(finalSize);
+        }
+
+        protected override void OnPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
+        {
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
+
+            if (property == IsIndeterminateProperty)
+            {
+                UpdatePseudoClasses(newValue.GetValueOrDefault<bool>(), null);
+            }
+            else if (property == OrientationProperty)
+            {
+                UpdatePseudoClasses(null, newValue.GetValueOrDefault<Orientation>());
+            }
         }
 
         /// <inheritdoc/>
@@ -119,6 +146,22 @@ namespace Avalonia.Controls
         private void UpdateIndicatorWhenPropChanged(AvaloniaPropertyChangedEventArgs e)
         {
             UpdateIndicator(Bounds.Size);
+        }
+
+        private void UpdatePseudoClasses(
+            bool? isIndeterminate,
+            Orientation? o)
+        {
+            if (isIndeterminate.HasValue)
+            {
+                PseudoClasses.Set(":indeterminate", isIndeterminate.Value);
+            }
+
+            if (o.HasValue)
+            {
+                PseudoClasses.Set(":vertical", o == Orientation.Vertical);
+                PseudoClasses.Set(":horizontal", o == Orientation.Horizontal);
+            }
         }
     }
 }

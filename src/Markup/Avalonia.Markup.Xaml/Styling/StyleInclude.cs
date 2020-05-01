@@ -1,20 +1,20 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Styling;
 using System;
 using Avalonia.Controls;
+using System.Collections.Generic;
+
+#nullable enable
 
 namespace Avalonia.Markup.Xaml.Styling
 {
     /// <summary>
     /// Includes a style from a URL.
     /// </summary>
-    public class StyleInclude : IStyle, ISetStyleParent
+    public class StyleInclude : IStyle, ISetResourceParent
     {
         private Uri _baseUri;
-        private IStyle _loaded;
-        private IResourceNode _parent;
+        private IStyle[]? _loaded;
+        private IResourceNode? _parent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyleInclude"/> class.
@@ -40,7 +40,7 @@ namespace Avalonia.Markup.Xaml.Styling
         /// <summary>
         /// Gets or sets the source URL.
         /// </summary>
-        public Uri Source { get; set; }
+        public Uri? Source { get; set; }
 
         /// <summary>
         /// Gets the loaded style.
@@ -52,11 +52,12 @@ namespace Avalonia.Markup.Xaml.Styling
                 if (_loaded == null)
                 {
                     var loader = new AvaloniaXamlLoader();
-                    _loaded = (IStyle)loader.Load(Source, _baseUri);
-                    (_loaded as ISetStyleParent)?.SetParent(this);
+                    var loaded = (IStyle)loader.Load(Source, _baseUri);
+                    (loaded as ISetResourceParent)?.SetParent(this);
+                    _loaded = new[] { loaded };
                 }
 
-                return _loaded;
+                return _loaded?[0]!;
             }
         }
 
@@ -64,38 +65,24 @@ namespace Avalonia.Markup.Xaml.Styling
         bool IResourceProvider.HasResources => Loaded.HasResources;
 
         /// <inheritdoc/>
-        IResourceNode IResourceNode.ResourceParent => _parent;
+        IResourceNode? IResourceNode.ResourceParent => _parent;
+
+        IReadOnlyList<IStyle> IStyle.Children => _loaded ?? Array.Empty<IStyle>();
 
         /// <inheritdoc/>
-        public bool Attach(IStyleable control, IStyleHost container)
-        {
-            if (Source != null)
-            {
-                return Loaded.Attach(control, container);
-            }
+        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host) => Loaded.TryAttach(target, host);
 
-            return false;
-        }
+        /// <inheritdoc/>
+        public bool TryGetResource(object key, out object? value) => Loaded.TryGetResource(key, out value);
 
-        public void Detach()
+        /// <inheritdoc/>
+        void ISetResourceParent.ParentResourcesChanged(ResourcesChangedEventArgs e)
         {
-            if (Source != null)
-            {
-                Loaded.Detach();
-            }
+            (Loaded as ISetResourceParent)?.ParentResourcesChanged(e);
         }
 
         /// <inheritdoc/>
-        public bool TryGetResource(object key, out object value) => Loaded.TryGetResource(key, out value);
-
-        /// <inheritdoc/>
-        void ISetStyleParent.NotifyResourcesChanged(ResourcesChangedEventArgs e)
-        {
-            (Loaded as ISetStyleParent)?.NotifyResourcesChanged(e);
-        }
-
-        /// <inheritdoc/>
-        void ISetStyleParent.SetParent(IResourceNode parent)
+        void ISetResourceParent.SetParent(IResourceNode parent)
         {
             if (_parent != null && parent != null)
             {

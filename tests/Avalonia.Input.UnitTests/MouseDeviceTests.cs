@@ -238,6 +238,9 @@ namespace Avalonia.Input.UnitTests
         {
             renderer.Setup(x => x.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
                 .Returns(new[] { hit });
+
+            renderer.Setup(x => x.HitTestFirst(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
+                .Returns(hit);
         }
 
         private IDisposable TestApplication(IRenderer renderer)

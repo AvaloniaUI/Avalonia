@@ -1,9 +1,7 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using Avalonia.Animation.Animators;
+using Avalonia.Utilities;
 using JetBrains.Annotations;
 
 namespace Avalonia
@@ -11,7 +9,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a vector.
     /// </summary>
-    public readonly struct Vector
+    public readonly struct Vector : IEquatable<Vector>
     {
         static Vector()
         {
@@ -86,6 +84,22 @@ namespace Avalonia
             => Divide(vector, scale);
 
         /// <summary>
+        /// Parses a <see cref="Vector"/> string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <returns>The <see cref="Vector"/>.</returns>
+        public static Vector Parse(string s)
+        {
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Vector."))
+            {
+                return new Vector(
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble()
+                );
+            }
+        }
+
+        /// <summary>
         /// Length of the vector
         /// </summary>
         public double Length => Math.Sqrt(SquaredLength);
@@ -138,7 +152,6 @@ namespace Avalonia
         /// </summary>
         /// <param name="other">The other vector.</param>
         /// <returns>True if vectors are nearly equal.</returns>
-        [Pure]
         public bool NearlyEquals(Vector other)
         {
             const float tolerance = float.Epsilon;
@@ -146,13 +159,7 @@ namespace Avalonia
             return Math.Abs(_x - other._x) < tolerance && Math.Abs(_y - other._y) < tolerance;
         }
 
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-                return false;
-
-            return obj is Vector vector && Equals(vector);
-        }
+        public override bool Equals(object obj) => obj is Vector other && Equals(other);
 
         public override int GetHashCode()
         {
@@ -173,9 +180,9 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Returns the string representation of the point.
+        /// Returns the string representation of the vector.
         /// </summary>
-        /// <returns>The string representation of the point.</returns>
+        /// <returns>The string representation of the vector.</returns>
         public override string ToString()
         {
             return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", _x, _y);

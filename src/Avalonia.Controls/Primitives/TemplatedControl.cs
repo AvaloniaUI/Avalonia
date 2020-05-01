@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
@@ -99,7 +96,7 @@ namespace Avalonia.Controls.Primitives
         static TemplatedControl()
         {
             ClipToBoundsProperty.OverrideDefaultValue<TemplatedControl>(true);
-            TemplateProperty.Changed.AddClassHandler<TemplatedControl>(x => x.OnTemplateChanged);
+            TemplateProperty.Changed.AddClassHandler<TemplatedControl>((x, e) => x.OnTemplateChanged(e));
         }
 
         /// <summary>
@@ -255,7 +252,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (template != null)
                 {
-                    Logger.Verbose(LogArea.Control, this, "Creating control template");
+                    Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Control, this, "Creating control template");
 
                     var (child, nameScope) = template.Build(this);
                     ApplyTemplatedParent(child);

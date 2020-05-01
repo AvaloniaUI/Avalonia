@@ -63,8 +63,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Same(textBlock, textBlockNode.Visual);
                 Assert.Equal(1, textBlockNode.DrawOperations.Count);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
-                Assert.NotNull(textNode.Text);
+                var textNode = (GlyphRunNode)textBlockNode.DrawOperations[0].Item;
+                Assert.NotNull(textNode.GlyphRun);
             }
         }
 
@@ -371,7 +371,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 var textBlockNode = (VisualNode)borderNode.Children[0];
                 Assert.Same(textBlock, textBlockNode.Visual);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
+                var textNode = (GlyphRunNode)textBlockNode.DrawOperations[0].Item;
                 Assert.Same(initialTextNode.Item, textNode);
             }
         }
@@ -574,6 +574,58 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Null(result.FindNode(border));
                 Assert.Null(result.FindNode(canvas));
                 Assert.Equal(new Rect(0, 0, 100, 100), result.Layers.Single().Dirty.Single());
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Dispose_Active_VisualNode_When_Control_Reparented_And_Child_Made_Invisible()
+        {
+            // Issue #3115
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                StackPanel panel;
+                Border border1;
+                Border border2;
+                var tree = new TestRoot
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = panel = new StackPanel
+                    {
+                        Children =
+                        {
+                            (border1 = new Border
+                            {
+                                Background = Brushes.Red,
+                            }),
+                            (border2 = new Border
+                            {
+                                Background = Brushes.Green,
+                            }),
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var decorator = new Decorator();
+                tree.Child = null;
+                decorator.Child = panel;
+                tree.Child = decorator;
+                border1.IsVisible = false;
+
+                scene = scene.CloneScene();
+                sceneBuilder.Update(scene, decorator);
+
+                var panelNode = (VisualNode)scene.FindNode(panel);
+                Assert.Equal(2, panelNode.Children.Count);
+                Assert.False(panelNode.Children[0].Disposed);
+                Assert.False(panelNode.Children[1].Disposed);
             }
         }
 

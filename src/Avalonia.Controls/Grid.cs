@@ -6,6 +6,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -24,13 +25,14 @@ namespace Avalonia.Controls
     {
         static Grid()
         {
-            IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(DefinitionBase.OnIsSharedSizeScopePropertyChanged);
             ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
 
-            ColumnProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
-            ColumnSpanProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
-            RowProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
-            RowSpanProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
+            IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(DefinitionBase.OnIsSharedSizeScopePropertyChanged);
+            ColumnProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+            ColumnSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+            RowProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+            RowSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+
             AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
         }
 
@@ -177,6 +179,7 @@ namespace Avalonia.Controls
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.ColumnDefinitions = value;
                 _data.ColumnDefinitions.Parent = this;
+                InvalidateMeasure();
             }
         }
 
@@ -197,6 +200,7 @@ namespace Avalonia.Controls
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.RowDefinitions = value;
                 _data.RowDefinitions.Parent = this;
+                InvalidateMeasure();
             }
         }
 
@@ -566,6 +570,15 @@ namespace Avalonia.Controls
                 ArrangeOverrideInProgress = false;
             }
             return (arrangeSize);
+        }
+
+        /// <summary>
+        /// <see cref="Panel.ChildrenChanged"/>
+        /// </summary>
+        protected override void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            CellsStructureDirty = true;
+            base.ChildrenChanged(sender, e);
         }
 
         /// <summary>
@@ -2728,11 +2741,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "Column",
                 defaultValue: 0,
-                validate: (_, v) =>
-                {
-                    if (v >= 0) return v;
-                    else throw new ArgumentException("Invalid Grid.Column value.");
-                });
+                validate: v => v >= 0);
 
         /// <summary>
         /// Row property. This is an attached property.
@@ -2749,11 +2758,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "Row",
                 defaultValue: 0,
-                validate: (_, v) =>
-                {
-                    if (v >= 0) return v;
-                    else throw new ArgumentException("Invalid Grid.Row value.");
-                });
+                validate: v => v >= 0);
 
         /// <summary>
         /// ColumnSpan property. This is an attached property.
@@ -2769,11 +2774,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "ColumnSpan",
                 defaultValue: 1,
-                validate: (_, v) =>
-                {
-                    if (v >= 1) return v;
-                    else throw new ArgumentException("Invalid Grid.ColumnSpan value.");
-                });
+                validate: v => v >= 0);
 
         /// <summary>
         /// RowSpan property. This is an attached property.
@@ -2789,11 +2790,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "RowSpan",
                 defaultValue: 1,
-                validate: (_, v) =>
-                {
-                    if (v >= 1) return v;
-                    else throw new ArgumentException("Invalid Grid.RowSpan value.");
-                });
+                validate: v => v >= 0);
 
         /// <summary>
         /// IsSharedSizeScope property marks scoping element for shared size.

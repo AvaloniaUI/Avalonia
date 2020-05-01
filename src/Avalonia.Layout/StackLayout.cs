@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Specialized;
+using Avalonia.Data;
 
 namespace Avalonia.Layout
 {
@@ -233,7 +234,7 @@ namespace Avalonia.Layout
             return new FlowLayoutAnchorInfo { Index = anchorIndex, Offset = offset, };
         }
 
-        protected override void InitializeForContextCore(VirtualizingLayoutContext context)
+        protected internal override void InitializeForContextCore(VirtualizingLayoutContext context)
         {
             var state = context.LayoutState;
             var stackState = state as StackLayoutState;
@@ -253,13 +254,13 @@ namespace Avalonia.Layout
             stackState.InitializeForContext(context, this);
         }
 
-        protected override void UninitializeForContextCore(VirtualizingLayoutContext context)
+        protected internal override void UninitializeForContextCore(VirtualizingLayoutContext context)
         {
             var stackState = (StackLayoutState)context.LayoutState;
             stackState.UninitializeForContext(context);
         }
 
-        protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
+        protected internal override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
         {
             var desiredSize = GetFlowAlgorithm(context).Measure(
                 availableSize,
@@ -267,17 +268,19 @@ namespace Avalonia.Layout
                 false,
                 0,
                 Spacing,
+                int.MaxValue,
                 _orientation.ScrollOrientation,
                 LayoutId);
 
             return new Size(desiredSize.Width, desiredSize.Height);
         }
 
-        protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
+        protected internal override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
         {
             var value = GetFlowAlgorithm(context).Arrange(
                finalSize,
                context,
+               false,
                FlowLayoutAlgorithm.LineAlignment.Start,
                LayoutId);
 
@@ -293,11 +296,11 @@ namespace Avalonia.Layout
             InvalidateLayout();
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
         {
-            if (e.Property == OrientationProperty)
+            if (property == OrientationProperty)
             {
-                var orientation = (Orientation)e.NewValue;
+                var orientation = newValue.GetValueOrDefault<Orientation>();
 
                 //Note: For StackLayout Vertical Orientation means we have a Vertical ScrollOrientation.
                 //Horizontal Orientation means we have a Horizontal ScrollOrientation.

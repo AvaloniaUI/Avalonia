@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.IO;
 using Avalonia.Win32.Interop;
@@ -26,6 +23,7 @@ namespace Avalonia.Direct2D1.Media
             using (BitmapDecoder decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, fileName, DecodeOptions.CacheOnDemand))
             {
                 WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnDemand);
+                Dpi = new Vector(96, 96);
             }
         }
 
@@ -39,6 +37,7 @@ namespace Avalonia.Direct2D1.Media
             _decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, stream, DecodeOptions.CacheOnLoad);
 
             WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, _decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnLoad);
+            Dpi = new Vector(96, 96);
         }
 
         /// <summary>
@@ -62,6 +61,7 @@ namespace Avalonia.Direct2D1.Media
                 pixelFormat.Value.ToWic(),
                 BitmapCreateCacheOption.CacheOnLoad);
             WicImpl.SetResolution(dpi.X, dpi.Y);
+            Dpi = dpi;
         }
 
         public WicBitmapImpl(APixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
@@ -70,6 +70,8 @@ namespace Avalonia.Direct2D1.Media
             WicImpl.SetResolution(dpi.X, dpi.Y);
 
             PixelFormat = format;
+            Dpi = dpi;
+
             using (var l = WicImpl.Lock(BitmapLockFlags.Write))
             {
                 for (var row = 0; row < size.Height; row++)
@@ -82,14 +84,7 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-        public override Vector Dpi
-        {
-            get
-            {
-                WicImpl.GetResolution(out double x, out double y);
-                return new Vector(x, y);
-            }
-        }
+        public override Vector Dpi { get; }
 
         public override PixelSize PixelSize => WicImpl.Size.ToAvalonia();
 

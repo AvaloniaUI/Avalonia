@@ -19,9 +19,7 @@ namespace Avalonia.X11
     class AvaloniaX11Platform : IWindowingPlatform
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
-        private Lazy<MouseDevice> _mouseDevice = new Lazy<MouseDevice>(() => new MouseDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
-        public MouseDevice MouseDevice => _mouseDevice.Value;
         public Dictionary<IntPtr, Action<XEvent>> Windows = new Dictionary<IntPtr, Action<XEvent>>();
         public XI2Manager XI2;
         public X11Info Info { get; private set; }
@@ -38,13 +36,15 @@ namespace Avalonia.X11
                 throw new Exception("XOpenDisplay failed");
             XError.Init();
             Info = new X11Info(Display, DeferredDisplay);
-
+            //TODO: log
+            if (options.UseDBusMenu)
+                DBusHelper.TryInitialize();
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new X11PlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(InputModifiers.Control))
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<IStandardCursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
@@ -95,6 +95,8 @@ namespace Avalonia
         public bool UseEGL { get; set; }
         public bool UseGpu { get; set; } = true;
         public bool OverlayPopups { get; set; }
+        public bool UseDBusMenu { get; set; }
+        public bool UseDeferredRendering { get; set; } = true;
 
         public List<string> GlxRendererBlacklist { get; set; } = new List<string>
         {

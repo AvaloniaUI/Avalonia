@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Collections;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
@@ -43,7 +40,7 @@ namespace Avalonia.Controls
 
         static ContentControl()
         {
-            ContentProperty.Changed.AddClassHandler<ContentControl>(x => x.ContentChanged);
+            ContentProperty.Changed.AddClassHandler<ContentControl>((x, e) => x.ContentChanged(e));
         }
 
         /// <summary>

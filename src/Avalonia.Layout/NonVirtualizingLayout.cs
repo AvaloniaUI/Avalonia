@@ -17,30 +17,6 @@ namespace Avalonia.Layout
     /// </remarks>
     public abstract class NonVirtualizingLayout : AttachedLayout
     {
-        /// <inheritdoc/>
-        public sealed override void InitializeForContext(LayoutContext context)
-        {
-            InitializeForContextCore((VirtualizingLayoutContext)context);
-        }
-
-        /// <inheritdoc/>
-        public sealed override void UninitializeForContext(LayoutContext context)
-        {
-            UninitializeForContextCore((VirtualizingLayoutContext)context);
-        }
-
-        /// <inheritdoc/>
-        public sealed override Size Measure(LayoutContext context, Size availableSize)
-        {
-            return MeasureOverride((VirtualizingLayoutContext)context, availableSize);
-        }
-
-        /// <inheritdoc/>
-        public sealed override Size Arrange(LayoutContext context, Size finalSize)
-        {
-            return ArrangeOverride((VirtualizingLayoutContext)context, finalSize);
-        }
-
         /// <summary>
         /// When overridden in a derived class, initializes any per-container state the layout
         /// requires when it is attached to an ILayoutable container.
@@ -49,7 +25,7 @@ namespace Avalonia.Layout
         /// The context object that facilitates communication between the layout and its host
         /// container.
         /// </param>
-        protected virtual void InitializeForContextCore(VirtualizingLayoutContext context)
+        protected internal virtual void InitializeForContextCore(LayoutContext context)
         {
         }
 
@@ -61,7 +37,7 @@ namespace Avalonia.Layout
         /// The context object that facilitates communication between the layout and its host
         /// container.
         /// </param>
-        protected virtual void UninitializeForContextCore(VirtualizingLayoutContext context)
+        protected internal virtual void UninitializeForContextCore(LayoutContext context)
         {
         }
 
@@ -83,7 +59,9 @@ namespace Avalonia.Layout
         /// of the allocated sizes for child objects or based on other considerations such as a
         /// fixed container size.
         /// </returns>
-        protected abstract Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize);
+        protected internal abstract Size MeasureOverride(
+            NonVirtualizingLayoutContext context,
+            Size availableSize);
 
         /// <summary>
         /// When implemented in a derived class, provides the behavior for the "Arrange" pass of
@@ -98,6 +76,8 @@ namespace Avalonia.Layout
         /// its children.
         /// </param>
         /// <returns>The actual size that is used after the element is arranged in layout.</returns>
-        protected virtual Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize) => finalSize;
+        protected internal virtual Size ArrangeOverride(
+            NonVirtualizingLayoutContext context,
+            Size finalSize) => finalSize;
     }
 }

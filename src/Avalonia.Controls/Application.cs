@@ -1,7 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.Collections.Generic;
 using System.Reactive.Concurrency;
 using System.Threading;
 using Avalonia.Animation;
@@ -32,7 +30,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IResourceNode
     {
         /// <summary>
         /// The application-global data templates.
@@ -44,9 +42,39 @@ namespace Avalonia
         private readonly Styler _styler = new Styler();
         private Styles _styles;
         private IResourceDictionary _resources;
+        private bool _notifyingResourcesChanged;
+        private Action<IReadOnlyList<IStyle>> _stylesAdded;
+        private Action<IReadOnlyList<IStyle>> _stylesRemoved;
+
+        /// <summary>
+        /// Defines the <see cref="DataContext"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object> DataContextProperty =
+            StyledElement.DataContextProperty.AddOwner<Application>();
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
+        /// <summary>
+        /// Creates an instance of the <see cref="Application"/> class.
+        /// </summary>
+        public Application()
+        {
+            Name = "Avalonia Application";
+        }
+
+        /// <summary>
+        /// Gets or sets the Applications's data context.
+        /// </summary>
+        /// <remarks>
+        /// The data context property specifies the default object that will
+        /// be used for data binding.
+        /// </remarks>
+        public object DataContext
+        {
+            get { return GetValue(DataContextProperty); }
+            set { SetValue(DataContextProperty, value); }
+        }
 
         /// <summary>
         /// Gets the current instance of the <see cref="Application"/> class.
@@ -133,7 +161,19 @@ namespace Avalonia
         /// <remarks>
         /// Global styles apply to all windows in the application.
         /// </remarks>
-        public Styles Styles => _styles ?? (_styles = new Styles());
+        public Styles Styles
+        {
+            get
+            {
+                if (_styles == null)
+                {
+                    _styles = new Styles(this);
+                    _styles.ResourcesChanged += ThisResourcesChanged;
+                }
+
+                return _styles;
+            }
+        }
 
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
@@ -161,6 +201,18 @@ namespace Avalonia
         /// </summary>
         public IApplicationLifetime ApplicationLifetime { get; set; }
 
+        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesAdded
+        {
+            add => _stylesAdded += value;
+            remove => _stylesAdded -= value;
+        }
+
+        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesRemoved
+        {
+            add => _stylesRemoved += value;
+            remove => _stylesRemoved -= value;
+        }
+
         /// <summary>
         /// Initializes the application by loading XAML etc.
         /// </summary>
@@ -172,6 +224,16 @@ namespace Avalonia
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||
                    Styles.TryGetResource(key, out value);
+        }
+
+        void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
+        {
+            _stylesAdded?.Invoke(styles);
+        }
+
+        void IStyleHost.StylesRemoved(IReadOnlyList<IStyle> styles)
+        {
+            _stylesRemoved?.Invoke(styles);
         }
 
         /// <summary>
@@ -206,9 +268,45 @@ namespace Avalonia
             
         }
 
+        private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            if (_notifyingResourcesChanged)
+            {
+                return;
+            }
+
+            try
+            {
+                _notifyingResourcesChanged = true;
+                (_resources as ISetResourceParent)?.ParentResourcesChanged(e);
+                (_styles as ISetResourceParent)?.ParentResourcesChanged(e);
+                ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+            }
+            finally
+            {
+                _notifyingResourcesChanged = false;
+            }
+        }
+
         private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
         {
-            ResourcesChanged?.Invoke(this, e);
+            NotifyResourcesChanged(e);
+        }
+
+        private string _name;
+        /// <summary>
+        /// Defines Name property
+        /// </summary>
+        public static readonly DirectProperty<Application, string> NameProperty =
+            AvaloniaProperty.RegisterDirect<Application, string>("Name", o => o.Name, (o, v) => o.Name = v);
+
+        /// <summary>
+        /// Application name to be used for various platform-specific purposes
+        /// </summary>
+        public string Name
+        {
+            get => _name;
+            set => SetAndRaise(NameProperty, ref _name, value);
         }
     }
 }

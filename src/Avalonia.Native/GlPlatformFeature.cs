@@ -8,24 +8,31 @@ namespace Avalonia.Native
 {
     class GlPlatformFeature : IWindowingPlatformGlFeature
     {
-
-        public GlPlatformFeature(IAvnGlFeature feature)
+        public GlPlatformFeature(IAvnGlDisplay display)
         {
-            Display = new GlDisplay(feature.ObtainDisplay());
-            ImmediateContext = new GlContext(Display, feature.ObtainImmediateContext());
+            var immediate = display.CreateContext(null);
+            var deferred = display.CreateContext(immediate);
+            GlDisplay = new GlDisplay(display, immediate.SampleCount, immediate.StencilSize);
+            
+            ImmediateContext = new GlContext(Display, immediate);
+            DeferredContext = new GlContext(Display, deferred);
         }
 
         public IGlContext ImmediateContext { get; }
-        public GlDisplay Display { get; }
+        internal GlContext DeferredContext { get; }
+        internal GlDisplay GlDisplay;
+        public GlDisplay Display => GlDisplay;
     }
 
     class GlDisplay : IGlDisplay
     {
         private readonly IAvnGlDisplay _display;
 
-        public GlDisplay(IAvnGlDisplay display)
+        public GlDisplay(IAvnGlDisplay display, int sampleCount, int stencilSize)
         {
             _display = display;
+            SampleCount = sampleCount;
+            StencilSize = stencilSize;
             GlInterface = new GlInterface((name, optional) =>
             {
                 var rv = _display.GetProcAddress(name);
@@ -39,11 +46,11 @@ namespace Avalonia.Native
 
         public GlInterface GlInterface { get; }
 
-        public int SampleCount => _display.GetSampleCount();
+        public int SampleCount { get; }
 
-        public int StencilSize => _display.GetStencilSize();
+        public int StencilSize { get; }
 
-        public void ClearContext() => _display.ClearContext();
+        public void ClearContext() => _display.LegacyClearCurrentContext();
     }
 
     class GlContext : IGlContext
@@ -60,7 +67,7 @@ namespace Avalonia.Native
 
         public void MakeCurrent()
         {
-            Context.MakeCurrent();
+            Context.LegacyMakeCurrent();
         }
     }
 
@@ -109,6 +116,9 @@ namespace Avalonia.Native
 
         public double Scaling => _session.GetScaling();
 
+
+        public bool IsYFlipped => true;
+        
         public void Dispose()
         {
             _session?.Dispose();
@@ -128,5 +138,6 @@ namespace Avalonia.Native
         {
             return new GlPlatformSurfaceRenderTarget(_window.CreateGlRenderTarget());
         }
+
     }
 }

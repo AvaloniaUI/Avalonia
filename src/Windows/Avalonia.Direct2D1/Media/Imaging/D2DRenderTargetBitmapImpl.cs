@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.IO;
+﻿using System.IO;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
@@ -58,7 +55,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
             {
                 using (var dc = wic.CreateDrawingContext(null))
                 {
-                    dc.DrawImage(
+                    dc.DrawBitmap(
                         RefCountable.CreateUnownedNotClonable(this),
                         1,
                         new Rect(PixelSize.ToSizeWithDpi(Dpi.X)),

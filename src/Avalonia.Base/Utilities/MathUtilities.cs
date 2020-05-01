@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Runtime.InteropServices;
 
@@ -159,6 +156,11 @@ namespace Avalonia.Utilities
         /// <returns>The clamped value.</returns>
         public static int Clamp(int val, int min, int max)
         {
+            if (min > max)
+            {
+                throw new ArgumentException($"{min} cannot be greater than {max}.");
+            }
+
             if (val < min)
             {
                 return min;

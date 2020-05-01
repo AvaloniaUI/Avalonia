@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -81,87 +78,80 @@ namespace Avalonia.Styling.UnitTests
             Assert.Equal("TestLogical1 > TestLogical3", selector.ToString());
         }
 
-        public abstract class TestLogical : ILogical, IStyleable
+        public abstract class TestLogical : Control
         {
-            public TestLogical()
+            public ILogical LogicalParent
             {
-                Classes = new Classes();
+                get => Parent;
+                set => ((ISetLogicalParent)this).SetParent(value);
             }
 
-            public event EventHandler<AvaloniaPropertyChangedEventArgs> PropertyChanged;
-            public event EventHandler<AvaloniaPropertyChangedEventArgs> InheritablePropertyChanged;
-            public event EventHandler<LogicalTreeAttachmentEventArgs> AttachedToLogicalTree;
-            public event EventHandler<LogicalTreeAttachmentEventArgs> DetachedFromLogicalTree;
-
-            public Classes Classes { get; }
-
-            public string Name { get; set; }
-
-            public bool IsAttachedToLogicalTree { get; }
-
-            public IAvaloniaReadOnlyList<ILogical> LogicalChildren { get; set; }
-
-            public ILogical LogicalParent { get; set; }
-
-            public Type StyleKey { get; }
-
-            public ITemplatedControl TemplatedParent { get; }
-
-            IObservable<IStyleable> IStyleable.StyleDetach { get; }
-
-            IAvaloniaReadOnlyList<string> IStyleable.Classes => Classes;
-
-            public object GetValue(AvaloniaProperty property)
+            public void ClearValue(AvaloniaProperty property)
             {
                 throw new NotImplementedException();
             }
 
-            public T GetValue<T>(AvaloniaProperty<T> property)
+            public void ClearValue<T>(AvaloniaProperty<T> property)
             {
                 throw new NotImplementedException();
             }
 
-            public void SetValue(AvaloniaProperty property, object value, BindingPriority priority)
+            public void AddInheritanceChild(IAvaloniaObject child)
             {
                 throw new NotImplementedException();
             }
 
-            public void SetValue<T>(AvaloniaProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
+            public void RemoveInheritanceChild(IAvaloniaObject child)
             {
                 throw new NotImplementedException();
             }
 
-            public IDisposable Bind(AvaloniaProperty property, IObservable<object> source, BindingPriority priority)
+            public void InheritanceParentChanged<T>(StyledPropertyBase<T> property, IAvaloniaObject oldParent, IAvaloniaObject newParent)
             {
                 throw new NotImplementedException();
             }
 
-            public bool IsAnimating(AvaloniaProperty property)
+            public void InheritedPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, Optional<T> newValue)
             {
                 throw new NotImplementedException();
             }
 
-            public bool IsSet(AvaloniaProperty property)
+            public void ClearValue<T>(StyledPropertyBase<T> property)
             {
                 throw new NotImplementedException();
             }
 
-            public IDisposable Bind<T>(AvaloniaProperty<T> property, IObservable<T> source, BindingPriority priority = BindingPriority.LocalValue)
+            public void ClearValue<T>(DirectPropertyBase<T> property)
             {
                 throw new NotImplementedException();
             }
 
-            public void NotifyAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+            public T GetValue<T>(StyledPropertyBase<T> property)
             {
                 throw new NotImplementedException();
             }
 
-            public void NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+            public T GetValue<T>(DirectPropertyBase<T> property)
             {
                 throw new NotImplementedException();
             }
 
-            public void NotifyResourcesChanged(ResourcesChangedEventArgs e)
+            public void SetValue<T>(StyledPropertyBase<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SetValue<T>(DirectPropertyBase<T> property, T value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IDisposable Bind<T>(StyledPropertyBase<T> property, IObservable<BindingValue<T>> source, BindingPriority priority = BindingPriority.LocalValue)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IDisposable Bind<T>(DirectPropertyBase<T> property, IObservable<BindingValue<T>> source)
             {
                 throw new NotImplementedException();
             }

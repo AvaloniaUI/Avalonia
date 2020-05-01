@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -48,6 +45,18 @@ namespace Avalonia.Base.UnitTests.Data.Converters
                 CultureInfo.InvariantCulture);
 
             Assert.Equal(TestEnum.Bar, result);
+        }
+
+        [Fact]
+        public void Can_Convert_String_To_TimeSpan()
+        {
+            var result = DefaultValueConverter.Instance.Convert(
+                "00:00:10",
+                typeof(TimeSpan),
+                null,
+                CultureInfo.InvariantCulture);
+
+            Assert.Equal(TimeSpan.FromSeconds(10), result);
         }
 
         [Fact]

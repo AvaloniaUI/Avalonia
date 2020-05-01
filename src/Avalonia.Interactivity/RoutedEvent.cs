@@ -1,9 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Subjects;
-using System.Reflection;
 
 namespace Avalonia.Interactivity
 {
@@ -26,10 +22,14 @@ namespace Avalonia.Interactivity
             Type eventArgsType,
             Type ownerType)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(eventArgsType != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
-            Contract.Requires<InvalidCastException>(typeof(RoutedEventArgs).GetTypeInfo().IsAssignableFrom(eventArgsType.GetTypeInfo()));
+            name = name ?? throw new ArgumentNullException(nameof(name));
+            eventArgsType = eventArgsType ?? throw new ArgumentNullException(nameof(name));
+            ownerType = ownerType ?? throw new ArgumentNullException(nameof(name));
+
+            if (!typeof(RoutedEventArgs).IsAssignableFrom(eventArgsType))
+            {
+                throw new InvalidCastException("eventArgsType must be derived from RoutedEventArgs.");
+            }
 
             EventArgsType = eventArgsType;
             Name = name;
@@ -45,6 +45,8 @@ namespace Avalonia.Interactivity
 
         public RoutingStrategies RoutingStrategies { get; }
 
+        public bool HasRaisedSubscriptions => _raised.HasObservers;
+
         public IObservable<(object, RoutedEventArgs)> Raised => _raised;
         public IObservable<RoutedEventArgs> RouteFinished => _routeFinished;
 
@@ -53,7 +55,7 @@ namespace Avalonia.Interactivity
             RoutingStrategies routingStrategy)
                 where TEventArgs : RoutedEventArgs
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            name = name ?? throw new ArgumentNullException(nameof(name));
 
             var routedEvent = new RoutedEvent<TEventArgs>(name, routingStrategy, typeof(TOwner));
             RoutedEventRegistry.Instance.Register(typeof(TOwner), routedEvent);
@@ -66,7 +68,7 @@ namespace Avalonia.Interactivity
             Type ownerType)
                 where TEventArgs : RoutedEventArgs
         {
-            Contract.Requires<ArgumentNullException>(name != null);
+            name = name ?? throw new ArgumentNullException(nameof(name));
 
             var routedEvent = new RoutedEvent<TEventArgs>(name, routingStrategy, ownerType);
             RoutedEventRegistry.Instance.Register(ownerType, routedEvent);
@@ -109,28 +111,40 @@ namespace Avalonia.Interactivity
         public RoutedEvent(string name, RoutingStrategies routingStrategies, Type ownerType)
             : base(name, routingStrategies, typeof(TEventArgs), ownerType)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
         }
 
+        [Obsolete("Use overload taking Action<TTarget, TEventArgs>.")]
         public IDisposable AddClassHandler<TTarget>(
             Func<TTarget, Action<TEventArgs>> handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false)
-                where TTarget : class, IInteractive
+            where TTarget : class, IInteractive
         {
-            EventHandler<RoutedEventArgs> adapter = (sender, e) =>
+            void Adapter(object sender, RoutedEventArgs e)
             {
-                var target = sender as TTarget;
-                var args = e as TEventArgs;
-
-                if (target != null && args != null)
+                if (sender is TTarget target && e is TEventArgs args)
                 {
                     handler(target)(args);
                 }
-            };
+            }
 
-            return AddClassHandler(typeof(TTarget), adapter, routes, handledEventsToo);
+            return AddClassHandler(typeof(TTarget), Adapter, routes, handledEventsToo);
+        }
+
+        public IDisposable AddClassHandler<TTarget>(
+            Action<TTarget, TEventArgs> handler,
+            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
+            bool handledEventsToo = false) where TTarget : class, IInteractive
+        {
+            void Adapter(object sender, RoutedEventArgs e)
+            {
+                if (sender is TTarget target && e is TEventArgs args)
+                {
+                    handler(target, args);
+                }
+            }
+
+            return AddClassHandler(typeof(TTarget), Adapter, routes, handledEventsToo);
         }
     }
 }

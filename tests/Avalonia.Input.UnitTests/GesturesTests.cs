@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -135,7 +132,7 @@ namespace Avalonia.Interactivity.UnitTests
         }
 
         [Fact]
-        public void DoubleTapped_Should_Be_Raised_For_Middle_Button()
+        public void DoubleTapped_Should_Not_Be_Raised_For_Middle_Button()
         {
             Border border = new Border();
             var decorator = new Decorator
@@ -149,7 +146,7 @@ namespace Avalonia.Interactivity.UnitTests
             _mouse.Click(border, MouseButton.Middle);
             _mouse.Down(border, MouseButton.Middle, clickCount: 2);
 
-            Assert.True(raised);
+            Assert.False(raised);
         }
 
         [Fact]

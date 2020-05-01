@@ -1,10 +1,8 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
@@ -13,7 +11,6 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
-using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -119,7 +116,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static SelectingItemsControl()
         {
-            IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>(x => x.ContainerSelectionChanged);
+            IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>((x, e) => x.ContainerSelectionChanged(e));
         }
 
         /// <summary>
@@ -241,17 +238,14 @@ namespace Avalonia.Controls.Primitives
         public override void BeginInit()
         {
             base.BeginInit();
-            ++_updateCount;
-            _updateSelectedIndex = int.MinValue;
+
+            InternalBeginInit();
         }
 
         /// <inheritdoc/>
         public override void EndInit()
         {
-            if (--_updateCount == 0)
-            {
-                UpdateFinished();
-            }
+            InternalEndInit();
 
             base.EndInit();
         }
@@ -269,11 +263,20 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The container or null if the event did not originate in a container.</returns>
         protected IControl GetContainerFromEventSource(IInteractive eventSource)
         {
-            var item = ((IVisual)eventSource).GetSelfAndVisualAncestors()
-                .OfType<IControl>()
-                .FirstOrDefault(x => x.LogicalParent == this && ItemContainerGenerator?.IndexFromContainer(x) != -1);
+            var parent = (IVisual)eventSource;
 
-            return item;
+            while (parent != null)
+            {
+                if (parent is IControl control && control.LogicalParent == this
+                                               && ItemContainerGenerator?.IndexFromContainer(control) != -1)
+                {
+                    return control;
+                }
+
+                parent = parent.VisualParent;
+            }
+
+            return null;
         }
 
         /// <inheritdoc/>
@@ -302,12 +305,23 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         protected override void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            base.ItemsCollectionChanged(sender, e);
-
             if (_updateCount > 0)
             {
+                base.ItemsCollectionChanged(sender, e);
                 return;
             }
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    _selection.ItemsInserted(e.NewStartingIndex, e.NewItems.Count);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    _selection.ItemsRemoved(e.OldStartingIndex, e.OldItems.Count);
+                    break;
+            }
+
+            base.ItemsCollectionChanged(sender, e);
 
             switch (e.Action)
             {
@@ -318,14 +332,12 @@ namespace Avalonia.Controls.Primitives
                     }
                     else
                     {
-                        _selection.ItemsInserted(e.NewStartingIndex, e.NewItems.Count);
                         UpdateSelectedItem(_selection.First(), false);
                     }
 
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    _selection.ItemsRemoved(e.OldStartingIndex, e.OldItems.Count);
                     UpdateSelectedItem(_selection.First(), false);
                     ResetSelectedItems();
                     break;
@@ -358,16 +370,16 @@ namespace Avalonia.Controls.Primitives
             {
                 if ((container.ContainerControl as ISelectable)?.IsSelected == true)
                 {
-                    if (SelectedIndex == -1)
-                    {
-                        SelectedIndex = container.Index;
-                    }
-                    else
+                    if (SelectionMode.HasFlag(SelectionMode.Multiple))
                     {
                         if (_selection.Add(container.Index))
                         {
                             resetSelectedItems = true;
                         }
+                    }
+                    else
+                    {
+                        SelectedIndex = container.Index;
                     }
 
                     MarkContainerSelected(container.ContainerControl, true);
@@ -420,7 +432,8 @@ namespace Avalonia.Controls.Primitives
         protected override void OnDataContextBeginUpdate()
         {
             base.OnDataContextBeginUpdate();
-            ++_updateCount;
+
+            InternalBeginInit();
         }
 
         /// <inheritdoc/>
@@ -428,10 +441,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDataContextEndUpdate();
 
-            if (--_updateCount == 0)
-            {
-                UpdateFinished();
-            }
+            InternalEndInit();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -926,8 +936,8 @@ namespace Avalonia.Controls.Primitives
             {
                 var changed = new SelectionChangedEventArgs(
                     SelectionChangedEvent,
-                    added ?? Empty,
-                    removed ?? Empty);
+                    removed ?? Empty,
+                    added ?? Empty);
                 RaiseEvent(changed);
             }
         }
@@ -1042,8 +1052,8 @@ namespace Avalonia.Controls.Primitives
 
                 var e = new SelectionChangedEventArgs(
                     SelectionChangedEvent,
-                    added != -1 ? new[] { ElementAt(Items, added) } : Array.Empty<object>(),
-                    removed?.Select(x => ElementAt(Items, x)).ToArray() ?? Array.Empty<object>());
+                    removed?.Select(x => ElementAt(Items, x)).ToArray() ?? Array.Empty<object>(),
+                    added != -1 ? new[] { ElementAt(Items, added) } : Array.Empty<object>());
                 RaiseEvent(e);
             }
 
@@ -1062,7 +1072,7 @@ namespace Avalonia.Controls.Primitives
             }
             catch (Exception ex)
             {
-                Logger.Error(
+                Logger.TryGet(LogEventLevel.Error)?.Log(
                     LogArea.Property,
                     this,
                     "Error thrown updating SelectedItems: {Error}",
@@ -1088,8 +1098,36 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    SelectedIndex = _updateSelectedIndex != int.MinValue ? _updateSelectedIndex : 0;
+                    if (_updateSelectedIndex != int.MinValue)
+                    {
+                        SelectedIndex = _updateSelectedIndex;
+                    }
+
+                    if (AlwaysSelected && SelectedIndex == -1)
+                    {
+                        SelectedIndex = 0;
+                    }
                 }
+            }
+        }
+
+        private void InternalBeginInit()
+        {
+            if (_updateCount == 0)
+            {
+                _updateSelectedIndex = int.MinValue;
+            }
+
+            ++_updateCount;
+        }
+
+        private void InternalEndInit()
+        {
+            Debug.Assert(_updateCount > 0);
+
+            if (--_updateCount == 0)
+            {
+                UpdateFinished();
             }
         }
 
