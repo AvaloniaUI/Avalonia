@@ -551,6 +551,28 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Auto_Sizing_Is_Done_After_ExecuteInitialLayoutPass()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new TextBlock()
+                {
+                    Text = "Welcome to Avalonia!"
+                };
+                var target = new Window
+                {
+                    Width = 200,
+                    SizeToContent = SizeToContent.Height,
+                    Content = child
+                };
+                target.IsVisible = true; // not measured unless visible
+                target.LayoutManager.ExecuteInitialLayoutPass(target);
+
+                Assert.Equal(child.DesiredSize.Height, target.DesiredSize.Height);
+            }
+        }
+
         public class DialogSizingTests : SizingTests
         {
             protected override void Show(Window window)
