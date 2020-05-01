@@ -19,6 +19,7 @@ namespace Avalonia.Animation
     {
         private TimeSpan _ktimeSpan;
         private Cue _kCue;
+        private KeySpline _kKeySpline;
 
         public KeyFrame()
         {
@@ -74,6 +75,25 @@ namespace Avalonia.Animation
             }
         }
 
+        /// <summary>
+        /// Gets or sets the KeySpline of this <see cref="KeyFrame"/>.
+        /// </summary>
+        /// <value>The key spline.</value>
+        public KeySpline KeySpline
+        {
+            get
+            {
+                return _kKeySpline;
+            }
+            set
+            {
+                _kKeySpline = value;
+                if (value != null && !value.IsValid())
+                {
+                    throw new ArgumentException($"{nameof(KeySpline)} must have X coordinates >= 0.0 and <= 1.0.");
+                }
+            }
+        }
 
     }
 
