@@ -499,6 +499,16 @@ private:
         _transitioningWindowState = false;
     }
     
+    SystemDecorations Decorations () override
+    {
+        return _decorations;
+    }
+    
+    AvnWindowState WindowState () override
+    {
+        return _lastWindowState;
+    }
+    
     void WindowStateChanged () override
     {
         if(!_inSetWindowState && !_transitioningWindowState)
@@ -1587,6 +1597,13 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     if(parent != nullptr)
     {
         parent->EndStateTransition();
+        
+        if(parent->Decorations() != SystemDecorationsFull && parent->WindowState() == Maximized)
+        {
+            NSRect screenRect = [[self screen] visibleFrame];
+            [self setFrame:screenRect display:YES];
+        }
+        
         parent->WindowStateChanged();
     }
 }
