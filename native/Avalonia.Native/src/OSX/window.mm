@@ -772,9 +772,10 @@ private:
                         {
                             ExitFullScreenMode();
                         }
-                        
-                        
-                        [Window miniaturize:Window];
+                        else
+                        {
+                            [Window miniaturize:Window];
+                        }
                         break;
                         
                     case FullScreen:
@@ -1602,6 +1603,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         {
             NSRect screenRect = [[self screen] visibleFrame];
             [self setFrame:screenRect display:YES];
+        }
+        
+        if(parent->WindowState() == Minimized)
+        {
+            [self miniaturize:nullptr];
         }
         
         parent->WindowStateChanged();
