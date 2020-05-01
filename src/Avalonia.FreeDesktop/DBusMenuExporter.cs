@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -184,7 +185,7 @@ namespace Avalonia.FreeDesktop
 
             private static string[] AllProperties = new[]
             {
-                "type", "label", "enabled", "visible", "shortcut", "toggle-type", "children-display"
+                "type", "label", "enabled", "visible", "shortcut", "toggle-type", "children-display", "toggle-state", "icon-data"
             };
             
             object GetProperty((NativeMenuItemBase item, NativeMenu menu) i, string name)
@@ -210,7 +211,7 @@ namespace Avalonia.FreeDesktop
                             return null;
                         if (item.Menu != null && item.Menu.Items.Count == 0)
                             return false;
-                        if (item.Enabled == false)
+                        if (item.IsEnabled == false)
                             return false;
                         return null;
                     }
@@ -232,6 +233,30 @@ namespace Avalonia.FreeDesktop
                             lst.Add("Super");
                         lst.Add(item.Gesture.Key.ToString());
                         return new[] { lst.ToArray() };
+                    }
+
+                    if (name == "toggle-type")
+                    {
+                        if (item.ToggleType == NativeMenuItemToggleType.CheckBox)
+                            return "checkmark";
+                        if (item.ToggleType == NativeMenuItemToggleType.Radio)
+                            return "radio";
+                    }
+
+                    if (name == "toggle-state")
+                    {
+                        if (item.ToggleType != NativeMenuItemToggleType.None)
+                            return item.IsChecked ? 1 : 0;
+                    }
+
+                    if (name == "icon-data")
+                    {
+                        if (item.Icon != null)
+                        {
+                            var ms = new MemoryStream();
+                            item.Icon.Save(ms);
+                            return ms.ToArray();
+                        }
                     }
 
                     if (name == "children-display")
@@ -319,10 +344,10 @@ namespace Avalonia.FreeDesktop
                 {
                     var item = GetMenu(id).item;
 
-                    if (item is NativeMenuItem menuItem)
+                    if (item is NativeMenuItem menuItem && item is INativeMenuItemExporterEventsImplBridge bridge)
                     {
-                        if (menuItem?.Enabled == true)
-                            menuItem.RaiseClick();
+                        if (menuItem?.IsEnabled == true)
+                            bridge?.RaiseClicked();
                     }
                 }
             }
