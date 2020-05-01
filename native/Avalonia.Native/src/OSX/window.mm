@@ -1273,6 +1273,20 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
 }
 
+- (void)performClose:(id)sender
+{
+    if([[self delegate] respondsToSelector:@selector(windowShouldClose:)])
+    {
+        if(![[self delegate] windowShouldClose:self]) return;
+    }
+    else if([self respondsToSelector:@selector(windowShouldClose:)])
+    {
+        if(![self windowShouldClose:self]) return;
+    }
+    
+    [self close];
+}
+
 - (void)pollModalSession:(nonnull NSModalSession)session
 {
     auto response = [NSApp runModalSession:session];
