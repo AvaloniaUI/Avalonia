@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Avalonia.LogicalTree
 {
@@ -27,6 +26,35 @@ namespace Avalonia.LogicalTree
             {
                 yield return ancestor;
             }
+        }
+
+        /// <summary>
+        /// Finds first ancestor of given type.
+        /// </summary>
+        /// <typeparam name="T">Ancestor type.</typeparam>
+        /// <param name="logical">The logical.</param>
+        /// <param name="includeSelf">If given logical should be included in search.</param>
+        /// <returns>First ancestor of given type.</returns>
+        public static T FindLogicalAncestorOfType<T>(this ILogical logical, bool includeSelf = false) where T : class
+        {
+            if (logical is null)
+            {
+                return null;
+            }
+
+            ILogical parent = includeSelf ? logical : logical.LogicalParent;
+
+            while (parent != null)
+            {
+                if (parent is T result)
+                {
+                    return result;
+                }
+
+                parent = parent.LogicalParent;
+            }
+
+            return null;
         }
 
         public static IEnumerable<ILogical> GetLogicalChildren(this ILogical logical)
@@ -57,6 +85,28 @@ namespace Avalonia.LogicalTree
             }
         }
 
+        /// <summary>
+        /// Finds first descendant of given type.
+        /// </summary>
+        /// <typeparam name="T">Descendant type.</typeparam>
+        /// <param name="logical">The logical.</param>
+        /// <param name="includeSelf">If given logical should be included in search.</param>
+        /// <returns>First descendant of given type.</returns>
+        public static T FindLogicalDescendantOfType<T>(this ILogical logical, bool includeSelf = false) where T : class
+        {
+            if (logical is null)
+            {
+                return null;
+            }
+
+            if (includeSelf && logical is T result)
+            {
+                return result;
+            }
+
+            return FindDescendantOfTypeCore<T>(logical);
+        }
+
         public static ILogical GetLogicalParent(this ILogical logical)
         {
             return logical.LogicalParent;
@@ -80,9 +130,46 @@ namespace Avalonia.LogicalTree
             }
         }
 
-        public static bool IsLogicalParentOf(this ILogical logical, ILogical target)
+        public static bool IsLogicalAncestorOf(this ILogical logical, ILogical target)
         {
-            return target.GetLogicalAncestors().Any(x => x == logical);
+            ILogical current = target?.LogicalParent;
+
+            while (current != null)
+            {
+                if (current == logical)
+                {
+                    return true;
+                }
+
+                current = current.LogicalParent;
+            }
+
+            return false;
+        }
+
+        private static T FindDescendantOfTypeCore<T>(ILogical logical) where T : class
+        {
+            var logicalChildren = logical.LogicalChildren;
+            var logicalChildrenCount = logicalChildren.Count;
+
+            for (var i = 0; i < logicalChildrenCount; i++)
+            {
+                ILogical child = logicalChildren[i];
+
+                if (child is T result)
+                {
+                    return result;
+                }
+
+                var childResult = FindDescendantOfTypeCore<T>(child);
+
+                if (!(childResult is null))
+                {
+                    return childResult;
+                }
+            }
+
+            return null;
         }
     }
 }
