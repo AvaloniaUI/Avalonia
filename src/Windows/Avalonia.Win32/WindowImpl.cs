@@ -19,8 +19,7 @@ namespace Avalonia.Win32
     /// Window implementation for Win32 platform.
     /// </summary>
     public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
-        ITopLevelImplWithNativeControlHost,
-        IEmbeddableWindowImpl
+        ITopLevelImplWithNativeControlHost
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -126,7 +125,7 @@ namespace Avalonia.Win32
 
         public Action<WindowState> WindowStateChanged { get; set; }
         
-        public event Action LostFocus;
+        public Action LostFocus { get; set; }
 
         public Thickness BorderThickness
         {

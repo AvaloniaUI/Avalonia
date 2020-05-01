@@ -67,8 +67,8 @@ namespace Avalonia.Controls.Platform
                 window.Deactivated += WindowDeactivated;
             }
 
-            if (_root is TopLevel tl && tl.PlatformImpl is IEmbeddableWindowImpl eimpl)
-                eimpl.LostFocus += TopLevelLostPlatformFocus;
+            if (_root is TopLevel tl)
+                tl.PlatformImpl.LostFocus += TopLevelLostPlatformFocus;
 
             _inputManagerSubscription = InputManager?.Process.Subscribe(RawInput);
         }
@@ -100,8 +100,8 @@ namespace Avalonia.Controls.Platform
                 root.Deactivated -= WindowDeactivated;
             }
             
-            if (_root is TopLevel tl && tl.PlatformImpl is IEmbeddableWindowImpl eimpl)
-                eimpl.LostFocus -= TopLevelLostPlatformFocus;
+            if (_root is TopLevel tl)
+                tl.PlatformImpl.LostFocus -= TopLevelLostPlatformFocus;
 
             _inputManagerSubscription?.Dispose();
 

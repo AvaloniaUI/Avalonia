@@ -139,5 +139,7 @@ namespace Avalonia.iOS
         public ILockedFramebuffer Lock() => new EmulatedFramebuffer(this);
 
         public IPopupImpl CreatePopup() => null;
+        
+        public Action LostFocus { get; set; }
     }
 }

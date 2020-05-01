@@ -265,8 +265,7 @@ namespace Avalonia.Controls.Primitives
                     (x, handler) => x.Deactivated += handler,
                     (x, handler) => x.Deactivated -= handler));
                 
-                if (window.PlatformImpl is IEmbeddableWindowImpl reportsFocus)
-                    DeferCleanup(SubscribeToEventHandler<IEmbeddableWindowImpl, Action>(reportsFocus, WindowLostFocus,
+                DeferCleanup(SubscribeToEventHandler<IWindowImpl, Action>(window.PlatformImpl, WindowLostFocus,
                         (x, handler) => x.LostFocus += handler,
                         (x, handler) => x.LostFocus -= handler));
             }

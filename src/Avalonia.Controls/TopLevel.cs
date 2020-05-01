@@ -136,8 +136,7 @@ namespace Avalonia.Controls
                     this);
             }
 
-            if (impl is IEmbeddableWindowImpl embeddableWindowImpl)
-                embeddableWindowImpl.LostFocus += PlatformImpl_LostFocus;
+            impl.LostFocus += PlatformImpl_LostFocus;
         }
 
         /// <summary>

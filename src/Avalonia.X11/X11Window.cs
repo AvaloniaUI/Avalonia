@@ -310,6 +310,7 @@ namespace Avalonia.X11
         public Action<WindowState> WindowStateChanged { get; set; }
         public Action Closed { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
+        public Action LostFocus { get; set; }
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {

@@ -43,8 +43,7 @@ namespace Avalonia.Native
     }
 
     public abstract class WindowBaseImpl : IWindowBaseImpl,
-        IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost,
-        IEmbeddableWindowImpl
+        IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost
     {
         IInputRoot _inputRoot;
         IAvnWindowBase _native;
@@ -122,7 +121,7 @@ namespace Avalonia.Native
             }, (int)w, (int)h, new Vector(dpi, dpi));
         }
 
-        public event Action LostFocus;
+        public Action LostFocus { get; set; }
         
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }

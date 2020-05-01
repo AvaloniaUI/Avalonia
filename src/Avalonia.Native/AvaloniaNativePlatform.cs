@@ -112,7 +112,7 @@ namespace Avalonia.Native
             return new WindowImpl(_factory, _options, _glFeature);
         }
 
-        public IEmbeddableWindowImpl CreateEmbeddableWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
         }

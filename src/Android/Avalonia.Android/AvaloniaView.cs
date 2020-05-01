@@ -33,10 +33,8 @@ namespace Avalonia.Android
             return _view.View.DispatchKeyEvent(e);
         }
 
-        class ViewImpl : TopLevelImpl, IEmbeddableWindowImpl
+        class ViewImpl : TopLevelImpl
         {
-            public event Action LostFocus;
-
             public ViewImpl(Context context) : base(context)
             {
                 View.Focusable = true;
