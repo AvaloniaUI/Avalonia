@@ -318,16 +318,24 @@ namespace Avalonia.Rendering
                         _lastSceneId = scene.Generation;
 
 
+                    var isUiThread = Dispatcher.UIThread.CheckAccess();
                     // We have consumed the previously available scene, but there might be some dirty 
                     // rects since the last update. *If* we are on UI thread, we can force immediate scene
                     // rebuild before rendering anything on-screen
                     // We are calling the same method recursively here 
-                    if (!recursiveCall && Dispatcher.UIThread.CheckAccess() && NeedsUpdate)
+                    if (!recursiveCall && isUiThread && NeedsUpdate)
                     {
                         UpdateScene();
                         var (rs, _) = UpdateRenderLayersAndConsumeSceneIfNeeded(ref context, true);
                         return (rs, true);
                     }
+
+                    // We are rendering a new scene version, so it's highly likely
+                    // that there is already a pending update for animations
+                    // So we are scheduling an update call so UI thread could prepare a scene before
+                    // the next render timer tick
+                    if (!recursiveCall && !isUiThread)
+                        Dispatcher.UIThread.InvokeAsync(UpdateSceneIfNeeded, DispatcherPriority.Render);
 
                     // Indicate that we have updated the layers
                     return (sceneRef.Clone(), true);
@@ -534,6 +542,12 @@ namespace Avalonia.Rendering
             context = RenderTarget.CreateDrawingContext(this);
         }
 
+        private void UpdateSceneIfNeeded()
+        {
+            if(NeedsUpdate)
+                UpdateScene();
+        }
+        
         private void UpdateScene()
         {
             Dispatcher.UIThread.VerifyAccess();
