@@ -49,7 +49,7 @@ namespace Avalonia.Rendering
             IRenderLoop renderLoop,
             ISceneBuilder sceneBuilder = null,
             IDispatcher dispatcher = null,
-            IDeferredRendererLock rendererLock = null)
+            IDeferredRendererLock rendererLock = null) : base(true)
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
@@ -261,7 +261,8 @@ namespace Avalonia.Rendering
                     try
                     {
                         var (scene, updated) = UpdateRenderLayersAndConsumeSceneIfNeeded(ref context);
-
+                        if (updated)
+                            FpsTick();
                         using (scene)
                         {
                             if (scene?.Item != null)
