@@ -35,6 +35,7 @@ namespace Avalonia.Rendering
         private IRef<IDrawOperation> _currentDraw;
         private readonly IDeferredRendererLock _lock;
         private readonly object _sceneLock = new object();
+        private readonly Action _updateSceneIfNeededDelegate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeferredRenderer"/> class.
@@ -59,6 +60,7 @@ namespace Avalonia.Rendering
             Layers = new RenderLayers();
             _renderLoop = renderLoop;
             _lock = rendererLock ?? new ManagedDeferredRendererLock();
+            _updateSceneIfNeededDelegate = UpdateSceneIfNeeded;
         }
 
         /// <summary>
@@ -336,7 +338,7 @@ namespace Avalonia.Rendering
                     // So we are scheduling an update call so UI thread could prepare a scene before
                     // the next render timer tick
                     if (!recursiveCall && !isUiThread)
-                        Dispatcher.UIThread.InvokeAsync(UpdateSceneIfNeeded, DispatcherPriority.Render);
+                        Dispatcher.UIThread.Post(_updateSceneIfNeededDelegate, DispatcherPriority.Render);
 
                     // Indicate that we have updated the layers
                     return (sceneRef.Clone(), true);
