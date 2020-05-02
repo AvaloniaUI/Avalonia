@@ -205,7 +205,7 @@ namespace Avalonia.Skia
                     new SKColor(ac.R, ac.G, ac.B, (byte)(ac.A * opacity)),
                     SKDropShadowImageFilterShadowMode.DrawShadowOnly, null);
                 
-                var paint = new SKPaint { Color = SKColors.White, ImageFilter = filter };
+                var paint = new SKPaint { IsAntialias = true, Color = SKColors.White, ImageFilter = filter };
                 
                 return new BoxShadowFilter
                 {
