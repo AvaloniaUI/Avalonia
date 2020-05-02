@@ -164,21 +164,11 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry, BoxShadow boxShadow)
+        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
         {
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
 
-            if(!boxShadow.IsEmpty)
-                using (var shadow = BoxShadowFilter.Create(boxShadow, _currentOpacity, false))
-                {
-                    Canvas.Save();
-                    Canvas.ClipPath(impl.EffectivePath, SKClipOperation.Difference);
-                    Canvas.DrawPath(impl.EffectivePath, shadow.Paint);
-                    Canvas.Restore();
-
-                }
-            
             using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default(PaintWrapper))
             using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, size) : default(PaintWrapper))
             {
@@ -198,55 +188,99 @@ namespace Avalonia.Skia
         {
             public SKPaint Paint;
             private SKImageFilter _filter;
-            private SKImageFilter _dilate;
+            public SKClipOperation ClipOperation;
 
             public static BoxShadowFilter Create(BoxShadow shadow, double opacity, bool skipDilate)
             {
                 var ac = shadow.Color;
                 var spread = (int)shadow.Spread;
-                var dilate = !skipDilate && spread != 0 ? SKImageFilter.CreateDilate(spread, spread) : null;
+                if (shadow.IsInset)
+                    spread = -spread;
+                
                 var filter = SKImageFilter.CreateDropShadow(
                     (float)shadow.OffsetX,
                     (float)shadow.OffsetY,
                     (float)shadow.Blur / 2,
                     (float)shadow.Blur / 2,
                     new SKColor(ac.R, ac.G, ac.B, (byte)(ac.A * opacity)),
-                    SKDropShadowImageFilterShadowMode.DrawShadowOnly, dilate);
+                    SKDropShadowImageFilterShadowMode.DrawShadowOnly, null);
+                
                 var paint = new SKPaint { Color = SKColors.White, ImageFilter = filter };
-                return new BoxShadowFilter { Paint = paint, _filter = filter, _dilate = dilate };
+                
+                return new BoxShadowFilter
+                {
+                    Paint = paint, _filter = filter,
+                    ClipOperation = shadow.IsInset ? SKClipOperation.Intersect : SKClipOperation.Difference
+                };
             }
 
             public void Dispose()
             {
                 Paint.Dispose();
                 _filter.Dispose();
-                _dilate?.Dispose();
             }
         }
-        
-        /// <inheritdoc />
-        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0D, double radiusY = 0D,
-            BoxShadow boxShadow = default)
-        {
-            var rc = rect.ToSKRect();
-            var isRounded = Math.Abs(radiusX) > double.Epsilon || Math.Abs(radiusY) > double.Epsilon;
 
-            if (!boxShadow.IsEmpty)
+        SKRect AreaCastingShadowInHole(
+            SKRect hole_rect,
+            float shadow_blur,
+            float shadow_spread,
+            float offsetX, float offsetY)
+        {
+            // Adapted from Chromium
+            var bounds = hole_rect;
+
+            bounds.Inflate(shadow_blur, shadow_blur);
+
+            if (shadow_spread < 0)
+                bounds.Inflate(-shadow_spread, -shadow_spread);
+
+            var offset_bounds = bounds;
+            offset_bounds.Offset(-offsetX, -offsetY);
+            bounds.Union(offset_bounds);
+            return bounds;
+        }
+
+
+        /// <inheritdoc />
+        public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect, BoxShadow boxShadow = default)
+        {
+            var rc = rect.Rect.ToSKRect();
+            var isRounded = rect.IsRounded;
+            var needRoundRect = rect.IsRounded || (!boxShadow.IsEmpty && boxShadow.IsInset);
+            using var skRoundRect = needRoundRect ? new SKRoundRect() : null;
+            if (needRoundRect)
+                skRoundRect.SetRectRadii(rc,
+                    new[]
+                    {
+                        rect.RadiiTopLeft.ToSKPoint(), rect.RadiiTopRight.ToSKPoint(),
+                        rect.RadiiBottomRight.ToSKPoint(), rect.RadiiBottomLeft.ToSKPoint(),
+                    });
+
+            if (!boxShadow.IsEmpty && !boxShadow.IsInset)
             {
                 using(var shadow = BoxShadowFilter.Create(boxShadow, _currentOpacity, true))
                 {
-                    var shadowRect = rc;
-                    shadowRect.Inflate((float)boxShadow.Spread, (float)boxShadow.Spread);
+                    var spread = (float)boxShadow.Spread;
+                    if (boxShadow.IsInset)
+                        spread = -spread;
+                    
                     Canvas.Save();
                     if (isRounded)
                     {
-                        Canvas.ClipRoundRect(new SKRoundRect(rc, (float)radiusX, (float)radiusY),
-                            SKClipOperation.Difference, true);
-                        Canvas.DrawRoundRect(shadowRect, (float)radiusX, (float)radiusY, shadow.Paint);
+                        using var shadowRect = new SKRoundRect(skRoundRect);
+                        if (spread != 0)
+                            shadowRect.Inflate(spread, spread);
+                        Canvas.ClipRoundRect(skRoundRect,
+                            shadow.ClipOperation, true);
+                        Canvas.DrawRoundRect(shadowRect, shadow.Paint);
                     }
                     else
                     {
-                        Canvas.ClipRect(shadowRect, SKClipOperation.Difference);
+                        var shadowRect = rc;
+                        if (spread != 0)
+                            shadowRect.Inflate(spread, spread);
+                        Canvas.ClipRect(shadowRect, shadow.ClipOperation);
                         Canvas.DrawRect(shadowRect, shadow.Paint);
                     }
                     Canvas.Restore();
@@ -255,11 +289,11 @@ namespace Avalonia.Skia
             
             if (brush != null)
             {
-                using (var paint = CreatePaint(_fillPaint, brush, rect.Size))
+                using (var paint = CreatePaint(_fillPaint, brush, rect.Rect.Size))
                 {
                     if (isRounded)
                     {
-                        Canvas.DrawRoundRect(rc, (float)radiusX, (float)radiusY, paint.Paint);
+                        Canvas.DrawRoundRect(skRoundRect, paint.Paint);
                     }
                     else
                     {
@@ -269,13 +303,35 @@ namespace Avalonia.Skia
                 }
             }
 
+            if (!boxShadow.IsEmpty && boxShadow.IsInset)
+            {
+                using(var shadow = BoxShadowFilter.Create(boxShadow, _currentOpacity, true))
+                {
+                    var spread = (float)boxShadow.Spread;
+                    var offsetX = (float)boxShadow.OffsetX;
+                    var offsetY = (float)boxShadow.OffsetY;
+                    var outerRect = AreaCastingShadowInHole(rc, (float)boxShadow.Blur, spread, offsetX, offsetY);
+                    
+                    Canvas.Save();
+                    using var shadowRect = new SKRoundRect(skRoundRect);
+                    if (spread != 0)
+                        shadowRect.Deflate(spread, spread);
+                    Canvas.ClipRoundRect(skRoundRect,
+                        shadow.ClipOperation, true);
+                    using (var outerRRect = new SKRoundRect(outerRect))
+                        Canvas.DrawRoundRectDifference(outerRRect, shadowRect, shadow.Paint);
+                
+                    Canvas.Restore();
+                }
+            }
+            
             if (pen?.Brush != null)
             {
-                using (var paint = CreatePaint(_strokePaint, pen, rect.Size))
+                using (var paint = CreatePaint(_strokePaint, pen, rect.Rect.Size))
                 {
                     if (isRounded)
                     {
-                        Canvas.DrawRoundRect(rc, (float)radiusX, (float)radiusY, paint.Paint);
+                        Canvas.DrawRoundRect(skRoundRect, paint.Paint);
                     }
                     else
                     {

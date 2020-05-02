@@ -151,6 +151,31 @@
           </Animation>
         </Style.Animations>
       </Style>
+      <Style Selector="Border.InsetShadow">
+        <Setter Property="BorderBrush" Value="Black"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Style.Animations>
+          <Animation Duration="0:0:3"
+                     IterationCount="Infinite"
+                     PlaybackDirection="Alternate">
+            <KeyFrame Cue="0%">
+              <Setter Property="BoxShadow" Value="inset 0 0 0 2 Red"/>
+            </KeyFrame>
+            <KeyFrame Cue="35%">
+              <Setter Property="BoxShadow" Value="inset 0 0 20 2 Blue"/>
+            </KeyFrame>
+            <KeyFrame Cue="70%">
+              <Setter Property="BoxShadow" Value="inset 0 0 20 30 Green"/>
+            </KeyFrame>
+            <KeyFrame Cue="85%">
+              <Setter Property="BoxShadow" Value="inset 30 0 20 30 Green"/>
+            </KeyFrame>
+            <KeyFrame Cue="100%">
+              <Setter Property="BoxShadow" Value="inset 30 30 20 30 Green"/>
+            </KeyFrame>
+          </Animation>
+        </Style.Animations>
+      </Style>
     </Styles>
   </UserControl.Styles>
   <Grid>
@@ -171,6 +196,8 @@
         <Border Classes="Test Rect6" Background="Red"/>
         <Border Classes="Test Shadow" Background="PaleGreen" CornerRadius="10" Child="{x:Null}" />
         <Border Classes="Test Shadow" Background="PaleGreen" CornerRadius="0 30 60 0" Child="{x:Null}" />
+        <Border Classes="Test InsetShadow" CornerRadius="10" Child="{x:Null}" />
+        <Border Classes="Test InsetShadow" CornerRadius="0 30 60 0" Child="{x:Null}" />
       </WrapPanel>
     </StackPanel>
   </Grid>

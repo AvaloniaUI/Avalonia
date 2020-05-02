@@ -127,8 +127,6 @@ namespace Avalonia.Controls
         /// <returns>The space taken.</returns>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            _borderRenderHelper.Update(finalSize, BorderThickness, CornerRadius);
-
             return LayoutHelper.ArrangeChild(Child, finalSize, Padding, BorderThickness);
         }
     }

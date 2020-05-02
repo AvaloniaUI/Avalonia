@@ -19,20 +19,17 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
-        /// <param name="boxShadow"></param>
         public GeometryNode(Matrix transform,
             IBrush brush,
             IPen pen,
             IGeometryImpl geometry,
-            BoxShadow boxShadow,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(boxShadow.TransformBounds(geometry.GetRenderBounds(pen)), transform, null)
+            : base(geometry.GetRenderBounds(pen), transform, null)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Geometry = geometry;
-            BoxShadow = boxShadow;
             ChildScenes = childScenes;
         }
 
@@ -56,8 +53,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         public IGeometryImpl Geometry { get; }
 
-        public BoxShadow BoxShadow { get; }
-
         /// <inheritdoc/>
         public override IDictionary<IVisual, Scene> ChildScenes { get; }
 
@@ -74,11 +69,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, IPen pen, IGeometryImpl geometry,
-            BoxShadow boxShadow)
+        public bool Equals(Matrix transform, IBrush brush, IPen pen, IGeometryImpl geometry)
         {
             return transform == Transform &&
-                   BoxShadow.Equals(boxShadow, boxShadow) &&
                    Equals(brush, Brush) &&
                    Equals(Pen, pen) &&
                    Equals(geometry, Geometry);
@@ -88,7 +81,7 @@ namespace Avalonia.Rendering.SceneGraph
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-            context.DrawGeometry(Brush, Pen, Geometry, BoxShadow);
+            context.DrawGeometry(Brush, Pen, Geometry);
         }
 
         /// <inheritdoc/>

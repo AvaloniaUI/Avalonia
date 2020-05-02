@@ -336,8 +336,6 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            _borderRenderer.Update(finalSize, BorderThickness, CornerRadius);
-
             return ArrangeOverrideImpl(finalSize, new Vector());
         }
 

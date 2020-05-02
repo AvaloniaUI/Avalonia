@@ -19,26 +19,21 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="rect">The rectangle to draw.</param>
-        /// <param name="radiusY">The radius in the Y dimension of the rounded corners.</param>
-        /// <param name="radiusX">The radius in the X dimension of the rounded corners.</param>
+        /// <param name="boxShadow">The box shadow parameters</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public RectangleNode(
             Matrix transform,
             IBrush brush,
             IPen pen,
-            Rect rect,
-            double radiusX,
-            double radiusY,
+            RoundedRect rect,
             BoxShadow boxShadow,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(boxShadow.TransformBounds(rect), transform, pen)
+            : base(boxShadow.TransformBounds(rect.Rect), transform, pen)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Rect = rect;
-            RadiusX = radiusX;
-            RadiusY = radiusY;
             ChildScenes = childScenes;
             BoxShadow = boxShadow;
         }
@@ -61,17 +56,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the rectangle to draw.
         /// </summary>
-        public Rect Rect { get; }
-
-        /// <summary>
-        /// The radius in the X dimension of the rounded corners.
-        /// </summary>
-        public double RadiusX { get; }
-
-        /// <summary>
-        /// The radius in the Y dimension of the rounded corners.
-        /// </summary>
-        public double RadiusY { get; }
+        public RoundedRect Rect { get; }
         
         /// <summary>
         /// The parameters for the box-shadow effect
@@ -88,22 +73,19 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill of the other draw operation.</param>
         /// <param name="pen">The stroke of the other draw operation.</param>
         /// <param name="rect">The rectangle of the other draw operation.</param>
-        /// <param name="radiusX"></param>
-        /// <param name="radiusY"></param>
+        /// <param name="boxShadow">The box shadow parameters of the other draw operation</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, IPen pen, Rect rect, double radiusX, double radiusY, BoxShadow boxShadow)
+        public bool Equals(Matrix transform, IBrush brush, IPen pen, RoundedRect rect, BoxShadow boxShadow)
         {
             return transform == Transform &&
                    Equals(brush, Brush) &&
                    Equals(Pen, pen) &&
                    Media.BoxShadow.Equals(BoxShadow, boxShadow) &&
-                   rect == Rect &&
-                   Math.Abs(radiusX - RadiusX) < double.Epsilon &&
-                   Math.Abs(radiusY - RadiusY) < double.Epsilon;
+                   rect.Equals(Rect);
         }
 
         /// <inheritdoc/>
@@ -111,7 +93,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             context.Transform = Transform;
 
-            context.DrawRectangle(Brush, Pen, Rect, RadiusX, RadiusY, BoxShadow);
+            context.DrawRectangle(Brush, Pen, Rect, BoxShadow);
         }
 
         /// <inheritdoc/>
@@ -124,13 +106,13 @@ namespace Avalonia.Rendering.SceneGraph
 
                 if (Brush != null)
                 {
-                    var rect = Rect.Inflate((Pen?.Thickness / 2) ?? 0);
+                    var rect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
                     return rect.Contains(p);
                 }
                 else
                 {
-                    var borderRect = Rect.Inflate((Pen?.Thickness / 2) ?? 0);
-                    var emptyRect = Rect.Deflate((Pen?.Thickness / 2) ?? 0);
+                    var borderRect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
+                    var emptyRect = Rect.Rect.Deflate((Pen?.Thickness / 2) ?? 0);
                     return borderRect.Contains(p) && !emptyRect.Contains(p);
                 }
             }

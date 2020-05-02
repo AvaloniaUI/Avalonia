@@ -125,7 +125,7 @@ namespace Avalonia.Media
 
             if (brush != null || PenIsVisible(pen))
             {
-                PlatformImpl.DrawGeometry(brush, pen, geometry.PlatformImpl, default);
+                PlatformImpl.DrawGeometry(brush, pen, geometry.PlatformImpl);
             }
         }
 
@@ -164,7 +164,7 @@ namespace Avalonia.Media
                 radiusY = Math.Min(radiusY, rect.Height / 2);
             }
 
-            PlatformImpl.DrawRectangle(brush, pen, rect, radiusX, radiusY, boxShadow);
+            PlatformImpl.DrawRectangle(brush, pen, new RoundedRect(rect, radiusX, radiusY), boxShadow);
         }
 
         /// <summary>

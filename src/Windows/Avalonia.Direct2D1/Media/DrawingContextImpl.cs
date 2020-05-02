@@ -199,8 +199,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry,
-            BoxShadow boxShadow)
+        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
         {
             if (brush != null)
             {
@@ -229,10 +228,14 @@ namespace Avalonia.Direct2D1.Media
         }
 
         /// <inheritdoc />
-        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0D, double radiusY = 0D,
-            BoxShadow boxShadow = default)
+        public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rrect, BoxShadow boxShadow = default)
         {
-            var rc = rect.ToDirect2D();
+            var rc = rrect.Rect.ToDirect2D();
+            var rect = rrect.Rect;
+            var radiusX = Math.Max(rrect.RadiiTopLeft.X,
+                Math.Max(rrect.RadiiTopRight.X, Math.Max(rrect.RadiiBottomRight.X, rrect.RadiiBottomLeft.X)));
+            var radiusY = Math.Max(rrect.RadiiTopLeft.Y,
+                Math.Max(rrect.RadiiTopRight.Y, Math.Max(rrect.RadiiBottomRight.Y, rrect.RadiiBottomLeft.Y)));
             var isRounded = Math.Abs(radiusX) > double.Epsilon || Math.Abs(radiusY) > double.Epsilon;
 
             if (brush != null)
