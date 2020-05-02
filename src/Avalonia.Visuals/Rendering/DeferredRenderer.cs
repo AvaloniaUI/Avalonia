@@ -75,7 +75,7 @@ namespace Avalonia.Rendering
         public DeferredRenderer(
             IVisual root,
             IRenderTarget renderTarget,
-            ISceneBuilder sceneBuilder = null)
+            ISceneBuilder sceneBuilder = null) : base(true)
         {
             Contract.Requires<ArgumentNullException>(root != null);
             Contract.Requires<ArgumentNullException>(renderTarget != null);
@@ -85,6 +85,7 @@ namespace Avalonia.Rendering
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
             Layers = new RenderLayers();
             _lock = new ManagedDeferredRendererLock();
+            _updateSceneIfNeededDelegate = UpdateSceneIfNeeded;
         }
 
         /// <inheritdoc/>
