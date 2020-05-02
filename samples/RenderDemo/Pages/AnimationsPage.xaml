@@ -145,7 +145,7 @@
             <KeyFrame Cue="50%">
               <Setter Property="BoxShadow" Value="20 20 0 0 Blue"/>
             </KeyFrame>
-            <KeyFrame Cue="90%">
+            <KeyFrame Cue="100%">
               <Setter Property="BoxShadow" Value="20 20 10 20 Green"/>
             </KeyFrame>
           </Animation>
