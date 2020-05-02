@@ -29,8 +29,9 @@ namespace Avalonia.Rendering.SceneGraph
             Rect rect,
             double radiusX,
             double radiusY,
+            BoxShadow boxShadow,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(rect, transform, pen)
+            : base(boxShadow.TransformBounds(rect), transform, pen)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
@@ -39,6 +40,7 @@ namespace Avalonia.Rendering.SceneGraph
             RadiusX = radiusX;
             RadiusY = radiusY;
             ChildScenes = childScenes;
+            BoxShadow = boxShadow;
         }
 
         /// <summary>
@@ -70,6 +72,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// The radius in the Y dimension of the rounded corners.
         /// </summary>
         public double RadiusY { get; }
+        
+        /// <summary>
+        /// The parameters for the box-shadow effect
+        /// </summary>
+        public BoxShadow BoxShadow { get; }
 
         /// <inheritdoc/>
         public override IDictionary<IVisual, Scene> ChildScenes { get; }
@@ -88,11 +95,12 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, IPen pen, Rect rect, double radiusX, double radiusY)
+        public bool Equals(Matrix transform, IBrush brush, IPen pen, Rect rect, double radiusX, double radiusY, BoxShadow boxShadow)
         {
             return transform == Transform &&
                    Equals(brush, Brush) &&
                    Equals(Pen, pen) &&
+                   Media.BoxShadow.Equals(BoxShadow, boxShadow) &&
                    rect == Rect &&
                    Math.Abs(radiusX - RadiusX) < double.Epsilon &&
                    Math.Abs(radiusY - RadiusY) < double.Epsilon;
@@ -103,7 +111,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             context.Transform = Transform;
 
-            context.DrawRectangle(Brush, Pen, Rect, RadiusX, RadiusY);
+            context.DrawRectangle(Brush, Pen, Rect, RadiusX, RadiusY, BoxShadow);
         }
 
         /// <inheritdoc/>

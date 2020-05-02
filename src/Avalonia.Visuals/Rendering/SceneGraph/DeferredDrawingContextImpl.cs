@@ -97,13 +97,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry, BoxShadow boxShadow)
         {
             var next = NextDrawAs<GeometryNode>();
 
-            if (next == null || !next.Item.Equals(Transform, brush, pen, geometry))
+            if (next == null || !next.Item.Equals(Transform, brush, pen, geometry, boxShadow))
             {
-                Add(new GeometryNode(Transform, brush, pen, geometry, CreateChildScene(brush)));
+                Add(new GeometryNode(Transform, brush, pen, geometry, boxShadow, CreateChildScene(brush)));
             }
             else
             {
@@ -149,13 +149,14 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0, double radiusY = 0)
+        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0D, double radiusY = 0D,
+            BoxShadow boxShadow = default)
         {
             var next = NextDrawAs<RectangleNode>();
 
-            if (next == null || !next.Item.Equals(Transform, brush, pen, rect, radiusX, radiusY))
+            if (next == null || !next.Item.Equals(Transform, brush, pen, rect, radiusX, radiusY, boxShadow))
             {
-                Add(new RectangleNode(Transform, brush, pen, rect, radiusX, radiusY, CreateChildScene(brush)));
+                Add(new RectangleNode(Transform, brush, pen, rect, radiusX, radiusY, boxShadow, CreateChildScene(brush)));
             }
             else
             {

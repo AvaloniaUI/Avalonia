@@ -134,6 +134,23 @@
           </Animation>
         </Style.Animations>
       </Style>
+      <Style Selector="Border.Shadow">
+        <Style.Animations>
+          <Animation Duration="0:0:3"
+                     IterationCount="Infinite"
+                     PlaybackDirection="Alternate">
+            <KeyFrame Cue="0%">
+              <Setter Property="BoxShadow" Value="-15 -15 Red"/>
+            </KeyFrame>
+            <KeyFrame Cue="50%">
+              <Setter Property="BoxShadow" Value="20 20 0 0 Blue"/>
+            </KeyFrame>
+            <KeyFrame Cue="90%">
+              <Setter Property="BoxShadow" Value="20 20 10 20 Green"/>
+            </KeyFrame>
+          </Animation>
+        </Style.Animations>
+      </Style>
     </Styles>
   </UserControl.Styles>
   <Grid>
@@ -152,6 +169,8 @@
         <Border Classes="Test Rect4" Background="Navy"/>
         <Border Classes="Test Rect5" Background="SeaGreen"/>
         <Border Classes="Test Rect6" Background="Red"/>
+        <Border Classes="Test Shadow" Background="PaleGreen" CornerRadius="10" Child="{x:Null}" />
+        <Border Classes="Test Shadow" Background="PaleGreen" CornerRadius="0 30 60 0" Child="{x:Null}" />
       </WrapPanel>
     </StackPanel>
   </Grid>

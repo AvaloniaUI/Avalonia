@@ -33,6 +33,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
             AvaloniaProperty.Register<Border, CornerRadius>(nameof(CornerRadius));
 
+        /// <summary>
+        /// Defines the <see cref="BoxShadow"/> property.
+        /// </summary>
+        public static readonly StyledProperty<BoxShadow> BoxShadowProperty =
+            AvaloniaProperty.Register<Border, BoxShadow>(nameof(BoxShadow));
+        
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
 
         /// <summary>
@@ -44,7 +50,8 @@ namespace Avalonia.Controls
                 BackgroundProperty,
                 BorderBrushProperty,
                 BorderThicknessProperty,
-                CornerRadiusProperty);
+                CornerRadiusProperty,
+                BoxShadowProperty);
             AffectsMeasure<Border>(BorderThicknessProperty);
         }
 
@@ -83,14 +90,24 @@ namespace Avalonia.Controls
             get { return GetValue(CornerRadiusProperty); }
             set { SetValue(CornerRadiusProperty, value); }
         }
-
+        
+        /// <summary>
+        /// Gets or sets the box shadow effect parameters
+        /// </summary>
+        public BoxShadow BoxShadow
+        {
+            get => GetValue(BoxShadowProperty);
+            set => SetValue(BoxShadowProperty, value);
+        }
+        
         /// <summary>
         /// Renders the control.
         /// </summary>
         /// <param name="context">The drawing context.</param>
         public override void Render(DrawingContext context)
         {
-            _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush);
+            _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush,
+                BoxShadow);
         }
 
         /// <summary>

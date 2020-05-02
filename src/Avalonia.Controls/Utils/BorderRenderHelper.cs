@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Media;
+using Avalonia.Platform;
 
 namespace Avalonia.Controls.Utils
 {
@@ -67,14 +68,17 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        public void Render(DrawingContext context, Size size, Thickness borders, CornerRadius radii, IBrush background, IBrush borderBrush)
+        public void Render(DrawingContext context, Size size, Thickness borders, CornerRadius radii, IBrush background,
+            IBrush borderBrush, BoxShadow boxShadow)
         {
             if (_useComplexRendering)
             {
                 var backgroundGeometry = _backgroundGeometryCache;
                 if (backgroundGeometry != null)
                 {
-                    context.DrawGeometry(background, null, backgroundGeometry);
+                    // We are using platform impl here because I'm not sure if we should
+                    // make the box shadow for geometries to be public API
+                    context.PlatformImpl.DrawGeometry(background, null, backgroundGeometry.PlatformImpl, boxShadow);
                 }
 
                 var borderGeometry = _borderGeometryCache;
@@ -97,7 +101,7 @@ namespace Avalonia.Controls.Utils
 
                 var rect = new Rect(top, top, size.Width - borderThickness, size.Height - borderThickness);
 
-                context.DrawRectangle(background, pen, rect, radii.TopLeft, radii.TopLeft);
+                context.DrawRectangle(background, pen, rect, radii.TopLeft, radii.TopLeft, boxShadow);
             }
         }    
 

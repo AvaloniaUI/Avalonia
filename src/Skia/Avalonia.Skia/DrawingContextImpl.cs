@@ -164,11 +164,21 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry, BoxShadow boxShadow)
         {
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
 
+            if(!boxShadow.IsEmpty)
+                using (var shadow = BoxShadowFilter.Create(boxShadow, _currentOpacity, false))
+                {
+                    Canvas.Save();
+                    Canvas.ClipPath(impl.EffectivePath, SKClipOperation.Difference);
+                    Canvas.DrawPath(impl.EffectivePath, shadow.Paint);
+                    Canvas.Restore();
+
+                }
+            
             using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default(PaintWrapper))
             using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, size) : default(PaintWrapper))
             {
@@ -184,12 +194,65 @@ namespace Avalonia.Skia
             }
         }
 
+        struct BoxShadowFilter : IDisposable
+        {
+            public SKPaint Paint;
+            private SKImageFilter _filter;
+            private SKImageFilter _dilate;
+
+            public static BoxShadowFilter Create(BoxShadow shadow, double opacity, bool skipDilate)
+            {
+                var ac = shadow.Color;
+                var spread = (int)shadow.Spread;
+                var dilate = !skipDilate && spread != 0 ? SKImageFilter.CreateDilate(spread, spread) : null;
+                var filter = SKImageFilter.CreateDropShadow(
+                    (float)shadow.OffsetX,
+                    (float)shadow.OffsetY,
+                    (float)shadow.Blur / 2,
+                    (float)shadow.Blur / 2,
+                    new SKColor(ac.R, ac.G, ac.B, (byte)(ac.A * opacity)),
+                    SKDropShadowImageFilterShadowMode.DrawShadowOnly, dilate);
+                var paint = new SKPaint { Color = SKColors.White, ImageFilter = filter };
+                return new BoxShadowFilter { Paint = paint, _filter = filter, _dilate = dilate };
+            }
+
+            public void Dispose()
+            {
+                Paint.Dispose();
+                _filter.Dispose();
+                _dilate?.Dispose();
+            }
+        }
+        
         /// <inheritdoc />
-        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX, double radiusY)
+        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0D, double radiusY = 0D,
+            BoxShadow boxShadow = default)
         {
             var rc = rect.ToSKRect();
             var isRounded = Math.Abs(radiusX) > double.Epsilon || Math.Abs(radiusY) > double.Epsilon;
 
+            if (!boxShadow.IsEmpty)
+            {
+                using(var shadow = BoxShadowFilter.Create(boxShadow, _currentOpacity, true))
+                {
+                    var shadowRect = rc;
+                    shadowRect.Inflate((float)boxShadow.Spread, (float)boxShadow.Spread);
+                    Canvas.Save();
+                    if (isRounded)
+                    {
+                        Canvas.ClipRoundRect(new SKRoundRect(rc, (float)radiusX, (float)radiusY),
+                            SKClipOperation.Difference, true);
+                        Canvas.DrawRoundRect(shadowRect, (float)radiusX, (float)radiusY, shadow.Paint);
+                    }
+                    else
+                    {
+                        Canvas.ClipRect(shadowRect, SKClipOperation.Difference);
+                        Canvas.DrawRect(shadowRect, shadow.Paint);
+                    }
+                    Canvas.Restore();
+                }
+            }
+            
             if (brush != null)
             {
                 using (var paint = CreatePaint(_fillPaint, brush, rect.Size))

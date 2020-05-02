@@ -111,7 +111,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Not_Replace_Identical_DrawOperation()
         {
             var node = new VisualNode(new TestRoot(), null);
-            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0, 0));
+            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0, 0, default));
             var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -133,7 +133,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Replace_Different_DrawOperation()
         {
             var node = new VisualNode(new TestRoot(), null);
-            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0, 0));
+            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0, 0, default));
             var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -155,7 +155,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Update_DirtyRects()
         {
             var node = new VisualNode(new TestRoot(), null);
-            var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0, 0);
+            var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0, 0, default);
             var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -206,7 +206,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Trimmed_DrawOperations_Releases_Reference()
         {
             var node = new VisualNode(new TestRoot(), null);
-            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0, 0));
+            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0, 0, default));
             var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 

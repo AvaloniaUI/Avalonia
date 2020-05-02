@@ -69,7 +69,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 new Matrix(),
                 Brushes.Black,
                 null,
-                geometry);
+                geometry, default);
 
             geometryNode.HitTest(new Point());
         }
