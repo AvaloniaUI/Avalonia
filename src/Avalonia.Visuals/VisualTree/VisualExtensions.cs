@@ -377,7 +377,7 @@ namespace Avalonia.VisualTree
         /// </returns>
         public static bool IsVisualAncestorOf(this IVisual visual, IVisual target)
         {
-            IVisual current = target;
+            IVisual current = target?.VisualParent;
 
             while (current != null)
             {
