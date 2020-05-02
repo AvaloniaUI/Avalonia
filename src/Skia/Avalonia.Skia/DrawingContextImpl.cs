@@ -33,6 +33,7 @@ namespace Avalonia.Skia
 
         private readonly SKPaint _strokePaint = new SKPaint();
         private readonly SKPaint _fillPaint = new SKPaint();
+        private readonly SKPaint _boxShadowPaint = new SKPaint();
 
         /// <summary>
         /// Context create info.
@@ -190,7 +191,7 @@ namespace Avalonia.Skia
             private SKImageFilter _filter;
             public SKClipOperation ClipOperation;
 
-            public static BoxShadowFilter Create(BoxShadow shadow, double opacity, bool skipDilate)
+            public static BoxShadowFilter Create(SKPaint paint, BoxShadow shadow, double opacity, bool skipDilate)
             {
                 var ac = shadow.Color;
                 var spread = (int)shadow.Spread;
@@ -205,7 +206,10 @@ namespace Avalonia.Skia
                     new SKColor(ac.R, ac.G, ac.B, (byte)(ac.A * opacity)),
                     SKDropShadowImageFilterShadowMode.DrawShadowOnly, null);
                 
-                var paint = new SKPaint { IsAntialias = true, Color = SKColors.White, ImageFilter = filter };
+                paint.Reset();
+                paint.IsAntialias = true;
+                paint.Color= SKColors.White;
+                paint.ImageFilter = filter;
                 
                 return new BoxShadowFilter
                 {
@@ -216,7 +220,8 @@ namespace Avalonia.Skia
 
             public void Dispose()
             {
-                Paint.Dispose();
+                Paint.Reset();
+                Paint = null;
                 _filter.Dispose();
             }
         }
@@ -259,7 +264,7 @@ namespace Avalonia.Skia
 
             if (!boxShadow.IsEmpty && !boxShadow.IsInset)
             {
-                using(var shadow = BoxShadowFilter.Create(boxShadow, _currentOpacity, true))
+                using(var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity, true))
                 {
                     var spread = (float)boxShadow.Spread;
                     if (boxShadow.IsInset)
@@ -305,7 +310,7 @@ namespace Avalonia.Skia
 
             if (!boxShadow.IsEmpty && boxShadow.IsInset)
             {
-                using(var shadow = BoxShadowFilter.Create(boxShadow, _currentOpacity, true))
+                using(var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity, true))
                 {
                     var spread = (float)boxShadow.Spread;
                     var offsetX = (float)boxShadow.OffsetX;
