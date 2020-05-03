@@ -26,16 +26,16 @@ namespace Avalonia.Rendering.SceneGraph
             IBrush brush,
             IPen pen,
             RoundedRect rect,
-            BoxShadow boxShadow,
+            BoxShadows boxShadows,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(boxShadow.TransformBounds(rect.Rect), transform, pen)
+            : base(boxShadows.TransformBounds(rect.Rect), transform, pen)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Rect = rect;
             ChildScenes = childScenes;
-            BoxShadow = boxShadow;
+            BoxShadows = boxShadows;
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// The parameters for the box-shadow effect
         /// </summary>
-        public BoxShadow BoxShadow { get; }
+        public BoxShadows BoxShadows { get; }
 
         /// <inheritdoc/>
         public override IDictionary<IVisual, Scene> ChildScenes { get; }
@@ -79,12 +79,12 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, IPen pen, RoundedRect rect, BoxShadow boxShadow)
+        public bool Equals(Matrix transform, IBrush brush, IPen pen, RoundedRect rect, BoxShadows boxShadows)
         {
             return transform == Transform &&
                    Equals(brush, Brush) &&
                    Equals(Pen, pen) &&
-                   Media.BoxShadow.Equals(BoxShadow, boxShadow) &&
+                   Media.BoxShadows.Equals(BoxShadows, boxShadows) &&
                    rect.Equals(Rect);
         }
 
@@ -93,7 +93,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             context.Transform = Transform;
 
-            context.DrawRectangle(Brush, Pen, Rect, BoxShadow);
+            context.DrawRectangle(Brush, Pen, Rect, BoxShadows);
         }
 
         /// <inheritdoc/>

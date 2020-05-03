@@ -150,13 +150,13 @@ namespace Avalonia.Rendering.SceneGraph
 
         /// <inheritdoc/>
         public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect,
-            BoxShadow boxShadow = default)
+            BoxShadows boxShadows = default)
         {
             var next = NextDrawAs<RectangleNode>();
 
-            if (next == null || !next.Item.Equals(Transform, brush, pen, rect, boxShadow))
+            if (next == null || !next.Item.Equals(Transform, brush, pen, rect, boxShadows))
             {
-                Add(new RectangleNode(Transform, brush, pen, rect, boxShadow, CreateChildScene(brush)));
+                Add(new RectangleNode(Transform, brush, pen, rect, boxShadows, CreateChildScene(brush)));
             }
             else
             {

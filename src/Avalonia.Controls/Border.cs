@@ -36,8 +36,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="BoxShadow"/> property.
         /// </summary>
-        public static readonly StyledProperty<BoxShadow> BoxShadowProperty =
-            AvaloniaProperty.Register<Border, BoxShadow>(nameof(BoxShadow));
+        public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
+            AvaloniaProperty.Register<Border, BoxShadows>(nameof(BoxShadow));
         
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
 
@@ -94,7 +94,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the box shadow effect parameters
         /// </summary>
-        public BoxShadow BoxShadow
+        public BoxShadows BoxShadow
         {
             get => GetValue(BoxShadowProperty);
             set => SetValue(BoxShadowProperty, value);

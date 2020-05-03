@@ -20,7 +20,7 @@ namespace Avalonia.Media
                 typeof(BoxShadow).IsAssignableFrom(prop.PropertyType));
         }
         
-        public bool Equals(BoxShadow other)
+        public bool Equals(in BoxShadow other)
         {
             return OffsetX.Equals(other.OffsetX) && OffsetY.Equals(other.OffsetY) && Blur.Equals(other.Blur) && Spread.Equals(other.Spread) && Color.Equals(other.Color);
         }
@@ -81,13 +81,11 @@ namespace Avalonia.Media
                 throw new ArgumentNullException();
             if (s.Length == 0)
                 throw new FormatException();
-            if (s[0] == ' ' || s[s.Length - 1] == ' ')
-                s = s.Trim();
-            
-            if (s == "none")
-                return default;
 
             var p = s.Split(s_Separator, StringSplitOptions.RemoveEmptyEntries);
+            if (p.Length == 1 && p[0] == "none")
+                return default;
+            
             if (p.Length < 3 || p.Length > 6)
                 throw new FormatException();
             

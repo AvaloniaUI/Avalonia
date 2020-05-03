@@ -228,7 +228,7 @@ namespace Avalonia.Direct2D1.Media
         }
 
         /// <inheritdoc />
-        public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rrect, BoxShadow boxShadow = default)
+        public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rrect, BoxShadows boxShadow = default)
         {
             var rc = rrect.Rect.ToDirect2D();
             var rect = rrect.Rect;

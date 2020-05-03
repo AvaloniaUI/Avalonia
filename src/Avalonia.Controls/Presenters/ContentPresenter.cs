@@ -43,7 +43,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="BoxShadow"/> property.
         /// </summary>
-        public static readonly StyledProperty<BoxShadow> BoxShadowProperty =
+        public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
             Border.BoxShadowProperty.AddOwner<ContentPresenter>();
         
         /// <summary>
@@ -140,7 +140,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets the box shadow effect parameters
         /// </summary>
-        public BoxShadow BoxShadow
+        public BoxShadows BoxShadow
         {
             get => GetValue(BoxShadowProperty);
             set => SetValue(BoxShadowProperty, value);

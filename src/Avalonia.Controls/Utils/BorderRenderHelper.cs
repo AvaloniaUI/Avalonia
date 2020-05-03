@@ -82,17 +82,17 @@ namespace Avalonia.Controls.Utils
 
         public void Render(DrawingContext context,
             Size finalSize, Thickness borderThickness, CornerRadius cornerRadius,
-            IBrush background, IBrush borderBrush, BoxShadow boxShadow)
+            IBrush background, IBrush borderBrush, BoxShadows boxShadows)
         {
             if (_size != finalSize
                 || _borderThickness != borderThickness
                 || _cornerRadius != cornerRadius
                 || !_initialized)
                 Update(finalSize, borderThickness, cornerRadius);
-            RenderCore(context, background, borderBrush, boxShadow);
+            RenderCore(context, background, borderBrush, boxShadows);
         }
         
-        void RenderCore(DrawingContext context, IBrush background, IBrush borderBrush, BoxShadow boxShadow)
+        void RenderCore(DrawingContext context, IBrush background, IBrush borderBrush, BoxShadows boxShadows)
         {
             if (_useComplexRendering)
             {
@@ -125,7 +125,7 @@ namespace Avalonia.Controls.Utils
                     rrect = rrect.Deflate(borderThickness * 0.5, borderThickness * 0.5);
                 }
 
-                context.PlatformImpl.DrawRectangle(background, pen, rrect, boxShadow);
+                context.PlatformImpl.DrawRectangle(background, pen, rrect, boxShadows);
             }
         }    
 
