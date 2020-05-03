@@ -124,7 +124,7 @@ namespace Avalonia.Media
         /// <param name="s">The color string.</param>
         /// <param name="color">The parsed color</param>
         /// <returns>The status of the operation.</returns>
-        public static bool TryParse(Span<char> s, out Color color)
+        public static bool TryParse(ReadOnlySpan<char> s, out Color color)
         {
             color = default;
             if (s == null)
