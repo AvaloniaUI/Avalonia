@@ -97,11 +97,15 @@ namespace Avalonia.X11.Glx
         
         [GlEntryPointAttribute("glXWaitGL")]
         public GlxWaitGL WaitGL { get; }
-        public delegate  void GlxWaitGL();
+        public delegate void GlxWaitGL();
         
         public delegate int GlGetError();
         [GlEntryPoint("glGetError")]
         public GlGetError GetError { get; }
+
+        public delegate IntPtr GlxQueryExtensionsString(IntPtr display, int screen);
+        [GlEntryPoint("glXQueryExtensionsString")]
+        public GlxQueryExtensionsString QueryExtensionsString { get; }
 
         public GlxInterface() : base(SafeGetProcAddress)
         {
@@ -122,5 +126,13 @@ namespace Avalonia.X11.Glx
         }
 
         private static readonly Func<string, bool, IntPtr> GlxConverted = ConvertNative(GlxGetProcAddress);
+
+        public string[] GetExtensions(IntPtr display)
+        {
+            var s = Marshal.PtrToStringAnsi(QueryExtensionsString(display, 0));
+            return s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim()).ToArray();
+
+        }
     }
 }

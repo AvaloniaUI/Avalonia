@@ -16,21 +16,30 @@ namespace Avalonia.Native
             var immediate = display.CreateContext(null);
             var deferred = display.CreateContext(immediate);
             GlDisplay = new GlDisplay(display, immediate.SampleCount, immediate.StencilSize);
-            
-            ImmediateContext = new GlContext(GlDisplay, immediate);
-            DeferredContext = new GlContext(GlDisplay, deferred);
+
+            int major, minor;
+            using (immediate.MakeCurrent())
+            {
+                GlDisplay.GlInterface.GetIntegerv(GlConsts.GL_MAJOR_VERSION, out major);
+                GlDisplay.GlInterface.GetIntegerv(GlConsts.GL_MINOR_VERSION, out minor);
+            }
+
+            _version = new GlVersion(GlProfileType.OpenGL, major, minor);
+            ImmediateContext = new GlContext(GlDisplay, immediate, _version);
+            DeferredContext = new GlContext(GlDisplay, deferred, _version);
         }
 
-        public IGlContext ImmediateContext { get; }
+        internal IGlContext ImmediateContext { get; }
+        public IGlContext MainContext => DeferredContext;
         internal GlContext DeferredContext { get; }
         internal GlDisplay GlDisplay;
-        public IGlDisplay Display => GlDisplay;
+        private readonly GlVersion _version;
 
         public IGlContext CreateContext() => new GlContext(GlDisplay,
-            _display.CreateContext(((GlContext)ImmediateContext).Context));
+            _display.CreateContext(((GlContext)ImmediateContext).Context), _version);
     }
 
-    class GlDisplay : IGlDisplay
+    class GlDisplay
     {
         private readonly IAvnGlDisplay _display;
 
@@ -48,8 +57,6 @@ namespace Avalonia.Native
             });
         }
 
-        public GlDisplayType Type => GlDisplayType.OpenGl;
-
         public GlInterface GlInterface { get; }
 
         public int SampleCount { get; }
@@ -61,16 +68,20 @@ namespace Avalonia.Native
 
     class GlContext : IGlContext
     {
+        private readonly GlDisplay _display;
         public IAvnGlContext Context { get; private set; }
 
-        public GlContext(GlDisplay display, IAvnGlContext context)
+        public GlContext(GlDisplay display, IAvnGlContext context, GlVersion version)
         {
-            Display = display;
+            _display = display;
             Context = context;
+            Version = version;
         }
 
-        public IGlDisplay Display { get; }
-
+        public GlVersion Version { get; }
+        public GlInterface GlInterface => _display.GlInterface;
+        public int SampleCount => _display.SampleCount;
+        public int StencilSize => _display.StencilSize;
         public IDisposable MakeCurrent() => Context.MakeCurrent();
 
         public void Dispose()
@@ -84,15 +95,18 @@ namespace Avalonia.Native
     class GlPlatformSurfaceRenderTarget : IGlPlatformSurfaceRenderTarget
     {
         private IAvnGlSurfaceRenderTarget _target;
-        public GlPlatformSurfaceRenderTarget(IAvnGlSurfaceRenderTarget target)
+        private readonly IGlContext _context;
+
+        public GlPlatformSurfaceRenderTarget(IAvnGlSurfaceRenderTarget target, IGlContext context)
         {
             _target = target;
+            _context = context;
         }
 
         public IGlPlatformSurfaceRenderingSession BeginDraw()
         {
             var feature = (GlPlatformFeature)AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
-            return new GlPlatformSurfaceRenderingSession(feature.GlDisplay, _target.BeginDrawing());
+            return new GlPlatformSurfaceRenderingSession(_context, _target.BeginDrawing());
         }
 
         public void Dispose()
@@ -106,13 +120,13 @@ namespace Avalonia.Native
     {
         private IAvnGlSurfaceRenderingSession _session;
 
-        public GlPlatformSurfaceRenderingSession(GlDisplay display, IAvnGlSurfaceRenderingSession session)
+        public GlPlatformSurfaceRenderingSession(IGlContext context, IAvnGlSurfaceRenderingSession session)
         {
-            Display = display;
+            Context = context;
             _session = session;
         }
 
-        public IGlDisplay Display { get; }
+        public IGlContext Context { get; }
 
         public PixelSize Size
         {
@@ -138,14 +152,16 @@ namespace Avalonia.Native
     class GlPlatformSurface : IGlPlatformSurface
     {
         private readonly IAvnWindowBase _window;
+        private readonly IGlContext _context;
 
-        public GlPlatformSurface(IAvnWindowBase window)
+        public GlPlatformSurface(IAvnWindowBase window, IGlContext context)
         {
             _window = window;
+            _context = context;
         }
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
         {
-            return new GlPlatformSurfaceRenderTarget(_window.CreateGlRenderTarget());
+            return new GlPlatformSurfaceRenderTarget(_window.CreateGlRenderTarget(), _context);
         }
 
     }

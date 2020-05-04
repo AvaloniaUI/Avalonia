@@ -5,6 +5,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Native.Interop;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 
@@ -24,8 +25,8 @@ namespace Avalonia.Native
             _glFeature = glFeature;
             using (var e = new WindowEvents(this))
             {
-                Init(_native = factory.CreateWindow(e,
-                    _opts.UseGpu ? glFeature?.DeferredContext.Context : null), factory.CreateScreens());
+                var context = _opts.UseGpu ? glFeature?.DeferredContext : null;
+                Init(_native = factory.CreateWindow(e, context?.Context), factory.CreateScreens(), context);
             }
 
             NativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);

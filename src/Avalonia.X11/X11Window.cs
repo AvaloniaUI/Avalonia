@@ -165,7 +165,7 @@ namespace Avalonia.X11
             
             if (egl != null)
                 surfaces.Insert(0,
-                    new EglGlPlatformSurface((EglDisplay)egl.Display, egl.DeferredContext,
+                    new EglGlPlatformSurface(egl.DeferredContext,
                         new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
             if (glx != null)
                 surfaces.Insert(0, new GlxGlPlatformSurface(glx.Display, glx.DeferredContext,

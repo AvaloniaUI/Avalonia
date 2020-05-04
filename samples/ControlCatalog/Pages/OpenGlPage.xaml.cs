@@ -91,12 +91,12 @@ namespace ControlCatalog.Pages
 
         private string GetShader(bool fragment, string shader)
         {
-            var version = (DisplayType == GlDisplayType.OpenGl ?
+            var version = (GlVersion.Type == GlProfileType.OpenGL ?
                 RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? 150 : 120 :
                 100);
             var data = "#version " + version + "\n";
-            if (DisplayType == GlDisplayType.OpenGLES)
-                data += "precision mediump float\n";
+            if (GlVersion.Type == GlProfileType.OpenGLES)
+                data += "precision mediump float;\n";
             if (version >= 150)
             {
                 shader = shader.Replace("attribute", "in");

@@ -16,7 +16,7 @@ namespace Avalonia.OpenGL
         private OpenGlTextureBitmap _bitmap;
         private PixelSize _oldSize;
         private bool _glFailed;
-        protected GlDisplayType DisplayType { get; private set; }
+        protected GlVersion GlVersion { get; private set; }
         public sealed override void Render(DrawingContext context)
         {
             if(!EnsureInitialized())
@@ -26,7 +26,7 @@ namespace Avalonia.OpenGL
             {
                 using (_bitmap.Lock())
                 {
-                    var gl = _context.Display.GlInterface;
+                    var gl = _context.GlInterface;
                     gl.BindFramebuffer(GL_FRAMEBUFFER, _fb);
                     if (_oldSize != GetPixelSize())
                         ResizeTexture(gl);
@@ -46,7 +46,7 @@ namespace Avalonia.OpenGL
             {
                 using (_context.MakeCurrent())
                 {
-                    var gl = _context.Display.GlInterface;
+                    var gl = _context.GlInterface;
                     gl.BindTexture(GL_TEXTURE_2D, 0);
                     gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
                     gl.DeleteFramebuffers(1, new[] { _fb });
@@ -59,7 +59,7 @@ namespace Avalonia.OpenGL
                     try
                     {
                         if (callUserDeinit)
-                            OnOpenGlDeinit(_context.Display.GlInterface, _fb);
+                            OnOpenGlDeinit(_context.GlInterface, _fb);
                     }
                     finally
                     {
@@ -100,7 +100,7 @@ namespace Avalonia.OpenGL
                 return false;
             }
 
-            DisplayType = feature.Display.Type;
+            GlVersion = _context.Version;
             try
             {
                 _bitmap = new OpenGlTextureBitmap();
@@ -120,7 +120,7 @@ namespace Avalonia.OpenGL
                 try
                 {
                     _oldSize = GetPixelSize();
-                    var gl = _context.Display.GlInterface;
+                    var gl = _context.GlInterface;
                     var oneArr = new int[1];
                     gl.GenFramebuffers(1, oneArr);
                     _fb = oneArr[0];
@@ -153,7 +153,7 @@ namespace Avalonia.OpenGL
                 }
 
                 if (!_glFailed)
-                    OnOpenGlInit(_context.Display.GlInterface, _fb);
+                    OnOpenGlInit(_context.GlInterface, _fb);
             }
 
             if (_glFailed)
@@ -171,7 +171,7 @@ namespace Avalonia.OpenGL
             gl.GetIntegerv( GL_TEXTURE_BINDING_2D, out var oldTexture);
             gl.BindTexture(GL_TEXTURE_2D, _texture);
             gl.TexImage2D(GL_TEXTURE_2D, 0, 
-                DisplayType == GlDisplayType.OpenGLES ? GL_RGBA : GL_RGBA8,
+                GlVersion.Type == GlProfileType.OpenGLES ? GL_RGBA : GL_RGBA8,
                 size.Width, size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
             gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -184,7 +184,7 @@ namespace Avalonia.OpenGL
             _renderBuffer = oneArr[0];
             gl.BindRenderbuffer(GL_RENDERBUFFER, _renderBuffer);
             gl.RenderbufferStorage(GL_RENDERBUFFER,
-                DisplayType == GlDisplayType.OpenGLES ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT,
+                GlVersion.Type == GlProfileType.OpenGLES ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT,
                 size.Width, size.Height);
             gl.FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _renderBuffer);
             gl.BindRenderbuffer(GL_RENDERBUFFER, oldRenderBuffer);

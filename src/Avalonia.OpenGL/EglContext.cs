@@ -11,17 +11,26 @@ namespace Avalonia.OpenGL
         private readonly EglInterface _egl;
         private readonly object _lock = new object();
 
-        public EglContext(EglDisplay display, EglInterface egl, IntPtr ctx, EglSurface offscreenSurface)
+        public EglContext(EglDisplay display, EglInterface egl, IntPtr ctx, EglSurface offscreenSurface,
+            GlVersion version, int sampleCount, int stencilSize)
         {
             _disp = display;
             _egl = egl;
             Context = ctx;
             OffscreenSurface = offscreenSurface;
+            Version = version;
+            SampleCount = sampleCount;
+            StencilSize = stencilSize;
+            GlInterface = GlInterface.FromNativeUtf8GetProcAddress(b => _egl.GetProcAddress(b));
         }
 
         public IntPtr Context { get; }
         public EglSurface OffscreenSurface { get; }
-        public IGlDisplay Display => _disp;
+        public GlVersion Version { get; }
+        public GlInterface GlInterface { get; }
+        public int SampleCount { get; }
+        public int StencilSize { get; }
+        public EglDisplay Display => _disp;
 
         public IDisposable Lock()
         {
@@ -52,7 +61,7 @@ namespace Avalonia.OpenGL
             }
 
         }
-        
+
         public IDisposable MakeCurrent()
         {
             var old = new RestoreContext(_egl, _disp.Handle);

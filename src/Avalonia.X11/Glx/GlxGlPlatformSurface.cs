@@ -59,6 +59,7 @@ namespace Avalonia.X11.Glx
                 private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
                 private IDisposable _lock;
                 private readonly IDisposable _clearContext;
+                public IGlContext Context => _context;
 
                 public Session(GlxContext context, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info,
                     IDisposable @lock, IDisposable clearContext)
@@ -71,7 +72,7 @@ namespace Avalonia.X11.Glx
 
                 public void Dispose()
                 {
-                    _context.Display.GlInterface.Flush();
+                    _context.GlInterface.Flush();
                     _context.Glx.WaitGL();
                     _context.Display.SwapBuffers(_info.Handle);
                     _context.Glx.WaitX();
@@ -79,7 +80,6 @@ namespace Avalonia.X11.Glx
                     _lock.Dispose();
                 }
 
-                public IGlDisplay Display => _context.Display;
                 public PixelSize Size => _info.Size;
                 public double Scaling => _info.Scaling;
                 public bool IsYFlipped { get; }

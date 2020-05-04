@@ -16,9 +16,9 @@ namespace Avalonia.OpenGL
         private readonly EglContext _context;
         private readonly IEglWindowGlPlatformSurfaceInfo _info;
         
-        public EglGlPlatformSurface(EglDisplay display, EglContext context, IEglWindowGlPlatformSurfaceInfo info)
+        public EglGlPlatformSurface(EglContext context, IEglWindowGlPlatformSurfaceInfo info)
         {
-            _display = display;
+            _display = context.Display;
             _context = context;
             _info = info;
         }
@@ -96,7 +96,7 @@ namespace Avalonia.OpenGL
 
                 public void Dispose()
                 {
-                    _context.Display.GlInterface.Flush();
+                    _context.GlInterface.Flush();
                     _display.EglInterface.WaitGL();
                     _glSurface.SwapBuffers();
                     _display.EglInterface.WaitClient();
@@ -106,7 +106,7 @@ namespace Avalonia.OpenGL
                     _lock.Dispose();
                 }
 
-                public IGlDisplay Display => _context.Display;
+                public IGlContext Context => _context;
                 public PixelSize Size => _info.Size;
                 public double Scaling => _info.Scaling;
                 public bool IsYFlipped { get; }

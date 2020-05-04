@@ -59,7 +59,7 @@ namespace Avalonia.Skia
             bool success = false;
             try
             {
-                var disp = glSession.Display;
+                var disp = glSession.Context;
                 var gl = disp.GlInterface;
                 gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var fb);
 

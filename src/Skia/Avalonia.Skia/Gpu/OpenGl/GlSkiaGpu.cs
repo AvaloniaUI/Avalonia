@@ -11,14 +11,12 @@ namespace Avalonia.Skia
 
         public GlSkiaGpu(IWindowingPlatformGlFeature gl)
         {
-            
-            var immediateContext = gl.CreateContext();
-            using (immediateContext.MakeCurrent())
+            var context = gl.MainContext;
+            using (context.MakeCurrent())
             {
-                var display = gl.Display;
-                using (var iface = display.Type == GlDisplayType.OpenGl ?
-                    GRGlInterface.AssembleGlInterface((_, proc) => display.GlInterface.GetProcAddress(proc)) :
-                    GRGlInterface.AssembleGlesInterface((_, proc) => display.GlInterface.GetProcAddress(proc)))
+                using (var iface = context.Version.Type == GlProfileType.OpenGL ?
+                    GRGlInterface.AssembleGlInterface((_, proc) => context.GlInterface.GetProcAddress(proc)) :
+                    GRGlInterface.AssembleGlesInterface((_, proc) => context.GlInterface.GetProcAddress(proc)))
                 {
                     _grContext = GRContext.Create(GRBackend.OpenGL, iface);
                 }

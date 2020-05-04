@@ -67,8 +67,7 @@ namespace Avalonia.Win32
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
             if (Win32GlManager.EglFeature != null)
-                _gl = new EglGlPlatformSurface((EglDisplay)Win32GlManager.EglFeature.Display,
-                    Win32GlManager.EglFeature.DeferredContext, this);
+                _gl = new EglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
 
             s_instances.Add(this);
         }

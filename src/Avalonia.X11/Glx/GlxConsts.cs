@@ -100,6 +100,8 @@ namespace Avalonia.X11.Glx
         public const int GLX_CONTEXT_FLAGS_ARB = 0x2094;
         public const int GLX_CONTEXT_CORE_PROFILE_BIT_ARB = 0x00000001;
         public const int GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB = 0x00000002;
+        public const int GLX_CONTEXT_ES2_PROFILE_BIT_EXT = 0x00000004;
+        
         public const int GLX_CONTEXT_PROFILE_MASK_ARB = 0x9126;
 
     }

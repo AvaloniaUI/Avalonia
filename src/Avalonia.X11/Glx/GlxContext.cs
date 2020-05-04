@@ -13,7 +13,9 @@ namespace Avalonia.X11.Glx
         private readonly bool _ownsPBuffer;
         private readonly object _lock = new object();
 
-        public GlxContext(GlxInterface glx, IntPtr handle, GlxDisplay display, X11Info x11, IntPtr defaultXid,
+        public GlxContext(GlxInterface glx, IntPtr handle, GlxDisplay display, 
+            GlVersion version, int sampleCount, int stencilSize,
+            X11Info x11, IntPtr defaultXid,
             bool ownsPBuffer)
         {
             Handle = handle;
@@ -22,10 +24,17 @@ namespace Avalonia.X11.Glx
             _defaultXid = defaultXid;
             _ownsPBuffer = ownsPBuffer;
             Display = display;
+            Version = version;
+            SampleCount = sampleCount;
+            StencilSize = stencilSize;
+            GlInterface = new GlInterface(GlxInterface.SafeGetProcAddress);
         }
         
         public GlxDisplay Display { get; }
-        IGlDisplay IGlContext.Display => Display;
+        public GlVersion Version { get; }
+        public GlInterface GlInterface { get; }
+        public int SampleCount { get; }
+        public int StencilSize { get; }
         
         public IDisposable Lock()
         {
@@ -58,7 +67,7 @@ namespace Avalonia.X11.Glx
                 _glx.MakeContextCurrent(disp, _draw, _read, _context);
             }
         }
-
+        
         public IDisposable MakeCurrent() => MakeCurrent(_defaultXid);
 
         public IDisposable MakeCurrent(IntPtr xid)

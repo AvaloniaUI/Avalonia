@@ -6,12 +6,13 @@ namespace Avalonia.OpenGL
     public class EglGlPlatformFeature : IWindowingPlatformGlFeature
     {
         private EglDisplay _display;
-        public IGlDisplay Display => _display;
+        public EglDisplay Display => _display;
         public IGlContext CreateContext()
         {
             return _display.CreateContext(DeferredContext);
         }
-        public EglContext DeferredContext { get; set; }
+        public EglContext DeferredContext { get; private set; }
+        public IGlContext MainContext => DeferredContext;
 
         public static void TryInitialize()
         {

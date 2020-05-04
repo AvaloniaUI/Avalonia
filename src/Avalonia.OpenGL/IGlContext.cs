@@ -4,7 +4,10 @@ namespace Avalonia.OpenGL
 {
     public interface IGlContext : IDisposable
     {
-        IGlDisplay Display { get; }
+        GlVersion Version { get; }
+        GlInterface GlInterface { get; }
+        int SampleCount { get; }
+        int StencilSize { get; }
         IDisposable MakeCurrent();
     }
 }
