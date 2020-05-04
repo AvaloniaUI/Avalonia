@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -80,8 +77,12 @@ namespace Avalonia
                     _inheritanceParent?.RemoveInheritanceChild(this);
                     _inheritanceParent = value;
 
-                    foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegisteredInherited(GetType()))
+                    var properties = AvaloniaPropertyRegistry.Instance.GetRegisteredInherited(GetType());
+                    var propertiesCount = properties.Count;
+
+                    for (var i = 0; i < propertiesCount; i++)
                     {
+                        var property = properties[i];
                         if (valuestore?.IsSet(property) == true)
                         {
                             // If local value set there can be no change.
@@ -311,7 +312,10 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
-        public void SetValue<T>(
+        /// <returns>
+        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
+        /// </returns>
+        public IDisposable SetValue<T>(
             StyledPropertyBase<T> property,
             T value,
             BindingPriority priority = BindingPriority.LocalValue)
@@ -335,8 +339,10 @@ namespace Avalonia
             }
             else if (!(value is DoNothingType))
             {
-                Values.SetValue(property, value, priority);
+                return Values.SetValue(property, value, priority);
             }
+
+            return null;
         }
 
         /// <summary>

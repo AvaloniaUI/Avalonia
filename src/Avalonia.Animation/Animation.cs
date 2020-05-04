@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -254,10 +251,10 @@ namespace Avalonia.Animation
 
                     if (keyframe.TimingMode == KeyFrameTimingMode.TimeSpan)
                     {
-                        cue = new Cue(keyframe.KeyTime.Ticks / Duration.Ticks);
+                        cue = new Cue(keyframe.KeyTime.TotalSeconds / Duration.TotalSeconds);
                     }
 
-                    var newKF = new AnimatorKeyFrame(handler, cue);
+                    var newKF = new AnimatorKeyFrame(handler, cue, keyframe.KeySpline);
 
                     subscriptions.Add(newKF.BindSetter(setter, control));
 

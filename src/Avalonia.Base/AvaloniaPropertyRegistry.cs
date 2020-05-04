@@ -1,11 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using Avalonia.Data;
 
 namespace Avalonia
 {
@@ -28,8 +23,6 @@ namespace Avalonia
             new Dictionary<Type, List<AvaloniaProperty>>();
         private readonly Dictionary<Type, List<AvaloniaProperty>> _directCache =
             new Dictionary<Type, List<AvaloniaProperty>>();
-        private readonly Dictionary<Type, List<PropertyInitializationData>> _initializedCache =
-            new Dictionary<Type, List<PropertyInitializationData>>();
         private readonly Dictionary<Type, List<AvaloniaProperty>> _inheritedCache =
             new Dictionary<Type, List<AvaloniaProperty>>();
 
@@ -49,7 +42,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
-        public IEnumerable<AvaloniaProperty> GetRegistered(Type type)
+        public IReadOnlyList<AvaloniaProperty> GetRegistered(Type type)
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
@@ -83,7 +76,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
-        public IEnumerable<AvaloniaProperty> GetRegisteredAttached(Type type)
+        public IReadOnlyList<AvaloniaProperty> GetRegisteredAttached(Type type)
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
@@ -114,7 +107,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
-        public IEnumerable<AvaloniaProperty> GetRegisteredDirect(Type type)
+        public IReadOnlyList<AvaloniaProperty> GetRegisteredDirect(Type type)
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
@@ -145,7 +138,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
-        public IEnumerable<AvaloniaProperty> GetRegisteredInherited(Type type)
+        public IReadOnlyList<AvaloniaProperty> GetRegisteredInherited(Type type)
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
@@ -157,16 +150,27 @@ namespace Avalonia
             result = new List<AvaloniaProperty>();
             var visited = new HashSet<AvaloniaProperty>();
 
-            foreach (var property in GetRegistered(type))
+            var registered = GetRegistered(type);
+            var registeredCount = registered.Count;
+
+            for (var i = 0; i < registeredCount; i++)
             {
+                var property = registered[i];
+
                 if (property.Inherits)
                 {
                     result.Add(property);
                     visited.Add(property);
                 }
             }
-            foreach (var property in GetRegisteredAttached(type))
+
+            var registeredAttached = GetRegisteredAttached(type);
+            var registeredAttachedCount = registeredAttached.Count;
+
+            for (var i = 0; i < registeredAttachedCount; i++)
             {
+                var property = registeredAttached[i];
+
                 if (property.Inherits)
                 {
                     if (!visited.Contains(property))
@@ -185,7 +189,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="o">The object.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
-        public IEnumerable<AvaloniaProperty> GetRegistered(IAvaloniaObject o)
+        public IReadOnlyList<AvaloniaProperty> GetRegistered(IAvaloniaObject o)
         {
             Contract.Requires<ArgumentNullException>(o != null);
 
@@ -229,8 +233,13 @@ namespace Avalonia
                 throw new InvalidOperationException("Attached properties not supported.");
             }
 
-            foreach (AvaloniaProperty x in GetRegistered(type))
+            var registered = GetRegistered(type);
+            var registeredCount = registered.Count;
+
+            for (var i = 0; i < registeredCount; i++)
             {
+                AvaloniaProperty x = registered[i];
+
                 if (x.Name == name)
                 {
                     return x;
@@ -276,8 +285,13 @@ namespace Avalonia
                 return property;
             }
 
-            foreach (var p in GetRegisteredDirect(o.GetType()))
+            var registeredDirect = GetRegisteredDirect(o.GetType());
+            var registeredDirectCount = registeredDirect.Count;
+
+            for (var i = 0; i < registeredDirectCount; i++)
             {
+                var p = registeredDirect[i];
+
                 if (p == property)
                 {
                     return (DirectPropertyBase<T>)p;
@@ -308,8 +322,23 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(type != null);
             Contract.Requires<ArgumentNullException>(property != null);
 
-            return Instance.GetRegistered(type).Any(x => x == property) ||
-                Instance.GetRegisteredAttached(type).Any(x => x == property);
+            static bool ContainsProperty(IReadOnlyList<AvaloniaProperty> properties, AvaloniaProperty property)
+            {
+                var propertiesCount = properties.Count;
+
+                for (var i = 0; i < propertiesCount; i++)
+                {
+                    if (properties[i] == property)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            return ContainsProperty(Instance.GetRegistered(type), property) ||
+                   ContainsProperty(Instance.GetRegisteredAttached(type), property);
         }
 
         /// <summary>
@@ -374,7 +403,6 @@ namespace Avalonia
             }
             
             _registeredCache.Clear();
-            _initializedCache.Clear();
             _inheritedCache.Clear();
         }
 
@@ -411,32 +439,7 @@ namespace Avalonia
             }
             
             _attachedCache.Clear();
-            _initializedCache.Clear();
             _inheritedCache.Clear();
-        }
-
-        private readonly struct PropertyInitializationData
-        {
-            public AvaloniaProperty Property { get; }
-            public object Value { get; }
-            public bool IsDirect { get; }
-            public IDirectPropertyAccessor DirectAccessor { get; }
-
-            public PropertyInitializationData(AvaloniaProperty property, IDirectPropertyAccessor directAccessor)
-            {
-                Property = property;
-                Value = null;
-                IsDirect = true;
-                DirectAccessor = directAccessor;
-            }
-
-            public PropertyInitializationData(AvaloniaProperty property, IStyledPropertyAccessor styledAccessor, Type type)
-            {
-                Property = property;
-                Value = styledAccessor.GetDefaultValue(type);
-                IsDirect = false;
-                DirectAccessor = null;
-            }
         }
     }
 }

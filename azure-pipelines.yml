@@ -14,7 +14,7 @@ jobs:
     displayName: 'Install Nuke'
     inputs:
       script: |
-         dotnet tool install --global Nuke.GlobalTool --version 0.12.3
+         dotnet tool install --global Nuke.GlobalTool --version 0.24.0
   - task: CmdLine@2
     displayName: 'Run Nuke'
     inputs:
@@ -35,16 +35,16 @@ jobs:
     vmImage: 'macOS-10.14'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.0.x'
+    displayName: 'Use .NET Core SDK 3.1.101'
     inputs:
       packageType: sdk
-      version: 3.0.x
+      version: 3.1.101
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core Runtime 2.1.x'
+    displayName: 'Use .NET Core Runtime 3.1.1'
     inputs:
       packageType: runtime
-      version: 2.1.x
+      version: 3.1.1
 
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -68,13 +68,13 @@ jobs:
     inputs:
       script: |
         brew update
-        brew install castxml
+        brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/8a004a91a7fcd3f6620d5b01b6541ff0a640ffba/Formula/castxml.rb
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:
       script: |
-       dotnet tool install --global Nuke.GlobalTool --version 0.12.3 
+       dotnet tool install --global Nuke.GlobalTool --version 0.24.0
 
   - task: CmdLine@2
     displayName: 'Run Nuke'
@@ -116,7 +116,7 @@ jobs:
     displayName: 'Install Nuke'
     inputs:
       script: |
-       dotnet tool install --global Nuke.GlobalTool --version 0.12.3 
+       dotnet tool install --global Nuke.GlobalTool --version 0.24.0 
 
   - task: CmdLine@2
     displayName: 'Run Nuke'

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +6,8 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
 
+#nullable enable
+
 namespace Avalonia.Styling
 {
     /// <summary>
@@ -16,49 +15,16 @@ namespace Avalonia.Styling
     /// </summary>
     public class Styles : AvaloniaObject, IAvaloniaList<IStyle>, IStyle, ISetResourceParent
     {
-        private IResourceNode _parent;
-        private IResourceDictionary _resources;
-        private AvaloniaList<IStyle> _styles = new AvaloniaList<IStyle>();
-        private Dictionary<Type, List<IStyle>> _cache;
+        private readonly AvaloniaList<IStyle> _styles = new AvaloniaList<IStyle>();
+        private IResourceNode? _parent;
+        private IResourceDictionary? _resources;
+        private Dictionary<Type, List<IStyle>?>? _cache;
         private bool _notifyingResourcesChanged;
 
         public Styles()
         {
             _styles.ResetBehavior = ResetBehavior.Remove;
-            _styles.ForEachItem(
-                x =>
-                {
-                    if (x.ResourceParent == null && x is ISetResourceParent setParent)
-                    {
-                        setParent.SetParent(this);
-                        setParent.ParentResourcesChanged(new ResourcesChangedEventArgs());
-                    }
-
-                    if (x.HasResources)
-                    {
-                        ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
-                    }
-
-                    x.ResourcesChanged += NotifyResourcesChanged;
-                    _cache = null;
-                },
-                x =>
-                {
-                    if (x.ResourceParent == this && x is ISetResourceParent setParent)
-                    {
-                        setParent.SetParent(null);
-                        setParent.ParentResourcesChanged(new ResourcesChangedEventArgs());
-                    }
-
-                    if (x.HasResources)
-                    {
-                        ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
-                    }
-
-                    x.ResourcesChanged -= NotifyResourcesChanged;
-                    _cache = null;
-                },
-                () => { });
+            _styles.CollectionChanged += OnCollectionChanged;
         }
 
         public Styles(IResourceNode parent)
@@ -67,14 +33,10 @@ namespace Avalonia.Styling
             _parent = parent;
         }
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged
-        {
-            add => _styles.CollectionChanged += value;
-            remove => _styles.CollectionChanged -= value;
-        }
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
         /// <inheritdoc/>
-        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+        public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
         /// <inheritdoc/>
         public int Count => _styles.Count;
@@ -90,7 +52,7 @@ namespace Avalonia.Styling
             get => _resources ?? (Resources = new ResourceDictionary());
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
+                value = value ?? throw new ArgumentNullException(nameof(Resources));
 
                 var hadResources = false;
 
@@ -111,13 +73,15 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        IResourceNode IResourceNode.ResourceParent => _parent;
+        IResourceNode? IResourceNode.ResourceParent => _parent;
 
         /// <inheritdoc/>
         bool ICollection<IStyle>.IsReadOnly => false;
 
         /// <inheritdoc/>
         IStyle IReadOnlyList<IStyle>.this[int index] => _styles[index];
+
+        IReadOnlyList<IStyle> IStyle.Children => this;
 
         /// <inheritdoc/>
         public IStyle this[int index]
@@ -126,66 +90,50 @@ namespace Avalonia.Styling
             set => _styles[index] = value;
         }
 
-        /// <summary>
-        /// Attaches the style to a control if the style's selector matches.
-        /// </summary>
-        /// <param name="control">The control to attach to.</param>
-        /// <param name="container">
-        /// The control that contains this style. May be null.
-        /// </param>
-        public bool Attach(IStyleable control, IStyleHost container)
+        /// <inheritdoc/>
+        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
         {
-            if (_cache == null)
-            {
-                _cache = new Dictionary<Type, List<IStyle>>();
-            }
+            _cache ??= new Dictionary<Type, List<IStyle>?>();
 
-            if (_cache.TryGetValue(control.StyleKey, out var cached))
+            if (_cache.TryGetValue(target.StyleKey, out var cached))
             {
-                if (cached != null)
+                if (cached is object)
                 {
                     foreach (var style in cached)
                     {
-                        style.Attach(control, container);
+                        style.TryAttach(target, host);
                     }
 
-                    return true;
+                    return SelectorMatchResult.AlwaysThisType;
                 }
-
-                return false;
+                else
+                {
+                    return SelectorMatchResult.NeverThisType;
+                }
             }
             else
             {
-                List<IStyle> result = null;
+                List<IStyle>? matches = null;
 
-                foreach (var style in this)
+                foreach (var child in this)
                 {
-                    if (style.Attach(control, container))
+                    if (child.TryAttach(target, host) != SelectorMatchResult.NeverThisType)
                     {
-                        if (result == null)
-                        {
-                            result = new List<IStyle>();
-                        }
-
-                        result.Add(style);
+                        matches ??= new List<IStyle>();
+                        matches.Add(child);
                     }
                 }
 
-                _cache.Add(control.StyleKey, result);
-                return result != null;
-            }
-        }
-
-        public void Detach()
-        {
-            foreach (IStyle style in this)
-            {
-                style.Detach();
+                _cache.Add(target.StyleKey, matches);
+                
+                return matches is null ?
+                    SelectorMatchResult.NeverThisType :
+                    SelectorMatchResult.AlwaysThisType;
             }
         }
 
         /// <inheritdoc/>
-        public bool TryGetResource(object key, out object value)
+        public bool TryGetResource(object key, out object? value)
         {
             if (_resources != null && _resources.TryGetResource(key, out value))
             {
@@ -269,6 +217,106 @@ namespace Avalonia.Styling
         void ISetResourceParent.ParentResourcesChanged(ResourcesChangedEventArgs e)
         {
             NotifyResourcesChanged(e);
+        }
+
+        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            static IReadOnlyList<T> ToReadOnlyList<T>(IList list)
+            {
+                if (list is IReadOnlyList<T>)
+                {
+                    return (IReadOnlyList<T>)list;
+                }
+                else
+                {
+                    var result = new T[list.Count];
+                    list.CopyTo(result, 0);
+                    return result;
+                }
+            }
+
+            void Add(IList items)
+            {
+                for (var i = 0; i < items.Count; ++i)
+                {
+                    var style = (IStyle)items[i];
+
+                    if (style.ResourceParent == null && style is ISetResourceParent setParent)
+                    {
+                        setParent.SetParent(this);
+                        setParent.ParentResourcesChanged(new ResourcesChangedEventArgs());
+                    }
+
+                    if (style.HasResources)
+                    {
+                        ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+                    }
+
+                    style.ResourcesChanged += NotifyResourcesChanged;
+                    _cache = null;
+                }
+
+                GetHost()?.StylesAdded(ToReadOnlyList<IStyle>(items));
+            }
+
+            void Remove(IList items)
+            {
+                for (var i = 0; i < items.Count; ++i)
+                {
+                    var style = (IStyle)items[i];
+
+                    if (style.ResourceParent == this && style is ISetResourceParent setParent)
+                    {
+                        setParent.SetParent(null);
+                        setParent.ParentResourcesChanged(new ResourcesChangedEventArgs());
+                    }
+
+                    if (style.HasResources)
+                    {
+                        ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+                    }
+
+                    style.ResourcesChanged -= NotifyResourcesChanged;
+                    _cache = null;
+                }
+
+                GetHost()?.StylesRemoved(ToReadOnlyList<IStyle>(items));
+            }
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    Add(e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    Remove(e.OldItems);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    Remove(e.OldItems);
+                    Add(e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    throw new InvalidOperationException("Reset should not be called on Styles.");
+            }
+
+            CollectionChanged?.Invoke(this, e);
+        }
+
+        private IStyleHost? GetHost()
+        {
+            var node = _parent;
+
+            while (node != null)
+            {
+                if (node is IStyleHost host)
+                {
+                    return host;
+                }
+
+                node = node.ResourceParent;
+            }
+
+            return null;
         }
 
         private void NotifyResourcesChanged(object sender, ResourcesChangedEventArgs e)

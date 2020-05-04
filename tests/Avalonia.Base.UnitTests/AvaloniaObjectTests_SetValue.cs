@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Data;
 using Xunit;
@@ -282,6 +279,41 @@ namespace Avalonia.Base.UnitTests
             target.SetValue(Class1.FrankProperty, BindingOperations.DoNothing);
 
             Assert.Equal("newvalue", target.GetValue(Class1.FrankProperty));
+        }
+
+        [Fact]
+        public void Disposing_Style_SetValue_Reverts_To_DefaultValue()
+        {
+            Class1 target = new Class1();
+
+            var d = target.SetValue(Class1.FooProperty, "foo", BindingPriority.Style);
+            d.Dispose();
+
+            Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Disposing_Style_SetValue_Reverts_To_Previous_Style_Value()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "foo", BindingPriority.Style);
+            var d = target.SetValue(Class1.FooProperty, "bar", BindingPriority.Style);
+            d.Dispose();
+
+            Assert.Equal("foo", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Disposing_Animation_SetValue_Reverts_To_Previous_Local_Value()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "foo", BindingPriority.LocalValue);
+            var d = target.SetValue(Class1.FooProperty, "bar", BindingPriority.Animation);
+            d.Dispose();
+
+            Assert.Equal("foo", target.GetValue(Class1.FooProperty));
         }
 
         private class Class1 : AvaloniaObject

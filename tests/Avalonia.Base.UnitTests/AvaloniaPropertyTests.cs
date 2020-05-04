@@ -1,8 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Data;
+using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -123,6 +121,11 @@ namespace Avalonia.Base.UnitTests
                 OverrideMetadata(typeof(T), metadata);
             }
 
+            public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
+            {
+                throw new NotImplementedException();
+            }
+
             internal override IDisposable RouteBind(
                 IAvaloniaObject o,
                 IObservable<BindingValue<object>> source,
@@ -146,7 +149,7 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
-            internal override void RouteSetValue(
+            internal override IDisposable RouteSetValue(
                 IAvaloniaObject o,
                 object value,
                 BindingPriority priority)

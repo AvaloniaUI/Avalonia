@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -98,7 +95,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Raised when the popup closes.
         /// </summary>
-        public event EventHandler? Closed;
+        public event EventHandler<PopupClosedEventArgs>? Closed;
 
         /// <summary>
         /// Raised when the popup opens.
@@ -273,13 +270,13 @@ namespace Avalonia.Controls.Primitives
 
                 if (parentPopupRoot?.Parent is Popup popup)
                 {
-                    DeferCleanup(SubscribeToEventHandler<Popup, EventHandler>(popup, ParentClosed,
+                    DeferCleanup(SubscribeToEventHandler<Popup, EventHandler<PopupClosedEventArgs>>(popup, ParentClosed,
                         (x, handler) => x.Closed += handler,
                         (x, handler) => x.Closed -= handler));
                 }
             }
 
-            DeferCleanup(topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel));
+            DeferCleanup(topLevel.AddDisposableHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel));
 
             DeferCleanup(InputManager.Instance?.Process.Subscribe(ListenForNonClientClick));
 
@@ -309,28 +306,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Closes the popup.
         /// </summary>
-        public void Close()
-        {
-            if (_openState is null)
-            {
-                using (BeginIgnoringIsOpen())
-                {
-                    IsOpen = false;
-                }
-
-                return;
-            }
-
-            _openState.Dispose();
-            _openState = null;
-
-            using (BeginIgnoringIsOpen())
-            {
-                IsOpen = false;
-            }
-
-            Closed?.Invoke(this, EventArgs.Empty);
-        }
+        public void Close() => CloseCore(null);
 
         /// <summary>
         /// Measures the control.
@@ -392,22 +368,44 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        private void CloseCore(EventArgs? closeEvent)
+        {
+            if (_openState is null)
+            {
+                using (BeginIgnoringIsOpen())
+                {
+                    IsOpen = false;
+                }
+
+                return;
+            }
+
+            _openState.Dispose();
+            _openState = null;
+
+            using (BeginIgnoringIsOpen())
+            {
+                IsOpen = false;
+            }
+
+            Closed?.Invoke(this, new PopupClosedEventArgs(closeEvent));
+        }
+
         private void ListenForNonClientClick(RawInputEventArgs e)
         {
             var mouse = e as RawPointerEventArgs;
 
             if (!StaysOpen && mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
             {
-                Close();
+                CloseCore(e);
             }
         }
 
         private void PointerPressedOutside(object sender, PointerPressedEventArgs e)
         {
-            if (!StaysOpen && !IsChildOrThis((IVisual)e.Source))
+            if (!StaysOpen && e.Source is IVisual v && !IsChildOrThis(v))
             {
-                Close();
-                e.Handled = true;
+                CloseCore(e);
             }
         }
 

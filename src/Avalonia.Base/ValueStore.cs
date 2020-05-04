@@ -70,23 +70,25 @@ namespace Avalonia
             return false;
         }
 
-        public void SetValue<T>(StyledPropertyBase<T> property, T value, BindingPriority priority)
+        public IDisposable? SetValue<T>(StyledPropertyBase<T> property, T value, BindingPriority priority)
         {
             if (property.ValidateValue?.Invoke(value) == false)
             {
                 throw new ArgumentException($"{value} is not a valid value for '{property.Name}.");
             }
 
+            IDisposable? result = null;
+
             if (_values.TryGetValue(property, out var slot))
             {
-                SetExisting(slot, property, value, priority);
+                result = SetExisting(slot, property, value, priority);
             }
             else if (property.HasCoercion)
             {
                 // If the property has any coercion callbacks then always create a PriorityValue.
                 var entry = new PriorityValue<T>(_owner, property, this);
                 _values.AddValue(property, entry);
-                entry.SetValue(value, priority);
+                result = entry.SetValue(value, priority);
             }
             else if (priority == BindingPriority.LocalValue)
             {
@@ -95,10 +97,13 @@ namespace Avalonia
             }
             else
             {
-                var entry = new ConstantValueEntry<T>(property, value, priority);
+                var entry = new ConstantValueEntry<T>(property, value, priority, this);
                 _values.AddValue(property, entry);
                 _sink.ValueChanged(property, priority, default, value);
+                result = entry;
             }
+
+            return result;
         }
 
         public IDisposable AddBinding<T>(
@@ -205,21 +210,23 @@ namespace Avalonia
             }
         }
 
-        private void SetExisting<T>(
+        private IDisposable? SetExisting<T>(
             object slot,
             StyledPropertyBase<T> property,
             T value,
             BindingPriority priority)
         {
+            IDisposable? result = null;
+
             if (slot is IPriorityValueEntry<T> e)
             {
                 var priorityValue = new PriorityValue<T>(_owner, property, this, e);
                 _values.SetValue(property, priorityValue);
-                priorityValue.SetValue(value, priority);
+                result = priorityValue.SetValue(value, priority);
             }
             else if (slot is PriorityValue<T> p)
             {
-                p.SetValue(value, priority);
+                result = p.SetValue(value, priority);
             }
             else if (slot is LocalValueEntry<T> l)
             {
@@ -232,7 +239,7 @@ namespace Avalonia
                 else
                 {
                     var priorityValue = new PriorityValue<T>(_owner, property, this, l);
-                    priorityValue.SetValue(value, priority);
+                    result = priorityValue.SetValue(value, priority);
                     _values.SetValue(property, priorityValue);
                 }
             }
@@ -240,6 +247,8 @@ namespace Avalonia
             {
                 throw new NotSupportedException("Unrecognised value store slot type.");
             }
+
+            return result;
         }
 
         private IDisposable BindExisting<T>(

@@ -56,6 +56,21 @@ namespace ControlCatalog
                 }
             };
             Styles.Add(light);
+
+            var decorations = this.Find<ComboBox>("Decorations");
+            decorations.SelectionChanged += (sender, e) =>
+            {
+                if (VisualRoot is Window window)
+                    window.SystemDecorations = (SystemDecorations)decorations.SelectedIndex;
+            };
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            var decorations = this.Find<ComboBox>("Decorations");
+            if (VisualRoot is Window window)
+                decorations.SelectedIndex = (int)window.SystemDecorations;
         }
     }
 }

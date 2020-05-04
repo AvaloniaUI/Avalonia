@@ -66,7 +66,7 @@ namespace Avalonia.Media.TextFormatting
 
             //ToDo: Fix FontFamily fallback
             currentTypeface =
-                FontManager.Current.MatchCharacter(codepoint, defaultTypeface.Weight, defaultTypeface.Style);
+                FontManager.Current.MatchCharacter(codepoint, defaultTypeface.Weight, defaultTypeface.Style, defaultStyle.TextFormat.Typeface.FontFamily);
 
             if (currentTypeface != null && TryGetRunProperties(text, currentTypeface, defaultTypeface, out count))
             {

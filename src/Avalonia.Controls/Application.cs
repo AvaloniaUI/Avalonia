@@ -1,7 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.Collections.Generic;
 using System.Reactive.Concurrency;
 using System.Threading;
 using Avalonia.Animation;
@@ -45,6 +43,8 @@ namespace Avalonia
         private Styles _styles;
         private IResourceDictionary _resources;
         private bool _notifyingResourcesChanged;
+        private Action<IReadOnlyList<IStyle>> _stylesAdded;
+        private Action<IReadOnlyList<IStyle>> _stylesRemoved;
 
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -201,6 +201,18 @@ namespace Avalonia
         /// </summary>
         public IApplicationLifetime ApplicationLifetime { get; set; }
 
+        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesAdded
+        {
+            add => _stylesAdded += value;
+            remove => _stylesAdded -= value;
+        }
+
+        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesRemoved
+        {
+            add => _stylesRemoved += value;
+            remove => _stylesRemoved -= value;
+        }
+
         /// <summary>
         /// Initializes the application by loading XAML etc.
         /// </summary>
@@ -212,6 +224,16 @@ namespace Avalonia
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||
                    Styles.TryGetResource(key, out value);
+        }
+
+        void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
+        {
+            _stylesAdded?.Invoke(styles);
+        }
+
+        void IStyleHost.StylesRemoved(IReadOnlyList<IStyle> styles)
+        {
+            _stylesRemoved?.Invoke(styles);
         }
 
         /// <summary>
@@ -286,6 +308,5 @@ namespace Avalonia
             get => _name;
             set => SetAndRaise(NameProperty, ref _name, value);
         }
-
     }
 }

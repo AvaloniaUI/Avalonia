@@ -1,6 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
+using System;
+using Avalonia.Data;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Shapes
@@ -13,6 +12,7 @@ namespace Avalonia.Controls.Shapes
         static Path()
         {
             AffectsGeometry<Path>(DataProperty);
+            DataProperty.Changed.AddClassHandler<Path>((o, e) => o.DataChanged(e));
         }
 
         public Geometry Data
@@ -22,5 +22,26 @@ namespace Avalonia.Controls.Shapes
         }
 
         protected override Geometry CreateDefiningGeometry() => Data;
+
+        private void DataChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var oldGeometry = (Geometry)e.OldValue;
+            var newGeometry = (Geometry)e.NewValue;
+
+            if (oldGeometry is object)
+            {
+                oldGeometry.Changed -= GeometryChanged;
+            }
+
+            if (newGeometry is object)
+            {
+                newGeometry.Changed += GeometryChanged;
+            }
+        }
+
+        private void GeometryChanged(object sender, EventArgs e)
+        {
+            InvalidateGeometry();
+        }
     }
 }

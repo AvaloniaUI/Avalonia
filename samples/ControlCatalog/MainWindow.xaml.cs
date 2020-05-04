@@ -1,13 +1,11 @@
+using System;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
-using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using ControlCatalog.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ControlCatalog
 {
@@ -31,9 +29,16 @@ namespace ControlCatalog
 
             DataContext = new MainWindowViewModel(_notificationArea);
             _recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[2] as NativeMenuItem).Menu;
+
             var mainMenu = this.FindControl<Menu>("MainMenu");
             mainMenu.AttachedToVisualTree += MenuAttached;
         }
+
+        public static string MenuQuitHeader => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "Quit Avalonia" : "E_xit";
+
+        public static KeyGesture MenuQuitGesture => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+            new KeyGesture(Key.Q, KeyModifiers.Meta) :
+            new KeyGesture(Key.F4, KeyModifiers.Alt);
 
         public void MenuAttached(object sender, VisualTreeAttachmentEventArgs e)
         {

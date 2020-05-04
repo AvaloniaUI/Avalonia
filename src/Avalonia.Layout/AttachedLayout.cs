@@ -46,7 +46,23 @@ namespace Avalonia.Layout
         /// <see cref="VirtualizingLayout.InitializeForContextCore"/> to provide the behavior for
         /// this method in a derived class.
         /// </remarks>
-        public abstract void InitializeForContext(LayoutContext context);
+        public void InitializeForContext(LayoutContext context)
+        {
+            if (this is VirtualizingLayout virtualizingLayout)
+            {
+                var virtualizingContext = GetVirtualizingLayoutContext(context);
+                virtualizingLayout.InitializeForContextCore(virtualizingContext);
+            }
+            else if (this is NonVirtualizingLayout nonVirtualizingLayout)
+            {
+                var nonVirtualizingContext = GetNonVirtualizingLayoutContext(context);
+                nonVirtualizingLayout.InitializeForContextCore(nonVirtualizingContext);
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+        }
 
         /// <summary>
         /// Removes any state the layout previously stored on the ILayoutable container.
@@ -55,7 +71,23 @@ namespace Avalonia.Layout
         /// The context object that facilitates communication between the layout and its host
         /// container.
         /// </param>
-        public abstract void UninitializeForContext(LayoutContext context);
+        public void UninitializeForContext(LayoutContext context)
+        {
+            if (this is VirtualizingLayout virtualizingLayout)
+            {
+                var virtualizingContext = GetVirtualizingLayoutContext(context);
+                virtualizingLayout.UninitializeForContextCore(virtualizingContext);
+            }
+            else if (this is NonVirtualizingLayout nonVirtualizingLayout)
+            {
+                var nonVirtualizingContext = GetNonVirtualizingLayoutContext(context);
+                nonVirtualizingLayout.UninitializeForContextCore(nonVirtualizingContext);
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+        }
 
         /// <summary>
         /// Suggests a DesiredSize for a container element. A container element that supports
@@ -73,7 +105,23 @@ namespace Avalonia.Layout
         /// if scrolling or other resize behavior is possible in that particular container.
         /// </param>
         /// <returns></returns>
-        public abstract Size Measure(LayoutContext context, Size availableSize);
+        public Size Measure(LayoutContext context, Size availableSize)
+        {
+            if (this is VirtualizingLayout virtualizingLayout)
+            {
+                var virtualizingContext = GetVirtualizingLayoutContext(context);
+                return virtualizingLayout.MeasureOverride(virtualizingContext, availableSize);
+            }
+            else if (this is NonVirtualizingLayout nonVirtualizingLayout)
+            {
+                var nonVirtualizingContext = GetNonVirtualizingLayoutContext(context);
+                return nonVirtualizingLayout.MeasureOverride(nonVirtualizingContext, availableSize);
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+        }
 
         /// <summary>
         /// Positions child elements and determines a size for a container UIElement. Container
@@ -88,7 +136,23 @@ namespace Avalonia.Layout
         /// The final size that the container computes for the child in layout.
         /// </param>
         /// <returns>The actual size that is used after the element is arranged in layout.</returns>
-        public abstract Size Arrange(LayoutContext context, Size finalSize);
+        public Size Arrange(LayoutContext context, Size finalSize)
+        {
+            if (this is VirtualizingLayout virtualizingLayout)
+            {
+                var virtualizingContext = GetVirtualizingLayoutContext(context);
+                return virtualizingLayout.ArrangeOverride(virtualizingContext, finalSize);
+            }
+            else if (this is NonVirtualizingLayout nonVirtualizingLayout)
+            {
+                var nonVirtualizingContext = GetNonVirtualizingLayoutContext(context);
+                return nonVirtualizingLayout.ArrangeOverride(nonVirtualizingContext, finalSize);
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+        }
 
         /// <summary>
         /// Invalidates the measurement state (layout) for all ILayoutable containers that reference
@@ -102,5 +166,37 @@ namespace Avalonia.Layout
         /// occurs asynchronously.
         /// </summary>
         protected void InvalidateArrange() => ArrangeInvalidated?.Invoke(this, EventArgs.Empty);
+
+        private VirtualizingLayoutContext GetVirtualizingLayoutContext(LayoutContext context)
+        {
+            if (context is VirtualizingLayoutContext virtualizingContext)
+            {
+                return virtualizingContext;
+            }
+            else if (context is NonVirtualizingLayoutContext nonVirtualizingContext)
+            {
+                return nonVirtualizingContext.GetVirtualizingContextAdapter();
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        private NonVirtualizingLayoutContext GetNonVirtualizingLayoutContext(LayoutContext context)
+        {
+            if (context is NonVirtualizingLayoutContext nonVirtualizingContext)
+            {
+                return nonVirtualizingContext;
+            }
+            else if (context is VirtualizingLayoutContext virtualizingContext)
+            {
+                return virtualizingContext.GetNonVirtualizingContextAdapter();
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+        }
     }
 }

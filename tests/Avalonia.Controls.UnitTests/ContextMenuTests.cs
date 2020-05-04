@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Windows.Input;
-using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Markup.Data;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
@@ -159,6 +155,19 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Can_Set_Clear_ContextMenu_Property()
+        {
+            using (Application())
+            {
+                var target = new ContextMenu();
+                var control = new Panel();
+
+                control.ContextMenu = target;
+                control.ContextMenu = null;
+            }
+        }
+
         [Fact(Skip = "The only reason this test was 'passing' before was that the author forgot to call Window.ApplyTemplate()")]
         public void Cancelling_Closing_Leaves_ContextMenuOpen()
         {
@@ -200,16 +209,17 @@ namespace Avalonia.Controls.UnitTests
             screenImpl.Setup(x => x.ScreenCount).Returns(1);
             screenImpl.Setup(X => X.AllScreens).Returns( new[] { new Screen(1, screen, screen, true) });
 
-            popupImpl = MockWindowingPlatform.CreatePopupMock();
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            popupImpl = MockWindowingPlatform.CreatePopupMock(windowImpl.Object);
             popupImpl.SetupGet(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.CreatePopup()).Returns(popupImpl.Object);
 
-            var windowImpl = MockWindowingPlatform.CreateWindowMock(() => popupImpl.Object);
             windowImpl.Setup(x => x.Screen).Returns(screenImpl.Object);
 
             var services = TestServices.StyledWindow.With(
                                         inputManager: new InputManager(),
                                         windowImpl: windowImpl.Object,
-                                        windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object, () => popupImpl.Object));
+                                        windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object, x => popupImpl.Object));
 
             return UnitTestApplication.Start(services);
         }

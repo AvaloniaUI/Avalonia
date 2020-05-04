@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using System.Reactive;
@@ -90,7 +87,7 @@ namespace Avalonia.Styling.UnitTests
             child.LogicalParent = parent;
 
             var selector = default(Selector).OfType<TestLogical1>().Class("foo").Descendant().OfType<TestLogical3>();
-            var activator = selector.Match(child).Activator;
+            var activator = selector.Match(child).Activator.ToObservable();
 
             Assert.False(await activator.Take(1));
             parent.Classes.Add("foo");

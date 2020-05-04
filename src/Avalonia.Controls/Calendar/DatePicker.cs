@@ -476,7 +476,7 @@ namespace Avalonia.Controls
             {
                 _dropDownButton.Click += DropDownButton_Click;
                 _buttonPointerPressedSubscription =
-                    _dropDownButton.AddHandler(PointerPressedEvent, DropDownButton_PointerPressed, handledEventsToo: true);
+                    _dropDownButton.AddDisposableHandler(PointerPressedEvent, DropDownButton_PointerPressed, handledEventsToo: true);
             }
 
             if (_textBox != null)
@@ -895,12 +895,17 @@ namespace Avalonia.Controls
                 _ignoreButtonClick = false;
             }
         }
-        private void PopUp_Closed(object sender, EventArgs e)
+        private void PopUp_Closed(object sender, PopupClosedEventArgs e)
         {
             IsDropDownOpen = false;
 
             if(!_isPopupClosing)
             {
+                if (e.CloseEvent is PointerEventArgs pointerEvent)
+                {
+                    pointerEvent.Handled = true;
+                }
+
                 _isPopupClosing = true;
                 Threading.Dispatcher.UIThread.InvokeAsync(() => _isPopupClosing = false);
             }

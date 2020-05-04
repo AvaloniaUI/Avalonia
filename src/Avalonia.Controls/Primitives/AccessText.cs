@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -158,17 +155,6 @@ namespace Avalonia.Controls.Primitives
         protected override TextLayout CreateTextLayout(Size constraint, string text)
         {
             return base.CreateTextLayout(constraint, StripAccessKey(text));
-        }
-
-        /// <summary>
-        /// Measures the control.
-        /// </summary>
-        /// <param name="availableSize">The available size for the control.</param>
-        /// <returns>The desired size.</returns>
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            var result = base.MeasureOverride(availableSize);
-            return result.WithHeight(result.Height + 1);
         }
 
         /// <inheritdoc/>

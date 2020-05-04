@@ -1,12 +1,10 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -87,6 +85,137 @@ namespace Avalonia.Controls.UnitTests
             target.ScrollToEnd();
 
             Assert.Equal(new Vector(0, 40), target.Offset);
+        }
+
+        [Fact]
+        public void SmallChange_Should_Be_16()
+        {
+            var target = new ScrollViewer();
+
+            Assert.Equal(new Size(16, 16), target.SmallChange);
+        }
+
+        [Fact]
+        public void LargeChange_Should_Be_Viewport()
+        {
+            var target = new ScrollViewer();
+
+            target.SetValue(ScrollViewer.ViewportProperty, new Size(104, 143));
+            Assert.Equal(new Size(104, 143), target.LargeChange);
+        }
+
+        [Fact]
+        public void SmallChange_Should_Come_From_ILogicalScrollable_If_Present()
+        {
+            var child = new Mock<Control>();
+            var logicalScroll = child.As<ILogicalScrollable>();
+
+            logicalScroll.Setup(x => x.IsLogicalScrollEnabled).Returns(true);
+            logicalScroll.Setup(x => x.ScrollSize).Returns(new Size(12, 43));
+
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = child.Object,
+            };
+
+            target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
+
+            Assert.Equal(new Size(12, 43), target.SmallChange);
+        }
+
+        [Fact]
+        public void LargeChange_Should_Come_From_ILogicalScrollable_If_Present()
+        {
+            var child = new Mock<Control>();
+            var logicalScroll = child.As<ILogicalScrollable>();
+
+            logicalScroll.Setup(x => x.IsLogicalScrollEnabled).Returns(true);
+            logicalScroll.Setup(x => x.PageScrollSize).Returns(new Size(45, 67));
+
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+                Content = child.Object,
+            };
+
+            target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
+
+            Assert.Equal(new Size(45, 67), target.LargeChange);
+        }
+
+        [Fact]
+        public void Changing_Extent_Should_Raise_ScrollChanged()
+        {
+            var target = new ScrollViewer();
+            var raised = 0;
+
+            target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
+            target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
+            target.Offset = new Vector(10, 10);
+
+            target.ScrollChanged += (s, e) =>
+            {
+                Assert.Equal(new Vector(11, 12), e.ExtentDelta);
+                Assert.Equal(default, e.OffsetDelta);
+                Assert.Equal(default, e.ViewportDelta);
+                ++raised;
+            };
+
+            target.SetValue(ScrollViewer.ExtentProperty, new Size(111, 112));
+
+            Assert.Equal(1, raised);
+
+        }
+
+        [Fact]
+        public void Changing_Offset_Should_Raise_ScrollChanged()
+        {
+            var target = new ScrollViewer();
+            var raised = 0;
+
+            target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
+            target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
+            target.Offset = new Vector(10, 10);
+
+            target.ScrollChanged += (s, e) =>
+            {
+                Assert.Equal(default, e.ExtentDelta);
+                Assert.Equal(new Vector(12, 14), e.OffsetDelta);
+                Assert.Equal(default, e.ViewportDelta);
+                ++raised;
+            };
+
+            target.Offset = new Vector(22, 24);
+
+            Assert.Equal(1, raised);
+
+        }
+
+        [Fact]
+        public void Changing_Viewport_Should_Raise_ScrollChanged()
+        {
+            var target = new ScrollViewer();
+            var raised = 0;
+
+            target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
+            target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
+            target.Offset = new Vector(10, 10);
+
+            target.ScrollChanged += (s, e) =>
+            {
+                Assert.Equal(default, e.ExtentDelta);
+                Assert.Equal(default, e.OffsetDelta);
+                Assert.Equal(new Vector(6, 8), e.ViewportDelta);
+                ++raised;
+            };
+
+            target.SetValue(ScrollViewer.ViewportProperty, new Size(56, 58));
+
+            Assert.Equal(1, raised);
+
         }
 
         private Control CreateTemplate(ScrollViewer control, INameScope scope)

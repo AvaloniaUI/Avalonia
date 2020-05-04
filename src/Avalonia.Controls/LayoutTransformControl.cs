@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-//
 // Idea got from and adapted to work in avalonia
 // http://silverlight.codeplex.com/SourceControl/changeset/view/74775#Release/Silverlight4/Source/Controls.Layout.Toolkit/LayoutTransformer/LayoutTransformer.cs
 //

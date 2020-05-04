@@ -1,9 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Logging;
@@ -336,7 +332,15 @@ namespace Avalonia
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
             where T : Visual
         {
-            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            static void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Sender is T sender)
+                {
+                    sender.InvalidateVisual();
+                }
+            }
+
+            static void InvalidateAndSubscribe(AvaloniaPropertyChangedEventArgs e)
             {
                 if (e.Sender is T sender)
                 {
@@ -347,7 +351,7 @@ namespace Avalonia
 
                     if (e.NewValue is IAffectsRender newValue)
                     {
-                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);                        
+                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);
                     }
 
                     sender.InvalidateVisual();
@@ -356,7 +360,14 @@ namespace Avalonia
 
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(Invalidate);
+                if (property.CanValueAffectRender())
+                {
+                    property.Changed.Subscribe(e => InvalidateAndSubscribe(e));
+                }
+                else
+                {
+                    property.Changed.Subscribe(e => Invalidate(e));
+                }
             }
         }
 

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
@@ -470,6 +467,15 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Uses the visitor pattern to resolve an untyped property to a typed property.
+        /// </summary>
+        /// <typeparam name="TData">The type of user data passed.</typeparam>
+        /// <param name="vistor">The visitor which will accept the typed property.</param>
+        /// <param name="data">The user data to pass.</param>
+        public abstract void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
+            where TData : struct;
+
+        /// <summary>
         /// Notifies the <see cref="Changed"/> observable.
         /// </summary>
         /// <param name="e">The observable arguments.</param>
@@ -496,7 +502,10 @@ namespace Avalonia
         /// <param name="o">The object instance.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority.</param>
-        internal abstract void RouteSetValue(
+        /// <returns>
+        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
+        /// </returns>
+        internal abstract IDisposable? RouteSetValue(
             IAvaloniaObject o,
             object value,
             BindingPriority priority);

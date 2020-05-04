@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia.Interactivity
@@ -13,7 +10,7 @@ namespace Avalonia.Interactivity
         /// <summary>
         /// Gets the interactive parent of the object for bubbling and tunneling events.
         /// </summary>
-        IInteractive InteractiveParent { get; }
+        IInteractive? InteractiveParent { get; }
 
         /// <summary>
         /// Adds a handler for the specified routed event.
@@ -23,7 +20,7 @@ namespace Avalonia.Interactivity
         /// <param name="routes">The routing strategies to listen to.</param>
         /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
         /// <returns>A disposable that terminates the event subscription.</returns>
-        IDisposable AddHandler(
+        void AddHandler(
             RoutedEvent routedEvent,
             Delegate handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
@@ -38,7 +35,7 @@ namespace Avalonia.Interactivity
         /// <param name="routes">The routing strategies to listen to.</param>
         /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
         /// <returns>A disposable that terminates the event subscription.</returns>
-        IDisposable AddHandler<TEventArgs>(
+        void AddHandler<TEventArgs>(
             RoutedEvent<TEventArgs> routedEvent,
             EventHandler<TEventArgs> handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
@@ -59,6 +56,13 @@ namespace Avalonia.Interactivity
         /// <param name="handler">The handler.</param>
         void RemoveHandler<TEventArgs>(RoutedEvent<TEventArgs> routedEvent, EventHandler<TEventArgs> handler)
             where TEventArgs : RoutedEventArgs;
+
+        /// <summary>
+        /// Adds the object's handlers for a routed event to an event route.
+        /// </summary>
+        /// <param name="routedEvent">The event.</param>
+        /// <param name="route">The event route.</param>
+        void AddToEventRoute(RoutedEvent routedEvent, EventRoute route);
 
         /// <summary>
         /// Raises a routed event.

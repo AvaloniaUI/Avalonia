@@ -269,6 +269,9 @@ namespace Avalonia.Controls.Primitives
                 // Since we didn't know the final widths of the columns until we resized,
                 // we waited until now to measure each cell
                 double leftEdge = 0;
+                if (autoSizeHeight)
+                    DesiredHeight = 0;
+
                 foreach (DataGridColumn column in OwningGrid.ColumnsInternal.GetVisibleColumns())
                 {
                     DataGridCell cell = OwningRow.Cells[column.Index];

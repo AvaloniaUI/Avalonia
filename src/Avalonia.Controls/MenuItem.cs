@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +10,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -47,6 +45,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<object> IconProperty =
             AvaloniaProperty.Register<MenuItem, object>(nameof(Icon));
+
+        /// <summary>
+        /// Defines the <see cref="InputGesture"/> property.
+        /// </summary>
+        public static readonly StyledProperty<KeyGesture> InputGestureProperty =
+            AvaloniaProperty.Register<MenuItem, KeyGesture>(nameof(InputGesture));
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
@@ -93,6 +97,7 @@ namespace Avalonia.Controls
         private ICommand _command;
         private bool _commandCanExecute = true;
         private Popup _popup;
+        private IDisposable _gridHack;
 
         /// <summary>
         /// Initializes static members of the <see cref="MenuItem"/> class.
@@ -192,6 +197,19 @@ namespace Avalonia.Controls
         {
             get { return GetValue(IconProperty); }
             set { SetValue(IconProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the input gesture that will be displayed in the menu item.
+        /// </summary>
+        /// <remarks>
+        /// Setting this property does not cause the input gesture to be handled by the menu item,
+        /// it simply displays the gesture text in the menu.
+        /// </remarks>
+        public KeyGesture InputGesture
+        {
+            get { return GetValue(InputGestureProperty); }
+            set { SetValue(InputGestureProperty, value); }
         }
 
         /// <summary>
@@ -303,6 +321,32 @@ namespace Avalonia.Controls
             if (Command != null)
             {
                 Command.CanExecuteChanged -= CanExecuteChanged;
+            }
+
+            _gridHack?.Dispose();
+            _gridHack = null;
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            if (this.GetVisualParent() is IControl parent)
+            {
+                // HACK: This nasty but it's all WPF's fault. Grid uses an inherited attached
+                // property to store SharedSizeGroup state, except property inheritance is done
+                // down the logical tree. In this case, the control which is setting
+                // Grid.IsSharedSizeScope="True" is not in the logical tree. Instead of fixing
+                // the way Grid stores shared size state, the developers of WPF just created a
+                // binding of the internal state of the visual parent to the menu item. We don't
+                // have much choice but to do the same for now unless we want to refactor Grid,
+                // which I honestly am not brave enough to do right now. Here's the same hack in
+                // the WPF codebase:
+                //
+                // https://github.com/dotnet/wpf/blob/89537909bdf36bc918e88b37751add46a8980bb0/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/MenuItem.cs#L2126-L2141
+                _gridHack = Bind(
+                    DefinitionBase.PrivateSharedSizeScopeProperty,
+                    parent.GetBindingObservable(DefinitionBase.PrivateSharedSizeScopeProperty));
             }
         }
 

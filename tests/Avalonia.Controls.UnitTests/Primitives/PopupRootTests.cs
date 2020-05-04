@@ -1,15 +1,15 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
@@ -175,9 +175,146 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
-        private PopupRoot CreateTarget(TopLevel popupParent)
+        [Fact]
+        public void Child_Should_Be_Measured_With_Infinity()
         {
-            var result = new PopupRoot(popupParent, popupParent.PlatformImpl.CreatePopup())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new ChildControl();
+                var window = new Window();
+                var target = CreateTarget(window);
+                
+                target.Content = child;
+                target.Show();
+
+                Assert.Equal(Size.Infinity, child.MeasureSize);
+            }
+        }
+
+        [Fact]
+        public void Child_Should_Be_Measured_With_Width_Height_When_Set()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new ChildControl();
+                var window = new Window();
+                var target = CreateTarget(window);
+
+                target.Width = 500;
+                target.Height = 600;
+                target.Content = child;
+                target.Show();
+
+                Assert.Equal(new Size(500, 600), child.MeasureSize);
+            }
+        }
+
+        [Fact]
+        public void Child_Should_Be_Measured_With_MaxWidth_MaxHeight_When_Set()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var child = new ChildControl();
+                var window = new Window();
+                var target = CreateTarget(window);
+
+                target.MaxWidth = 500;
+                target.MaxHeight = 600;
+                target.Content = child;
+                target.Show();
+
+                Assert.Equal(new Size(500, 600), child.MeasureSize);
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Have_Offset_On_Bounds_When_Content_Larger_Than_Max_Window_Size()
+        {
+            // Issue #3784.
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl);
+
+                var child = new Canvas
+                {
+                    Width = 400,
+                    Height = 1344,
+                };
+
+                var target = CreateTarget(window, popupImpl.Object);
+                target.Content = child;
+
+                target.Show();
+
+                Assert.Equal(new Size(400, 1024), target.Bounds.Size);
+
+                // Issue #3784 causes this to be (0, 160) which makes no sense as Window has no
+                // parent control to be offset against.
+                Assert.Equal(new Point(0, 0), target.Bounds.Position);
+            }
+        }
+
+        [Fact]
+        public void MinWidth_MinHeight_Should_Be_Respected()
+        {
+            // Issue #3796
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl);
+
+                var target = CreateTarget(window, popupImpl.Object);
+                target.MinWidth = 400;
+                target.MinHeight = 800;
+                target.Content = new Border
+                {
+                    Width = 100,
+                    Height = 100,
+                };
+
+                target.Show();
+
+                Assert.Equal(new Rect(0, 0, 400, 800), target.Bounds);
+                Assert.Equal(new Size(400, 800), target.ClientSize);
+                Assert.Equal(new Size(400, 800), target.PlatformImpl.ClientSize);
+            }
+        }
+
+        [Fact]
+        public void Setting_Width_Should_Resize_WindowImpl()
+        {
+            // Issue #3796
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl);
+                var positioner = new Mock<IPopupPositioner>();
+                popupImpl.Setup(x => x.PopupPositioner).Returns(positioner.Object);
+
+                var target = CreateTarget(window, popupImpl.Object);
+                target.Width = 400;
+                target.Height = 800;
+
+                target.Show();
+
+                Assert.Equal(400, target.Width);
+                Assert.Equal(800, target.Height);
+
+                target.Width = 410;
+                target.LayoutManager.ExecuteLayoutPass();
+
+                positioner.Verify(x => 
+                    x.Update(It.Is<PopupPositionerParameters>(x => x.Size.Width == 410)));
+                Assert.Equal(410, target.Width);
+            }
+        }
+
+        private PopupRoot CreateTarget(TopLevel popupParent, IPopupImpl impl = null)
+        {
+            impl ??= popupParent.PlatformImpl.CreatePopup();
+
+            var result = new PopupRoot(popupParent, impl)
             {
                 Template = new FuncControlTemplate<PopupRoot>((parent, scope) =>
                     new ContentPresenter
@@ -218,6 +355,17 @@ namespace Avalonia.Controls.UnitTests.Primitives
             protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
             {
                 Popup = (Popup)this.GetVisualChildren().Single();
+            }
+        }
+
+        private class ChildControl : Control
+        {
+            public Size MeasureSize { get; private set; }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                MeasureSize = availableSize;
+                return base.MeasureOverride(availableSize);
             }
         }
     }
