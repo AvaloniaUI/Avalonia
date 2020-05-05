@@ -39,7 +39,6 @@ namespace Avalonia.Win32
 
         private SavedWindowInfo _savedWindowInfo;
         private bool _isFullScreenActive;
-        private IntPtr _taskBarList;
 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
@@ -547,40 +546,6 @@ namespace Avalonia.Win32
 
         /// <summary>
         /// Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
-        /// </summary>
-        /// <param name="fullscreen">Fullscreen state.</param>
-        private unsafe void MarkFullscreen(bool fullscreen)
-        {
-            if (_taskBarList == IntPtr.Zero)
-            {
-                Guid clsid = ShellIds.TaskBarList;
-                Guid iid = ShellIds.ITaskBarList2;
-
-                int result = CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out _taskBarList);
-
-                if (_taskBarList != IntPtr.Zero)
-                {
-                    var ptr = (ITaskBarList2VTable**)_taskBarList.ToPointer();
-
-                    var hrInit = Marshal.GetDelegateForFunctionPointer<HrInit>((*ptr)->HrInit);
-
-                    if (hrInit(_taskBarList) != HRESULT.S_OK)
-                    {
-                        _taskBarList = IntPtr.Zero;
-                    }
-                }
-            }
-
-            if (_taskBarList != IntPtr.Zero)
-            {
-                var ptr = (ITaskBarList2VTable**)_taskBarList.ToPointer();
-                var markFullscreen = Marshal.GetDelegateForFunctionPointer<MarkFullscreenWindow>((*ptr)->MarkFullscreenWindow);
-                markFullscreen(_taskBarList, _hwnd, fullscreen);
-            }
-        }
-
-        /// <summary>
-        /// Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
         /// Method must only be called from inside UpdateWindowProperties.
         /// </summary>
         /// <param name="fullscreen"></param>
@@ -634,7 +599,7 @@ namespace Avalonia.Win32
                 UpdateWindowProperties(_windowProperties, true);
             }
 
-            MarkFullscreen(fullscreen);
+            TaskBarList.MarkFullscreen(_hwnd, fullscreen);
         }
 
         private void ShowWindow(WindowState state)

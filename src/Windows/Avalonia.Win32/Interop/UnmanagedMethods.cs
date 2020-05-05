@@ -1880,6 +1880,22 @@ namespace Avalonia.Win32.Interop
             [MarshalAs(UnmanagedType.LPWStr)]
             public string pszSpec;
         }
+
+        public delegate void MarkFullscreenWindow(IntPtr This, IntPtr hwnd, [MarshalAs(UnmanagedType.Bool)] bool fullscreen);
+        public delegate HRESULT HrInit(IntPtr This);
+
+        public struct ITaskBarList2VTable
+        {
+            public IntPtr IUnknown1;
+            public IntPtr IUnknown2;
+            public IntPtr IUnknown3;
+            public IntPtr HrInit;
+            public IntPtr AddTab;
+            public IntPtr DeleteTab;
+            public IntPtr ActivateTab;
+            public IntPtr SetActiveAlt;
+            public IntPtr MarkFullscreenWindow;
+        }
     }
 
     [Flags]
