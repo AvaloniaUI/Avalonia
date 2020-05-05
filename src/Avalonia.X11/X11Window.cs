@@ -221,11 +221,10 @@ namespace Avalonia.X11
                               MotifDecorations.Maximize | MotifDecorations.Minimize | MotifDecorations.ResizeH;
 
             if (_popup 
-                || _systemDecorations == SystemDecorations.None
-                || _systemDecorations == SystemDecorations.BorderOnly) 
+                || _systemDecorations == SystemDecorations.None) 
                 decorations = 0;
 
-            if (!_canResize || _systemDecorations == SystemDecorations.BorderOnly)
+            if (!_canResize)
             {
                 functions &= ~(MotifFunctions.Resize | MotifFunctions.Maximize);
                 decorations &= ~(MotifDecorations.Maximize | MotifDecorations.ResizeH);
@@ -248,7 +247,7 @@ namespace Avalonia.X11
             var min = _minMaxSize.minSize;
             var max = _minMaxSize.maxSize;
 
-            if (!_canResize || _systemDecorations == SystemDecorations.BorderOnly)
+            if (!_canResize)
                 max = min = _realSize;
             
             if (preResize.HasValue)
@@ -821,7 +820,7 @@ namespace Avalonia.X11
         
         public void SetSystemDecorations(SystemDecorations enabled)
         {
-            _systemDecorations = enabled;
+            _systemDecorations = enabled == SystemDecorations.Full ? SystemDecorations.Full : SystemDecorations.None;
             UpdateMotifHints();
             UpdateSizeHints(null);
         }
