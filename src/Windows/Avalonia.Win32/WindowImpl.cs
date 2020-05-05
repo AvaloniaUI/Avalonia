@@ -801,6 +801,11 @@ namespace Avalonia.Win32
                 SetStyle(style);
             }
 
+            if (oldProperties.IsFullScreen != newProperties.IsFullScreen)
+            {
+                SetFullScreen(newProperties.IsFullScreen);
+            }
+
             if ((oldProperties.Decorations != newProperties.Decorations) || forceChanges)
             {
                 var style = GetStyle();
@@ -816,22 +821,22 @@ namespace Avalonia.Win32
                     style &= ~fullDecorationFlags;
                 }
 
-                var margins = new MARGINS
-                {
-                    cyBottomHeight = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0
-                };
-
-                DwmExtendFrameIntoClientArea(_hwnd, ref margins);
-
-                GetClientRect(_hwnd, out var oldClientRect);
-                var oldClientRectOrigin = new POINT();
-                ClientToScreen(_hwnd, ref oldClientRectOrigin);
-                oldClientRect.Offset(oldClientRectOrigin);
-
                 SetStyle(style);
 
                 if (!_isFullScreenActive)
                 {
+                    var margins = new MARGINS
+                    {
+                        cyBottomHeight = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0
+                    };
+
+                    DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
+                    GetClientRect(_hwnd, out var oldClientRect);
+                    var oldClientRectOrigin = new POINT();
+                    ClientToScreen(_hwnd, ref oldClientRectOrigin);
+                    oldClientRect.Offset(oldClientRectOrigin);
+
                     var newRect = oldClientRect;
 
                     if (newProperties.Decorations == SystemDecorations.Full)
@@ -843,11 +848,6 @@ namespace Avalonia.Win32
                         SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
                         SetWindowPosFlags.SWP_FRAMECHANGED);
                 }
-            }
-
-            if (oldProperties.IsFullScreen != newProperties.IsFullScreen)
-            {
-                SetFullScreen(newProperties.IsFullScreen);
             }
         }
 
