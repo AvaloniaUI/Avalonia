@@ -460,6 +460,7 @@ namespace Avalonia.Win32.Interop
             WS_SIZEFRAME = 0x40000,
             WS_SYSMENU = 0x80000,
             WS_TABSTOP = 0x10000,
+            WS_THICKFRAME = 0x40000,
             WS_VISIBLE = 0x10000000,
             WS_VSCROLL = 0x200000,
             WS_EX_DLGMODALFRAME = 0x00000001,
@@ -1146,7 +1147,10 @@ namespace Avalonia.Win32.Interop
         internal static extern int CoCreateInstance(ref Guid clsid,
             IntPtr ignore1, int ignore2, ref Guid iid, [MarshalAs(UnmanagedType.IUnknown), Out] out object pUnkOuter);
 
-        
+        [DllImport("ole32.dll", PreserveSig = true)]
+        internal static extern int CoCreateInstance(ref Guid clsid,
+            IntPtr ignore1, int ignore2, ref Guid iid, [Out] out IntPtr pUnkOuter);
+
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int SHCreateItemFromParsingName([MarshalAs(UnmanagedType.LPWStr)] string pszPath, IntPtr pbc, ref Guid riid, [MarshalAs(UnmanagedType.Interface)] out IShellItem ppv);
 
@@ -1642,6 +1646,8 @@ namespace Avalonia.Win32.Interop
             public static readonly Guid SaveFileDialog = Guid.Parse("C0B4E2F3-BA21-4773-8DBA-335EC946EB8B");
             public static readonly Guid IFileDialog = Guid.Parse("42F85136-DB7E-439C-85F1-E4075D135FC8");
             public static readonly Guid IShellItem = Guid.Parse("43826D1E-E718-42EE-BC55-A1E261C37BFE");
+            public static readonly Guid TaskBarList = Guid.Parse("56FDF344-FD6D-11D0-958A-006097C9A090");
+            public static readonly Guid ITaskBarList2 = Guid.Parse("ea1afb91-9e28-4b86-90e9-9e9f8a5eefaf");
         }
 
         [ComImport(), Guid("42F85136-DB7E-439C-85F1-E4075D135FC8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -1873,6 +1879,22 @@ namespace Avalonia.Win32.Interop
             public string pszName;
             [MarshalAs(UnmanagedType.LPWStr)]
             public string pszSpec;
+        }
+
+        public delegate void MarkFullscreenWindow(IntPtr This, IntPtr hwnd, [MarshalAs(UnmanagedType.Bool)] bool fullscreen);
+        public delegate HRESULT HrInit(IntPtr This);
+
+        public struct ITaskBarList2VTable
+        {
+            public IntPtr IUnknown1;
+            public IntPtr IUnknown2;
+            public IntPtr IUnknown3;
+            public IntPtr HrInit;
+            public IntPtr AddTab;
+            public IntPtr DeleteTab;
+            public IntPtr ActivateTab;
+            public IntPtr SetActiveAlt;
+            public IntPtr MarkFullscreenWindow;
         }
     }
 
