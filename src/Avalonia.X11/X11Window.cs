@@ -220,14 +220,10 @@ namespace Avalonia.X11
             var decorations = MotifDecorations.Menu | MotifDecorations.Title | MotifDecorations.Border |
                               MotifDecorations.Maximize | MotifDecorations.Minimize | MotifDecorations.ResizeH;
 
-            if (_popup || _systemDecorations == SystemDecorations.None)
-            {
+            if (_popup 
+                || _systemDecorations == SystemDecorations.None
+                || _systemDecorations == SystemDecorations.BorderOnly) 
                 decorations = 0;
-            }
-            else if (_systemDecorations == SystemDecorations.BorderOnly)
-            {
-                decorations = MotifDecorations.Border;
-            }
 
             if (!_canResize || _systemDecorations == SystemDecorations.BorderOnly)
             {
