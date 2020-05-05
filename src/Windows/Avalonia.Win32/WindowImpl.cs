@@ -586,7 +586,8 @@ namespace Avalonia.Win32
                 // repainted.  Better-looking methods welcome.
                 _isFullScreenActive = false;
 
-                SetStyle(_savedWindowInfo.Style, false);
+                var windowStates = GetWindowStateStyles();
+                SetStyle((_savedWindowInfo.Style & ~WindowStateMask) | windowStates, false);
                 SetExtendedStyle(_savedWindowInfo.ExStyle, false);
 
                 // On restore, resize to the previous saved rect size.
@@ -666,6 +667,13 @@ namespace Avalonia.Win32
                     SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
                 }
             }
+        }
+
+        private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
+
+        private WindowStyles GetWindowStateStyles ()
+        {
+            return GetStyle() & WindowStateMask;
         }
 
         private WindowStyles GetStyle()
