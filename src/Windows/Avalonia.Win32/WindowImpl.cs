@@ -591,9 +591,15 @@ namespace Avalonia.Win32
                 GetWindowRect(_hwnd, out var windowRect);
                 _savedWindowInfo.WindowRect = windowRect;
 
+                var current = GetStyle();
+                var currentEx = GetExtendedStyle();
+
+                _savedWindowInfo.Style = current;
+                _savedWindowInfo.ExStyle = currentEx;
+
                 // Set new window style and size.
-                SetStyle(GetStyle() & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME), false);
-                SetExtendedStyle(GetExtendedStyle() & ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE), false);
+                SetStyle(current & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME), false);
+                SetExtendedStyle(currentEx & ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE), false);
 
                 // On expand, if we're given a window_rect, grow to it, otherwise do
                 // not resize.
