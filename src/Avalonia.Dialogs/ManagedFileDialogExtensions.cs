@@ -17,6 +17,7 @@ namespace Avalonia.Dialogs
                 var dialog = new T
                 {
                     Content = new ManagedFileChooser(),
+                    Title = d.Title,
                     DataContext = model
                 };
 
