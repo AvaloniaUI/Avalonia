@@ -552,6 +552,7 @@ namespace Avalonia.X11
                 else if (value == WindowState.Maximized)
                 {
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_HIDDEN);
+                    ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
                     ChangeWMAtoms(true, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
                 }
@@ -559,10 +560,13 @@ namespace Avalonia.X11
                 {
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_HIDDEN);
                     ChangeWMAtoms(true, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
+                    ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
+                        _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
                 }
                 else
                 {
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_HIDDEN);
+                    ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
                 }
@@ -1063,7 +1067,7 @@ namespace Avalonia.X11
 
         void ChangeWMAtoms(bool enable, params IntPtr[] atoms)
         {
-            if (atoms.Length < 1 || atoms.Length > 4)
+            if (atoms.Length != 1 && atoms.Length != 2)
                 throw new ArgumentException();
 
             if (!_mapped)
