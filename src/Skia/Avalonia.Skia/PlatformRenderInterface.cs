@@ -18,13 +18,17 @@ namespace Avalonia.Skia
 
         private GRContext GrContext { get; }
 
-        public PlatformRenderInterface(ICustomSkiaGpu customSkiaGpu)
+        public PlatformRenderInterface(ICustomSkiaGpu customSkiaGpu, long maxResourceBytes = 100000000)
         {
             if (customSkiaGpu != null)
             {
                 _customSkiaGpu = customSkiaGpu;
 
                 GrContext = _customSkiaGpu.GrContext;
+
+                GrContext.GetResourceCacheLimits(out var maxResources, out _);
+
+                GrContext.SetResourceCacheLimits(maxResources, maxResourceBytes);
 
                 return;
             }
@@ -39,6 +43,10 @@ namespace Avalonia.Skia
                     : GRGlInterface.AssembleGlesInterface((_, proc) => display.GlInterface.GetProcAddress(proc)))
                 {
                     GrContext = GRContext.Create(GRBackend.OpenGL, iface);
+
+                    GrContext.GetResourceCacheLimits(out var maxResources, out _);
+
+                    GrContext.SetResourceCacheLimits(maxResources, maxResourceBytes);
                 }
                 display.ClearContext();
             }
