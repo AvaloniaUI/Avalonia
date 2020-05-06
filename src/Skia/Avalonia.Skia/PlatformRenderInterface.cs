@@ -18,7 +18,7 @@ namespace Avalonia.Skia
 
         private GRContext GrContext { get; }
 
-        public PlatformRenderInterface(ICustomSkiaGpu customSkiaGpu, long maxResourceBytes)
+        public PlatformRenderInterface(ICustomSkiaGpu customSkiaGpu, long maxResourceBytes = 100000000)
         {
             if (customSkiaGpu != null)
             {
