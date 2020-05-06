@@ -180,12 +180,12 @@ namespace Avalonia.Direct2D1
         public IGeometryImpl CreateRectangleGeometry(Rect rect) => new RectangleGeometryImpl(rect);
         public IStreamGeometryImpl CreateStreamGeometry() => new StreamGeometryImpl();
 
-        public IBitmapImpl LoadBitmap(string fileName)
+        public IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions? options = null)
         {
             return new WicBitmapImpl(fileName);
         }
 
-        public IBitmapImpl LoadBitmap(Stream stream)
+        public IBitmapImpl LoadBitmap(Stream stream, BitmapDecodeOptions? options = null)
         {
             return new WicBitmapImpl(stream);
         }
@@ -193,16 +193,6 @@ namespace Avalonia.Direct2D1
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new WicBitmapImpl(format, data, size, dpi, stride);
-        }
-
-        public IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions decodeOptions)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IBitmapImpl LoadBitmap(Stream stream, BitmapDecodeOptions decodeOptions)
-        {
-            throw new NotImplementedException();
         }
 
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)

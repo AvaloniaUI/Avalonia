@@ -85,23 +85,21 @@ namespace Avalonia.Platform
         /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
         IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null);
 
-        IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions decodeOptions);
-
-        IBitmapImpl LoadBitmap(Stream stream, BitmapDecodeOptions decodeOptions);
-
         /// <summary>
         /// Loads a bitmap implementation from a file..
         /// </summary>
         /// <param name="fileName">The filename of the bitmap.</param>
+        /// <param name="decodeOptions">Decode options that specify the size of the decoded bitmap.</param>
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
-        IBitmapImpl LoadBitmap(string fileName);
+        IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions? decodeOptions = null);
 
         /// <summary>
         /// Loads a bitmap implementation from a file..
         /// </summary>
         /// <param name="stream">The stream to read the bitmap from.</param>
+        /// <param name="decodeOptions">Decode options that specify the size of the decoded bitmap.</param>
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
-        IBitmapImpl LoadBitmap(Stream stream);
+        IBitmapImpl LoadBitmap(Stream stream, BitmapDecodeOptions? decodeOptions = null);
 
         /// <summary>
         /// Loads a bitmap implementation from a pixels in memory.

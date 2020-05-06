@@ -78,40 +78,36 @@ namespace Avalonia.Skia
             return new StreamGeometryImpl();
         }
 
-        public IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions decodeOptions)
+        /// <inheritdoc />
+        public unsafe IBitmapImpl LoadBitmap(Stream stream, BitmapDecodeOptions? decodeOptions = null)
+        {            
+            if (decodeOptions is null)
+            {
+                return new ImmutableBitmap(stream);
+            }
+            else
+            {
+                var options = decodeOptions.Value;
+
+                var skBitmap = SKBitmap.Decode(stream);
+
+                skBitmap = skBitmap.Resize(new SKImageInfo(options.DecodePixelSize.Width, options.DecodePixelSize.Height), options.InterpolationMode.ToSKFilterQuality());
+
+                fixed (byte* p = skBitmap.Bytes)
+                {
+                    IntPtr ptr = (IntPtr)p;
+
+                    return LoadBitmap(PixelFormat.Bgra8888, ptr, new PixelSize(skBitmap.Width, skBitmap.Height), new Vector(96, 96), skBitmap.RowBytes);
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions? decodeOptions)
         {
             using (var stream = File.OpenRead(fileName))
             {
                 return LoadBitmap(stream, decodeOptions);
-            }
-        }
-
-        public unsafe IBitmapImpl LoadBitmap(Stream stream, BitmapDecodeOptions decodeOptions)
-        {
-            var skBitmap = SKBitmap.Decode(stream);
-
-            skBitmap = skBitmap.Resize(new SKImageInfo(decodeOptions.DecodePixelSize.Width, decodeOptions.DecodePixelSize.Height), decodeOptions.InterpolationMode.ToSKFilterQuality());
-
-            fixed (byte* p = skBitmap.Bytes)
-            {
-                IntPtr ptr = (IntPtr)p;
-
-                return LoadBitmap(PixelFormat.Bgra8888, ptr, new PixelSize(skBitmap.Width, skBitmap.Height), new Vector(96, 96), skBitmap.RowBytes);                
-            }
-        }
-
-        /// <inheritdoc />
-        public IBitmapImpl LoadBitmap(Stream stream)
-        {
-            return new ImmutableBitmap(stream);
-        }
-
-        /// <inheritdoc />
-        public IBitmapImpl LoadBitmap(string fileName)
-        {
-            using (var stream = File.OpenRead(fileName))
-            {
-                return LoadBitmap(stream);
             }
         }
 
