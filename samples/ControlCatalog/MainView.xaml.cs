@@ -16,61 +16,14 @@ namespace ControlCatalog
         public MainView()
         {
             AvaloniaXamlLoader.Load(this);
-            if (AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().IsDesktop)
-            {
-                IList tabItems = ((IList)this.FindControl<TabControl>("Sidebar").Items);
-                tabItems.Add(new TabItem()
-                {
-                    Header = "Dialogs",
-                    Content = new DialogsPage()
-                });
-                tabItems.Add(new TabItem()
-                {
-                    Header = "Screens",
-                    Content = new ScreenPage()
-                });
-
-            }
-
-            var light = new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            {
-                Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default")
-            };
-            var dark = new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            {
-                Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseDark.xaml?assembly=Avalonia.Themes.Default")
-            };
-
             
-            var themes = this.Find<ComboBox>("Themes");
-            themes.SelectionChanged += (sender, e) =>
-            {
-                switch (themes.SelectedIndex)
-                {
-                    case 0:
-                        Styles[0] = light;
-                        break;
-                    case 1:
-                        Styles[0] = dark;
-                        break;
-                }
-            };
-            Styles.Add(light);
 
-            var decorations = this.Find<ComboBox>("Decorations");
-            decorations.SelectionChanged += (sender, e) =>
-            {
-                if (VisualRoot is Window window)
-                    window.SystemDecorations = (SystemDecorations)decorations.SelectedIndex;
-            };
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            var decorations = this.Find<ComboBox>("Decorations");
-            if (VisualRoot is Window window)
-                decorations.SelectedIndex = (int)window.SystemDecorations;
+            
         }
     }
 }

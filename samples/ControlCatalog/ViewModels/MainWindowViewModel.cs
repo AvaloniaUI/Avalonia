@@ -1,8 +1,13 @@
+using System.Collections.ObjectModel;
 using System.Reactive;
+using System.Reactive.Concurrency;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
@@ -14,6 +19,7 @@ namespace ControlCatalog.ViewModels
         private bool _isMenuItemChecked = true;
         private WindowState _windowState;
         private WindowState[] _windowStates;
+        private ObservableCollection<Bitmap> _covers;
 
         public MainWindowViewModel(IManagedNotificationManager notificationManager)
         {
@@ -62,6 +68,30 @@ namespace ControlCatalog.ViewModels
                 WindowState.Maximized,
                 WindowState.FullScreen,
             };
+
+            Covers = new ObservableCollection<Bitmap>();
+
+            RxApp.MainThreadScheduler.Schedule(() =>
+            {
+                var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+
+                var assets = assetLoader.GetAssets(new System.Uri("avares://ControlCatalog/Assets/Albums"), new System.Uri("avares://ControlCatalog/"));
+
+                foreach(var uri in assets)
+                {
+                    var (stream, assembly) = assetLoader.OpenAndGetAssembly(uri);
+
+                    Covers.Add(new Bitmap(stream));
+                }
+
+
+            });
+        }        
+
+        public ObservableCollection<Bitmap> Covers
+        {
+            get { return _covers; }
+            set { this.RaiseAndSetIfChanged(ref _covers, value); }
         }
 
         public WindowState WindowState
