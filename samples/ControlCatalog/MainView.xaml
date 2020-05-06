@@ -6,7 +6,7 @@
         Foreground="{DynamicResource ThemeForegroundBrush}"
         FontSize="{DynamicResource FontSizeNormal}">
   <ScrollViewer>
-    <ItemsRepeater MaxWidth="800" Items="{Binding Covers}" RenderOptions.BitmapInterpolationMode="LowQuality">
+    <ItemsRepeater MaxWidth="800" Items="{Binding Covers}" RenderOptions.BitmapInterpolationMode="Default">
       <ItemsRepeater.Layout>
         <UniformGridLayout MinItemWidth="200" MinItemHeight="200" Orientation="Horizontal" />
       </ItemsRepeater.Layout>
