@@ -24,7 +24,7 @@ namespace Avalonia.Win32
 
                 Guid clsid = dialog is OpenFileDialog ? UnmanagedMethods.ShellIds.OpenFileDialog : UnmanagedMethods.ShellIds.SaveFileDialog;
                 Guid iid = UnmanagedMethods.ShellIds.IFileDialog;
-                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out var unk);
+                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out object unk);
                 var frm = (UnmanagedMethods.IFileDialog)unk;
 
                 var openDialog = dialog as OpenFileDialog;
@@ -105,9 +105,9 @@ namespace Avalonia.Win32
 
                 var hWnd = parent?.PlatformImpl?.Handle?.Handle ?? IntPtr.Zero;
                 Guid clsid = UnmanagedMethods.ShellIds.OpenFileDialog;
-                Guid iid  = UnmanagedMethods.ShellIds.IFileDialog;
+                Guid iid = UnmanagedMethods.ShellIds.IFileDialog;
 
-                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out var unk);
+                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out object unk);
                 var frm = (UnmanagedMethods.IFileDialog)unk;
                 uint options;
                 frm.GetOptions(out options);
