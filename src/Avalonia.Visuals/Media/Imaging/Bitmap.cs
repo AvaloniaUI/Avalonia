@@ -31,6 +31,18 @@ namespace Avalonia.Media.Imaging
             PlatformImpl = RefCountable.Create(factory.LoadBitmap(stream));
         }
 
+        public Bitmap(Stream stream, BitmapDecodeOptions decodeOptions)
+        {
+            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            PlatformImpl = RefCountable.Create(factory.LoadBitmap(stream, decodeOptions));
+        }
+
+        public Bitmap(string file, BitmapDecodeOptions decodeOptions)
+        {
+            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            PlatformImpl = RefCountable.Create(factory.LoadBitmap(file, decodeOptions));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Bitmap"/> class.
         /// </summary>

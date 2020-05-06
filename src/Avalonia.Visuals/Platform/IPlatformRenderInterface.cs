@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Platform
 {
@@ -83,6 +84,10 @@ namespace Avalonia.Platform
         /// <param name="format">Pixel format (optional).</param>
         /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
         IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null);
+
+        IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions decodeOptions);
+
+        IBitmapImpl LoadBitmap(Stream stream, BitmapDecodeOptions decodeOptions);
 
         /// <summary>
         /// Loads a bitmap implementation from a file..

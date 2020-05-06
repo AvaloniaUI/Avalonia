@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -75,6 +76,28 @@ namespace Avalonia.Skia
         public IStreamGeometryImpl CreateStreamGeometry()
         {
             return new StreamGeometryImpl();
+        }
+
+        public IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions decodeOptions)
+        {
+            using (var stream = File.OpenRead(fileName))
+            {
+                return LoadBitmap(stream, decodeOptions);
+            }
+        }
+
+        public unsafe IBitmapImpl LoadBitmap(Stream stream, BitmapDecodeOptions decodeOptions)
+        {
+            var skBitmap = SKBitmap.Decode(stream);
+
+            skBitmap = skBitmap.Resize(new SKImageInfo(decodeOptions.DecodePixelSize.Width, decodeOptions.DecodePixelSize.Height), decodeOptions.InterpolationMode.ToSKFilterQuality());
+
+            fixed (byte* p = skBitmap.Bytes)
+            {
+                IntPtr ptr = (IntPtr)p;
+
+                return LoadBitmap(PixelFormat.Bgra8888, ptr, new PixelSize(skBitmap.Width, skBitmap.Height), new Vector(96, 96), skBitmap.RowBytes);                
+            }
         }
 
         /// <inheritdoc />

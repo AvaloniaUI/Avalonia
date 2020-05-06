@@ -7,6 +7,7 @@ using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using SharpDX.DirectWrite;
 using GlyphRun = Avalonia.Media.GlyphRun;
@@ -192,6 +193,16 @@ namespace Avalonia.Direct2D1
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new WicBitmapImpl(format, data, size, dpi, stride);
+        }
+
+        public IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions decodeOptions)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IBitmapImpl LoadBitmap(Stream stream, BitmapDecodeOptions decodeOptions)
+        {
+            throw new NotImplementedException();
         }
 
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)

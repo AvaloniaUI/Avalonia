@@ -123,26 +123,9 @@ namespace Avalonia.Skia
                     Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity))
                 })
             {
-                paint.FilterQuality = GetInterpolationMode(bitmapInterpolationMode);
+                paint.FilterQuality = bitmapInterpolationMode.ToSKFilterQuality();
 
                 drawableImage.Draw(this, s, d, paint);
-            }
-        }
-
-        private static SKFilterQuality GetInterpolationMode(BitmapInterpolationMode interpolationMode)
-        {
-            switch (interpolationMode)
-            {
-                case BitmapInterpolationMode.LowQuality:
-                    return SKFilterQuality.Low;
-                case BitmapInterpolationMode.MediumQuality:
-                    return SKFilterQuality.Medium;
-                case BitmapInterpolationMode.HighQuality:
-                    return SKFilterQuality.High;
-                case BitmapInterpolationMode.Default:
-                    return SKFilterQuality.None;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
             }
         }
 
