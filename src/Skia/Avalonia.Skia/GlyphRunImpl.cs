@@ -7,16 +7,10 @@ namespace Avalonia.Skia
     /// <inheritdoc />
     public class GlyphRunImpl : IGlyphRunImpl
     {
-        public GlyphRunImpl(SKPaint paint, SKTextBlob textBlob)
+        public GlyphRunImpl(SKTextBlob textBlob)
         {
-            Paint = paint;
             TextBlob = textBlob;
         }
-
-        /// <summary>
-        ///     Gets the paint to draw with.
-        /// </summary>
-        public SKPaint Paint { get; }
 
         /// <summary>
         ///     Gets the text blob to draw.
@@ -26,7 +20,6 @@ namespace Avalonia.Skia
         void IDisposable.Dispose()
         {
             TextBlob.Dispose();
-            Paint.Dispose();
         }
     }
 }
