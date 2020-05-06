@@ -103,7 +103,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions? decodeOptions)
+        public IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions? decodeOptions = null)
         {
             using (var stream = File.OpenRead(fileName))
             {
