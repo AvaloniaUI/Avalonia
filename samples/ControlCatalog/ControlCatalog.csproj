@@ -11,6 +11,7 @@
     </AvaloniaResource>
     <AvaloniaResource Include="Assets\*" />
     <AvaloniaResource Include="Assets\Fonts\*" />
+    <AvaloniaResource Include="Assets\Albums\*" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Bold.ttf" />
