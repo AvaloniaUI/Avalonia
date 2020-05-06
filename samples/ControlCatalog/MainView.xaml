@@ -5,20 +5,20 @@
         Background="{DynamicResource ThemeBackgroundBrush}"
         Foreground="{DynamicResource ThemeForegroundBrush}"
         FontSize="{DynamicResource FontSizeNormal}">
-  <ListBox Items="{Binding Covers}">
-    <ListBox.ItemsPanel>
-      <ItemsPanelTemplate>
-        <WrapPanel MaxWidth="1000" HorizontalAlignment="Center" />
-      </ItemsPanelTemplate>
-    </ListBox.ItemsPanel>
-    <ListBox.ItemTemplate>
-      <DataTemplate>        
+  <ScrollViewer>
+    <ItemsRepeater MaxWidth="800" Items="{Binding Covers}" RenderOptions.BitmapInterpolationMode="LowQuality">
+      <ItemsRepeater.Layout>
+        <UniformGridLayout MinItemWidth="200" MinItemHeight="200" Orientation="Horizontal" />
+      </ItemsRepeater.Layout>
+      <ItemsRepeater.ItemTemplate>
+        <DataTemplate>
           <Border>
-            <Panel Width="200" MinHeight="200">                            
-              <Image Width="200" Stretch="UniformToFill" Source="{Binding }" />              
+            <Panel Width="200" MinHeight="200">
+              <Image Width="200" Stretch="UniformToFill" Source="{Binding }" />
             </Panel>
-          </Border>                  
-      </DataTemplate>
-    </ListBox.ItemTemplate>
-  </ListBox>
+          </Border>
+        </DataTemplate>
+      </ItemsRepeater.ItemTemplate>
+    </ItemsRepeater>
+  </ScrollViewer>  
 </UserControl>
