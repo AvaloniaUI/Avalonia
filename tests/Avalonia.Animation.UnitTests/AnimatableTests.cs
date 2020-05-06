@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -16,7 +17,7 @@ namespace Avalonia.Animation.UnitTests
             var target = CreateTarget();
             var control = new Control
             {
-                Transitions = { target.Object },
+                Transitions = new Transitions { target.Object },
             };
 
             control.Opacity = 0.5;
@@ -37,7 +38,7 @@ namespace Avalonia.Animation.UnitTests
                 var target = CreateTarget();
                 var control = new Control
                 {
-                    Transitions = { target.Object },
+                    Transitions = new Transitions { target.Object },
                 };
 
                 var root = new TestRoot
@@ -213,12 +214,119 @@ namespace Avalonia.Animation.UnitTests
             sub.Verify(x => x.Dispose());
         }
 
+        [Fact]
+        public void Animation_Is_Cancelled_When_New_Style_Activates()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                var target = CreateTarget();
+                var control = CreateStyledControl(target.Object);
+                var sub = new Mock<IDisposable>();
+
+                target.Setup(x => x.Apply(
+                    control,
+                    It.IsAny<IClock>(),
+                    1.0,
+                    0.5)).Returns(sub.Object);
+
+                control.Opacity = 0.5;
+
+                target.Verify(x => x.Apply(
+                    control,
+                    It.IsAny<Clock>(),
+                    1.0,
+                    0.5),
+                    Times.Once);
+
+                control.Classes.Add("foo");
+
+                sub.Verify(x => x.Dispose());
+            }
+        }
+
+        [Fact]
+        public void Transition_From_Style_Trigger_Is_Applied()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                var target = CreateTransition(Control.WidthProperty);
+                var control = CreateStyledControl(transition2: target.Object);
+                var sub = new Mock<IDisposable>();
+
+                control.Classes.Add("foo");
+                control.Width = 100;
+
+                target.Verify(x => x.Apply(
+                    control,
+                    It.IsAny<Clock>(),
+                    double.NaN,
+                    100.0),
+                    Times.Once);
+            }
+        }
+
         private static Mock<ITransition> CreateTarget()
+        {
+            return CreateTransition(Visual.OpacityProperty);
+        }
+
+        private static Control CreateControl(ITransition transition)
+        {
+            var control = new Control
+            {
+                Transitions = new Transitions { transition },
+            };
+
+            var root = new TestRoot(control);
+            return control;
+        }
+
+        private static Control CreateStyledControl(
+            ITransition transition1 = null,
+            ITransition transition2 = null)
+        {
+            transition1 = transition1 ?? CreateTarget().Object;
+            transition2 = transition2 ?? CreateTransition(Control.WidthProperty).Object;
+
+            var control = new Control
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Control>())
+                    {
+                        Setters =
+                        {
+                            new Setter
+                            {
+                                Property = Control.TransitionsProperty,
+                                Value = new Transitions { transition1 },
+                            }
+                        }
+                    },
+                    new Style(x => x.OfType<Control>().Class("foo"))
+                    {
+                        Setters =
+                        {
+                            new Setter
+                            {
+                                Property = Control.TransitionsProperty,
+                                Value = new Transitions { transition2 },
+                            }
+                        }
+                    }
+                }
+            };
+
+            var root = new TestRoot(control);
+            return control;
+        }
+
+        private static Mock<ITransition> CreateTransition(AvaloniaProperty property)
         {
             var target = new Mock<ITransition>();
             var sub = new Mock<IDisposable>();
 
-            target.Setup(x => x.Property).Returns(Visual.OpacityProperty);
+            target.Setup(x => x.Property).Returns(property);
             target.Setup(x => x.Apply(
                 It.IsAny<Animatable>(),
                 It.IsAny<IClock>(),
@@ -226,17 +334,6 @@ namespace Avalonia.Animation.UnitTests
                 It.IsAny<object>())).Returns(sub.Object);
 
             return target;
-        }
-
-        private static Control CreateControl(ITransition transition)
-        {
-            var control = new Control
-            {
-                Transitions = { transition },
-            };
-
-            var root = new TestRoot(control);
-            return control;
         }
     }
 }
