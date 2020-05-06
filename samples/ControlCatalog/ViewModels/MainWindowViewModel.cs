@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Reactive;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -14,6 +16,9 @@ namespace ControlCatalog.ViewModels
         private bool _isMenuItemChecked = true;
         private WindowState _windowState;
         private WindowState[] _windowStates;
+
+        public List<int> Albums { get; set; } = Enumerable.Range(0, 400).ToList();
+
 
         public MainWindowViewModel(IManagedNotificationManager notificationManager)
         {
