@@ -920,13 +920,18 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>(
+                    x => x.PixelSize == new PixelSize(100, 100) &&
+                    x.Dpi == new Vector(96, 96)));
+
                 Image img;
                 var tree = new TestRoot
                 {
                     Child = img = new Image
                     {
-                        Source = new Bitmap(bitmap)
+                        Source = new Bitmap(bitmap),
+                        Width = 100,
+                        Height = 100
                     }
                 };
 
