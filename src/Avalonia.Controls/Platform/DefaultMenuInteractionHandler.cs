@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
@@ -64,6 +65,9 @@ namespace Avalonia.Controls.Platform
                 window.Deactivated += WindowDeactivated;
             }
 
+            if (_root is TopLevel tl && tl.PlatformImpl is IEmbeddableWindowImpl eimpl)
+                eimpl.LostFocus += TopLevelLostPlatformFocus;
+
             _inputManagerSubscription = InputManager?.Process.Subscribe(RawInput);
         }
 
@@ -93,6 +97,9 @@ namespace Avalonia.Controls.Platform
             {
                 root.Deactivated -= WindowDeactivated;
             }
+            
+            if (_root is TopLevel tl && tl.PlatformImpl is IEmbeddableWindowImpl eimpl)
+                eimpl.LostFocus -= TopLevelLostPlatformFocus;
 
             _inputManagerSubscription?.Dispose();
 
@@ -398,6 +405,11 @@ namespace Avalonia.Controls.Platform
         }
 
         protected internal virtual void WindowDeactivated(object sender, EventArgs e)
+        {
+            Menu?.Close();
+        }
+        
+        private void TopLevelLostPlatformFocus()
         {
             Menu?.Close();
         }

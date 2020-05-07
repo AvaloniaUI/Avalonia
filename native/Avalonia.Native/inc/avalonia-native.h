@@ -24,6 +24,8 @@ struct IAvnGlSurfaceRenderTarget;
 struct IAvnGlSurfaceRenderingSession;
 struct IAvnAppMenu;
 struct IAvnAppMenuItem;
+struct IAvnNativeControlHost;
+struct IAvnNativeControlHostTopLevelAttachment;
 
 struct AvnSize
 {
@@ -215,6 +217,7 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT ObtainNSWindowHandleRetained(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandle(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandleRetained(void** retOut) = 0;
+    virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut) = 0;
 };
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
@@ -250,6 +253,7 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
     virtual bool RawTextInputEvent (unsigned int timeStamp, const char* text) = 0;
     virtual void ScalingChanged(double scaling) = 0;
     virtual void RunRenderPriorityJobs() = 0;
+    virtual void LostFocus() = 0;
 };
 
 
@@ -395,5 +399,23 @@ AVNCOM(IAvnAppMenuItem, 19) : IUnknown
     virtual HRESULT SetGesture (void* utf8String, AvnInputModifiers modifiers) = 0;
     virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) = 0;
 };
+
+AVNCOM(IAvnNativeControlHost, 20) : IUnknown
+{
+    virtual HRESULT CreateDefaultChild(void* parent, void** retOut) = 0;
+    virtual IAvnNativeControlHostTopLevelAttachment* CreateAttachment() = 0;
+    virtual void DestroyDefaultChild(void* child) = 0;
+};
+
+AVNCOM(IAvnNativeControlHostTopLevelAttachment, 21) : IUnknown
+{
+    virtual void* GetParentHandle() = 0;
+    virtual HRESULT InitializeWithChildHandle(void* child) = 0;
+    virtual HRESULT AttachTo(IAvnNativeControlHost* host) = 0;
+    virtual void MoveTo(float x, float y, float width, float height) = 0;
+    virtual void Hide() = 0;
+    virtual void ReleaseChild() = 0;
+};
+
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();

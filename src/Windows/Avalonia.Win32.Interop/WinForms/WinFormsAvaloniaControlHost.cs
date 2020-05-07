@@ -24,9 +24,7 @@ namespace Avalonia.Win32.Embedding
             if (_root.IsFocused)
                 FocusManager.Instance.Focus(null);
             _root.GotFocus += RootGotFocus;
-            // ReSharper disable once PossibleNullReferenceException
-            // Always non-null at this point
-            _root.PlatformImpl.LostFocus += PlatformImpl_LostFocus;
+
             FixPosition();
         }
 
@@ -34,23 +32,6 @@ namespace Avalonia.Win32.Embedding
         {
             get { return (Avalonia.Controls.Control)_root.Content; }
             set { _root.Content = value; }
-        }
-
-        void Unfocus()
-        {
-            var focused = (IVisual)FocusManager.Instance.Current;
-            if (focused == null)
-                return;
-            while (focused.VisualParent != null)
-                focused = focused.VisualParent;
-
-            if (focused == _root)
-                KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, InputModifiers.None);
-        }
-
-        private void PlatformImpl_LostFocus()
-        {
-            Unfocus();
         }
 
         protected override void Dispose(bool disposing)
