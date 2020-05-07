@@ -69,7 +69,7 @@ namespace Avalonia.Controls
         {
             var source = Source;
 
-            if (source != null && Bounds.Size != Size.Empty)
+            if (source != null && Bounds.Width > 0 && Bounds.Height > 0)
             {
                 Rect viewPort = new Rect(Bounds.Size);
                 Size sourceSize = source.Size;
