@@ -1,61 +1,33 @@
 using System;
-using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Notifications;
-using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using ControlCatalog.ViewModels;
+using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace ControlCatalog
 {
-    public class MainWindow : Window
+    public class TestControl : Control
     {
-        private WindowNotificationManager _notificationArea;
-        private NativeMenu _recentMenu;
+        private Random _r = new Random();
 
+        public override void Render(DrawingContext drawingContext)
+        {
+            drawingContext.DrawLine(new Pen(Brushes.Black, 10), new Point(0, 100), new Point(Bounds.Width * _r.NextDouble(), 100));
+            drawingContext.DrawLine(new Pen(Brushes.Black, 10), new Point(0, 150), new Point(Bounds.Width * _r.NextDouble(), 100));
+            drawingContext.DrawLine(new Pen(Brushes.Black, 10), new Point(0, 100), new Point(Bounds.Width * double.NegativeInfinity, 150));            
+            Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
+        }
+    }
+
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
         public MainWindow()
         {
-            this.InitializeComponent();
-            this.AttachDevTools();
-            //Renderer.DrawFps = true;
-            //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
-
-            _notificationArea = new WindowNotificationManager(this)
-            {
-                Position = NotificationPosition.TopRight,
-                MaxItems = 3
-            };
-
-            DataContext = new MainWindowViewModel(_notificationArea);
-            _recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[2] as NativeMenuItem).Menu;
-
-            var mainMenu = this.FindControl<Menu>("MainMenu");
-            mainMenu.AttachedToVisualTree += MenuAttached;
-        }
-
-        public static string MenuQuitHeader => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "Quit Avalonia" : "E_xit";
-
-        public static KeyGesture MenuQuitGesture => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
-            new KeyGesture(Key.Q, KeyModifiers.Meta) :
-            new KeyGesture(Key.F4, KeyModifiers.Alt);
-
-        public void MenuAttached(object sender, VisualTreeAttachmentEventArgs e)
-        {
-            if (NativeMenu.GetIsNativeMenuExported(this) && sender is Menu mainMenu)
-            {
-                mainMenu.IsVisible = false;
-            }
-        }
-
-        public void OnOpenClicked(object sender, EventArgs args)
-        {
-            _recentMenu.Items.Insert(0, new NativeMenuItem("Item " + (_recentMenu.Items.Count + 1)));
-        }
-
-        public void OnCloseClicked(object sender, EventArgs args)
-        {
-            Close();
+            InitializeComponent();
         }
 
         private void InitializeComponent()
