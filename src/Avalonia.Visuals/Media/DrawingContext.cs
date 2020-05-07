@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Logging;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -8,6 +9,29 @@ using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media
 {
+    internal static class RenderValidationExtensions
+    {
+        public static bool IsRenderValid (this double d)
+        {
+            return !(double.IsNaN(d) || double.IsInfinity(d));
+        }
+
+        public static bool IsRenderValid (this Point p)
+        {
+            return p.X.IsRenderValid() && p.Y.IsRenderValid();
+        }
+
+        public static bool IsThicknessValid (this Thickness t)
+        {
+            return t.Left.IsRenderValid() && t.Top.IsRenderValid() && t.Right.IsRenderValid() && t.Bottom.IsRenderValid();
+        }
+
+        public static bool IsRenderValid (this IPen p)
+        {
+            return p.Thickness.IsRenderValid() && p.MiterLimit.IsRenderValid();
+        }
+    }
+
     public sealed class DrawingContext : IDisposable
     {
         private readonly bool _ownsImpl;
@@ -109,7 +133,14 @@ namespace Avalonia.Media
         {
             if (PenIsVisible(pen))
             {
-                PlatformImpl.DrawLine(pen, p1, p2);
+                if (pen.IsRenderValid() && p1.IsRenderValid() && p2.IsRenderValid())
+                {
+                    PlatformImpl.DrawLine(pen, p1, p2);
+                }
+                else
+                {
+                    Logger.TryGet(LogEventLevel.Warning)?.Log("DrawLine", this, "Invalid Draw Parameters");
+                }
             }
         }
 
