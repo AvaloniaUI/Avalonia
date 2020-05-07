@@ -484,22 +484,12 @@ namespace Avalonia.Controls
         /// <returns>.
         /// A task that can be used to retrieve the result of the dialog when it closes.
         /// </returns>
-        public Task<TResult> ShowDialog<TResult>(Window owner) => ShowDialog<TResult>(owner.PlatformImpl);
-
-        /// <summary>
-        /// Shows the window as a dialog.
-        /// </summary>
-        /// <typeparam name="TResult">
-        /// The type of the result produced by the dialog.
-        /// </typeparam>
-        /// <param name="owner">The dialog's owner window.</param>
-        /// <returns>.
-        /// A task that can be used to retrieve the result of the dialog when it closes.
-        /// </returns>
-        public Task<TResult> ShowDialog<TResult>(IWindowImpl owner)
+        public Task<TResult> ShowDialog<TResult>(Window owner)
         {
             if (owner == null)
+            {
                 throw new ArgumentNullException(nameof(owner));
+            }
 
             if (IsVisible)
             {
@@ -510,29 +500,44 @@ namespace Avalonia.Controls
 
             EnsureInitialized();
             IsVisible = true;
+
+            var initialSize = new Size(
+                double.IsNaN(Width) ? ClientSize.Width : Width,
+                double.IsNaN(Height) ? ClientSize.Height : Height);
+
+            if (initialSize != ClientSize)
+            {
+                using (BeginAutoSizing())
+                {
+                    PlatformImpl?.Resize(initialSize);
+                }
+            }
+
             LayoutManager.ExecuteInitialLayoutPass(this);
 
             var result = new TaskCompletionSource<TResult>();
 
             using (BeginAutoSizing())
             {
-
-                PlatformImpl?.ShowDialog(owner);
+                PlatformImpl?.ShowDialog(owner.PlatformImpl);
 
                 Renderer?.Start();
+
                 Observable.FromEventPattern<EventHandler, EventArgs>(
-                    x => this.Closed += x,
-                    x => this.Closed -= x)
+                        x => Closed += x,
+                        x => Closed -= x)
                     .Take(1)
                     .Subscribe(_ =>
                     {
                         owner.Activate();
                         result.SetResult((TResult)(_dialogResult ?? default(TResult)));
                     });
+
                 OnOpened(EventArgs.Empty);
             }
 
-            SetWindowStartupLocation(owner);
+            SetWindowStartupLocation(owner.PlatformImpl);
+
             return result.Task;
         }
 

@@ -95,5 +95,18 @@ namespace Avalonia.Skia.UnitTests
                 Assert.Equal("Noto Mono", skTypeface.FamilyName);
             }
         }
+
+        [Fact]
+        public void Should_Throw_For_Invalid_Custom_Font()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var fontManager = new FontManagerImpl();
+
+                Assert.Throws<InvalidOperationException>(() =>
+                    fontManager.CreateGlyphTypeface(
+                        new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Unknown")));
+            }
+        }
     }
 }

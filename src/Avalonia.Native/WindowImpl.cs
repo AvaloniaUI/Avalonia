@@ -67,7 +67,7 @@ namespace Avalonia.Native
 
         public void SetSystemDecorations(Controls.SystemDecorations enabled)
         {
-            _native.HasDecorations = (Interop.SystemDecorations)enabled;
+            _native.Decorations = (Interop.SystemDecorations)enabled;
         }
 
         public void SetTitleBarColor (Avalonia.Media.Color color)

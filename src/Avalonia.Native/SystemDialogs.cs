@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Native.Interop;
-using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
@@ -18,13 +17,15 @@ namespace Avalonia.Native
             _native = native;
         }
 
-        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
+        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent)
         {
             var events = new SystemDialogEvents();
 
+            var nativeParent = GetNativeWindow(parent);
+
             if (dialog is OpenFileDialog ofd)
             {
-                _native.OpenFileDialog((parent as WindowImpl)?.Native,
+                _native.OpenFileDialog(nativeParent,
                                         events, ofd.AllowMultiple,
                                         ofd.Title ?? "",
                                         ofd.InitialDirectory ?? "",
@@ -33,7 +34,7 @@ namespace Avalonia.Native
             }
             else
             {
-                _native.SaveFileDialog((parent as WindowImpl)?.Native,
+                _native.SaveFileDialog(nativeParent,
                                         events,
                                         dialog.Title ?? "",
                                         dialog.InitialDirectory ?? "",
@@ -44,13 +45,20 @@ namespace Avalonia.Native
             return events.Task.ContinueWith(t => { events.Dispose(); return t.Result; });
         }
 
-        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
         {
             var events = new SystemDialogEvents();
 
-            _native.SelectFolderDialog((parent as WindowImpl)?.Native, events, dialog.Title ?? "", dialog.InitialDirectory ?? "");
+            var nativeParent = GetNativeWindow(parent);
+
+            _native.SelectFolderDialog(nativeParent, events, dialog.Title ?? "", dialog.InitialDirectory ?? "");
 
             return events.Task.ContinueWith(t => { events.Dispose(); return t.Result.FirstOrDefault(); });
+        }
+
+        private IAvnWindow GetNativeWindow(Window window)
+        {
+            return (window?.PlatformImpl as WindowImpl)?.Native;
         }
     }
 

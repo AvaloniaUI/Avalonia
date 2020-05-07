@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
@@ -16,16 +15,16 @@ namespace Avalonia.Win32
         private const UnmanagedMethods.FOS DefaultDialogOptions = UnmanagedMethods.FOS.FOS_FORCEFILESYSTEM | UnmanagedMethods.FOS.FOS_NOVALIDATE |
             UnmanagedMethods.FOS.FOS_NOTESTFILECREATE | UnmanagedMethods.FOS.FOS_DONTADDTORECENT;
 
-        public unsafe Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
+        public unsafe Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent)
         {
-            var hWnd = parent?.Handle?.Handle ?? IntPtr.Zero;
+            var hWnd = parent?.PlatformImpl?.Handle?.Handle ?? IntPtr.Zero;
             return Task.Factory.StartNew(() =>
             {
                 var result = Array.Empty<string>();
 
                 Guid clsid = dialog is OpenFileDialog ? UnmanagedMethods.ShellIds.OpenFileDialog : UnmanagedMethods.ShellIds.SaveFileDialog;
                 Guid iid = UnmanagedMethods.ShellIds.IFileDialog;
-                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out var unk);
+                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out object unk);
                 var frm = (UnmanagedMethods.IFileDialog)unk;
 
                 var openDialog = dialog as OpenFileDialog;
@@ -98,17 +97,17 @@ namespace Avalonia.Win32
             });
         }
 
-        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
         {
             return Task.Factory.StartNew(() =>
             {
                 string result = string.Empty;
 
-                var hWnd = parent?.Handle?.Handle ?? IntPtr.Zero;
+                var hWnd = parent?.PlatformImpl?.Handle?.Handle ?? IntPtr.Zero;
                 Guid clsid = UnmanagedMethods.ShellIds.OpenFileDialog;
-                Guid iid  = UnmanagedMethods.ShellIds.IFileDialog;
+                Guid iid = UnmanagedMethods.ShellIds.IFileDialog;
 
-                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out var unk);
+                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out object unk);
                 var frm = (UnmanagedMethods.IFileDialog)unk;
                 uint options;
                 frm.GetOptions(out options);
