@@ -358,6 +358,10 @@ namespace Avalonia.Media
             {
                 PlatformImpl.PushOpacity(opacity);
             }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning)?.Log(LogArea.DrawingContext, this, "Invalid Opacity Parameters");
+            }
 
             return new PushedState(this, PushedState.PushedStateType.Opacity);
         }
@@ -375,6 +379,10 @@ namespace Avalonia.Media
             if (bounds.IsRenderValid())
             {
                 PlatformImpl.PushOpacityMask(mask, bounds);
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning)?.Log(LogArea.DrawingContext, this, "Invalid OpacityMask Parameters");
             }
 
             return new PushedState(this, PushedState.PushedStateType.OpacityMask);
