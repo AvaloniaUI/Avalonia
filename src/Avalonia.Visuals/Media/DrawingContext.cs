@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Logging;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
@@ -9,29 +8,6 @@ using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media
 {
-    internal static class RenderValidationExtensions
-    {
-        public static bool IsRenderValid (this double d)
-        {
-            return !(double.IsNaN(d) || double.IsInfinity(d));
-        }
-
-        public static bool IsRenderValid (this Point p)
-        {
-            return p.X.IsRenderValid() && p.Y.IsRenderValid();
-        }
-
-        public static bool IsThicknessValid (this Thickness t)
-        {
-            return t.Left.IsRenderValid() && t.Top.IsRenderValid() && t.Right.IsRenderValid() && t.Bottom.IsRenderValid();
-        }
-
-        public static bool IsRenderValid (this IPen p)
-        {
-            return p.Thickness.IsRenderValid() && p.MiterLimit.IsRenderValid();
-        }
-    }
-
     public sealed class DrawingContext : IDisposable
     {
         private readonly bool _ownsImpl;
@@ -85,7 +61,7 @@ namespace Avalonia.Media
         {
             get { return _currentTransform; }
             private set
-            {
+            {                
                 _currentTransform = value;
                 var transform = _currentTransform * _currentContainerTransform;
                 PlatformImpl.Transform = transform;
@@ -104,7 +80,7 @@ namespace Avalonia.Media
         /// <param name="rect">The rect in the output to draw to.</param>
         public void DrawImage(IImage source, Rect rect)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            Contract.Requires<ArgumentNullException>(source != null);            
 
             DrawImage(source, new Rect(source.Size), rect);
         }
@@ -120,7 +96,14 @@ namespace Avalonia.Media
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            source.Draw(this, sourceRect, destRect, bitmapInterpolationMode);
+            if (sourceRect.IsRenderValid() && destRect.IsRenderValid())
+            {
+                source.Draw(this, sourceRect, destRect, bitmapInterpolationMode);
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning)?.Log(LogArea.DrawingContext, this, "Invalid Draw Parameters");
+            }
         }
 
         /// <summary>
@@ -139,7 +122,7 @@ namespace Avalonia.Media
                 }
                 else
                 {
-                    Logger.TryGet(LogEventLevel.Warning)?.Log("DrawLine", this, "Invalid Draw Parameters");
+                    Logger.TryGet(LogEventLevel.Warning)?.Log(LogArea.DrawingContext, this, "Invalid Draw Parameters");
                 }
             }
         }
@@ -193,7 +176,14 @@ namespace Avalonia.Media
                 radiusY = Math.Min(radiusY, rect.Height / 2);
             }
 
-            PlatformImpl.DrawRectangle(brush, pen, rect, radiusX, radiusY);
+            if (pen.IsRenderValid() && rect.IsRenderValid() && radiusX.IsRenderValid() && radiusY.IsRenderValid())
+            {
+                PlatformImpl.DrawRectangle(brush, pen, rect, radiusX, radiusY);
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning)?.Log(LogArea.DrawingContext, this, "Invalid Draw Parameters");
+            }
         }
 
         /// <summary>
@@ -225,7 +215,14 @@ namespace Avalonia.Media
 
             if (foreground != null)
             {
-                PlatformImpl.DrawText(foreground, origin, text.PlatformImpl);
+                if (origin.IsRenderValid())
+                {
+                    PlatformImpl.DrawText(foreground, origin, text.PlatformImpl);
+                }
+                else
+                {
+                    Logger.TryGet(LogEventLevel.Warning)?.Log(LogArea.DrawingContext, this, "Invalid Draw Parameters");
+                }
             }
         }
 
@@ -241,7 +238,14 @@ namespace Avalonia.Media
 
             if (foreground != null)
             {
-                PlatformImpl.DrawGlyphRun(foreground, glyphRun, baselineOrigin);
+                if (glyphRun.IsRenderValid() && baselineOrigin.IsRenderValid())
+                {
+                    PlatformImpl.DrawGlyphRun(foreground, glyphRun, baselineOrigin);
+                }
+                else
+                {
+                    Logger.TryGet(LogEventLevel.Warning)?.Log(LogArea.DrawingContext, this, "Invalid Draw Parameters");
+                }
             }
         }
 
@@ -318,7 +322,15 @@ namespace Avalonia.Media
         /// <returns>A disposable used to undo the clip rectangle.</returns>
         public PushedState PushClip(Rect clip)
         {
-            PlatformImpl.PushClip(clip);
+            if (clip.IsRenderValid())
+            {
+                PlatformImpl.PushClip(clip);
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning)?.Log(LogArea.DrawingContext, this, "Invalid Clip Parameters");
+            }
+
             return new PushedState(this, PushedState.PushedStateType.Clip);
         }
 
@@ -342,7 +354,11 @@ namespace Avalonia.Media
         public PushedState PushOpacity(double opacity)
         //TODO: Eliminate platform-specific push opacity call
         {
-            PlatformImpl.PushOpacity(opacity);
+            if (opacity.IsRenderValid())
+            {
+                PlatformImpl.PushOpacity(opacity);
+            }
+
             return new PushedState(this, PushedState.PushedStateType.Opacity);
         }
 
@@ -356,7 +372,11 @@ namespace Avalonia.Media
         /// <returns>A disposable to undo the opacity mask.</returns>
         public PushedState PushOpacityMask(IBrush mask, Rect bounds)
         {
-            PlatformImpl.PushOpacityMask(mask, bounds);
+            if (bounds.IsRenderValid())
+            {
+                PlatformImpl.PushOpacityMask(mask, bounds);
+            }
+
             return new PushedState(this, PushedState.PushedStateType.OpacityMask);
         }
 

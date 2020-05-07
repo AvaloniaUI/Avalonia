@@ -34,5 +34,10 @@ namespace Avalonia.Logging
         /// The log event comes from the control system.
         /// </summary>
         public const string Control = "Control";
+
+        /// <summary>
+        /// The log event comes from Drawing Context calls.
+        /// </summary>
+        public const string DrawingContext = "DrawingContext";
     }
 }
