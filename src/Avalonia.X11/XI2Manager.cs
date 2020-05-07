@@ -196,7 +196,7 @@ namespace Avalonia.X11
                     (ev.Type == XiEventType.XI_TouchUpdate ?
                         RawPointerEventType.TouchUpdate :
                         RawPointerEventType.TouchEnd);
-                client.ScheduleInput(new RawTouchEventArgs(client.TouchDevice,
+                client.ScheduleXI2Input(new RawTouchEventArgs(client.TouchDevice,
                     ev.Timestamp, client.InputRoot, type, ev.Position, ev.Modifiers, ev.Detail));
                 return;
             }
@@ -230,10 +230,10 @@ namespace Avalonia.X11
                 }
 
                 if (scrollDelta != default)
-                    client.ScheduleInput(new RawMouseWheelEventArgs(client.MouseDevice, ev.Timestamp,
+                    client.ScheduleXI2Input(new RawMouseWheelEventArgs(client.MouseDevice, ev.Timestamp,
                         client.InputRoot, ev.Position, scrollDelta, ev.Modifiers));
                 if (_pointerDevice.HasMotion(ev))
-                    client.ScheduleInput(new RawPointerEventArgs(client.MouseDevice, ev.Timestamp, client.InputRoot,
+                    client.ScheduleXI2Input(new RawPointerEventArgs(client.MouseDevice, ev.Timestamp, client.InputRoot,
                         RawPointerEventType.Move, ev.Position, ev.Modifiers));
             }
 
@@ -246,7 +246,7 @@ namespace Avalonia.X11
                     : ev.Button == 3 ? (down ? RawPointerEventType.RightButtonDown : RawPointerEventType.RightButtonUp)
                     : (RawPointerEventType?)null;
                 if (type.HasValue)
-                    client.ScheduleInput(new RawPointerEventArgs(client.MouseDevice, ev.Timestamp, client.InputRoot,
+                    client.ScheduleXI2Input(new RawPointerEventArgs(client.MouseDevice, ev.Timestamp, client.InputRoot,
                         type.Value, ev.Position, ev.Modifiers));
             }
             
@@ -307,7 +307,7 @@ namespace Avalonia.X11
     interface IXI2Client
     {
         IInputRoot InputRoot { get; }
-        void ScheduleInput(RawInputEventArgs args);
+        void ScheduleXI2Input(RawInputEventArgs args);
         IMouseDevice MouseDevice { get; }
         TouchDevice TouchDevice { get; }
     }

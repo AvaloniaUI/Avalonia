@@ -31,9 +31,11 @@ public:
     AvnPoint lastPositionSet;
     NSString* _lastTitle;
     IAvnAppMenu* _mainMenu;
+    bool _shown;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events, IAvnGlContext* gl)
     {
+        _shown = false;
         _mainMenu = nullptr;
         BaseEvents = events;
         _glContext = gl;
@@ -116,6 +118,8 @@ public:
             
             [Window setTitle:_lastTitle];
             [Window setTitleVisibility:NSWindowTitleVisible];
+            
+            _shown = true;
         
             return S_OK;
         }
@@ -409,6 +413,7 @@ protected:
         [Window setStyleMask:GetStyle()];
     }
     
+public:
     virtual void OnResized ()
     {
         
@@ -435,6 +440,7 @@ private:
     ComPtr<IAvnWindowEvents> WindowEvents;
     WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
+        _lastWindowState = Normal;
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
         [Window disableCursorRects];
@@ -448,7 +454,7 @@ private:
                 [[Window parentWindow] removeChildWindow:Window];
             WindowBaseImpl::Show();
             
-            return SetWindowState(Normal);
+            return SetWindowState(_lastWindowState);
         }
     }
     
@@ -599,57 +605,63 @@ private:
         {
             _lastWindowState = state;
             
-            switch (state) {
-                case Maximized:
-                    lastPositionSet.X = 0;
-                    lastPositionSet.Y = 0;
-                    
-                    if([Window isMiniaturized])
-                    {
-                        [Window deminiaturize:Window];
-                    }
-                    
-                    if(!IsZoomed())
-                    {
-                        DoZoom();
-                    }
-                    break;
-                    
-                case Minimized:
-                    [Window miniaturize:Window];
-                    break;
-                    
-                default:
-                    if([Window isMiniaturized])
-                    {
-                        [Window deminiaturize:Window];
-                    }
-                    
-                    if(IsZoomed())
-                    {
-                        DoZoom();
-                    }
-                    break;
+            if(_shown)
+            {
+                switch (state) {
+                    case Maximized:
+                        lastPositionSet.X = 0;
+                        lastPositionSet.Y = 0;
+                        
+                        if([Window isMiniaturized])
+                        {
+                            [Window deminiaturize:Window];
+                        }
+                        
+                        if(!IsZoomed())
+                        {
+                            DoZoom();
+                        }
+                        break;
+                        
+                    case Minimized:
+                        [Window miniaturize:Window];
+                        break;
+                        
+                    default:
+                        if([Window isMiniaturized])
+                        {
+                            [Window deminiaturize:Window];
+                        }
+                        
+                        if(IsZoomed())
+                        {
+                            DoZoom();
+                        }
+                        break;
+                }
             }
             
             return S_OK;
         }
     }
-    
-protected:
+
     virtual void OnResized () override
     {
-        auto windowState = [Window isMiniaturized] ? Minimized
-        : (IsZoomed() ? Maximized : Normal);
-        
-        if (windowState != _lastWindowState)
+        if(_shown)
         {
-            _lastWindowState = windowState;
+            auto windowState = [Window isMiniaturized] ? Minimized
+            : (IsZoomed() ? Maximized : Normal);
             
-            WindowEvents->WindowStateChanged(windowState);
+            if (windowState != _lastWindowState)
+            {
+                _lastWindowState = windowState;
+                
+                WindowEvents->WindowStateChanged(windowState);
+            }
         }
     }
     
+protected:
     virtual NSWindowStyleMask GetStyle() override
     {
         unsigned long s = NSWindowStyleMaskBorderless;
@@ -1312,6 +1324,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
 }
 
+- (void)windowDidResize:(NSNotification *)notification
+{
+    _parent->OnResized();
+}
+
 - (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame
 {
     return true;
@@ -1382,6 +1399,7 @@ protected:
             [Window setContentSize:NSSize{x, y}];
             
             [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
+            
             return S_OK;
         }
     }

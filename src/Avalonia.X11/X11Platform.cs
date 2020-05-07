@@ -99,6 +99,7 @@ namespace Avalonia
         public bool UseGpu { get; set; } = true;
         public bool OverlayPopups { get; set; }
         public bool UseDBusMenu { get; set; }
+        public bool UseDeferredRendering { get; set; } = true;
 
         public List<string> GlxRendererBlacklist { get; set; } = new List<string>
         {

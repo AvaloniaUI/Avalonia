@@ -101,7 +101,7 @@ namespace Avalonia.Controls.Platform
             if (_root is TopLevel tl && tl.PlatformImpl is IEmbeddableWindowImpl eimpl)
                 eimpl.LostFocus -= TopLevelLostPlatformFocus;
 
-            _inputManagerSubscription.Dispose();
+            _inputManagerSubscription?.Dispose();
 
             Menu = null;
             _root = null;
