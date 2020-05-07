@@ -935,6 +935,9 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                     }
                 };
 
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(new Size(100, 100)));
+
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
                 sceneBuilder.UpdateAll(scene);
