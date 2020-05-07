@@ -15,6 +15,10 @@ NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationActivati
         }
         
         [[NSApplication sharedApplication] setActivationPolicy: AvnDesiredActivationPolicy];
+        
+        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"NSFullScreenMenuItemEverywhere"];
+        
+        [[NSApplication sharedApplication] setHelpMenu: [[NSMenu new] initWithTitle:@""]];
     }
 }
 

@@ -18,13 +18,17 @@ namespace Avalonia.Skia
 
         private GRContext GrContext { get; }
 
-        public PlatformRenderInterface(ICustomSkiaGpu customSkiaGpu)
+        public PlatformRenderInterface(ICustomSkiaGpu customSkiaGpu, long maxResourceBytes = 100663296)
         {
             if (customSkiaGpu != null)
             {
                 _customSkiaGpu = customSkiaGpu;
 
                 GrContext = _customSkiaGpu.GrContext;
+
+                GrContext.GetResourceCacheLimits(out var maxResources, out _);
+
+                GrContext.SetResourceCacheLimits(maxResources, maxResourceBytes);
 
                 return;
             }
@@ -39,6 +43,10 @@ namespace Avalonia.Skia
                     : GRGlInterface.AssembleGlesInterface((_, proc) => display.GlInterface.GetProcAddress(proc)))
                 {
                     GrContext = GRContext.Create(GRBackend.OpenGL, iface);
+
+                    GrContext.GetResourceCacheLimits(out var maxResources, out _);
+
+                    GrContext.SetResourceCacheLimits(maxResources, maxResourceBytes);
                 }
                 display.ClearContext();
             }
@@ -149,6 +157,16 @@ namespace Avalonia.Skia
             return new WriteableBitmapImpl(size, dpi, format);
         }
 
+        private static readonly SKPaint s_paint = new SKPaint
+        {
+            TextEncoding = SKTextEncoding.GlyphId,
+            IsAntialias = true,
+            IsStroke = false,
+            SubpixelText = true
+        };
+
+        private static readonly SKTextBlobBuilder s_textBlobBuilder = new SKTextBlobBuilder();
+
         /// <inheritdoc />
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
         {
@@ -158,92 +176,84 @@ namespace Avalonia.Skia
 
             var typeface = glyphTypeface.Typeface;
 
-            var paint = new SKPaint
+            s_paint.TextSize = (float)glyphRun.FontRenderingEmSize;
+            s_paint.Typeface = typeface;
+
+
+            SKTextBlob textBlob;
+
+            width = 0;
+
+            var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
+
+            if (glyphRun.GlyphOffsets.IsEmpty)
             {
-                TextSize = (float)glyphRun.FontRenderingEmSize,
-                Typeface = typeface,
-                TextEncoding = SKTextEncoding.GlyphId,
-                IsAntialias = true,
-                IsStroke = false,
-                SubpixelText = true
-            };
-
-            using (var textBlobBuilder = new SKTextBlobBuilder())
-            {
-                SKTextBlob textBlob;
-
-                width = 0;
-
-                var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
-
-                if (glyphRun.GlyphOffsets.IsEmpty)
+                if (glyphTypeface.IsFixedPitch)
                 {
-                    if (glyphTypeface.IsFixedPitch)
-                    {
-                        textBlobBuilder.AddRun(paint, 0, 0, glyphRun.GlyphIndices.Buffer.Span);
+                    s_textBlobBuilder.AddRun(s_paint, 0, 0, glyphRun.GlyphIndices.Buffer.Span);
 
-                        textBlob = textBlobBuilder.Build();
+                    textBlob = s_textBlobBuilder.Build();
 
-                        width = glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[0]) * scale * glyphRun.GlyphIndices.Length;
-                    }
-                    else
-                    {
-                        var buffer = textBlobBuilder.AllocateHorizontalRun(paint, count, 0);
-
-                        var positions = buffer.GetPositionSpan();
-
-                        for (var i = 0; i < count; i++)
-                        {
-                            positions[i] = (float)width;
-
-                            if (glyphRun.GlyphAdvances.IsEmpty)
-                            {
-                                width += glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
-                            }
-                            else
-                            {
-                                width += glyphRun.GlyphAdvances[i];
-                            }
-                        }
-
-                        buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
-
-                        textBlob = textBlobBuilder.Build();
-                    }
+                    width = glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[0]) * scale * glyphRun.GlyphIndices.Length;
                 }
                 else
                 {
-                    var buffer = textBlobBuilder.AllocatePositionedRun(paint, count);
+                    var buffer = s_textBlobBuilder.AllocateHorizontalRun(s_paint, count, 0);
 
-                    var glyphPositions = buffer.GetPositionSpan();
-
-                    var currentX = 0.0;
+                    var positions = buffer.GetPositionSpan();
 
                     for (var i = 0; i < count; i++)
                     {
-                        var glyphOffset = glyphRun.GlyphOffsets[i];
-
-                        glyphPositions[i] = new SKPoint((float)(currentX + glyphOffset.X), (float)glyphOffset.Y);
+                        positions[i] = (float)width;
 
                         if (glyphRun.GlyphAdvances.IsEmpty)
                         {
-                            currentX += glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
+                            width += glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
                         }
                         else
                         {
-                            currentX += glyphRun.GlyphAdvances[i];
+                            width += glyphRun.GlyphAdvances[i];
                         }
                     }
 
                     buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
 
-                    width = currentX;
+                    textBlob = s_textBlobBuilder.Build();
+                }
+            }
+            else
+            {
+                var buffer = s_textBlobBuilder.AllocatePositionedRun(s_paint, count);
 
-                    textBlob = textBlobBuilder.Build();
+                var glyphPositions = buffer.GetPositionSpan();
+
+                var currentX = 0.0;
+
+                for (var i = 0; i < count; i++)
+                {
+                    var glyphOffset = glyphRun.GlyphOffsets[i];
+
+                    glyphPositions[i] = new SKPoint((float)(currentX + glyphOffset.X), (float)glyphOffset.Y);
+
+                    if (glyphRun.GlyphAdvances.IsEmpty)
+                    {
+                        currentX += glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
+                    }
+                    else
+                    {
+                        currentX += glyphRun.GlyphAdvances[i];
+                    }
                 }
 
-                return new GlyphRunImpl(paint, textBlob);
+                buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
+
+                width = currentX;
+
+                textBlob = s_textBlobBuilder.Build();
             }
+
+            return new GlyphRunImpl(textBlob);
+
         }
     }
 }

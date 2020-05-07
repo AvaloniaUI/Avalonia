@@ -392,7 +392,7 @@ namespace Avalonia.Controls.Platform
             {
                 var control = e.Source as ILogical;
 
-                if (!Menu.IsLogicalParentOf(control))
+                if (!Menu.IsLogicalAncestorOf(control))
                 {
                     Menu.Close();
                 }
