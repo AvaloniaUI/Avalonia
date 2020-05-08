@@ -81,7 +81,7 @@ namespace Avalonia.Dialogs
 
             if (indexOfPreselected > 1)
             {
-                _filesView.ScrollIntoView(model.Items[indexOfPreselected - 1]);
+                _filesView.ScrollIntoView(indexOfPreselected - 1);
             }
         }
     }
