@@ -1,6 +1,8 @@
 using System;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
+
+#nullable enable
 
 namespace Avalonia
 {
@@ -20,7 +22,7 @@ namespace Avalonia
         public StyledPropertyMetadata(
             Optional<TValue> defaultValue = default,
             BindingMode defaultBindingMode = BindingMode.Default,
-            Func<IAvaloniaObject, TValue, TValue> coerce = null)
+            Func<IAvaloniaObject, TValue, TValue>? coerce = null)
                 : base(defaultBindingMode)
         {
             _defaultValue = defaultValue;
@@ -30,6 +32,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the default value for the property.
         /// </summary>
+        [MaybeNull]
         public TValue DefaultValue => _defaultValue.GetValueOrDefault();
 
         /// <summary>
@@ -37,7 +40,7 @@ namespace Avalonia
         /// </summary>
         public Func<IAvaloniaObject, TValue, TValue>? CoerceValue { get; private set; }
 
-        object IStyledPropertyMetadata.DefaultValue => DefaultValue;
+        object? IStyledPropertyMetadata.DefaultValue => DefaultValue;
 
         /// <inheritdoc/>
         public override void Merge(PropertyMetadata baseMetadata, AvaloniaProperty property)
@@ -48,7 +51,7 @@ namespace Avalonia
             {
                 if (!_defaultValue.HasValue)
                 {
-                    _defaultValue = src.DefaultValue;
+                    _defaultValue = new Optional<TValue>(src.DefaultValue);
                 }
 
                 if (CoerceValue == null)

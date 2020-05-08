@@ -2,6 +2,8 @@ using System;
 using Avalonia.Data;
 using Avalonia.Utilities;
 
+#nullable enable
+
 namespace Avalonia
 {
     /// <summary>
@@ -21,7 +23,7 @@ namespace Avalonia
             string name,
             Type ownerType,
             PropertyMetadata metadata,
-            Action<IAvaloniaObject, bool> notifying = null)
+            Action<IAvaloniaObject, bool>? notifying = null)
             : base(name, typeof(TValue), ownerType, metadata, notifying)
         {
         }
@@ -35,7 +37,7 @@ namespace Avalonia
         protected AvaloniaProperty(
             AvaloniaProperty source, 
             Type ownerType, 
-            PropertyMetadata metadata)
+            PropertyMetadata? metadata)
             : base(source, ownerType, metadata)
         {
         }

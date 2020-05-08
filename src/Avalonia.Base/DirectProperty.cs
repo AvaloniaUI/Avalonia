@@ -1,5 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
+
+#nullable enable
 
 namespace Avalonia
 {
@@ -29,12 +32,12 @@ namespace Avalonia
         public DirectProperty(
             string name,
             Func<TOwner, TValue> getter,
-            Action<TOwner, TValue> setter,
+            Action<TOwner, TValue>? setter,
             DirectPropertyMetadata<TValue> metadata,
             bool enableDataValidation)
             : base(name, typeof(TOwner), metadata, enableDataValidation)
         {
-            Contract.Requires<ArgumentNullException>(getter != null);
+            getter = getter ?? throw new ArgumentNullException(nameof(getter));
 
             Getter = getter;
             Setter = setter;
@@ -53,12 +56,12 @@ namespace Avalonia
         private DirectProperty(
             DirectPropertyBase<TValue> source,
             Func<TOwner, TValue> getter,
-            Action<TOwner, TValue> setter,
-            DirectPropertyMetadata<TValue> metadata,
+            Action<TOwner, TValue>? setter,
+            DirectPropertyMetadata<TValue>? metadata,
             bool enableDataValidation)
             : base(source, typeof(TOwner), metadata, enableDataValidation)
         {
-            Contract.Requires<ArgumentNullException>(getter != null);
+            getter = getter ?? throw new ArgumentNullException(nameof(getter));
 
             Getter = getter;
             Setter = setter;
@@ -81,7 +84,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the setter function.
         /// </summary>
-        public Action<TOwner, TValue> Setter { get; }
+        public Action<TOwner, TValue>? Setter { get; }
 
         /// <summary>
         /// Registers the direct property on another type.
@@ -99,8 +102,8 @@ namespace Avalonia
         /// <returns>The property.</returns>
         public DirectProperty<TNewOwner, TValue> AddOwner<TNewOwner>(
             Func<TNewOwner, TValue> getter,
-            Action<TNewOwner, TValue> setter = null,
-            TValue unsetValue = default(TValue),
+            Action<TNewOwner, TValue>? setter = null,
+            [AllowNull] TValue unsetValue = default,
             BindingMode defaultBindingMode = BindingMode.Default,
             bool enableDataValidation = false)
                 where TNewOwner : AvaloniaObject
@@ -138,8 +141,8 @@ namespace Avalonia
         /// <returns>The property.</returns>
         public DirectProperty<TNewOwner, TValue> AddOwnerWithDataValidation<TNewOwner>(
             Func<TNewOwner, TValue> getter,
-            Action<TNewOwner,TValue> setter,
-            TValue unsetValue = default(TValue),
+            Action<TNewOwner, TValue>? setter,
+            [AllowNull]  TValue unsetValue = default,
             BindingMode defaultBindingMode = BindingMode.Default,
             bool enableDataValidation = false)
                 where TNewOwner : AvaloniaObject
@@ -183,13 +186,13 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        object IDirectPropertyAccessor.GetValue(IAvaloniaObject instance)
+        object? IDirectPropertyAccessor.GetValue(IAvaloniaObject instance)
         {
             return Getter((TOwner)instance);
         }
 
         /// <inheritdoc/>
-        void IDirectPropertyAccessor.SetValue(IAvaloniaObject instance, object value)
+        void IDirectPropertyAccessor.SetValue(IAvaloniaObject instance, object? value)
         {
             if (Setter == null)
             {

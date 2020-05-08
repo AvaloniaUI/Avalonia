@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
@@ -48,7 +49,7 @@ namespace Avalonia
         protected DirectPropertyBase(
             AvaloniaProperty source,
             Type ownerType,
-            PropertyMetadata metadata,
+            PropertyMetadata? metadata,
             bool enableDataValidation)
             : base(source, ownerType, metadata)
         {
@@ -84,6 +85,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>The unset value.</returns>
+        [return: MaybeNull]
         public TValue GetUnsetValue(Type type)
         {
             type = type ?? throw new ArgumentNullException(nameof(type));
@@ -120,7 +122,8 @@ namespace Avalonia
             return o.GetValue<TValue>(this);
         }
 
-        internal override object RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
+        /// <inheritdoc/>
+        internal override object? RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
         {
             return o.GetValue<TValue>(this);
         }
@@ -128,7 +131,7 @@ namespace Avalonia
         /// <inheritdoc/>
         internal override IDisposable? RouteSetValue(
             IAvaloniaObject o,
-            object value,
+            object? value,
             BindingPriority priority)
         {
             var v = TryConvert(value);
@@ -152,14 +155,14 @@ namespace Avalonia
         /// <inheritdoc/>
         internal override IDisposable RouteBind(
             IAvaloniaObject o,
-            IObservable<BindingValue<object>> source,
+            IObservable<BindingValue<object?>> source,
             BindingPriority priority)
         {
             var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);
             return o.Bind<TValue>(this, adapter);
         }
 
-        internal override void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject oldParent)
+        internal override void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject? oldParent)
         {
             throw new NotSupportedException("Direct properties do not support inheritance.");
         }

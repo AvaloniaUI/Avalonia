@@ -1,8 +1,11 @@
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
+
+#nullable enable
 
 namespace Avalonia
 {
@@ -11,7 +14,7 @@ namespace Avalonia
     /// </summary>
     public abstract class StyledPropertyBase<TValue> : AvaloniaProperty<TValue>, IStyledPropertyAccessor
     {
-        private bool _inherits;
+        private readonly bool _inherits;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyledPropertyBase{T}"/> class.
@@ -27,12 +30,12 @@ namespace Avalonia
             Type ownerType,            
             StyledPropertyMetadata<TValue> metadata,
             bool inherits = false,
-            Func<TValue, bool> validate = null,
-            Action<IAvaloniaObject, bool> notifying = null)
+            Func<TValue, bool>? validate = null,
+            Action<IAvaloniaObject, bool>? notifying = null)
                 : base(name, ownerType, metadata, notifying)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
+            name = name ?? throw new ArgumentNullException(nameof(name));
+            ownerType = ownerType ?? throw new ArgumentNullException(nameof(ownerType));
 
             if (name.Contains("."))
             {
@@ -72,7 +75,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the value validation callback for the property.
         /// </summary>
-        public Func<TValue, bool> ValidateValue { get; }
+        public Func<TValue, bool>? ValidateValue { get; }
 
         /// <summary>
         /// Gets a value indicating whether this property has any value coercion callbacks defined
@@ -80,7 +83,8 @@ namespace Avalonia
         /// </summary>
         internal bool HasCoercion { get; private set; }
 
-        public TValue CoerceValue(IAvaloniaObject instance, TValue baseValue)
+        [return: MaybeNull]
+        public TValue CoerceValue(IAvaloniaObject instance, [AllowNull] TValue baseValue)
         {
             var metadata = GetMetadata(instance.GetType());
 
@@ -97,9 +101,10 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>The default value.</returns>
+        [return: MaybeNull]
         public TValue GetDefaultValue(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type = type ?? throw new ArgumentNullException(nameof(type));
 
             return GetMetadata(type).DefaultValue;
         }
@@ -183,7 +188,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        object IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
+        object? IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
 
         /// <inheritdoc/>
         internal override void RouteClearValue(IAvaloniaObject o)
@@ -192,22 +197,22 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        internal override object RouteGetValue(IAvaloniaObject o)
+        internal override object? RouteGetValue(IAvaloniaObject o)
         {
             return o.GetValue<TValue>(this);
         }
 
         /// <inheritdoc/>
-        internal override object RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
+        internal override object? RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
         {
             var value = o.GetBaseValue<TValue>(this, maxPriority);
             return value.HasValue ? value.Value : AvaloniaProperty.UnsetValue;
         }
 
         /// <inheritdoc/>
-        internal override IDisposable RouteSetValue(
+        internal override IDisposable? RouteSetValue(
             IAvaloniaObject o,
-            object value,
+            object? value,
             BindingPriority priority)
         {
             var v = TryConvert(value);
@@ -222,7 +227,7 @@ namespace Avalonia
             }
             else if (v.HasError)
             {
-                throw v.Error;
+                throw v.Error!;
             }
 
             return null;
@@ -231,7 +236,7 @@ namespace Avalonia
         /// <inheritdoc/>
         internal override IDisposable RouteBind(
             IAvaloniaObject o,
-            IObservable<BindingValue<object>> source,
+            IObservable<BindingValue<object?>> source,
             BindingPriority priority)
         {
             var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);
@@ -241,22 +246,16 @@ namespace Avalonia
         /// <inheritdoc/>
         internal override void RouteInheritanceParentChanged(
             AvaloniaObject o,
-            IAvaloniaObject oldParent)
+            IAvaloniaObject? oldParent)
         {
             o.InheritanceParentChanged(this, oldParent);
         }
 
-        private object GetDefaultBoxedValue(Type type)
+        private object? GetDefaultBoxedValue(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type = type ?? throw new ArgumentNullException(nameof(type));
 
             return GetMetadata(type).DefaultValue;
-        }
-
-        [DebuggerHidden]
-        private Func<IAvaloniaObject, TValue, TValue> Cast<THost>(Func<THost, TValue, TValue> validate)
-        {
-            return (o, v) => validate((THost)o, v);
         }
     }
 }
