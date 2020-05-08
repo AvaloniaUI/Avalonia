@@ -115,17 +115,17 @@ namespace Avalonia.X11.Glx
         // On some Linux systems, glXGetProcAddress will return valid pointers for even EGL functions.
         // This makes Skia try to load some data from EGL,
         // which can then cause segmentation faults because they return garbage.
-        public static IntPtr SafeGetProcAddress(string proc, bool optional)
+        public static IntPtr SafeGetProcAddress(string proc)
         {
             if (proc.StartsWith("egl", StringComparison.InvariantCulture))
             {
                 return IntPtr.Zero;
             }
 
-            return GlxConverted(proc, optional);
+            return GlxConverted(proc);
         }
 
-        private static readonly Func<string, bool, IntPtr> GlxConverted = ConvertNative(GlxGetProcAddress);
+        private static readonly Func<string, IntPtr> GlxConverted = ConvertNative(GlxGetProcAddress);
 
         public string[] GetExtensions(IntPtr display)
         {

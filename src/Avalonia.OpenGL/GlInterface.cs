@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Platform.Interop;
@@ -8,26 +9,51 @@ namespace Avalonia.OpenGL
 {
     public delegate IntPtr GlGetProcAddressDelegate(string procName);
     
-    public unsafe class GlInterface : GlInterfaceBase
+    public unsafe class GlInterface : GlBasicInfoInterface<GlInterface.GlContextInfo>
     {
         public string Version { get; }
         public string Vendor { get; }
         public string Renderer { get; }
+        public GlContextInfo ContextInfo { get; }
 
-        public GlInterface(Func<string, bool, IntPtr> getProcAddress) : base(getProcAddress)
+        public class GlContextInfo
+        {
+            public GlVersion Version { get; }
+            public HashSet<string> Extensions { get; }
+
+            public GlContextInfo(GlVersion version, HashSet<string> extensions)
+            {
+                Version = version;
+                Extensions = extensions;
+            }
+
+            public static GlContextInfo Create(GlVersion version, Func<string, IntPtr> getProcAddress)
+            {
+                var basicInfoInterface = new GlBasicInfoInterface(getProcAddress);
+                var exts = basicInfoInterface.GetString(GL_EXTENSIONS).Split(' ');
+                return new GlContextInfo(version, new HashSet<string>(exts));
+            }
+        }
+
+        private GlInterface(GlContextInfo info, Func<string, IntPtr> getProcAddress) : base(getProcAddress, info)
         {
             Version = GetString(GlConsts.GL_VERSION);
             Renderer = GetString(GlConsts.GL_RENDERER);
-            Vendor = GetString(GlConsts.GL_VENDOR);
+            Vendor = GetString(GlConsts.GL_VENDOR);   
         }
 
-        public GlInterface(Func<Utf8Buffer, IntPtr> n) : this(ConvertNative(n))
+        public GlInterface(GlVersion version, Func<string, IntPtr> getProcAddress) : this(
+            GlContextInfo.Create(version, getProcAddress), getProcAddress)
+        {
+        }
+
+        public GlInterface(GlVersion version, Func<Utf8Buffer, IntPtr> n) : this(version, ConvertNative(n))
         {
             
         }
 
-        public static GlInterface FromNativeUtf8GetProcAddress(Func<Utf8Buffer, IntPtr> getProcAddress) =>
-            new GlInterface(getProcAddress);
+        public static GlInterface FromNativeUtf8GetProcAddress(GlVersion version, Func<Utf8Buffer, IntPtr> getProcAddress) =>
+            new GlInterface(version, getProcAddress);
 
         
         public T GetProcAddress<T>(string proc) => Marshal.GetDelegateForFunctionPointer<T>(GetProcAddress(proc));
@@ -283,7 +309,9 @@ namespace Avalonia.OpenGL
 
         
         public delegate void GlGenVertexArrays(int n, int[] rv);
-        [GlEntryPoint("glGenVertexArrays", "glGenVertexArraysOES")]
+        
+        [GlMinVersionEntryPoint("glGenVertexArrays",3,0)]
+        [GlExtensionEntryPoint("glGenVertexArraysOES", "GL_OES_vertex_array_object")]
         public GlGenVertexArrays GenVertexArrays { get; }
 
         public int GenVertexArray()
@@ -294,7 +322,8 @@ namespace Avalonia.OpenGL
         }
 
         public delegate void GlBindVertexArray(int array);
-        [GlEntryPoint("glBindVertexArray", "glBindVertexArrayOES")]
+        [GlMinVersionEntryPoint("glBindVertexArray", 3,0)]
+        [GlExtensionEntryPoint("glBindVertexArrayOES", "GL_OES_vertex_array_object")]
         public GlBindVertexArray BindVertexArray { get; }
 
         public delegate int GlGetUniformLocation(int program, IntPtr name);
@@ -325,7 +354,8 @@ namespace Avalonia.OpenGL
         public GlDeleteBuffers DeleteBuffers { get; }
 
         public delegate void GlDeleteVertexArrays(int count, int[] buffers);
-        [GlEntryPoint("glDeleteVertexArrays", "glDeleteVertexArraysOES")]
+        [GlMinVersionEntryPoint("glDeleteVertexArrays", 3,0)]
+        [GlExtensionEntryPoint("glDeleteVertexArraysOES", "GL_OES_vertex_array_object")]
         public GlDeleteVertexArrays DeleteVertexArrays { get; }
 
         public delegate void GlDeleteProgram(int program);

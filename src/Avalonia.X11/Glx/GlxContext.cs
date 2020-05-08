@@ -27,7 +27,8 @@ namespace Avalonia.X11.Glx
             Version = version;
             SampleCount = sampleCount;
             StencilSize = stencilSize;
-            GlInterface = new GlInterface(GlxInterface.SafeGetProcAddress);
+            using (MakeCurrent())
+                GlInterface = new GlInterface(version, GlxInterface.SafeGetProcAddress);
         }
         
         public GlxDisplay Display { get; }

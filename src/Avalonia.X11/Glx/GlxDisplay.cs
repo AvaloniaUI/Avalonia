@@ -87,7 +87,7 @@ namespace Avalonia.X11.Glx
                 sampleCount, stencilSize, true);
             using (DeferredContext.MakeCurrent())
             {
-                var glInterface = new GlInterface(GlxInterface.SafeGetProcAddress);
+                var glInterface = DeferredContext.GlInterface;
                 if (glInterface.Version == null)
                     throw new OpenGlException("GL version string is null, aborting");
                 if (glInterface.Renderer == null)
