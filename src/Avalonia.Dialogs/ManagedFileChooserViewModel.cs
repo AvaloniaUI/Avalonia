@@ -136,7 +136,7 @@ namespace Avalonia.Dialogs
                         : dialog is OpenFolderDialog ? "Select directory"
                         : throw new ArgumentException(nameof(dialog)));
 
-            var directory = dialog.InitialDirectory;
+            var directory = dialog.Directory;
 
             if (directory == null || !Directory.Exists(directory))
             {

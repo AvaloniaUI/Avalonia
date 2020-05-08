@@ -669,7 +669,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
-            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: InputModifiers.Shift);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Shift);
 
             var panel = target.Presenter.Panel;
 
@@ -713,17 +713,17 @@ namespace Avalonia.Controls.UnitTests.Primitives
             VerifyAdded("Bar");
 
             receivedArgs = null;
-            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: InputModifiers.Control);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
 
             VerifyAdded("Baz");
 
             receivedArgs = null;
-            _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: InputModifiers.Control);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Control);
 
             VerifyAdded("Qux");
 
             receivedArgs = null;
-            _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: InputModifiers.Control);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Control);
 
             VerifyRemoved("Bar");
         }
@@ -741,14 +741,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
             _helper.Click((Interactive)target.Presenter.Panel.Children[1]);
-            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: InputModifiers.Control);
-            _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: InputModifiers.Control);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Control);
 
             Assert.Equal(1, target.SelectedIndex);
             Assert.Equal("Bar", target.SelectedItem);
             Assert.Equal(new[] { "Bar", "Baz", "Qux" }, target.SelectedItems);
 
-            _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: InputModifiers.Control);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Control);
 
             Assert.Equal(2, target.SelectedIndex);
             Assert.Equal("Baz", target.SelectedItem);
@@ -768,12 +768,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
             _helper.Click((Interactive)target.Presenter.Panel.Children[1]);
-            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: InputModifiers.Control);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
 
             Assert.Equal(1, target.SelectedIndex);
             Assert.Equal("Bar", target.SelectedItem);
 
-            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: InputModifiers.Control);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
 
             Assert.Equal(1, target.SelectedIndex);
             Assert.Equal("Bar", target.SelectedItem);
@@ -792,7 +792,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
             _helper.Click((Interactive)target.Presenter.Panel.Children[3]);
-            _helper.Click((Interactive)target.Presenter.Panel.Children[4], modifiers: InputModifiers.Control);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[4], modifiers: KeyModifiers.Control);
 
             var panel = target.Presenter.Panel;
 
@@ -813,7 +813,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
             _helper.Click((Interactive)target.Presenter.Panel.Children[3]);
-            _helper.Click((Interactive)target.Presenter.Panel.Children[5], modifiers: InputModifiers.Shift);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[5], modifiers: KeyModifiers.Shift);
 
             var panel = target.Presenter.Panel;
 
@@ -834,7 +834,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
             _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
-            _helper.Click((Interactive)target.Presenter.Panel.Children[5], modifiers: InputModifiers.Shift);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[5], modifiers: KeyModifiers.Shift);
 
             var panel = target.Presenter.Panel;
 
@@ -878,12 +878,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
             VerifyAdded("Bar");
 
             receivedArgs = null;
-            _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: InputModifiers.Shift);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Shift);
 
             VerifyAdded("Baz" ,"Qux");
 
             receivedArgs = null;
-            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: InputModifiers.Shift);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Shift);
 
             VerifyRemoved("Qux");
         }
@@ -904,15 +904,15 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(new[] { "Foo" }, target.SelectedItems);
 
-            _helper.Click((Interactive)target.Presenter.Panel.Children[4], modifiers: InputModifiers.Control);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[4], modifiers: KeyModifiers.Control);
 
             Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
 
-            _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: InputModifiers.Control);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Control);
 
             Assert.Equal(new[] { "Foo", "Bar", "Foo" }, target.SelectedItems);
 
-            _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: InputModifiers.Control);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Control);
 
             Assert.Equal(new[] { "Foo", "Bar", "Foo", "Bar" }, target.SelectedItems);
         }
@@ -1174,7 +1174,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
             _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
-            _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: InputModifiers.Shift);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Shift);
 
             Assert.Equal(2, target.SelectedItems.Count);
 
@@ -1224,7 +1224,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Presenter.ApplyTemplate();
 
             _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
-            _helper.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: InputModifiers.Shift);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: KeyModifiers.Shift);
 
             Assert.Equal(1, target.SelectedItems.Count);
         }
@@ -1244,7 +1244,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Presenter.ApplyTemplate();
 
             _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
-            _helper.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: InputModifiers.Control);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: KeyModifiers.Control);
 
             Assert.Equal(1, target.SelectedItems.Count);
         }
