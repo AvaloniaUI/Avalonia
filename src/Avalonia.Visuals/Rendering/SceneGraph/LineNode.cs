@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
@@ -6,11 +7,78 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
+
     /// <summary>
     /// A node in the scene graph which represents a line draw.
     /// </summary>
     internal class LineNode : BrushDrawOperation
     {
+
+        const double degreeToRadians = Math.PI / 180.0;
+
+        private static double CalculateAngle(Point p1, Point p2)
+        {
+            var xDiff = p2.X - p1.X;
+            var yDiff = p2.Y - p1.Y;
+
+            return Math.Atan2(yDiff, xDiff) * 180.0 / Math.PI;
+        }
+
+        private static double CalculateOppSide(double angle, double hyp)
+        {
+            return Math.Sin(angle * degreeToRadians) * hyp;
+        }
+
+        private static double CalculateAdjSide(double angle, double hyp)
+        {
+            return Math.Cos(angle * degreeToRadians) * hyp;
+        }
+
+        static Rect CalculateBounds(Point p1, Point p2, double thickness, double angleToCorner)
+        {
+            var pts = TranslatePointsAlongTangent(p1, p2, angleToCorner + 90, thickness / 2);
+
+            return new Rect(pts.p1, pts.p2);
+        }
+
+        static (Point p1, Point p2) TranslatePointsAlongTangent(Point p1, Point p2, double angle, double distance)
+        {
+            var xDiff = CalculateOppSide(angle, distance);
+            var yDiff = CalculateAdjSide(angle, distance);
+
+            var c1 = new Point(p1.X + xDiff, p1.Y - yDiff);
+            var c2 = new Point(p1.X - xDiff, p1.Y + yDiff);
+
+            var c3 = new Point(p2.X + xDiff, p2.Y - yDiff);
+            var c4 = new Point(p2.X - xDiff, p2.Y + yDiff);
+
+            var minX = Math.Min(c1.X, Math.Min(c2.X, Math.Min(c3.X, c4.X)));
+            var minY = Math.Min(c1.Y, Math.Min(c2.Y, Math.Min(c3.Y, c4.Y)));
+            var maxX = Math.Max(c1.X, Math.Max(c2.X, Math.Max(c3.X, c4.X)));
+            var maxY = Math.Max(c1.Y, Math.Max(c2.Y, Math.Max(c3.Y, c4.Y)));
+
+            return (new Point(minX, minY), new Point(maxX, maxY));
+        }
+
+        static Rect CalculateBounds(Point p1, Point p2, IPen p)
+        {
+            var angle = CalculateAngle(p1, p2);
+
+            var angleToCorner = 90 - angle;
+
+            if (p.LineCap != PenLineCap.Flat)
+            {
+                var pts = TranslatePointsAlongTangent(p1, p2, angleToCorner, p.Thickness / 2);
+
+                return CalculateBounds(pts.p1, pts.p2, p.Thickness, angleToCorner);
+            }
+            else
+            {
+                return CalculateBounds(p1, p2, p.Thickness, angleToCorner);
+            }
+        }
+
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GeometryNode"/> class.
         /// </summary>
@@ -25,14 +93,18 @@ namespace Avalonia.Rendering.SceneGraph
             Point p1,
             Point p2,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(new Rect(p1, p2), transform, pen)
+            : base(CalculateBounds(p1, p2, pen), transform, pen)
         {
             Transform = transform;
             Pen = pen?.ToImmutable();
             P1 = p1;
             P2 = p2;
             ChildScenes = childScenes;
+
+            
         }
+
+        
 
         /// <summary>
         /// Gets the transform with which the node will be drawn.
