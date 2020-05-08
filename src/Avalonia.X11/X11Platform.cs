@@ -105,8 +105,7 @@ namespace Avalonia
             new GlVersion(GlProfileType.OpenGL, 3, 0),
             new GlVersion(GlProfileType.OpenGLES, 3, 2),
             new GlVersion(GlProfileType.OpenGLES, 3, 0),
-            new GlVersion(GlProfileType.OpenGLES, 2, 0),
-            new GlVersion(GlProfileType.OpenGL, 2, 0)
+            new GlVersion(GlProfileType.OpenGLES, 2, 0)
         };
 
         public List<string> GlxRendererBlacklist { get; set; } = new List<string>

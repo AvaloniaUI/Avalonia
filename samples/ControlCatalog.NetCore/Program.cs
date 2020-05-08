@@ -60,11 +60,7 @@ namespace ControlCatalog.NetCore
                 .With(new X11PlatformOptions
                 {
                     EnableMultiTouch = true,
-                    UseDBusMenu = true,
-                    GlProfiles = new List<GlVersion>
-                    {
-                        new GlVersion(GlProfileType.OpenGLES, 2, 0)
-                    }
+                    UseDBusMenu = true
                 })
                 .With(new Win32PlatformOptions
                 {
