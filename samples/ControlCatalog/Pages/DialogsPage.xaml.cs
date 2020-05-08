@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
+using Avalonia.Dialogs;
 using Avalonia.Markup.Xaml;
 #pragma warning disable 4014
 
@@ -57,6 +58,19 @@ namespace ControlCatalog.Pages
                 {
                     Title = "Select folder",
                 }.ShowAsync(GetWindow());
+            };
+            this.FindControl<Button>("OpenBoth").Click += async delegate
+            {
+                var res = await new OpenFileDialog()
+                {
+                    Title = "Select both",
+                    AllowMultiple = true
+                }.ShowManagedAsync(GetWindow(), new ManagedFileDialogOptions
+                {
+                    AllowDirectorySelection = true
+                });
+                if (res != null)
+                    Console.WriteLine("Selected: \n" + string.Join("\n", res));
             };
             this.FindControl<Button>("DecoratedWindow").Click += delegate
             {

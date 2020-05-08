@@ -328,7 +328,9 @@ namespace Avalonia.X11
             }
             else if (ev.type == XEventName.UnmapNotify)
                 _mapped = false;
-            else if (ev.type == XEventName.Expose)
+            else if (ev.type == XEventName.Expose ||
+                     (ev.type == XEventName.VisibilityNotify &&
+                      ev.VisibilityEvent.state < 2))
             {
                 if (!_triggeredExpose)
                 {

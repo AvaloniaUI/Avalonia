@@ -14,6 +14,7 @@ namespace Avalonia.Dialogs
 {
     internal class ManagedFileChooserViewModel : InternalViewModelBase
     {
+        private readonly ManagedFileDialogOptions _options;
         public event Action CancelRequested;
         public event Action<string[]> CompleteRequested;
 
@@ -103,8 +104,9 @@ namespace Avalonia.Dialogs
             QuickLinks.AddRange(quickSources.GetAllItems().Select(i => new ManagedFileChooserItemViewModel(i)));
         }
 
-        public ManagedFileChooserViewModel(FileSystemDialog dialog)
+        public ManagedFileChooserViewModel(FileSystemDialog dialog, ManagedFileDialogOptions options)
         {
+            _options = options;
             _disposables = new CompositeDisposable();
 
             var quickSources = AvaloniaLocator.Current
@@ -202,10 +204,12 @@ namespace Avalonia.Dialogs
                     }
                     else
                     {
-                        var invalidItems = SelectedItems.Where(i => i.ItemType == ManagedFileChooserItemType.Folder).ToList();
-                        foreach (var item in invalidItems)
+                        if (!_options.AllowDirectorySelection)
                         {
-                            SelectedItems.Remove(item);
+                            var invalidItems = SelectedItems.Where(i => i.ItemType == ManagedFileChooserItemType.Folder)
+                                .ToList();
+                            foreach (var item in invalidItems) 
+                                SelectedItems.Remove(item);
                         }
 
                         if (!_selectingDirectory)
