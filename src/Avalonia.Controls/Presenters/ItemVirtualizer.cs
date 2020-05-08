@@ -275,8 +275,8 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Scrolls the specified item into view.
         /// </summary>
-        /// <param name="item">The item.</param>
-        public virtual void ScrollIntoView(object item)
+        /// <param name="index">The index of the item.</param>
+        public virtual void ScrollIntoView(int index)
         {
         }
 
