@@ -116,7 +116,7 @@ namespace Avalonia.Data
         /// Creates an <see cref="Optional{T}"/> from an instance of the underlying value type.
         /// </summary>
         /// <param name="value">The value.</param>
-        public static implicit operator Optional<T>(T value) => new Optional<T>(value);
+        public static implicit operator Optional<T>([AllowNull] T value) => new Optional<T>(value);
 
         /// <summary>
         /// Compares two <see cref="Optional{T}"/>s for inequality.

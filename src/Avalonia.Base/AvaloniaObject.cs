@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.PropertyStore;
 using Avalonia.Threading;
+
+#nullable enable
 
 namespace Avalonia
 {
@@ -17,12 +20,12 @@ namespace Avalonia
     /// </remarks>
     public class AvaloniaObject : IAvaloniaObject, IAvaloniaObjectDebug, INotifyPropertyChanged, IValueSink
     {
-        private IAvaloniaObject _inheritanceParent;
-        private List<IDisposable> _directBindings;
-        private PropertyChangedEventHandler _inpcChanged;
-        private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
-        private List<IAvaloniaObject> _inheritanceChildren;
-        private ValueStore _values;
+        private IAvaloniaObject? _inheritanceParent;
+        private List<IDisposable>? _directBindings;
+        private PropertyChangedEventHandler? _inpcChanged;
+        private EventHandler<AvaloniaPropertyChangedEventArgs>? _propertyChanged;
+        private List<IAvaloniaObject>? _inheritanceChildren;
+        private ValueStore? _values;
         private ValueStore Values => _values ?? (_values = new ValueStore(this));
 
         /// <summary>
@@ -58,7 +61,7 @@ namespace Avalonia
         /// <value>
         /// The inheritance parent.
         /// </value>
-        protected IAvaloniaObject InheritanceParent
+        protected IAvaloniaObject? InheritanceParent
         {
             get
             {
@@ -101,7 +104,7 @@ namespace Avalonia
         /// Gets or sets the value of a <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="property">The property.</param>
-        public object this[AvaloniaProperty property]
+        public object? this[AvaloniaProperty property]
         {
             get { return GetValue(property); }
             set { SetValue(property, value); }
@@ -223,7 +226,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
-        public object GetValue(AvaloniaProperty property)
+        public object? GetValue(AvaloniaProperty property)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
 
@@ -236,6 +239,7 @@ namespace Avalonia
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
+        [return: MaybeNull]
         public T GetValue<T>(StyledPropertyBase<T> property)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
@@ -250,6 +254,7 @@ namespace Avalonia
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
+        [return: MaybeNull]
         public T GetValue<T>(DirectPropertyBase<T> property)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
@@ -281,7 +286,7 @@ namespace Avalonia
         /// <returns>True if the property is animating, otherwise false.</returns>
         public bool IsAnimating(AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            property = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
 
             return _values?.IsAnimating(property) ?? false;
@@ -298,7 +303,7 @@ namespace Avalonia
         /// </remarks>
         public bool IsSet(AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            property = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
 
             return _values?.IsSet(property) ?? false;
@@ -312,7 +317,7 @@ namespace Avalonia
         /// <param name="priority">The priority of the value.</param>
         public void SetValue(
             AvaloniaProperty property,
-            object value,
+            object? value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
@@ -330,9 +335,9 @@ namespace Avalonia
         /// <returns>
         /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
         /// </returns>
-        public IDisposable SetValue<T>(
+        public IDisposable? SetValue<T>(
             StyledPropertyBase<T> property,
-            T value,
+            [AllowNull] T value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
@@ -468,7 +473,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        Delegate[] IAvaloniaObjectDebug.GetPropertyChangedSubscribers()
+        Delegate[]? IAvaloniaObjectDebug.GetPropertyChangedSubscribers()
         {
             return _propertyChanged?.GetInvocationList();
         }
@@ -674,6 +679,7 @@ namespace Avalonia
             return true;
         }
 
+        [return: MaybeNull]
         private T GetInheritedOrDefault<T>(StyledPropertyBase<T> property)
         {
             if (property.Inherits && InheritanceParent is AvaloniaObject o)
@@ -684,11 +690,12 @@ namespace Avalonia
             return property.GetDefaultValue(GetType());
         }
 
+        [return: MaybeNull]
         private T GetValueOrInheritedOrDefault<T>(
             StyledPropertyBase<T> property,
             BindingPriority maxPriority = BindingPriority.Animation)
         {
-            var o = this;
+            AvaloniaObject? o = this;
             var inherits = property.Inherits;
             var value = default(T);
 
@@ -785,7 +792,7 @@ namespace Avalonia
         {
             var p = AvaloniaPropertyRegistry.Instance.FindRegisteredDirect(this, property);
 
-            if (p == null)
+            if (p is null)
             {
                 throw new ArgumentException($"Property '{property.Name} not registered on '{this.GetType()}");
             }
@@ -844,7 +851,7 @@ namespace Avalonia
                 }
                 else
                 {
-                    LogBindingError(property, value.Error);
+                    LogBindingError(property, value.Error!);
                 }
             }
         }
@@ -855,7 +862,7 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <param name="value">The new value.</param>
         /// <param name="priority">The priority.</param>
-        private void LogPropertySet<T>(AvaloniaProperty<T> property, T value, BindingPriority priority)
+        private void LogPropertySet<T>(AvaloniaProperty<T> property, [AllowNull] T value, BindingPriority priority)
         {
             Logger.TryGet(LogEventLevel.Verbose)?.Log(
                 LogArea.Property,
@@ -879,14 +886,14 @@ namespace Avalonia
             {
                 _owner = owner;
                 _property = property;
-                _owner._directBindings.Add(this);
+                _owner._directBindings!.Add(this);
                 _subscription = source.Subscribe(this);
             }
 
             public void Dispose()
             {
                 _subscription.Dispose();
-                _owner._directBindings.Remove(this);
+                _owner._directBindings!.Remove(this);
             }
 
             public void OnCompleted() => Dispose();
