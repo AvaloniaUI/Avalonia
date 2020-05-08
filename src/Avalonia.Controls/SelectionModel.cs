@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Linq;
 using Avalonia.Controls.Utils;
 
 #nullable enable
@@ -575,7 +576,7 @@ namespace Avalonia.Controls
 
         public void OnSelectionInvalidatedDueToCollectionChange(
             bool selectionInvalidated,
-            IReadOnlyList<object>? removedItems)
+            IReadOnlyList<object?>? removedItems)
         {
             SelectionModelSelectionChangedEventArgs? e = null;
 
@@ -588,9 +589,9 @@ namespace Avalonia.Controls
             ApplyAutoSelect();
         }
 
-        internal object? ResolvePath(object data, IndexPath dataIndexPath)
+        internal IObservable<object?>? ResolvePath(object data, IndexPath dataIndexPath)
         {
-            object? resolved = null;
+            IObservable<object?>? resolved = null;
 
             // Raise ChildrenRequested event if there is a handler
             if (ChildrenRequested != null)
@@ -609,19 +610,6 @@ namespace Avalonia.Controls
 
                 // Clear out the values in the args so that it cannot be used after the event handler call.
                 _childrenRequestedEventArgs.Initialize(null, default, true);
-            }
-            else
-            {
-                // No handlers for ChildrenRequested event. If data is of type ItemsSourceView
-                // or a type that can be used to create a ItemsSourceView, then we can auto-resolve
-                // that as the child. If not, then we consider the value as a leaf. This is to
-                // avoid having to provide the event handler for the most common scenarios. If the 
-                // app dev does not want this default behavior, they can provide the handler to
-                // override.
-                if (data is IEnumerable<object>)
-                {
-                    resolved = data;
-                }
             }
 
             return resolved;

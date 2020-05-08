@@ -8,9 +8,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Diagnostics;
+using ReactiveUI;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -254,7 +257,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     _output.WriteLine("ChildrenRequestedIndexPath:" + args.SourceIndex);
                     sourcePaths.Add(args.SourceIndex);
-                    args.Children = args.Source is IEnumerable ? args.Source : null;
+                    args.Children = Observable.Return(args.Source as IEnumerable);
                 };
             }
 
@@ -1892,6 +1895,108 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new IndexPath(0), target.SelectedIndex);
             Assert.Equal(0, raised);
+        }
+
+        [Fact]
+        public void Can_Replace_Children_Collection()
+        {
+            var root = new Node("Root");
+            var target = new SelectionModel { Source = new[] { root } };
+            target.ChildrenRequested += (s, e) => e.Children = ((Node)e.Source).WhenAnyValue(x => x.Children);
+
+            target.Select(0, 9);
+
+            Assert.Equal("Child 9", ((Node)target.SelectedItem).Header);
+
+            root.ReplaceChildren();
+
+            Assert.Null(target.SelectedItem);
+        }
+
+        [Fact]
+        public void Child_Resolver_Is_Unsubscribed_When_Source_Changed()
+        {
+            var root = new Node("Root");
+            var target = new SelectionModel { Source = new[] { root } };
+            target.ChildrenRequested += (s, e) => e.Children = ((Node)e.Source).WhenAnyValue(x => x.Children);
+
+            target.Select(0, 9);
+
+            Assert.Equal(1, root.PropertyChangedSubscriptions);
+
+            target.Source = null;
+
+            Assert.Equal(0, root.PropertyChangedSubscriptions);
+        }
+
+        [Fact]
+        public void Child_Resolver_Is_Unsubscribed_When_Parent_Removed()
+        {
+            var root = new Node("Root");
+            var target = new SelectionModel { Source = new[] { root } };
+            var node = root.Children[1];
+            var path = new IndexPath(new[] { 0, 1, 1 });
+
+            target.ChildrenRequested += (s, e) => e.Children = ((Node)e.Source).WhenAnyValue(x => x.Children);
+
+            target.SelectAt(path);
+
+            Assert.Equal(1, node.PropertyChangedSubscriptions);
+
+            root.ReplaceChildren();
+
+            Assert.Equal(0, node.PropertyChangedSubscriptions);
+        }
+
+        private class Node : INotifyPropertyChanged
+        {
+            private ObservableCollection<Node> _children;
+            private PropertyChangedEventHandler _propertyChanged;
+
+            public Node(string header)
+            {
+                Header = header;
+            }
+
+            public string Header { get; }
+
+            public ObservableCollection<Node> Children
+            {
+                get => _children ??= CreateChildren(10);
+                private set
+                {
+                    _children = value;
+                    _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Children)));
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged
+            {
+                add
+                {
+                    _propertyChanged += value;
+                    ++PropertyChangedSubscriptions;
+                }
+
+                remove
+                {
+                    _propertyChanged -= value;
+                    --PropertyChangedSubscriptions;
+                }
+            }
+
+            public int PropertyChangedSubscriptions { get; private set; }
+
+            public void ReplaceChildren()
+            {
+                Children = CreateChildren(5);
+            }
+
+            private ObservableCollection<Node> CreateChildren(int count)
+            {
+                return new ObservableCollection<Node>(
+                    Enumerable.Range(0, count).Select(x => new Node("Child " + x)));
+            }
         }
 
         private int GetSubscriberCount(AvaloniaList<object> list)

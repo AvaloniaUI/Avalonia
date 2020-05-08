@@ -9,6 +9,9 @@ using System;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Provides data for the <see cref="SelectionModel.ChildrenRequested"/> event.
+    /// </summary>
     public class SelectionModelChildrenRequestedEventArgs : EventArgs
     {
         private object? _source;
@@ -24,8 +27,15 @@ namespace Avalonia.Controls
             Initialize(source, sourceIndexPath, throwOnAccess);
         }
 
-        public object? Children { get; set; }
-        
+        /// <summary>
+        /// Gets or sets an observable which produces the children of the <see cref="Source"/>
+        /// object.
+        /// </summary>
+        public IObservable<object?>? Children { get; set; }
+
+        /// <summary>
+        /// Gets the object whose children are being requested.
+        /// </summary>        
         public object Source
         {
             get
@@ -39,6 +49,9 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the index of the object whose children are being requested.
+        /// </summary>        
         public IndexPath SourceIndex
         {
             get

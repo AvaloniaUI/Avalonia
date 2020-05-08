@@ -29,6 +29,7 @@ namespace Avalonia.Controls
         private readonly SelectionNode? _parent;
         private readonly List<IndexRange> _selected = new List<IndexRange>();
         private readonly List<int> _selectedIndicesCached = new List<int>();
+        private IDisposable? _childrenSubscription;
         private SelectionNodeOperation? _operation;
         private object? _source;
         private bool _selectedIndicesCacheIsValid;
@@ -83,6 +84,7 @@ namespace Avalonia.Controls
                     if (_source != null)
                     {
                         ClearSelection();
+                        ClearChildNodes();
                         UnhookCollectionChangedHandler();
                     }
 
@@ -163,30 +165,32 @@ namespace Avalonia.Controls
                 if (_childrenNodes[index] == null)
                 {
                     var childData = ItemsSourceView!.GetAt(index);
+                    IObservable<object?>? resolver = null;
                     
                     if (childData != null)
                     {
                         var childDataIndexPath = IndexPath.CloneWithChildIndex(index);
-                        var resolvedChild = _manager.ResolvePath(childData, childDataIndexPath);
-                        
-                        if (resolvedChild != null)
-                        {
-                            child = new SelectionNode(_manager, parent: this);
-                            child.Source = resolvedChild;
+                        resolver = _manager.ResolvePath(childData, childDataIndexPath);
+                    }
 
-                            if (_operation != null)
-                            {
-                                child.BeginOperation();
-                            }
-                        }
-                        else
-                        {
-                            child = _manager.SharedLeafNode;
-                        }
+                    if (resolver != null)
+                    {
+                        child = new SelectionNode(_manager, parent: this);
+                        child.SetChildrenObservable(resolver);
+                    }
+                    else if (childData is IEnumerable<object> || childData is IList)
+                    {
+                        child = new SelectionNode(_manager, parent: this);
+                        child.Source = childData;
                     }
                     else
-                    {
+                    { 
                         child = _manager.SharedLeafNode;
+                    }
+
+                    if (_operation != null && child != _manager.SharedLeafNode)
+                    {
+                        child.BeginOperation();
                     }
 
                     _childrenNodes[index] = child;
@@ -206,6 +210,11 @@ namespace Avalonia.Controls
             }
 
             return child;
+        }
+
+        public void SetChildrenObservable(IObservable<object?> resolver)
+        {
+            _childrenSubscription = resolver.Subscribe(x => Source = x);
         }
 
         public int SelectedCount { get; private set; }
@@ -327,7 +336,9 @@ namespace Avalonia.Controls
 
         public void Dispose()
         {
+            _childrenSubscription?.Dispose();
             ItemsSourceView?.Dispose();
+            ClearChildNodes();
             UnhookCollectionChangedHandler();
         }
 
@@ -529,6 +540,19 @@ namespace Avalonia.Controls
             _selectedItems?.Clear();
             SelectedCount = 0;
             AnchorIndex = -1;
+        }
+
+        private void ClearChildNodes()
+        {
+            foreach (var child in _childrenNodes)
+            {
+                if (child != null && child != _manager.SharedLeafNode)
+                {
+                    child.Dispose();
+                }
+            }
+
+            RealizedChildrenNodeCount = 0;
         }
 
         private bool Select(int index, bool select, bool raiseOnSelectionChanged)
