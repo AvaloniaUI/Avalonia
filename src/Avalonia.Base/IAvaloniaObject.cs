@@ -1,5 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
+
+#nullable enable
 
 namespace Avalonia
 {
@@ -11,7 +14,7 @@ namespace Avalonia
         /// <summary>
         /// Raised when a <see cref="AvaloniaProperty"/> value changes on this object.
         /// </summary>
-        event EventHandler<AvaloniaPropertyChangedEventArgs> PropertyChanged;
+        event EventHandler<AvaloniaPropertyChangedEventArgs>? PropertyChanged;
 
         /// <summary>
         /// Clears an <see cref="AvaloniaProperty"/>'s local value.
@@ -31,6 +34,7 @@ namespace Avalonia
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
+        [return: MaybeNull]
         T GetValue<T>(StyledPropertyBase<T> property);
 
         /// <summary>
@@ -39,6 +43,7 @@ namespace Avalonia
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
+        [return: MaybeNull]
         T GetValue<T>(DirectPropertyBase<T> property);
 
         /// <summary>
@@ -75,9 +80,12 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
-        IDisposable SetValue<T>(
+        /// <returns>
+        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
+        /// </returns>
+        IDisposable? SetValue<T>(
             StyledPropertyBase<T> property,
-            T value,
+            [AllowNull] T value,
             BindingPriority priority = BindingPriority.LocalValue);
 
         /// <summary>
@@ -86,7 +94,7 @@ namespace Avalonia
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
-        void SetValue<T>(DirectPropertyBase<T> property, T value);
+        void SetValue<T>(DirectPropertyBase<T> property, [AllowNull] T value);
 
         /// <summary>
         /// Binds a <see cref="AvaloniaProperty"/> to an observable.

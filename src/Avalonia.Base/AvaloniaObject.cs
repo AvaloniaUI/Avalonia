@@ -39,7 +39,7 @@ namespace Avalonia
         /// <summary>
         /// Raised when a <see cref="AvaloniaProperty"/> value changes on this object.
         /// </summary>
-        public event EventHandler<AvaloniaPropertyChangedEventArgs> PropertyChanged
+        public event EventHandler<AvaloniaPropertyChangedEventArgs>? PropertyChanged
         {
             add { _propertyChanged += value; }
             remove { _propertyChanged -= value; }
@@ -48,7 +48,7 @@ namespace Avalonia
         /// <summary>
         /// Raised when a <see cref="AvaloniaProperty"/> value changes on this object.
         /// </summary>
-        event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+        event PropertyChangedEventHandler? INotifyPropertyChanged.PropertyChanged
         {
             add { _inpcChanged += value; }
             remove { _inpcChanged -= value; }
@@ -371,7 +371,7 @@ namespace Avalonia
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
-        public void SetValue<T>(DirectPropertyBase<T> property, T value)
+        public void SetValue<T>(DirectPropertyBase<T> property, [AllowNull] T value)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
@@ -491,12 +491,12 @@ namespace Avalonia
             // priority isn't of any use and would introduce overhead.
             if (change.IsEffectiveValueChange && !change.OldValue.HasValue)
             {
-                change.SetOldValue(GetInheritedOrDefault<T>(property));
+                change.SetOldValue(new Optional<T>(GetInheritedOrDefault(property)));
             }
 
             if (change.IsEffectiveValueChange && !change.NewValue.HasValue)
             {
-                change.SetNewValue(GetInheritedOrDefault(property));
+                change.SetNewValue(new Optional<T>(GetInheritedOrDefault(property)));
             }
 
             if (!change.IsEffectiveValueChange ||
@@ -769,7 +769,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
-        private void SetDirectValueUnchecked<T>(DirectPropertyBase<T> property, T value)
+        private void SetDirectValueUnchecked<T>(DirectPropertyBase<T> property, [AllowNull] T value)
         {
             var p = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
 
