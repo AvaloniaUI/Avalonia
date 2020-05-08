@@ -37,6 +37,7 @@ namespace Avalonia.OpenGL
 
         private GlInterface(GlContextInfo info, Func<string, IntPtr> getProcAddress) : base(getProcAddress, info)
         {
+            ContextInfo = info;
             Version = GetString(GlConsts.GL_VERSION);
             Renderer = GetString(GlConsts.GL_RENDERER);
             Vendor = GetString(GlConsts.GL_VENDOR);   
@@ -307,25 +308,6 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("glDrawElements")]
         public GlDrawElements DrawElements { get; }
 
-        
-        public delegate void GlGenVertexArrays(int n, int[] rv);
-        
-        [GlMinVersionEntryPoint("glGenVertexArrays",3,0)]
-        [GlExtensionEntryPoint("glGenVertexArraysOES", "GL_OES_vertex_array_object")]
-        public GlGenVertexArrays GenVertexArrays { get; }
-
-        public int GenVertexArray()
-        {
-            var rv = new int[1];
-            GenVertexArrays(1, rv);
-            return rv[0];
-        }
-
-        public delegate void GlBindVertexArray(int array);
-        [GlMinVersionEntryPoint("glBindVertexArray", 3,0)]
-        [GlExtensionEntryPoint("glBindVertexArrayOES", "GL_OES_vertex_array_object")]
-        public GlBindVertexArray BindVertexArray { get; }
-
         public delegate int GlGetUniformLocation(int program, IntPtr name);
         [GlEntryPoint("glGetUniformLocation")]
         public GlGetUniformLocation GetUniformLocation { get; }
@@ -353,11 +335,6 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("glDeleteBuffers")]
         public GlDeleteBuffers DeleteBuffers { get; }
 
-        public delegate void GlDeleteVertexArrays(int count, int[] buffers);
-        [GlMinVersionEntryPoint("glDeleteVertexArrays", 3,0)]
-        [GlExtensionEntryPoint("glDeleteVertexArraysOES", "GL_OES_vertex_array_object")]
-        public GlDeleteVertexArrays DeleteVertexArrays { get; }
-
         public delegate void GlDeleteProgram(int program);
         [GlEntryPoint("glDeleteProgram")]
         public GlDeleteProgram DeleteProgram { get; }
@@ -365,8 +342,6 @@ namespace Avalonia.OpenGL
         public delegate void GlDeleteShader(int shader);
         [GlEntryPoint("glDeleteShader")]
         public GlDeleteShader DeleteShader { get; }
-
-        
         // ReSharper restore UnassignedGetOnlyAutoProperty
     }
 }
