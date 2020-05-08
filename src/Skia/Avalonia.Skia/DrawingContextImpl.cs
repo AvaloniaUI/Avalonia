@@ -278,8 +278,8 @@ namespace Avalonia.Skia
                             using var shadowRect = new SKRoundRect(skRoundRect);
                             if (spread != 0)
                                 shadowRect.Inflate(spread, spread);
-                            Canvas.ClipRoundRect(skRoundRect,
-                                shadow.ClipOperation, true);
+                            //Canvas.ClipRoundRect(skRoundRect,
+                              //  shadow.ClipOperation, true);
                             Canvas.DrawRoundRect(shadowRect, shadow.Paint);
                         }
                         else
@@ -327,8 +327,8 @@ namespace Avalonia.Skia
                         using var shadowRect = new SKRoundRect(skRoundRect);
                         if (spread != 0)
                             shadowRect.Deflate(spread, spread);
-                        Canvas.ClipRoundRect(skRoundRect,
-                            shadow.ClipOperation, true);
+                       // Canvas.ClipRoundRect(skRoundRect,
+                         //   shadow.ClipOperation, true);
                         using (var outerRRect = new SKRoundRect(outerRect))
                             Canvas.DrawRoundRectDifference(outerRRect, shadowRect, shadow.Paint);
 
