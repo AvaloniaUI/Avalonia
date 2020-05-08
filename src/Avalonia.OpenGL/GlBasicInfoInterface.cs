@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Platform.Interop;
 
@@ -16,6 +18,7 @@ namespace Avalonia.OpenGL
         
         public delegate void GlGetIntegerv(int name, out int rv);
         public delegate IntPtr GlGetString(int v);
+        public delegate IntPtr GlGetStringi(int v, int v1);
     }
     
     public class GlBasicInfoInterface<TContextInfo> : GlInterfaceBase<TContextInfo>
@@ -34,6 +37,9 @@ namespace Avalonia.OpenGL
         
         [GlEntryPoint("glGetString")]
         public GlBasicInfoInterface.GlGetString GetStringNative { get; }
+        
+        [GlEntryPoint("glGetStringi")]
+        public GlBasicInfoInterface.GlGetStringi GetStringiNative { get; }
 
         public string GetString(int v)
         {
@@ -41,6 +47,26 @@ namespace Avalonia.OpenGL
             if (ptr != IntPtr.Zero)
                 return Marshal.PtrToStringAnsi(ptr);
             return null;
+        }
+        
+        public string GetString(int v, int index)
+        {
+            var ptr = GetStringiNative(v, index);
+            if (ptr != IntPtr.Zero)
+                return Marshal.PtrToStringAnsi(ptr);
+            return null;
+        }
+
+        public List<string> GetExtensions()
+        {
+            var sp = GetString(GlConsts.GL_EXTENSIONS);
+            if (sp != null)
+                return sp.Split(' ').ToList();
+            GetIntegerv(GlConsts.GL_NUM_EXTENSIONS, out int count);
+            var rv = new List<string>(count);
+            for (var c = 0; c < count; c++)
+                rv.Add(GetString(GlConsts.GL_EXTENSIONS, c));
+            return rv;
         }
     }
 }

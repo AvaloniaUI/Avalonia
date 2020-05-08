@@ -48,6 +48,8 @@ namespace Avalonia.OpenGL
                         proc = typed.GetProcAddress(context, getProcAddress);
                     else if (attr is IGlEntryPointAttribute untyped)
                         proc = untyped.GetProcAddress(getProcAddress);
+                    if (proc != IntPtr.Zero)
+                        break;
                 }
                 
                 if (proc != IntPtr.Zero)

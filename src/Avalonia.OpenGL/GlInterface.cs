@@ -30,7 +30,7 @@ namespace Avalonia.OpenGL
             public static GlContextInfo Create(GlVersion version, Func<string, IntPtr> getProcAddress)
             {
                 var basicInfoInterface = new GlBasicInfoInterface(getProcAddress);
-                var exts = basicInfoInterface.GetString(GL_EXTENSIONS).Split(' ');
+                var exts = basicInfoInterface.GetExtensions();
                 return new GlContextInfo(version, new HashSet<string>(exts));
             }
         }
