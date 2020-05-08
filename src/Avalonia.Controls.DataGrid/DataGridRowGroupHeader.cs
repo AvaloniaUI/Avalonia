@@ -275,7 +275,7 @@ namespace Avalonia.Controls
         //TODO TabStop
         private void DataGridRowGroupHeader_PointerPressed(PointerPressedEventArgs e)
         {
-            if (OwningGrid != null && e.MouseButton == MouseButton.Left)
+            if (OwningGrid != null && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 if (OwningGrid.IsDoubleClickRecordsClickOnCall(this) && !e.Handled)
                 {

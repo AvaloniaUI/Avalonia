@@ -206,7 +206,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPointerPressed(e);
 
-            if (e.MouseButton == MouseButton.Left)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
                 CalendarDayButtonMouseDown?.Invoke(this, e);
         }
 

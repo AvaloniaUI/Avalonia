@@ -162,7 +162,7 @@ namespace Avalonia.Controls
             if (OwningGrid != null)
             {
                 OwningGrid.OnCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
-                if (e.MouseButton == MouseButton.Left)
+                if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
                 {
                     if (!e.Handled)
                     //if (!e.Handled && OwningGrid.IsTabStop)

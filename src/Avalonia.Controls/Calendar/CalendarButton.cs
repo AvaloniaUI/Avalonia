@@ -148,7 +148,8 @@ namespace Avalonia.Controls.Primitives
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
-            if (e.MouseButton == MouseButton.Left)
+
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
                 CalendarLeftMouseButtonDown?.Invoke(this, e);
         }
 
