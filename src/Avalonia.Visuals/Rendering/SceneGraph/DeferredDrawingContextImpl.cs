@@ -136,16 +136,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void DrawLine(IPen pen, Point p1, Point p2)
         {
-            var next = NextDrawAs<LineNode>();
-
-            if (next == null || !next.Item.Equals(Transform, pen, p1, p2))
-            {
-                Add(new LineNode(Transform, pen, p1, p2, CreateChildScene(pen.Brush)));
-            }
-            else
-            {
-                ++_drawOperationindex;
-            }
+            DrawGeometry(pen.Brush, pen, new LineGeometry(p1, p2).PlatformImpl);            
         }
 
         /// <inheritdoc/>
