@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -13,6 +14,24 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering
 {
+
+    public static class RenderExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRenderValid(this double d)
+        {
+            return !double.IsInfinity(d) && !double.IsNaN(d);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRenderValid (this Rect r)
+        {
+            return r.X.IsRenderValid() &&
+                r.Y.IsRenderValid() &&
+                r.Width.IsRenderValid() &&
+                r.Height.IsRenderValid();
+        }
+    }
     /// <summary>
     /// A renderer which renders the state of the visual tree to an intermediate scene graph
     /// representation which is then rendered on a rendering thread.
@@ -422,16 +441,19 @@ namespace Avalonia.Rendering
 
                             foreach (var rect in layer.Dirty)
                             {
-                                var snappedRect = SnapToDevicePixels(rect, scale);
-                                context.Transform = Matrix.Identity;
-                                context.PushClip(snappedRect);
-                                context.Clear(Colors.Transparent);
-                                Render(context, node, layer.LayerRoot, snappedRect);
-                                context.PopClip();
-
-                                if (DrawDirtyRects)
+                                if (rect.IsRenderValid())
                                 {
-                                    _dirtyRectsDisplay.Add(snappedRect);
+                                    var snappedRect = SnapToDevicePixels(rect, scale);
+                                    context.Transform = Matrix.Identity;
+                                    context.PushClip(snappedRect);
+                                    context.Clear(Colors.Transparent);
+                                    Render(context, node, layer.LayerRoot, snappedRect);
+                                    context.PopClip();
+
+                                    if (DrawDirtyRects)
+                                    {
+                                        _dirtyRectsDisplay.Add(snappedRect);
+                                    }
                                 }
                             }
                         }
