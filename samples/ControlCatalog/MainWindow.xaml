@@ -12,6 +12,7 @@
   <DockPanel>
     <StackPanel DockPanel.Dock="Top">
       <Button Content="Test" />
+      <local:TestControl1 VerticalAlignment="Stretch" Height="20" />
     </StackPanel>
     <local:TestControl />
   </DockPanel>

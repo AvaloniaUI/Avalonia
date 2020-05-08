@@ -20,6 +20,16 @@ namespace ControlCatalog
         }
     }
 
+    public class TestControl1 : Control
+    {
+        private Random _r = new Random();
+
+        public override void Render(DrawingContext drawingContext)
+        {
+            drawingContext.FillRectangle(Brushes.Red, Bounds);
+        }
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
