@@ -27,8 +27,8 @@ namespace Avalonia.Rendering.SceneGraph
 
         private static (Point p1, Point p2) TranslatePointsAlongTangent(Point p1, Point p2, double angle, double distance)
         {
-            var xDiff = CalculateAdjSide(angle, distance);
-            var yDiff = CalculateOppSide(angle, distance);
+            var xDiff = CalculateOppSide(angle, distance);
+            var yDiff = CalculateAdjSide(angle, distance);            
 
             var c1 = new Point(p1.X + xDiff, p1.Y - yDiff);
             var c2 = new Point(p1.X - xDiff, p1.Y + yDiff);
@@ -55,17 +55,17 @@ namespace Avalonia.Rendering.SceneGraph
         {
             var angle = CalculateAngle(p1, p2);
 
-            var angleToCorner = 90 - angle;
+            var angleToCorner = angle;
 
             if (p.LineCap != PenLineCap.Flat)
             {
-                var pts = TranslatePointsAlongTangent(p1, p2, angleToCorner - 90, p.Thickness / 2);
+                var pts = TranslatePointsAlongTangent(p1, p2, angle - 90, p.Thickness / 2);
 
-                return CalculateBounds(pts.p1, pts.p2, p.Thickness, angleToCorner);
+                return CalculateBounds(pts.p1, pts.p2, p.Thickness, angle);
             }
             else
             {
-                return CalculateBounds(p1, p2, p.Thickness, angleToCorner);
+                return CalculateBounds(p1, p2, p.Thickness, angle);
             }
         }
     }
