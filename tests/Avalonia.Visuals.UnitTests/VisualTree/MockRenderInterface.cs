@@ -4,6 +4,7 @@ using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Visuals.UnitTests.VisualTree
 {
@@ -77,6 +78,21 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         }
 
         public IGeometryImpl CreateRectangleGeometry(Rect rect)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IBitmapImpl LoadBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IBitmapImpl ResizeBitmap(IBitmapImpl bitmapImpl, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
             throw new NotImplementedException();
         }
