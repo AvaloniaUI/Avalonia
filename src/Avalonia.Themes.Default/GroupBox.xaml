@@ -1,0 +1,60 @@
+﻿<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    >
+
+  <Styles.Resources>
+    <Thickness x:Key="GroupBoxHeaderThemePadding">4</Thickness>
+  </Styles.Resources>
+  
+  <Style Selector="GroupBox">
+    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    <Setter Property="Padding" Value="4" />
+    <Setter Property="Margin" Value="1" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Grid x:Name="GroupBoxRoot">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Border x:Name="HeaderSite"
+                    Grid.Row="0"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    UseLayoutRounding="True">
+              <ContentControl x:Name="HeaderContent"
+                                         Margin="{DynamicResource GroupBoxHeaderThemePadding}"
+                                         Content="{TemplateBinding Header}"
+                                         ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                         FontFamily="{TemplateBinding FontFamily}"
+                                         FontSize="{TemplateBinding FontSize}"
+                                         FontWeight="{TemplateBinding FontWeight}"
+                                         UseLayoutRounding="False" />
+            </Border>
+            <Border Grid.Row="1"
+                    Background="Transparent"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{Binding RelativeSource={RelativeSource TemplatedParent},
+                                                                        Path=BorderThickness}"
+                    UseLayoutRounding="True">
+              <ContentPresenter Margin="{TemplateBinding Padding}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Cursor="{TemplateBinding Cursor}"
+                                UseLayoutRounding="False" />
+            </Border>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</Styles>

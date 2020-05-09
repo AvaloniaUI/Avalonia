@@ -57,6 +57,7 @@
       <TabItem Header="TextBlock"><pages:TextBlockPage/></TabItem>
       <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
       <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
+      <TabItem Header="GroupBox"><pages:GroupBoxPage/></TabItem>
       <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
       <TabControl.Tag>
         <StackPanel Width="115" Spacing="4" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8">
