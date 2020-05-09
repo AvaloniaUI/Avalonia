@@ -181,31 +181,37 @@ namespace Avalonia.Direct2D1
         public IGeometryImpl CreateRectangleGeometry(Rect rect) => new RectangleGeometryImpl(rect);
         public IStreamGeometryImpl CreateStreamGeometry() => new StreamGeometryImpl();
 
+        /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)
         {
             return new WicBitmapImpl(fileName);
         }
 
+        /// <inheritdoc />
         public IBitmapImpl LoadBitmap(Stream stream)
         {
             return new WicBitmapImpl(stream);
         }
 
+        /// <inheritdoc />
         public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public IBitmapImpl LoadBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public IBitmapImpl ResizeBitmap(IBitmapImpl bitmapImpl, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new WicBitmapImpl(format, data, size, dpi, stride);

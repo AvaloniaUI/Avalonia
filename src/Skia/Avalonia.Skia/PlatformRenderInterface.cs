@@ -80,6 +80,7 @@ namespace Avalonia.Skia
             return new StreamGeometryImpl();
         }
 
+        /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)
         {
             using (var stream = File.OpenRead(fileName))
@@ -88,19 +89,10 @@ namespace Avalonia.Skia
             }
         }
 
+        /// <inheritdoc />
         public IBitmapImpl LoadBitmap(Stream stream)
         {
             return new ImmutableBitmap(stream);
-        }
-
-        public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
-        {
-            return new ImmutableBitmap(stream, width, true, interpolationMode);
-        }
-
-        public IBitmapImpl LoadBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
-        {
-            return new ImmutableBitmap(stream, height, false, interpolationMode);
         }
 
         /// <inheritdoc />
@@ -109,6 +101,19 @@ namespace Avalonia.Skia
             return new ImmutableBitmap(size, dpi, stride, format, data);
         }
 
+        /// <inheritdoc />
+        public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new ImmutableBitmap(stream, width, true, interpolationMode);
+        }
+
+        /// <inheritdoc />
+        public IBitmapImpl LoadBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new ImmutableBitmap(stream, height, false, interpolationMode);
+        }
+
+        /// <inheritdoc />
         public IBitmapImpl ResizeBitmap(IBitmapImpl bitmapImpl, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
             if (bitmapImpl is ImmutableBitmap ibmp)

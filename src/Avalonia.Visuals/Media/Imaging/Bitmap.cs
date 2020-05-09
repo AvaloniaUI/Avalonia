@@ -11,18 +11,41 @@ namespace Avalonia.Media.Imaging
     /// </summary>
     public class Bitmap : IBitmap
     {
+        /// <summary>
+        /// Loads a Bitmap from a stream and decodes at the desired width. Aspect ratio is maintained.
+        /// This is more efficient than loading and then resizing.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from. This can be any supported image format.</param>
+        /// <param name="width">The desired width of the resulting bitmap.</param>
+        /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should any scaling be required.</param>
+        /// <returns>An instance of the <see cref="Bitmap"/> class.</returns>
         public static Bitmap DecodeToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
             IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             return new Bitmap(factory.LoadBitmapToWidth(stream, width, interpolationMode));
         }
 
+        /// <summary>
+        /// Loads a Bitmap from a stream and decodes at the desired height. Aspect ratio is maintained.
+        /// This is more efficient than loading and then resizing.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from. This can be any supported image format.</param>
+        /// <param name="height">The desired height of the resulting bitmap.</param>
+        /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should any scaling be required.</param>
+        /// <returns>An instance of the <see cref="Bitmap"/> class.</returns>
         public static Bitmap DecodeToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
             IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             return new Bitmap(factory.LoadBitmapToHeight(stream, height, interpolationMode));
         }
 
+        /// <summary>
+        /// Creates a Bitmap from another Bitmap scaled to a specified size.
+        /// </summary>
+        /// <param name="src">The source bitmap.</param>
+        /// <param name="destinationSize">The destination size.</param>
+        /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should any scaling be required.</param>
+        /// <returns>An instance of the <see cref="Bitmap"/> class.</returns>
         public static Bitmap CreateScaledBitmap(Bitmap src, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
             IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
@@ -57,7 +80,7 @@ namespace Avalonia.Media.Imaging
         {
             PlatformImpl = impl.Clone();
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Bitmap"/> class.
         /// </summary>
@@ -66,7 +89,7 @@ namespace Avalonia.Media.Imaging
         {
             PlatformImpl = RefCountable.Create(impl);
         }
-        
+
         /// <inheritdoc/>
         public virtual void Dispose()
         {

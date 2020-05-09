@@ -41,7 +41,7 @@ namespace Avalonia.Skia
         }
 
         public ImmutableBitmap(ImmutableBitmap src, PixelSize destinationSize, BitmapInterpolationMode interpolationMode)
-        {            
+        {
             SKImageInfo info = new SKImageInfo(destinationSize.Width, destinationSize.Height, SKColorType.Bgra8888);
             SKImage output = SKImage.Create(info);
             src._image.ScalePixels(output.PeekPixels(), interpolationMode.ToSKFilterQuality());
