@@ -301,8 +301,6 @@ namespace Avalonia.Controls.Presenters
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            FormattedText.Constraint = Bounds.Size;
-
             context.DrawText(Foreground, new Point(), FormattedText);
         }
 
@@ -315,10 +313,6 @@ namespace Avalonia.Controls.Presenters
             {
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
-
-                // issue #600: set constraint before any FormattedText manipulation
-                //             see base.Render(...) implementation
-                FormattedText.Constraint = _constraint;
 
                 var rects = FormattedText.HitTestTextRange(start, length);
 
@@ -497,6 +491,14 @@ namespace Avalonia.Controls.Presenters
                     Constraint = availableSize,
                 }.Bounds.Size;
             }
+        }
+        
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            if (FormattedText != null)
+                FormattedText.Constraint = finalSize;
+
+            return base.ArrangeOverride(finalSize);
         }
 
         private int CoerceCaretIndex(int value)
