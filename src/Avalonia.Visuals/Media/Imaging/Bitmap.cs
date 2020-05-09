@@ -23,6 +23,12 @@ namespace Avalonia.Media.Imaging
             return new Bitmap(factory.LoadBitmapToHeight(stream, height, interpolationMode));
         }
 
+        public static Bitmap CreateScaledBitmap(Bitmap src, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            return new Bitmap(factory.ResizeBitmap(src.PlatformImpl.Item, destinationSize, interpolationMode));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Bitmap"/> class.
         /// </summary>

@@ -109,6 +109,18 @@ namespace Avalonia.Skia
             return new ImmutableBitmap(size, dpi, stride, format, data);
         }
 
+        public IBitmapImpl ResizeBitmap(IBitmapImpl bitmapImpl, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            if (bitmapImpl is ImmutableBitmap ibmp)
+            {
+                return new ImmutableBitmap(ibmp, destinationSize, interpolationMode);
+            }
+            else
+            {
+                throw new Exception("Invalid source bitmap type.");
+            }
+        }
+
         /// <inheritdoc />
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {

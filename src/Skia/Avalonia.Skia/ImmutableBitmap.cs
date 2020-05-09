@@ -40,6 +40,20 @@ namespace Avalonia.Skia
             }
         }
 
+        public ImmutableBitmap(ImmutableBitmap src, PixelSize destinationSize, BitmapInterpolationMode interpolationMode)
+        {            
+            SKImageInfo info = new SKImageInfo(destinationSize.Width, destinationSize.Height, SKColorType.Bgra8888);
+            SKImage output = SKImage.Create(info);
+            src._image.ScalePixels(output.PeekPixels(), interpolationMode.ToSKFilterQuality());
+
+            _image = output;
+
+            PixelSize = new PixelSize(_image.Width, _image.Height);
+
+            // TODO: Skia doesn't have an API for DPI.
+            Dpi = new Vector(96, 96);
+        }
+
         // NOTE, putting the stream before options in the parameters, causes an exception
         // inside SKCodec.Create with optimized code. Probably a bug in .net compiler.
         // Other option is to have the argument order as desired and use PreserveSig options.
