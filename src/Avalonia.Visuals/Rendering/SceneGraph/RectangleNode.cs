@@ -30,7 +30,7 @@ namespace Avalonia.Rendering.SceneGraph
             double radiusX,
             double radiusY,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(rect, transform, pen)
+            : base(rect.Inflate((pen?.Thickness ?? 0) / 2), transform, pen)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
