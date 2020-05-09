@@ -10,7 +10,7 @@ namespace Avalonia
     {
         public SkiaOptions()
         {
-            MaxGpuResourceSizeBytes = 512000000;
+            MaxGpuResourceSizeBytes = 100663296; // Value taken from skia.
         }
         /// <summary>
         /// Custom gpu factory to use. Can be used to customize behavior of Skia renderer.
