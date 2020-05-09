@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Platform
 {
@@ -88,18 +89,30 @@ namespace Avalonia.Platform
         /// <summary>
         /// Loads a bitmap implementation from a file..
         /// </summary>
-        /// <param name="fileName">The filename of the bitmap.</param>
-        /// <param name="decodeOptions">Decode options that specify the size of the decoded bitmap.</param>
+        /// <param name="fileName">The filename of the bitmap.</param>        
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
-        IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions? decodeOptions = null);
+        IBitmapImpl LoadBitmap(string fileName);        
 
         /// <summary>
         /// Loads a bitmap implementation from a file..
         /// </summary>
-        /// <param name="stream">The stream to read the bitmap from.</param>
-        /// <param name="decodeOptions">Decode options that specify the size of the decoded bitmap.</param>
+        /// <param name="stream">The stream to read the bitmap from.</param>        
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
-        IBitmapImpl LoadBitmap(Stream stream, BitmapDecodeOptions? decodeOptions = null);
+        IBitmapImpl LoadBitmap(Stream stream);
+
+        /// <summary>
+        /// Loads a bitmap implementation from a file..
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param>        
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality);
+
+        /// <summary>
+        /// Loads a bitmap implementation from a file..
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param>        
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IBitmapImpl LoadBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality);
 
         /// <summary>
         /// Loads a bitmap implementation from a pixels in memory.

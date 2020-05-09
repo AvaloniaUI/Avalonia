@@ -11,6 +11,18 @@ namespace Avalonia.Media.Imaging
     /// </summary>
     public class Bitmap : IBitmap
     {
+        public static Bitmap DecodeToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            return new Bitmap(factory.LoadBitmapToWidth(stream, width, interpolationMode));
+        }
+
+        public static Bitmap DecodeToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            return new Bitmap(factory.LoadBitmapToHeight(stream, height, interpolationMode));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Bitmap"/> class.
         /// </summary>
@@ -29,18 +41,6 @@ namespace Avalonia.Media.Imaging
         {
             IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             PlatformImpl = RefCountable.Create(factory.LoadBitmap(stream));
-        }
-
-        public Bitmap(Stream stream, BitmapDecodeOptions decodeOptions)
-        {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            PlatformImpl = RefCountable.Create(factory.LoadBitmap(stream, decodeOptions));
-        }
-
-        public Bitmap(string file, BitmapDecodeOptions decodeOptions)
-        {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            PlatformImpl = RefCountable.Create(factory.LoadBitmap(file, decodeOptions));
         }
 
         /// <summary>

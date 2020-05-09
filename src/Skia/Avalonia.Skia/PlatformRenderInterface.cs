@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
+using Avalonia.Visuals.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -78,37 +80,27 @@ namespace Avalonia.Skia
             return new StreamGeometryImpl();
         }
 
-        /// <inheritdoc />
-        public unsafe IBitmapImpl LoadBitmap(Stream stream, BitmapDecodeOptions? decodeOptions = null)
-        {            
-            if (decodeOptions is null)
-            {
-                return new ImmutableBitmap(stream);
-            }
-            else
-            {
-                var options = decodeOptions.Value;
-
-                var skBitmap = SKBitmap.Decode(stream);
-
-                skBitmap = skBitmap.Resize(new SKImageInfo(options.DecodePixelSize.Width, options.DecodePixelSize.Height), options.InterpolationMode.ToSKFilterQuality());
-
-                fixed (byte* p = skBitmap.Bytes)
-                {
-                    IntPtr ptr = (IntPtr)p;
-
-                    return LoadBitmap(PixelFormat.Bgra8888, ptr, new PixelSize(skBitmap.Width, skBitmap.Height), new Vector(96, 96), skBitmap.RowBytes);
-                }
-            }
-        }
-
-        /// <inheritdoc />
-        public IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions? decodeOptions = null)
+        public IBitmapImpl LoadBitmap(string fileName)
         {
             using (var stream = File.OpenRead(fileName))
             {
-                return LoadBitmap(stream, decodeOptions);
+                return LoadBitmap(stream);
             }
+        }
+
+        public IBitmapImpl LoadBitmap(Stream stream)
+        {
+            return new ImmutableBitmap(stream);
+        }
+
+        public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new ImmutableBitmap(stream, width, true, interpolationMode);
+        }
+
+        public IBitmapImpl LoadBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new ImmutableBitmap(stream, height, false, interpolationMode);
         }
 
         /// <inheritdoc />

@@ -9,6 +9,7 @@ using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Visuals.Media.Imaging;
 using SharpDX.DirectWrite;
 using GlyphRun = Avalonia.Media.GlyphRun;
 using TextAlignment = Avalonia.Media.TextAlignment;
@@ -180,14 +181,24 @@ namespace Avalonia.Direct2D1
         public IGeometryImpl CreateRectangleGeometry(Rect rect) => new RectangleGeometryImpl(rect);
         public IStreamGeometryImpl CreateStreamGeometry() => new StreamGeometryImpl();
 
-        public IBitmapImpl LoadBitmap(string fileName, BitmapDecodeOptions? options = null)
+        public IBitmapImpl LoadBitmap(string fileName)
         {
             return new WicBitmapImpl(fileName);
         }
 
-        public IBitmapImpl LoadBitmap(Stream stream, BitmapDecodeOptions? options = null)
+        public IBitmapImpl LoadBitmap(Stream stream)
         {
             return new WicBitmapImpl(stream);
+        }
+
+        public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IBitmapImpl LoadBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
         }
 
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
