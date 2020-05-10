@@ -835,7 +835,7 @@ namespace Avalonia.Controls
         }
         private void Calendar_PointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (e.MouseButton == MouseButton.Left)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 e.Handled = true;
             }
