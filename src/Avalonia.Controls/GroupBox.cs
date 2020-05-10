@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Controls.Primitives;
+﻿using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 
 namespace Avalonia.Controls
@@ -9,11 +8,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class GroupBox: HeaderedContentControl
     {
-        /// <summary>
-        /// style key of this control
-        /// </summary>
-        public Type StyleKey => typeof(GroupBox);
-
         /// <summary>
         /// override some metadata:
         /// Focusable: false
