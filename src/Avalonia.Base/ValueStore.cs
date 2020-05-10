@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Utilities;
@@ -56,7 +57,7 @@ namespace Avalonia
         public bool TryGetValue<T>(
             StyledPropertyBase<T> property,
             BindingPriority maxPriority,
-            out T value)
+            [MaybeNull] out T value)
         {
             if (_values.TryGetValue(property, out var slot))
             {
@@ -73,7 +74,7 @@ namespace Avalonia
             return false;
         }
 
-        public IDisposable? SetValue<T>(StyledPropertyBase<T> property, T value, BindingPriority priority)
+        public IDisposable? SetValue<T>(StyledPropertyBase<T> property, [AllowNull] T value, BindingPriority priority)
         {
             if (property.ValidateValue?.Invoke(value) == false)
             {
@@ -219,7 +220,7 @@ namespace Avalonia
         private IDisposable? SetExisting<T>(
             object slot,
             StyledPropertyBase<T> property,
-            T value,
+            [AllowNull] T value,
             BindingPriority priority)
         {
             IDisposable? result = null;

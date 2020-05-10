@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 
 #nullable enable
@@ -103,7 +104,7 @@ namespace Avalonia.PropertyStore
             return CalculateValue(maxPriority).Item1;
         }
 
-        public IDisposable? SetValue(T value, BindingPriority priority)
+        public IDisposable? SetValue([AllowNull] T value, BindingPriority priority)
         {
             IDisposable? result = null;
 
