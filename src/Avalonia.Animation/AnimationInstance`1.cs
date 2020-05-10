@@ -148,7 +148,12 @@ namespace Avalonia.Animation
             var iterDelay = _iterationDelay.Ticks * _speedRatioConv;
             var initDelay = _initialDelay.Ticks * _speedRatioConv;
 
-            if (indexTime > 0 & indexTime <= initDelay)
+            if ((_fillMode == FillMode.Backward
+                   || _fillMode == FillMode.Both) & indexTime == 0)
+            {
+                PublishNext(_firstKFValue);
+            }
+            else if (indexTime > 0 & indexTime <= initDelay)
             {
                 DoDelay();
             }
