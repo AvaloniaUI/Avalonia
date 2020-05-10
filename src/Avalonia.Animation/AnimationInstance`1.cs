@@ -119,9 +119,10 @@ namespace Avalonia.Animation
         {
             if (_fillMode == FillMode.Backward || _fillMode == FillMode.Both)
                 if (_currentIteration == 0)
-                    PublishNext(_firstKFValue);
+                    _targetControl.SetValue(_animator.Property, _firstKFValue, BindingPriority.LocalValue);
+
                 else
-                    PublishNext(_lastInterpValue);
+                    _targetControl.SetValue(_animator.Property, _lastInterpValue, BindingPriority.LocalValue);
         }
 
         private void DoPlayStates()
@@ -151,11 +152,14 @@ namespace Avalonia.Animation
             if ((_fillMode == FillMode.Backward
                    || _fillMode == FillMode.Both) & indexTime == 0)
             {
-                DoDelay();
+
+                _targetControl.SetValue(_animator.Property, _neutralValue, BindingPriority.LocalValue);
+                return;
             }
             else if (indexTime > 0 & indexTime <= initDelay)
             {
                 DoDelay();
+                return;
             }
             else
             {
