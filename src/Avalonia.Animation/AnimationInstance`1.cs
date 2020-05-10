@@ -151,7 +151,7 @@ namespace Avalonia.Animation
             if ((_fillMode == FillMode.Backward
                    || _fillMode == FillMode.Both) & indexTime == 0)
             {
-                PublishNext(_firstKFValue);
+                DoDelay();
             }
             else if (indexTime > 0 & indexTime <= initDelay)
             {

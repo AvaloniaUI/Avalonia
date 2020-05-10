@@ -1,15 +1,6 @@
 using Avalonia.Controls;
-using Avalonia.LogicalTree;
-using Avalonia.Markup;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Avalonia.Data.Converters;
-using Avalonia.Data;
+using Avalonia;
 
 namespace ControlCatalog.Pages
 {
@@ -17,7 +8,7 @@ namespace ControlCatalog.Pages
     {
 
         public static readonly StyledProperty<bool> SideBarEnabledProperty =
-            AvaloniaProperty.Register<MetroWindow, bool>(nameof(SideBarEnabled));
+            AvaloniaProperty.Register<AutoCompleteBoxPage, bool>(nameof(SideBarEnabled), false);
 
         public bool SideBarEnabled
         {
@@ -28,7 +19,7 @@ namespace ControlCatalog.Pages
         public AutoCompleteBoxPage()
         {
             this.InitializeComponent();
-            this.FindControl<Button>("sidebar").Click += delegate
+            this.FindControl<Button>("sidebar_button").Click += delegate
             {
                 SideBarEnabled = !SideBarEnabled;
             };

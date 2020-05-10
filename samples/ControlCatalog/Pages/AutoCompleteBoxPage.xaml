@@ -1,6 +1,37 @@
-<UserControl xmlns="https://github.com/avaloniaui" 
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ControlCatalog.Pages.AutoCompleteBoxPage">
-  <Grid>
-    
+<l:AutoCompleteBoxPage xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:l="clr-namespace:ControlCatalog.Pages;assembly=ControlCatalog"
+  x:Class="ControlCatalog.Pages.AutoCompleteBoxPage">
+  <l:AutoCompleteBoxPage.Styles>
+    <Style Selector="l|AutoCompleteBoxPage[SideBarEnabled=False] Grid#sidebar">
+      <Style.Animations>
+        <Animation Duration="0:0:0.5" FillMode="Both" Easing="QuadraticEaseIn">
+          <!-- <KeyFrame Cue="0%">
+            <Setter Property="Width" Value="250" />
+          </KeyFrame>  -->
+          <KeyFrame Cue="100%">
+            <Setter Property="Width" Value="0" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="l|AutoCompleteBoxPage[SideBarEnabled=True] Grid#sidebar">
+      <Style.Animations>
+        <Animation Duration="0:0:0.5" FillMode="Both" Easing="QuadraticEaseOut">
+          <!-- <KeyFrame Cue="0%">
+            <Setter Property="Width" Value="0" />
+          </KeyFrame> -->
+          <KeyFrame Cue="100%">
+            <Setter Property="Width" Value="250" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+  </l:AutoCompleteBoxPage.Styles>
+  <Grid RowDefinitions="80,*">
+    <Button Name="sidebar_button" Grid.RowSpan="1" />
+    <Grid Grid.Row="1" Grid.ColumnDefinitions="Auto,*">
+      <Grid Name="sidebar" Background="Red" Width="0" Grid.ColumnSpan="1" />
+    </Grid>
   </Grid>
-</UserControl>
+</l:AutoCompleteBoxPage>
