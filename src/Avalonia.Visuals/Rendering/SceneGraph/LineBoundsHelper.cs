@@ -5,8 +5,6 @@ namespace Avalonia.Rendering.SceneGraph
 {
     public static class LineBoundsHelper
     {
-        private const double degreeToRadians = Math.PI / 180.0;
-
         private static double CalculateAngle(Point p1, Point p2)
         {
             var xDiff = p2.X - p1.X;
@@ -28,7 +26,7 @@ namespace Avalonia.Rendering.SceneGraph
         private static (Point p1, Point p2) TranslatePointsAlongTangent(Point p1, Point p2, double angle, double distance)
         {
             var xDiff = CalculateOppSide(angle, distance);
-            var yDiff = CalculateAdjSide(angle, distance);            
+            var yDiff = CalculateAdjSide(angle, distance);
 
             var c1 = new Point(p1.X + xDiff, p1.Y - yDiff);
             var c2 = new Point(p1.X - xDiff, p1.Y + yDiff);
@@ -54,8 +52,6 @@ namespace Avalonia.Rendering.SceneGraph
         public static Rect CalculateBounds(Point p1, Point p2, IPen p)
         {
             var radians = CalculateAngle(p1, p2);
-
-            var angleToCorner = radians;
 
             if (p.LineCap != PenLineCap.Flat)
             {
