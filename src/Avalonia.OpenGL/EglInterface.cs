@@ -24,7 +24,7 @@ namespace Avalonia.OpenGL
         [DllImport("libegl.dll", CharSet = CharSet.Ansi)]
         static extern IntPtr eglGetProcAddress(string proc);
         
-        static Func<string, bool, IntPtr> Load()
+        static Func<string, IntPtr> Load()
         {
             var os = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem;
             if(os == OperatingSystemType.Linux || os == OperatingSystemType.Android)
@@ -34,23 +34,17 @@ namespace Avalonia.OpenGL
                 var disp = eglGetProcAddress("eglGetPlatformDisplayEXT");
                 if (disp == IntPtr.Zero)
                     throw new OpenGlException("libegl.dll doesn't have eglGetPlatformDisplayEXT entry point");
-                return (name, optional) =>
-                {
-                    var r = eglGetProcAddress(name);
-                    if (r == IntPtr.Zero && !optional)
-                        throw new OpenGlException($"Entry point {r} is not found");
-                    return r;
-                };
+                return eglGetProcAddress;
             }
 
             throw new PlatformNotSupportedException();
         }
 
-        static Func<string, bool, IntPtr> Load(string library)
+        static Func<string, IntPtr> Load(string library)
         {
             var dyn = AvaloniaLocator.Current.GetService<IDynamicLibraryLoader>();
             var lib = dyn.LoadLibrary(library);
-            return (s, o) => dyn.GetProcAddress(lib, s, o);
+            return (s) => dyn.GetProcAddress(lib, s, true);
         }
 
         // ReSharper disable UnassignedGetOnlyAutoProperty
@@ -63,7 +57,8 @@ namespace Avalonia.OpenGL
         public EglGetDisplay GetDisplay { get; }
         
         public delegate IntPtr EglGetPlatformDisplayEXT(int platform, IntPtr nativeDisplay, int[] attrs);
-        [GlEntryPoint("eglGetPlatformDisplayEXT", true)]
+        [GlEntryPoint("eglGetPlatformDisplayEXT")]
+        [GlOptionalEntryPoint]
         public EglGetPlatformDisplayEXT GetPlatformDisplayEXT { get; }
 
         public delegate bool EglInitialize(IntPtr display, out int major, out int minor);
@@ -87,6 +82,10 @@ namespace Avalonia.OpenGL
             IntPtr share, int[] attrs);
         [GlEntryPoint("eglCreateContext")]
         public EglCreateContext CreateContext { get; }
+        
+        public delegate bool EglDestroyContext(IntPtr display, IntPtr context);
+        [GlEntryPoint("eglDestroyContext")]
+        public EglDestroyContext DestroyContext { get; }
 
         public delegate IntPtr EglCreatePBufferSurface(IntPtr display, IntPtr config, int[] attrs);
         [GlEntryPoint("eglCreatePbufferSurface")]
@@ -95,6 +94,18 @@ namespace Avalonia.OpenGL
         public delegate bool EglMakeCurrent(IntPtr display, IntPtr draw, IntPtr read, IntPtr context);
         [GlEntryPoint("eglMakeCurrent")]
         public EglMakeCurrent MakeCurrent { get; }
+
+        public delegate IntPtr EglGetCurrentContext();
+        [GlEntryPoint("eglGetCurrentContext")]
+        public EglGetCurrentContext GetCurrentContext { get; }
+        
+        public delegate IntPtr EglGetCurrentDisplay();
+        [GlEntryPoint("eglGetCurrentDisplay")]
+        public EglGetCurrentContext GetCurrentDisplay { get; }
+
+        public delegate IntPtr EglGetCurrentSurface(int readDraw);
+        [GlEntryPoint("eglGetCurrentSurface")] 
+        public EglGetCurrentSurface GetCurrentSurface { get; }
 
         public delegate void EglDisplaySurfaceVoidDelegate(IntPtr display, IntPtr surface);
         [GlEntryPoint("eglDestroySurface")]
@@ -120,9 +131,9 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("eglWaitClient")]
         public EglWaitGL WaitClient { get; }
         
-        public delegate bool EglWaitNative();
+        public delegate bool EglWaitNative(int engine);
         [GlEntryPoint("eglWaitNative")]
-        public EglWaitGL WaitNative { get; }
+        public EglWaitNative WaitNative { get; }
         
         public delegate IntPtr EglQueryString(IntPtr display, int i);
         
