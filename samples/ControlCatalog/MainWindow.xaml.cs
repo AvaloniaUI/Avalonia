@@ -27,14 +27,24 @@ namespace ControlCatalog
             t.Start();
         }
 
+        public static double CalculateOppSide(double angle, double hyp)
+        {
+            return Math.Sin(angle) * hyp;
+        }
+
+        public static double CalculateAdjSide(double angle, double hyp)
+        {
+            return Math.Cos(angle) * hyp;
+        }
+
 
 
         public override void Render(DrawingContext drawingContext)
         {
             var lineLength = Math.Sqrt((100 * 100) + (100 * 100));
 
-            var diffX = LineBoundsHelper.CalculateAdjSide(angle, lineLength);
-            var diffY = LineBoundsHelper.CalculateOppSide(angle, lineLength);
+            var diffX = CalculateAdjSide(angle, lineLength);
+            var diffY = CalculateOppSide(angle, lineLength);
 
 
             var p1 = new Point(400, 400);

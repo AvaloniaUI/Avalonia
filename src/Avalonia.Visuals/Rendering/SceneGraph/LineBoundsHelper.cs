@@ -15,12 +15,12 @@ namespace Avalonia.Rendering.SceneGraph
             return Math.Atan2(yDiff, xDiff);
         }
 
-        public static double CalculateOppSide(double angle, double hyp)
+        private static double CalculateOppSide(double angle, double hyp)
         {
             return Math.Sin(angle) * hyp;
         }
 
-        public static double CalculateAdjSide(double angle, double hyp)
+        private static double CalculateAdjSide(double angle, double hyp)
         {
             return Math.Cos(angle) * hyp;
         }
