@@ -28,9 +28,9 @@ namespace Avalonia.Skia
         private double _currentOpacity = 1.0f;
         private readonly bool _canTextUseLcdRendering;
         private Matrix _currentTransform;
-        private GRContext _grContext;
         private bool _disposed;
-
+        private GRContext _grContext;
+        public GRContext GrContext => _grContext;
         private readonly SKPaint _strokePaint = new SKPaint();
         private readonly SKPaint _fillPaint = new SKPaint();
         private readonly SKPaint _boxShadowPaint = new SKPaint();
