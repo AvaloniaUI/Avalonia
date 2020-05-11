@@ -44,6 +44,9 @@
       <TabItem Header="GlyphRun">
         <pages:GlyphRunPage/>
       </TabItem>
+      <TabItem Header="LineBoundsDemo">
+        <pages:LineBoundsDemo />
+      </TabItem>
     </TabControl>
   </DockPanel>
 </Window>
