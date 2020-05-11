@@ -28,7 +28,7 @@ namespace Avalonia.Rendering.SceneGraph
             RoundedRect rect,
             BoxShadows boxShadows,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(boxShadows.TransformBounds(rect.Rect).Inflate((pen?.Thickness ?? 0) / 2), transform, pen)
+            : base(boxShadows.TransformBounds(rect.Rect).Inflate((pen?.Thickness ?? 0) / 2), transform)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();

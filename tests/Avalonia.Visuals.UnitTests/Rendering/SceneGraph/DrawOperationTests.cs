@@ -77,7 +77,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         private class TestRectangleDrawOperation : RectangleNode
         {
             public TestRectangleDrawOperation(Rect bounds, Matrix transform, Pen pen) 
-                : base(transform, pen.Brush, pen, bounds, 0, 0)
+                : base(transform, pen.Brush, pen, bounds, new BoxShadows())
             {
 
             }
@@ -90,7 +90,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         private class TestDrawOperation : DrawOperation
         {
             public TestDrawOperation(Rect bounds, Matrix transform, Pen pen)
-                :base(bounds, transform, pen)
+                :base(bounds, transform)
             {
             }
 
