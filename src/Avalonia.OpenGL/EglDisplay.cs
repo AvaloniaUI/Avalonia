@@ -6,7 +6,7 @@ using static Avalonia.OpenGL.EglConsts;
 
 namespace Avalonia.OpenGL
 {
-    public class EglDisplay : IGlDisplay
+    public class EglDisplay
     {
         private readonly EglInterface _egl;
         private readonly IntPtr _display;
@@ -16,6 +16,9 @@ namespace Avalonia.OpenGL
 
         public IntPtr Handle => _display;
         private AngleOptions.PlatformApi? _angleApi;
+        private int _sampleCount;
+        private int _stencilSize;
+        private GlVersion _version;
 
         public EglDisplay(EglInterface egl) : this(egl, -1, IntPtr.Zero, null)
         {
@@ -78,13 +81,6 @@ namespace Avalonia.OpenGL
             {
                 new
                 {
-                    Attributes = new[] {EGL_NONE},
-                    Api = EGL_OPENGL_API,
-                    RenderableTypeBit = EGL_OPENGL_BIT,
-                    Type = GlDisplayType.OpenGL2
-                },
-                new
-                {
                     Attributes = new[]
                     {
                         EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -92,7 +88,7 @@ namespace Avalonia.OpenGL
                     },
                     Api = EGL_OPENGL_ES_API,
                     RenderableTypeBit = EGL_OPENGL_ES2_BIT,
-                    Type = GlDisplayType.OpenGLES2
+                    Version = new GlVersion(GlProfileType.OpenGLES, 2, 0)
                 }
             })
             {
@@ -120,14 +116,16 @@ namespace Avalonia.OpenGL
                         continue;
                     _contextAttributes = cfg.Attributes;
                     _surfaceType = surfaceType;
-                    Type = cfg.Type;
+                    _version = cfg.Version;
+                    _egl.GetConfigAttrib(_display, _config, EGL_SAMPLES, out _sampleCount);
+                    _egl.GetConfigAttrib(_display, _config, EGL_STENCIL_SIZE, out _stencilSize);
+                    goto Found;
                 }
-            }
 
+            }
+            Found:
             if (_contextAttributes == null)
                 throw new OpenGlException("No suitable EGL config was found");
-               
-            GlInterface = GlInterface.FromNativeUtf8GetProcAddress(b => _egl.GetProcAddress(b));
         }
 
         public EglDisplay() : this(new EglInterface())
@@ -135,8 +133,6 @@ namespace Avalonia.OpenGL
             
         }
         
-        public GlDisplayType Type { get; }
-        public GlInterface GlInterface { get; }
         public EglInterface EglInterface => _egl;
         public EglContext CreateContext(IGlContext share)
         {
@@ -154,8 +150,8 @@ namespace Avalonia.OpenGL
             });
             if (surf == IntPtr.Zero)
                 throw OpenGlException.GetFormattedException("eglCreatePBufferSurface", _egl);
-            var rv = new EglContext(this, _egl, ctx, new EglSurface(this, _egl, surf));
-            rv.MakeCurrent(null);
+            var rv = new EglContext(this, _egl, ctx, new EglSurface(this, _egl, surf),
+                _version, _sampleCount, _stencilSize);
             return rv;
         }
 
@@ -164,15 +160,9 @@ namespace Avalonia.OpenGL
             var ctx = _egl.CreateContext(_display, _config, share?.Context ?? IntPtr.Zero, _contextAttributes);
             if (ctx == IntPtr.Zero)
                 throw OpenGlException.GetFormattedException("eglCreateContext", _egl);
-            var rv = new EglContext(this, _egl, ctx, offscreenSurface);
+            var rv = new EglContext(this, _egl, ctx, offscreenSurface, _version, _sampleCount, _stencilSize);
             rv.MakeCurrent(null);
             return rv;
-        }
-
-        public void ClearContext()
-        {
-            if (!_egl.MakeCurrent(_display, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero))
-                throw OpenGlException.GetFormattedException("eglMakeCurrent", _egl);
         }
 
         public EglSurface CreateWindowSurface(IntPtr window)
@@ -181,24 +171,6 @@ namespace Avalonia.OpenGL
             if (s == IntPtr.Zero)
                 throw OpenGlException.GetFormattedException("eglCreateWindowSurface", _egl);
             return new EglSurface(this, _egl, s);
-        }
-
-        public int SampleCount
-        {
-            get
-            {
-                _egl.GetConfigAttrib(_display, _config, EGL_SAMPLES, out var rv);
-                return rv;
-            }
-        }
-
-        public int StencilSize
-        {
-            get
-            {
-                _egl.GetConfigAttrib(_display, _config, EGL_STENCIL_SIZE, out var rv);
-                return rv;
-            }
         }
     }
 }

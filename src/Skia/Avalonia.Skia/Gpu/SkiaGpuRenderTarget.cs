@@ -4,13 +4,13 @@ using Avalonia.Rendering;
 namespace Avalonia.Skia
 {
     /// <summary>
-    /// Adapts <see cref="ICustomSkiaRenderTarget"/> to be used within Skia rendering pipeline.
+    /// Adapts <see cref="ISkiaGpuRenderTarget"/> to be used within our rendering pipeline.
     /// </summary>
-    internal class CustomRenderTarget : IRenderTarget
+    internal class SkiaGpuRenderTarget : IRenderTargetWithCorruptionInfo
     {
-        private readonly ICustomSkiaRenderTarget _renderTarget;
+        private readonly ISkiaGpuRenderTarget _renderTarget;
 
-        public CustomRenderTarget(ICustomSkiaRenderTarget renderTarget)
+        public SkiaGpuRenderTarget(ISkiaGpuRenderTarget renderTarget)
         {
             _renderTarget = renderTarget;
         }
@@ -22,7 +22,7 @@ namespace Avalonia.Skia
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            ICustomSkiaRenderSession session = _renderTarget.BeginRendering();
+            var session = _renderTarget.BeginRenderingSession();
 
             var nfo = new DrawingContextImpl.CreateInfo
             {
@@ -35,5 +35,7 @@ namespace Avalonia.Skia
 
             return new DrawingContextImpl(nfo, session);
         }
+
+        public bool IsCorrupted => _renderTarget.IsCorrupted;
     }
 }
