@@ -255,5 +255,7 @@ namespace Avalonia.Skia
             return new GlyphRunImpl(textBlob);
 
         }
+
+        public bool SupportsIndividualRoundRects => true;
     }
 }

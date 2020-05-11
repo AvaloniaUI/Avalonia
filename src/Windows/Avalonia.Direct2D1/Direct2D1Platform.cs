@@ -240,5 +240,7 @@ namespace Avalonia.Direct2D1
 
             return new GlyphRunImpl(run);
         }
+
+        public bool SupportsIndividualRoundRects => false;
     }
 }
