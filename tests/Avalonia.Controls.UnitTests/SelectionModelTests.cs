@@ -1697,6 +1697,37 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Batch_Update_Clear_Nested_Data_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = CreateNestedData(3, 2, 2);
+            target.SelectRange(new IndexPath(0), new IndexPath(1, 1));
+
+            Assert.Equal(24, target.SelectedIndices.Count);
+
+            var indices = target.SelectedIndices.ToList();
+            var items = target.SelectedItems.ToList();
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(indices, e.DeselectedIndices);
+                Assert.Equal(items, e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            using (target.Update())
+            {
+                target.ClearSelection();
+            }
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
         public void AutoSelect_Selects_When_Enabled()
         {
             var data = new[] { "foo", "bar", "baz" };
