@@ -1,84 +1,61 @@
 using System;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
-using Avalonia.Rendering.SceneGraph;
-using Avalonia.Threading;
+using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
-    public class TestControl : Control
+    public class MainWindow : Window
     {
-        private Random _r = new Random();
+        private WindowNotificationManager _notificationArea;
+        private NativeMenu _recentMenu;
 
-        private double angle = Math.PI / 8;
-        public TestControl()
-        {
-            DispatcherTimer t = new DispatcherTimer();
-            t.Interval = TimeSpan.FromSeconds(0.0125);
-
-            t.Tick += (sender, e) =>
-            {
-                angle += Math.PI / 360;
-                Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
-            };
-
-            t.Start();
-        }
-
-        public static double CalculateOppSide(double angle, double hyp)
-        {
-            return Math.Sin(angle) * hyp;
-        }
-
-        public static double CalculateAdjSide(double angle, double hyp)
-        {
-            return Math.Cos(angle) * hyp;
-        }
-
-
-
-        public override void Render(DrawingContext drawingContext)
-        {
-            var lineLength = Math.Sqrt((100 * 100) + (100 * 100));
-
-            var diffX = CalculateAdjSide(angle, lineLength);
-            var diffY = CalculateOppSide(angle, lineLength);
-
-
-            var p1 = new Point(400, 400);
-            var p2 = new Point(p1.X + diffX, p1.Y + diffY);
-
-            var pen = new Pen(Brushes.Green, 20, lineCap: PenLineCap.Square);
-            var boundPen = new Pen(Brushes.Black);
-
-            drawingContext.DrawLine(pen, p1, p2);
-
-            drawingContext.DrawRectangle(boundPen, LineBoundsHelper.CalculateBounds(p1, p2, pen));
-
-            //Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
-        }
-    }
-
-    public class TestControl1 : Control
-    {
-        private Random _r = new Random();
-
-        public override void Render(DrawingContext drawingContext)
-        {
-            drawingContext.FillRectangle(Brushes.Red, Bounds);
-        }
-    }
-
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
-    {
         public MainWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
+            this.AttachDevTools();
+            //Renderer.DrawFps = true;
+            //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
+
+            _notificationArea = new WindowNotificationManager(this)
+            {
+                Position = NotificationPosition.TopRight,
+                MaxItems = 3
+            };
+
+            DataContext = new MainWindowViewModel(_notificationArea);
+            _recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[2] as NativeMenuItem).Menu;
+
+            var mainMenu = this.FindControl<Menu>("MainMenu");
+            mainMenu.AttachedToVisualTree += MenuAttached;
+        }
+
+        public static string MenuQuitHeader => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "Quit Avalonia" : "E_xit";
+
+        public static KeyGesture MenuQuitGesture => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+            new KeyGesture(Key.Q, KeyModifiers.Meta) :
+            new KeyGesture(Key.F4, KeyModifiers.Alt);
+
+        public void MenuAttached(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            if (NativeMenu.GetIsNativeMenuExported(this) && sender is Menu mainMenu)
+            {
+                mainMenu.IsVisible = false;
+            }
+        }
+
+        public void OnOpenClicked(object sender, EventArgs args)
+        {
+            _recentMenu.Items.Insert(0, new NativeMenuItem("Item " + (_recentMenu.Items.Count + 1)));
+        }
+
+        public void OnCloseClicked(object sender, EventArgs args)
+        {
+            Close();
         }
 
         private void InitializeComponent()
