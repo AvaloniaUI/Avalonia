@@ -248,6 +248,13 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect, BoxShadows boxShadows = default)
         {
+            if (rect.Rect.Height <= 0 || rect.Rect.Width <= 0)
+                return;
+            // Arbitrary chosen values
+            // On OSX Skia breaks OpenGL context when asked to draw, e. g. (0, 0, 623, 6666600) rect
+            if (rect.Rect.Height > 8192 || rect.Rect.Width > 8192)
+                boxShadows = default;
+
             var rc = rect.Rect.ToSKRect();
             var isRounded = rect.IsRounded;
             var needRoundRect = rect.IsRounded || (boxShadows.HasInsetShadows);
