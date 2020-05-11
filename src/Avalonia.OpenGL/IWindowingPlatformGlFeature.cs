@@ -2,6 +2,7 @@ namespace Avalonia.OpenGL
 {
     public interface IWindowingPlatformGlFeature
     {
-        IGlContext ImmediateContext { get; }
+        IGlContext CreateContext();
+        IGlContext MainContext { get; }
     }
 }

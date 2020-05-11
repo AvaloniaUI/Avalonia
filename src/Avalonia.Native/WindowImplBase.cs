@@ -56,6 +56,7 @@ namespace Avalonia.Native
         private Size _lastRenderedLogicalSize;
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
+        private IGlContext _glContext;
 
         internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, GlPlatformFeature glFeature)
         {
@@ -67,13 +68,14 @@ namespace Avalonia.Native
             _cursorFactory = AvaloniaLocator.Current.GetService<IStandardCursorFactory>();
         }
 
-        protected void Init(IAvnWindowBase window, IAvnScreens screens)
+        protected void Init(IAvnWindowBase window, IAvnScreens screens, IGlContext glContext)
         {
             _native = window;
+            _glContext = glContext;
 
             Handle = new MacOSTopLevelWindowHandle(window);
             if (_gpu)
-                _glSurface = new GlPlatformSurface(window);
+                _glSurface = new GlPlatformSurface(window, _glContext);
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
             _savedScaling = Scaling;
