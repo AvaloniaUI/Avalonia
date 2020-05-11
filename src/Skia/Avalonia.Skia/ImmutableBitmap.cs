@@ -54,59 +54,59 @@ namespace Avalonia.Skia
             Dpi = new Vector(96, 96);
         }
 
-        //NOTE: SKCodec.Create randomly crashes when optimizations are enabled.
-        [MethodImpl(MethodImplOptions.NoOptimization)]
         public ImmutableBitmap(Stream stream, int decodeSize, bool horizontal, BitmapInterpolationMode interpolationMode)
         {
-            // create the codec
-            var codec = SKCodec.Create(stream);
-            var info = codec.Info;
-
-            // get the scale that is nearest to what we want (eg: jpg returned 512)
-            var supportedScale = codec.GetScaledDimensions(horizontal ? ((float)decodeSize / info.Width) : ((float)decodeSize / info.Height));
-
-            // decode the bitmap at the nearest size
-            var nearest = new SKImageInfo(supportedScale.Width, supportedScale.Height);
-            var bmp = SKBitmap.Decode(codec, nearest);
-
-            // now scale that to the size that we want
-            var realScale = horizontal ? ((double)info.Height / info.Width) : ((double)info.Width / info.Height);
-
-            SKImageInfo desired;
-
-
-            if (horizontal)
+            using (var skStream = new SKManagedStream(stream))
+            using (var codec = SKCodec.Create(skStream))
             {
-                desired = new SKImageInfo(decodeSize, (int)(realScale * decodeSize));
-            }
-            else
-            {
-                desired = new SKImageInfo((int)(realScale * decodeSize), decodeSize);
-            }
+                var info = codec.Info;
 
-            if (bmp.Width != desired.Width || bmp.Height != desired.Height)
-            {
-                if (bmp.Height != bmp.Width)
+                // get the scale that is nearest to what we want (eg: jpg returned 512)
+                var supportedScale = codec.GetScaledDimensions(horizontal ? ((float)decodeSize / info.Width) : ((float)decodeSize / info.Height));
+
+                // decode the bitmap at the nearest size
+                var nearest = new SKImageInfo(supportedScale.Width, supportedScale.Height);
+                var bmp = SKBitmap.Decode(codec, nearest);
+
+                // now scale that to the size that we want
+                var realScale = horizontal ? ((double)info.Height / info.Width) : ((double)info.Width / info.Height);
+
+                SKImageInfo desired;
+
+
+                if (horizontal)
                 {
-
+                    desired = new SKImageInfo(decodeSize, (int)(realScale * decodeSize));
                 }
-                var scaledBmp = bmp.Resize(desired, interpolationMode.ToSKFilterQuality());
+                else
+                {
+                    desired = new SKImageInfo((int)(realScale * decodeSize), decodeSize);
+                }
+
+                if (bmp.Width != desired.Width || bmp.Height != desired.Height)
+                {
+                    if (bmp.Height != bmp.Width)
+                    {
+
+                    }
+                    var scaledBmp = bmp.Resize(desired, interpolationMode.ToSKFilterQuality());
+                    bmp.Dispose();
+                    bmp = scaledBmp;
+                }
+
+                _image = SKImage.FromBitmap(bmp);
                 bmp.Dispose();
-                bmp = scaledBmp;
+
+                if (_image == null)
+                {
+                    throw new ArgumentException("Unable to load bitmap from provided data");
+                }
+
+                PixelSize = new PixelSize(_image.Width, _image.Height);
+
+                // TODO: Skia doesn't have an API for DPI.
+                Dpi = new Vector(96, 96);
             }
-
-            _image = SKImage.FromBitmap(bmp);
-            bmp.Dispose();
-
-            if (_image == null)
-            {
-                throw new ArgumentException("Unable to load bitmap from provided data");
-            }
-
-            PixelSize = new PixelSize(_image.Width, _image.Height);
-
-            // TODO: Skia doesn't have an API for DPI.
-            Dpi = new Vector(96, 96);
         }
 
         /// <summary>
