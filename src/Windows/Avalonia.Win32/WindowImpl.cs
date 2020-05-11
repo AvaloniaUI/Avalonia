@@ -37,10 +37,14 @@ namespace Avalonia.Win32
                 { WindowEdge.West, HitTestValues.HTLEFT }
             };
 
+        private SavedWindowInfo _savedWindowInfo;
+        private bool _isFullScreenActive;
+
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
 #endif
 
+        private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
         private readonly List<WindowImpl> _disabledBy;
         private readonly TouchDevice _touchDevice;
         private readonly MouseDevice _mouseDevice;
@@ -82,7 +86,9 @@ namespace Avalonia.Win32
 
             _windowProperties = new WindowProperties
             {
-                ShowInTaskbar = false, IsResizable = true, Decorations = SystemDecorations.Full
+                ShowInTaskbar = false,
+                IsResizable = true,
+                Decorations = SystemDecorations.Full
             };
             _rendererLock = new ManagedDeferredRendererLock();
 
@@ -535,26 +541,97 @@ namespace Avalonia.Win32
             }
         }
 
+        /// <summary>
+        /// Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
+        /// Method must only be called from inside UpdateWindowProperties.
+        /// </summary>
+        /// <param name="fullscreen"></param>
+        private void SetFullScreen(bool fullscreen)
+        {
+            if (fullscreen)
+            {
+                GetWindowRect(_hwnd, out var windowRect);
+                _savedWindowInfo.WindowRect = windowRect;
+
+                var current = GetStyle();
+                var currentEx = GetExtendedStyle();
+
+                _savedWindowInfo.Style = current;
+                _savedWindowInfo.ExStyle = currentEx;
+
+                // Set new window style and size.
+                SetStyle(current & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME), false);
+                SetExtendedStyle(currentEx & ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE), false);
+
+                // On expand, if we're given a window_rect, grow to it, otherwise do
+                // not resize.
+                MONITORINFO monitor_info = MONITORINFO.Create();
+                GetMonitorInfo(MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST), ref monitor_info);
+
+                var window_rect = monitor_info.rcMonitor.ToPixelRect();
+
+                SetWindowPos(_hwnd, IntPtr.Zero, window_rect.X, window_rect.Y,
+                             window_rect.Width, window_rect.Height,
+                             SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+
+                _isFullScreenActive = true;
+            }
+            else
+            {
+                // Reset original window style and size.  The multiple window size/moves
+                // here are ugly, but if SetWindowPos() doesn't redraw, the taskbar won't be
+                // repainted.  Better-looking methods welcome.
+                _isFullScreenActive = false;
+
+                var windowStates = GetWindowStateStyles();
+                SetStyle((_savedWindowInfo.Style & ~WindowStateMask) | windowStates, false);
+                SetExtendedStyle(_savedWindowInfo.ExStyle, false);
+
+                // On restore, resize to the previous saved rect size.
+                var new_rect = _savedWindowInfo.WindowRect.ToPixelRect();
+
+                SetWindowPos(_hwnd, IntPtr.Zero, new_rect.X, new_rect.Y, new_rect.Width,
+                             new_rect.Height,
+                            SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+
+                UpdateWindowProperties(_windowProperties, true);
+            }
+
+            TaskBarList.MarkFullscreen(_hwnd, fullscreen);
+        }
+
         private void ShowWindow(WindowState state)
         {
             ShowWindowCommand command;
 
+            var newWindowProperties = _windowProperties;
+
             switch (state)
             {
                 case WindowState.Minimized:
+                    newWindowProperties.IsFullScreen = false;
                     command = ShowWindowCommand.Minimize;
                     break;
                 case WindowState.Maximized:
+                    newWindowProperties.IsFullScreen = false;
                     command = ShowWindowCommand.Maximize;
                     break;
 
                 case WindowState.Normal:
+                    newWindowProperties.IsFullScreen = false;
                     command = ShowWindowCommand.Restore;
                     break;
+
+                case WindowState.FullScreen:
+                    newWindowProperties.IsFullScreen = true;
+                    UpdateWindowProperties(newWindowProperties);
+                    return;
 
                 default:
                     throw new ArgumentException("Invalid WindowState.");
             }
+
+            UpdateWindowProperties(newWindowProperties);
 
             UnmanagedMethods.ShowWindow(_hwnd, command);
 
@@ -587,22 +664,69 @@ namespace Avalonia.Win32
                     SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
                 }
             }
+        }        
+
+        private WindowStyles GetWindowStateStyles ()
+        {
+            return GetStyle() & WindowStateMask;
         }
 
-        private WindowStyles GetStyle() => (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
+        private WindowStyles GetStyle()
+        {
+            if (_isFullScreenActive)
+            {
+                return _savedWindowInfo.Style;
+            }
+            else
+            {
+                return (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
+            }
+        }
 
-        private WindowStyles GetExtendedStyle() => (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE);
+        private WindowStyles GetExtendedStyle()
+        {
+            if (_isFullScreenActive)
+            {
+                return _savedWindowInfo.ExStyle;
+            }
+            else
+            {
+                return (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE);
+            }
+        }
 
-        private void SetStyle(WindowStyles style) => SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
+        private void SetStyle(WindowStyles style, bool save = true)
+        {
+            if (save)
+            {
+                _savedWindowInfo.Style = style;
+            }
 
-        private void SetExtendedStyle(WindowStyles style) => SetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE, (uint)style);
+            if (!_isFullScreenActive)
+            {
+                SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
+            }
+        }
+
+        private void SetExtendedStyle(WindowStyles style, bool save = true)
+        {
+            if (save)
+            {
+                _savedWindowInfo.ExStyle = style;
+            }
+
+            if (!_isFullScreenActive)
+            {
+                SetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE, (uint)style);
+            }
+        }
 
         private void UpdateEnabled()
         {
             EnableWindow(_hwnd, _disabledBy.Count == 0);
         }
 
-        private void UpdateWindowProperties(WindowProperties newProperties)
+        private void UpdateWindowProperties(WindowProperties newProperties, bool forceChanges = false)
         {
             var oldProperties = _windowProperties;
 
@@ -610,7 +734,7 @@ namespace Avalonia.Win32
             // according to the new values already.
             _windowProperties = newProperties;
 
-            if (oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar)
+            if ((oldProperties.ShowInTaskbar != newProperties.ShowInTaskbar) || forceChanges)
             {
                 var exStyle = GetExtendedStyle();
 
@@ -629,7 +753,7 @@ namespace Avalonia.Win32
                 // Otherwise it will still show in the taskbar.
             }
 
-            if (oldProperties.IsResizable != newProperties.IsResizable)
+            if ((oldProperties.IsResizable != newProperties.IsResizable) || forceChanges)
             {
                 var style = GetStyle();
 
@@ -645,7 +769,12 @@ namespace Avalonia.Win32
                 SetStyle(style);
             }
 
-            if (oldProperties.Decorations != newProperties.Decorations)
+            if (oldProperties.IsFullScreen != newProperties.IsFullScreen)
+            {
+                SetFullScreen(newProperties.IsFullScreen);
+            }
+
+            if ((oldProperties.Decorations != newProperties.Decorations) || forceChanges)
             {
                 var style = GetStyle();
 
@@ -660,30 +789,33 @@ namespace Avalonia.Win32
                     style &= ~fullDecorationFlags;
                 }
 
-                var margins = new MARGINS
-                {
-                    cyBottomHeight = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0
-                };
-
-                DwmExtendFrameIntoClientArea(_hwnd, ref margins);
-
-                GetClientRect(_hwnd, out var oldClientRect);
-                var oldClientRectOrigin = new POINT();
-                ClientToScreen(_hwnd, ref oldClientRectOrigin);
-                oldClientRect.Offset(oldClientRectOrigin);
-
                 SetStyle(style);
 
-                var newRect = oldClientRect;
-
-                if (newProperties.Decorations == SystemDecorations.Full)
+                if (!_isFullScreenActive)
                 {
-                    AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
-                }
+                    var margins = new MARGINS
+                    {
+                        cyBottomHeight = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0
+                    };
 
-                SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
-                    SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
-                    SetWindowPosFlags.SWP_FRAMECHANGED);
+                    DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
+                    GetClientRect(_hwnd, out var oldClientRect);
+                    var oldClientRectOrigin = new POINT();
+                    ClientToScreen(_hwnd, ref oldClientRectOrigin);
+                    oldClientRect.Offset(oldClientRectOrigin);
+
+                    var newRect = oldClientRect;
+
+                    if (newProperties.Decorations == SystemDecorations.Full)
+                    {
+                        AdjustWindowRectEx(ref newRect, (uint)style, false, (uint)GetExtendedStyle());
+                    }
+
+                    SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
+                        SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
+                        SetWindowPosFlags.SWP_FRAMECHANGED);
+                }
             }
         }
 
@@ -710,11 +842,19 @@ namespace Avalonia.Win32
 
         IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
 
+        private struct SavedWindowInfo
+        {
+            public WindowStyles Style { get; set; }
+            public WindowStyles ExStyle { get; set; }
+            public RECT WindowRect { get; set; }
+        };
+
         private struct WindowProperties
         {
             public bool ShowInTaskbar;
             public bool IsResizable;
             public SystemDecorations Decorations;
+            public bool IsFullScreen;
         }
     }
 }

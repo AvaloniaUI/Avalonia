@@ -19,7 +19,7 @@ namespace Avalonia.Skia
     {
         private readonly ISkiaGpu _skiaGpu;
 
-        public PlatformRenderInterface(ISkiaGpu skiaGpu)
+        public PlatformRenderInterface(ISkiaGpu skiaGpu, long maxResourceBytes)
         {
             if (skiaGpu != null)
             {
@@ -29,7 +29,7 @@ namespace Avalonia.Skia
 
             var gl = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
             if (gl != null) 
-                _skiaGpu = new GlSkiaGpu(gl);
+                _skiaGpu = new GlSkiaGpu(gl, maxResourceBytes);
         }
 
         /// <inheritdoc />
@@ -237,5 +237,7 @@ namespace Avalonia.Skia
             throw new PlatformNotSupportedException(
                 "Current GPU acceleration backend does not support OpenGL integration");
         }
+
+        public bool SupportsIndividualRoundRects => true;
     }
 }

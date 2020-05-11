@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using ReactiveUI;
+using Avalonia.Controls;
 
 namespace BindingDemo.ViewModels
 {
@@ -27,7 +28,7 @@ namespace BindingDemo.ViewModels
                     Detail = "Item " + x + " details",
                 }));
 
-            SelectedItems = new ObservableCollection<TestItem>();
+            Selection = new SelectionModel();
 
             ShuffleItems = ReactiveCommand.Create(() =>
             {
@@ -56,7 +57,7 @@ namespace BindingDemo.ViewModels
         }
 
         public ObservableCollection<TestItem> Items { get; }
-        public ObservableCollection<TestItem> SelectedItems { get; }
+        public SelectionModel Selection { get; }
         public ReactiveCommand<Unit, Unit> ShuffleItems { get; }
 
         public string BooleanString
