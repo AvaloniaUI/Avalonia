@@ -29,6 +29,11 @@ namespace Avalonia.Skia
         {
             return new SKPoint((float)p.X, (float)p.Y);
         }
+        
+        public static SKPoint ToSKPoint(this Vector p)
+        {
+            return new SKPoint((float)p.X, (float)p.Y);
+        }
 
         public static SKRect ToSKRect(this Rect r)
         {

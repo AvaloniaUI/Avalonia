@@ -19,8 +19,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
-        public GeometryNode(
-            Matrix transform,
+        public GeometryNode(Matrix transform,
             IBrush brush,
             IPen pen,
             IGeometryImpl geometry,
@@ -64,6 +63,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill of the other draw operation.</param>
         /// <param name="pen">The stroke of the other draw operation.</param>
         /// <param name="geometry">The geometry of the other draw operation.</param>
+        /// <param name="boxShadow">The box shadow parameters</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent
@@ -72,9 +72,9 @@ namespace Avalonia.Rendering.SceneGraph
         public bool Equals(Matrix transform, IBrush brush, IPen pen, IGeometryImpl geometry)
         {
             return transform == Transform &&
-                Equals(brush, Brush) && 
-                Equals(Pen, pen) &&
-                Equals(geometry, Geometry);
+                   Equals(brush, Brush) &&
+                   Equals(Pen, pen) &&
+                   Equals(geometry, Geometry);
         }
 
         /// <inheritdoc/>

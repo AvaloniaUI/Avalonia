@@ -100,5 +100,7 @@ namespace Avalonia.UnitTests
             width = 0;
             return Mock.Of<IGlyphRunImpl>();
         }
+
+        public bool SupportsIndividualRoundRects { get; set; }
     }
 }

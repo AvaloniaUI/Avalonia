@@ -92,5 +92,7 @@ namespace Avalonia.Benchmarks
 
             return new NullGlyphRun();
         }
+
+        public bool SupportsIndividualRoundRects => true;
     }
 }
