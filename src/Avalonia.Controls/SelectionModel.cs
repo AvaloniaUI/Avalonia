@@ -808,7 +808,11 @@ namespace Avalonia.Controls
             }
 
             OnSelectionChanged(e);
-            _rootNode.Cleanup();
+
+            if (_operationCount == 0)
+            {
+                _rootNode.Cleanup();
+            }
         }
 
         private void ApplyAutoSelect()
