@@ -287,7 +287,7 @@ namespace Avalonia.Skia
                             var shadowRect = rc;
                             if (spread != 0)
                                 shadowRect.Inflate(spread, spread);
-                            Canvas.ClipRect(shadowRect, shadow.ClipOperation);
+                            Canvas.ClipRect(rc, shadow.ClipOperation);
                             Canvas.DrawRect(shadowRect, shadow.Paint);
                         }
 
