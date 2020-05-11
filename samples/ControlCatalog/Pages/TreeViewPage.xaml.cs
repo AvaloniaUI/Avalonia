@@ -28,21 +28,22 @@ namespace ControlCatalog.Pages
             {
                 Node root = new Node();
                 Items = root.Children;
-                SelectedItems = new ObservableCollection<Node>();
+                Selection = new SelectionModel();
 
                 AddItemCommand = ReactiveCommand.Create(() =>
                 {
-                    Node parentItem = SelectedItems.Count > 0 ? SelectedItems[0] : root;
+                    Node parentItem = Selection.SelectedItems.Count > 0 ?
+                        (Node)Selection.SelectedItems[0] : root;
                     parentItem.AddNewItem();
                 });
 
                 RemoveItemCommand = ReactiveCommand.Create(() =>
                 {
-                    while (SelectedItems.Count > 0)
+                    while (Selection.SelectedItems.Count > 0)
                     {
-                        Node lastItem = SelectedItems[0];
+                        Node lastItem = (Node)Selection.SelectedItems[0];
                         RecursiveRemove(Items, lastItem);
-                        SelectedItems.Remove(lastItem);
+                        Selection.DeselectAt(Selection.SelectedIndices[0]);
                     }
 
                     bool RecursiveRemove(ObservableCollection<Node> items, Node selectedItem)
@@ -67,7 +68,7 @@ namespace ControlCatalog.Pages
 
             public ObservableCollection<Node> Items { get; }
 
-            public ObservableCollection<Node> SelectedItems { get; }
+            public SelectionModel Selection { get; }
 
             public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
 
@@ -78,7 +79,7 @@ namespace ControlCatalog.Pages
                 get => _selectionMode;
                 set
                 {
-                    SelectedItems.Clear();
+                    Selection.ClearSelection();
                     this.RaiseAndSetIfChanged(ref _selectionMode, value);
                 }
             }
@@ -109,7 +110,7 @@ namespace ControlCatalog.Pages
 
             public override string ToString() => Header;
 
-            private Node CreateNewNode() => new Node {Header = $"Item {_counter++}"};
+            private Node CreateNewNode() => new Node { Header = $"Item {_counter++}" };
         }
     }
 }
