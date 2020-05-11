@@ -191,24 +191,22 @@ namespace Avalonia.Skia
             private SKImageFilter _filter;
             public SKClipOperation ClipOperation;
 
+            static float SkBlurRadiusToSigma(double radius) {
+                if (radius <= 0)
+                    return 0.0f;
+                return 0.288675f * (float)radius + 0.5f;
+            }
             public static BoxShadowFilter Create(SKPaint paint, BoxShadow shadow, double opacity)
             {
                 var ac = shadow.Color;
-                var spread = (int)shadow.Spread;
-                if (shadow.IsInset)
-                    spread = -spread;
-                
-                var filter = SKImageFilter.CreateDropShadow(
-                    (float)shadow.OffsetX,
-                    (float)shadow.OffsetY,
-                    (float)shadow.Blur / 2,
-                    (float)shadow.Blur / 2,
-                    new SKColor(ac.R, ac.G, ac.B, (byte)(ac.A * opacity)),
-                    SKDropShadowImageFilterShadowMode.DrawShadowOnly, null);
-                
+
+                SKImageFilter filter = null;
+                filter = SKImageFilter.CreateBlur(SkBlurRadiusToSigma(shadow.Blur), SkBlurRadiusToSigma(shadow.Blur));
+                var color = new SKColor(ac.R, ac.G, ac.B, (byte)(ac.A * opacity));
+
                 paint.Reset();
                 paint.IsAntialias = true;
-                paint.Color= SKColors.White;
+                paint.Color = color;
                 paint.ImageFilter = filter;
                 
                 return new BoxShadowFilter
@@ -222,7 +220,7 @@ namespace Avalonia.Skia
             {
                 Paint.Reset();
                 Paint = null;
-                _filter.Dispose();
+                _filter?.Dispose();
             }
         }
 
@@ -280,7 +278,11 @@ namespace Avalonia.Skia
                                 shadowRect.Inflate(spread, spread);
                             Canvas.ClipRoundRect(skRoundRect,
                                 shadow.ClipOperation, true);
+                            
+                            var oldTransform = Transform;
+                            Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
                             Canvas.DrawRoundRect(shadowRect, shadow.Paint);
+                            Transform = oldTransform;
                         }
                         else
                         {
@@ -288,7 +290,10 @@ namespace Avalonia.Skia
                             if (spread != 0)
                                 shadowRect.Inflate(spread, spread);
                             Canvas.ClipRect(rc, shadow.ClipOperation);
+                            var oldTransform = Transform;
+                            Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
                             Canvas.DrawRect(shadowRect, shadow.Paint);
+                            Transform = oldTransform;
                         }
 
                         Canvas.Restore();
@@ -329,9 +334,12 @@ namespace Avalonia.Skia
                             shadowRect.Deflate(spread, spread);
                         Canvas.ClipRoundRect(skRoundRect,
                             shadow.ClipOperation, true);
+                        
+                        var oldTransform = Transform;
+                        Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
                         using (var outerRRect = new SKRoundRect(outerRect))
                             Canvas.DrawRoundRectDifference(outerRRect, shadowRect, shadow.Paint);
-
+                        Transform = oldTransform;
                         Canvas.Restore();
                     }
                 }
