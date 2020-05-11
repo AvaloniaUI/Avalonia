@@ -41,7 +41,7 @@ namespace Avalonia.Media
             PlatformImpl = impl;
             _ownsImpl = true;
         }
-        
+
         public DrawingContext(IDrawingContextImpl impl, bool ownsImpl)
         {
             _ownsImpl = ownsImpl;
@@ -61,7 +61,7 @@ namespace Avalonia.Media
         {
             get { return _currentTransform; }
             private set
-            {                
+            {
                 _currentTransform = value;
                 var transform = _currentTransform * _currentContainerTransform;
                 PlatformImpl.Transform = transform;
@@ -80,7 +80,7 @@ namespace Avalonia.Media
         /// <param name="rect">The rect in the output to draw to.</param>
         public void DrawImage(IImage source, Rect rect)
         {
-            Contract.Requires<ArgumentNullException>(source != null);            
+            Contract.Requires<ArgumentNullException>(source != null);
 
             DrawImage(source, new Rect(source.Size), rect);
         }
@@ -178,7 +178,7 @@ namespace Avalonia.Media
                 radiusY = Math.Min(radiusY, rect.Height / 2);
             }
 
-            if ((pen is null || (pen != null && pen.IsRenderValid())) && rect.IsRenderValid() && radiusX.IsRenderValid() && radiusY.IsRenderValid())
+            if ((pen is null || (pen != null && pen.IsRenderValid())) && rect.IsRenderValid() && radiusX.IsRenderValid() && radiusY.IsRenderValid() && boxShadow.IsRenderValid())
             {
                 PlatformImpl.DrawRectangle(brush, pen, new RoundedRect(rect, radiusX, radiusY), boxShadow);
             }

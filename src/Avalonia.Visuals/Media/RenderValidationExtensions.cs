@@ -33,5 +33,11 @@ namespace Avalonia.Media
         {
             return g.Bounds.IsRenderValid() && g.FontRenderingEmSize.IsRenderValid();
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRenderValid (this BoxShadow bs)
+        {
+            return bs.OffsetX.IsRenderValid() && bs.OffsetY.IsRenderValid() && bs.Blur.IsRenderValid() && bs.Spread.IsRenderValid();
+        }
     }
 }
