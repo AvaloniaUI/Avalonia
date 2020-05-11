@@ -115,10 +115,10 @@ namespace Avalonia.Direct2D1.Media
         {
             _decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, stream, DecodeOptions.CacheOnLoad);
 
-            var bmp = new Bitmap(Direct2D1Platform.ImagingFactory, _decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnLoad);
+            var frame = _decoder.GetFrame(0);
 
             // now scale that to the size that we want
-            var realScale = horizontal ? ((double)bmp.Size.Height / bmp.Size.Width) : ((double)bmp.Size.Width / bmp.Size.Height);
+            var realScale = horizontal ? ((double)frame.Size.Height / frame.Size.Width) : ((double)frame.Size.Width / frame.Size.Height);
 
             PixelSize desired;
 
@@ -131,19 +131,19 @@ namespace Avalonia.Direct2D1.Media
                 desired = new PixelSize((int)(realScale * decodeSize), decodeSize);
             }
 
-            if (bmp.Size.Width != desired.Width || bmp.Size.Height != desired.Height)
+            if (frame.Size.Width != desired.Width || frame.Size.Height != desired.Height)
             {
                 using (var scaler = new BitmapScaler(Direct2D1Platform.ImagingFactory))
                 {
-                    scaler.Initialize(bmp, desired.Width, desired.Height, ConvertInterpolationMode(interpolationMode));
+                    scaler.Initialize(frame, desired.Width, desired.Height, ConvertInterpolationMode(interpolationMode));
 
-                    var image = new Bitmap(Direct2D1Platform.ImagingFactory, scaler, BitmapCreateCacheOption.CacheOnDemand);
-                    bmp.Dispose();
-                    bmp = image;
+                    WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, scaler, BitmapCreateCacheOption.CacheOnLoad);                    
                 }
             }
-
-            WicImpl = bmp;
+            else
+            {
+                WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, frame, BitmapCreateCacheOption.CacheOnLoad);
+            }
 
             Dpi = new Vector(96, 96);
         }
