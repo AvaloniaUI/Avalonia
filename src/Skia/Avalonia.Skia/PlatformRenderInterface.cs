@@ -19,7 +19,7 @@ namespace Avalonia.Skia
     {
         private readonly ISkiaGpu _skiaGpu;
 
-        public PlatformRenderInterface(ISkiaGpu skiaGpu, long maxResourceBytes)
+        public PlatformRenderInterface(ISkiaGpu skiaGpu, long? maxResourceBytes = null)
         {
             if (skiaGpu != null)
             {

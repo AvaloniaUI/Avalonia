@@ -9,7 +9,7 @@ namespace Avalonia.Skia
     {
         private GRContext _grContext;
 
-        public GlSkiaGpu(IWindowingPlatformGlFeature gl, long maxResourceBytes)
+        public GlSkiaGpu(IWindowingPlatformGlFeature gl, long? maxResourceBytes)
         {
             var context = gl.MainContext;
             using (context.MakeCurrent())
@@ -19,8 +19,11 @@ namespace Avalonia.Skia
                     GRGlInterface.AssembleGlesInterface((_, proc) => context.GlInterface.GetProcAddress(proc)))
                 {
                     _grContext = GRContext.Create(GRBackend.OpenGL, iface);
-                    _grContext.GetResourceCacheLimits(out var maxResources, out _);
-                    _grContext.SetResourceCacheLimits(maxResources, maxResourceBytes);
+                    if (maxResourceBytes.HasValue)
+                    {
+                        _grContext.GetResourceCacheLimits(out var maxResources, out _);
+                        _grContext.SetResourceCacheLimits(maxResources, maxResourceBytes.Value);
+                    }
                 }
             }
         }

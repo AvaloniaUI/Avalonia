@@ -8,10 +8,6 @@ namespace Avalonia
     /// </summary>
     public class SkiaOptions
     {
-        public SkiaOptions()
-        {
-            MaxGpuResourceSizeBytes = 100663296; // Value taken from skia.
-        }
         /// <summary>
         /// Custom gpu factory to use. Can be used to customize behavior of Skia renderer.
         /// </summary>
@@ -20,6 +16,6 @@ namespace Avalonia
         /// <summary>
         /// The maximum number of bytes for video memory to store textures and resources.
         /// </summary>
-        public long MaxGpuResourceSizeBytes { get; set; }
+        public long? MaxGpuResourceSizeBytes { get; set; }
     }
 }
