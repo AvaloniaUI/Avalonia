@@ -675,7 +675,9 @@ namespace Avalonia.Controls
 
                 if (o != n)
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     RaisePropertyChanged(HasSystemDecorationsProperty, o, n);
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
             }
         }
