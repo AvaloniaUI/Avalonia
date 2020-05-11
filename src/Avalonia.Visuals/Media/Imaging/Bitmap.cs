@@ -40,16 +40,15 @@ namespace Avalonia.Media.Imaging
         }
 
         /// <summary>
-        /// Creates a Bitmap from another Bitmap scaled to a specified size.
-        /// </summary>
-        /// <param name="src">The source bitmap.</param>
+        /// Creates a Bitmap scaled to a specified size from the current bitmap.
+        /// </summary>        
         /// <param name="destinationSize">The destination size.</param>
         /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should any scaling be required.</param>
         /// <returns>An instance of the <see cref="Bitmap"/> class.</returns>
-        public static Bitmap CreateScaledBitmap(Bitmap src, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        public Bitmap CreateScaledBitmap(PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
             IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            return new Bitmap(factory.ResizeBitmap(src.PlatformImpl.Item, destinationSize, interpolationMode));
+            return new Bitmap(factory.ResizeBitmap(PlatformImpl.Item, destinationSize, interpolationMode));
         }
 
         /// <summary>
