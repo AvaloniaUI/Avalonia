@@ -54,10 +54,8 @@ namespace Avalonia.Skia
             Dpi = new Vector(96, 96);
         }
 
-        // NOTE, putting the stream before options in the parameters, causes an exception
-        // inside SKCodec.Create with optimized code. Probably a bug in .net compiler.
-        // Other option is to have the argument order as desired and use PreserveSig options.
-        [MethodImpl(MethodImplOptions.PreserveSig)]
+        //NOTE: SKCodec.Create randomly crashes when optimizations are enabled.
+        [MethodImpl(MethodImplOptions.NoOptimization)]
         public ImmutableBitmap(Stream stream, int decodeSize, bool horizontal, BitmapInterpolationMode interpolationMode)
         {
             // create the codec
