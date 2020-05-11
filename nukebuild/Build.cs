@@ -123,7 +123,7 @@ partial class Build : NukeBuild
     });
 
     Target CompileHtmlPreviewer => _ => _
-        .DependsOn("Clean")
+        .DependsOn(Clean)
         .Executes(() =>
         {
             var webappDir = RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp";
