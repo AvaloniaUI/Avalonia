@@ -196,19 +196,19 @@ namespace Avalonia.Direct2D1
         /// <inheritdoc />
         public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
-            throw new NotImplementedException();
+            return new WicBitmapImpl(stream, width, true, interpolationMode);
         }
 
         /// <inheritdoc />
         public IBitmapImpl LoadBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
-            throw new NotImplementedException();
+            return new WicBitmapImpl(stream, height, false, interpolationMode);
         }
 
         /// <inheritdoc />
         public IBitmapImpl ResizeBitmap(IBitmapImpl bitmapImpl, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
-            throw new NotImplementedException();
+            return (bitmapImpl as WicBitmapImpl).CreateScaledBitmap(destinationSize, interpolationMode);
         }
 
         /// <inheritdoc />
