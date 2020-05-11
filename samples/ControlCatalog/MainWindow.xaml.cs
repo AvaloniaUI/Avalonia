@@ -12,7 +12,7 @@ namespace ControlCatalog
     {
         private Random _r = new Random();
 
-        private double angle = 45;
+        private double angle = Math.PI / 8;
         public TestControl()
         {
             DispatcherTimer t = new DispatcherTimer();
@@ -20,7 +20,7 @@ namespace ControlCatalog
 
             t.Tick += (sender, e) =>
             {
-                angle += 1;
+                angle += Math.PI / 360;
                 Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
             };
 

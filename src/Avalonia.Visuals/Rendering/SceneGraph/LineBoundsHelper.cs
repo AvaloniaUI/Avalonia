@@ -12,17 +12,17 @@ namespace Avalonia.Rendering.SceneGraph
             var xDiff = p2.X - p1.X;
             var yDiff = p2.Y - p1.Y;
 
-            return Math.Atan2(yDiff, xDiff) * 180.0 / Math.PI;
+            return Math.Atan2(yDiff, xDiff);
         }
 
         public static double CalculateOppSide(double angle, double hyp)
         {
-            return Math.Sin(angle * degreeToRadians) * hyp;
+            return Math.Sin(angle) * hyp;
         }
 
         public static double CalculateAdjSide(double angle, double hyp)
         {
-            return Math.Cos(angle * degreeToRadians) * hyp;
+            return Math.Cos(angle) * hyp;
         }
 
         private static (Point p1, Point p2) TranslatePointsAlongTangent(Point p1, Point p2, double angle, double distance)
@@ -53,19 +53,19 @@ namespace Avalonia.Rendering.SceneGraph
 
         public static Rect CalculateBounds(Point p1, Point p2, IPen p)
         {
-            var angle = CalculateAngle(p1, p2);
+            var radians = CalculateAngle(p1, p2);
 
-            var angleToCorner = angle;
+            var angleToCorner = radians;
 
             if (p.LineCap != PenLineCap.Flat)
             {
-                var pts = TranslatePointsAlongTangent(p1, p2, angle - 90, p.Thickness / 2);
+                var pts = TranslatePointsAlongTangent(p1, p2, radians - Math.PI / 2, p.Thickness / 2);
 
-                return CalculateBounds(pts.p1, pts.p2, p.Thickness, angle);
+                return CalculateBounds(pts.p1, pts.p2, p.Thickness, radians);
             }
             else
             {
-                return CalculateBounds(p1, p2, p.Thickness, angle);
+                return CalculateBounds(p1, p2, p.Thickness, radians);
             }
         }
     }
