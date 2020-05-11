@@ -32,11 +32,7 @@ namespace Avalonia.Rendering.SceneGraph
             P1 = p1;
             P2 = p2;
             ChildScenes = childScenes;
-
-            
         }
-
-        
 
         /// <summary>
         /// Gets the transform with which the node will be drawn.
