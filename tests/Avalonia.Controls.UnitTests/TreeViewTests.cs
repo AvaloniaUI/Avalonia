@@ -130,6 +130,7 @@ namespace Avalonia.Controls.UnitTests
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
+            ExpandAll(target);
 
             var item = tree[0].Children[1].Children[0];
             var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
@@ -157,6 +158,7 @@ namespace Avalonia.Controls.UnitTests
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
+            ExpandAll(target);
 
             var item = tree[0].Children[1].Children[0];
             var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
@@ -188,6 +190,7 @@ namespace Avalonia.Controls.UnitTests
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
+            ExpandAll(target);
 
             var item1 = tree[0].Children[1].Children[0];
             var container1 = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item1);
@@ -225,6 +228,7 @@ namespace Avalonia.Controls.UnitTests
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
+            ExpandAll(target);
 
             var rootNode = tree[0];
 
@@ -264,6 +268,7 @@ namespace Avalonia.Controls.UnitTests
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
+            ExpandAll(target);
 
             var rootNode = tree[0];
 
@@ -297,6 +302,7 @@ namespace Avalonia.Controls.UnitTests
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
+            ExpandAll(target);
 
             var rootNode = tree[0];
 
@@ -330,6 +336,7 @@ namespace Avalonia.Controls.UnitTests
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
+            ExpandAll(target);
 
             var rootNode = tree[0];
 
@@ -376,6 +383,7 @@ namespace Avalonia.Controls.UnitTests
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
+            ExpandAll(target);
 
             var item = tree[0].Children[1].Children[0];
             var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
@@ -402,6 +410,7 @@ namespace Avalonia.Controls.UnitTests
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
+            ExpandAll(target);
 
             var item = tree[0].Children[1].Children[0];
 
@@ -579,6 +588,7 @@ namespace Avalonia.Controls.UnitTests
 
                 CreateNodeDataTemplate(target);
                 ApplyTemplates(target);
+                ExpandAll(target);
 
                 var item = data[0].Children[0];
                 var node = target.ItemContainerGenerator.Index.ContainerFromItem(item);
@@ -614,6 +624,7 @@ namespace Avalonia.Controls.UnitTests
 
                 CreateNodeDataTemplate(target);
                 ApplyTemplates(target);
+                ExpandAll(target);
 
                 var rootNode = tree[0];
 
@@ -651,6 +662,7 @@ namespace Avalonia.Controls.UnitTests
 
                 CreateNodeDataTemplate(target);
                 ApplyTemplates(target);
+                ExpandAll(target);
 
                 var rootNode = tree[0];
 
@@ -697,6 +709,7 @@ namespace Avalonia.Controls.UnitTests
 
                 CreateNodeDataTemplate(target);
                 ApplyTemplates(target);
+                ExpandAll(target);
 
                 var rootNode = tree[0];
 

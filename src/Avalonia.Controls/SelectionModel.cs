@@ -774,7 +774,10 @@ namespace Avalonia.Controls
                 winrtEnd,
                 info =>
                 {
-                    info.ParentNode!.Select(info.Path.GetAt(info.Path.GetSize() - 1), select);
+                    if (info.Path >= winrtStart && info.Path <= winrtEnd)
+                    {
+                        info.ParentNode!.Select(info.Path.GetAt(info.Path.GetSize() - 1), select);
+                    }
                 });
         }
 
@@ -808,7 +811,11 @@ namespace Avalonia.Controls
             }
 
             OnSelectionChanged(e);
-            _rootNode.Cleanup();
+
+            if (_operationCount == 0)
+            {
+                _rootNode.Cleanup();
+            }
         }
 
         private void ApplyAutoSelect()
