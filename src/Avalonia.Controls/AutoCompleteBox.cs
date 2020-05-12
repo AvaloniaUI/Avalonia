@@ -1212,7 +1212,7 @@ namespace Avalonia.Controls
         /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control
         /// when a new template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
 
             if (DropDownPopup != null)
@@ -1240,7 +1240,7 @@ namespace Avalonia.Controls
                 OpeningDropDown(false);
             }
 
-            base.OnTemplateApplied(e);
+            base.OnApplyTemplate(e);
         }
 
         /// <summary>

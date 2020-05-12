@@ -8,11 +8,17 @@
 #include <pthread.h>
 
 extern IAvnPlatformThreadingInterface* CreatePlatformThreading();
+extern void FreeAvnGCHandle(void* handle);
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl);
 extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events, IAvnGlContext* gl);
 extern IAvnSystemDialogs* CreateSystemDialogs();
 extern IAvnScreens* CreateScreens();
-extern IAvnClipboard* CreateClipboard();
+extern IAvnClipboard* CreateClipboard(NSPasteboard*, NSPasteboardItem*);
+extern NSPasteboardItem* TryGetPasteboardItem(IAvnClipboard*);
+extern NSObject<NSDraggingSource>* CreateDraggingSource(NSDragOperation op, IAvnDndResultCallback* cb, void* handle);
+extern void* GetAvnDataObjectHandleFromDraggingInfo(NSObject<NSDraggingInfo>* info);
+extern NSString* GetAvnCustomDataType();
+extern AvnDragDropEffects ConvertDragDropEffects(NSDragOperation nsop);
 extern IAvnCursorFactory* CreateCursorFactory();
 extern IAvnGlDisplay* GetGlDisplay();
 extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* events);

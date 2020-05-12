@@ -2079,10 +2079,8 @@ namespace Avalonia.Controls
         /// <see cref="T:System.Windows.Controls.Calendar" /> when a new
         /// template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             Root = e.NameScope.Find<Panel>(PART_ElementRoot);
 
             SelectedMonth = DisplayDate;

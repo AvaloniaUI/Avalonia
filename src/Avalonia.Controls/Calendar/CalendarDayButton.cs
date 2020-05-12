@@ -150,11 +150,11 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
             SetPseudoClasses();
         }
+
         private void SetPseudoClasses()
         {
             if (_ignoringMouseOverState)

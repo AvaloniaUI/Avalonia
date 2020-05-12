@@ -19,7 +19,6 @@
         </TreeView>
 
         <Button Command="{Binding AddItemCommand}">Add</Button>
-
         <Button Command="{Binding RemoveItemCommand}">Remove</Button>
 
         <ComboBox SelectedIndex="{Binding SelectionMode, Mode=TwoWay}">

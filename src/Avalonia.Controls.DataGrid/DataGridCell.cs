@@ -121,10 +121,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Builds the visual tree for the cell control when a new template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             UpdatePseudoClasses();
             _rightGridLine = e.NameScope.Find<Rectangle>(DATAGRIDCELL_elementRightGridLine);
             if (_rightGridLine != null && OwningColumn == null)
