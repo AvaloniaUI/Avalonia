@@ -341,7 +341,7 @@ namespace Avalonia.Controls
             set { SetAndRaise(NewLineProperty, ref _newLine, value); }
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
 
