@@ -115,7 +115,7 @@ namespace Avalonia.Controls.Remote.Server
                 {
                     lock (_lock)
                     {
-                        _lastReceivedFrame = lastFrame.SequenceId;
+                        _lastReceivedFrame = Math.Max(lastFrame.SequenceId, _lastReceivedFrame);
                     }
                     Dispatcher.UIThread.Post(RenderIfNeeded);
                 }
@@ -298,6 +298,8 @@ namespace Avalonia.Controls.Remote.Server
                 Width = width,
                 Height = height,
                 Stride = width * bpp,
+                DpiX = _dpi.X,
+                DpiY = _dpi.Y
             };
         }
 

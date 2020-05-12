@@ -128,10 +128,10 @@ namespace Avalonia.Input
             _obsoleteClickCount = obsoleteClickCount;
         }
 
-        [Obsolete("Use DoubleTapped or DoubleRightTapped event instead")]
+        [Obsolete("Use DoubleTapped event or Gestures.DoubleRightTapped attached event")]
         public int ClickCount => _obsoleteClickCount;
 
-        [Obsolete("Use PointerUpdateKind")]
+        [Obsolete("Use PointerPressedEventArgs.GetCurrentPoint(this).Properties")]
         public MouseButton MouseButton => Properties.PointerUpdateKind.GetMouseButton();
     }
 
@@ -153,7 +153,7 @@ namespace Avalonia.Input
         /// </summary>
         public MouseButton InitialPressMouseButton { get; }
 
-        [Obsolete("Either use GetCurrentPoint(this).Properties.PointerUpdateKind or InitialPressMouseButton, see https://github.com/AvaloniaUI/Avalonia/wiki/Pointer-events-in-0.9 for more details", true)]
+        [Obsolete("Use InitialPressMouseButton")]
         public MouseButton MouseButton => InitialPressMouseButton;
     }
 

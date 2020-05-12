@@ -265,7 +265,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Selected_Item_Changes_To_NextAvailable_Item_If_SelectedItem_Is_Removed_From_Middle()
+        public void Selected_Item_Changes_To_First_Item_If_SelectedItem_Is_Removed_From_Middle()
         {
             var items = new ObservableCollection<string>
             {
@@ -288,8 +288,8 @@ namespace Avalonia.Controls.UnitTests
 
             items.RemoveAt(1);
 
-            Assert.Equal(1, target.SelectedIndex);
-            Assert.Equal("FooBar", target.SelectedItem);
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal("Foo", target.SelectedItem);
         }
 
         private Control CreateTemplate(Carousel control, INameScope scope)

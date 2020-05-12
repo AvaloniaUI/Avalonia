@@ -96,6 +96,8 @@ namespace Avalonia.Controls
         /// <returns>the item.</returns>
         public object GetAt(int index) => _inner[index];
 
+        public int IndexOf(object item) => _inner.IndexOf(item);
+
         /// <summary>
         /// Retrieves the index of the item that has the specified unique identifier (key).
         /// </summary>

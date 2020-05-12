@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Native.Interop;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 
@@ -21,8 +22,8 @@ namespace Avalonia.Native
             _glFeature = glFeature;
             using (var e = new WindowEvents(this))
             {
-                Init(_native = factory.CreateWindow(e,
-                    _opts.UseGpu ? glFeature?.DeferredContext.Context : null), factory.CreateScreens());
+                var context = _opts.UseGpu ? glFeature?.DeferredContext : null;
+                Init(_native = factory.CreateWindow(e, context?.Context), factory.CreateScreens(), context);
             }
 
             NativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
@@ -67,7 +68,7 @@ namespace Avalonia.Native
 
         public void SetSystemDecorations(Controls.SystemDecorations enabled)
         {
-            _native.HasDecorations = (Interop.SystemDecorations)enabled;
+            _native.Decorations = (Interop.SystemDecorations)enabled;
         }
 
         public void SetTitleBarColor (Avalonia.Media.Color color)

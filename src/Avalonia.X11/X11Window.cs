@@ -165,7 +165,7 @@ namespace Avalonia.X11
             
             if (egl != null)
                 surfaces.Insert(0,
-                    new EglGlPlatformSurface((EglDisplay)egl.Display, egl.DeferredContext,
+                    new EglGlPlatformSurface(egl.DeferredContext,
                         new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
             if (glx != null)
                 surfaces.Insert(0, new GlxGlPlatformSurface(glx.Display, glx.DeferredContext,
@@ -220,16 +220,11 @@ namespace Avalonia.X11
             var decorations = MotifDecorations.Menu | MotifDecorations.Title | MotifDecorations.Border |
                               MotifDecorations.Maximize | MotifDecorations.Minimize | MotifDecorations.ResizeH;
 
-            if (_popup || _systemDecorations == SystemDecorations.None)
-            {
+            if (_popup 
+                || _systemDecorations == SystemDecorations.None) 
                 decorations = 0;
-            }
-            else if (_systemDecorations == SystemDecorations.BorderOnly)
-            {
-                decorations = MotifDecorations.Border;
-            }
 
-            if (!_canResize || _systemDecorations == SystemDecorations.BorderOnly)
+            if (!_canResize)
             {
                 functions &= ~(MotifFunctions.Resize | MotifFunctions.Maximize);
                 decorations &= ~(MotifDecorations.Maximize | MotifDecorations.ResizeH);
@@ -252,7 +247,7 @@ namespace Avalonia.X11
             var min = _minMaxSize.minSize;
             var max = _minMaxSize.maxSize;
 
-            if (!_canResize || _systemDecorations == SystemDecorations.BorderOnly)
+            if (!_canResize)
                 max = min = _realSize;
             
             if (preResize.HasValue)
@@ -333,7 +328,9 @@ namespace Avalonia.X11
             }
             else if (ev.type == XEventName.UnmapNotify)
                 _mapped = false;
-            else if (ev.type == XEventName.Expose)
+            else if (ev.type == XEventName.Expose ||
+                     (ev.type == XEventName.VisibilityNotify &&
+                      ev.VisibilityEvent.state < 2))
             {
                 if (!_triggeredExpose)
                 {
@@ -552,12 +549,21 @@ namespace Avalonia.X11
                 else if (value == WindowState.Maximized)
                 {
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_HIDDEN);
+                    ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
                     ChangeWMAtoms(true, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
+                        _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
+                }
+                else if (value == WindowState.FullScreen)
+                {
+                    ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_HIDDEN);
+                    ChangeWMAtoms(true, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
+                    ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
                 }
                 else
                 {
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_HIDDEN);
+                    ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
                 }
@@ -582,6 +588,12 @@ namespace Avalonia.X11
                         if (pitems[c] == _x11.Atoms._NET_WM_STATE_HIDDEN)
                         {
                             state = WindowState.Minimized;
+                            break;
+                        }
+
+                        if(pitems[c] == _x11.Atoms._NET_WM_STATE_FULLSCREEN)
+                        {
+                            state = WindowState.FullScreen;
                             break;
                         }
 
@@ -810,7 +822,7 @@ namespace Avalonia.X11
         
         public void SetSystemDecorations(SystemDecorations enabled)
         {
-            _systemDecorations = enabled;
+            _systemDecorations = enabled == SystemDecorations.Full ? SystemDecorations.Full : SystemDecorations.None;
             UpdateMotifHints();
             UpdateSizeHints(null);
         }
@@ -1052,7 +1064,7 @@ namespace Avalonia.X11
 
         void ChangeWMAtoms(bool enable, params IntPtr[] atoms)
         {
-            if (atoms.Length < 1 || atoms.Length > 4)
+            if (atoms.Length != 1 && atoms.Length != 2)
                 throw new ArgumentException();
 
             if (!_mapped)
