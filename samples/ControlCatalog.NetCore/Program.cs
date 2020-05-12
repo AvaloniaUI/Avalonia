@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -6,6 +7,7 @@ using System.Threading;
 using Avalonia;
 using Avalonia.ReactiveUI;
 using Avalonia.Dialogs;
+using Avalonia.OpenGL;
 
 namespace ControlCatalog.NetCore
 {

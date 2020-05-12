@@ -219,7 +219,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             if (_popup != null)
             {
@@ -230,8 +230,6 @@ namespace Avalonia.Controls
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
             _popup.Closed += PopupClosed;
-
-            base.OnTemplateApplied(e);
         }
 
         /// <summary>

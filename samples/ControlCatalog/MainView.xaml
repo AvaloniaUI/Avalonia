@@ -47,6 +47,7 @@
       <TabItem Header="Menu"><pages:MenuPage/></TabItem>
       <TabItem Header="Notifications"><pages:NotificationsPage/></TabItem>
 	    <TabItem Header="NumericUpDown"><pages:NumericUpDownPage/></TabItem>
+      <TabItem Header="OpenGL"><pages:OpenGlPage/></TabItem>
       <TabItem Header="Pointers (Touch)"><pages:PointersPage/></TabItem>
       <TabItem Header="ProgressBar"><pages:ProgressBarPage/></TabItem>
       <TabItem Header="RadioButton"><pages:RadioButtonPage/></TabItem>
