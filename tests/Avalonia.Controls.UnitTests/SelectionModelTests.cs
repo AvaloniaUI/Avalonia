@@ -34,9 +34,9 @@ namespace Avalonia.Controls.UnitTests
             SelectionModel selectionModel = new SelectionModel() { SingleSelect = true };
             _output.WriteLine("No source set.");
             Select(selectionModel, 4, true);
-            ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) });
+            ValidateSelection(selectionModel, Path(4));
             Select(selectionModel, 4, false);
-            ValidateSelection(selectionModel, new List<IndexPath>() { });
+            ValidateSelection(selectionModel);
         }
 
         [Fact]
@@ -46,9 +46,9 @@ namespace Avalonia.Controls.UnitTests
             _output.WriteLine("Set the source to 10 items");
             selectionModel.Source = Enumerable.Range(0, 10).ToList();
             Select(selectionModel, 3, true);
-            ValidateSelection(selectionModel, new List<IndexPath>() { Path(3) }, new List<IndexPath>() { Path() });
+            ValidateSelection(selectionModel, Path(3));
             Select(selectionModel, 3, false);
-            ValidateSelection(selectionModel, new List<IndexPath>() { });
+            ValidateSelection(selectionModel);
         }
 
         [Fact]
@@ -61,11 +61,11 @@ namespace Avalonia.Controls.UnitTests
             selectionModel.SelectionChanged += delegate (object sender, SelectionModelSelectionChangedEventArgs args)
             {
                 selectionChangedFiredCount++;
-                ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
+                ValidateSelection(selectionModel, Path(4));
             };
 
             Select(selectionModel, 4, true);
-            ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
+            ValidateSelection(selectionModel, Path(4));
             Assert.Equal(1, selectionChangedFiredCount);
         }
 
@@ -85,41 +85,29 @@ namespace Avalonia.Controls.UnitTests
             selectionModel.Source = Enumerable.Range(0, 10).ToList();
 
             Select(selectionModel, 4, true);
-            ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
+            ValidateSelection(selectionModel, Path(4));
             SelectRangeFromAnchor(selectionModel, 8, true /* select */);
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(4),
-                    Path(5),
-                    Path(6),
-                    Path(7),
-                    Path(8)
-                },
-                new List<IndexPath>() { Path() });
+                Path(4),
+                Path(5),
+                Path(6),
+                Path(7),
+                Path(8));
 
             ClearSelection(selectionModel);
             SetAnchorIndex(selectionModel, 6);
             SelectRangeFromAnchor(selectionModel, 3, true /* select */);
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(3),
-                    Path(4),
-                    Path(5),
-                    Path(6)
-                },
-                new List<IndexPath>() { Path() });
+                Path(3),
+                Path(4),
+                Path(5),
+                Path(6));
 
             SetAnchorIndex(selectionModel, 4);
             SelectRangeFromAnchor(selectionModel, 5, false /* select */);
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(3),
-                    Path(6)
-                },
-                new List<IndexPath>() { Path() });
+                Path(3),
+                Path(6));
         }
 
         [Fact]
@@ -129,10 +117,9 @@ namespace Avalonia.Controls.UnitTests
             _output.WriteLine("Setting the source");
             selectionModel.Source = CreateNestedData(1 /* levels */ , 2 /* groupsAtLevel */, 2 /* countAtLeaf */);
             Select(selectionModel, 1, 1, true);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>() { Path(1, 1) }, new List<IndexPath>() { Path(), Path(1) });
+            ValidateSelection(selectionModel, Path(1, 1));
             Select(selectionModel, 1, 1, false);
-            ValidateSelection(selectionModel, new List<IndexPath>() { });
+            ValidateSelection(selectionModel);
         }
 
         [Fact]
@@ -143,68 +130,36 @@ namespace Avalonia.Controls.UnitTests
             selectionModel.Source = CreateNestedData(1 /* levels */ , 3 /* groupsAtLevel */, 3 /* countAtLeaf */);
 
             Select(selectionModel, 1, 2, true);
-            ValidateSelection(selectionModel, new List<IndexPath>() { Path(1, 2) }, new List<IndexPath>() { Path(), Path(1) });
+            ValidateSelection(selectionModel, Path(1, 2));
             SelectRangeFromAnchor(selectionModel, 2, 2, true /* select */);
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(1, 2),
-                    Path(2), // Inner node should be selected since everything 2.* is selected
-                    Path(2, 0),
-                    Path(2, 1),
-                    Path(2, 2)
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(1)
-                },
-                1 /* selectedInnerNodes */);
+                Path(1, 2),
+                Path(2, 0),
+                Path(2, 1),
+                Path(2, 2));
 
             ClearSelection(selectionModel);
             SetAnchorIndex(selectionModel, 2, 1);
             SelectRangeFromAnchor(selectionModel, 0, 1, true /* select */);
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(0, 1),
-                    Path(0, 2),
-                    Path(1, 0),
-                    Path(1, 1),
-                    Path(1, 2),
-                    Path(1),
-                    Path(2, 0),
-                    Path(2, 1)
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(0),
-                    Path(2),
-                },
-                1 /* selectedInnerNodes */);
+                Path(0, 1),
+                Path(0, 2),
+                Path(1, 0),
+                Path(1, 1),
+                Path(1, 2),
+                Path(2, 0),
+                Path(2, 1));
 
             SetAnchorIndex(selectionModel, 1, 1);
             SelectRangeFromAnchor(selectionModel, 2, 0, false /* select */);
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(0, 1),
-                    Path(0, 2),
-                    Path(1, 0),
-                    Path(2, 1)
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(1),
-                    Path(0),
-                    Path(2),
-                },
-                0 /* selectedInnerNodes */);
+                Path(0, 1),
+                Path(0, 2),
+                Path(1, 0),
+                Path(2, 1));
 
             ClearSelection(selectionModel);
-            ValidateSelection(selectionModel, new List<IndexPath>() { });
+            ValidateSelection(selectionModel);
         }
 
         [Fact]
@@ -215,30 +170,11 @@ namespace Avalonia.Controls.UnitTests
             selectionModel.Source = CreateNestedData(3 /* levels */ , 2 /* groupsAtLevel */, 2 /* countAtLeaf */);
             var path = Path(1, 0, 1, 1);
             Select(selectionModel, path, true);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>() { path },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(1),
-                    Path(1, 0),
-                    Path(1, 0, 1),
-                });
+            ValidateSelection(selectionModel, path);
             Select(selectionModel, Path(0, 0, 1, 0), true);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(0, 0, 1, 0)
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(0),
-                    Path(0, 0),
-                    Path(0, 0, 1)
-                });
+            ValidateSelection(selectionModel, Path(0, 0, 1, 0));
             Select(selectionModel, Path(0, 0, 1, 0), false);
-            ValidateSelection(selectionModel, new List<IndexPath>() { });
+            ValidateSelection(selectionModel);
         }
 
         [Theory]
@@ -263,15 +199,7 @@ namespace Avalonia.Controls.UnitTests
 
             var startPath = Path(1, 0, 1, 0);
             Select(selectionModel, startPath, true);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>() { startPath },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(1),
-                    Path(1, 0),
-                    Path(1, 0, 1)
-                });
+            ValidateSelection(selectionModel, startPath);
 
             var endPath = Path(1, 1, 1, 0);
             SelectRangeFromAnchor(selectionModel, endPath, true /* select */);
@@ -306,72 +234,45 @@ namespace Avalonia.Controls.UnitTests
             }
 
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(1, 0),
-                    Path(1, 1),
-                    Path(1, 0, 1),
-                    Path(1, 0, 1, 0),
-                    Path(1, 0, 1, 1),
-                    Path(1, 0, 1, 2),
-                    Path(1, 0, 1, 3),
-                    Path(1, 1, 0),
-                    Path(1, 1, 1),
-                    Path(1, 1, 0, 0),
-                    Path(1, 1, 0, 1),
-                    Path(1, 1, 0, 2),
-                    Path(1, 1, 0, 3),
-                    Path(1, 1, 1, 0),
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(1),
-                    Path(1, 0),
-                    Path(1, 1),
-                    Path(1, 1, 1),
-                });
+                Path(1, 1),
+                Path(1, 0, 1, 0),
+                Path(1, 0, 1, 1),
+                Path(1, 0, 1, 2),
+                Path(1, 0, 1, 3),
+                Path(1, 1, 0),
+                Path(1, 1, 1),
+                Path(1, 1, 0, 0),
+                Path(1, 1, 0, 1),
+                Path(1, 1, 0, 2),
+                Path(1, 1, 0, 3),
+                Path(1, 1, 1, 0));
 
             ClearSelection(selectionModel);
-            ValidateSelection(selectionModel, new List<IndexPath>() { });
+            ValidateSelection(selectionModel);
 
             startPath = Path(0, 1, 0, 2);
             SetAnchorIndex(selectionModel, startPath);
             endPath = Path(0, 0, 0, 2);
             SelectRangeFromAnchor(selectionModel, endPath, true /* select */);
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(0, 0),
-                    Path(0, 1),
-                    Path(0, 0, 0),
-                    Path(0, 0, 1),
-                    Path(0, 0, 0, 2),
-                    Path(0, 0, 0, 3),
-                    Path(0, 0, 1, 0),
-                    Path(0, 0, 1, 1),
-                    Path(0, 0, 1, 2),
-                    Path(0, 0, 1, 3),
-                    Path(0, 1, 0),
-                    Path(0, 1, 0, 0),
-                    Path(0, 1, 0, 1),
-                    Path(0, 1, 0, 2),
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(0),
-                    Path(0, 0),
-                    Path(0, 0, 0),
-                    Path(0, 1),
-                    Path(0, 1, 0),
-                });
+                Path(0, 1),
+                Path(0, 0, 1),
+                Path(0, 0, 0, 2),
+                Path(0, 0, 0, 3),
+                Path(0, 0, 1, 0),
+                Path(0, 0, 1, 1),
+                Path(0, 0, 1, 2),
+                Path(0, 0, 1, 3),
+                Path(0, 1, 0),
+                Path(0, 1, 0, 0),
+                Path(0, 1, 0, 1),
+                Path(0, 1, 0, 2));
 
             startPath = Path(0, 1, 0, 2);
             SetAnchorIndex(selectionModel, startPath);
             endPath = Path(0, 0, 0, 2);
             SelectRangeFromAnchor(selectionModel, endPath, false /* select */);
-            ValidateSelection(selectionModel, new List<IndexPath>() { });
+            ValidateSelection(selectionModel);
         }
 
         [Fact]
@@ -385,64 +286,36 @@ namespace Avalonia.Controls.UnitTests
             selectionModel.Select(4);
             selectionModel.Select(5);
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(3),
-                    Path(4),
-                    Path(5),
-                },
-                new List<IndexPath>()
-                {
-                    Path()
-                });
+                Path(3),
+                Path(4),
+                Path(5));
 
             _output.WriteLine("Insert in selected range: Inserting 3 items at index 4");
             data.Insert(4, 41);
             data.Insert(4, 42);
             data.Insert(4, 43);
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(3),
-                    Path(7),
-                    Path(8),
-                },
-                new List<IndexPath>()
-                {
-                    Path()
-                });
+                Path(3),
+                Path(7),
+                Path(8));
 
             _output.WriteLine("Insert before selected range: Inserting 3 items at index 0");
             data.Insert(0, 100);
             data.Insert(0, 101);
             data.Insert(0, 102);
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(6),
-                    Path(10),
-                    Path(11),
-                },
-                new List<IndexPath>()
-                {
-                    Path()
-                });
+                Path(6),
+                Path(10),
+                Path(11));
 
             _output.WriteLine("Insert after selected range: Inserting 3 items at index 12");
             data.Insert(12, 1000);
             data.Insert(12, 1001);
             data.Insert(12, 1002);
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(6),
-                    Path(10),
-                    Path(11),
-                },
-                new List<IndexPath>()
-                {
-                    Path()
-                });
+                Path(6),
+                Path(10),
+                Path(11));
         }
 
         [Fact]
@@ -453,42 +326,15 @@ namespace Avalonia.Controls.UnitTests
             selectionModel.Source = data;
 
             selectionModel.Select(1, 1);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(1, 1),
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(1),
-                });
+            ValidateSelection(selectionModel, Path(1, 1));
 
             _output.WriteLine("Insert before selected range: Inserting item at group index 0");
             data.Insert(0, 100);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(2, 1)
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(2),
-                });
+            ValidateSelection(selectionModel, Path(2, 1));
 
             _output.WriteLine("Insert after selected range: Inserting item at group index 3");
             data.Insert(3, 1000);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(2, 1)
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(2),
-                });
+            ValidateSelection(selectionModel, Path(2, 1));
         }
 
         [Fact]
@@ -502,58 +348,26 @@ namespace Avalonia.Controls.UnitTests
             selectionModel.Select(7);
             selectionModel.Select(8);
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(6),
-                    Path(7),
-                    Path(8)
-                },
-                new List<IndexPath>()
-                {
-                    Path()
-                });
+                Path(6),
+                Path(7),
+                Path(8));
 
             _output.WriteLine("Remove before selected range: Removing item at index 0");
             data.RemoveAt(0);
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(5),
-                    Path(6),
-                    Path(7)
-                },
-                new List<IndexPath>()
-                {
-                    Path()
-                });
+                Path(5),
+                Path(6),
+                Path(7));
 
             _output.WriteLine("Remove from before to middle of selected range: Removing items at index 3, 4, 5");
             data.RemoveAt(3);
             data.RemoveAt(3);
             data.RemoveAt(3);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(3),
-                    Path(4)
-                },
-                new List<IndexPath>()
-                {
-                    Path()
-                });
+            ValidateSelection(selectionModel, Path(3), Path(4));
 
             _output.WriteLine("Remove after selected range: Removing item at index 5");
             data.RemoveAt(5);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(3),
-                    Path(4)
-                },
-                new List<IndexPath>()
-                {
-                    Path()
-                });
+            ValidateSelection(selectionModel, Path(3), Path(4));
         }
 
         [Fact]
@@ -565,49 +379,32 @@ namespace Avalonia.Controls.UnitTests
 
             selectionModel.Select(1, 1);
             selectionModel.Select(1, 2);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(1, 1),
-                    Path(1, 2)
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(1),
-                });
+            ValidateSelection(selectionModel, Path(1, 1), Path(1, 2));
 
             _output.WriteLine("Remove before selected range: Removing item at group index 0");
             data.RemoveAt(0);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(0, 1),
-                    Path(0, 2)
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(0),
-                });
+            ValidateSelection(selectionModel, Path(0, 1), Path(0, 2));
 
             _output.WriteLine("Remove after selected range: Removing item at group index 1");
             data.RemoveAt(1);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(0, 1),
-                    Path(0, 2)
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(0),
-                });
+            ValidateSelection(selectionModel, Path(0, 1), Path(0, 2));
 
             _output.WriteLine("Remove group containing selected items");
+
+            var raised = 0;
+
+            selectionModel.SelectionChanged += (s, e) => 
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Equal(new object[] { 4, 5, }, e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
             data.RemoveAt(0);
-            ValidateSelection(selectionModel, new List<IndexPath>());
+            ValidateSelection(selectionModel);
+            Assert.Equal(1, raised);
         }
 
         [Fact]
@@ -620,29 +417,11 @@ namespace Avalonia.Controls.UnitTests
             selectionModel.Select(3);
             selectionModel.Select(4);
             selectionModel.Select(5);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(3),
-                    Path(4),
-                    Path(5),
-                },
-                new List<IndexPath>()
-                {
-                    Path()
-                });
+            ValidateSelection(selectionModel, Path(3), Path(4), Path(5));
 
             data[3] = 300;
             data[4] = 400;
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(5),
-                },
-                new List<IndexPath>()
-                {
-                    Path()
-                });
+            ValidateSelection(selectionModel, Path(5));
         }
 
         [Fact]
@@ -653,19 +432,10 @@ namespace Avalonia.Controls.UnitTests
             selectionModel.Source = data;
 
             selectionModel.Select(1, 1);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(1, 1)
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(1)
-                });
+            ValidateSelection(selectionModel, Path(1, 1));
 
             data[1] = new ObservableCollection<int>(Enumerable.Range(0, 5));
-            ValidateSelection(selectionModel, new List<IndexPath>());
+            ValidateSelection(selectionModel);
         }
 
         [Fact]
@@ -678,20 +448,10 @@ namespace Avalonia.Controls.UnitTests
             selectionModel.Select(3);
             selectionModel.Select(4);
             selectionModel.Select(5);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(3),
-                    Path(4),
-                    Path(5),
-                },
-                new List<IndexPath>()
-                {
-                    Path()
-                });
+            ValidateSelection(selectionModel, Path(3), Path(4), Path(5));
 
             data.Clear();
-            ValidateSelection(selectionModel, new List<IndexPath>());
+            ValidateSelection(selectionModel);
         }
 
         [Fact]
@@ -702,19 +462,10 @@ namespace Avalonia.Controls.UnitTests
             selectionModel.Source = data;
 
             selectionModel.Select(1, 1);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(1, 1)
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(1)
-                });
+            ValidateSelection(selectionModel, Path(1, 1));
 
             (data[1] as IList).Clear();
-            ValidateSelection(selectionModel, new List<IndexPath>());
+            ValidateSelection(selectionModel);
         }
 
         // In some cases the leaf node might get a collection change that affects an ancestors selection
@@ -734,54 +485,22 @@ namespace Avalonia.Controls.UnitTests
             selectionModel.Select(1, 0);
             selectionModel.Select(1, 1);
             selectionModel.Select(1, 2);
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(1, 0),
-                    Path(1, 1),
-                    Path(1, 2),
-                    Path(1)
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                },
-                1 /* selectedInnerNodes */);
+            ValidateSelection(selectionModel, Path(1, 0), Path(1, 1), Path(1, 2));
 
             _output.WriteLine("Inserting 1.0");
             selectionChangedRaised = false;
             (data[1] as AvaloniaList<object>).Insert(0, 100);
             Assert.True(selectionChangedRaised, "SelectionChanged event was not raised");
-            ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(1, 1),
-                    Path(1, 2),
-                    Path(1, 3),
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(1),
-                });
+            ValidateSelection(selectionModel, Path(1, 1), Path(1, 2), Path(1, 3));
 
             _output.WriteLine("Removing 1.0");
             selectionChangedRaised = false;
             (data[1] as AvaloniaList<object>).RemoveAt(0);
             Assert.True(selectionChangedRaised, "SelectionChanged event was not raised");
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
-                {
-                    Path(1, 0),
-                    Path(1, 1),
-                    Path(1, 2),
-                    Path(1)
-                },
-                new List<IndexPath>()
-                {
-                    Path(),
-                },
-                1 /* selectedInnerNodes */);
+                Path(1, 0),
+                Path(1, 1),
+                Path(1, 2));
         }
 
         [Fact]
@@ -859,21 +578,33 @@ namespace Avalonia.Controls.UnitTests
             selectionModel.SelectRange(IndexPath.CreateFrom(0), IndexPath.CreateFrom(1, 1));
 
             ValidateSelection(selectionModel,
-                new List<IndexPath>()
+                Path(0),
+                Path(1),
+                Path(0, 0),
+                Path(0, 1),
+                Path(0, 2),
+                Path(1, 0),
+                Path(1, 1));
+        }
+
+        [Fact]
+        public void SelectRange_Should_Select_Nested_Items_On_Different_Levels()
+        {
+            var target = new SelectionModel();
+            var data = CreateNestedData(1, 2, 3);
+
+            target.Source = data;
+            target.AnchorIndex = new IndexPath(0, 1);
+            target.SelectRange(Path(0, 1), Path(1));
+
+            Assert.Equal(
+                new[]
                 {
-                    Path(0),
                     Path(1),
-                    Path(0, 0),
                     Path(0, 1),
                     Path(0, 2),
-                    Path(1, 0),
-                    Path(1, 1)
                 },
-                new List<IndexPath>()
-                {
-                    Path(),
-                    Path(1)
-                });
+                target.SelectedIndices);
         }
 
         [Fact]
@@ -1697,6 +1428,37 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Batch_Update_Clear_Nested_Data_Raises_SelectionChanged()
+        {
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.Source = CreateNestedData(3, 2, 2);
+            target.SelectRange(new IndexPath(0), new IndexPath(1, 1));
+
+            Assert.Equal(24, target.SelectedIndices.Count);
+
+            var indices = target.SelectedIndices.ToList();
+            var items = target.SelectedItems.ToList();
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(indices, e.DeselectedIndices);
+                Assert.Equal(items, e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            using (target.Update())
+            {
+                target.ClearSelection();
+            }
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
         public void AutoSelect_Selects_When_Enabled()
         {
             var data = new[] { "foo", "bar", "baz" };
@@ -1898,19 +1660,61 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Can_Replace_Children_Collection()
+        public void Can_Replace_Parent_Children_Collection()
         {
             var root = new Node("Root");
             var target = new SelectionModel { Source = new[] { root } };
+            var raised = 0;
+
             target.ChildrenRequested += (s, e) => e.Children = ((Node)e.Source).WhenAnyValue(x => x.Children);
 
             target.Select(0, 9);
 
-            Assert.Equal("Child 9", ((Node)target.SelectedItem).Header);
+            var selected = (Node)target.SelectedItem;
+            Assert.Equal("Child 9", selected.Header);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { Path(0, 9) }, e.DeselectedIndices);
+                Assert.Equal(new[] { selected }, e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
 
             root.ReplaceChildren();
 
             Assert.Null(target.SelectedItem);
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Can_Replace_Grandparent_Children_Collection()
+        {
+            var root = new Node("Root");
+            var target = new SelectionModel { Source = new[] { root } };
+            var raised = 0;
+
+            target.ChildrenRequested += (s, e) => e.Children = ((Node)e.Source).WhenAnyValue(x => x.Children);
+
+            target.SelectAt(Path(0, 9, 1));
+
+            var selected = (Node)target.SelectedItem;
+            Assert.Equal("Child 1", selected.Header);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { Path(0, 9, 1) }, e.DeselectedIndices);
+                Assert.Equal(new[] { selected }, e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            root.ReplaceChildren();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Equal(1, raised);
         }
 
         [Fact]
@@ -1946,57 +1750,6 @@ namespace Avalonia.Controls.UnitTests
             root.ReplaceChildren();
 
             Assert.Equal(0, node.PropertyChangedSubscriptions);
-        }
-
-        private class Node : INotifyPropertyChanged
-        {
-            private ObservableCollection<Node> _children;
-            private PropertyChangedEventHandler _propertyChanged;
-
-            public Node(string header)
-            {
-                Header = header;
-            }
-
-            public string Header { get; }
-
-            public ObservableCollection<Node> Children
-            {
-                get => _children ??= CreateChildren(10);
-                private set
-                {
-                    _children = value;
-                    _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Children)));
-                }
-            }
-
-            public event PropertyChangedEventHandler PropertyChanged
-            {
-                add
-                {
-                    _propertyChanged += value;
-                    ++PropertyChangedSubscriptions;
-                }
-
-                remove
-                {
-                    _propertyChanged -= value;
-                    --PropertyChangedSubscriptions;
-                }
-            }
-
-            public int PropertyChangedSubscriptions { get; private set; }
-
-            public void ReplaceChildren()
-            {
-                Children = CreateChildren(5);
-            }
-
-            private ObservableCollection<Node> CreateChildren(int count)
-            {
-                return new ObservableCollection<Node>(
-                    Enumerable.Range(0, count).Select(x => new Node("Child " + x)));
-            }
         }
 
         private int GetSubscriberCount(AvaloniaList<object> list)
@@ -2123,75 +1876,9 @@ namespace Avalonia.Controls.UnitTests
 
         private void ValidateSelection(
             SelectionModel selectionModel,
-            List<IndexPath> expectedSelected,
-            List<IndexPath> expectedPartialSelected = null,
-            int selectedInnerNodes = 0)
+            params IndexPath[] expectedSelected)
         {
-            _output.WriteLine("Validating Selection...");
-
-            _output.WriteLine("Selection contains indices:");
-            foreach (var index in selectionModel.SelectedIndices)
-            {
-                _output.WriteLine(" " + index.ToString());
-            }
-
-            _output.WriteLine("Selection contains items:");
-            foreach (var item in selectionModel.SelectedItems)
-            {
-                _output.WriteLine(" " + item.ToString());
-            }
-
-            if (selectionModel.Source != null)
-            {
-                List<IndexPath> allIndices = GetIndexPathsInSource(selectionModel.Source);
-                foreach (var index in allIndices)
-                {
-                    bool? isSelected = selectionModel.IsSelectedWithPartialAt(index);
-                    if (Contains(expectedSelected, index) && !Contains(expectedPartialSelected, index))
-                    {
-                        Assert.True(isSelected.Value, index + " is Selected");
-                    }
-                    else if (expectedPartialSelected != null && Contains(expectedPartialSelected, index))
-                    {
-                        Assert.True(isSelected == null, index + " is partially Selected");
-                    }
-                    else
-                    {
-                        if (isSelected == null)
-                        {
-                            _output.WriteLine("*************" + index + " is null");
-                            Assert.True(false, "Expected false but got null");;
-                        }
-                        else
-                        {
-                            Assert.False(isSelected.Value, index + " is not Selected");
-                        }
-                    }
-                }
-            }
-            else
-            {
-                foreach (var index in expectedSelected)
-                {
-                    Assert.True(selectionModel.IsSelectedWithPartialAt(index), index + " is Selected");
-                }
-            }
-            if (expectedSelected.Count > 0)
-            {
-                _output.WriteLine("SelectedIndex is " + selectionModel.SelectedIndex);
-                Assert.Equal(expectedSelected[0], selectionModel.SelectedIndex);
-                if (selectionModel.Source != null)
-                {
-                    Assert.Equal(selectionModel.SelectedItem, GetData(selectionModel, expectedSelected[0]));
-                }
-
-                int itemsCount = selectionModel.SelectedItems.Count();
-                Assert.Equal(selectionModel.Source != null ? expectedSelected.Count - selectedInnerNodes : 0, itemsCount);
-                int indicesCount = selectionModel.SelectedIndices.Count();
-                Assert.Equal(expectedSelected.Count - selectedInnerNodes, indicesCount);
-            }
-
-            _output.WriteLine("Validating Selection... done");
+            Assert.Equal(expectedSelected, selectionModel.SelectedIndices);
         }
 
         private object GetData(SelectionModel selectionModel, IndexPath indexPath)
@@ -2363,6 +2050,57 @@ namespace Avalonia.Controls.UnitTests
                 CollectionChanged?.Invoke(
                     this, 
                     new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+        }
+
+        private class Node : INotifyPropertyChanged
+        {
+            private ObservableCollection<Node> _children;
+            private PropertyChangedEventHandler _propertyChanged;
+
+            public Node(string header)
+            {
+                Header = header;
+            }
+
+            public string Header { get; }
+
+            public ObservableCollection<Node> Children
+            {
+                get => _children ??= CreateChildren(10);
+                private set
+                {
+                    _children = value;
+                    _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Children)));
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged
+            {
+                add
+                {
+                    _propertyChanged += value;
+                    ++PropertyChangedSubscriptions;
+                }
+
+                remove
+                {
+                    _propertyChanged -= value;
+                    --PropertyChangedSubscriptions;
+                }
+            }
+
+            public int PropertyChangedSubscriptions { get; private set; }
+
+            public void ReplaceChildren()
+            {
+                Children = CreateChildren(5);
+            }
+
+            private ObservableCollection<Node> CreateChildren(int count)
+            {
+                return new ObservableCollection<Node>(
+                    Enumerable.Range(0, count).Select(x => new Node("Child " + x)));
             }
         }
     }
