@@ -116,5 +116,7 @@ namespace Avalonia.Platform
         /// <param name="width">The glyph run's width.</param>
         /// <returns></returns>
         IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width);
+
+        bool SupportsIndividualRoundRects { get; }
     }
 }

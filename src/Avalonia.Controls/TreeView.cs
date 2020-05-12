@@ -395,7 +395,7 @@ namespace Avalonia.Controls
         private void OnSelectionModelChildrenRequested(object sender, SelectionModelChildrenRequestedEventArgs e)
         {
             var container = ItemContainerGenerator.Index.ContainerFromItem(e.Source) as ItemsControl;
-            e.Children = container.GetObservable(ItemsProperty);
+            e.Children = container?.GetObservable(ItemsProperty);
         }
 
         private TreeViewItem GetContainerInDirection(
