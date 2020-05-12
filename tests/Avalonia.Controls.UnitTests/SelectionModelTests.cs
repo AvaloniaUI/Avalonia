@@ -1929,19 +1929,61 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Can_Replace_Children_Collection()
+        public void Can_Replace_Parent_Children_Collection()
         {
             var root = new Node("Root");
             var target = new SelectionModel { Source = new[] { root } };
+            var raised = 0;
+
             target.ChildrenRequested += (s, e) => e.Children = ((Node)e.Source).WhenAnyValue(x => x.Children);
 
             target.Select(0, 9);
 
-            Assert.Equal("Child 9", ((Node)target.SelectedItem).Header);
+            var selected = (Node)target.SelectedItem;
+            Assert.Equal("Child 9", selected.Header);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { Path(0, 9) }, e.DeselectedIndices);
+                Assert.Equal(new[] { selected }, e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
 
             root.ReplaceChildren();
 
             Assert.Null(target.SelectedItem);
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Can_Replace_Grandparent_Children_Collection()
+        {
+            var root = new Node("Root");
+            var target = new SelectionModel { Source = new[] { root } };
+            var raised = 0;
+
+            target.ChildrenRequested += (s, e) => e.Children = ((Node)e.Source).WhenAnyValue(x => x.Children);
+
+            target.SelectAt(Path(0, 9, 1));
+
+            var selected = (Node)target.SelectedItem;
+            Assert.Equal("Child 1", selected.Header);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { Path(0, 9, 1) }, e.DeselectedIndices);
+                Assert.Equal(new[] { selected }, e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
+            root.ReplaceChildren();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Equal(1, raised);
         }
 
         [Fact]
@@ -1977,57 +2019,6 @@ namespace Avalonia.Controls.UnitTests
             root.ReplaceChildren();
 
             Assert.Equal(0, node.PropertyChangedSubscriptions);
-        }
-
-        private class Node : INotifyPropertyChanged
-        {
-            private ObservableCollection<Node> _children;
-            private PropertyChangedEventHandler _propertyChanged;
-
-            public Node(string header)
-            {
-                Header = header;
-            }
-
-            public string Header { get; }
-
-            public ObservableCollection<Node> Children
-            {
-                get => _children ??= CreateChildren(10);
-                private set
-                {
-                    _children = value;
-                    _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Children)));
-                }
-            }
-
-            public event PropertyChangedEventHandler PropertyChanged
-            {
-                add
-                {
-                    _propertyChanged += value;
-                    ++PropertyChangedSubscriptions;
-                }
-
-                remove
-                {
-                    _propertyChanged -= value;
-                    --PropertyChangedSubscriptions;
-                }
-            }
-
-            public int PropertyChangedSubscriptions { get; private set; }
-
-            public void ReplaceChildren()
-            {
-                Children = CreateChildren(5);
-            }
-
-            private ObservableCollection<Node> CreateChildren(int count)
-            {
-                return new ObservableCollection<Node>(
-                    Enumerable.Range(0, count).Select(x => new Node("Child " + x)));
-            }
         }
 
         private int GetSubscriberCount(AvaloniaList<object> list)
@@ -2394,6 +2385,57 @@ namespace Avalonia.Controls.UnitTests
                 CollectionChanged?.Invoke(
                     this, 
                     new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+        }
+
+        private class Node : INotifyPropertyChanged
+        {
+            private ObservableCollection<Node> _children;
+            private PropertyChangedEventHandler _propertyChanged;
+
+            public Node(string header)
+            {
+                Header = header;
+            }
+
+            public string Header { get; }
+
+            public ObservableCollection<Node> Children
+            {
+                get => _children ??= CreateChildren(10);
+                private set
+                {
+                    _children = value;
+                    _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Children)));
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged
+            {
+                add
+                {
+                    _propertyChanged += value;
+                    ++PropertyChangedSubscriptions;
+                }
+
+                remove
+                {
+                    _propertyChanged -= value;
+                    --PropertyChangedSubscriptions;
+                }
+            }
+
+            public int PropertyChangedSubscriptions { get; private set; }
+
+            public void ReplaceChildren()
+            {
+                Children = CreateChildren(5);
+            }
+
+            private ObservableCollection<Node> CreateChildren(int count)
+            {
+                return new ObservableCollection<Node>(
+                    Enumerable.Range(0, count).Select(x => new Node("Child " + x)));
             }
         }
     }

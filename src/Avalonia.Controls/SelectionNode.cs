@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Controls.Utils;
 
 #nullable enable
 
@@ -214,7 +215,21 @@ namespace Avalonia.Controls
 
         public void SetChildrenObservable(IObservable<object?> resolver)
         {
-            _childrenSubscription = resolver.Subscribe(x => Source = x);
+            _childrenSubscription = resolver.Subscribe(x =>
+            {
+                if (Source != null)
+                {
+                    using (_manager.Update())
+                    {
+                        SelectionTreeHelper.Traverse(
+                            this,
+                            realizeChildren: false,
+                            info => info.Node.Clear());
+                    }
+                }
+
+                Source = x;
+            });
         }
 
         public int SelectedCount { get; private set; }
@@ -544,11 +559,14 @@ namespace Avalonia.Controls
 
         private void ClearChildNodes()
         {
-            foreach (var child in _childrenNodes)
+            for (int i = 0; i < _childrenNodes.Count; i++)
             {
+                var child = _childrenNodes[i];
+
                 if (child != null && child != _manager.SharedLeafNode)
                 {
                     child.Dispose();
+                    _childrenNodes[i] = null;
                 }
             }
 
