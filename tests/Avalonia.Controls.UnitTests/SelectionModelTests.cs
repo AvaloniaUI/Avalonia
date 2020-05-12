@@ -390,8 +390,21 @@ namespace Avalonia.Controls.UnitTests
             ValidateSelection(selectionModel, Path(0, 1), Path(0, 2));
 
             _output.WriteLine("Remove group containing selected items");
+
+            var raised = 0;
+
+            selectionModel.SelectionChanged += (s, e) => 
+            {
+                Assert.Empty(e.DeselectedIndices);
+                Assert.Equal(new object[] { 4, 5, }, e.DeselectedItems);
+                Assert.Empty(e.SelectedIndices);
+                Assert.Empty(e.SelectedItems);
+                ++raised;
+            };
+
             data.RemoveAt(0);
             ValidateSelection(selectionModel);
+            Assert.Equal(1, raised);
         }
 
         [Fact]
