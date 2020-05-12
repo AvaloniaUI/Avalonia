@@ -98,9 +98,8 @@ namespace Avalonia.Controls.Primitives
         /// <see cref="T:System.Windows.Controls.Primitives.CalendarButton" />
         /// when a new template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
             SetPseudoClasses();
         }
         

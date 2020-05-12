@@ -77,17 +77,25 @@ namespace Avalonia.Native
             _factory = factory;
         }
 
+        class GCHandleDeallocator : CallbackBase, IAvnGCHandleDeallocatorCallback
+        {
+            public void FreeGCHandle(IntPtr handle)
+            {
+                GCHandle.FromIntPtr(handle).Free();
+            }
+        }
+        
         void DoInitialize(AvaloniaNativePlatformOptions options)
         {
             _options = options;
-            _factory.Initialize();
+            _factory.Initialize(new GCHandleDeallocator());
             if (_factory.MacOptions != null)
             {
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
 
                 _factory.MacOptions.ShowInDock = macOpts?.ShowInDock != false ? 1 : 0;
             }
-            
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>()
                 .ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()))
@@ -101,7 +109,9 @@ namespace Avalonia.Native
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta))
-                .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider());
+                .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
+                .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
+                ;
             if (_options.UseGpu)
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>()
                     .ToConstant(_glFeature = new GlPlatformFeature(_factory.ObtainGlDisplay()));
