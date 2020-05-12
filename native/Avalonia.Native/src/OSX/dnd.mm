@@ -21,7 +21,6 @@ extern NSString* GetAvnCustomDataType()
 
 @interface AvnDndSource : NSObject<NSDraggingSource>
 
-
 @end
 
 @implementation AvnDndSource

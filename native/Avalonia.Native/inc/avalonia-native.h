@@ -429,7 +429,6 @@ AVNCOM(IAvnStringArray, 20) : IUnknown
     virtual HRESULT Get(unsigned int index, IAvnString**ppv) = 0;
 };
 
-
 AVNCOM(IAvnDndResultCallback, 21) : IUnknown
 {
     virtual void OnDragAndDropComplete(AvnDragDropEffects effecct) = 0;

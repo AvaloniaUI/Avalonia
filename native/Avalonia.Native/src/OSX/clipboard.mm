@@ -85,7 +85,7 @@ public:
         
         return S_OK;
     }
-    
+
     virtual HRESULT Clear() override
     {
         @autoreleasepool
