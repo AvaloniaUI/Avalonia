@@ -254,8 +254,12 @@ namespace Avalonia
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IStyler>().ToConstant(_styler)
                 .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
-                .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance)
-                .Bind<IPlatformDragSource>().ToTransient<InProcessDragSource>();
+                .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
+            
+            // TODO: Fix this, for now we keep this behavior since someone might be relying on it in 0.9.x
+            if (AvaloniaLocator.Current.GetService<IPlatformDragSource>() == null)
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IPlatformDragSource>().ToTransient<InProcessDragSource>();
 
             var clock = new RenderLoopClock();
             AvaloniaLocator.CurrentMutable

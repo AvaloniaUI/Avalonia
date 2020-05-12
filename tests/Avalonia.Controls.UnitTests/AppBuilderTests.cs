@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
-using Avalonia.Controls.UnitTests;
+﻿using Avalonia.Controls.UnitTests;
 using Avalonia.Platform;
-using Avalonia.UnitTests;
+using Xunit;
 
 [assembly: ExportAvaloniaModule("DefaultModule", typeof(AppBuilderTests.DefaultModule))]
 [assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.Direct2DModule), ForRenderingSubsystem = "Direct2D1")]
@@ -16,6 +10,7 @@ using Avalonia.UnitTests;
 
 namespace Avalonia.Controls.UnitTests
 {
+    using AppBuilder = Avalonia.UnitTests.AppBuilder;
 
     public class AppBuilderTests
     {

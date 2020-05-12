@@ -377,7 +377,19 @@ namespace Avalonia.VisualTree
         /// </returns>
         public static bool IsVisualAncestorOf(this IVisual visual, IVisual target)
         {
-            return target.GetVisualAncestors().Any(x => x == visual);
+            IVisual current = target?.VisualParent;
+
+            while (current != null)
+            {
+                if (current == visual)
+                {
+                    return true;
+                }
+
+                current = current.VisualParent;
+            }
+
+            return false;
         }
 
         public static IEnumerable<IVisual> SortByZIndex(this IEnumerable<IVisual> elements)

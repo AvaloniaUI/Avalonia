@@ -162,9 +162,8 @@ namespace Avalonia.Controls
             // Don't call base.OnKeyDown - let events bubble up to containing TreeView.
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
             _header = e.NameScope.Find<IControl>("PART_Header");
         }
 

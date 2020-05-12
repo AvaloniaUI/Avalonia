@@ -22,6 +22,9 @@ struct IAvnGlSurfaceRenderTarget;
 struct IAvnGlSurfaceRenderingSession;
 struct IAvnMenu;
 struct IAvnMenuItem;
+struct IAvnStringArray;
+struct IAvnDndResultCallback;
+struct IAvnGCHandleDeallocatorCallback;
 struct IAvnMenuEvents;
 
 enum SystemDecorations {
@@ -130,11 +133,28 @@ enum AvnInputModifiers
     XButton2MouseButton = 256
 };
 
+enum class AvnDragDropEffects
+{
+    None = 0,
+    Copy = 1,
+    Move = 2,
+    Link = 4,
+};
+
+enum class AvnDragEventType
+{
+    Enter,
+    Over,
+    Leave,
+    Drop
+};
+
 enum AvnWindowState
 {
     Normal,
     Minimized,
     Maximized,
+    FullScreen,
 };
 
 enum AvnStandardCursorType
@@ -187,7 +207,7 @@ enum AvnMenuItemToggleType
 AVNCOM(IAvaloniaNativeFactory, 01) : IUnknown
 {
 public:
-    virtual HRESULT Initialize() = 0;
+    virtual HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator) = 0;
     virtual IAvnMacOptions* GetMacOptions() = 0;
     virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnWindow** ppv) = 0;
     virtual HRESULT CreatePopup (IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnPopup** ppv) = 0;
@@ -195,6 +215,7 @@ public:
     virtual HRESULT CreateSystemDialogs (IAvnSystemDialogs** ppv) = 0;
     virtual HRESULT CreateScreens (IAvnScreens** ppv) = 0;
     virtual HRESULT CreateClipboard(IAvnClipboard** ppv) = 0;
+    virtual HRESULT CreateDndClipboard(IAvnClipboard** ppv) = 0;
     virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) = 0;
     virtual HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv) = 0;
     virtual HRESULT SetAppMenu(IAvnMenu* menu) = 0;
@@ -235,6 +256,8 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT ObtainNSWindowHandleRetained(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandle(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandleRetained(void** retOut) = 0;
+    virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
+                                              IAvnClipboard* clipboard, IAvnDndResultCallback* cb, void* sourceHandle) = 0;
 };
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
@@ -246,7 +269,7 @@ AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
 {
     virtual HRESULT ShowDialog (IAvnWindow* parent) = 0;
     virtual HRESULT SetCanResize(bool value) = 0;
-    virtual HRESULT SetHasDecorations(SystemDecorations value) = 0;
+    virtual HRESULT SetDecorations(SystemDecorations value) = 0;
     virtual HRESULT SetTitle (void* utf8Title) = 0;
     virtual HRESULT SetTitleBarColor (AvnColor color) = 0;
     virtual HRESULT SetWindowState(AvnWindowState state) = 0;
@@ -270,6 +293,9 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
     virtual bool RawTextInputEvent (unsigned int timeStamp, const char* text) = 0;
     virtual void ScalingChanged(double scaling) = 0;
     virtual void RunRenderPriorityJobs() = 0;
+    virtual AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
+                                         AvnInputModifiers modifiers, AvnDragDropEffects effects,
+                                         IAvnClipboard* clipboard, void* dataObjectHandle) = 0;
 };
 
 
@@ -353,8 +379,10 @@ AVNCOM(IAvnScreens, 0e) : IUnknown
 
 AVNCOM(IAvnClipboard, 0f) : IUnknown
 {
-    virtual HRESULT GetText (IAvnString**ppv) = 0;
-    virtual HRESULT SetText (void* utf8Text) = 0;
+    virtual HRESULT GetText (char* type, IAvnString**ppv) = 0;
+    virtual HRESULT SetText (char* type, void* utf8Text) = 0;
+    virtual HRESULT ObtainFormats(IAvnStringArray**ppv) = 0;
+    virtual HRESULT GetStrings(char* type, IAvnStringArray**ppv) = 0;
     virtual HRESULT Clear() = 0;
 };
 
@@ -425,6 +453,22 @@ AVNCOM(IAvnMenuEvents, 1A) : IUnknown
      * NeedsUpdate
      */
     virtual void NeedsUpdate () = 0;
+};
+
+AVNCOM(IAvnStringArray, 20) : IUnknown
+{
+    virtual unsigned int GetCount() = 0;
+    virtual HRESULT Get(unsigned int index, IAvnString**ppv) = 0;
+};
+
+AVNCOM(IAvnDndResultCallback, 21) : IUnknown
+{
+    virtual void OnDragAndDropComplete(AvnDragDropEffects effecct) = 0;
+};
+
+AVNCOM(IAvnGCHandleDeallocatorCallback, 22) : IUnknown
+{
+    virtual void FreeGCHandle(void* handle) = 0;
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();

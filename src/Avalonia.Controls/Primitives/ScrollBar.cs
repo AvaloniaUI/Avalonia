@@ -147,10 +147,8 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             if (_lineUpButton != null)
             {
                 _lineUpButton.Click -= LineUpClick;
