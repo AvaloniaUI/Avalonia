@@ -395,10 +395,17 @@ namespace Avalonia.Controls
 
         private void OnSelectionModelChildrenRequested(object sender, SelectionModelChildrenRequestedEventArgs e)
         {
-            var container = ItemContainerGenerator.Index.ContainerFromItem(e.Source) as ItemsControl;
+            var container = ItemContainerGenerator.Index.ContainerFromItem(e.Source) as TreeViewItem;
 
             if (container is object)
             {
+                if (e.SourceIndex.IsAncestorOf(e.FinalIndex))
+                {
+                    container.IsExpanded = true;
+                    container.ApplyTemplate();
+                    container.Presenter?.ApplyTemplate();
+                }
+
                 e.Children = Observable.CombineLatest(
                     container.GetObservable(TreeViewItem.IsExpandedProperty),
                     container.GetObservable(ItemsProperty),

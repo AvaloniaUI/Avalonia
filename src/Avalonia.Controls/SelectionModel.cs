@@ -141,7 +141,7 @@ namespace Avalonia.Controls
                     while (current?.AnchorIndex >= 0)
                     {
                         path.Add(current.AnchorIndex);
-                        current = current.GetAt(current.AnchorIndex, false);
+                        current = current.GetAt(current.AnchorIndex, false, default);
                     }
 
                     anchor = new IndexPath(path);
@@ -420,7 +420,7 @@ namespace Avalonia.Controls
             for (int i = 0; i < path.GetSize() - 1; i++)
             {
                 var childIndex = path.GetAt(i);
-                node = node.GetAt(childIndex, realizeChild: false);
+                node = node.GetAt(childIndex, false, default);
 
                 if (node == null)
                 {
@@ -455,7 +455,7 @@ namespace Avalonia.Controls
             }
 
             var isSelected = (bool?)false;
-            var childNode = _rootNode.GetAt(groupIndex, realizeChild: false);
+            var childNode = _rootNode.GetAt(groupIndex, false, default);
 
             if (childNode != null)
             {
@@ -474,7 +474,7 @@ namespace Avalonia.Controls
             for (int i = 0; i < path.GetSize() - 1; i++)
             {
                 var childIndex = path.GetAt(i);
-                node = node.GetAt(childIndex, realizeChild: false);
+                node = node.GetAt(childIndex, false, default);
 
                 if (node == null)
                 {
@@ -598,7 +598,10 @@ namespace Avalonia.Controls
             ApplyAutoSelect(true);
         }
 
-        internal IObservable<object?>? ResolvePath(object data, IndexPath dataIndexPath)
+        internal IObservable<object?>? ResolvePath(
+            object data,
+            IndexPath dataIndexPath,
+            IndexPath finalIndexPath)
         {
             IObservable<object?>? resolved = null;
 
@@ -607,18 +610,22 @@ namespace Avalonia.Controls
             {
                 if (_childrenRequestedEventArgs == null)
                 {
-                    _childrenRequestedEventArgs = new SelectionModelChildrenRequestedEventArgs(data, dataIndexPath, false);
+                    _childrenRequestedEventArgs = new SelectionModelChildrenRequestedEventArgs(
+                        data,
+                        dataIndexPath,
+                        finalIndexPath,
+                        false);
                 }
                 else
                 {
-                    _childrenRequestedEventArgs.Initialize(data, dataIndexPath, false);
+                    _childrenRequestedEventArgs.Initialize(data, dataIndexPath, finalIndexPath, false);
                 }
 
                 ChildrenRequested(this, _childrenRequestedEventArgs);
                 resolved = _childrenRequestedEventArgs.Children;
 
                 // Clear out the values in the args so that it cannot be used after the event handler call.
-                _childrenRequestedEventArgs.Initialize(null, default, true);
+                _childrenRequestedEventArgs.Initialize(null, default, default, true);
             }
 
             return resolved;
@@ -683,7 +690,7 @@ namespace Avalonia.Controls
                 ClearSelection(resetAnchor: true);
             }
 
-            var childNode = _rootNode.GetAt(groupIndex, realizeChild: true);
+            var childNode = _rootNode.GetAt(groupIndex, true, new IndexPath(groupIndex, itemIndex));
             var selected = childNode!.Select(itemIndex, select);
 
             if (selected)
@@ -764,7 +771,7 @@ namespace Avalonia.Controls
 
             for (int groupIdx = startGroupIndex; groupIdx <= endGroupIndex; groupIdx++)
             {
-                var groupNode = _rootNode.GetAt(groupIdx, realizeChild: true)!;
+                var groupNode = _rootNode.GetAt(groupIdx, true, new IndexPath(endGroupIndex, endItemIndex))!;
                 int startIndex = groupIdx == startGroupIndex ? startItemIndex : 0;
                 int endIndex = groupIdx == endGroupIndex ? endItemIndex : groupNode.DataCount - 1;
                 groupNode.SelectRange(new IndexRange(startIndex, endIndex), select);
