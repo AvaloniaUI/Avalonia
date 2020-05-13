@@ -346,7 +346,7 @@ namespace Avalonia.Controls
 
                 if (container != null)
                 {
-                    container.BringIntoView();
+                    DispatcherTimer.RunOnce(container.BringIntoView, TimeSpan.Zero);
                 }
             }
         }
