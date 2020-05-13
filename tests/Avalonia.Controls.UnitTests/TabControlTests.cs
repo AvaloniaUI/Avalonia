@@ -6,6 +6,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -343,6 +344,8 @@ namespace Avalonia.Controls.UnitTests
 
                 tabControl.DataContext = new { Tabs = new List<string>() };
                 window.ApplyTemplate();
+
+                Assert.Equal(0, tabControl.Items.Count());
             }
         }
 
