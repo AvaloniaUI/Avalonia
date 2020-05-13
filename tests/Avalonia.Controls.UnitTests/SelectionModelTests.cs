@@ -1796,6 +1796,19 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new IndexPath(2), target.SelectedIndices.First());
         }
 
+        // test that going from non-null source to non-null source clears selection
+        [Fact]
+        public void Changing_Source_With_Valid_IndexPath_Retains_Selection()
+        {
+            var data = new[] { "foo", "bar", "baz", "boo", "hoo" };
+            var smallerData = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { RetainSelectionOnReset = true };
+            target.Source = data;
+            target.SelectedIndex = new IndexPath(2);
+            target.Source = smallerData;
+            Assert.Equal(1, target.SelectedIndices.Count);
+        }
+
         private int GetSubscriberCount(AvaloniaList<object> list)
         {
             return ((INotifyCollectionChangedDebug)list).GetCollectionChangedSubscribers()?.Length ?? 0;
