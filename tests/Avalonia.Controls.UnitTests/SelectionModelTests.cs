@@ -1752,6 +1752,26 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(0, node.PropertyChangedSubscriptions);
         }
 
+        [Fact]
+        public void Setting_SelectedIndex_To_Minus_1_Clears_Selection()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { Source = data };
+            target.SelectedIndex = new IndexPath(1);
+            target.SelectedIndex = new IndexPath(-1);
+            Assert.Empty(target.SelectedIndices);
+        }
+
+        [Fact]
+        public void Assigning_Source_With_Less_Items_Than_Selection_Trims_Selection()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { RetainSelectionOnReset = true };
+            target.SelectedIndex = new IndexPath(4);
+            target.Source = data;
+            Assert.Empty(target.SelectedIndices);
+        }
+
         private int GetSubscriberCount(AvaloniaList<object> list)
         {
             return ((INotifyCollectionChangedDebug)list).GetCollectionChangedSubscribers()?.Length ?? 0;
