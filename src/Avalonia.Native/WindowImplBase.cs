@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
@@ -200,6 +201,30 @@ namespace Avalonia.Native
             {
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
             }
+
+            public AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
+                AvnInputModifiers modifiers,
+                AvnDragDropEffects effects,
+                IAvnClipboard clipboard, IntPtr dataObjectHandle)
+            {
+                var device = AvaloniaLocator.Current.GetService<IDragDropDevice>();
+
+                IDataObject dataObject = null;
+                if (dataObjectHandle != IntPtr.Zero)
+                    dataObject = GCHandle.FromIntPtr(dataObjectHandle).Target as IDataObject;
+                
+                using(var clipboardDataObject = new ClipboardDataObject(clipboard))
+                {
+                    if (dataObject == null)
+                        dataObject = clipboardDataObject;
+                    
+                    var args = new RawDragEvent(device, (RawDragEventType)type,
+                        _parent._inputRoot, position.ToAvaloniaPoint(), dataObject, (DragDropEffects)effects,
+                        (RawInputModifiers)modifiers);
+                    _parent.Input(args);
+                    return (AvnDragDropEffects)args.Effects;
+                }
+            }
         }
 
         public void Activate()
@@ -356,6 +381,12 @@ namespace Avalonia.Native
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
 
+        }
+
+        internal void BeginDraggingSession(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard clipboard,
+            IAvnDndResultCallback callback, IntPtr sourceHandle)
+        {
+            _native.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
         }
 
         public IPlatformHandle Handle { get; private set; }

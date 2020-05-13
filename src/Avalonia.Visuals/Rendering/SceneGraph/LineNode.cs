@@ -7,29 +7,30 @@ using Avalonia.VisualTree;
 namespace Avalonia.Rendering.SceneGraph
 {
     /// <summary>
-    /// A node in the scene graph which represents a geometry draw.
+    /// A node in the scene graph which represents a line draw.
     /// </summary>
-    internal class GeometryNode : BrushDrawOperation
+    internal class LineNode : BrushDrawOperation
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GeometryNode"/> class.
         /// </summary>
         /// <param name="transform">The transform.</param>
-        /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
-        /// <param name="geometry">The geometry.</param>
+        /// <param name="p1">The start point of the line.</param>
+        /// <param name="p2">The end point of the line.</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
-        public GeometryNode(Matrix transform,
-            IBrush brush,
+        public LineNode(
+            Matrix transform,
             IPen pen,
-            IGeometryImpl geometry,
+            Point p1,
+            Point p2,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(geometry.GetRenderBounds(pen), transform)
+            : base(LineBoundsHelper.CalculateBounds(p1, p2, pen), transform)
         {
             Transform = transform;
-            Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
-            Geometry = geometry;
+            P1 = p1;
+            P2 = p2;
             ChildScenes = childScenes;
         }
 
@@ -39,19 +40,19 @@ namespace Avalonia.Rendering.SceneGraph
         public Matrix Transform { get; }
 
         /// <summary>
-        /// Gets the fill brush.
-        /// </summary>
-        public IBrush Brush { get; }
-
-        /// <summary>
         /// Gets the stroke pen.
         /// </summary>
         public ImmutablePen Pen { get; }
 
         /// <summary>
-        /// Gets the geometry to draw.
+        /// Gets the start point of the line.
         /// </summary>
-        public IGeometryImpl Geometry { get; }
+        public Point P1 { get; }
+
+        /// <summary>
+        /// Gets the end point of the line.
+        /// </summary>
+        public Point P2 { get; }
 
         /// <inheritdoc/>
         public override IDictionary<IVisual, Scene> ChildScenes { get; }
@@ -60,40 +61,28 @@ namespace Avalonia.Rendering.SceneGraph
         /// Determines if this draw operation equals another.
         /// </summary>
         /// <param name="transform">The transform of the other draw operation.</param>
-        /// <param name="brush">The fill of the other draw operation.</param>
         /// <param name="pen">The stroke of the other draw operation.</param>
-        /// <param name="geometry">The geometry of the other draw operation.</param>
-        /// <param name="boxShadow">The box shadow parameters</param>
+        /// <param name="p1">The start point of the other draw operation.</param>
+        /// <param name="p2">The end point of the other draw operation.</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, IPen pen, IGeometryImpl geometry)
+        public bool Equals(Matrix transform, IPen pen, Point p1, Point p2)
         {
-            return transform == Transform &&
-                   Equals(brush, Brush) &&
-                   Equals(Pen, pen) &&
-                   Equals(geometry, Geometry);
+            return transform == Transform && Equals(Pen, pen) && p1 == P1 && p2 == P2;
         }
 
-        /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-            context.DrawGeometry(Brush, Pen, Geometry);
+            context.DrawLine(Pen, P1, P2);
         }
 
-        /// <inheritdoc/>
         public override bool HitTest(Point p)
         {
-            if (Transform.HasInverse)
-            {
-                p *= Transform.Invert();
-                return (Brush != null && Geometry.FillContains(p)) ||
-                    (Pen != null && Geometry.StrokeContains(Pen, p));
-            }
-
+            // TODO: Implement line hit testing.
             return false;
         }
     }
