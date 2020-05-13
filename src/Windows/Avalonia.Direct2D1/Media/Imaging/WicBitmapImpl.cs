@@ -177,16 +177,6 @@ namespace Avalonia.Direct2D1.Media
             return new OptionalDispose<D2DBitmap>(D2DBitmap.FromWicBitmap(renderTarget, converter), true);
         }
 
-        public unsafe WicBitmapImpl CreateScaledBitmap(PixelSize size, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode interpolationMode)
-        {
-            using (var scaler = new BitmapScaler(Direct2D1Platform.ImagingFactory))
-            {
-                scaler.Initialize(WicImpl, size.Width, size.Height, ConvertInterpolationMode(interpolationMode));
-
-                return new WicBitmapImpl(new Bitmap(Direct2D1Platform.ImagingFactory, scaler, BitmapCreateCacheOption.CacheOnDemand));
-            }
-        }
-
         public override void Save(Stream stream)
         {
             using (var encoder = new PngBitmapEncoder(Direct2D1Platform.ImagingFactory, stream))

@@ -208,7 +208,8 @@ namespace Avalonia.Direct2D1
         /// <inheritdoc />
         public IBitmapImpl ResizeBitmap(IBitmapImpl bitmapImpl, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
-            return (bitmapImpl as WicBitmapImpl).CreateScaledBitmap(destinationSize, interpolationMode);
+            // https://github.com/sharpdx/SharpDX/issues/959 blocks implementation.
+            throw new NotImplementedException();
         }
 
         /// <inheritdoc />
