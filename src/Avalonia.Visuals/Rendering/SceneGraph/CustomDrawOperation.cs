@@ -9,7 +9,7 @@ namespace Avalonia.Rendering.SceneGraph
         public Matrix Transform { get; }
         public ICustomDrawOperation Custom { get; }
         public CustomDrawOperation(ICustomDrawOperation custom, Matrix transform) 
-            : base(custom.Bounds, transform, null)
+            : base(custom.Bounds, transform)
         {
             Transform = transform;
             Custom = custom;
