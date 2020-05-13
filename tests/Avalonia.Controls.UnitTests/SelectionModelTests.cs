@@ -1763,6 +1763,18 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Assigning_Source_With_Less_Items_Than_Previous_Clears_Selection()
+        {
+            var data = new[] { "foo", "bar", "baz", "boo", "hoo" };
+            var smallerData = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { RetainSelectionOnReset = true };
+            target.Source = data;
+            target.SelectedIndex = new IndexPath(4);
+            target.Source = smallerData;
+            Assert.Empty(target.SelectedIndices);
+        }
+
+        [Fact]
         public void Assigning_Source_With_Less_Items_Than_Selection_Trims_Selection()
         {
             var data = new[] { "foo", "bar", "baz" };
@@ -1770,6 +1782,18 @@ namespace Avalonia.Controls.UnitTests
             target.SelectedIndex = new IndexPath(4);
             target.Source = data;
             Assert.Empty(target.SelectedIndices);
+        }
+
+        [Fact]
+        public void Assigning_Source_With_Less_Items_Than_Multiple_Selection_Trims_Selection()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { RetainSelectionOnReset = true };
+            target.Select(4);
+            target.Select(2);
+            target.Source = data;
+            Assert.Equal(1, target.SelectedIndices.Count);
+            Assert.Equal(new IndexPath(2), target.SelectedIndices.First());
         }
 
         private int GetSubscriberCount(AvaloniaList<object> list)
