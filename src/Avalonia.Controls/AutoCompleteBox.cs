@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
@@ -1100,6 +1101,7 @@ namespace Avalonia.Controls
                 {
                     _textBoxSubscriptions =
                         _textBox.GetObservable(TextBox.TextProperty)
+                                .Skip(1)
                                 .Subscribe(_ => OnTextBoxTextChanged());
 
                     if (Text != null)
