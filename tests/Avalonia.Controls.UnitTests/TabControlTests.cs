@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Collections;
@@ -323,6 +324,26 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplate(target);
 
             Assert.NotEqual(dataContext, tabItem.Content);
+        }
+
+        [Fact]
+        public void Can_Have_Empty_Tab_Control()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TabControl Name='tabs' Items='{Binding Tabs}'/>
+</Window>";
+                var loader = new Markup.Xaml.AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var tabControl = window.FindControl<TabControl>("tabs");
+
+                tabControl.DataContext = new { Tabs = new List<string>() };
+                window.ApplyTemplate();
+            }
         }
 
         private IControlTemplate TabControlTemplate()
