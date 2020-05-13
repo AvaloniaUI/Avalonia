@@ -4,9 +4,9 @@ using Avalonia.Markup.Xaml;
 
 namespace RenderDemo.Pages
 {
-    public class LineBoundsDemo : UserControl
+    public class LineBoundsPage : UserControl
     {
-        public LineBoundsDemo()
+        public LineBoundsPage()
         {
             this.InitializeComponent();
         }

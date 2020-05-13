@@ -4,6 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              xmlns:controls="clr-namespace:RenderDemo.Controls"
-             x:Class="RenderDemo.Pages.LineBoundsDemo">
+             x:Class="RenderDemo.Pages.LineBoundsPage">
   <controls:LineBoundsDemoControl />
 </UserControl>
