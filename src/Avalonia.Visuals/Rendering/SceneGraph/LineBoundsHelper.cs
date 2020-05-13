@@ -3,7 +3,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public static class LineBoundsHelper
+    internal static class LineBoundsHelper
     {
         private static double CalculateAngle(Point p1, Point p2)
         {
@@ -13,12 +13,12 @@ namespace Avalonia.Rendering.SceneGraph
             return Math.Atan2(yDiff, xDiff);
         }
 
-        private static double CalculateOppSide(double angle, double hyp)
+        internal static double CalculateOppSide(double angle, double hyp)
         {
             return Math.Sin(angle) * hyp;
         }
 
-        private static double CalculateAdjSide(double angle, double hyp)
+        internal static double CalculateAdjSide(double angle, double hyp)
         {
             return Math.Cos(angle) * hyp;
         }

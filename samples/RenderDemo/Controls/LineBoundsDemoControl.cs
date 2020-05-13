@@ -9,24 +9,34 @@ namespace RenderDemo.Controls
 {
     public class LineBoundsDemoControl : Control
     {
-        private double angle = Math.PI / 8;
-
-        public static double CalculateOppSide(double angle, double hyp)
+        static LineBoundsDemoControl()
         {
-            return Math.Sin(angle) * hyp;
+            AffectsRender<LineBoundsDemoControl>(AngleProperty);
         }
 
-        public static double CalculateAdjSide(double angle, double hyp)
+        public LineBoundsDemoControl()
         {
-            return Math.Cos(angle) * hyp;
+            var timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1 / 60);
+            timer.Tick += (sender, e) => Angle += Math.PI / 360;
+            timer.Start();
+        }
+
+        public static readonly StyledProperty<double> AngleProperty =
+            AvaloniaProperty.Register<LineBoundsDemoControl, double>(nameof(Angle));        
+
+        public double Angle
+        {
+            get => GetValue(AngleProperty);
+            set => SetValue(AngleProperty, value);
         }
 
         public override void Render(DrawingContext drawingContext)
         {
             var lineLength = Math.Sqrt((100 * 100) + (100 * 100));
 
-            var diffX = CalculateAdjSide(angle, lineLength);
-            var diffY = CalculateOppSide(angle, lineLength);
+            var diffX = LineBoundsHelper.CalculateAdjSide(Angle, lineLength);
+            var diffY = LineBoundsHelper.CalculateOppSide(Angle, lineLength);
 
 
             var p1 = new Point(200, 200);
@@ -38,9 +48,6 @@ namespace RenderDemo.Controls
             drawingContext.DrawLine(pen, p1, p2);
 
             drawingContext.DrawRectangle(boundPen, LineBoundsHelper.CalculateBounds(p1, p2, pen));
-
-            angle += Math.PI / 360;
-            Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
         }
     }
 }
