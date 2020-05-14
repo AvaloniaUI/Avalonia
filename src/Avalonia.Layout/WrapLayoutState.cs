@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Avalonia.Layout;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,7 +50,7 @@ namespace Avalonia.Layout
 
         internal void RemoveFromIndex(int index)
         {
-            if (index > _items.Count)
+            if (index >= _items.Count)
             {
                 // Item was added/removed but we haven't realized that far yet
                 return;
@@ -137,7 +136,7 @@ namespace Avalonia.Layout
 
         internal void RecycleElementAt(int index)
         {
-            ILayoutable element = _context.GetOrCreateElementAt(index);
+            var element = _context.GetOrCreateElementAt(index);
             _context.RecycleElement(element);
         }
     }
