@@ -114,7 +114,7 @@ namespace Avalonia.Native
 
         public Action GotInputWhenDisabled { get; set; }
 
-        public void SetParent(IWindowImpl parent)
+        public void SetParent(IWindowImpl parent, bool isModal)
         {
         }
 

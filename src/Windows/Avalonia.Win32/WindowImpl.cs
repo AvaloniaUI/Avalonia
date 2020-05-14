@@ -351,7 +351,7 @@ namespace Avalonia.Win32
 
         public Action GotInputWhenDisabled { get; set; }
 
-        public void SetParent(IWindowImpl parent)
+        public void SetParent(IWindowImpl parent, bool isModal)
         {
             _parent = (WindowImpl)parent;
             SetOwnerHandle(_parent._hwnd);
