@@ -358,7 +358,7 @@ namespace Avalonia.Controls
             bool close = true;
 
             try
-            {
+            {                
                 if (!ignoreCancel && HandleClosing())
                 {
                     close = false;
@@ -369,16 +369,27 @@ namespace Avalonia.Controls
             {
                 if (close)
                 {
-                    if (Owner is Window owner)
-                    {
-                        owner.RemoveChild(this);                        
-                    }
-
-                    Owner = null;
-
-                    PlatformImpl?.Dispose();
+                    CloseInternal();   
                 }
             }
+        }
+
+        private void CloseInternal ()
+        {
+            foreach(var child in _children)
+            {
+                // if we HandleClosing() before then there will be no children.
+                child.CloseInternal();
+            }
+
+            if (Owner is Window owner)
+            {
+                owner.RemoveChild(this);
+            }
+
+            Owner = null;
+
+            PlatformImpl?.Dispose();
         }
 
         /// <summary>
@@ -386,10 +397,31 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual bool HandleClosing()
         {
-            var args = new CancelEventArgs();
-            OnClosing(args);
+            bool canClose = true;
 
-            return args.Cancel;
+            foreach(var child in _children)
+            {
+                if(!child.HandleClosing())
+                {
+                    child.CloseInternal();
+                }
+                else
+                {
+                    canClose = false;
+                }
+            }
+
+            if (canClose)
+            {
+                var args = new CancelEventArgs();
+                OnClosing(args);
+
+                return args.Cancel;
+            }
+            else
+            {
+                return !canClose;
+            }
         }
 
         protected virtual void HandleWindowStateChanged(WindowState state)
