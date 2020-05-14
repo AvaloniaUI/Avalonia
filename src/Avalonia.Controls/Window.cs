@@ -389,16 +389,6 @@ namespace Avalonia.Controls
             var args = new CancelEventArgs();
             OnClosing(args);
 
-            if(!args.Cancel)
-            {
-                if (Owner is Window owner)
-                {
-                    owner.RemoveChild(this);                    
-                }
-
-                Owner = null;
-            }
-
             return args.Cancel;
         }
 
