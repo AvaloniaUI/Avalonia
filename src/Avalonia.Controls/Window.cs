@@ -69,8 +69,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
     {
-        private List<Window> _children = new List<Window>();
-        private Window _owner;
+        private List<Window> _children = new List<Window>();        
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -370,11 +369,12 @@ namespace Avalonia.Controls
             {
                 if (close)
                 {
-                    if (_owner != null)
+                    if (Owner is Window owner)
                     {
-                        _owner.RemoveChild(this);
-                        _owner = null;
+                        owner.RemoveChild(this);                        
                     }
+
+                    Owner = null;
 
                     PlatformImpl?.Dispose();
                 }
@@ -391,11 +391,12 @@ namespace Avalonia.Controls
 
             if(!args.Cancel)
             {
-                if(_owner != null)
+                if (Owner is Window owner)
                 {
-                    _owner.RemoveChild(this);
-                    _owner = null;
+                    owner.RemoveChild(this);                    
                 }
+
+                Owner = null;
             }
 
             return args.Cancel;
@@ -429,11 +430,12 @@ namespace Avalonia.Controls
             {
                 Renderer?.Stop();
 
-                if (_owner != null)
+                if (Owner is Window owner)
                 {
-                    _owner.RemoveChild(this);
-                    _owner = null;
+                    owner.RemoveChild(this);                    
                 }
+
+                Owner = null;
 
                 PlatformImpl?.Hide();
             }
@@ -548,8 +550,8 @@ namespace Avalonia.Controls
             using (BeginAutoSizing())
             {
                 PlatformImpl.SetParent(owner.PlatformImpl);
-                _owner = owner;
-                _owner.AddChild(this);
+                Owner = owner;
+                owner.AddChild(this);
                 PlatformImpl?.Show();
 
                 Renderer?.Start();
@@ -694,11 +696,12 @@ namespace Avalonia.Controls
 
             base.HandleClosed();
 
-            if (_owner != null)
+            if (Owner is Window owner)
             {
-                _owner.RemoveChild(this);
-                _owner = null;
+                owner.RemoveChild(this);                
             }
+
+            Owner = null;
         }
 
         /// <inheritdoc/>
