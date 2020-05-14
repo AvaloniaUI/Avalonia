@@ -277,6 +277,8 @@ namespace Avalonia.Layout
 
         protected internal override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
         {
+            ((StackLayoutState)context.LayoutState).OnMeasureStart();
+
             var desiredSize = GetFlowAlgorithm(context).Measure(
                 availableSize,
                 context,
@@ -299,8 +301,6 @@ namespace Avalonia.Layout
                false,
                FlowLayoutAlgorithm.LineAlignment.Start,
                LayoutId);
-
-            ((StackLayoutState)context.LayoutState).OnArrangeLayoutEnd();
 
             return new Size(value.Width, value.Height);
         }
