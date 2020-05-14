@@ -117,7 +117,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetParent(IWindowImpl parent, bool isModal)
+        public void SetParent(IWindowImpl parent)
         {
         }
 

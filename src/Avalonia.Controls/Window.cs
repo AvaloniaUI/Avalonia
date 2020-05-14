@@ -539,7 +539,7 @@ namespace Avalonia.Controls
 
             using (BeginAutoSizing())
             {
-                PlatformImpl.SetParent(owner.PlatformImpl, true);
+                PlatformImpl.SetParent(owner.PlatformImpl);
                 Owner = owner;
                 owner.AddChild(this);
                 PlatformImpl?.Show();

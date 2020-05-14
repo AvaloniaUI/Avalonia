@@ -29,6 +29,7 @@ public:
     NSString* _lastTitle;
     IAvnMenu* _mainMenu;
     bool _shown;
+    bool _isChild;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events, IAvnGlContext* gl)
     {
@@ -36,6 +37,7 @@ public:
         _mainMenu = nullptr;
         BaseEvents = events;
         _glContext = gl;
+        _isChild = false;
         renderTarget = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext: gl];
         View = [[AvnView alloc] initWithParent:this];
 
@@ -497,12 +499,7 @@ private:
     virtual HRESULT Show () override
     {
         @autoreleasepool
-        {
-            if([Window parentWindow] != nil)
-                [[Window parentWindow] removeChildWindow:Window];
-            
-            [Window setModal:FALSE];
-            
+        {            
             WindowBaseImpl::Show();
             
             HideOrShowTrafficLights();
@@ -511,7 +508,16 @@ private:
         }
     }
     
-    virtual HRESULT ShowDialog (IAvnWindow* parent) override
+    virtual HRESULT SetEnabled (bool enable) override
+    {
+        @autoreleasepool
+        {
+            [Window setEnabled:enable];
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT SetParent (IAvnWindow* parent) override
     {
         @autoreleasepool
         {
@@ -522,12 +528,10 @@ private:
             if(cparent == nullptr)
                 return E_INVALIDARG;
             
-            [Window setModal:TRUE];
-            
+            _isChild = true;
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
-            WindowBaseImpl::Show();
             
-            HideOrShowTrafficLights();
+            UpdateStyle();
             
             return S_OK;
         }
@@ -883,15 +887,15 @@ protected:
         switch (_decorations)
         {
             case SystemDecorationsNone:
-                s = s | NSWindowStyleMaskFullSizeContentView | NSWindowStyleMaskMiniaturizable;
+                s = s | NSWindowStyleMaskFullSizeContentView;
                 break;
 
             case SystemDecorationsBorderOnly:
-                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView | NSWindowStyleMaskMiniaturizable;
+                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView;
                 break;
 
             case SystemDecorationsFull:
-                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskBorderless;
+                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskBorderless;
                 
                 if(_canResize)
                 {
@@ -900,6 +904,10 @@ protected:
                 break;
         }
 
+        if(!_isChild)
+        {
+            s |= NSWindowStyleMaskMiniaturizable;
+        }
         return s;
     }
 };
@@ -1089,7 +1097,15 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
     if([self ignoreUserInput])
+    {
+        auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
+        
+        if(window != nullptr)
+        {
+            window->WindowEvents->GotInputWhenDisabled();
+        }
         return;
+    }
     
     [self becomeFirstResponder];
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
@@ -1234,7 +1250,16 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
 {
     if([self ignoreUserInput])
+    {
+        auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
+        
+        if(window != nullptr)
+        {
+            window->WindowEvents->GotInputWhenDisabled();
+        }
         return;
+    }
+    
     auto key = s_KeyMap[[event keyCode]];
     
     auto timestamp = [event timestamp] * 1000;
@@ -1416,7 +1441,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     ComPtr<WindowBaseImpl> _parent;
     bool _canBecomeKeyAndMain;
     bool _closed;
-    bool _isModal;
+    bool _isEnabled;
     AvnMenu* _menu;
     double _lastScaling;
 }
@@ -1538,6 +1563,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _parent = parent;
     [self setDelegate:self];
     _closed = false;
+    _isEnabled = true;
     
     _lastScaling = [self backingScaleFactor];
     [self setOpaque:NO];
@@ -1604,28 +1630,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(bool)shouldTryToHandleEvents
 {
-    for(NSWindow* uch in [self childWindows])
-    {
-        auto ch = objc_cast<AvnWindow>(uch);
-        if(ch == nil)
-            continue;
-        
-        if(![ch isModal])
-            continue;
-        
-        return FALSE;
-    }
-    return TRUE;
+    return _isEnabled;
 }
 
--(bool) isModal
+-(void) setEnabled:(bool)enable
 {
-    return _isModal;
-}
-
--(void) setModal: (bool) isModal
-{
-    _isModal = isModal;
+    _isEnabled = enable;
 }
 
 -(void)makeKeyWindow

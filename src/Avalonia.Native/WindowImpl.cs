@@ -52,6 +52,11 @@ namespace Avalonia.Native
             {
                 _parent.WindowStateChanged?.Invoke((WindowState)state);
             }
+
+            void IAvnWindowEvents.GotInputWhenDisabled ()
+            {
+                _parent.GotInputWhenDisabled?.Invoke();
+            }
         }
 
         public IAvnWindow Native => _native;
@@ -114,12 +119,14 @@ namespace Avalonia.Native
 
         public Action GotInputWhenDisabled { get; set; }
 
-        public void SetParent(IWindowImpl parent, bool isModal)
+        public void SetParent(IWindowImpl parent)
         {
+            _native.SetParent(((WindowImpl)parent).Native);
         }
 
         public void SetEnabled(bool enable)
         {
+            _native.SetEnabled(enable);
         }
     }
 }
