@@ -18,7 +18,6 @@ namespace Avalonia.Layout
     /// </summary>
     public class WrapLayout : VirtualizingLayout
     {
-
         /// <summary>
         /// Gets or sets a uniform Horizontal distance (in pixels) between items when <see cref="Orientation"/> is set to Horizontal,
         /// or between columns of items when <see cref="Orientation"/> is set to Vertical.
@@ -150,7 +149,7 @@ namespace Avalonia.Layout
             {
                 bool measured = false;
                 WrapItem item = state.GetItemAt(i);
-                //if (item.Measure == null)
+                if (item.Measure == null)
                 {
                     item.Element = context.GetOrCreateElementAt(i);
                     item.Element.Measure(availableSize);
@@ -164,7 +163,7 @@ namespace Avalonia.Layout
                     continue; // ignore collapsed items
                 }
 
-                //if (item.Position == null)
+                if (item.Position == null)
                 {
                     if (parentMeasure.U < position.U + currentMeasure.U)
                     {
@@ -206,8 +205,25 @@ namespace Avalonia.Layout
                     // Always measure elements that are within the bounds
                     item.Element = context.GetOrCreateElementAt(i);
                     item.Element.Measure(availableSize);
-                    item.Measure = new UvMeasure(Orientation, item.Element.DesiredSize.Width, item.Element.DesiredSize.Height);
-                    currentMeasure = item.Measure.Value;
+
+                    currentMeasure = new UvMeasure(Orientation, item.Element.DesiredSize.Width, item.Element.DesiredSize.Height);
+                    if (currentMeasure.Equals(item.Measure) == false)
+                    {
+                        // this item changed size; we need to recalculate layout for everything after this
+                        state.RemoveFromIndex(i + 1);
+                        item.Measure = currentMeasure;
+
+                        // did the change make it go into the new row?
+                        if (parentMeasure.U < position.U + currentMeasure.U)
+                        {
+                            // New Row
+                            position.U = 0;
+                            position.V += currentV + spacingMeasure.V;
+                            currentV = 0;
+                        }
+
+                        item.Position = position;
+                    }
                 }
 
                 position.U += currentMeasure.U + spacingMeasure.U;
@@ -266,7 +282,7 @@ namespace Avalonia.Layout
                     if (((position.V + desiredMeasure.V) >= realizationBounds.VMin) && (position.V <= realizationBounds.VMax))
                     {
                         // place the item
-                        ILayoutable child = context.GetOrCreateElementAt(item.Index);
+                        var child = context.GetOrCreateElementAt(item.Index);
                         if (Orientation == Orientation.Horizontal)
                         {
                             child.Arrange(new Rect(position.U, position.V, desiredMeasure.U, desiredMeasure.V));
