@@ -56,11 +56,6 @@ namespace Avalonia.Native
 
         public IAvnWindow Native => _native;
 
-        public void ShowDialog(IWindowImpl window)
-        {
-            _native.ShowDialog(((WindowImpl)window).Native);
-        }
-
         public void CanResize(bool value)
         {
             _native.CanResize = value;
@@ -116,5 +111,15 @@ namespace Avalonia.Native
 
         public override IPopupImpl CreatePopup() =>
             _opts.OverlayPopups ? null : new PopupImpl(_factory, _opts, _glFeature, this);
+
+        public Action GotInputWhenDisabled { get; set; }
+
+        public void SetParent(IWindowImpl parent)
+        {
+        }
+
+        public void SetEnabled(bool enable)
+        {
+        }
     }
 }
