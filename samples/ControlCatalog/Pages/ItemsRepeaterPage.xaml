@@ -12,8 +12,9 @@
         <ComboBoxItem>Stack - Horizontal</ComboBoxItem>
         <ComboBoxItem>UniformGrid - Vertical</ComboBoxItem>
         <ComboBoxItem>UniformGrid - Horizontal</ComboBoxItem>
-        <ComboBoxItem>WrapLayout - Horizontal</ComboBoxItem>
-        <ComboBoxItem>WrapLayout - Veritcal</ComboBoxItem>
+        <ComboBoxItem>Wrap - Horizontal</ComboBoxItem>
+        <ComboBoxItem>Wrap - Veritcal</ComboBoxItem>
+        <ComboBoxItem>Staggered - Horizontal</ComboBoxItem>
       </ComboBox>
       <Button Command="{Binding AddItem}">Add Item</Button>
       <Button Command="{Binding RandomizeHeights}">Randomize Heights</Button>

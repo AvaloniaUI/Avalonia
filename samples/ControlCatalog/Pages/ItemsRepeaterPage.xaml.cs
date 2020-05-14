@@ -90,6 +90,16 @@ namespace ControlCatalog.Pages
                         VerticalSpacing = 20
                     };
                     break;
+                case 6:
+                    _scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                    _scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+                    _repeater.Layout = new StaggeredLayout
+                    {
+                         ColumnSpacing = 20,
+                          RowSpacing = 20,
+                          DesiredColumnWidth= 250
+                    };
+                    break;
             }
         }
 
