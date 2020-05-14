@@ -41,8 +41,6 @@ namespace Avalonia.X11
         private IntPtr _renderHandle;
         private bool _mapped;
         private bool _wasMappedAtLeastOnce = false;
-        private HashSet<X11Window> _transientChildren = new HashSet<X11Window>();
-        private X11Window _transientParent;
         private double? _scalingOverride;
         private bool _disabled;
 
@@ -775,26 +773,19 @@ namespace Avalonia.X11
 
         bool ActivateTransientChildIfNeeded()
         {
-            if(_disabled)
+            if (_disabled)
             {
+                GotInputWhenDisabled?.Invoke();
                 return false;
             }
 
-            if (_transientChildren.Count == 0)
-                return false;
-            var child = _transientChildren.First();
-            if (!child.ActivateTransientChildIfNeeded())
-                child.Activate();
             return true;
         }
-        
+
         void SetTransientParent(X11Window window, bool informServer = true)
-        {
-            _transientParent?._transientChildren.Remove(this);
-            _transientParent = window;
-            _transientParent?._transientChildren.Add(this);
+        {            
             if (informServer)
-                SetTransientForHint(_transientParent?._handle);
+                SetTransientForHint(window?._handle);
         }
 
         void SetTransientForHint(IntPtr? parent)
