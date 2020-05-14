@@ -17,7 +17,7 @@ namespace RenderDemo.Controls
         public LineBoundsDemoControl()
         {
             var timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1 / 60);
+            timer.Interval = TimeSpan.FromSeconds(1 / 60.0);
             timer.Tick += (sender, e) => Angle += Math.PI / 360;
             timer.Start();
         }
