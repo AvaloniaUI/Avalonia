@@ -399,7 +399,7 @@ namespace Avalonia.Controls
         {
             bool canClose = true;
 
-            foreach(var child in _children)
+            foreach(var child in _children.ToList())
             {
                 if(!child.HandleClosing())
                 {
