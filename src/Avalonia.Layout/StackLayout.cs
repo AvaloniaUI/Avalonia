@@ -15,6 +15,12 @@ namespace Avalonia.Layout
     public class StackLayout : VirtualizingLayout, IFlowLayoutAlgorithmDelegates
     {
         /// <summary>
+        /// Defines the <see cref="DisableVirtualization"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> DisableVirtualizationProperty =
+            AvaloniaProperty.Register<StackLayout, bool>(nameof(DisableVirtualization));
+
+        /// <summary>
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
@@ -34,6 +40,15 @@ namespace Avalonia.Layout
         public StackLayout()
         {
             LayoutId = "StackLayout";
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether virtualization is disabled on the layout.
+        /// </summary>
+        public bool DisableVirtualization
+        {
+            get => GetValue(DisableVirtualizationProperty);
+            set => SetValue(DisableVirtualizationProperty, value);
         }
 
         /// <summary>
@@ -270,6 +285,7 @@ namespace Avalonia.Layout
                 Spacing,
                 int.MaxValue,
                 _orientation.ScrollOrientation,
+                DisableVirtualization,
                 LayoutId);
 
             return new Size(desiredSize.Width, desiredSize.Height);
