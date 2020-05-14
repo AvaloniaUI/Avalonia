@@ -135,7 +135,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent WindowClosedEvent =
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowClosed", RoutingStrategies.Direct);
-        
+
         /// <summary>
         /// Routed event that can be used for global tracking of opening windows
         /// </summary>
@@ -187,6 +187,7 @@ namespace Avalonia.Controls
             : base(impl)
         {
             impl.Closing = HandleClosing;
+            impl.GotInputWhenDisabled = OnGotInputWhenDisabled;
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
@@ -306,7 +307,7 @@ namespace Avalonia.Controls
                 PlatformImpl?.Move(value);
             }
         }
-        
+
         /// <summary>
         /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
         /// </summary>
@@ -327,7 +328,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired before a window is closed.
         /// </summary>
-        public event EventHandler<CancelEventArgs> Closing;      
+        public event EventHandler<CancelEventArgs> Closing;
 
         /// <summary>
         /// Closes the window.
@@ -369,9 +370,9 @@ namespace Avalonia.Controls
             {
                 if (close)
                 {
-                    if(_owner != null)
+                    if (_owner != null)
                     {
-                        _owner._children.Remove(this);
+                        _owner.RemoveChild(this);
                         _owner = null;
                     }
 
@@ -387,6 +388,16 @@ namespace Avalonia.Controls
         {
             var args = new CancelEventArgs();
             OnClosing(args);
+
+            if(!args.Cancel)
+            {
+                if(_owner != null)
+                {
+                    _owner.RemoveChild(this);
+                    _owner = null;
+                }
+            }
+
             return args.Cancel;
         }
 
@@ -420,8 +431,7 @@ namespace Avalonia.Controls
 
                 if (_owner != null)
                 {
-                    _owner._children.Remove(this);
-                    // update enabled state of parent.
+                    _owner.RemoveChild(this);
                     _owner = null;
                 }
 
@@ -538,8 +548,8 @@ namespace Avalonia.Controls
             using (BeginAutoSizing())
             {
                 PlatformImpl.SetParent(owner.PlatformImpl);
-                owner._children.Add(this);
-                owner.PlatformImpl.SetEnabled(false);                
+                _owner = owner;
+                _owner.AddChild(this);
                 PlatformImpl?.Show();
 
                 Renderer?.Start();
@@ -560,6 +570,37 @@ namespace Avalonia.Controls
             SetWindowStartupLocation(owner.PlatformImpl);
 
             return result.Task;
+        }
+
+        private void UpdateEnabled()
+        {
+            PlatformImpl.SetEnabled(_children.Count == 0);
+        }
+
+        private void AddChild(Window window)
+        {
+            _children.Add(window);
+            UpdateEnabled();
+        }
+
+        private void RemoveChild(Window window)
+        {
+            _children.Remove(window);
+            UpdateEnabled();
+        }
+
+        private void OnGotInputWhenDisabled()
+        {
+            var firstChild = _children.FirstOrDefault();
+
+            if (firstChild != null)
+            {
+                firstChild.OnGotInputWhenDisabled();
+            }
+            else
+            {
+                Activate();
+            }
         }
 
         private void SetWindowStartupLocation(IWindowBaseImpl owner = null)
@@ -652,6 +693,12 @@ namespace Avalonia.Controls
             RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
 
             base.HandleClosed();
+
+            if (_owner != null)
+            {
+                _owner.RemoveChild(this);
+                _owner = null;
+            }
         }
 
         /// <inheritdoc/>
