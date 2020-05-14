@@ -69,6 +69,9 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
     {
+        private List<Window> _children = new List<Window>();
+        private Window _owner;
+
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
         /// </summary>
@@ -366,6 +369,12 @@ namespace Avalonia.Controls
             {
                 if (close)
                 {
+                    if(_owner != null)
+                    {
+                        _owner._children.Remove(this);
+                        _owner = null;
+                    }
+
                     PlatformImpl?.Dispose();
                 }
             }
@@ -408,6 +417,14 @@ namespace Avalonia.Controls
             using (BeginAutoSizing())
             {
                 Renderer?.Stop();
+
+                if (_owner != null)
+                {
+                    _owner._children.Remove(this);
+                    // update enabled state of parent.
+                    _owner = null;
+                }
+
                 PlatformImpl?.Hide();
             }
 
@@ -521,7 +538,8 @@ namespace Avalonia.Controls
             using (BeginAutoSizing())
             {
                 PlatformImpl.SetParent(owner.PlatformImpl);
-                owner.PlatformImpl.SetEnabled(false);
+                owner._children.Add(this);
+                owner.PlatformImpl.SetEnabled(false);                
                 PlatformImpl?.Show();
 
                 Renderer?.Start();

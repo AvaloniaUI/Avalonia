@@ -44,8 +44,7 @@ namespace Avalonia.Win32
         private readonly ManagedWindowResizeDragHelper _managedDrag;
 #endif
 
-        private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
-        private readonly List<WindowImpl> _disabledBy;
+        private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);        
         private readonly TouchDevice _touchDevice;
         private readonly MouseDevice _mouseDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
@@ -70,7 +69,6 @@ namespace Avalonia.Win32
 
         public WindowImpl()
         {
-            _disabledBy = new List<WindowImpl>();
             _touchDevice = new TouchDevice();
             _mouseDevice = new WindowsMouseDevice();
 
@@ -342,13 +340,6 @@ namespace Avalonia.Win32
 
         public void Hide()
         {
-            if (_parent != null)
-            {
-                _parent._disabledBy.Remove(this);
-                _parent.UpdateEnabled();
-                _parent = null;
-            }
-
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
         }
 
@@ -363,7 +354,7 @@ namespace Avalonia.Win32
         public void SetParent(IWindowImpl parent)
         {
             _parent = (WindowImpl)parent;
-            _parent._disabledBy.Add(this);
+            SetOwnerHandle(_parent._hwnd);
         }
 
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
@@ -665,7 +656,9 @@ namespace Avalonia.Win32
                     SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
                 }
             }
-        }        
+        }
+
+        private void SetOwnerHandle(IntPtr handle) => SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, handle);
 
         private WindowStyles GetWindowStateStyles ()
         {
@@ -720,11 +713,6 @@ namespace Avalonia.Win32
             {
                 SetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE, (uint)style);
             }
-        }
-
-        private void UpdateEnabled()
-        {
-            SetEnabled(_disabledBy.Count == 0);
         }
 
         private void UpdateWindowProperties(WindowProperties newProperties, bool forceChanges = false)
