@@ -354,18 +354,19 @@ namespace Avalonia.Win32
 
         public virtual void Show()
         {
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, IntPtr.Zero);
+            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent != null ? _parent._hwnd : IntPtr.Zero);
             ShowWindow(_showWindowState);
         }
 
-        public void ShowDialog(IWindowImpl parent)
+        public Action GotInputWhenDisabled { get; set; }
+
+        public void SetParent(IWindowImpl parent)
         {
             _parent = (WindowImpl)parent;
             _parent._disabledBy.Add(this);
-            _parent.UpdateEnabled();
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, ((WindowImpl)parent)._hwnd);
-            ShowWindow(_showWindowState);
         }
+
+        public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
 
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
@@ -723,7 +724,7 @@ namespace Avalonia.Win32
 
         private void UpdateEnabled()
         {
-            EnableWindow(_hwnd, _disabledBy.Count == 0);
+            SetEnabled(_disabledBy.Count == 0);
         }
 
         private void UpdateWindowProperties(WindowProperties newProperties, bool forceChanges = false)
