@@ -44,6 +44,8 @@ namespace Avalonia.X11
         private HashSet<X11Window> _transientChildren = new HashSet<X11Window>();
         private X11Window _transientParent;
         private double? _scalingOverride;
+        private bool _disabled;
+
         public object SyncRoot { get; } = new object();
 
         class InputEventContainer
@@ -773,6 +775,11 @@ namespace Avalonia.X11
 
         bool ActivateTransientChildIfNeeded()
         {
+            if(_disabled)
+            {
+                return false;
+            }
+
             if (_transientChildren.Count == 0)
                 return false;
             var child = _transientChildren.First();
@@ -1035,11 +1042,17 @@ namespace Avalonia.X11
             ChangeWMAtoms(value, _x11.Atoms._NET_WM_STATE_ABOVE);
         }
 
-        public void ShowDialog(IWindowImpl parent)
+        public void SetParent(IWindowImpl parent)
         {
             SetTransientParent((X11Window)parent);
-            ShowCore();
         }
+
+        public void SetEnabled(bool enable)
+        {
+            _disabled = !enable;
+        }
+
+        public Action GotInputWhenDisabled { get; set; }
 
         public void SetIcon(IWindowIconImpl icon)
         {
