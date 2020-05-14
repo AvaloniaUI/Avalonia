@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
@@ -519,7 +520,9 @@ namespace Avalonia.Controls
 
             using (BeginAutoSizing())
             {
-                PlatformImpl?.ShowDialog(owner.PlatformImpl);
+                PlatformImpl.SetParent(owner.PlatformImpl);
+                owner.PlatformImpl.SetEnabled(false);
+                PlatformImpl?.Show();
 
                 Renderer?.Start();
 
