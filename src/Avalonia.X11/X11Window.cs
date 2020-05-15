@@ -775,10 +775,10 @@ namespace Avalonia.X11
             if (_disabled)
             {
                 GotInputWhenDisabled?.Invoke();
-                return false;
+                return true;
             }
 
-            return true;
+            return false;
         }
 
         public void SetParent(IWindowImpl parent)
