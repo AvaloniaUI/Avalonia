@@ -141,13 +141,13 @@ namespace Avalonia.Media
         /// <param name="radiusY">The radius in the Y dimension of the rounded corners.
         ///     This value will be clamped to the range of 0 to Height/2
         /// </param>
-        /// <param name="boxShadow">Box shadow effect parameters</param>
+        /// <param name="boxShadows">Box shadow effect parameters</param>
         /// <remarks>
         /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
         /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
         /// </remarks>
         public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0, double radiusY = 0,
-            BoxShadow boxShadow = default)
+            BoxShadows boxShadows = default)
         {
             if (brush == null && !PenIsVisible(pen))
             {
@@ -164,7 +164,7 @@ namespace Avalonia.Media
                 radiusY = Math.Min(radiusY, rect.Height / 2);
             }
 
-            PlatformImpl.DrawRectangle(brush, pen, new RoundedRect(rect, radiusX, radiusY), boxShadow);
+            PlatformImpl.DrawRectangle(brush, pen, new RoundedRect(rect, radiusX, radiusY), boxShadows);
         }
 
         /// <summary>

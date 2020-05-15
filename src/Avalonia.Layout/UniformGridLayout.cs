@@ -433,6 +433,7 @@ namespace Avalonia.Layout
                 LineSpacing,
                 _maximumRowsOrColumns,
                 _orientation.ScrollOrientation,
+                false,
                 LayoutId);
 
             // If after Measure the first item is in the realization rect, then we revoke grid state's ownership,
