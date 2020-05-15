@@ -40,7 +40,7 @@ namespace Avalonia.Native
 
             bool IAvnWindowEvents.Closing()
             {
-                if(_parent.Closing != null)
+                if (_parent.Closing != null)
                 {
                     return _parent.Closing();
                 }
@@ -53,7 +53,7 @@ namespace Avalonia.Native
                 _parent.WindowStateChanged?.Invoke((WindowState)state);
             }
 
-            void IAvnWindowEvents.GotInputWhenDisabled ()
+            void IAvnWindowEvents.GotInputWhenDisabled()
             {
                 _parent.GotInputWhenDisabled?.Invoke();
             }
@@ -71,7 +71,7 @@ namespace Avalonia.Native
             _native.Decorations = (Interop.SystemDecorations)enabled;
         }
 
-        public void SetTitleBarColor (Avalonia.Media.Color color)
+        public void SetTitleBarColor(Avalonia.Media.Color color)
         {
             _native.SetTitleBarColor(new AvnColor { Alpha = color.A, Red = color.R, Green = color.G, Blue = color.B });
         }

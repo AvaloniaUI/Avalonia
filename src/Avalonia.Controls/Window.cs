@@ -69,7 +69,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
     {
-        private List<Window> _children = new List<Window>();        
+        private List<Window> _children = new List<Window>();
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -374,9 +374,9 @@ namespace Avalonia.Controls
             }
         }
 
-        private void CloseInternal ()
+        private void CloseInternal()
         {
-            foreach(var child in _children.ToList())
+            foreach (var child in _children.ToList())
             {
                 // if we HandleClosing() before then there will be no children.
                 child.CloseInternal();
@@ -399,9 +399,9 @@ namespace Avalonia.Controls
         {
             bool canClose = true;
 
-            foreach(var child in _children.ToList())
+            foreach (var child in _children.ToList())
             {
-                if(!child.HandleClosing())
+                if (!child.HandleClosing())
                 {
                     child.CloseInternal();
                 }
@@ -454,7 +454,7 @@ namespace Avalonia.Controls
 
                 if (Owner is Window owner)
                 {
-                    owner.RemoveChild(this);                    
+                    owner.RemoveChild(this);
                 }
 
                 Owner = null;
@@ -720,7 +720,7 @@ namespace Avalonia.Controls
 
             if (Owner is Window owner)
             {
-                owner.RemoveChild(this);                
+                owner.RemoveChild(this);
             }
 
             Owner = null;

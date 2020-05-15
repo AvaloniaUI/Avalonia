@@ -44,7 +44,7 @@ namespace Avalonia.Win32
         private readonly ManagedWindowResizeDragHelper _managedDrag;
 #endif
 
-        private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);        
+        private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
         private readonly TouchDevice _touchDevice;
         private readonly MouseDevice _mouseDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
@@ -660,7 +660,7 @@ namespace Avalonia.Win32
 
         private void SetOwnerHandle(IntPtr handle) => SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, handle);
 
-        private WindowStyles GetWindowStateStyles ()
+        private WindowStyles GetWindowStateStyles()
         {
             return GetStyle() & WindowStateMask;
         }
