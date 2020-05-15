@@ -358,7 +358,7 @@ namespace Avalonia.Controls
             bool close = true;
 
             try
-            {                
+            {
                 if (!ignoreCancel && HandleClosing())
                 {
                     close = false;
@@ -369,7 +369,7 @@ namespace Avalonia.Controls
             {
                 if (close)
                 {
-                    CloseInternal();   
+                    CloseInternal();
                 }
             }
         }
