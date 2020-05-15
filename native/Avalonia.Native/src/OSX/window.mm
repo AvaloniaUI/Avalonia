@@ -1086,14 +1086,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (bool) ignoreUserInput
 {
     auto parentWindow = objc_cast<AvnWindow>([self window]);
+    
     if(parentWindow == nil || ![parentWindow shouldTryToHandleEvents])
-        return TRUE;
-    return FALSE;
-}
-
-- (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
-{
-    if([self ignoreUserInput])
     {
         auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
         
@@ -1101,6 +1095,17 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         {
             window->WindowEvents->GotInputWhenDisabled();
         }
+        
+        return TRUE;
+    }
+    
+    return FALSE;
+}
+
+- (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
+{
+    if([self ignoreUserInput])
+    {
         return;
     }
     
@@ -1248,12 +1253,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     if([self ignoreUserInput])
     {
-        auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
-        
-        if(window != nullptr)
-        {
-            window->WindowEvents->GotInputWhenDisabled();
-        }
         return;
     }
     
