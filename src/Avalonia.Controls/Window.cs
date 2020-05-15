@@ -376,7 +376,7 @@ namespace Avalonia.Controls
 
         private void CloseInternal ()
         {
-            foreach(var child in _children)
+            foreach(var child in _children.ToList())
             {
                 // if we HandleClosing() before then there will be no children.
                 child.CloseInternal();
