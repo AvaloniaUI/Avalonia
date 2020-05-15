@@ -354,7 +354,7 @@ namespace Avalonia.Win32
         public void SetParent(IWindowImpl parent)
         {
             _parent = (WindowImpl)parent;
-            SetOwnerHandle(_parent._hwnd);
+            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent._hwnd);
         }
 
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
@@ -656,9 +656,7 @@ namespace Avalonia.Win32
                     SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
                 }
             }
-        }
-
-        private void SetOwnerHandle(IntPtr handle) => SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, handle);
+        }        
 
         private WindowStyles GetWindowStateStyles()
         {
