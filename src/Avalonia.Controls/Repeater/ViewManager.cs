@@ -388,19 +388,24 @@ namespace Avalonia.Controls
                     }
 
                 case NotifyCollectionChangedAction.Reset:
-                    if (_owner.ItemsSourceView.HasKeyIndexMapping)
+                    // If we get multiple resets back to back before
+                    // running layout, we dont have to clear all the elements again.
+                    if (!_isDataSourceStableResetPending)
                     {
-                        _isDataSourceStableResetPending = true;
-                    }
-
-                    // Walk through all the elements and make sure they are cleared, they will go into
-                    // the stable id reset pool.
-                    foreach (var element in _owner.Children)
-                    {
-                        var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
-                        if (virtInfo.IsRealized && virtInfo.AutoRecycleCandidate)
+                        if (_owner.ItemsSourceView.HasKeyIndexMapping)
                         {
-                            _owner.ClearElementImpl(element);
+                            _isDataSourceStableResetPending = true;
+                        }
+
+                        // Walk through all the elements and make sure they are cleared, they will go into
+                        // the stable id reset pool.
+                        foreach (var element in _owner.Children)
+                        {
+                            var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
+                            if (virtInfo.IsRealized && virtInfo.AutoRecycleCandidate)
+                            {
+                                _owner.ClearElementImpl(element);
+                            }
                         }
                     }
 
@@ -441,6 +446,9 @@ namespace Avalonia.Controls
                 }
 
                 _resetPool.Clear();
+
+                // Flush the realized indices once the stable reset pool is cleared to start fresh.
+                InvalidateRealizedIndicesHeldByLayout();
             }
         }
 
@@ -498,6 +506,10 @@ namespace Avalonia.Controls
                     var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
                     virtInfo.MoveOwnershipToLayoutFromUniqueIdResetPool();
                     UpdateElementIndex(element, virtInfo, index);
+
+                    // Update realized indices
+                    _firstRealizedElementIndexHeldByLayout = Math.Min(_firstRealizedElementIndexHeldByLayout, index);
+                    _lastRealizedElementIndexHeldByLayout = Math.Max(_lastRealizedElementIndexHeldByLayout, index);
                 }
             }
 
@@ -519,6 +531,10 @@ namespace Avalonia.Controls
                     _pinnedPool.RemoveAt(i);
                     element = elementInfo.PinnedElement;
                     elementInfo.VirtualizationInfo.MoveOwnershipToLayoutFromPinnedPool();
+
+                    // Update realized indices
+                    _firstRealizedElementIndexHeldByLayout = Math.Min(_firstRealizedElementIndexHeldByLayout, index);
+                    _lastRealizedElementIndexHeldByLayout = Math.Max(_lastRealizedElementIndexHeldByLayout, index);
                     break;
                 }
             }
