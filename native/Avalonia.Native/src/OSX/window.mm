@@ -29,7 +29,6 @@ public:
     NSString* _lastTitle;
     IAvnMenu* _mainMenu;
     bool _shown;
-    bool _isChild;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events, IAvnGlContext* gl)
     {
@@ -37,7 +36,6 @@ public:
         _mainMenu = nullptr;
         BaseEvents = events;
         _glContext = gl;
-        _isChild = false;
         renderTarget = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext: gl];
         View = [[AvnView alloc] initWithParent:this];
 
@@ -528,7 +526,6 @@ private:
             if(cparent == nullptr)
                 return E_INVALIDARG;
             
-            _isChild = true;
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
             
             UpdateStyle();
@@ -904,7 +901,7 @@ protected:
                 break;
         }
 
-        if(!_isChild)
+        if([Window parentWindow] == nullptr)
         {
             s |= NSWindowStyleMaskMiniaturizable;
         }
