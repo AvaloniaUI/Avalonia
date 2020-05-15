@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Generators;
@@ -9,18 +10,19 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A control context menu.
     /// </summary>
-    public class ContextMenu : MenuBase
+    public class ContextMenu : MenuBase, ISetterValue
     {
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup _popup;
-        private Control _attachedControl;
+        private List<Control> _attachedControls;
         private IInputElement _previousFocus;
 
         /// <summary>
@@ -74,13 +76,14 @@ namespace Avalonia.Controls
             if (e.OldValue is ContextMenu oldMenu)
             {
                 control.PointerReleased -= ControlPointerReleased;
-                oldMenu._attachedControl = null;
+                oldMenu._attachedControls?.Remove(control);
                 ((ISetLogicalParent)oldMenu._popup)?.SetParent(null);
             }
 
             if (e.NewValue is ContextMenu newMenu)
             {
-                newMenu._attachedControl = control;
+                newMenu._attachedControls ??= new List<Control>();
+                newMenu._attachedControls.Add(control);
                 control.PointerReleased += ControlPointerReleased;
             }
         }
@@ -96,17 +99,21 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         public void Open(Control control)
         {
-            if (control is null && _attachedControl is null)
+            if (control is null && (_attachedControls is null || _attachedControls.Count == 0))
             {
                 throw new ArgumentNullException(nameof(control));
             }
 
-            if (control is object && _attachedControl is object && control != _attachedControl)
+            if (control is object &&
+                _attachedControls is object &&
+                !_attachedControls.Contains(control))
             {
                 throw new ArgumentException(
                     "Cannot show ContentMenu on a different control to the one it is attached to.",
                     nameof(control));
             }
+
+            control ??= _attachedControls[0];
 
             if (IsOpen)
             {
@@ -126,7 +133,12 @@ namespace Avalonia.Controls
                 _popup.Closed += PopupClosed;
             }
 
-            ((ISetLogicalParent)_popup).SetParent(control);
+            if (_popup.Parent != control)
+            {
+                ((ISetLogicalParent)_popup).SetParent(null);
+                ((ISetLogicalParent)_popup).SetParent(control);
+            }
+
             _popup.Child = this;
             _popup.IsOpen = true;
 
@@ -155,6 +167,17 @@ namespace Avalonia.Controls
             }
         }
 
+        void ISetterValue.Initialize(ISetter setter)
+        {
+            // ContextMenu can be assigned to the ContextMenu property in a setter. This overrides
+            // the behavior defined in Control which requires controls to be wrapped in a <template>.
+            if (!(setter is Setter s && s.Property == ContextMenuProperty))
+            {
+                throw new InvalidOperationException(
+                    "Cannot use a control as a Setter value. Wrap the control in a <Template>.");
+            }
+        }
+
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new MenuItemContainerGenerator(this);
@@ -179,7 +202,7 @@ namespace Avalonia.Controls
             SelectedIndex = -1;
             IsOpen = false;
 
-            if (_attachedControl is null)
+            if (_attachedControls is null || _attachedControls.Count == 0)
             {
                 ((ISetLogicalParent)_popup).SetParent(null);
             }

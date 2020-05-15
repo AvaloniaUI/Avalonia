@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Xml;
 using Avalonia.Controls;
+using Avalonia.DesignerSupport.Remote.HtmlTransport;
 using Avalonia.Input;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Designer;
@@ -24,15 +25,16 @@ namespace Avalonia.DesignerSupport.Remote
         {
             public string AppPath { get; set; }
             public Uri Transport { get; set; }
+            public Uri HtmlMethodListenUri { get; set; }
             public string Method { get; set; } = Methods.AvaloniaRemote;
             public string SessionId { get; set; } = Guid.NewGuid().ToString();
         }
 
-        static class Methods
+        internal static class Methods
         {
             public const string AvaloniaRemote = "avalonia-remote";
             public const string Win32 = "win32";
-
+            public const string Html = "html";
         }
 
         static Exception Die(string error)
@@ -51,6 +53,19 @@ namespace Avalonia.DesignerSupport.Remote
         static Exception PrintUsage()
         {
             Console.Error.WriteLine("Usage: --transport transport_spec --session-id sid --method method app");
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("--transport: transport used for communication with the IDE");
+            Console.Error.WriteLine("    'tcp-bson' (e. g. 'tcp-bson://127.0.0.1:30243/') - TCP-based transport with BSON serialization of messages defined in Avalonia.Remote.Protocol");
+            Console.Error.WriteLine("    'file' (e. g. 'file://C://my/file.xaml' - pseudo-transport that triggers XAML updates on file changes, useful as a standalone previewer tool, always uses http preview method");
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("--session-id: session id to be sent to IDE process");
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("--method: the way the XAML is displayed");
+            Console.Error.WriteLine("    'avalonia-remote' - binary image is sent via transport connection in FrameMessage");
+            Console.Error.WriteLine("    'win32' - XAML is displayed in win32 window (handle could be obtained from UpdateXamlResultMessage), IDE is responsible to use user32!SetParent");
+            Console.Error.WriteLine("    'html' - Previewer starts an HTML server and displays XAML previewer as a web page");
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("--html-url - endpoint for HTML method to listen on, e. g. http://127.0.0.1:8081");
             Console.Error.WriteLine();
             Console.Error.WriteLine("Example: --transport tcp-bson://127.0.0.1:30243/ --session-id 123 --method avalonia-remote MyApp.exe");
             Console.Error.Flush();
@@ -74,6 +89,8 @@ namespace Avalonia.DesignerSupport.Remote
                         next = a => rv.Transport = new Uri(a, UriKind.Absolute);
                     else if (arg == "--method")
                         next = a => rv.Method = a;
+                    else if (arg == "--html-url")
+                        next = a => rv.HtmlMethodListenUri = new Uri(a, UriKind.Absolute);
                     else if (arg == "--session-id")
                         next = a => rv.SessionId = a;
                     else if (rv.AppPath == null)
@@ -89,6 +106,9 @@ namespace Avalonia.DesignerSupport.Remote
             {
                 PrintUsage();
             }
+
+            if (next != null)
+                PrintUsage();
             return rv;
         }
 
@@ -98,27 +118,40 @@ namespace Avalonia.DesignerSupport.Remote
             {
                 return new BsonTcpTransport().Connect(IPAddress.Parse(transport.Host), transport.Port).Result;
             }
+
+            if (transport.Scheme == "file")
+            {
+                return new FileWatcherTransport(transport);
+            }
             PrintUsage();
             return null;
         }
         
         interface IAppInitializer
         {
-            Application GetConfiguredApp(IAvaloniaRemoteTransportConnection transport, CommandLineArgs args, object obj);
+           IAvaloniaRemoteTransportConnection ConfigureApp(IAvaloniaRemoteTransportConnection transport, CommandLineArgs args, object obj);
         }
-        
+
         class AppInitializer<T> : IAppInitializer where T : AppBuilderBase<T>, new()
         {
-            public Application GetConfiguredApp(IAvaloniaRemoteTransportConnection transport,
+            public IAvaloniaRemoteTransportConnection ConfigureApp(IAvaloniaRemoteTransportConnection transport,
                 CommandLineArgs args, object obj)
             {
-                var builder = (AppBuilderBase<T>) obj;
+                var builder = (AppBuilderBase<T>)obj;
                 if (args.Method == Methods.AvaloniaRemote)
                     builder.UseWindowingSubsystem(() => PreviewerWindowingPlatform.Initialize(transport));
+                if (args.Method == Methods.Html)
+                {
+                    transport = new HtmlWebSocketTransport(transport,
+                        args.HtmlMethodListenUri ?? new Uri("http://localhost:5000"));
+                    builder.UseWindowingSubsystem(() =>
+                        PreviewerWindowingPlatform.Initialize(transport));
+                }
+
                 if (args.Method == Methods.Win32)
                     builder.UseWindowingSubsystem("Avalonia.Win32");
                 builder.SetupWithoutStarting();
-                return builder.Instance;
+                return transport;
             }
         }
 
@@ -128,6 +161,8 @@ namespace Avalonia.DesignerSupport.Remote
         {
             var args = ParseCommandLineArgs(cmdline);
             var transport = CreateTransport(args.Transport);
+            if (transport is ITransportWithEnforcedMethod enforcedMethod)
+                args.Method = enforcedMethod.PreviewerMethod;
             var asm = Assembly.LoadFile(System.IO.Path.GetFullPath(args.AppPath));
             var entryPoint = asm.EntryPoint;
             if (entryPoint == null)
@@ -141,12 +176,14 @@ namespace Avalonia.DesignerSupport.Remote
             var appBuilder = builderMethod.Invoke(null, null);
             Log($"Initializing application in design mode");
             var initializer =(IAppInitializer)Activator.CreateInstance(typeof(AppInitializer<>).MakeGenericType(appBuilder.GetType()));
-            var app = initializer.GetConfiguredApp(transport, args, appBuilder);
+            transport = initializer.ConfigureApp(transport, args, appBuilder);
             s_transport = transport;
             transport.OnMessage += OnTransportMessage;
             transport.OnException += (t, e) => Die(e.ToString());
+            transport.Start();
             Log("Sending StartDesignerSessionMessage");
             transport.Send(new StartDesignerSessionMessage {SessionId = args.SessionId});
+            
             Dispatcher.UIThread.MainLoop(CancellationToken.None);
         }
 
@@ -197,18 +234,10 @@ namespace Avalonia.DesignerSupport.Remote
                 }
                 catch (Exception e)
                 {
-                    var xmlException = e as XmlException;
-                    
                     s_transport.Send(new UpdateXamlResultMessage
                     {
                         Error = e.ToString(),
-                        Exception = new ExceptionDetails
-                        {
-                            ExceptionType = e.GetType().FullName,
-                            Message = e.Message.ToString(),
-                            LineNumber = xmlException?.LineNumber,
-                            LinePosition = xmlException?.LinePosition,
-                        }
+                        Exception = new ExceptionDetails(e),
                     });
                 }
             }

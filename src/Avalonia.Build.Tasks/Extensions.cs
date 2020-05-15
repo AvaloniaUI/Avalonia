@@ -9,14 +9,19 @@ namespace Avalonia.Build.Tasks
 
         public static void LogError(this IBuildEngine engine, BuildEngineErrorCode code, string file, string message)
         {
-            engine.LogErrorEvent(new BuildErrorEventArgs("Avalonia", FormatErrorCode(code), file ?? "", 0, 0, 0, 0, message, 
+            engine.LogErrorEvent(new BuildErrorEventArgs("Avalonia", FormatErrorCode(code), file ?? "", 0, 0, 0, 0, message,
                 "", "Avalonia"));
         }
-        
+
         public static void LogWarning(this IBuildEngine engine, BuildEngineErrorCode code, string file, string message)
         {
             engine.LogWarningEvent(new BuildWarningEventArgs("Avalonia", FormatErrorCode(code), file ?? "", 0, 0, 0, 0, message,
                 "", "Avalonia"));
+        }
+
+        public static void LogMessage(this IBuildEngine engine, string message, MessageImportance imp)
+        {
+            engine.LogMessageEvent(new BuildMessageEventArgs(message, "", "Avalonia", imp));
         }
     }
 }

@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.OpenGlPage"
+             xmlns:pages="clr-namespace:ControlCatalog.Pages">
+  <Grid>
+    <pages:OpenGlPageControl x:Name="GL"/>
+    <StackPanel>
+      <TextBlock Text="{Binding #GL.Info}"/>
+    </StackPanel>
+    <Grid ColumnDefinitions="*,Auto" Margin="20">
+      <StackPanel Grid.Column="1" MinWidth="300">
+        <TextBlock>Yaw</TextBlock>
+        <Slider Value="{Binding Yaw, Mode=TwoWay, ElementName=GL}" Maximum="10"/>
+        <TextBlock>Pitch</TextBlock>
+        <Slider Value="{Binding Pitch, Mode=TwoWay, ElementName=GL}" Maximum="10"/>
+        <TextBlock>Roll</TextBlock>
+        <Slider Value="{Binding Roll, Mode=TwoWay, ElementName=GL}" Maximum="10"/>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock FontWeight="Bold" Foreground="#C000C0">D</TextBlock>
+          <TextBlock FontWeight="Bold" Foreground="#00C090">I</TextBlock>
+          <TextBlock FontWeight="Bold" Foreground="#90C000">S</TextBlock>
+          <TextBlock FontWeight="Bold" Foreground="#C09000">C</TextBlock>
+          <TextBlock FontWeight="Bold" Foreground="#00C090">O</TextBlock>
+        </StackPanel>
+        <Slider Value="{Binding Disco, Mode=TwoWay, ElementName=GL}" Maximum="1"/>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</UserControl>

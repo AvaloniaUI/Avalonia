@@ -119,6 +119,50 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Parses a color string.
+        /// </summary>
+        /// <param name="s">The color string.</param>
+        /// <param name="color">The parsed color</param>
+        /// <returns>The status of the operation.</returns>
+        public static bool TryParse(ReadOnlySpan<char> s, out Color color)
+        {
+            color = default;
+            if (s == null)
+                return false;
+            if (s.Length == 0)
+                return false;
+
+            if (s[0] == '#')
+            {
+                var or = 0u;
+
+                if (s.Length == 7)
+                {
+                    or = 0xff000000;
+                }
+                else if (s.Length != 9)
+                {
+                    return false;
+                }
+
+                if(!uint.TryParse(s.Slice(1).ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var parsed))
+                    return false;
+                color = FromUInt32(parsed| or);
+                return true;
+            }
+
+            var knownColor = KnownColors.GetKnownColor(s.ToString());
+
+            if (knownColor != KnownColor.None)
+            {
+                color = knownColor.ToColor();
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Returns the string representation of the color.
         /// </summary>
         /// <returns>
