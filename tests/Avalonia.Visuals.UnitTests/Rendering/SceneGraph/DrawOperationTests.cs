@@ -35,7 +35,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             double expectedWidth,
             double expectedHeight)
         {
-            var target = new TestDrawOperation(
+            var target = new TestRectangleDrawOperation(
                 new Rect(x, y, width, height),
                 Matrix.CreateScale(scaleX, scaleY),
                 penThickness.HasValue ? new Pen(Brushes.Black, penThickness.Value) : null);
@@ -69,15 +69,28 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 new Matrix(),
                 Brushes.Black,
                 null,
-                geometry);
+                geometry, default);
 
             geometryNode.HitTest(new Point());
+        }
+
+        private class TestRectangleDrawOperation : RectangleNode
+        {
+            public TestRectangleDrawOperation(Rect bounds, Matrix transform, Pen pen) 
+                : base(transform, pen.Brush, pen, bounds, new BoxShadows())
+            {
+
+            }
+
+            public override bool HitTest(Point p) => false;
+
+            public override void Render(IDrawingContextImpl context) { }
         }
 
         private class TestDrawOperation : DrawOperation
         {
             public TestDrawOperation(Rect bounds, Matrix transform, Pen pen)
-                :base(bounds, transform, pen)
+                :base(bounds, transform)
             {
             }
 

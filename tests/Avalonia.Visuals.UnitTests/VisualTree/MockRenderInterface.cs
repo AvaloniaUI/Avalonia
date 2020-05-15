@@ -56,6 +56,8 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
+        public bool SupportsIndividualRoundRects { get; set; }
+
         public IFontManagerImpl CreateFontManager()
         {
             return new MockFontManagerImpl();

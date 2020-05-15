@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
@@ -71,12 +72,13 @@ namespace Avalonia.Input
             if (ev.Route == RoutingStrategies.Bubble)
             {
                 var e = (PointerPressedEventArgs)ev;
+                var visual = (IVisual)ev.Source;
 
                 if (e.ClickCount <= 1)
                 {
                     s_lastPress = new WeakReference<IInteractive>(e.Source);
                 }
-                else if (s_lastPress != null && e.ClickCount == 2 && e.MouseButton == MouseButton.Left)
+                else if (s_lastPress != null && e.ClickCount == 2 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {

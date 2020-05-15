@@ -295,7 +295,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc />
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             if (TextBox != null)
             {
