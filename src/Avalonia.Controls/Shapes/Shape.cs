@@ -2,6 +2,8 @@ using System;
 using Avalonia.Collections;
 using Avalonia.Media;
 
+#nullable enable
+
 namespace Avalonia.Controls.Shapes
 {
     /// <summary>
@@ -12,8 +14,8 @@ namespace Avalonia.Controls.Shapes
         /// <summary>
         /// Defines the <see cref="Fill"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> FillProperty =
-            AvaloniaProperty.Register<Shape, IBrush>(nameof(Fill));
+        public static readonly StyledProperty<IBrush?> FillProperty =
+            AvaloniaProperty.Register<Shape, IBrush?>(nameof(Fill));
 
         /// <summary>
         /// Defines the <see cref="Stretch"/> property.
@@ -24,14 +26,14 @@ namespace Avalonia.Controls.Shapes
         /// <summary>
         /// Defines the <see cref="Stroke"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> StrokeProperty =
-            AvaloniaProperty.Register<Shape, IBrush>(nameof(Stroke));
+        public static readonly StyledProperty<IBrush?> StrokeProperty =
+            AvaloniaProperty.Register<Shape, IBrush?>(nameof(Stroke));
 
         /// <summary>
         /// Defines the <see cref="StrokeDashArray"/> property.
         /// </summary>
-        public static readonly StyledProperty<AvaloniaList<double>> StrokeDashArrayProperty =
-            AvaloniaProperty.Register<Shape, AvaloniaList<double>>(nameof(StrokeDashArray));
+        public static readonly StyledProperty<AvaloniaList<double>?> StrokeDashArrayProperty =
+            AvaloniaProperty.Register<Shape, AvaloniaList<double>?>(nameof(StrokeDashArray));
 
         /// <summary>
         /// Defines the <see cref="StrokeDashOffset"/> property.
@@ -58,8 +60,8 @@ namespace Avalonia.Controls.Shapes
             AvaloniaProperty.Register<Shape, PenLineJoin>(nameof(StrokeJoin), PenLineJoin.Miter);
 
         private Matrix _transform = Matrix.Identity;
-        private Geometry _definingGeometry;
-        private Geometry _renderedGeometry;
+        private Geometry? _definingGeometry;
+        private Geometry? _renderedGeometry;
         private bool _calculateTransformOnArrange;
 
         static Shape()
@@ -73,7 +75,7 @@ namespace Avalonia.Controls.Shapes
         /// <summary>
         /// Gets a value that represents the <see cref="Geometry"/> of the shape.
         /// </summary>
-        public Geometry DefiningGeometry
+        public Geometry? DefiningGeometry
         {
             get
             {
@@ -89,7 +91,7 @@ namespace Avalonia.Controls.Shapes
         /// <summary>
         /// Gets a value that represents the final rendered <see cref="Geometry"/> of the shape.
         /// </summary>
-        public Geometry RenderedGeometry
+        public Geometry? RenderedGeometry
         {
             get
             {
@@ -123,7 +125,7 @@ namespace Avalonia.Controls.Shapes
         /// <summary>
         /// Gets or sets the <see cref="IBrush"/> that specifies how the shape's interior is painted.
         /// </summary>
-        public IBrush Fill
+        public IBrush? Fill
         {
             get { return GetValue(FillProperty); }
             set { SetValue(FillProperty, value); }
@@ -141,7 +143,7 @@ namespace Avalonia.Controls.Shapes
         /// <summary>
         /// Gets or sets the <see cref="IBrush"/> that specifies how the shape's outline is painted.
         /// </summary>
-        public IBrush Stroke
+        public IBrush? Stroke
         {
             get { return GetValue(StrokeProperty); }
             set { SetValue(StrokeProperty, value); }
@@ -150,7 +152,7 @@ namespace Avalonia.Controls.Shapes
         /// <summary>
         /// Gets or sets a collection of <see cref="double"/> values that indicate the pattern of dashes and gaps that is used to outline shapes.
         /// </summary>
-        public AvaloniaList<double> StrokeDashArray
+        public AvaloniaList<double>? StrokeDashArray
         {
             get { return GetValue(StrokeDashArrayProperty); }
             set { SetValue(StrokeDashArrayProperty, value); }
@@ -231,15 +233,16 @@ namespace Avalonia.Controls.Shapes
         /// Creates the shape's defining geometry.
         /// </summary>
         /// <returns>Defining <see cref="Geometry"/> of the shape.</returns>
-        protected abstract Geometry CreateDefiningGeometry();
+        protected abstract Geometry? CreateDefiningGeometry();
 
         /// <summary>
-        /// Invalidates <see cref="Geometry"/> of this shape.
+        /// Invalidates the geometry of this shape.
         /// </summary>
         protected void InvalidateGeometry()
         {
             _renderedGeometry = null;
             _definingGeometry = null;
+
             InvalidateMeasure();
         }
 
@@ -385,8 +388,8 @@ namespace Avalonia.Controls.Shapes
             // portion changes.
             if (e.Property == BoundsProperty)
             {
-                var oldBounds = (Rect)e.OldValue;
-                var newBounds = (Rect)e.NewValue;
+                var oldBounds = (Rect)e.OldValue!;
+                var newBounds = (Rect)e.NewValue!;
 
                 if (oldBounds.Size == newBounds.Size)
                 {
