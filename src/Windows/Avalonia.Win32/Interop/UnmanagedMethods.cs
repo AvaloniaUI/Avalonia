@@ -1302,6 +1302,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("dwmapi.dll")]
         public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
 
+        [DllImport("dwmapi.dll")]
+        public static extern bool DwmDefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref IntPtr plResult);
+
         [StructLayout(LayoutKind.Sequential)]
         internal struct MARGINS
         {

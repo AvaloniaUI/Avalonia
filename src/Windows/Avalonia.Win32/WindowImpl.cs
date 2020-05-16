@@ -782,10 +782,13 @@ namespace Avalonia.Win32
                 {
                     var margins = new MARGINS
                     {
-                        cyBottomHeight = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0
+                         cxLeftWidth= 50,
+                         cxRightWidth = 50,
+                          cyBottomHeight= 50,
+                           cyTopHeight = 50
                     };
 
-                    DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+                    //DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
                     GetClientRect(_hwnd, out var oldClientRect);
                     var oldClientRectOrigin = new POINT();
