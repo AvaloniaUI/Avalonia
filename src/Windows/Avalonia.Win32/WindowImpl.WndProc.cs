@@ -87,6 +87,11 @@ namespace Avalonia.Win32
 
             var fCallDWP = !DwmDefWindowProc(hWnd, msg, wParam, lParam, ref lRet);
 
+            if(fCallDWP)
+            {
+                fCallDWP = DefWindowProc(hWnd, msg, wParam, lParam) != IntPtr.Zero;
+            }            
+
             switch ((WindowsMessage)msg)
             {
                 case WindowsMessage.WM_ACTIVATE:
@@ -545,10 +550,15 @@ namespace Avalonia.Win32
                 }
             }
 
-            using (_rendererLock.Lock())
+            if (fCallDWP)
             {
-                return DefWindowProc(hWnd, msg, wParam, lParam);
+                using (_rendererLock.Lock())
+                {
+                    return DefWindowProc(hWnd, msg, wParam, lParam);
+                }
             }
+
+            return IntPtr.Zero;
         }
 
         private static int ToInt32(IntPtr ptr)

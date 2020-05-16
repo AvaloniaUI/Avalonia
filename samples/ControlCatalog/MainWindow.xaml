@@ -9,9 +9,25 @@
         xmlns:v="clr-namespace:ControlCatalog.Views"
         x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}" Background="#00000000">
   <DockPanel>
-    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" VerticalAlignment="Top">
+    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" VerticalAlignment="Top" Spacing="5">
       <Border Background="LightGray" BorderThickness="1" CornerRadius="4">
-        <TextBlock Text="Tab1" />
+        <Button Content="Test" />
+      </Border>
+
+      <Border Background="LightGray" BorderThickness="1" CornerRadius="4">
+        <Button Content="Test" />
+      </Border>
+
+      <Border Background="LightGray" BorderThickness="1" CornerRadius="4">
+        <Button Content="Test" />
+      </Border>
+
+      <Border Background="LightGray" BorderThickness="1" CornerRadius="4">
+        <Button Content="Test" />
+      </Border>
+
+      <Border Background="LightGray" BorderThickness="1" CornerRadius="4">
+        <Button Content="Test" />
       </Border>
     </StackPanel>
   </DockPanel>
