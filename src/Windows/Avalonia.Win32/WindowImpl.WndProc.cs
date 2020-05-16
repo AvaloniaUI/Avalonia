@@ -24,11 +24,7 @@ namespace Avalonia.Win32
         HitTestValues HitTestNCA(IntPtr hWnd, IntPtr wParam, IntPtr lParam)
         {
             // Get the point coordinates for the hit test.
-            POINT ptMouse = new POINT
-            {
-                X = HighWord(ToInt32(lParam)),
-                Y = ToInt32(lParam)
-            };
+            var ptMouse = PointFromLParam(lParam);
 
             // Get the window rectangle.            
             GetWindowRect(hWnd, out var rcWindow);
@@ -85,12 +81,7 @@ namespace Avalonia.Win32
             RawInputEventArgs e = null;
             IntPtr lRet = IntPtr.Zero;
 
-            var fCallDWP = !DwmDefWindowProc(hWnd, msg, wParam, lParam, ref lRet);
-
-            if(fCallDWP)
-            {
-                fCallDWP = DefWindowProc(hWnd, msg, wParam, lParam) != IntPtr.Zero;
-            }            
+            var fCallDWP = !DwmDefWindowProc(hWnd, msg, wParam, lParam, ref lRet);          
 
             switch ((WindowsMessage)msg)
             {
@@ -143,13 +134,16 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCHITTEST:
                     if(lRet == IntPtr.Zero)
                     {
-                        lRet = (IntPtr)HitTestNCA(hWnd, wParam, lParam);
-
-                        if (lRet != (IntPtr)HitTestValues.HTNOWHERE)
+                        switch (HitTestNCA(hWnd, wParam, lParam))
                         {
-                            fCallDWP = false;
+                            case HitTestValues.HTNOWHERE:
+                            case HitTestValues.HTCAPTION:
+                            case HitTestValues.HTCLIENT:
+                                return (IntPtr)HitTestValues.HTCLIENT;                                
 
-                            return IntPtr.Zero;
+                            default:
+                                fCallDWP = false;
+                                break;
                         }
                     }
                     break;
