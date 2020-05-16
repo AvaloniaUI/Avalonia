@@ -4,36 +4,63 @@ using Avalonia.Media;
 
 namespace Avalonia.Controls.Shapes
 {
+    /// <summary>
+    /// Provides a base class for shape elements, such as <see cref="Ellipse"/>, <see cref="Polygon"/> and <see cref="Rectangle"/>.
+    /// </summary>
     public abstract class Shape : Control
     {
+        /// <summary>
+        /// Defines the <see cref="Fill"/> property.
+        /// </summary>
         public static readonly StyledProperty<IBrush> FillProperty =
             AvaloniaProperty.Register<Shape, IBrush>(nameof(Fill));
 
+        /// <summary>
+        /// Defines the <see cref="Stretch"/> property.
+        /// </summary>
         public static readonly StyledProperty<Stretch> StretchProperty =
             AvaloniaProperty.Register<Shape, Stretch>(nameof(Stretch));
 
+        /// <summary>
+        /// Defines the <see cref="Stroke"/> property.
+        /// </summary>
         public static readonly StyledProperty<IBrush> StrokeProperty =
             AvaloniaProperty.Register<Shape, IBrush>(nameof(Stroke));
 
+        /// <summary>
+        /// Defines the <see cref="StrokeDashArray"/> property.
+        /// </summary>
         public static readonly StyledProperty<AvaloniaList<double>> StrokeDashArrayProperty =
             AvaloniaProperty.Register<Shape, AvaloniaList<double>>(nameof(StrokeDashArray));
 
+        /// <summary>
+        /// Defines the <see cref="StrokeDashOffset"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> StrokeDashOffsetProperty =
             AvaloniaProperty.Register<Shape, double>(nameof(StrokeDashOffset));
 
+        /// <summary>
+        /// Defines the <see cref="StrokeThickness"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> StrokeThicknessProperty =
             AvaloniaProperty.Register<Shape, double>(nameof(StrokeThickness));
 
+        /// <summary>
+        /// Defines the <see cref="StrokeLineCap"/> property.
+        /// </summary>
         public static readonly StyledProperty<PenLineCap> StrokeLineCapProperty =
             AvaloniaProperty.Register<Shape, PenLineCap>(nameof(StrokeLineCap), PenLineCap.Flat);
 
+        /// <summary>
+        /// Defines the <see cref="StrokeJoin"/> property.
+        /// </summary>
         public static readonly StyledProperty<PenLineJoin> StrokeJoinProperty =
             AvaloniaProperty.Register<Shape, PenLineJoin>(nameof(StrokeJoin), PenLineJoin.Miter);
 
         private Matrix _transform = Matrix.Identity;
         private Geometry _definingGeometry;
         private Geometry _renderedGeometry;
-        bool _calculateTransformOnArrange = false;
+        private bool _calculateTransformOnArrange;
 
         static Shape()
         {
@@ -43,6 +70,9 @@ namespace Avalonia.Controls.Shapes
                 StrokeThicknessProperty, StrokeLineCapProperty, StrokeJoinProperty);
         }
 
+        /// <summary>
+        /// Gets a value that represents the <see cref="Geometry"/> of the shape.
+        /// </summary>
         public Geometry DefiningGeometry
         {
             get
@@ -56,12 +86,9 @@ namespace Avalonia.Controls.Shapes
             }
         }
 
-        public IBrush Fill
-        {
-            get { return GetValue(FillProperty); }
-            set { SetValue(FillProperty, value); }
-        }
-
+        /// <summary>
+        /// Gets a value that represents the final rendered <see cref="Geometry"/> of the shape.
+        /// </summary>
         public Geometry RenderedGeometry
         {
             get
@@ -93,42 +120,72 @@ namespace Avalonia.Controls.Shapes
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="IBrush"/> that specifies how the shape's interior is painted.
+        /// </summary>
+        public IBrush Fill
+        {
+            get { return GetValue(FillProperty); }
+            set { SetValue(FillProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a <see cref="Stretch"/> enumeration value that describes how the shape fills its allocated space.
+        /// </summary>
         public Stretch Stretch
         {
             get { return GetValue(StretchProperty); }
             set { SetValue(StretchProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="IBrush"/> that specifies how the shape's outline is painted.
+        /// </summary>
         public IBrush Stroke
         {
             get { return GetValue(StrokeProperty); }
             set { SetValue(StrokeProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a collection of <see cref="double"/> values that indicate the pattern of dashes and gaps that is used to outline shapes.
+        /// </summary>
         public AvaloniaList<double> StrokeDashArray
         {
             get { return GetValue(StrokeDashArrayProperty); }
             set { SetValue(StrokeDashArrayProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value that specifies the distance within the dash pattern where a dash begins.
+        /// </summary>
         public double StrokeDashOffset
         {
             get { return GetValue(StrokeDashOffsetProperty); }
             set { SetValue(StrokeDashOffsetProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the width of the shape outline.
+        /// </summary>
         public double StrokeThickness
         {
             get { return GetValue(StrokeThicknessProperty); }
             set { SetValue(StrokeThicknessProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a <see cref="PenLineCap"/> enumeration value that describes the shape at the ends of a line.
+        /// </summary>
         public PenLineCap StrokeLineCap
         {
             get { return GetValue(StrokeLineCapProperty); }
             set { SetValue(StrokeLineCapProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a <see cref="PenLineJoin"/> enumeration value that specifies the type of join that is used at the vertices of a Shape.
+        /// </summary>
         public PenLineJoin StrokeJoin
         {
             get { return GetValue(StrokeJoinProperty); }
@@ -170,8 +227,15 @@ namespace Avalonia.Controls.Shapes
             }
         }
 
+        /// <summary>
+        /// Creates the shape's defining geometry.
+        /// </summary>
+        /// <returns>Defining <see cref="Geometry"/> of the shape.</returns>
         protected abstract Geometry CreateDefiningGeometry();
 
+        /// <summary>
+        /// Invalidates <see cref="Geometry"/> of this shape.
+        /// </summary>
         protected void InvalidateGeometry()
         {
             _renderedGeometry = null;
