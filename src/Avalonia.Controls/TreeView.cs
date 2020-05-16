@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
@@ -395,7 +396,14 @@ namespace Avalonia.Controls
         private void OnSelectionModelChildrenRequested(object sender, SelectionModelChildrenRequestedEventArgs e)
         {
             var container = ItemContainerGenerator.Index.ContainerFromItem(e.Source) as ItemsControl;
-            e.Children = container.GetObservable(ItemsProperty);
+
+            if (container is object)
+            {
+                e.Children = Observable.CombineLatest(
+                    container.GetObservable(TreeViewItem.IsExpandedProperty),
+                    container.GetObservable(ItemsProperty),
+                    (expanded, items) => expanded ? items : null);
+            }
         }
 
         private TreeViewItem GetContainerInDirection(
@@ -478,13 +486,13 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == SelectionModeProperty)
+            if (change.Property == SelectionModeProperty)
             {
-                var mode = newValue.GetValueOrDefault<SelectionMode>();
+                var mode = change.NewValue.GetValueOrDefault<SelectionMode>();
                 Selection.SingleSelect = !mode.HasFlagCustom(SelectionMode.Multiple);
                 Selection.AutoSelect = mode.HasFlagCustom(SelectionMode.AlwaysSelected);
             }

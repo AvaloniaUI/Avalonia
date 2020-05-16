@@ -20,6 +20,7 @@ namespace Avalonia.Controls
         private bool _singleSelect;
         private bool _autoSelect;
         private int _operationCount;
+        private IndexPath _oldAnchorIndex;
         private IReadOnlyList<IndexPath>? _selectedIndicesCached;
         private IReadOnlyList<object?>? _selectedItemsCached;
         private SelectionModelChildrenRequestedEventArgs? _childrenRequestedEventArgs;
@@ -142,6 +143,8 @@ namespace Avalonia.Controls
             }
             set
             {
+                var oldValue = AnchorIndex;
+
                 if (value != null)
                 {
                     SelectionTreeHelper.TraverseIndexPath(
@@ -155,7 +158,10 @@ namespace Avalonia.Controls
                     _rootNode.AnchorIndex = -1;
                 }
 
-                RaisePropertyChanged("AnchorIndex");
+                if (_operationCount == 0 && oldValue != AnchorIndex)
+                {
+                    RaisePropertyChanged("AnchorIndex");
+                }
             }
         }
 
@@ -633,19 +639,18 @@ namespace Avalonia.Controls
             _selectedIndicesCached = null;
             _selectedItemsCached = null;
 
-            // Raise SelectionChanged event
             if (e != null)
             {
                 SelectionChanged?.Invoke(this, e);
-            }
 
-            RaisePropertyChanged(nameof(SelectedIndex));
-            RaisePropertyChanged(nameof(SelectedIndices));
+                RaisePropertyChanged(nameof(SelectedIndex));
+                RaisePropertyChanged(nameof(SelectedIndices));
 
-            if (_rootNode.Source != null)
-            {
-                RaisePropertyChanged(nameof(SelectedItem));
-                RaisePropertyChanged(nameof(SelectedItems));
+                if (_rootNode.Source != null)
+                {
+                    RaisePropertyChanged(nameof(SelectedItem));
+                    RaisePropertyChanged(nameof(SelectedItems));
+                }
             }
         }
 
@@ -774,7 +779,10 @@ namespace Avalonia.Controls
                 winrtEnd,
                 info =>
                 {
-                    info.ParentNode!.Select(info.Path.GetAt(info.Path.GetSize() - 1), select);
+                    if (info.Path >= winrtStart && info.Path <= winrtEnd)
+                    {
+                        info.ParentNode!.Select(info.Path.GetAt(info.Path.GetSize() - 1), select);
+                    }
                 });
         }
 
@@ -782,6 +790,7 @@ namespace Avalonia.Controls
         {
             if (_operationCount++ == 0)
             {
+                _oldAnchorIndex = AnchorIndex;
                 _rootNode.BeginOperation();
             }
         }
@@ -805,10 +814,17 @@ namespace Avalonia.Controls
                     var changeSet = new SelectionModelChangeSet(changes);
                     e = changeSet.CreateEventArgs();
                 }
-            }
 
-            OnSelectionChanged(e);
-            _rootNode.Cleanup();
+                OnSelectionChanged(e);
+                
+                if (_oldAnchorIndex != AnchorIndex)
+                {
+                    RaisePropertyChanged(nameof(AnchorIndex));
+                }
+
+                _rootNode.Cleanup();
+                _oldAnchorIndex = default;
+            }
         }
 
         private void ApplyAutoSelect()

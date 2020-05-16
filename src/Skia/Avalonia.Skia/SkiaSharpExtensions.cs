@@ -1,13 +1,36 @@
 using System;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Visuals.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
     public static class SkiaSharpExtensions
     {
+        public static SKFilterQuality ToSKFilterQuality(this BitmapInterpolationMode interpolationMode)
+        {
+            switch (interpolationMode)
+            {
+                case BitmapInterpolationMode.LowQuality:
+                    return SKFilterQuality.Low;
+                case BitmapInterpolationMode.MediumQuality:
+                    return SKFilterQuality.Medium;
+                case BitmapInterpolationMode.HighQuality:
+                    return SKFilterQuality.High;
+                case BitmapInterpolationMode.Default:
+                    return SKFilterQuality.None;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
+            }
+        }
+
         public static SKPoint ToSKPoint(this Point p)
+        {
+            return new SKPoint((float)p.X, (float)p.Y);
+        }
+        
+        public static SKPoint ToSKPoint(this Vector p)
         {
             return new SKPoint((float)p.X, (float)p.Y);
         }

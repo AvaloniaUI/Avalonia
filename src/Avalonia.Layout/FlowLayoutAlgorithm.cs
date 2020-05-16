@@ -74,6 +74,7 @@ namespace Avalonia.Layout
             double lineSpacing,
             int maxItemsPerLine,
             ScrollOrientation orientation,
+            bool disableVirtualization,
             string layoutId)
         {
             _orientation.ScrollOrientation = orientation;
@@ -95,14 +96,14 @@ namespace Avalonia.Layout
             _elementManager.OnBeginMeasure(orientation);
 
             int anchorIndex = GetAnchorIndex(availableSize, isWrapping, minItemSpacing, layoutId);
-            Generate(GenerateDirection.Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, layoutId);
-            Generate(GenerateDirection.Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, layoutId);
+            Generate(GenerateDirection.Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
+            Generate(GenerateDirection.Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
             if (isWrapping && IsReflowRequired())
             {
                 var firstElementBounds = _elementManager.GetLayoutBoundsForRealizedIndex(0);
                 _orientation.SetMinorStart(ref firstElementBounds, 0);
                 _elementManager.SetLayoutBoundsForRealizedIndex(0, firstElementBounds);
-                Generate(GenerateDirection.Forward, 0 /*anchorIndex*/, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, layoutId);
+                Generate(GenerateDirection.Forward, 0 /*anchorIndex*/, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
             }
 
             RaiseLineArranged();
@@ -273,6 +274,7 @@ namespace Avalonia.Layout
             double minItemSpacing,
             double lineSpacing,
             int maxItemsPerLine,
+            bool disableVirtualization,
             string layoutId)
         {
             if (anchorIndex != -1)
@@ -288,7 +290,7 @@ namespace Avalonia.Layout
                 bool lineNeedsReposition = false;
 
                 while (_elementManager.IsIndexValidInData(currentIndex) &&
-                    ShouldContinueFillingUpSpace(previousIndex, direction))
+                    (disableVirtualization || ShouldContinueFillingUpSpace(previousIndex, direction)))
                 {
                     // Ensure layout element.
                     _elementManager.EnsureElementRealized(direction == GenerateDirection.Forward, currentIndex, layoutId);

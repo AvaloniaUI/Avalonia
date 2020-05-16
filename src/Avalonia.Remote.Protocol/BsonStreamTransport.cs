@@ -144,5 +144,9 @@ namespace Avalonia.Remote.Protocol
 
         public event Action<IAvaloniaRemoteTransportConnection, object> OnMessage;
         public event Action<IAvaloniaRemoteTransportConnection, Exception> OnException;
+        public void Start()
+        {
+            
+        }
     }
 }
