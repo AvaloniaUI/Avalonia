@@ -40,7 +40,7 @@ namespace Avalonia.Native
 
             bool IAvnWindowEvents.Closing()
             {
-                if(_parent.Closing != null)
+                if (_parent.Closing != null)
                 {
                     return _parent.Closing();
                 }
@@ -52,14 +52,14 @@ namespace Avalonia.Native
             {
                 _parent.WindowStateChanged?.Invoke((WindowState)state);
             }
+
+            void IAvnWindowEvents.GotInputWhenDisabled()
+            {
+                _parent.GotInputWhenDisabled?.Invoke();
+            }
         }
 
         public IAvnWindow Native => _native;
-
-        public void ShowDialog(IWindowImpl window)
-        {
-            _native.ShowDialog(((WindowImpl)window).Native);
-        }
 
         public void CanResize(bool value)
         {
@@ -71,7 +71,7 @@ namespace Avalonia.Native
             _native.Decorations = (Interop.SystemDecorations)enabled;
         }
 
-        public void SetTitleBarColor (Avalonia.Media.Color color)
+        public void SetTitleBarColor(Avalonia.Media.Color color)
         {
             _native.SetTitleBarColor(new AvnColor { Alpha = color.A, Red = color.R, Green = color.G, Blue = color.B });
         }
@@ -116,5 +116,17 @@ namespace Avalonia.Native
 
         public override IPopupImpl CreatePopup() =>
             _opts.OverlayPopups ? null : new PopupImpl(_factory, _opts, _glFeature, this);
+
+        public Action GotInputWhenDisabled { get; set; }
+
+        public void SetParent(IWindowImpl parent)
+        {
+            _native.SetParent(((WindowImpl)parent).Native);
+        }
+
+        public void SetEnabled(bool enable)
+        {
+            _native.SetEnabled(enable);
+        }
     }
 }
