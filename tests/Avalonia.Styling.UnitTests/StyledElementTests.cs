@@ -492,20 +492,20 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Resources_Parent_Is_Set()
+        public void Resources_Owner_Is_Set()
         {
             var target = new TestControl();
 
-            Assert.Same(target, ((IResourceNode)target.Resources).ResourceParent);
+            Assert.Same(target, ((ResourceDictionary)target.Resources).Owner);
         }
 
         [Fact]
         public void Assigned_Resources_Parent_Is_Set()
         {
-            var resources = new ResourceDictionary();
-            var target = new TestControl { Resources = resources };
+            var resources = new Mock<IResourceDictionary>();
+            var target = new TestControl { Resources = resources.Object };
 
-            Assert.Same(target, ((IResourceNode)resources).ResourceParent);
+            resources.Verify(x => x.AddOwner(target));
         }
 
         [Fact]
@@ -522,58 +522,25 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Changing_Parent_Notifies_Resources_ParentResourcesChanged()
-        {
-            var resources = new Mock<IResourceDictionary>();
-            var setResourceParent = resources.As<ISetResourceParent>();
-            var target = new TestControl { Resources = resources.Object };
-            var parent = new Decorator { Resources = { { "foo", "bar" } } };
-
-            setResourceParent.ResetCalls();
-            parent.Child = target;
-
-            setResourceParent.Verify(x =>
-                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
-                Times.Once);
-        }
-
-        [Fact]
-        public void Styles_Parent_Is_Set()
+        public void Styles_Owner_Is_Set()
         {
             var target = new TestControl();
 
-            Assert.Same(target, ((IResourceNode)target.Styles).ResourceParent);
+            Assert.Same(target, target.Styles.Owner);
         }
 
         [Fact]
-        public void Changing_Parent_Notifies_Styles_ParentResourcesChanged()
+        public void Changing_Parent_Raises_ResourcesChanged()
         {
-            var style = new Mock<IStyle>();
-            var setResourceParent = style.As<ISetResourceParent>();
-            var target = new TestControl { Styles = { style.Object } };
+            var target = new TestControl();
             var parent = new Decorator { Resources = { { "foo", "bar" } } };
+            var raised = 0;
 
-            setResourceParent.ResetCalls();
+            target.ResourcesChanged += (s, e) => ++raised;
+
             parent.Child = target;
 
-            setResourceParent.Verify(x =>
-                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
-                Times.Once);
-        }
-
-        [Fact]
-        public void Changing_Resources_Notifies_Styles()
-        {
-            var style = new Mock<IStyle>();
-            var setResourceParent = style.As<ISetResourceParent>();
-            var target = new TestControl { Styles = { style.Object } };
-
-            setResourceParent.ResetCalls();
-            target.Resources.Add("foo", "bar");
-
-            setResourceParent.Verify(x =>
-                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
-                Times.Once);
+            Assert.Equal(1, raised);
         }
 
         [Fact]

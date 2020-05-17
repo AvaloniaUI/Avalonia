@@ -30,7 +30,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IResourceNode
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IResourceHost
     {
         /// <summary>
         /// The application-global data templates.
@@ -129,26 +129,13 @@ namespace Avalonia
         /// </summary>
         public IResourceDictionary Resources
         {
-            get => _resources ?? (Resources = new ResourceDictionary());
+            get => _resources ??= new ResourceDictionary(this);
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
-
-                var hadResources = false;
-
-                if (_resources != null)
-                {
-                    hadResources = _resources.Count > 0;
-                    _resources.ResourcesChanged -= ThisResourcesChanged;
-                }
-
+                value = value ?? throw new ArgumentNullException(nameof(value));
+                _resources?.RemoveOwner(this);
                 _resources = value;
-                _resources.ResourcesChanged += ThisResourcesChanged;
-
-                if (hadResources || _resources.Count > 0)
-                {
-                    ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
-                }
+                _resources.AddOwner(this);
             }
         }
 
@@ -161,22 +148,14 @@ namespace Avalonia
         /// <remarks>
         /// Global styles apply to all windows in the application.
         /// </remarks>
-        public Styles Styles
-        {
-            get
-            {
-                if (_styles == null)
-                {
-                    _styles = new Styles(this);
-                    _styles.ResourcesChanged += ThisResourcesChanged;
-                }
-
-                return _styles;
-            }
-        }
+        public Styles Styles => _styles ??= new Styles(this);
 
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
+
+        /// <inheritdoc/>
+        bool IResourceNode.HasResources => (_resources?.HasResources ?? false) ||
+            (((IResourceNode?)_styles)?.HasResources ?? false);
 
         /// <summary>
         /// Gets the styling parent of the application, which is null.
@@ -185,13 +164,7 @@ namespace Avalonia
 
         /// <inheritdoc/>
         bool IStyleHost.IsStylesInitialized => _styles != null;
-
-        /// <inheritdoc/>
-        bool IResourceProvider.HasResources => _resources?.Count > 0;
-
-        /// <inheritdoc/>
-        IResourceNode IResourceNode.ResourceParent => null;
-        
+       
         /// <summary>
         /// Application lifetime, use it for things like setting the main window and exiting the app from code
         /// Currently supported lifetimes are:
@@ -219,11 +192,16 @@ namespace Avalonia
         public virtual void Initialize() { }
 
         /// <inheritdoc/>
-        bool IResourceProvider.TryGetResource(object key, out object value)
+        bool IResourceNode.TryGetResource(object key, out object value)
         {
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||
                    Styles.TryGetResource(key, out value);
+        }
+
+        void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, e);
         }
 
         void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
@@ -282,8 +260,6 @@ namespace Avalonia
             try
             {
                 _notifyingResourcesChanged = true;
-                (_resources as ISetResourceParent)?.ParentResourcesChanged(e);
-                (_styles as ISetResourceParent)?.ParentResourcesChanged(e);
                 ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
             }
             finally

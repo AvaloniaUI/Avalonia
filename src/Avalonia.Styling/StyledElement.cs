@@ -212,7 +212,6 @@ namespace Avalonia
                 if (_styles is null)
                 {
                     _styles = new Styles(this);
-                    _styles.ResourcesChanged += ThisResourcesChanged;
                     NotifyResourcesChanged(new ResourcesChangedEventArgs());
                 }
 
@@ -225,32 +224,13 @@ namespace Avalonia
         /// </summary>
         public IResourceDictionary Resources
         {
-            get => _resources ?? (Resources = new ResourceDictionary());
+            get => _resources ??= new ResourceDictionary(this);
             set
             {
                 value = value ?? throw new ArgumentNullException(nameof(value));
-
-                var hadResources = false;
-
-                if (_resources != null)
-                {
-                    (_resources as ISetResourceParent)?.SetParent(null);
-                    hadResources = _resources.Count > 0;
-                    _resources.ResourcesChanged -= ThisResourcesChanged;
-                }
-
+                _resources?.RemoveOwner(this);
                 _resources = value;
-                _resources.ResourcesChanged += ThisResourcesChanged;
-
-                if (value is ISetResourceParent setParent && setParent.ResourceParent == null)
-                {
-                    setParent.SetParent(this);
-                }
-
-                if (hadResources || _resources.Count > 0)
-                {
-                    NotifyResourcesChanged(new ResourcesChangedEventArgs());
-                }
+                _resources.AddOwner(this);
             }
         }
 
@@ -312,10 +292,8 @@ namespace Avalonia
         IAvaloniaReadOnlyList<ILogical> ILogical.LogicalChildren => LogicalChildren;
 
         /// <inheritdoc/>
-        bool IResourceProvider.HasResources => _resources?.Count > 0 || Styles.HasResources;
-
-        /// <inheritdoc/>
-        IResourceNode? IResourceNode.ResourceParent => ((IStyleHost)this).StylingParent as IResourceNode;
+        bool IResourceNode.HasResources => (_resources?.HasResources ?? false) ||
+            (((IResourceNode?)_styles)?.HasResources ?? false);
 
         /// <inheritdoc/>
         IAvaloniaReadOnlyList<string> IStyleable.Classes => Classes;
@@ -407,7 +385,10 @@ namespace Avalonia
         void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
 
         /// <inheritdoc/>
-        bool IResourceProvider.TryGetResource(object key, out object? value)
+        void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
+
+        /// <inheritdoc/>
+        bool IResourceNode.TryGetResource(object key, out object? value)
         {
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||
@@ -446,6 +427,7 @@ namespace Avalonia
                 {
                     old.ResourcesChanged -= ThisResourcesChanged;
                 }
+
                 if (Parent != null)
                 {
                     Parent.ResourcesChanged += ThisResourcesChanged;
@@ -804,24 +786,9 @@ namespace Avalonia
             }
         }
 
-        private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        private void NotifyResourcesChanged(ResourcesChangedEventArgs? e = null)
         {
-            if (_notifyingResourcesChanged)
-            {
-                return;
-            }
-
-            try
-            {
-                _notifyingResourcesChanged = true;
-                (_resources as ISetResourceParent)?.ParentResourcesChanged(e);
-                (_styles as ISetResourceParent)?.ParentResourcesChanged(e);
-                ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
-            }
-            finally
-            {
-                _notifyingResourcesChanged = false;
-            }
+            ResourcesChanged?.Invoke(this, e ?? new ResourcesChangedEventArgs());
         }
 
         private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
