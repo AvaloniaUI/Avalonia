@@ -653,6 +653,37 @@ namespace Avalonia.Skia
             }
         }
 
+
+        static SKColor StupidBlend(SKColor bg, SKColor fg)
+        {
+            using (var bmp = new SKBitmap(1, 1))
+            {
+                bmp.SetPixel(0, 0, bg);
+                using (var canvas = new SKCanvas(bmp))
+                using (var paint = new SKPaint
+                {
+                    Color = fg
+                })
+                    canvas.DrawRect(-1, -1, 3, 3, paint);
+                return bmp.GetPixel(0, 0);
+            }
+        }
+
+        static SKColorFilter CreateAlphaColorFilter(double opacity)
+        {
+            if (opacity > 1)
+                opacity = 1;
+            var c = new byte[256];
+            var a = new byte[256];
+            for (var i = 0; i < 256; i++)
+            {
+                c[i] = 255;
+                a[i] = (byte)(i * opacity);
+            }
+
+            return SKColorFilter.CreateTable(a, c, c, c);
+        }
+
         /// <summary>
         /// Creates paint wrapper for given brush.
         /// </summary>
@@ -687,9 +718,22 @@ namespace Avalonia.Skia
 
             if (brush is IPerlinNoiseBrush noiseBrush)
             {
-                paint.Color = new SKColor(255, 255, 255, 25);
-                paint.BlendMode = SKBlendMode.Exclusion;
-                //paint.Shader = SKShader.CreatePerlinNoiseTurbulence(0.2f, 0.2f, 2, 0.756f);                
+                var tintOpacity = 0.6;
+                var noiseOpcity = 0.1;
+
+                var excl = new SKColor(255, 255, 255, 25);
+                var tint = new SKColor(255, 255, 255, (byte)(255 * tintOpacity));
+
+                tint = StupidBlend(excl, tint);
+
+                var tintShader = SKShader.CreateColor(tint);
+                var noiseShader =
+                    //SKShader.CreatePerlinNoiseImprovedNoise(0.5f, 0.5f, 4, 0)
+                    SKShader.CreatePerlinNoiseTurbulence(0.4f, 0.4f, 4, 0)
+                    .WithColorFilter(CreateAlphaColorFilter(noiseOpcity));
+
+                var compose = SKShader.CreateCompose(tintShader, noiseShader);
+                paint.Shader = compose;
 
                 return paintWrapper;
             }

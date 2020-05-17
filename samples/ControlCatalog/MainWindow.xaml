@@ -10,36 +10,32 @@
         x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}" Background="Transparent" TextBlock.Foreground="Red">
 
   <Panel>
-    <StackPanel>
-      <TextBlock VerticalAlignment="Top" HorizontalAlignment="Left" Text="Desktop Background / Gausian Blur (1/2)" />      
-      <Slider x:Name="ColourBurn" Minimum="0" Maximum="0.3" Value="0.1" />
-      <Slider x:Name="TintOpacity" Minimum="0.6" Maximum="0.8" Value="0.8" />
-      <Slider x:Name="NoiseLevel" Minimum="0" Maximum="1" Value="0.12" />
-    </StackPanel>
-    <Border Margin="100" BorderThickness="1" BorderBrush="Black">
+    <Border BorderBrush="Black">
       <Border.Background>
         <SolidColorBrush Color="White" Opacity="{Binding #ColourBurn.Value}" />
       </Border.Background>
-      <Panel>
-        <TextBlock VerticalAlignment="Top" HorizontalAlignment="Left" Text="Colour Burn (3)" />
-        <Border Margin="100" BorderThickness="1" BorderBrush="Black">
+      <Panel>        
+        <Border BorderBrush="Black">
           <Border.Background>
-            <SolidColorBrush Color="White" Opacity="{Binding #TintOpacity.Value}" />
+            <SolidColorBrush Color="LightGray" Opacity="{Binding #TintOpacity.Value}" />
           </Border.Background>
           <Panel>
-            <TextBlock VerticalAlignment="Top" HorizontalAlignment="Left" Text="Tint (4)" />
-            <Border Margin="100" BorderThickness="1" BorderBrush="Black">
+            
+            <Border BoxShadow="inset 1 0 2 0 #FFFFFF">
               <Border.Background>
                 <ImageBrush Source="/Assets/noise2.png" Opacity="{Binding #NoiseLevel.Value}"  DestinationRect="0 0 40 40" TileMode="Tile" />
               </Border.Background>
-              <Panel>
-                <TextBlock VerticalAlignment="Top" HorizontalAlignment="Left" Text="Noise (5)" />
-                <TextBlock VerticalAlignment="Top" HorizontalAlignment="Right" Text="{Binding #NoiseLevel.Value}" />
-              </Panel>
+              
             </Border>
           </Panel>
         </Border>
       </Panel>
     </Border>
+    <StackPanel Margin="50 50 0 0" Width="250">
+      
+      <Slider x:Name="ColourBurn" Minimum="0" Maximum="0.3" Value="0.1" />
+      <Slider x:Name="TintOpacity" Minimum="0.6" Maximum="0.8" Value="0.8" />
+      <Slider x:Name="NoiseLevel" Minimum="0" Maximum="1" Value="0.12" />
+    </StackPanel>
   </Panel>
 </Window>

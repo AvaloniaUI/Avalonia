@@ -10,6 +10,11 @@ namespace Avalonia.Media
 
     }
 
+    public interface IAcrylicBrush : IBrush
+    {
+        public Color Tint { get; set; }
+    }
+
     /// <summary>
     /// Fills an area with a solid color.
     /// </summary>
