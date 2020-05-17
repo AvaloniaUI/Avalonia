@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -598,7 +599,13 @@ namespace Avalonia.Win32
         {
             var accent = new AccentPolicy();
             var accentStructSize = Marshal.SizeOf(accent);
-            accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
+            accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
+
+            var c = new Color(0, Colors.Red.B, Colors.Red.G, Colors.Red.R);
+            var opacity = 0x7F;
+            var bgcolor = (int)c.ToUint32();
+
+            accent.GradientColor = (int)((opacity << 24) | (bgcolor & 0xFFFFFFu));
 
             var accentPtr = Marshal.AllocHGlobal(accentStructSize);
             Marshal.StructureToPtr(accent, accentPtr, false);
