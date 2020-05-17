@@ -600,12 +600,13 @@ namespace Avalonia.Win32
             var accent = new AccentPolicy();
             var accentStructSize = Marshal.SizeOf(accent);
             accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
+            //accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
 
-            var c = new Color(0, Colors.Red.B, Colors.Red.G, Colors.Red.R);
-            var opacity = 0x7F;
+            var c = new Color(0, Colors.White.B, Colors.White.G, Colors.White.R);
+            var opacity = 0;
             var bgcolor = (int)c.ToUint32();
 
-            accent.GradientColor = (int)((opacity << 24) | (bgcolor & 0xFFFFFFu));
+           accent.GradientColor = (int)((opacity << 24) | (bgcolor & 0xFFFFFFu));
 
             var accentPtr = Marshal.AllocHGlobal(accentStructSize);
             Marshal.StructureToPtr(accent, accentPtr, false);

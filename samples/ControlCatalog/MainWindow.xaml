@@ -7,29 +7,35 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:ControlCatalog.ViewModels"
         xmlns:v="clr-namespace:ControlCatalog.Views"
-        x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}" Background="Transparent">
-  <DockPanel>
-    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" VerticalAlignment="Top" Spacing="5">
-      <Border Background="LightGray" BorderThickness="1" CornerRadius="4">
-        <Button Content="Test" />
-      </Border>
+        x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}" Background="Transparent" TextBlock.Foreground="Red">
 
-      <Border Background="LightGray" BorderThickness="1" CornerRadius="4">
-        <Button Content="Test" />
-      </Border>
-
-      <Border Background="LightGray" BorderThickness="1" CornerRadius="4">
-        <Button Content="Test" />
-      </Border>
-
-      <Border Background="LightGray" BorderThickness="1" CornerRadius="4">
-        <Button Content="Test" />
-      </Border>
-
-      <Border Background="LightGray" BorderThickness="1" CornerRadius="4">
-        <Button Content="Test" />
-      </Border>
+  <Panel>
+    <StackPanel>
+      <TextBlock VerticalAlignment="Top" HorizontalAlignment="Left" Text="Desktop Background / Gausian Blur (1/2)" />
+      <Slider x:Name="NoiseLevel" Minimum="0" Maximum="1" Value="0.25" />
+      <Slider x:Name="TintOpacity" Minimum="0" Maximum="1" Value="0.25" />
     </StackPanel>
-  </DockPanel>
-  
+    <Border Margin="100" Background="Perlin" BorderThickness="1" BorderBrush="Black">
+      <Panel>
+        <TextBlock VerticalAlignment="Top" HorizontalAlignment="Left" Text="Colour Burn (3)" />
+        <Border Margin="100" BorderThickness="1" BorderBrush="Black">
+          <Border.Background>
+            <SolidColorBrush Color="#FFFFFF" Opacity="{Binding #TintOpacity.Value}" />
+          </Border.Background>
+          <Panel>
+            <TextBlock VerticalAlignment="Top" HorizontalAlignment="Left" Text="Tint (4)" />
+            <Border Margin="100" BorderThickness="1" BorderBrush="Black">
+              <Border.Background>
+                <ImageBrush Source="/Assets/noise3.png" Opacity="{Binding #NoiseLevel.Value}"  DestinationRect="0 0 40 40" TileMode="Tile" />
+              </Border.Background>
+              <Panel>
+                <TextBlock VerticalAlignment="Top" HorizontalAlignment="Left" Text="Noise (5)" />
+                <TextBlock VerticalAlignment="Top" HorizontalAlignment="Right" Text="{Binding #NoiseLevel.Value}" />
+              </Panel>
+            </Border>
+          </Panel>
+        </Border>
+      </Panel>
+    </Border>
+  </Panel>
 </Window>

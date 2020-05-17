@@ -1,10 +1,24 @@
 namespace Avalonia.Media
 {
+    public class PerlinNoiseBrush : IPerlinNoiseBrush
+    {
+        public double Opacity => 1;
+    }
+
+    public class BlurBrush : IBlurBrush
+    {
+        public double Opacity => 1;
+    }
+
     /// <summary>
     /// Predefined brushes.
     /// </summary>
     public static class Brushes
     {
+        public static IBrush Blur => new BlurBrush();
+
+        public static IBrush Perlin => new PerlinNoiseBrush();
+
         /// <summary>
         /// Gets an <see cref="Colors.AliceBlue"/> colored brush.
         /// </summary>

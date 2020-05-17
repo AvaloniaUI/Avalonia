@@ -673,6 +673,25 @@ namespace Avalonia.Skia
             {
                 paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte) (solid.Color.A * opacity));
 
+
+                return paintWrapper;
+            }
+
+            if (brush is IBlurBrush blur)
+            {
+                paint.ImageFilter = SKImageFilter.CreateBlur(5, 5);
+
+                return paintWrapper;
+            }
+
+
+            if (brush is IPerlinNoiseBrush noiseBrush)
+            {
+                paint.Color = new SKColor(255, 255, 255, 25);
+                paint.BlendMode = SKBlendMode.Exclusion;
+                paint.ImageFilter = SKImageFilter.CreateBlur(5, 5);
+                //paint.Shader = SKShader.CreatePerlinNoiseTurbulence(0.2f, 0.2f, 2, 0.756f);                
+
                 return paintWrapper;
             }
 
@@ -699,7 +718,7 @@ namespace Avalonia.Skia
             }
 
             if (tileBrush != null && tileBrushImage != null)
-            {
+            {                
                 ConfigureTileBrush(ref paintWrapper, targetSize, tileBrush, tileBrushImage);
             }
             else

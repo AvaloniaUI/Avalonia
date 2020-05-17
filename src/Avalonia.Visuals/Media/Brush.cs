@@ -54,6 +54,16 @@ namespace Avalonia.Media
                 return brush;
             }
 
+            if(s == "Perlin")
+            {
+                return new PerlinNoiseBrush();
+            }
+
+            if(s == "Blur")
+            {
+                return new BlurBrush();
+            }
+
             throw new FormatException($"Invalid brush string: '{s}'.");
         }
 
