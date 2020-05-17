@@ -1,5 +1,11 @@
 namespace Avalonia.Media
 {
+    public enum AcrylicBackgroundSource
+    {
+        HostBackDrop = 0,
+        BackDrop = 1
+    }
+
     public interface IPerlinNoiseBrush : IBrush
     {
 
@@ -12,7 +18,13 @@ namespace Avalonia.Media
 
     public interface IAcrylicBrush : IBrush
     {
-        public Color Tint { get; set; }
+        public  AcrylicBackgroundSource BackgroundSource { get; set; }
+
+        public Color TintColor { get; set; }
+
+        public double TintOpacity { get; set; }
+
+        public Color FallbackColor { get; set; }
     }
 
     /// <summary>

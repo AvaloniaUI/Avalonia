@@ -250,6 +250,37 @@ namespace Avalonia.Skia
                         rect.RadiiBottomRight.ToSKPoint(), rect.RadiiBottomLeft.ToSKPoint(),
                     });
 
+            if (brush is IAcrylicBrush acrylicBrush)
+            {
+                if (acrylicBrush.BackgroundSource == AcrylicBackgroundSource.HostBackDrop)
+                {
+                    Canvas.Save();
+                    if (needRoundRect)
+                    {
+                        Canvas.ClipRoundRect(skRoundRect, SKClipOperation.Intersect, true);
+                    }
+                    else
+                    {
+                        Canvas.ClipRect(rc, SKClipOperation.Intersect, true);
+                    }
+                    Canvas.Clear();
+                    Canvas.Restore();
+                }
+                else
+                {
+                    // save existing? use as bg for shadow
+
+                }
+
+                //boxShadows = new BoxShadows(new BoxShadow
+                //{
+                //    Blur = 2,
+                //    OffsetX = 2,
+                //    Color = Colors.White,
+                //    IsInset = true
+                //});
+            }
+
             foreach (var boxShadow in boxShadows)
             {
                 if (!boxShadow.IsEmpty && !boxShadow.IsInset)
@@ -302,8 +333,7 @@ namespace Avalonia.Skia
                     else
                     {
                         Canvas.DrawRect(rc, paint.Paint);
-                    }
-                  
+                    }                                      
                 }
             }
 
@@ -716,13 +746,13 @@ namespace Avalonia.Skia
             }
 
 
-            if (brush is IPerlinNoiseBrush noiseBrush)
+            if (brush is IAcrylicBrush acrylicBrush)
             {
-                var tintOpacity = 0.6;
-                var noiseOpcity = 0.1;
+                var tintOpacity = acrylicBrush.TintOpacity;
+                var noiseOpcity = 0.04;
 
                 var excl = new SKColor(255, 255, 255, 25);
-                var tint = new SKColor(255, 255, 255, (byte)(255 * tintOpacity));
+                var tint = new SKColor(acrylicBrush.TintColor.R, acrylicBrush.TintColor.G, acrylicBrush.TintColor.B, (byte)(255 * tintOpacity));
 
                 tint = StupidBlend(excl, tint);
 

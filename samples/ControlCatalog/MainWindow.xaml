@@ -8,34 +8,38 @@
         xmlns:vm="clr-namespace:ControlCatalog.ViewModels"
         xmlns:v="clr-namespace:ControlCatalog.Views"
         x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}" Background="Transparent" TextBlock.Foreground="Red">
-
-  <Panel>
-    <Border BorderBrush="Black">
-      <Border.Background>
-        <SolidColorBrush Color="White" Opacity="{Binding #ColourBurn.Value}" />
-      </Border.Background>
-      <Panel>        
-        <Border BorderBrush="Black">
+  <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Border.Background>
+      <ImageBrush Source="/Assets/clovers.jpg"/>
+    </Border.Background>
+    <Panel>
+      <StackPanel Margin="24" Spacing="24">
+        <Border Height="100">
           <Border.Background>
-            <SolidColorBrush Color="LightGray" Opacity="{Binding #TintOpacity.Value}" />
+            <AcrylicBrush TintOpacity=".6" TintColor="White" BackgroundSource="BackDrop"  />
           </Border.Background>
-          <Panel>
-            
-            <Border BoxShadow="inset 1 0 2 0 #FFFFFF">
-              <Border.Background>
-                <ImageBrush Source="/Assets/noise2.png" Opacity="{Binding #NoiseLevel.Value}"  DestinationRect="0 0 40 40" TileMode="Tile" />
-              </Border.Background>
-              
-            </Border>
-          </Panel>
         </Border>
-      </Panel>
-    </Border>
-    <StackPanel Margin="50 50 0 0" Width="250">
       
-      <Slider x:Name="ColourBurn" Minimum="0" Maximum="0.3" Value="0.1" />
-      <Slider x:Name="TintOpacity" Minimum="0.6" Maximum="0.8" Value="0.8" />
-      <Slider x:Name="NoiseLevel" Minimum="0" Maximum="1" Value="0.12" />
-    </StackPanel>
-  </Panel>
+      <Border Height="100">
+          <Border.Background>
+            <AcrylicBrush TintOpacity=".6" TintColor="White" BackgroundSource="HostBackDrop"  />
+          </Border.Background>
+        </Border>
+            
+            <Border Height="100">
+          <Border.Background>
+            <AcrylicBrush TintOpacity=".4" TintColor="Red" BackgroundSource="HostBackDrop"  />
+          </Border.Background>
+        </Border>
+      </StackPanel>
+
+
+
+      <StackPanel Margin="50 50 0 0" Width="250">
+        <Slider x:Name="ColourBurn" Minimum="0" Maximum="0.3" Value="0.1" />
+        <Slider x:Name="TintOpacity" Minimum="0.6" Maximum="0.8" Value="0.8" />
+        <Slider x:Name="NoiseLevel" Minimum="0" Maximum="1" Value="0.12" />
+      </StackPanel>
+    </Panel>
+  </Border>
 </Window>

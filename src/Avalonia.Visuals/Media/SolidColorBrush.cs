@@ -4,6 +4,19 @@ using Avalonia.Media.Immutable;
 
 namespace Avalonia.Media
 {
+    public class AcrylicBrush : IAcrylicBrush
+    {
+        public Color TintColor { get; set; }
+
+        public double Opacity => 1;
+
+        public double TintOpacity { get; set; }
+
+        public AcrylicBackgroundSource BackgroundSource { get; set; }
+
+        public Color FallbackColor { get; set; }
+    }
+
     /// <summary>
     /// Fills an area with a solid color.
     /// </summary>
