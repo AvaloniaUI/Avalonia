@@ -10,6 +10,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -379,14 +380,19 @@ namespace Avalonia.Controls
         {
             if (change.Property == ItemsProperty)
             {
+                var oldEnumerable = change.OldValue.GetValueOrDefault<IEnumerable>();
                 var newEnumerable = change.NewValue.GetValueOrDefault<IEnumerable>();
-                var newDataSource = newEnumerable as ItemsSourceView;
-                if (newEnumerable != null && newDataSource == null)
-                {
-                    newDataSource = new ItemsSourceView(newEnumerable);
-                }
 
-                OnDataSourcePropertyChanged(ItemsSourceView, newDataSource);
+                if (oldEnumerable != newEnumerable)
+                {
+                    var newDataSource = newEnumerable as ItemsSourceView;
+                    if (newEnumerable != null && newDataSource == null)
+                    {
+                        newDataSource = new ItemsSourceView(newEnumerable);
+                    }
+
+                    OnDataSourcePropertyChanged(ItemsSourceView, newDataSource);
+                }
             }
             else if (change.Property == ItemTemplateProperty)
             {
@@ -435,8 +441,16 @@ namespace Avalonia.Controls
 
         private int GetElementIndexImpl(IControl element)
         {
-            var virtInfo = TryGetVirtualizationInfo(element);
-            return _viewManager.GetElementIndex(virtInfo);
+            // Verify that element is actually a child of this ItemsRepeater
+            var parent = element.GetVisualParent();
+            
+            if (parent == this)
+            {
+                var virtInfo = TryGetVirtualizationInfo(element);
+                return _viewManager.GetElementIndex(virtInfo);
+            }
+
+            return -1;
         }
 
         private IControl GetElementFromIndexImpl(int index)

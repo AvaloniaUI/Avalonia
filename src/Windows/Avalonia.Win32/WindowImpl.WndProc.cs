@@ -77,12 +77,6 @@ namespace Avalonia.Win32
                     s_instances.Remove(this);
                     Closed?.Invoke();
 
-                    if (_parent != null)
-                    {
-                        _parent._disabledBy.Remove(this);
-                        _parent.UpdateEnabled();
-                    }
-
                     _mouseDevice.Dispose();
                     _touchDevice?.Dispose();
                     //Free other resources

@@ -219,7 +219,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             if (_popup != null)
             {
@@ -230,8 +230,23 @@ namespace Avalonia.Controls
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
             _popup.Closed += PopupClosed;
+        }
 
-            base.OnTemplateApplied(e);
+        /// <summary>
+        /// Called when the ComboBox popup is closed, with the <see cref="PopupClosedEventArgs"/>
+        /// that caused the popup to close.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// This method can be overridden to control whether the event that caused the popup to close
+        /// is swallowed or passed through.
+        /// </remarks>
+        protected virtual void PopupClosedOverride(PopupClosedEventArgs e)
+        {
+            if (e.CloseEvent is PointerEventArgs pointerEvent)
+            {
+                pointerEvent.Handled = true;
+            }
         }
 
         internal void ItemFocused(ComboBoxItem dropDownItem)
@@ -247,10 +262,7 @@ namespace Avalonia.Controls
             _subscriptionsOnOpen?.Dispose();
             _subscriptionsOnOpen = null;
 
-            if (e.CloseEvent is PointerEventArgs pointerEvent)
-            {
-                pointerEvent.Handled = true;
-            }
+            PopupClosedOverride(e);
 
             if (CanFocus(this))
             {
@@ -292,9 +304,9 @@ namespace Avalonia.Controls
             {
                 var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
 
-                if (container == null && SelectedItems.Count > 0)
+                if (container == null && SelectedIndex != -1)
                 {
-                    ScrollIntoView(SelectedItems[0]);
+                    ScrollIntoView(Selection.SelectedIndex);
                     container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
                 }
 

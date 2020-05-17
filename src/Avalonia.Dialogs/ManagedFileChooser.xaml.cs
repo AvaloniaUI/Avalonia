@@ -34,7 +34,7 @@ namespace Avalonia.Dialogs
                 return;
             }
 
-            var isQuickLink = _quickLinksRoot.IsLogicalParentOf(e.Source as Control);
+            var isQuickLink = _quickLinksRoot.IsLogicalAncestorOf(e.Source as Control);
             if (e.ClickCount == 2 || isQuickLink)
             {
                 if (model.ItemType == ManagedFileChooserItemType.File)
@@ -81,7 +81,7 @@ namespace Avalonia.Dialogs
 
             if (indexOfPreselected > 1)
             {
-                _filesView.ScrollIntoView(model.Items[indexOfPreselected - 1]);
+                _filesView.ScrollIntoView(indexOfPreselected - 1);
             }
         }
     }

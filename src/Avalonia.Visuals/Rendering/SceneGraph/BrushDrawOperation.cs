@@ -9,8 +9,8 @@ namespace Avalonia.Rendering.SceneGraph
     /// </summary>
     internal abstract class BrushDrawOperation : DrawOperation
     {
-        public BrushDrawOperation(Rect bounds, Matrix transform, IPen pen)
-            : base(bounds, transform, pen)
+        public BrushDrawOperation(Rect bounds, Matrix transform)
+            : base(bounds, transform)
         {
         }
 
