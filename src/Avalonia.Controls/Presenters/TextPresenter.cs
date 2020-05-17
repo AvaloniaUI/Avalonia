@@ -75,6 +75,9 @@ namespace Avalonia.Controls.Presenters
         static TextPresenter()
         {
             AffectsRender<TextPresenter>(SelectionBrushProperty);
+            AffectsMeasure<TextPresenter>(TextProperty, PasswordCharProperty, 
+                TextAlignmentProperty, TextWrappingProperty, TextBlock.FontSizeProperty,
+                TextBlock.FontStyleProperty, TextBlock.FontWeightProperty, TextBlock.FontFamilyProperty);
 
             Observable.Merge(TextProperty.Changed, TextBlock.ForegroundProperty.Changed,
                 TextAlignmentProperty.Changed, TextWrappingProperty.Changed,
@@ -284,8 +287,6 @@ namespace Avalonia.Controls.Presenters
         protected void InvalidateFormattedText()
         {
             _formattedText = null;
-
-            InvalidateMeasure();
         }
 
         /// <summary>
@@ -301,13 +302,15 @@ namespace Avalonia.Controls.Presenters
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            FormattedText.Constraint = Bounds.Size;
-
             context.DrawText(Foreground, new Point(), FormattedText);
         }
 
         public override void Render(DrawingContext context)
         {
+            FormattedText.Constraint = Bounds.Size;
+
+            _constraint = Bounds.Size;
+
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
 
@@ -315,10 +318,6 @@ namespace Avalonia.Controls.Presenters
             {
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
-
-                // issue #600: set constraint before any FormattedText manipulation
-                //             see base.Render(...) implementation
-                FormattedText.Constraint = _constraint;
 
                 var rects = FormattedText.HitTestTextRange(start, length);
 
