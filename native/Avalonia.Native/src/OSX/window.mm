@@ -38,6 +38,7 @@ public:
         _glContext = gl;
         renderTarget = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext: gl];
         View = [[AvnView alloc] initWithParent:this];
+        
 
         Window = [[AvnWindow alloc] initWithParent:this];
         
@@ -47,7 +48,15 @@ public:
         
         [Window setStyleMask:NSWindowStyleMaskBorderless];
         [Window setBackingType:NSBackingStoreBuffered];
-        [Window setContentView: View];
+        [Window setTitlebarAppearsTransparent:true];
+       
+        auto effectView = [AutoFitContentVisualEffectView new];
+        [effectView setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+        [effectView setMaterial:NSVisualEffectMaterialDark];
+        [effectView setAutoresizesSubviews:true];
+        [effectView addSubview:View];
+        
+        [Window setContentView: effectView];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -487,7 +496,7 @@ private:
                 NSView *titlebarView = [subview subviews][0];
                 for (id button in titlebarView.subviews) {
                     if ([button isKindOfClass:[NSButton class]]) {
-                        [button setHidden: (_decorations != SystemDecorationsFull)];
+                        [button setHidden: false];
                     }
                 }
             }
@@ -879,7 +888,7 @@ private:
 protected:
     virtual NSWindowStyleMask GetStyle() override
     {
-        unsigned long s = NSWindowStyleMaskBorderless;
+        unsigned long s = NSWindowStyleMaskFullSizeContentView;
 
         switch (_decorations)
         {
@@ -900,6 +909,11 @@ protected:
                 }
                 break;
         }
+        
+        if(_canResize)
+        {
+            s = s | NSWindowStyleMaskResizable;
+        }
 
         if([Window parentWindow] == nullptr)
         {
@@ -910,6 +924,16 @@ protected:
 };
 
 NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEventTrackingRunLoopMode, NSModalPanelRunLoopMode, NSRunLoopCommonModes, NSConnectionReplyMode, nil];
+
+@implementation AutoFitContentVisualEffectView
+-(void)setFrameSize:(NSSize)newSize
+{
+    [super setFrameSize:newSize];
+    if([[self subviews] count] == 0)
+        return;
+    [[self subviews][0] setFrameSize: newSize];
+}
+@end
 
 @implementation AvnView
 {

@@ -3,6 +3,9 @@
 
 class WindowBaseImpl;
 
+@interface AutoFitContentVisualEffectView : NSVisualEffectView
+@end
+
 @interface AvnView : NSView<NSTextInputClient, NSDraggingDestination>
 -(AvnView* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
 -(NSEvent* _Nonnull) lastMouseDownEvent;
