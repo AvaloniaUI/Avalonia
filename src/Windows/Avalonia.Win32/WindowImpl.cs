@@ -14,6 +14,8 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
+
+
     /// <summary>
     /// Window implementation for Win32 platform.
     /// </summary>
@@ -592,6 +594,25 @@ namespace Avalonia.Win32
             TaskBarList.MarkFullscreen(_hwnd, fullscreen);
         }
 
+        internal void EnableBlur()
+        {
+            var accent = new AccentPolicy();
+            var accentStructSize = Marshal.SizeOf(accent);
+            accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
+
+            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+
+            var data = new WindowCompositionAttributeData();
+            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
+            data.SizeOfData = accentStructSize;
+            data.Data = accentPtr;
+
+            SetWindowCompositionAttribute(_hwnd, ref data);
+
+            Marshal.FreeHGlobal(accentPtr);
+        }
+
         private void ShowWindow(WindowState state)
         {
             ShowWindowCommand command;
@@ -624,6 +645,8 @@ namespace Avalonia.Win32
             }
 
             UpdateWindowProperties(newWindowProperties);
+
+            EnableBlur();
 
             UnmanagedMethods.ShowWindow(_hwnd, command);
 
