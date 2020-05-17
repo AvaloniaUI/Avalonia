@@ -18,10 +18,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             base.OnAttachedToLogicalTree(e);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            Order.Add($"Property {property.Name} Changed");
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            Order.Add($"Property {change.Property.Name} Changed");
+            base.OnPropertyChanged(change);
         }
 
         void ISupportInitialize.BeginInit()

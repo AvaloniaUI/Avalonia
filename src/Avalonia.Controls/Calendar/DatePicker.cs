@@ -510,17 +510,13 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == SelectedDateProperty)
+            if (change.Property == SelectedDateProperty)
             {
-                DataValidationErrors.SetError(this, newValue.Error);
+                DataValidationErrors.SetError(this, change.NewValue.Error);
             }
         }
 

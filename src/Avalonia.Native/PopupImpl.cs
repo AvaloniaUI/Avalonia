@@ -43,6 +43,11 @@ namespace Avalonia.Native
                 _parent = parent;
             }
 
+            public void GotInputWhenDisabled()
+            {
+                // NOP on Popup
+            }
+
             bool IAvnWindowEvents.Closing()
             {
                 return true;

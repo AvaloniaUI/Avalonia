@@ -312,11 +312,11 @@ namespace Avalonia.Layout
             InvalidateLayout();
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (property == OrientationProperty)
+            if (change.Property == OrientationProperty)
             {
-                var orientation = newValue.GetValueOrDefault<Orientation>();
+                var orientation = change.NewValue.GetValueOrDefault<Orientation>();
 
                 //Note: For StackLayout Vertical Orientation means we have a Vertical ScrollOrientation.
                 //Horizontal Orientation means we have a Horizontal ScrollOrientation.
