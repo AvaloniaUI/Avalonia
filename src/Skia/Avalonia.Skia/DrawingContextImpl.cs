@@ -689,7 +689,6 @@ namespace Avalonia.Skia
             {
                 paint.Color = new SKColor(255, 255, 255, 25);
                 paint.BlendMode = SKBlendMode.Exclusion;
-                paint.ImageFilter = SKImageFilter.CreateBlur(5, 5);
                 //paint.Shader = SKShader.CreatePerlinNoiseTurbulence(0.2f, 0.2f, 2, 0.756f);                
 
                 return paintWrapper;
