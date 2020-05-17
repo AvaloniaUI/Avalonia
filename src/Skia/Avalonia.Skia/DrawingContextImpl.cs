@@ -238,6 +238,20 @@ namespace Avalonia.Skia
             if (rect.Rect.Height > 8192 || rect.Rect.Width > 8192)
                 boxShadows = default;
 
+            if (brush is IAcrylicBrush)
+            {
+                // todo this is only for light mode?
+                // luma > 0.5?
+
+                boxShadows = new BoxShadows(new BoxShadow
+                {
+                    Blur = 2,
+                    OffsetX = 1,
+                    Color = Colors.White,
+                    IsInset = true
+                });
+            }
+
             var rc = rect.Rect.ToSKRect();
             var isRounded = rect.IsRounded;
             var needRoundRect = rect.IsRounded || (boxShadows.HasInsetShadows);
@@ -271,14 +285,6 @@ namespace Avalonia.Skia
                     // save existing? use as bg for shadow
 
                 }
-
-                //boxShadows = new BoxShadows(new BoxShadow
-                //{
-                //    Blur = 2,
-                //    OffsetX = 2,
-                //    Color = Colors.White,
-                //    IsInset = true
-                //});
             }
 
             foreach (var boxShadow in boxShadows)
