@@ -19,16 +19,28 @@
             <AcrylicBrush TintOpacity=".6" TintColor="White" BackgroundSource="BackDrop"  />
           </Border.Background>
         </Border>
-      
-      <Border Height="100">
+
+        <Border Height="100">
           <Border.Background>
             <AcrylicBrush TintOpacity=".6" TintColor="White" BackgroundSource="HostBackDrop"  />
           </Border.Background>
         </Border>
-            
-            <Border Height="100">
+
+        <Border Height="100">
           <Border.Background>
-            <AcrylicBrush TintOpacity=".4" TintColor="Red" BackgroundSource="HostBackDrop"  />
+            <AcrylicBrush TintOpacity=".4" TintColor="Purple" BackgroundSource="HostBackDrop"  />
+          </Border.Background>
+        </Border>
+
+        <Border Height="100">
+          <Border.Background>
+            <AcrylicBrush TintOpacity=".15" TintColor="Red" TintLuminosityOpacity="0.15" BackgroundSource="HostBackDrop"  />
+          </Border.Background>
+        </Border>
+      
+      <Border Height="100">
+          <Border.Background>
+            <AcrylicBrush TintOpacity="0" TintColor="Purple" TintLuminosityOpacity="0" BackgroundSource="HostBackDrop"  />
           </Border.Background>
         </Border>
       </StackPanel>

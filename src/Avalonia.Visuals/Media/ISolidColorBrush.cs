@@ -24,6 +24,8 @@ namespace Avalonia.Media
 
         public double TintOpacity { get; set; }
 
+        public double TintLuminosityOpacity { get; set; }
+
         public Color FallbackColor { get; set; }
     }
 

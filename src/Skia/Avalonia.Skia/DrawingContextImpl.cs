@@ -749,9 +749,9 @@ namespace Avalonia.Skia
             if (brush is IAcrylicBrush acrylicBrush)
             {
                 var tintOpacity = acrylicBrush.TintOpacity;
-                var noiseOpcity = 0.04;
+                var noiseOpcity = 0.08;
 
-                var excl = new SKColor(255, 255, 255, 25);
+                var excl = new SKColor(255, 255, 255, (byte)(255 * acrylicBrush.TintLuminosityOpacity));
                 var tint = new SKColor(acrylicBrush.TintColor.R, acrylicBrush.TintColor.G, acrylicBrush.TintColor.B, (byte)(255 * tintOpacity));
 
                 tint = StupidBlend(excl, tint);

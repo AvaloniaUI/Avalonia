@@ -10,7 +10,9 @@ namespace Avalonia.Media
 
         public double Opacity => 1;
 
-        public double TintOpacity { get; set; }
+        public double TintOpacity { get; set; } = 0.4;
+
+        public double TintLuminosityOpacity { get; set; } = 0.25;
 
         public AcrylicBackgroundSource BackgroundSource { get; set; }
 
