@@ -62,30 +62,26 @@ namespace Avalonia.Animation
             }
         }
 
-        protected override void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (_transitions is null || _previousTransitions is null || priority == BindingPriority.Animation)
+            if (_transitions is null || _previousTransitions is null || change.Priority == BindingPriority.Animation)
                 return;
 
             // PERF-SENSITIVE: Called on every property change. Don't use LINQ here (too many allocations).
             foreach (var transition in _transitions)
             {
-                if (transition.Property == property)
+                if (transition.Property == change.Property)
                 {
-                    if (_previousTransitions.TryGetValue(property, out var dispose))
+                    if (_previousTransitions.TryGetValue(change.Property, out var dispose))
                         dispose.Dispose();
 
                     var instance = transition.Apply(
                         this,
                         Clock ?? Avalonia.Animation.Clock.GlobalClock,
-                        oldValue.GetValueOrDefault(),
-                        newValue.GetValueOrDefault());
+                        change.OldValue.GetValueOrDefault(),
+                        change.NewValue.GetValueOrDefault());
 
-                    _previousTransitions[property] = instance;
+                    _previousTransitions[change.Property] = instance;
                     return;
                 }
             }

@@ -348,8 +348,8 @@ namespace Avalonia.Data
 
             return new BindingValue<T>(
                 fallbackValue.HasValue ?
-                    BindingValueType.DataValidationError :
-                    BindingValueType.DataValidationErrorWithFallback,
+                    BindingValueType.DataValidationErrorWithFallback :
+                    BindingValueType.DataValidationError,
                 fallbackValue.HasValue ? fallbackValue.Value : default,
                 e);
         }
