@@ -11,7 +11,8 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public DrawOperation(Rect bounds, Matrix transform)
         {
-            bounds = bounds.TransformToAABB(transform);
+            bounds = bounds.Normalize().TransformToAABB(transform);
+
             Bounds = new Rect(
                 new Point(Math.Floor(bounds.X), Math.Floor(bounds.Y)),
                 new Point(Math.Ceiling(bounds.Right), Math.Ceiling(bounds.Bottom)));
