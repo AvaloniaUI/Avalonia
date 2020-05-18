@@ -593,6 +593,45 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void DynamicResource_Can_Be_Found_In_Nested_Style_File()
+        {
+            var style1Xaml = @"
+<Styles xmlns='https://github.com/avaloniaui'
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+  <StyleInclude Source='test:style2.xaml'/>
+</Styles>";
+            var style2Xaml = @"
+<Style xmlns='https://github.com/avaloniaui'
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+  <Style.Resources>
+    <Color x:Key='Red'>Red</Color>
+    <SolidColorBrush x:Key='RedBrush' Color='{DynamicResource Red}'/>
+  </Style.Resources>
+</Style>";
+            using (StyledWindow(
+                ("test:style1.xaml", style1Xaml),
+                ("test:style2.xaml", style2Xaml)))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <StyleInclude Source='test:style1.xaml'/>
+    </Window.Styles>
+    <Border Name='border' Background='{DynamicResource RedBrush}'/>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var border = window.FindControl<Border>("border");
+                var borderBrush = (ISolidColorBrush)border.Background;
+
+                Assert.NotNull(borderBrush);
+                Assert.Equal(0xffff0000, borderBrush.Color.ToUint32());
+            }
+        }
+
+        [Fact]
         public void Control_Property_Is_Updated_When_Parent_Is_Changed()
         {
             var xaml = @"

@@ -40,7 +40,7 @@ namespace Avalonia.Styling.UnitTests
         public void Should_Set_Owner_On_Assigned_Resources()
         {
             var host = new Mock<IResourceHost>();
-            var target = new Style();
+            var target = new Styles();
             ((IResourceProvider)target).AddOwner(host.Object);
 
             var resources = new Mock<IResourceDictionary>();
@@ -63,6 +63,34 @@ namespace Avalonia.Styling.UnitTests
             resources.Verify(x => x.AddOwner(host.Object), Times.Once);
         }
 
+        [Fact]
+        public void Should_Set_Owner_On_Child_Style()
+        {
+            var host = new Mock<IResourceHost>();
+            var target = new Styles();
+            ((IResourceProvider)target).AddOwner(host.Object);
+
+            var style = new Mock<IStyle>();
+            var resourceProvider = style.As<IResourceProvider>();
+            target.Add(style.Object);
+
+            resourceProvider.Verify(x => x.AddOwner(host.Object), Times.Once);
+        }
+
+        [Fact]
+        public void Should_Set_Owner_On_Child_Style_2()
+        {
+            var host = new Mock<IResourceHost>();
+            var target = new Styles();
+
+            var style = new Mock<IStyle>();
+            var resourceProvider = style.As<IResourceProvider>();
+            target.Add(style.Object);
+
+            host.ResetCalls();
+            ((IResourceProvider)target).AddOwner(host.Object);
+            resourceProvider.Verify(x => x.AddOwner(host.Object), Times.Once);
+        }
         [Fact]
         public void Finds_Resource_In_Merged_Dictionary()
         {

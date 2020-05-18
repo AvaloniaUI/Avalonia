@@ -233,6 +233,14 @@ namespace Avalonia.Styling
 
             Owner = owner;
             _resources?.AddOwner(owner);
+
+            foreach (var child in this)
+            {
+                if (child is IResourceProvider r)
+                {
+                    r.AddOwner(owner);
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -244,6 +252,14 @@ namespace Avalonia.Styling
             {
                 Owner = null;
                 _resources?.RemoveOwner(owner);
+
+                foreach (var child in this)
+                {
+                    if (child is IResourceProvider r)
+                    {
+                        r.RemoveOwner(owner);
+                    }
+                }
             }
         }
 
