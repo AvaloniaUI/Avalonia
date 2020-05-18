@@ -47,7 +47,10 @@ namespace Avalonia.Visuals.UnitTests
         [Fact]
         public void Normalize_Should_Make_Invalid_Rects_Empty()
         {
-            var result = new Rect(double.NegativeInfinity,double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity).Normalize();
+            var result = new Rect(
+                double.NegativeInfinity, double.PositiveInfinity, 
+                double.PositiveInfinity, double.PositiveInfinity)
+                .Normalize();
 
             Assert.Equal(Rect.Empty, result);
         }

@@ -421,7 +421,8 @@ namespace Avalonia
         }
 
         /// <summary>
-		/// Normalizes the rectangle so both the <see cref="Width"/> and <see cref="Height"/> are positive, without changing the location of the rectangle
+		/// Normalizes the rectangle so both the <see cref="Width"/> and <see 
+        /// cref="Height"/> are positive, without changing the location of the rectangle
 		/// </summary>
         /// <returns>Normalized Rect</returns>
 		/// <remarks>
@@ -431,24 +432,25 @@ namespace Avalonia
         {
             Rect rect = this;            
 
-            if(double.IsNaN(rect.Right) || double.IsNaN(rect.Bottom) || double.IsNaN(rect.X) || double.IsNaN(rect.Y) || double.IsNaN(Height) || double.IsNaN(Width))
+            if(double.IsNaN(rect.Right) || double.IsNaN(rect.Bottom) || 
+                double.IsNaN(rect.X) || double.IsNaN(rect.Y) || 
+                double.IsNaN(Height) || double.IsNaN(Width))
             {
                 return Rect.Empty;
             }
 
             if (rect.Width < 0)
             {
-                var old = X;
                 var x = X + Width;
-                var width = old - x;
+                var width = X - x;
 
                 rect = rect.WithX(x).WithWidth(width);
             }
+
             if (rect.Height < 0)
             {
-                var old = Y;
                 var y = Y + Height;
-                var height = old - y;
+                var height = Y - y;
 
                 rect = rect.WithY(y).WithHeight(height);
             }
