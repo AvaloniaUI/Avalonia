@@ -22,14 +22,10 @@ namespace Avalonia.Animation
         /// <summary>
         /// Defines the <see cref="Transitions"/> property.
         /// </summary>
-        public static readonly DirectProperty<Animatable, Transitions> TransitionsProperty =
-            AvaloniaProperty.RegisterDirect<Animatable, Transitions>(
-                nameof(Transitions),
-                o => o.Transitions,
-                (o, v) => o.Transitions = v);
+        public static readonly StyledProperty<Transitions?> TransitionsProperty =
+            AvaloniaProperty.Register<Animatable, Transitions?>(nameof(Transitions));
 
         private bool _transitionsEnabled = true;
-        private Transitions? _transitions;
         private Dictionary<ITransition, TransitionState>? _transitionState;
 
         /// <summary>
@@ -44,36 +40,10 @@ namespace Avalonia.Animation
         /// <summary>
         /// Gets or sets the property transitions for the control.
         /// </summary>
-        public Transitions Transitions
+        public Transitions? Transitions
         {
-            get
-            {
-                if (_transitions is null)
-                {
-                    _transitions = new Transitions();
-                    _transitions.CollectionChanged += TransitionsCollectionChanged;
-                }
-
-                return _transitions;
-            }
-            set
-            {
-                // TODO: This is a hack, Setter should not replace transitions, but should add/remove.
-                if (value is null)
-                {
-                    return;
-                }
-
-                if (_transitions is object)
-                {
-                    RemoveTransitions(_transitions);
-                    _transitions.CollectionChanged -= TransitionsCollectionChanged;
-                }
-
-                SetAndRaise(TransitionsProperty, ref _transitions, value);
-                _transitions.CollectionChanged += TransitionsCollectionChanged;
-                AddTransitions(_transitions);
-            }
+            get => GetValue(TransitionsProperty);
+            set => SetValue(TransitionsProperty, value);
         }
 
         /// <summary>
@@ -89,9 +59,9 @@ namespace Avalonia.Animation
             {
                 _transitionsEnabled = true;
 
-                if (_transitions is object)
+                if (Transitions is object)
                 {
-                    AddTransitions(_transitions);
+                    AddTransitions(Transitions);
                 }
             }
         }
@@ -109,21 +79,39 @@ namespace Avalonia.Animation
             {
                 _transitionsEnabled = false;
 
-                if (_transitions is object)
+                if (Transitions is object)
                 {
-                    RemoveTransitions(_transitions);
+                    RemoveTransitions(Transitions);
                 }
             }
         }
 
         protected sealed override void OnPropertyChangedCore<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (_transitionsEnabled &&
-                _transitions is object &&
-                _transitionState is object &&
-                change.Priority > BindingPriority.Animation)
+            if (change.Property == TransitionsProperty && change.IsEffectiveValueChange)
             {
-                foreach (var transition in _transitions)
+                var oldTransitions = change.OldValue.GetValueOrDefault<Transitions>();
+                var newTransitions = change.NewValue.GetValueOrDefault<Transitions>();
+
+                if (oldTransitions is object)
+                {
+                    oldTransitions.CollectionChanged -= TransitionsCollectionChanged;
+                    RemoveTransitions(oldTransitions);
+                }
+
+                if (newTransitions is object)
+                {
+                    newTransitions.CollectionChanged += TransitionsCollectionChanged;
+                    AddTransitions(newTransitions);
+                }
+            }
+            else if (_transitionsEnabled &&
+                     Transitions is object &&
+                     _transitionState is object &&
+                     !change.Property.IsDirect &&
+                     change.Priority > BindingPriority.Animation)
+            {
+                foreach (var transition in Transitions)
                 {
                     if (transition.Property == change.Property)
                     {
