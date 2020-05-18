@@ -37,7 +37,7 @@ namespace Avalonia
         {
             if (_values.TryGetValue(property, out var slot))
             {
-                return slot.ValuePriority < BindingPriority.LocalValue;
+                return slot.Priority < BindingPriority.LocalValue;
             }
 
             return false;
@@ -47,21 +47,24 @@ namespace Avalonia
         {
             if (_values.TryGetValue(property, out var slot))
             {
-                return slot.Value.HasValue;
+                return slot.GetValue().HasValue;
             }
 
             return false;
         }
 
-        public bool TryGetValue<T>(StyledPropertyBase<T> property, out T value)
+        public bool TryGetValue<T>(
+            StyledPropertyBase<T> property,
+            BindingPriority maxPriority,
+            out T value)
         {
             if (_values.TryGetValue(property, out var slot))
             {
-                var v = (IValue<T>)slot;
+                var v = ((IValue<T>)slot).GetValue(maxPriority);
 
-                if (v.Value.HasValue)
+                if (v.HasValue)
                 {
-                    value = v.Value.Value;
+                    value = v.Value;
                     return true;
                 }
             }
@@ -90,17 +93,22 @@ namespace Avalonia
                 _values.AddValue(property, entry);
                 result = entry.SetValue(value, priority);
             }
-            else if (priority == BindingPriority.LocalValue)
-            {
-                _values.AddValue(property, new LocalValueEntry<T>(value));
-                _sink.ValueChanged(property, priority, default, value);
-            }
             else
             {
-                var entry = new ConstantValueEntry<T>(property, value, priority, this);
-                _values.AddValue(property, entry);
-                _sink.ValueChanged(property, priority, default, value);
-                result = entry;
+                var change = new AvaloniaPropertyChangedEventArgs<T>(_owner, property, default, value, priority);
+
+                if (priority == BindingPriority.LocalValue)
+                {
+                    _values.AddValue(property, new LocalValueEntry<T>(value));
+                    _sink.ValueChanged(change);
+                }
+                else
+                {
+                    var entry = new ConstantValueEntry<T>(property, value, priority, this);
+                    _values.AddValue(property, entry);
+                    _sink.ValueChanged(change);
+                    result = entry;
+                }
             }
 
             return result;
@@ -149,13 +157,14 @@ namespace Avalonia
 
                     if (remove)
                     {
-                        var old = TryGetValue(property, out var value) ? value : default;
+                        var old = TryGetValue(property, BindingPriority.LocalValue, out var value) ? value : default;
                         _values.Remove(property);
-                        _sink.ValueChanged(
+                        _sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+                            _owner,
                             property,
-                            BindingPriority.Unset,
                             old,
-                            BindingValue<T>.Unset);
+                            default,
+                            BindingPriority.Unset));
                     }
                 }
             }
@@ -176,23 +185,20 @@ namespace Avalonia
         {
             if (_values.TryGetValue(property, out var slot))
             {
+                var slotValue = slot.GetValue();
                 return new Diagnostics.AvaloniaPropertyValue(
                     property,
-                    slot.Value.HasValue ? slot.Value.Value : AvaloniaProperty.UnsetValue,
-                    slot.ValuePriority,
+                    slotValue.HasValue ? slotValue.Value : AvaloniaProperty.UnsetValue,
+                    slot.Priority,
                     null);
             }
 
             return null;
         }
 
-        void IValueSink.ValueChanged<T>(
-            StyledPropertyBase<T> property,
-            BindingPriority priority,
-            Optional<T> oldValue,
-            BindingValue<T> newValue)
+        void IValueSink.ValueChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            _sink.ValueChanged(property, priority, oldValue, newValue);
+            _sink.ValueChanged(change);
         }
 
         void IValueSink.Completed<T>(
@@ -232,9 +238,14 @@ namespace Avalonia
             {
                 if (priority == BindingPriority.LocalValue)
                 {
-                    var old = l.Value;
+                    var old = l.GetValue(BindingPriority.LocalValue);
                     l.SetValue(value);
-                    _sink.ValueChanged(property, priority, old, value);
+                    _sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+                        _owner,
+                        property,
+                        old,
+                        value,
+                        priority));
                 }
                 else
                 {
