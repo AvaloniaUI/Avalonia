@@ -3,6 +3,18 @@ using System.Threading;
 
 namespace Avalonia.OpenGL
 {
+    public class DirectCompositionEglGlPlatformSurface : EglGlPlatformSurface
+    {
+        public DirectCompositionEglGlPlatformSurface(EglContext context, IEglWindowGlPlatformSurfaceInfo info) : base(context, info)
+        {
+        }
+
+        protected override EglSurface CreateEglSurface()
+        {
+            return base.CreateEglSurface();
+        }
+    }
+
     public class EglGlPlatformSurface : IGlPlatformSurface
     {
         public interface IEglWindowGlPlatformSurfaceInfo
@@ -22,10 +34,12 @@ namespace Avalonia.OpenGL
             _context = context;
             _info = info;
         }
-        
+
+        protected virtual EglSurface CreateEglSurface ()=> _display.CreateWindowSurface(_info.Handle);
+
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
         {
-            var glSurface = _display.CreateWindowSurface(_info.Handle);
+            var glSurface = CreateEglSurface();
             return new RenderTarget(_display, _context, glSurface, _info);
         }
 

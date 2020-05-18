@@ -91,6 +91,11 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("eglCreatePbufferSurface")]
         public EglCreatePBufferSurface CreatePBufferSurface { get; }
 
+        public delegate IntPtr EglCreatePbufferFromClientBuffer(IntPtr display, uint buftype, IntPtr buffer, IntPtr config, int[] attrib_list);
+        [GlEntryPoint("eglCreatePbufferFromClientBuffer")]
+
+        public EglCreatePbufferFromClientBuffer CreatePbufferFromClientBuffer { get; }
+
         public delegate bool EglMakeCurrent(IntPtr display, IntPtr draw, IntPtr read, IntPtr context);
         [GlEntryPoint("eglMakeCurrent")]
         public EglMakeCurrent MakeCurrent { get; }
