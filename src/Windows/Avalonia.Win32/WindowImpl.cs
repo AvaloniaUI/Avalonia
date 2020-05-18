@@ -52,7 +52,7 @@ namespace Avalonia.Win32
         private readonly MouseDevice _mouseDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
-        private readonly IGlPlatformSurface _gl;
+        private readonly EglGlPlatformSurface _gl;
 
         private Win32NativeControlHost _nativeControlHost;
         private WndProc _wndProcDelegate;

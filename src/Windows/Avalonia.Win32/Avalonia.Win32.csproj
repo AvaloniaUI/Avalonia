@@ -5,6 +5,11 @@
     <PackageId>Avalonia.Win32</PackageId>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="SharpDX" Version="4.0.1" />
+    <PackageReference Include="SharpDX.Direct3D11" Version="4.0.1" />
+    <PackageReference Include="SharpDX.DirectComposition" Version="4.0.1" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2019013001" />
   </ItemGroup>
