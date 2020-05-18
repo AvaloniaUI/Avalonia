@@ -165,6 +165,11 @@ namespace Avalonia.OpenGL
             return rv;
         }
 
+        public void CreatePBufferFromClientBuffer ()
+        {
+            _egl.CreatePBufferSurface()
+        }
+
         public EglSurface CreateWindowSurface(IntPtr window)
         {
             var s = _egl.CreateWindowSurface(_display, _config, window, new[] {EGL_NONE, EGL_NONE});
