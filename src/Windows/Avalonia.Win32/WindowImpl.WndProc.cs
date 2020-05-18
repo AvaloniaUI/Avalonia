@@ -14,11 +14,10 @@ namespace Avalonia.Win32
 {
     public partial class WindowImpl
     {
-        const int LEFTEXTENDWIDTH = 0;
-        const int RIGHTEXTENDWIDTH = 0;
-        const int BOTTOMEXTENDWIDTH = 0;
-        const int TOPEXTENDWIDTH = 40;
-
+        const int LEFTEXTENDWIDTH = 4;
+        const int RIGHTEXTENDWIDTH = 4;
+        const int BOTTOMEXTENDWIDTH = 4;
+        const int TOPEXTENDWIDTH = 100;
 
         // Hit test the frame for resizing and moving.
         HitTestValues HitTestNCA(IntPtr hWnd, IntPtr wParam, IntPtr lParam)
@@ -60,7 +59,7 @@ namespace Avalonia.Win32
             }
 
             // Hit test (HTTOPLEFT, ... HTBOTTOMRIGHT)
-            HitTestValues[][] hitTests = new []
+            HitTestValues[][] hitTests = new[]
             {
                 new []{ HitTestValues.HTTOPLEFT,    fOnResizeBorder ? HitTestValues.HTTOP : HitTestValues.HTCAPTION,    HitTestValues.HTTOPRIGHT },
                 new []{ HitTestValues.HTLEFT,      HitTestValues.HTNOWHERE,     HitTestValues.HTRIGHT },
@@ -70,47 +69,112 @@ namespace Avalonia.Win32
             return hitTests[uRow][uCol];
         }
 
+        protected virtual unsafe IntPtr CustomCaptionProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref bool callDwp)
+        {
+            IntPtr lRet = IntPtr.Zero;
 
+            callDwp = !DwmDefWindowProc(hWnd, msg, wParam, lParam, ref lRet);
+
+            MARGINS margins = new MARGINS { cxLeftWidth = 0, cxRightWidth = 0, cyBottomHeight = 0, cyTopHeight = 100 };
+            RECT border_thickness = new RECT();
+
+            switch ((WindowsMessage)msg)
+            {
+                case WindowsMessage.WM_ACTIVATE:
+                    {
+                        if (GetStyle().HasFlag(WindowStyles.WS_THICKFRAME))
+                        {
+                            AdjustWindowRectEx(ref border_thickness, (uint)(GetStyle() & ~WindowStyles.WS_CAPTION), false, 0);
+                            border_thickness.left *= -1;
+                            border_thickness.top *= -1;
+                        }
+                        else if (GetStyle().HasFlag(WindowStyles.WS_BORDER))
+                        {
+                            border_thickness = new RECT { bottom = 1, left = 1, right = 1, top = 1 };
+                        }
+
+                        // Extend the frame into the client area.                        
+                        margins.cxLeftWidth = LEFTEXTENDWIDTH;
+                        margins.cxRightWidth = RIGHTEXTENDWIDTH;
+                        margins.cyBottomHeight = BOTTOMEXTENDWIDTH;
+                        margins.cyTopHeight = TOPEXTENDWIDTH;
+
+                       // var hr = DwmExtendFrameIntoClientArea(hWnd, ref margins);
+
+                        //if (hr < 0)
+                        {
+                            // Handle the error.
+                        }
+
+                        lRet = IntPtr.Zero;
+                        callDwp = true;
+                        break;
+                    }
+
+                case WindowsMessage.WM_NCCALCSIZE:
+                    {
+                        if (ToInt32(wParam) == 1)
+                        {
+                            lRet = IntPtr.Zero;
+                            callDwp = false;
+                        }
+                        break;
+                    }
+
+                case WindowsMessage.WM_NCHITTEST:
+                    if (lRet == IntPtr.Zero)
+                    {
+                        lRet = (IntPtr)HitTestNCA(hWnd, wParam, lParam);
+
+                        if(((HitTestValues)lRet) != HitTestValues.HTNOWHERE)
+                        {
+                            callDwp = false;
+                        }                        
+                    }
+                    break;
+            }
+
+            return lRet;
+        }
+    }
+
+    public partial class WindowImpl
+    {
+        protected virtual unsafe IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+        {
+            IntPtr lRet = IntPtr.Zero;
+            bool callDwp = true;
+
+            if(DwmIsCompositionEnabled(out bool enabled) == 0)
+            {
+                lRet = CustomCaptionProc(hWnd, msg, wParam, lParam, ref callDwp);
+            }
+
+            if(callDwp)
+            {
+                lRet = AppWndProc(hWnd, msg, wParam, lParam);
+            }
+
+            return lRet;
+        }
+    }
+
+    public partial class WindowImpl
+    {        
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation",
             Justification = "Using Win32 naming for consistency.")]
-        protected virtual unsafe IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+        protected virtual unsafe IntPtr AppWndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             const double wheelDelta = 120.0;
             uint timestamp = unchecked((uint)GetMessageTime());
 
-            RawInputEventArgs e = null;
-            IntPtr lRet = IntPtr.Zero;
-
-            var fCallDWP = !DwmDefWindowProc(hWnd, msg, wParam, lParam, ref lRet);          
+            RawInputEventArgs e = null;            
 
             switch ((WindowsMessage)msg)
             {
                 case WindowsMessage.WM_ACTIVATE:
                 {
-                        // Extend the frame into the client area.
-                        MARGINS margins;
-
-                        margins.cxLeftWidth = 0;      // 8
-                        margins.cxRightWidth = 0;    // 8
-                        margins.cyBottomHeight = 0; // 20
-                        margins.cyTopHeight = 40;       // 27
-
-                        var hr = DwmExtendFrameIntoClientArea(hWnd, ref margins);
-
-                        if (hr < 0)
-                        {
-                            // Handle the error.
-                        }
-
-                        return IntPtr.Zero;
-
-                       // fCallDWP = true;
-                        //lRet = 0;
-
-                        
-
-
-                        var wa = (WindowActivate)(ToInt32(wParam) & 0xffff);
+                    var wa = (WindowActivate)(ToInt32(wParam) & 0xffff);
 
                     switch (wa)
                     {
@@ -131,32 +195,15 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
                 }
 
-                case WindowsMessage.WM_NCHITTEST:
-                    if(lRet == IntPtr.Zero)
-                    {
-                        switch (HitTestNCA(hWnd, wParam, lParam))
-                        {
-                            case HitTestValues.HTNOWHERE:
-                            case HitTestValues.HTCAPTION:
-                            case HitTestValues.HTCLIENT:
-                                return (IntPtr)HitTestValues.HTCLIENT;                                
-
-                            default:
-                                fCallDWP = false;
-                                break;
-                        }
-                    }
-                    break;
-
                 case WindowsMessage.WM_NCCALCSIZE:
+                {
+                    if (ToInt32(wParam) == 1)
                     {
-                        if (ToInt32(wParam) == 1)
-                        {
-                            return IntPtr.Zero;
-                        }
-
-                        break;
+                        return IntPtr.Zero;
                     }
+
+                    break;
+                }
 
                 case WindowsMessage.WM_CLOSE:
                 {
@@ -543,16 +590,11 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
                 }
             }
-
-            if (fCallDWP)
+            
+            using (_rendererLock.Lock())
             {
-                using (_rendererLock.Lock())
-                {
-                    return DefWindowProc(hWnd, msg, wParam, lParam);
-                }
+                return DefWindowProc(hWnd, msg, wParam, lParam);
             }
-
-            return IntPtr.Zero;
         }
 
         private static int ToInt32(IntPtr ptr)

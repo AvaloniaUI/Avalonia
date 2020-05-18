@@ -654,7 +654,7 @@ namespace Avalonia.Win32
 
             UpdateWindowProperties(newWindowProperties);
 
-            EnableBlur();
+            //EnableBlur();
 
             UnmanagedMethods.ShowWindow(_hwnd, command);
 
