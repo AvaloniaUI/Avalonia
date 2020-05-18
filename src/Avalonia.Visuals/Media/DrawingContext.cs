@@ -350,7 +350,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="matrix">The matrix</param>
         /// <returns>A disposable used to undo the transformation.</returns>
-        PushedState PushSetTransform(Matrix matrix)
+        public PushedState PushSetTransform(Matrix matrix)
         {
             var oldMatrix = CurrentTransform;
             CurrentTransform = matrix;
