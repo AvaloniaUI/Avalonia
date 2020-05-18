@@ -99,15 +99,17 @@ namespace Avalonia.Win32
                         margins.cyBottomHeight = BOTTOMEXTENDWIDTH;
                         margins.cyTopHeight = TOPEXTENDWIDTH;
 
-                       // var hr = DwmExtendFrameIntoClientArea(hWnd, ref margins);
+                        var hr = DwmExtendFrameIntoClientArea(hWnd, ref margins);
 
-                        //if (hr < 0)
+                        if (hr < 0)
                         {
                             // Handle the error.
                         }
 
                         lRet = IntPtr.Zero;
                         callDwp = true;
+
+                        _gl.AttachToWindow(hWnd);
                         break;
                     }
 
