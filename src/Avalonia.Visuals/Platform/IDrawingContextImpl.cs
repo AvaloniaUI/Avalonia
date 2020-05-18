@@ -63,17 +63,13 @@ namespace Avalonia.Platform
         /// <param name="brush">The brush used to fill the rectangle, or <c>null</c> for no fill.</param>
         /// <param name="pen">The pen used to stroke the rectangle, or <c>null</c> for no stroke.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        /// <param name="radiusX">The radius in the X dimension of the rounded corners.
-        ///     This value will be clamped to the range of 0 to Width/2
-        /// </param>
-        /// <param name="radiusY">The radius in the Y dimension of the rounded corners.
-        ///     This value will be clamped to the range of 0 to Height/2
-        /// </param>
+        /// <param name="boxShadows">Box shadow effect parameters</param>
         /// <remarks>
         /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
         /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
         /// </remarks>
-        void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0, double radiusY = 0);
+        void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect,
+            BoxShadows boxShadow = default);
 
         /// <summary>
         /// Draws text.

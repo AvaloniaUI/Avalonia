@@ -149,7 +149,17 @@ namespace Avalonia.Skia
             if (index >= Text.Length || index < 0)
             {
                 var r = rects.LastOrDefault();
-                return new Rect(r.X + r.Width, r.Y, 0, _lineHeight);
+
+                var c = Text[Text.Length - 1];
+
+                switch (c)
+                {
+                    case '\n':
+                    case '\r':
+                        return new Rect(r.X, r.Y, 0, _lineHeight);
+                    default:
+                        return new Rect(r.X + r.Width, r.Y, 0, _lineHeight);
+                }
             }
             return rects[index];
         }
@@ -266,7 +276,8 @@ namespace Avalonia.Skia
                                 if (fb != null)
                                 {
                                     //TODO: figure out how to get the brush size
-                                    currentWrapper = context.CreatePaint(fb, new Size());
+                                    currentWrapper = context.CreatePaint(new SKPaint { IsAntialias = true }, fb,
+                                        new Size());
                                 }
                                 else
                                 {

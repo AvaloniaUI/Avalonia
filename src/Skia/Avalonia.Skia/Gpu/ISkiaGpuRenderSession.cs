@@ -6,7 +6,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Custom render session for Skia render target.
     /// </summary>
-    public interface ICustomSkiaRenderSession : IDisposable
+    public interface ISkiaGpuRenderSession : IDisposable
     {
         /// <summary>
         /// GrContext used by this session.

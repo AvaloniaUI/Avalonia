@@ -352,7 +352,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 set => SetValue(PopupContentProperty, value);
             }
 
-            protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+            protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
             {
                 Popup = (Popup)this.GetVisualChildren().Single();
             }
