@@ -154,19 +154,40 @@ namespace Avalonia.Controls.UnitTests
             };
 
             var raisedOnTarget = false;
-            var raisedOnPresenter = false;
             var raisedOnChild = false;
 
             target.Measure(Size.Infinity);
             target.ResourcesChanged += (_, __) => raisedOnTarget = true;
-            target.Presenter.ResourcesChanged += (_, __) => raisedOnPresenter = true;
             child.ResourcesChanged += (_, __) => raisedOnChild = true;
 
             target.Resources.Add("foo", "bar");
 
             Assert.True(raisedOnTarget);
-            Assert.True(raisedOnPresenter);
             Assert.True(raisedOnChild);
+        }
+
+        [Fact]
+        public void Adding_Resource_Should_Call_Not_Raise_ResourceChanged_On_Template_Children()
+        {
+            Border child;
+
+            var target = new ContentControl
+            {
+                Content = child = new Border(),
+                Template = ContentControlTemplate(),
+            };
+
+            var raisedOnTarget = false;
+            var raisedOnPresenter = false;
+
+            target.Measure(Size.Infinity);
+            target.ResourcesChanged += (_, __) => raisedOnTarget = true;
+            target.Presenter.ResourcesChanged += (_, __) => raisedOnPresenter = true;
+
+            target.Resources.Add("foo", "bar");
+
+            Assert.True(raisedOnTarget);
+            Assert.False(raisedOnPresenter);
         }
 
         [Fact]
@@ -199,22 +220,6 @@ namespace Avalonia.Controls.UnitTests
             style.Resources.Add("foo", "bar");
 
             Assert.True(raised);
-        }
-
-        [Fact]
-        public void Setting_Logical_Parent_Raises_Child_ResourcesChanged()
-        {
-            var parent = new ContentControl();
-            var child = new StyledElement();
-
-            ((ISetLogicalParent)child).SetParent(parent);
-            var raisedOnChild = false;
-
-            child.ResourcesChanged += (_, __) => raisedOnChild = true;
-
-            parent.Resources.Add("foo", "bar");
-
-            Assert.True(raisedOnChild);
         }
 
         private IControlTemplate ContentControlTemplate()
