@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Contexts;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
@@ -489,6 +490,45 @@ namespace Avalonia.LeakTests
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+            }
+        }
+
+        [Fact]
+        public void Path_Is_Freed()
+        {
+            using (Start())
+            {
+                var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
+
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new Path
+                        {
+                            Data = geometry
+                        }
+                    };
+
+                    window.Show();
+
+                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    Assert.IsType<Path>(window.Presenter.Child);
+
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Path>()).ObjectsCount));
+
+                // We are keeping geometry alive to simulate a resource that outlives the control.
+                GC.KeepAlive(geometry);
             }
         }
 
