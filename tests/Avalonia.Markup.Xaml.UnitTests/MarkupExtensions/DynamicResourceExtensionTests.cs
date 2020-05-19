@@ -634,33 +634,36 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void Control_Property_Is_Updated_When_Parent_Is_Changed()
         {
-            var xaml = @"
-<UserControl xmlns='https://github.com/avaloniaui'
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <UserControl.Resources>
+    <Window.Resources>
         <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
-    </UserControl.Resources>
+    </Window.Resources>
 
     <Border Name='border' Background='{DynamicResource brush}'/>
-</UserControl>";
+</Window>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
-            var border = userControl.FindControl<Border>("border");
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var border = window.FindControl<Border>("border");
 
-            DelayedBinding.ApplyBindings(border);
+                DelayedBinding.ApplyBindings(border);
 
-            var brush = (SolidColorBrush)border.Background;
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+                var brush = (SolidColorBrush)border.Background;
+                Assert.Equal(0xff506070, brush.Color.ToUint32());
 
-            userControl.Content = null;
+                window.Content = null;
 
-            Assert.Null(border.Background);
+                Assert.Null(border.Background);
 
-            userControl.Content = border;
+                window.Content = border;
 
-            brush = (SolidColorBrush)border.Background;
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+                brush = (SolidColorBrush)border.Background;
+                Assert.Equal(0xff506070, brush.Color.ToUint32());
+            }
         }
 
         [Fact]

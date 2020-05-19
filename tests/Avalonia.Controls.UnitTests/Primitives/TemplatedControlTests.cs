@@ -536,6 +536,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 }),
             };
 
+            var root = new TestRoot(target);
             target.ApplyTemplate();
 
             var contentPresenter = Assert.IsType<ContentPresenter>(target.GetVisualChildren().Single());
@@ -565,6 +566,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 }),
             };
 
+            var root = new TestRoot(target);
             target.ApplyTemplate();
 
             var contentPresenter = Assert.IsType<ContentPresenter>(target.GetVisualChildren().Single());

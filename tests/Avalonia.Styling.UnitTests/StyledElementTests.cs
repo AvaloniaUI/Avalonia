@@ -530,9 +530,9 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Changing_Parent_Raises_ResourcesChanged()
+        public void Adding_To_Logical_Tree_Raises_ResourcesChanged()
         {
-            var target = new TestControl();
+            var target = new TestRoot();
             var parent = new Decorator { Resources = { { "foo", "bar" } } };
             var raised = 0;
 

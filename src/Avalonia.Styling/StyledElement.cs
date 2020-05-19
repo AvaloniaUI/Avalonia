@@ -418,12 +418,16 @@ namespace Avalonia
                     var e = new LogicalTreeAttachmentEventArgs(newRoot, this, parent);
                     OnAttachedToLogicalTreeCore(e);
                 }
-                else
+                else if (parent is null)
                 {
                     // If we were attached to the logical tree, we piggyback on the tree traversal
                     // there to raise resources changed notifications. If we're being removed from
-                    // the logical tree or attached to a control which is not rooted, then traverse
-                    // the tree raising notifications now.
+                    // the logical tree, then traverse the tree raising notifications now.
+                    //
+                    // We don't raise resources changed notifications if we're being attached to a 
+                    // non-rooted control beacuse it's unlikely that dynamic resources need to be 
+                    // correct until the control is added to the tree, and it causes a *lot* of
+                    // notifications.
                     NotifyResourcesChanged();
                 }
 
