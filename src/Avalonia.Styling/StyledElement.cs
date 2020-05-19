@@ -509,7 +509,7 @@ namespace Avalonia
 
                 if (count > 0)
                 {
-                    e ??= new ResourcesChangedEventArgs();
+                    e ??= ResourcesChangedEventArgs.Empty;
 
                     for (var i = 0; i < count; ++i)
                     {
@@ -803,13 +803,13 @@ namespace Avalonia
         {
             if (ResourcesChanged is object)
             {
-                e ??= new ResourcesChangedEventArgs();
+                e ??= ResourcesChangedEventArgs.Empty;
                 ResourcesChanged(this, e);
             }
 
             if (propagate)
             {
-                e ??= new ResourcesChangedEventArgs();
+                e ??= ResourcesChangedEventArgs.Empty;
                 NotifyChildResourcesChanged(e);
             }
         }

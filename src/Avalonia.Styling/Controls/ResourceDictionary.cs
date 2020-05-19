@@ -146,7 +146,7 @@ namespace Avalonia.Controls
 
             if (hasResources)
             {
-                owner.NotifyHostedResourcesChanged(new ResourcesChangedEventArgs());
+                owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
             }
         }
 
@@ -171,14 +171,14 @@ namespace Avalonia.Controls
 
                 if (hasResources)
                 {
-                    owner.NotifyHostedResourcesChanged(new ResourcesChangedEventArgs());
+                    owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
                 }
             }
         }
 
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            Owner?.NotifyHostedResourcesChanged(new ResourcesChangedEventArgs());
+            Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
         }
     }
 }
