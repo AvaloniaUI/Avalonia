@@ -167,30 +167,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Adding_Resource_Should_Call_Not_Raise_ResourceChanged_On_Template_Children()
-        {
-            Border child;
-
-            var target = new ContentControl
-            {
-                Content = child = new Border(),
-                Template = ContentControlTemplate(),
-            };
-
-            var raisedOnTarget = false;
-            var raisedOnPresenter = false;
-
-            target.Measure(Size.Infinity);
-            target.ResourcesChanged += (_, __) => raisedOnTarget = true;
-            target.Presenter.ResourcesChanged += (_, __) => raisedOnPresenter = true;
-
-            target.Resources.Add("foo", "bar");
-
-            Assert.True(raisedOnTarget);
-            Assert.False(raisedOnPresenter);
-        }
-
-        [Fact]
         public void Adding_Resource_To_Styles_Should_Raise_ResourceChanged()
         {
             var target = new Decorator();

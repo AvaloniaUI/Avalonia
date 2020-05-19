@@ -494,6 +494,28 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Notifies child controls that a change has been made to resources that apply to them.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            if (_logicalChildren is object)
+            {
+                var count = _logicalChildren.Count;
+
+                if (count > 0)
+                {
+                    e ??= new ResourcesChangedEventArgs();
+
+                    for (var i = 0; i < count; ++i)
+                    {
+                        _logicalChildren[i].NotifyResourcesChanged(e);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Called when the styled element is added to a rooted logical tree.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -781,19 +803,10 @@ namespace Avalonia
                 ResourcesChanged(this, e);
             }
 
-            if (propagate && _logicalChildren is object)
+            if (propagate)
             {
-                var count = _logicalChildren.Count;
-
-                if (count > 0)
-                {
-                    e ??= new ResourcesChangedEventArgs();
-
-                    for (var i = 0; i < count; ++i)
-                    {
-                        _logicalChildren[i].NotifyResourcesChanged(e);
-                    }
-                }
+                e ??= new ResourcesChangedEventArgs();
+                NotifyChildResourcesChanged(e);
             }
         }
 
