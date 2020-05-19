@@ -6,6 +6,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -14,6 +15,7 @@ using JetBrains.Annotations;
 
 namespace Avalonia.Controls
 {
+
     /// <summary>
     /// Base class for top-level widgets.
     /// </summary>
@@ -49,6 +51,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<WindowTransparencyLevel> TransparencyLevelProperty =
             AvaloniaProperty.Register<TopLevel, WindowTransparencyLevel>(nameof(TransparencyLevel), WindowTransparencyLevel.None);
 
+        /// <summary>
+        /// Defines the <see cref="Background"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush> TransparencyBackgroundFallbackProperty =
+            AvaloniaProperty.Register<TopLevel, IBrush>(nameof(TransparencyBackgroundFallback), Brushes.White);
+
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
@@ -56,6 +64,7 @@ namespace Avalonia.Controls
         private readonly IGlobalStyles _globalStyles;
         private Size _clientSize;
         private ILayoutManager _layoutManager;
+        private Border _transparencyFallbackBorder;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -117,6 +126,7 @@ namespace Avalonia.Controls
             impl.Paint = HandlePaint;
             impl.Resized = HandleResized;
             impl.ScalingChanged = HandleScalingChanged;
+            impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
@@ -171,6 +181,12 @@ namespace Avalonia.Controls
         {
             get { return GetValue(TransparencyLevelProperty); }
             set { SetValue(TransparencyLevelProperty, value); }
+        }
+
+        public IBrush TransparencyBackgroundFallback
+        {
+            get => GetValue(TransparencyBackgroundFallbackProperty);
+            set => SetValue(TransparencyBackgroundFallbackProperty, value);
         }
 
         public ILayoutManager LayoutManager
@@ -330,6 +346,21 @@ namespace Avalonia.Controls
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
         }
 
+        protected virtual void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
+        {
+            if(_transparencyFallbackBorder != null)
+            {
+                if(transparencyLevel == WindowTransparencyLevel.None)
+                {
+                    _transparencyFallbackBorder.Background = TransparencyBackgroundFallback;
+                }
+                else
+                {
+                    _transparencyFallbackBorder.Background = Brushes.Transparent;
+                }
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -337,6 +368,15 @@ namespace Avalonia.Controls
 
             throw new InvalidOperationException(
                 $"Control '{GetType().Name}' is a top level control and cannot be added as a child.");
+        }
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+
+            _transparencyFallbackBorder = e.NameScope.Find<Border>("PART_TransparencyFallback");
+
+            HandleTransparencyLevelChanged(PlatformImpl.TransparencyLevel);
         }
 
         /// <summary>

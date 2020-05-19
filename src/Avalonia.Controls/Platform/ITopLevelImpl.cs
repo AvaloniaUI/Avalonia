@@ -59,6 +59,8 @@ namespace Avalonia.Platform
         /// </summary>
         Action<double> ScalingChanged { get; set; }
 
+        Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
         /// <summary>
         /// Creates a new renderer for the toplevel.
         /// </summary>

@@ -3,13 +3,15 @@
   <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}"/>
   <Setter Property="Template">
     <ControlTemplate>
-      <Border Background="{TemplateBinding Background}">
-        <VisualLayerManager>
-          <ContentPresenter Name="PART_ContentPresenter" 
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Content="{TemplateBinding Content}" 
-                            Margin="{TemplateBinding Padding}"/>
-        </VisualLayerManager>
+      <Border Name="PART_TransparencyFallback">
+        <Border Background="{TemplateBinding Background}">
+          <VisualLayerManager>
+            <ContentPresenter Name="PART_ContentPresenter"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"
+                              Margin="{TemplateBinding Padding}"/>
+          </VisualLayerManager>
+        </Border>
       </Border>
     </ControlTemplate>
   </Setter>
