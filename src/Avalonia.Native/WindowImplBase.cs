@@ -391,7 +391,22 @@ namespace Avalonia.Native
             _native.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get => WindowTransparencyLevel.None; set { } }
+        private WindowTransparencyLevel _transparencyLevel;
+
+        public WindowTransparencyLevel TransparencyLevel 
+        {
+            get => _transparencyLevel;
+            set
+            {
+                if(_transparencyLevel != value)
+                {
+                    _transparencyLevel = value;
+
+                    _native.SetBlurEnabled(_transparencyLevel >= WindowTransparencyLevel.Blur);
+                    TransparencyLevelChanged?.Invoke(_transparencyLevel);
+                }
+            } 
+        }
 
         public IPlatformHandle Handle { get; private set; }
     }
