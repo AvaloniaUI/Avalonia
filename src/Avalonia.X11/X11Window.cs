@@ -41,9 +41,9 @@ namespace Avalonia.X11
         private IntPtr _renderHandle;
         private bool _mapped;
         private bool _wasMappedAtLeastOnce = false;
-        private HashSet<X11Window> _transientChildren = new HashSet<X11Window>();
-        private X11Window _transientParent;
         private double? _scalingOverride;
+        private bool _disabled;
+
         public object SyncRoot { get; } = new object();
 
         class InputEventContainer
@@ -746,7 +746,6 @@ namespace Avalonia.X11
 
         void Cleanup()
         {
-            SetTransientParent(null, false);
             if (_xic != IntPtr.Zero)
             {
                 XDestroyIC(_xic);
@@ -773,38 +772,24 @@ namespace Avalonia.X11
 
         bool ActivateTransientChildIfNeeded()
         {
-            if (_transientChildren.Count == 0)
-                return false;
-            var child = _transientChildren.First();
-            if (!child.ActivateTransientChildIfNeeded())
-                child.Activate();
-            return true;
-        }
-        
-        void SetTransientParent(X11Window window, bool informServer = true)
-        {
-            _transientParent?._transientChildren.Remove(this);
-            _transientParent = window;
-            _transientParent?._transientChildren.Add(this);
-            if (informServer)
-                SetTransientForHint(_transientParent?._handle);
+            if (_disabled)
+            {
+                GotInputWhenDisabled?.Invoke();
+                return true;
+            }
+
+            return false;
         }
 
-        void SetTransientForHint(IntPtr? parent)
+        public void SetParent(IWindowImpl parent)
         {
-            if (parent == null || parent == IntPtr.Zero)
+            if (parent == null || parent.Handle == null || parent.Handle.Handle == IntPtr.Zero)
                 XDeleteProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_TRANSIENT_FOR);
             else
-                XSetTransientForHint(_x11.Display, _handle, parent.Value);
+                XSetTransientForHint(_x11.Display, _handle, parent.Handle.Handle);
         }
 
         public void Show()
-        {
-            SetTransientParent(null);
-            ShowCore();
-        }
-        
-        void ShowCore()
         {
             _wasMappedAtLeastOnce = true;
             XMapWindow(_x11.Display, _handle);
@@ -812,7 +797,6 @@ namespace Avalonia.X11
         }
 
         public void Hide() => XUnmapWindow(_x11.Display, _handle);
-        
         
         public Point PointToClient(PixelPoint point) => new Point((point.X - Position.X) / Scaling, (point.Y - Position.Y) / Scaling);
 
@@ -1034,12 +1018,13 @@ namespace Avalonia.X11
         {
             ChangeWMAtoms(value, _x11.Atoms._NET_WM_STATE_ABOVE);
         }
-
-        public void ShowDialog(IWindowImpl parent)
+        
+        public void SetEnabled(bool enable)
         {
-            SetTransientParent((X11Window)parent);
-            ShowCore();
+            _disabled = !enable;
         }
+
+        public Action GotInputWhenDisabled { get; set; }
 
         public void SetIcon(IWindowIconImpl icon)
         {

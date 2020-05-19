@@ -45,7 +45,6 @@ namespace Avalonia.Win32
 #endif
 
         private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
-        private readonly List<WindowImpl> _disabledBy;
         private readonly TouchDevice _touchDevice;
         private readonly MouseDevice _mouseDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
@@ -70,7 +69,6 @@ namespace Avalonia.Win32
 
         public WindowImpl()
         {
-            _disabledBy = new List<WindowImpl>();
             _touchDevice = new TouchDevice();
             _mouseDevice = new WindowsMouseDevice();
 
@@ -342,30 +340,24 @@ namespace Avalonia.Win32
 
         public void Hide()
         {
-            if (_parent != null)
-            {
-                _parent._disabledBy.Remove(this);
-                _parent.UpdateEnabled();
-                _parent = null;
-            }
-
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
         }
 
         public virtual void Show()
         {
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, IntPtr.Zero);
+            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent != null ? _parent._hwnd : IntPtr.Zero);
             ShowWindow(_showWindowState);
         }
 
-        public void ShowDialog(IWindowImpl parent)
+        public Action GotInputWhenDisabled { get; set; }
+
+        public void SetParent(IWindowImpl parent)
         {
             _parent = (WindowImpl)parent;
-            _parent._disabledBy.Add(this);
-            _parent.UpdateEnabled();
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, ((WindowImpl)parent)._hwnd);
-            ShowWindow(_showWindowState);
+            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent._hwnd);
         }
+
+        public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
 
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
@@ -666,7 +658,7 @@ namespace Avalonia.Win32
             }
         }        
 
-        private WindowStyles GetWindowStateStyles ()
+        private WindowStyles GetWindowStateStyles()
         {
             return GetStyle() & WindowStateMask;
         }
@@ -719,11 +711,6 @@ namespace Avalonia.Win32
             {
                 SetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE, (uint)style);
             }
-        }
-
-        private void UpdateEnabled()
-        {
-            EnableWindow(_hwnd, _disabledBy.Count == 0);
         }
 
         private void UpdateWindowProperties(WindowProperties newProperties, bool forceChanges = false)

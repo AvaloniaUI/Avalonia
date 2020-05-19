@@ -486,13 +486,13 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == SelectionModeProperty)
+            if (change.Property == SelectionModeProperty)
             {
-                var mode = newValue.GetValueOrDefault<SelectionMode>();
+                var mode = change.NewValue.GetValueOrDefault<SelectionMode>();
                 Selection.SingleSelect = !mode.HasFlagCustom(SelectionMode.Multiple);
                 Selection.AutoSelect = mode.HasFlagCustom(SelectionMode.AlwaysSelected);
             }

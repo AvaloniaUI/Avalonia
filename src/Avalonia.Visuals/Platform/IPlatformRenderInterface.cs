@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Platform
 {
@@ -87,16 +89,36 @@ namespace Avalonia.Platform
         /// <summary>
         /// Loads a bitmap implementation from a file..
         /// </summary>
-        /// <param name="fileName">The filename of the bitmap.</param>
+        /// <param name="fileName">The filename of the bitmap.</param>        
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
         IBitmapImpl LoadBitmap(string fileName);
 
         /// <summary>
         /// Loads a bitmap implementation from a file..
         /// </summary>
-        /// <param name="stream">The stream to read the bitmap from.</param>
+        /// <param name="stream">The stream to read the bitmap from.</param>        
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
         IBitmapImpl LoadBitmap(Stream stream);
+
+        /// <summary>
+        /// Loads a bitmap implementation from a stream to a specified width maintaining aspect ratio.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param> 
+        /// <param name="width">The desired width of the resulting bitmap.</param>
+        /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should resizing be required.</param>
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality);
+
+        /// <summary>
+        /// Loads a bitmap implementation from a stream to a specified height maintaining aspect ratio.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param> 
+        /// <param name="height">The desired height of the resulting bitmap.</param>
+        /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should resizing be required.</param>
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IBitmapImpl LoadBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality);
+
+        IBitmapImpl ResizeBitmap(IBitmapImpl bitmapImpl, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality);
 
         /// <summary>
         /// Loads a bitmap implementation from a pixels in memory.
