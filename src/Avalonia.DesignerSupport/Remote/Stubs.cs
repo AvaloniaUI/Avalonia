@@ -37,6 +37,8 @@ namespace Avalonia.DesignerSupport.Remote
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
 
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
         public WindowStub(IWindowImpl parent = null)
         {
             if (parent != null)
@@ -141,6 +143,8 @@ namespace Avalonia.DesignerSupport.Remote
         public IPopupPositioner PopupPositioner { get; }
 
         public Action GotInputWhenDisabled { get; set; }
+
+        public WindowTransparencyLevel TransparencyLevel { get => WindowTransparencyLevel.None; set { } }
     }
 
     class ClipboardStub : IClipboard

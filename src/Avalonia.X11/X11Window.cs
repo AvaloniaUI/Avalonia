@@ -300,6 +300,9 @@ namespace Avalonia.X11
         public Action Activated { get; set; }
         public Func<bool> Closing { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
+
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
         public Action Closed { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
 
@@ -1083,5 +1086,6 @@ namespace Avalonia.X11
 
         public IPopupPositioner PopupPositioner { get; }
         public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
+        public WindowTransparencyLevel TransparencyLevel { get; set; }
     }
 }

@@ -369,6 +369,8 @@ namespace Avalonia.Native
 
         Action<double> ITopLevelImpl.ScalingChanged { get; set; }
 
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
         public IScreenImpl Screen { get; private set; }
 
         // TODO
@@ -388,6 +390,8 @@ namespace Avalonia.Native
         {
             _native.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
         }
+
+        public WindowTransparencyLevel TransparencyLevel { get => WindowTransparencyLevel.None; set { } }
 
         public IPlatformHandle Handle { get; private set; }
     }

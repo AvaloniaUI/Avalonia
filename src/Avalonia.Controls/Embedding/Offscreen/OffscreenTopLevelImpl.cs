@@ -49,6 +49,9 @@ namespace Avalonia.Controls.Embedding.Offscreen
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
+
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
         public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 
         public virtual Point PointToClient(PixelPoint point) => point.ToPoint(1);
@@ -61,6 +64,9 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public Action Closed { get; set; }
         public abstract IMouseDevice MouseDevice { get; }
+
+        public WindowTransparencyLevel TransparencyLevel { get => WindowTransparencyLevel.None; set { } }
+
         public IPopupImpl CreatePopup() => null;
     }
 }
