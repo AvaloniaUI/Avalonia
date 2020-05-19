@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -66,6 +67,7 @@ namespace Avalonia.Win32
         private Size _minSize;
         private Size _maxSize;
         private WindowImpl _parent;
+        private WindowTransparencyLevel _transparencyLevel = WindowTransparencyLevel.None;
 
         public WindowImpl()
         {
@@ -121,6 +123,8 @@ namespace Avalonia.Win32
         public Action<PixelPoint> PositionChanged { get; set; }
 
         public Action<WindowState> WindowStateChanged { get; set; }
+
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
         public Thickness BorderThickness
         {
@@ -204,6 +208,70 @@ namespace Avalonia.Win32
                     _showWindowState = value;
                 }
             }
+        }
+
+        public WindowTransparencyLevel TransparencyLevel 
+        {
+            get => _transparencyLevel;
+            set 
+            {
+                var oldValue = _transparencyLevel;
+                _transparencyLevel = EnableBlur(value);
+
+                if(oldValue != _transparencyLevel)
+                {
+                    TransparencyLevelChanged?.Invoke(_transparencyLevel);
+                }
+            }
+        }
+
+        private WindowTransparencyLevel EnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            if(DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
+            {
+                return WindowTransparencyLevel.None;
+            }
+
+            var accent = new AccentPolicy();
+            var accentStructSize = Marshal.SizeOf(accent);
+
+            switch (transparencyLevel)
+            {
+                default:
+                case WindowTransparencyLevel.None:
+                    accent.AccentState = AccentState.ACCENT_DISABLED;
+                    break;
+
+                case WindowTransparencyLevel.Transparent:
+                    accent.AccentState = AccentState.ACCENT_ENABLE_TRANSPARENTGRADIENT;
+                    break;
+
+                case WindowTransparencyLevel.Blur:
+                    accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
+                    break;
+
+                case (WindowTransparencyLevel.Blur + 1):
+                    accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
+                    break;
+            }
+            var bgcolor = 0x00ffffff;
+
+            accent.GradientColor = bgcolor;
+
+            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+
+            var data = new WindowCompositionAttributeData();
+            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
+            data.SizeOfData = accentStructSize;
+            data.Data = accentPtr;
+
+            SetWindowCompositionAttribute(_hwnd, ref data);
+
+            Marshal.FreeHGlobal(accentPtr);
+
+            //todo return acheived level and check windows versions.
+            return transparencyLevel;
         }
 
         public IEnumerable<object> Surfaces => new object[] { Handle, _gl, _framebuffer };
