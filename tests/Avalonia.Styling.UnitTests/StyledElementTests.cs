@@ -101,7 +101,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void AttachedToLogicalParent_Should_Be_Called_When_Added_To_Tree()
+        public void AttachedToLogicalTree_Should_Be_Called_When_Added_To_Tree()
         {
             var root = new TestRoot();
             var parent = new Border();
@@ -128,9 +128,9 @@ namespace Avalonia.Styling.UnitTests
             Assert.True(childRaised);
             Assert.True(grandchildRaised);
         }
-
+        
         [Fact]
-        public void AttachedToLogicalParent_Should_Be_Called_Before_Parent_Change_Signalled()
+        public void AttachedToLogicalTree_Should_Be_Called_Before_Parent_Change_Signalled()
         {
             var root = new TestRoot();
             var child = new Border();
@@ -150,7 +150,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void AttachedToLogicalParent_Should_Not_Be_Called_With_GlobalStyles_As_Root()
+        public void AttachedToLogicalTree_Should_Not_Be_Called_With_GlobalStyles_As_Root()
         {
             var globalStyles = Mock.Of<IGlobalStyles>();
             var root = new TestRoot { StylingParent = globalStyles };
@@ -169,7 +169,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void AttachedToLogicalParent_Should_Have_Source_Set()
+        public void AttachedToLogicalTree_Should_Have_Source_Set()
         {
             var root = new TestRoot();
             var canvas = new Canvas();
@@ -191,7 +191,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void AttachedToLogicalParent_Should_Have_Parent_Set()
+        public void AttachedToLogicalTree_Should_Have_Parent_Set()
         {
             var root = new TestRoot();
             var canvas = new Canvas();
@@ -213,7 +213,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void DetachedFromLogicalParent_Should_Be_Called_When_Removed_From_Tree()
+        public void DetachedFromLogicalTree_Should_Be_Called_When_Removed_From_Tree()
         {
             var root = new TestRoot();
             var parent = new Border();
@@ -239,7 +239,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void DetachedFromLogicalParent_Should_Not_Be_Called_With_GlobalStyles_As_Root()
+        public void DetachedFromLogicalTree_Should_Not_Be_Called_With_GlobalStyles_As_Root()
         {
             var globalStyles = Mock.Of<IGlobalStyles>();
             var root = new TestRoot { StylingParent = globalStyles };
@@ -259,7 +259,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Parent_Should_Be_Null_When_DetachedFromLogicalParent_Called()
+        public void Parent_Should_Be_Null_When_DetachedFromLogicalTree_Called()
         {
             var target = new TestControl();
             var root = new TestRoot(target);
