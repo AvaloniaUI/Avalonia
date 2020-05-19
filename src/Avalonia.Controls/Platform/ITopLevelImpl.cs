@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Rendering;
@@ -106,5 +107,10 @@ namespace Avalonia.Platform
         IMouseDevice MouseDevice { get; }
 
         IPopupImpl CreatePopup();
+
+        /// <summary>
+        /// Gets or sets the <see cref="WindowTransparencyLevel"/> ofthe TopLevel.
+        /// </summary>
+        WindowTransparencyLevel TransparencyLevel { get; set; }
     }
 }

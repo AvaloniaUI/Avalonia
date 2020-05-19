@@ -43,6 +43,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IInputElement> PointerOverElementProperty =
             AvaloniaProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
 
+        /// <summary>
+        /// Represents the current <see cref="WindowTransparencyLevel"/>.
+        /// </summary>
+        public static readonly StyledProperty<WindowTransparencyLevel> TransparencyLevelProperty =
+            AvaloniaProperty.Register<TopLevel, WindowTransparencyLevel>(nameof(TransparencyLevel), WindowTransparencyLevel.None);
+
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
@@ -57,6 +63,9 @@ namespace Avalonia.Controls
         static TopLevel()
         {
             AffectsMeasure<TopLevel>(ClientSizeProperty);
+
+            TransparencyLevelProperty.Changed.AddClassHandler<TopLevel>(
+                (tl, e) => { if (tl.PlatformImpl != null) tl.PlatformImpl.TransparencyLevel = (WindowTransparencyLevel)e.NewValue; });
         }
 
         /// <summary>
@@ -153,6 +162,15 @@ namespace Avalonia.Controls
         {
             get { return _clientSize; }
             protected set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="WindowTransparencyLevel"/>.
+        /// </summary>
+        public WindowTransparencyLevel TransparencyLevel
+        {
+            get { return GetValue(TransparencyLevelProperty); }
+            set { SetValue(TransparencyLevelProperty, value); }
         }
 
         public ILayoutManager LayoutManager
