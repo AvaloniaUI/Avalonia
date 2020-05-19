@@ -2,7 +2,7 @@
         xmlns:pages="clr-namespace:ControlCatalog.Pages"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ControlCatalog.MainView"
-        Background="{DynamicResource ThemeBackgroundBrush}"
+        Background="Transparent"
         Foreground="{DynamicResource ThemeForegroundBrush}"
         FontSize="{DynamicResource FontSizeNormal}">
   <Grid>
@@ -69,6 +69,11 @@
           <ComboBox x:Name="Themes" SelectedIndex="0">
             <ComboBoxItem>Light</ComboBoxItem>
             <ComboBoxItem>Dark</ComboBoxItem>
+          </ComboBox>
+          <ComboBox x:Name="TransparencyLevels" SelectedIndex="0">
+            <ComboBoxItem>None</ComboBoxItem>
+            <ComboBoxItem>Transparent</ComboBoxItem>
+            <ComboBoxItem>Blur</ComboBoxItem>
           </ComboBox>
           <ComboBox Items="{Binding WindowStates}" SelectedItem="{Binding WindowState}" />
         </StackPanel>

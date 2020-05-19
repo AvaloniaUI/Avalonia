@@ -63,6 +63,13 @@ namespace ControlCatalog
                 if (VisualRoot is Window window)
                     window.SystemDecorations = (SystemDecorations)decorations.SelectedIndex;
             };
+
+            var transparencyLevels = this.Find<ComboBox>("TransparencyLevels");
+            transparencyLevels.SelectionChanged += (sender, e) =>
+            {
+                if (VisualRoot is Window window)
+                    window.TransparencyLevel = (WindowTransparencyLevel)transparencyLevels.SelectedIndex;
+            };
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
