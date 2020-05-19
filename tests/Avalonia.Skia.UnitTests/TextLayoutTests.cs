@@ -508,7 +508,7 @@ namespace Avalonia.Skia.UnitTests
 
         private const string Text = "日本でTest一番読まれている英字新聞・ジャパンタイムズが発信する国内外ニュースと、様々なジャンルの特集記事。";
 
-        [Fact]
+        [Fact(Skip= "Only used for profiling.")]
         public void Should_Wrap()
         {
             using (Start())
