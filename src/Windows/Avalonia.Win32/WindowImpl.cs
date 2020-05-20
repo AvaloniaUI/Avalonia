@@ -670,6 +670,11 @@ namespace Avalonia.Win32
         {
             if (!_isClientAreaExtended)
             {
+                if(DwmIsCompositionEnabled(out bool compositionEnabled) < 0 || !compositionEnabled)
+                {
+                    return;
+                }
+
                 RECT border_thickness = new RECT();
                 MARGINS margins = new MARGINS();
 
