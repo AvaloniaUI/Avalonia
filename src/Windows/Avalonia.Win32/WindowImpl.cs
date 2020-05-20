@@ -692,14 +692,12 @@ namespace Avalonia.Win32
 
                 var hr = DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
-                //if (hr < 0)
+                if (hr == 0)
                 {
-                    // Handle the error.
+                    _isClientAreaExtended = true;
+                    _extendedMargins = new Thickness(margins.cxLeftWidth / Scaling, margins.cyTopHeight / Scaling, margins.cxRightWidth / Scaling, margins.cyBottomHeight / Scaling);
+                    ExtendClientAreaToDecorationsChanged?.Invoke(true);
                 }
-
-                _isClientAreaExtended = true;
-                _extendedMargins = new Thickness(margins.cxLeftWidth / Scaling, margins.cyTopHeight / Scaling, margins.cxRightWidth / Scaling, margins.cyBottomHeight / Scaling);
-                ExtendClientAreaToDecorationsChanged?.Invoke(true);
             }
         }
 
