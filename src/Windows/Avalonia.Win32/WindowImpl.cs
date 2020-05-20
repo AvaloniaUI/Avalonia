@@ -234,7 +234,7 @@ namespace Avalonia.Win32
             {
                 canUseTransparency = true;
 
-                if (Win32Platform.WindowsVersion.Build >= 19628)
+                if (Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628)
                 {
                     canUseAcrylic = true;
                 }
