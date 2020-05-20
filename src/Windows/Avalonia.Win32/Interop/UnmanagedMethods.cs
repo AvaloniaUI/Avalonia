@@ -1334,6 +1334,14 @@ namespace Avalonia.Win32.Interop
             ACCENT_INVALID_STATE = 6
         }
 
+        internal enum AccentFlags
+        {
+            DrawLeftBorder = 0x20,
+            DrawTopBorder = 0x40,
+            DrawRightBorder = 0x80,
+            DrawBottomBorder = 0x100,            
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         internal struct AccentPolicy
         {

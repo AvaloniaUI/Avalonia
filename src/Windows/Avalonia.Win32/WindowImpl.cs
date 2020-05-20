@@ -247,14 +247,17 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowTransparencyLevel.Blur:
-                    accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
+                    accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
                     break;
 
                 case (WindowTransparencyLevel.Blur + 1):
                     accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
                     break;
             }
-            var bgcolor = 0x00ffffff;
+
+            var version = Environment.OSVersion;
+            accent.AccentFlags = 2;// (int)(AccentFlags.DrawBottomBorder | AccentFlags.DrawLeftBorder | AccentFlags.DrawRightBorder | AccentFlags.DrawTopBorder);
+            var bgcolor = 0x00FFFFFF;
 
             accent.GradientColor = bgcolor;
 
