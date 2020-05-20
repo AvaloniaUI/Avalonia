@@ -213,13 +213,7 @@ namespace Avalonia.Win32
 
         public void SetTransparencyLevelHint (WindowTransparencyLevel transparencyLevel)
         {
-            var level = EnableBlur(transparencyLevel);
-
-            if (TransparencyLevel != level)
-            {
-                TransparencyLevel = level;
-                TransparencyLevelChanged?.Invoke(TransparencyLevel);
-            }
+            TransparencyLevel = EnableBlur(transparencyLevel);
         }
 
         private WindowTransparencyLevel EnableBlur(WindowTransparencyLevel transparencyLevel)

@@ -83,7 +83,14 @@ namespace Avalonia.Controls
             AffectsMeasure<TopLevel>(ClientSizeProperty);
 
             TransparencyLevelHintProperty.Changed.AddClassHandler<TopLevel>(
-                (tl, e) => { if (tl.PlatformImpl != null) tl.PlatformImpl.SetTransparencyLevelHint((WindowTransparencyLevel)e.NewValue); });
+                (tl, e) => 
+                {
+                    if (tl.PlatformImpl != null)
+                    {
+                        tl.PlatformImpl.SetTransparencyLevelHint((WindowTransparencyLevel)e.NewValue);
+                        tl.HandleTransparencyLevelChanged(tl.PlatformImpl.TransparencyLevel);
+                    }
+                });
         }
 
         /// <summary>
