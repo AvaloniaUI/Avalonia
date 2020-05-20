@@ -69,7 +69,7 @@ namespace Avalonia.Win32
         private Size _maxSize;
         private POINT _maxTrackSize;
         private WindowImpl _parent;
-        private bool _extendClientAreaToDecorationsHint;
+        private Thickness _extendClientAreaToDecorationsHint;
 
         public WindowImpl()
         {
@@ -666,7 +666,7 @@ namespace Avalonia.Win32
             TaskBarList.MarkFullscreen(_hwnd, fullscreen);
         }
 
-        private void ExtendClientArea ()
+        private void ExtendClientArea (Thickness thickness)
         {
             if (!_isClientAreaExtended)
             {
@@ -690,10 +690,10 @@ namespace Avalonia.Win32
                 }
 
                 // Extend the frame into the client area.                        
-                margins.cxLeftWidth = border_thickness.left;
-                margins.cxRightWidth = border_thickness.right;
-                margins.cyBottomHeight = border_thickness.bottom;
-                margins.cyTopHeight = border_thickness.top;
+                margins.cxLeftWidth = thickness.Left == -1 ? border_thickness.left : (int)(thickness.Left * Scaling);
+                margins.cxRightWidth = thickness.Right == -1 ? border_thickness.right : (int)(thickness.Right * Scaling);
+                margins.cyBottomHeight = thickness.Bottom == -1 ? border_thickness.bottom : (int)(thickness.Bottom * Scaling);
+                margins.cyTopHeight = thickness.Top == -1 ? border_thickness.top : (int)(thickness.Top * Scaling);
 
                 var hr = DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
@@ -948,15 +948,14 @@ namespace Avalonia.Win32
 
         IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;        
 
-        public bool ExtendClientAreaToDecorationsHint
+        public Thickness ExtendClientAreaToDecorationsHint
         {
             get => _extendClientAreaToDecorationsHint;
             set
             {
-                _extendClientAreaToDecorationsHint = true;
+                _extendClientAreaToDecorationsHint = value;
 
-                ExtendClientArea();
-                // TODO Trigger transition.
+                ExtendClientArea(value);                
             }
         }
 
