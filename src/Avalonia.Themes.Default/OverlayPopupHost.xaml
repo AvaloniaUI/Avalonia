@@ -3,7 +3,7 @@
   <Setter Property="Template">
     <ControlTemplate>
       <Panel>
-        <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" Margin="{TemplateBinding WindowDecorationMargins}" />
+        <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
         <VisualLayerManager IsPopup="True">
           <ContentPresenter Name="PART_ContentPresenter"
                             Background="{TemplateBinding Background}"
