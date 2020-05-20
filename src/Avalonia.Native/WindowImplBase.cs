@@ -393,7 +393,7 @@ namespace Avalonia.Native
 
         private WindowTransparencyLevel _transparencyLevel;
 
-        public WindowTransparencyLevel TransparencyLevel 
+        public WindowTransparencyLevel TransparencyLevelHint 
         {
             get => _transparencyLevel;
             set

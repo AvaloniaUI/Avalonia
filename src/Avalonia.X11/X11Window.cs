@@ -1086,6 +1086,6 @@ namespace Avalonia.X11
 
         public IPopupPositioner PopupPositioner { get; }
         public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
-        public WindowTransparencyLevel TransparencyLevel { get; set; }
+        public WindowTransparencyLevel TransparencyLevelHint { get; set; }
     }
 }

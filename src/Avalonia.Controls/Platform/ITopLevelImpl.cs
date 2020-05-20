@@ -59,6 +59,9 @@ namespace Avalonia.Platform
         /// </summary>
         Action<double> ScalingChanged { get; set; }
 
+        /// <summary>
+        /// Gets or sets a method called when the toplevel's TransparencyLevel changes.
+        /// </summary>
         Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
         /// <summary>
@@ -111,8 +114,8 @@ namespace Avalonia.Platform
         IPopupImpl CreatePopup();
 
         /// <summary>
-        /// Gets or sets the <see cref="WindowTransparencyLevel"/> ofthe TopLevel.
+        /// Gets or sets the <see cref="WindowTransparencyLevel"/> of the TopLevel.
         /// </summary>
-        WindowTransparencyLevel TransparencyLevel { get; set; }
+        WindowTransparencyLevel TransparencyLevelHint { get; set; }
     }
 }

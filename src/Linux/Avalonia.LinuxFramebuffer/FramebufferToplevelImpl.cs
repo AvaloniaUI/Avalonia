@@ -83,6 +83,6 @@ namespace Avalonia.LinuxFramebuffer
 
         public Size ScaledSize => _outputBackend.PixelSize.ToSize(Scaling);
 
-        public WindowTransparencyLevel TransparencyLevel { get => WindowTransparencyLevel.None; set { } }
+        public WindowTransparencyLevel TransparencyLevelHint { get => WindowTransparencyLevel.None; set { } }
     }
 }

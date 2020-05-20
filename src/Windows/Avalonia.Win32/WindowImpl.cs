@@ -210,7 +210,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public WindowTransparencyLevel TransparencyLevel
+        public WindowTransparencyLevel TransparencyLevelHint
         {
             get => _transparencyLevel;
             set
