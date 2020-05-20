@@ -98,13 +98,14 @@ namespace Avalonia.Win32
                         LEFTEXTENDWIDTH = border_thickness.left;
                         RIGHTEXTENDWIDTH = border_thickness.right;
                         BOTTOMEXTENDWIDTH = border_thickness.bottom;
+                        TOPEXTENDWIDTH = border_thickness.top;
 
                         // Extend the frame into the client area.                        
                         margins.cxLeftWidth = border_thickness.left;
                         margins.cxRightWidth = border_thickness.right;
                         margins.cyBottomHeight = border_thickness.bottom;
                         margins.cyTopHeight = border_thickness.top;
-                         
+
                         var hr = DwmExtendFrameIntoClientArea(hWnd, ref margins);
 
                         //if (hr < 0)
@@ -131,6 +132,21 @@ namespace Avalonia.Win32
                     if (lRet == IntPtr.Zero)
                     {
                         lRet = (IntPtr)HitTestNCA(hWnd, wParam, lParam);
+
+                        uint timestamp = unchecked((uint)GetMessageTime());
+
+                        if (((HitTestValues)lRet) == HitTestValues.HTCAPTION)
+                        {
+                            var position = PointToClient(PointFromLParam(lParam));
+
+                            var visual = (_owner as Window).Renderer.HitTestFirst(position, _owner as Window, null);
+
+                            if(visual != null)
+                            {                                
+                                lRet = (IntPtr)HitTestValues.HTCLIENT;
+                            }
+                                                       
+                        }
 
                         if (((HitTestValues)lRet) != HitTestValues.HTNOWHERE)
                         {
