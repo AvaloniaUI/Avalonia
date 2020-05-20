@@ -227,15 +227,14 @@ namespace Avalonia.Win32
 
         private WindowTransparencyLevel EnableBlur(WindowTransparencyLevel transparencyLevel)
         {
-            var version = RtlGetVersion();
             bool canUseTransparency = false;
             bool canUseAcrylic = false;
 
-            if (version.Major >= 10)
+            if (Win32Platform.WindowsVersion.Major >= 10)
             {
                 canUseTransparency = true;
 
-                if (version.Build >= 19628)
+                if (Win32Platform.WindowsVersion.Build >= 19628)
                 {
                     canUseAcrylic = true;
                 }
