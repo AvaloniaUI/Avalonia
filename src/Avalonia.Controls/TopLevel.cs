@@ -127,11 +127,11 @@ namespace Avalonia.Controls
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
                 .Switch().Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformCursor));
 
-            if (((IStyleHost)this).StylingParent is IResourceProvider applicationResources)
+            if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
             {
                 WeakSubscriptionManager.Subscribe(
                     applicationResources,
-                    nameof(IResourceProvider.ResourcesChanged),
+                    nameof(IResourceHost.ResourcesChanged),
                     this);
             }
         }

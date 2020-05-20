@@ -1,15 +1,15 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data;
+
+#nullable enable
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     public class DynamicResourceExtension : IBinding
     {
-        private IResourceNode _anchor;
+        private IStyledElement? _anchor;
+        private IResourceProvider? _resourceProvider;
 
         public DynamicResourceExtension()
         {
@@ -20,31 +20,45 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             ResourceKey = resourceKey;
         }
 
-        public object ResourceKey { get; set; }
+        public object? ResourceKey { get; set; }
 
         public IBinding ProvideValue(IServiceProvider serviceProvider)
         {
             var provideTarget = serviceProvider.GetService<IProvideValueTarget>();
 
-            if (!(provideTarget.TargetObject is IResourceNode))
+            if (!(provideTarget.TargetObject is IStyledElement))
             {
-                _anchor = serviceProvider.GetFirstParent<IResourceNode>();
+                _anchor = serviceProvider.GetFirstParent<IStyledElement>();
+
+                if (_anchor is null)
+                {
+                    _resourceProvider = serviceProvider.GetFirstParent<IResourceProvider>();
+                }
             }
 
             return this;
         }
 
-        InstancedBinding IBinding.Initiate(
+        InstancedBinding? IBinding.Initiate(
             IAvaloniaObject target,
             AvaloniaProperty targetProperty,
             object anchor,
             bool enableDataValidation)
         {
-            var control = target as IResourceNode ?? _anchor;
+            if (ResourceKey is null)
+            {
+                return null;
+            }
+
+            var control = target as IStyledElement ?? _anchor as IStyledElement;
 
             if (control != null)
             {
                 return InstancedBinding.OneWay(control.GetResourceObservable(ResourceKey));
+            }
+            else if (_resourceProvider is object)
+            {
+                return InstancedBinding.OneWay(_resourceProvider.GetResourceObservable(ResourceKey));
             }
 
             return null;
