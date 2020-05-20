@@ -71,6 +71,8 @@ namespace Avalonia.Controls
     {
         private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
 
+        private bool _isExtendedIntoWindowDecorations;
+
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
         /// </summary>
@@ -86,6 +88,29 @@ namespace Avalonia.Controls
                 nameof(HasSystemDecorations),
                 o => o.HasSystemDecorations,
                 (o, v) => o.HasSystemDecorations = v);
+
+        /// <summary>
+        /// Defines the <see cref="ExtendClientAreaToDecorationsHint"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> ExtendClientAreaToDecorationsHintProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(ExtendClientAreaToDecorationsHint), false);
+
+
+        /// <summary>
+        /// Defines the <see cref="IsExtendedIntoWindowDecorations"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Window, bool> IsExtendedIntoWindowDecorationsProperty =
+            AvaloniaProperty.RegisterDirect<Window, bool>(nameof(IsExtendedIntoWindowDecorations),
+                o => o.IsExtendedIntoWindowDecorations,
+                unsetValue: false);
+
+        /// <summary>
+        /// Defines the <see cref="WindowDecorationMargins"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Window, Thickness> WindowDecorationMarginsProperty =
+            AvaloniaProperty.RegisterDirect<Window, Thickness>(nameof(WindowDecorationMargins),
+                o => o.WindowDecorationMargins);
+        
 
         /// <summary>
         /// Defines the <see cref="SystemDecorations"/> property.
@@ -164,6 +189,9 @@ namespace Avalonia.Controls
             WindowStateProperty.Changed.AddClassHandler<Window>(
                 (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.WindowState = (WindowState)e.NewValue; });
 
+            ExtendClientAreaToDecorationsHintProperty.Changed.AddClassHandler<Window>(
+                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.ExtendClientAreaToDecorationsHint = (bool)e.NewValue; });
+
             MinWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size((double)e.NewValue, w.MinHeight), new Size(w.MaxWidth, w.MaxHeight)));
             MinHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue), new Size(w.MaxWidth, w.MaxHeight)));
             MaxWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size((double)e.NewValue, w.MaxHeight)));
@@ -189,6 +217,7 @@ namespace Avalonia.Controls
             impl.GotInputWhenDisabled = OnGotInputWhenDisabled;
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
+            impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;            
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
 
             PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
@@ -235,6 +264,32 @@ namespace Avalonia.Controls
                     RaisePropertyChanged(HasSystemDecorationsProperty, oldValue, value);
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets or sets if the ClientArea is Extended into the Window Decorations (chrome or border).
+        /// </summary>
+        public bool ExtendClientAreaToDecorationsHint
+        {
+            get { return GetValue(ExtendClientAreaToDecorationsHintProperty); }
+            set { SetValue(ExtendClientAreaToDecorationsHintProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets if the ClientArea is Extended into the Window Decorations.
+        /// </summary>
+        public bool IsExtendedIntoWindowDecorations
+        {
+            get => _isExtendedIntoWindowDecorations;
+            private set => SetAndRaise(IsExtendedIntoWindowDecorationsProperty, ref _isExtendedIntoWindowDecorations, value);
+        }
+
+        private Thickness _windowDecorationMargins;
+
+        public Thickness WindowDecorationMargins
+        {
+            get => _windowDecorationMargins;
+            private set => SetAndRaise(WindowDecorationMarginsProperty, ref _windowDecorationMargins, value);
         }
 
         /// <summary>
@@ -433,6 +488,13 @@ namespace Avalonia.Controls
             {
                 Renderer.Start();
             }
+        }
+
+        protected virtual void ExtendClientAreaToDecorationsChanged(bool isExtended)
+        {
+            IsExtendedIntoWindowDecorations = isExtended;
+
+            WindowDecorationMargins = PlatformImpl.ExtendedMargins;
         }
 
         /// <summary>

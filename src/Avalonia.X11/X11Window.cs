@@ -311,6 +311,12 @@ namespace Avalonia.X11
             set => _transparencyHelper.TransparencyLevelChanged = value;
         }
 
+        public bool ExtendClientAreaToDecorationsHint { get; set; }
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public Thickness ExtendedMargins { get; } = new Thickness();
+
         public Action Closed { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
 
