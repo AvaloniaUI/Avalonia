@@ -14,11 +14,6 @@ namespace Avalonia.Win32
 {
     public partial class WindowImpl
     {
-        private int LEFTEXTENDWIDTH = 4;
-        private int RIGHTEXTENDWIDTH = 4;
-        private int BOTTOMEXTENDWIDTH = 4;
-        private int TOPEXTENDWIDTH = 100;
-
         // Hit test the frame for resizing and moving.
         HitTestValues HitTestNCA(IntPtr hWnd, IntPtr wParam, IntPtr lParam)
         {
@@ -32,28 +27,40 @@ namespace Avalonia.Win32
             RECT rcFrame = new RECT();
             AdjustWindowRectEx(ref rcFrame, (uint)(WindowStyles.WS_OVERLAPPEDWINDOW & ~WindowStyles.WS_CAPTION), false, 0);
 
+            RECT border_thickness = new RECT();
+            if (GetStyle().HasFlag(WindowStyles.WS_THICKFRAME))
+            {
+                AdjustWindowRectEx(ref border_thickness, (uint)(GetStyle()), false, 0);
+                border_thickness.left *= -1;
+                border_thickness.top *= -1;
+            }
+            else if (GetStyle().HasFlag(WindowStyles.WS_BORDER))
+            {
+                border_thickness = new RECT { bottom = 1, left = 1, right = 1, top = 1 };
+            }
+
             // Determine if the hit test is for resizing. Default middle (1,1).
             ushort uRow = 1;
             ushort uCol = 1;
             bool fOnResizeBorder = false;
 
             // Determine if the point is at the top or bottom of the window.
-            if (ptMouse.Y >= rcWindow.top && ptMouse.Y < rcWindow.top + TOPEXTENDWIDTH)
+            if (ptMouse.Y >= rcWindow.top && ptMouse.Y < rcWindow.top + border_thickness.top)
             {
                 fOnResizeBorder = (ptMouse.Y < (rcWindow.top - rcFrame.top));
                 uRow = 0;
             }
-            else if (ptMouse.Y < rcWindow.bottom && ptMouse.Y >= rcWindow.bottom - BOTTOMEXTENDWIDTH)
+            else if (ptMouse.Y < rcWindow.bottom && ptMouse.Y >= rcWindow.bottom - border_thickness.bottom)
             {
                 uRow = 2;
             }
 
             // Determine if the point is at the left or right of the window.
-            if (ptMouse.X >= rcWindow.left && ptMouse.X < rcWindow.left + LEFTEXTENDWIDTH)
+            if (ptMouse.X >= rcWindow.left && ptMouse.X < rcWindow.left + border_thickness.left)
             {
                 uCol = 0; // left side
             }
-            else if (ptMouse.X < rcWindow.right && ptMouse.X >= rcWindow.right - RIGHTEXTENDWIDTH)
+            else if (ptMouse.X < rcWindow.right && ptMouse.X >= rcWindow.right - border_thickness.right)
             {
                 uCol = 2; // right side
             }
@@ -65,8 +72,6 @@ namespace Avalonia.Win32
                 new []{ HitTestValues.HTLEFT,      HitTestValues.HTNOWHERE,     HitTestValues.HTRIGHT },
                 new []{ HitTestValues.HTBOTTOMLEFT, HitTestValues.HTBOTTOM, HitTestValues.HTBOTTOMRIGHT },
             };
-
-            System.Diagnostics.Debug.WriteLine(hitTests[uRow][uCol]);
 
             return hitTests[uRow][uCol];
         }
@@ -84,35 +89,37 @@ namespace Avalonia.Win32
             {
                 case WindowsMessage.WM_ACTIVATE:
                     {
-                        if (GetStyle().HasFlag(WindowStyles.WS_THICKFRAME))
-                        {
-                            AdjustWindowRectEx(ref border_thickness, (uint)(GetStyle()), false, 0);
-                            border_thickness.left *= -1;
-                            border_thickness.top *= -1;
+                        if (!_isClientAreaExtended)
+                        {                            
+                            if (GetStyle().HasFlag(WindowStyles.WS_THICKFRAME))
+                            {
+                                AdjustWindowRectEx(ref border_thickness, (uint)(GetStyle()), false, 0);
+                                border_thickness.left *= -1;
+                                border_thickness.top *= -1;
+                            }
+                            else if (GetStyle().HasFlag(WindowStyles.WS_BORDER))
+                            {
+                                border_thickness = new RECT { bottom = 1, left = 1, right = 1, top = 1 };
+                            }
+
+                            // Extend the frame into the client area.                        
+                            margins.cxLeftWidth = border_thickness.left;
+                            margins.cxRightWidth = border_thickness.right;
+                            margins.cyBottomHeight = border_thickness.bottom;
+                            margins.cyTopHeight = border_thickness.top;
+
+                            var hr = DwmExtendFrameIntoClientArea(hWnd, ref margins);
+
+                            //if (hr < 0)
+                            {
+                                // Handle the error.
+                            }
+
+                            _isClientAreaExtended = true;
+                            _extendedMargins = new Thickness(margins.cxLeftWidth / Scaling, margins.cyTopHeight / Scaling, margins.cxRightWidth / Scaling, margins.cyBottomHeight / Scaling);
+                            ExtendClientAreaToDecorationsChanged?.Invoke(true);
+
                         }
-                        else if (GetStyle().HasFlag(WindowStyles.WS_BORDER))
-                        {
-                            border_thickness = new RECT { bottom = 1, left = 1, right = 1, top = 1 };
-                        }
-
-                        LEFTEXTENDWIDTH = border_thickness.left;
-                        RIGHTEXTENDWIDTH = border_thickness.right;
-                        BOTTOMEXTENDWIDTH = border_thickness.bottom;
-                        TOPEXTENDWIDTH = border_thickness.top;
-
-                        // Extend the frame into the client area.                        
-                        margins.cxLeftWidth = border_thickness.left;
-                        margins.cxRightWidth = border_thickness.right;
-                        margins.cyBottomHeight = border_thickness.bottom;
-                        margins.cyTopHeight = border_thickness.top;
-
-                        var hr = DwmExtendFrameIntoClientArea(hWnd, ref margins);
-
-                        //if (hr < 0)
-                        {
-                            // Handle the error.
-                        }
-
                         lRet = IntPtr.Zero;
                         callDwp = true;
                         break;

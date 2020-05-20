@@ -39,6 +39,12 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
+        public bool ExtendClientAreaToDecorationsHint { get; set; }
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public Thickness ExtendedMargins { get; } = new Thickness();
+
         public WindowStub(IWindowImpl parent = null)
         {
             if (parent != null)

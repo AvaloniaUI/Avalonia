@@ -98,6 +98,12 @@ namespace Avalonia.Native
 
         public Action<WindowState> WindowStateChanged { get; set; }
 
+        public bool ExtendClientAreaToDecorationsHint { get; set; }
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public Thickness ExtendedMargins { get; } = new Thickness();
+
         public void ShowTaskbarIcon(bool value)
         {
             // NO OP On OSX
