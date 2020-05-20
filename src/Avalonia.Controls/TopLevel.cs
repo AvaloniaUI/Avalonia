@@ -402,7 +402,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    _transparencyFallbackBorder.Background = Brushes.Transparent;
+                    _transparencyFallbackBorder.Background = null;
                 }
             }
 
