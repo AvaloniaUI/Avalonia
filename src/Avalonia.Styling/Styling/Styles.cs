@@ -83,7 +83,7 @@ namespace Avalonia.Styling
         {
             get
             {
-                if (Count > 0)
+                if (_resources?.Count > 0)
                 {
                     return true;
                 }
