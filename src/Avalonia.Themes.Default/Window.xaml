@@ -4,7 +4,8 @@
   <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}"/>
   <Setter Property="Template">
     <ControlTemplate>
-      <Border Name="PART_TransparencyFallback">
+      <Panel>
+        <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
         <Border Background="{TemplateBinding Background}">
           <VisualLayerManager>
             <ContentPresenter Name="PART_ContentPresenter"
@@ -15,7 +16,7 @@
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
           </VisualLayerManager>
         </Border>
-      </Border>
+      </Panel>
     </ControlTemplate>
   </Setter>
 </Style>
