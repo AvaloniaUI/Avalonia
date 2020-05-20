@@ -861,9 +861,14 @@ namespace Avalonia.Win32
 
                 if (!_isFullScreenActive)
                 {
+                    var margin = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0;
+
                     var margins = new MARGINS
                     {
-                        cyBottomHeight = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0
+                        cyBottomHeight = margin,
+                        cxRightWidth = margin,
+                        cxLeftWidth = margin,
+                        cyTopHeight = margin
                     };
 
                     DwmExtendFrameIntoClientArea(_hwnd, ref margins);
