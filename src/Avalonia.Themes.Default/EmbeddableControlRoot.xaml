@@ -4,7 +4,7 @@
   <Setter Property="Template">
     <ControlTemplate>
       <Panel>
-        <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" Margin="{TemplateBinding WindowDecorationMargins}" />
+        <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
         <Border Background="{TemplateBinding Background}">
           <VisualLayerManager>
             <ContentPresenter Name="PART_ContentPresenter"
