@@ -138,8 +138,16 @@ namespace Avalonia.Win32
                         if (((HitTestValues)lRet) == HitTestValues.HTCAPTION)
                         {
                             var position = PointToClient(PointFromLParam(lParam));
+                            
+                            var visual = (_owner as Window).Renderer.HitTestFirst(position, _owner as Window, x =>
+                            {
+                                if(x is IInputElement ie && !ie.IsHitTestVisible)
+                                {
+                                    return false;
+                                }
 
-                            var visual = (_owner as Window).Renderer.HitTestFirst(position, _owner as Window, null);
+                                return true;
+                            });
 
                             if(visual != null)
                             {                                
