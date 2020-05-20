@@ -46,13 +46,21 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
 
         /// <summary>
-        /// Represents the current <see cref="WindowTransparencyLevel"/>.
+        /// Defines the <see cref="TransparencyLevelHint"/> property.
         /// </summary>
-        public static readonly StyledProperty<WindowTransparencyLevel> TransparencyLevelProperty =
-            AvaloniaProperty.Register<TopLevel, WindowTransparencyLevel>(nameof(TransparencyLevel), WindowTransparencyLevel.None);
+        public static readonly StyledProperty<WindowTransparencyLevel> TransparencyLevelHintProperty =
+            AvaloniaProperty.Register<TopLevel, WindowTransparencyLevel>(nameof(TransparencyLevelHint), WindowTransparencyLevel.None);
 
         /// <summary>
-        /// Defines the <see cref="Background"/> property.
+        /// Defines the <see cref="ActualTransparencyLevel"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TopLevel, WindowTransparencyLevel> ActualTransparencyLevelProperty =
+            AvaloniaProperty.RegisterDirect<TopLevel, WindowTransparencyLevel>(nameof(ActualTransparencyLevel), 
+                o => o.ActualTransparencyLevel, 
+                unsetValue: WindowTransparencyLevel.None);        
+
+        /// <summary>
+        /// Defines the <see cref="TransparencyBackgroundFallbackProperty"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush> TransparencyBackgroundFallbackProperty =
             AvaloniaProperty.Register<TopLevel, IBrush>(nameof(TransparencyBackgroundFallback), Brushes.White);
@@ -63,6 +71,7 @@ namespace Avalonia.Controls
         private readonly IPlatformRenderInterface _renderInterface;
         private readonly IGlobalStyles _globalStyles;
         private Size _clientSize;
+        private WindowTransparencyLevel _actualTransparencyLevel;
         private ILayoutManager _layoutManager;
         private Border _transparencyFallbackBorder;
 
@@ -73,7 +82,7 @@ namespace Avalonia.Controls
         {
             AffectsMeasure<TopLevel>(ClientSizeProperty);
 
-            TransparencyLevelProperty.Changed.AddClassHandler<TopLevel>(
+            TransparencyLevelHintProperty.Changed.AddClassHandler<TopLevel>(
                 (tl, e) => { if (tl.PlatformImpl != null) tl.PlatformImpl.TransparencyLevel = (WindowTransparencyLevel)e.NewValue; });
         }
 
@@ -102,6 +111,8 @@ namespace Avalonia.Controls
             }
 
             PlatformImpl = impl;
+
+            _actualTransparencyLevel = WindowTransparencyLevel.None;
 
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
             var styler = TryGetService<IStyler>(dependencyResolver);
@@ -175,14 +186,27 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="WindowTransparencyLevel"/>.
+        /// Gets or sets the <see cref="WindowTransparencyLevel"/> that the TopLevel should use when possible.
         /// </summary>
-        public WindowTransparencyLevel TransparencyLevel
+        public WindowTransparencyLevel TransparencyLevelHint
         {
-            get { return GetValue(TransparencyLevelProperty); }
-            set { SetValue(TransparencyLevelProperty, value); }
+            get { return GetValue(TransparencyLevelHintProperty); }
+            set { SetValue(TransparencyLevelHintProperty, value); }
         }
 
+        /// <summary>
+        /// Gets the acheived <see cref="WindowTransparencyLevel"/> that the platform was able to provide.
+        /// </summary>
+        public WindowTransparencyLevel ActualTransparencyLevel
+        {
+            get => _actualTransparencyLevel;
+            private set => SetAndRaise(ActualTransparencyLevelProperty, ref _actualTransparencyLevel, value);
+        }        
+
+        /// <summary>
+        /// Gets or sets the <see cref="IBrush"/> that transparency will blend with when transparency is not supported.
+        /// By default this is a solid white brush.
+        /// </summary>
         public IBrush TransparencyBackgroundFallback
         {
             get => GetValue(TransparencyBackgroundFallbackProperty);
@@ -359,6 +383,8 @@ namespace Avalonia.Controls
                     _transparencyFallbackBorder.Background = Brushes.Transparent;
                 }
             }
+
+            ActualTransparencyLevel = transparencyLevel;
         }
 
         /// <inheritdoc/>

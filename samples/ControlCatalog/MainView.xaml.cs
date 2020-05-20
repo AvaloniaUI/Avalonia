@@ -68,7 +68,7 @@ namespace ControlCatalog
             transparencyLevels.SelectionChanged += (sender, e) =>
             {
                 if (VisualRoot is Window window)
-                    window.TransparencyLevel = (WindowTransparencyLevel)transparencyLevels.SelectedIndex;
+                    window.TransparencyLevelHint = (WindowTransparencyLevel)transparencyLevels.SelectedIndex;
             };
         }
 
