@@ -31,25 +31,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void DynamicResource_Works_In_ResourceDictionary()
-        {
-            using (StyledWindow())
-            {
-                var xaml = @"
-<ResourceDictionary xmlns='https://github.com/avaloniaui'
-                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-  <Color x:Key='Red'>Red</Color>
-  <SolidColorBrush x:Key='RedBrush' Color='{DynamicResource Red}'/>
-</ResourceDictionary>";
-                var loader = new AvaloniaXamlLoader();
-                var resources = (ResourceDictionary)loader.Load(xaml);
-                var brush = (SolidColorBrush)resources["RedBrush"];
-
-                Assert.Equal(Colors.Red, brush.Color);
-            }
-        }
-
-        [Fact]
         public void DynamicResource_Finds_Resource_In_Parent_Dictionary()
         {
             var dictionaryXaml = @"

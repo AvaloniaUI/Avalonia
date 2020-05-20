@@ -8,105 +8,89 @@ namespace Avalonia.Styling.UnitTests
     public class StylesTests
     {
         [Fact]
-        public void Adding_Style_With_Resources_Should_Raise_ResourceChanged()
+        public void Adding_Style_Should_Set_Owner()
         {
-            var style = new Style
-            {
-                Resources = { { "foo", "bar" } },
-            };
+            var host = new Mock<IResourceHost>();
+            var target = new Styles(host.Object);
+            var style = new Mock<IStyle>();
+            var rp = style.As<IResourceProvider>();
 
+            host.ResetCalls();
+            target.Add(style.Object);
+
+            rp.Verify(x => x.AddOwner(host.Object));
+        }
+
+        [Fact]
+        public void Removing_Style_Should_Clear_Owner()
+        {
+            var host = new Mock<IResourceHost>();
+            var target = new Styles(host.Object);
+            var style = new Mock<IStyle>();
+            var rp = style.As<IResourceProvider>();
+
+            host.ResetCalls();
+            target.Add(style.Object);
+            target.Remove(style.Object);
+
+            rp.Verify(x => x.RemoveOwner(host.Object));
+        }
+
+        [Fact]
+        public void Should_Set_Owner_On_Assigned_Resources()
+        {
+            var host = new Mock<IResourceHost>();
             var target = new Styles();
-            var raised = false;
+            ((IResourceProvider)target).AddOwner(host.Object);
 
-            target.ResourcesChanged += (_, __) => raised = true;
-            target.Add(style);
+            var resources = new Mock<IResourceDictionary>();
+            target.Resources = resources.Object;
 
-            Assert.True(raised);
+            resources.Verify(x => x.AddOwner(host.Object), Times.Once);
         }
 
         [Fact]
-        public void Removing_Style_With_Resources_Should_Raise_ResourceChanged()
+        public void Should_Set_Owner_On_Assigned_Resources_2()
         {
-            var target = new Styles
-            {
-                new Style
-                {
-                    Resources = { { "foo", "bar" } },
-                }
-            };
-
-            var raised = false;
-
-            target.ResourcesChanged += (_, __) => raised = true;
-            target.Clear();
-
-            Assert.True(raised);
-        }
-
-        [Fact]
-        public void Adding_Style_Without_Resources_Should_Not_Raise_ResourceChanged()
-        {
-            var style = new Style();
+            var host = new Mock<IResourceHost>();
             var target = new Styles();
-            var raised = false;
 
-            target.ResourcesChanged += (_, __) => raised = true;
-            target.Add(style);
+            var resources = new Mock<IResourceDictionary>();
+            target.Resources = resources.Object;
 
-            Assert.False(raised);
+            host.ResetCalls();
+            ((IResourceProvider)target).AddOwner(host.Object);
+            resources.Verify(x => x.AddOwner(host.Object), Times.Once);
         }
 
         [Fact]
-        public void Adding_Resource_Should_Raise_Child_ResourceChanged()
+        public void Should_Set_Owner_On_Child_Style()
         {
-            Style child;
-            var target = new Styles
-            {
-                (child = new Style()),
-            };
+            var host = new Mock<IResourceHost>();
+            var target = new Styles();
+            ((IResourceProvider)target).AddOwner(host.Object);
 
-            var raised = false;
+            var style = new Mock<IStyle>();
+            var resourceProvider = style.As<IResourceProvider>();
+            target.Add(style.Object);
 
-            child.ResourcesChanged += (_, __) => raised = true;
-            target.Resources.Add("foo", "bar");
-
-            Assert.True(raised);
+            resourceProvider.Verify(x => x.AddOwner(host.Object), Times.Once);
         }
 
         [Fact]
-        public void Adding_Resource_To_Sibling_Style_Should_Raise_ResourceChanged()
+        public void Should_Set_Owner_On_Child_Style_2()
         {
-            Style style1;
-            Style style2;
-            var target = new Styles
-            {
-                (style1 = new Style()),
-                (style2 = new Style()),
-            };
+            var host = new Mock<IResourceHost>();
+            var target = new Styles();
 
-            var raised = false;
+            var style = new Mock<IStyle>();
+            var resourceProvider = style.As<IResourceProvider>();
+            target.Add(style.Object);
 
-            style2.ResourcesChanged += (_, __) => raised = true;
-            style1.Resources.Add("foo", "bar");
-
-            Assert.True(raised);
+            host.ResetCalls();
+            ((IResourceProvider)target).AddOwner(host.Object);
+            resourceProvider.Verify(x => x.AddOwner(host.Object), Times.Once);
         }
-
-        [Fact]
-        public void ParentResourcesChanged_Should_Be_Propagated_To_Children()
-        {
-            var childStyle = new Mock<IStyle>();
-            var setResourceParent = childStyle.As<ISetResourceParent>();
-            var target = new Styles { childStyle.Object };
-
-            setResourceParent.ResetCalls();
-            ((ISetResourceParent)target).ParentResourcesChanged(new ResourcesChangedEventArgs());
-
-            setResourceParent.Verify(x => x.ParentResourcesChanged(
-                It.IsAny<ResourcesChangedEventArgs>()),
-                Times.Once);
-        }
-
         [Fact]
         public void Finds_Resource_In_Merged_Dictionary()
         {
@@ -124,8 +108,7 @@ namespace Avalonia.Styling.UnitTests
                 }
             };
 
-            var result = target.FindResource("foo");
-
+            Assert.True(target.TryGetResource("foo", out var result));
             Assert.Equal("bar", result);
         }
     }
