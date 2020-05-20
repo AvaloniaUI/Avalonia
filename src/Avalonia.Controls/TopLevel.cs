@@ -83,7 +83,7 @@ namespace Avalonia.Controls
             AffectsMeasure<TopLevel>(ClientSizeProperty);
 
             TransparencyLevelHintProperty.Changed.AddClassHandler<TopLevel>(
-                (tl, e) => { if (tl.PlatformImpl != null) tl.PlatformImpl.TransparencyLevelHint = (WindowTransparencyLevel)e.NewValue; });
+                (tl, e) => { if (tl.PlatformImpl != null) tl.PlatformImpl.SetTransparencyLevelHint((WindowTransparencyLevel)e.NewValue); });
         }
 
         /// <summary>
@@ -402,7 +402,7 @@ namespace Avalonia.Controls
 
             _transparencyFallbackBorder = e.NameScope.Find<Border>("PART_TransparencyFallback");
 
-            HandleTransparencyLevelChanged(PlatformImpl.TransparencyLevelHint);
+            HandleTransparencyLevelChanged(PlatformImpl.TransparencyLevel);
         }
 
         /// <summary>

@@ -65,7 +65,9 @@ namespace Avalonia.Controls.Embedding.Offscreen
         public Action Closed { get; set; }
         public abstract IMouseDevice MouseDevice { get; }
 
-        public WindowTransparencyLevel TransparencyLevelHint { get => WindowTransparencyLevel.None; set { } }
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
 
         public IPopupImpl CreatePopup() => null;
     }

@@ -114,8 +114,13 @@ namespace Avalonia.Platform
         IPopupImpl CreatePopup();
 
         /// <summary>
-        /// Gets or sets the <see cref="WindowTransparencyLevel"/> of the TopLevel.
+        /// Sets the <see cref="WindowTransparencyLevel"/> hint of the TopLevel.
         /// </summary>
-        WindowTransparencyLevel TransparencyLevelHint { get; set; }
+        void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel);
+
+        /// <summary>
+        /// Gets the current <see cref="WindowTransparencyLevel"/> of the TopLevel.
+        /// </summary>
+        WindowTransparencyLevel TransparencyLevel { get; }
     }
 }

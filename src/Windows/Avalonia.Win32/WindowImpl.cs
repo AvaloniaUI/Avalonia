@@ -66,8 +66,7 @@ namespace Avalonia.Win32
         private OleDropTarget _dropTarget;
         private Size _minSize;
         private Size _maxSize;
-        private WindowImpl _parent;
-        private WindowTransparencyLevel _transparencyLevel = WindowTransparencyLevel.None;
+        private WindowImpl _parent;        
 
         public WindowImpl()
         {
@@ -210,18 +209,16 @@ namespace Avalonia.Win32
             }
         }
 
-        public WindowTransparencyLevel TransparencyLevelHint
-        {
-            get => _transparencyLevel;
-            set
-            {
-                var oldValue = _transparencyLevel;
-                _transparencyLevel = EnableBlur(value);
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
 
-                if (oldValue != _transparencyLevel)
-                {
-                    TransparencyLevelChanged?.Invoke(_transparencyLevel);
-                }
+        public void SetTransparencyLevelHint (WindowTransparencyLevel transparencyLevel)
+        {
+            var level = EnableBlur(transparencyLevel);
+
+            if (TransparencyLevel != level)
+            {
+                TransparencyLevel = level;
+                TransparencyLevelChanged?.Invoke(TransparencyLevel);
             }
         }
 
@@ -281,7 +278,7 @@ namespace Avalonia.Win32
 
             SetWindowCompositionAttribute(_hwnd, ref data);
 
-            Marshal.FreeHGlobal(accentPtr);
+            Marshal.FreeHGlobal(accentPtr);            
 
             return transparencyLevel;
         }

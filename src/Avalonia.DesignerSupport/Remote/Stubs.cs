@@ -144,7 +144,9 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Action GotInputWhenDisabled { get; set; }
 
-        public WindowTransparencyLevel TransparencyLevelHint { get => WindowTransparencyLevel.None; set { } }
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
     }
 
     class ClipboardStub : IClipboard
