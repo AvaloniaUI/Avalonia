@@ -40,6 +40,7 @@ namespace Avalonia.Win32
 
         private SavedWindowInfo _savedWindowInfo;
         private bool _isFullScreenActive;
+        private bool _isClientAreaExtended;
 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
@@ -68,6 +69,7 @@ namespace Avalonia.Win32
         private Size _maxSize;
         private POINT _maxTrackSize;
         private WindowImpl _parent;
+        private bool _extendClientAreaToDecorationsHint;
 
         public WindowImpl()
         {
@@ -664,6 +666,43 @@ namespace Avalonia.Win32
             TaskBarList.MarkFullscreen(_hwnd, fullscreen);
         }
 
+        private void ExtendClientArea ()
+        {
+            if (!_isClientAreaExtended)
+            {
+                RECT border_thickness = new RECT();
+                MARGINS margins = new MARGINS();
+
+                if (GetStyle().HasFlag(WindowStyles.WS_THICKFRAME))
+                {
+                    AdjustWindowRectEx(ref border_thickness, (uint)(GetStyle()), false, 0);
+                    border_thickness.left *= -1;
+                    border_thickness.top *= -1;
+                }
+                else if (GetStyle().HasFlag(WindowStyles.WS_BORDER))
+                {
+                    border_thickness = new RECT { bottom = 1, left = 1, right = 1, top = 1 };
+                }
+
+                // Extend the frame into the client area.                        
+                margins.cxLeftWidth = border_thickness.left;
+                margins.cxRightWidth = border_thickness.right;
+                margins.cyBottomHeight = border_thickness.bottom;
+                margins.cyTopHeight = border_thickness.top;
+
+                var hr = DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
+                //if (hr < 0)
+                {
+                    // Handle the error.
+                }
+
+                _isClientAreaExtended = true;
+                _extendedMargins = new Thickness(margins.cxLeftWidth / Scaling, margins.cyTopHeight / Scaling, margins.cxRightWidth / Scaling, margins.cyBottomHeight / Scaling);
+                ExtendClientAreaToDecorationsChanged?.Invoke(true);
+            }
+        }
+
         private void ShowWindow(WindowState state)
         {
             ShowWindowCommand command;
@@ -904,7 +943,25 @@ namespace Avalonia.Win32
             }
         }
 
-        IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
+        IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;        
+
+        public bool ExtendClientAreaToDecorationsHint
+        {
+            get => _extendClientAreaToDecorationsHint;
+            set
+            {
+                _extendClientAreaToDecorationsHint = true;
+
+                ExtendClientArea();
+                // TODO Trigger transition.
+            }
+        }
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        private Thickness _extendedMargins;
+
+        public Thickness ExtendedMargins => _extendedMargins;
 
         private struct SavedWindowInfo
         {
