@@ -92,8 +92,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ExtendClientAreaToDecorationsHint"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> ExtendClientAreaToDecorationsHintProperty =
-            AvaloniaProperty.Register<Window, bool>(nameof(ExtendClientAreaToDecorationsHint), false);
+        public static readonly StyledProperty<Thickness> ExtendClientAreaToDecorationsHintProperty =
+            AvaloniaProperty.Register<Window, Thickness>(nameof(ExtendClientAreaToDecorationsHint), default);
 
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<Window, Thickness> WindowDecorationMarginsProperty =
             AvaloniaProperty.RegisterDirect<Window, Thickness>(nameof(WindowDecorationMargins),
-                o => o.WindowDecorationMargins);
+                o => o.WindowDecorationMargins);        
         
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace Avalonia.Controls
                 (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.WindowState = (WindowState)e.NewValue; });
 
             ExtendClientAreaToDecorationsHintProperty.Changed.AddClassHandler<Window>(
-                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.ExtendClientAreaToDecorationsHint = (bool)e.NewValue; });
+                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.ExtendClientAreaToDecorationsHint = (Thickness)e.NewValue; });
 
             MinWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size((double)e.NewValue, w.MinHeight), new Size(w.MaxWidth, w.MaxHeight)));
             MinHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue), new Size(w.MaxWidth, w.MaxHeight)));
@@ -269,7 +269,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets if the ClientArea is Extended into the Window Decorations (chrome or border).
         /// </summary>
-        public bool ExtendClientAreaToDecorationsHint
+        public Thickness ExtendClientAreaToDecorationsHint
         {
             get { return GetValue(ExtendClientAreaToDecorationsHintProperty); }
             set { SetValue(ExtendClientAreaToDecorationsHintProperty, value); }

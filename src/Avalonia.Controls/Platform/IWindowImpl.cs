@@ -95,7 +95,7 @@ namespace Avalonia.Platform
         /// 
         void SetMinMaxSize(Size minSize, Size maxSize);
 
-        bool ExtendClientAreaToDecorationsHint { get; set; }
+        Thickness ExtendClientAreaToDecorationsHint { get; set; }
 
         Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
         
