@@ -80,50 +80,20 @@ namespace Avalonia.Win32
         {
             IntPtr lRet = IntPtr.Zero;
 
-            callDwp = !DwmDefWindowProc(hWnd, msg, wParam, lParam, ref lRet);
-
-            MARGINS margins = new MARGINS { cxLeftWidth = 0, cxRightWidth = 0, cyBottomHeight = 0, cyTopHeight = 100 };
-            RECT border_thickness = new RECT();
-
+            callDwp = !DwmDefWindowProc(hWnd, msg, wParam, lParam, ref lRet);            
+            
             switch ((WindowsMessage)msg)
             {
-                case WindowsMessage.WM_ACTIVATE:
-                    {
-                        if (!_isClientAreaExtended)
-                        {                            
-                            if (GetStyle().HasFlag(WindowStyles.WS_THICKFRAME))
-                            {
-                                AdjustWindowRectEx(ref border_thickness, (uint)(GetStyle()), false, 0);
-                                border_thickness.left *= -1;
-                                border_thickness.top *= -1;
-                            }
-                            else if (GetStyle().HasFlag(WindowStyles.WS_BORDER))
-                            {
-                                border_thickness = new RECT { bottom = 1, left = 1, right = 1, top = 1 };
-                            }
-
-                            // Extend the frame into the client area.                        
-                            margins.cxLeftWidth = border_thickness.left;
-                            margins.cxRightWidth = border_thickness.right;
-                            margins.cyBottomHeight = border_thickness.bottom;
-                            margins.cyTopHeight = border_thickness.top;
-
-                            var hr = DwmExtendFrameIntoClientArea(hWnd, ref margins);
-
-                            //if (hr < 0)
-                            {
-                                // Handle the error.
-                            }
-
-                            _isClientAreaExtended = true;
-                            _extendedMargins = new Thickness(margins.cxLeftWidth / Scaling, margins.cyTopHeight / Scaling, margins.cxRightWidth / Scaling, margins.cyBottomHeight / Scaling);
-                            ExtendClientAreaToDecorationsChanged?.Invoke(true);
-
-                        }
-                        lRet = IntPtr.Zero;
-                        callDwp = true;
-                        break;
-                    }
+                //case WindowsMessage.WM_ACTIVATE:
+                //    {
+                //        if (!_isClientAreaExtended)
+                //        {
+                //            ExtendClientArea();
+                //        }
+                //        lRet = IntPtr.Zero;
+                //        callDwp = true;
+                //        break;
+                //    }
 
                 case WindowsMessage.WM_NCCALCSIZE:
                     {
