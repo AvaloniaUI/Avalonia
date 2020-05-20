@@ -1305,6 +1305,35 @@ namespace Avalonia.Win32.Interop
         [DllImport("dwmapi.dll")]
         public static extern int DwmIsCompositionEnabled(out bool enabled);
 
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct RTL_OSVERSIONINFOEX
+        {
+            internal uint dwOSVersionInfoSize;
+            internal uint dwMajorVersion;
+            internal uint dwMinorVersion;
+            internal uint dwBuildNumber;
+            internal uint dwPlatformId;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+            internal string szCSDVersion;
+        }
+
+        [DllImport("ntdll")]
+        private static extern int RtlGetVersion(out RTL_OSVERSIONINFOEX lpVersionInformation);
+
+        internal static Version RtlGetVersion()
+        {
+            RTL_OSVERSIONINFOEX v = new RTL_OSVERSIONINFOEX();
+            v.dwOSVersionInfoSize = (uint)Marshal.SizeOf(v);
+            if (RtlGetVersion(out v) == 0)
+            {
+                return new Version((int)v.dwMajorVersion, (int)v.dwMinorVersion, (int)v.dwBuildNumber, (int)v.dwPlatformId);
+            }
+            else
+            {
+                throw new Exception("RtlGetVersion failed!");
+            }
+        }
+
         [DllImport("user32.dll")]
         internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
 

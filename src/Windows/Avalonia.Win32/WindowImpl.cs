@@ -210,15 +210,15 @@ namespace Avalonia.Win32
             }
         }
 
-        public WindowTransparencyLevel TransparencyLevel 
+        public WindowTransparencyLevel TransparencyLevel
         {
             get => _transparencyLevel;
-            set 
+            set
             {
                 var oldValue = _transparencyLevel;
                 _transparencyLevel = EnableBlur(value);
 
-                if(oldValue != _transparencyLevel)
+                if (oldValue != _transparencyLevel)
                 {
                     TransparencyLevelChanged?.Invoke(_transparencyLevel);
                 }
@@ -227,7 +227,21 @@ namespace Avalonia.Win32
 
         private WindowTransparencyLevel EnableBlur(WindowTransparencyLevel transparencyLevel)
         {
-            if(DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
+            var version = RtlGetVersion();
+            bool canUseTransparency = false;
+            bool canUseAcrylic = false;
+
+            if (version.Major >= 10)
+            {
+                canUseTransparency = true;
+
+                if (version.Build >= 19628)
+                {
+                    canUseAcrylic = true;
+                }
+            }
+
+            if (!canUseTransparency || DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
             {
                 return WindowTransparencyLevel.None;
             }
@@ -247,19 +261,16 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowTransparencyLevel.Blur:
-                    accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
+                    accent.AccentState = canUseAcrylic ? AccentState.ACCENT_ENABLE_ACRYLIC : AccentState.ACCENT_ENABLE_BLURBEHIND;
                     break;
 
-                case (WindowTransparencyLevel.Blur + 1):
+                case (WindowTransparencyLevel.Blur + 1): // hack force acrylic on windows 10.
                     accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
                     break;
             }
 
-            var version = Environment.OSVersion;
-            accent.AccentFlags = 2;// (int)(AccentFlags.DrawBottomBorder | AccentFlags.DrawLeftBorder | AccentFlags.DrawRightBorder | AccentFlags.DrawTopBorder);
-            var bgcolor = 0x00FFFFFF;
-
-            accent.GradientColor = bgcolor;
+            accent.AccentFlags = 2;
+            accent.GradientColor = 0x00FFFFFF;
 
             var accentPtr = Marshal.AllocHGlobal(accentStructSize);
             Marshal.StructureToPtr(accent, accentPtr, false);
@@ -273,7 +284,6 @@ namespace Avalonia.Win32
 
             Marshal.FreeHGlobal(accentPtr);
 
-            //todo return acheived level and check windows versions.
             return transparencyLevel;
         }
 
