@@ -95,6 +95,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> ExtendClientAreaToDecorationsHintProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(ExtendClientAreaToDecorationsHint), false);
 
+        public static readonly StyledProperty<ExtendClientAreaChromeHints> ExtendClientAreaChromeHintsProperty =
+            AvaloniaProperty.Register<Window, ExtendClientAreaChromeHints>(nameof(ExtendClientAreaChromeHints), ExtendClientAreaChromeHints.Default);
+
 
         /// <summary>
         /// Defines the <see cref="IsExtendedIntoWindowDecorations"/> property.
@@ -190,7 +193,10 @@ namespace Avalonia.Controls
                 (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.WindowState = (WindowState)e.NewValue; });
 
             ExtendClientAreaToDecorationsHintProperty.Changed.AddClassHandler<Window>(
-                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.ExtendClientAreaToDecorationsHint = (bool)e.NewValue; });
+                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaToDecorationsHint((bool)e.NewValue); });
+
+            ExtendClientAreaChromeHintsProperty.Changed.AddClassHandler<Window>(
+                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaChromeHints((ExtendClientAreaChromeHints)e.NewValue); });
 
             MinWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size((double)e.NewValue, w.MinHeight), new Size(w.MaxWidth, w.MaxHeight)));
             MinHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue), new Size(w.MaxWidth, w.MaxHeight)));
@@ -273,6 +279,12 @@ namespace Avalonia.Controls
         {
             get { return GetValue(ExtendClientAreaToDecorationsHintProperty); }
             set { SetValue(ExtendClientAreaToDecorationsHintProperty, value); }
+        }
+
+        public ExtendClientAreaChromeHints ExtendClientAreaChromeHints
+        {
+            get => GetValue(ExtendClientAreaChromeHintsProperty);
+            set => SetValue(ExtendClientAreaChromeHintsProperty, value);
         }
 
         /// <summary>
