@@ -66,8 +66,9 @@
       <v:CustomNotificationView />
     </DataTemplate>
   </Window.DataTemplates>
-  <Panel>    
-    <DockPanel LastChildFill="True" Margin="{Binding #MainWindow.WindowDecorationMargins}">
+  <Panel>  
+    <Panel Margin="{Binding #MainWindow.OffScreenMargin}">
+      <DockPanel LastChildFill="True" Margin="{Binding #MainWindow.WindowDecorationMargins}">
       <Menu Name="MainMenu" DockPanel.Dock="Top">
         <MenuItem Header="File">
           <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
@@ -78,11 +79,12 @@
       </Menu>
       <local:MainView />
     </DockPanel>
-    <Border IsVisible="{Binding ExtendClientAreaEnabled}" BorderThickness="1 1 1 0" MinHeight="30" CornerRadius="4 4 0 0" BorderBrush="#55000000" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250 0 0 0">
+    </Panel>    
+    <Border BorderThickness="1 1 1 0" CornerRadius="4 4 0 0" BorderBrush="#55000000" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250 8 0 0">
       <Border.Background>
         <SolidColorBrush Color="White" Opacity="0.7" />
       </Border.Background>
-      <TextBlock Margin="5" Text="Content In TitleBar" />
+      <TextBlock Margin="5 5 5 0" Text="Content In TitleBar" />
     </Border>
   </Panel>
 </Window>
