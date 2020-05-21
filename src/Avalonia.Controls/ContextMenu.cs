@@ -106,7 +106,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the Vertical offset of the popup in relation to the <see cref="PlacementTarget"/>.
+        /// Gets or sets the Vertical offset of the context menu in relation to the <see cref="PlacementTarget"/>.
         /// </summary>
         public double VerticalOffset
         {
@@ -144,7 +144,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the the anchor rectangle within the parent that the popup will be placed
+        /// Gets or sets the the anchor rectangle within the parent that the context menu will be placed
         /// relative to when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
         /// </summary>
         /// <remarks>
