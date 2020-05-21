@@ -5,14 +5,13 @@ using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
     /// A lookless control whose visual appearance is defined by its <see cref="Template"/>.
     /// </summary>
-    public class TemplatedControl : Control, ITemplatedControl
+    public class TemplatedControl : Control, ITemplatedControl, IThemed
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -75,6 +74,12 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<TemplatedControl, IControlTemplate>(nameof(Template));
 
         /// <summary>
+        /// Defines the <see cref="Theme"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IStyle> ThemeProperty =
+            AvaloniaProperty.Register<TemplatedControl, IStyle>(nameof(Theme));
+
+        /// <summary>
         /// Defines the IsTemplateFocusTarget attached property.
         /// </summary>
         public static readonly AttachedProperty<bool> IsTemplateFocusTargetProperty =
@@ -88,6 +93,8 @@ namespace Avalonia.Controls.Primitives
                 "TemplateApplied", 
                 RoutingStrategies.Direct);
 
+        private static ControlTheme s_unthemed = CreateUnthemed();
+
         private IControlTemplate _appliedTemplate;
 
         /// <summary>
@@ -97,6 +104,7 @@ namespace Avalonia.Controls.Primitives
         {
             ClipToBoundsProperty.OverrideDefaultValue<TemplatedControl>(true);
             TemplateProperty.Changed.AddClassHandler<TemplatedControl>((x, e) => x.OnTemplateChanged(e));
+            ThemeProperty.Changed.AddClassHandler<TemplatedControl>((x, e) => x.OnThemeChanged(e));
         }
 
         /// <summary>
@@ -199,6 +207,17 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets the theme to be applied to the control.
+        /// </summary>
+        public IStyle Theme
+        {
+            get { return GetValue(ThemeProperty); }
+            set { SetValue(ThemeProperty, value); }
+        }
+
+        IStyle IThemed.Theme => Theme ?? GetDefaultControlTheme();
+
+        /// <summary>
         /// Gets the value of the IsTemplateFocusTargetProperty attached property on a control.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -265,13 +284,17 @@ namespace Avalonia.Controls.Primitives
 
                     var e = new TemplateAppliedEventArgs(nameScope);
                     OnApplyTemplate(e);
+#pragma warning disable CS0618 // Type or member is obsolete
                     OnTemplateApplied(e);
+#pragma warning restore CS0618 // Type or member is obsolete
                     RaiseEvent(e);
                 }
 
                 _appliedTemplate = template;
             }
         }
+
+        protected virtual IStyle GetDefaultControlTheme() => s_unthemed;
 
         /// <inheritdoc/>
         protected override IControl GetTemplateFocusTarget()
@@ -361,6 +384,38 @@ namespace Avalonia.Controls.Primitives
                     ApplyTemplatedParent(c);
                 }
             }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Theme"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private void OnThemeChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            InvalidateStyles();
+        }
+
+        private static ControlTheme CreateUnthemed()
+        {
+            var template = new FuncControlTemplate<TemplatedControl>((o, n) =>
+                new Border
+                {
+                    Background = Brushes.Red,
+                    Child = new TextBlock
+                    {
+                        Foreground = Brushes.White,
+                        Text = "No template found.",
+                    }
+                });
+            ;
+
+            return new ControlTheme
+            {
+                Setters =
+                {
+                    new Setter(TemplateProperty, template),
+                }
+            };
         }
     }
 }

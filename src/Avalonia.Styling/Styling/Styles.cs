@@ -29,7 +29,7 @@ namespace Avalonia.Styling
             _styles.CollectionChanged += OnCollectionChanged;
         }
 
-        public Styles(IResourceHost owner)
+        public Styles(IResourceHost? owner)
             : this()
         {
             Owner = owner;
@@ -110,7 +110,7 @@ namespace Avalonia.Styling
             set => _styles[index] = value;
         }
 
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
+        public SelectorMatchResult TryAttach(IStyleable target, object? host)
         {
             _cache ??= new Dictionary<Type, List<IStyle>?>();
 

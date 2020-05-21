@@ -17,7 +17,7 @@ namespace Avalonia.Styling
         /// The <see cref="Styles"/> property may be lazily initialized, if so this property
         /// indicates whether it has been initialized.
         /// </remarks>
-        bool IsStylesInitialized { get; }
+        bool HasStyles { get; }
 
         /// <summary>
         /// Gets the styles for the element.

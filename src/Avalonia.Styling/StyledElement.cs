@@ -298,7 +298,7 @@ namespace Avalonia
         Type IStyleable.StyleKey => GetType();
 
         /// <inheritdoc/>
-        bool IStyleHost.IsStylesInitialized => _styles != null;
+        bool IStyleHost.HasStyles => _styles?.Count > 0;
 
         /// <inheritdoc/>
         IStyleHost? IStyleHost.StylingParent => (IStyleHost)InheritanceParent;

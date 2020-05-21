@@ -163,7 +163,7 @@ namespace Avalonia
         IStyleHost IStyleHost.StylingParent => null;
 
         /// <inheritdoc/>
-        bool IStyleHost.IsStylesInitialized => _styles != null;
+        bool IStyleHost.HasStyles => _styles?.Count > 0;
        
         /// <summary>
         /// Application lifetime, use it for things like setting the main window and exiting the app from code

@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using Avalonia.Animation;
-using Avalonia.Controls;
-using Avalonia.Metadata;
 
 #nullable enable
 
@@ -11,13 +7,8 @@ namespace Avalonia.Styling
     /// <summary>
     /// Defines a style.
     /// </summary>
-    public class Style : AvaloniaObject, IStyle, IResourceProvider
+    public class Style : StyleBase
     {
-        private IResourceHost? _owner;
-        private IResourceDictionary? _resources;
-        private List<ISetter>? _setters;
-        private List<IAnimation>? _animations;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
         /// </summary>
@@ -34,88 +25,10 @@ namespace Avalonia.Styling
             Selector = selector(null);
         }
 
-        public IResourceHost? Owner
-        {
-            get => _owner;
-            private set
-            {
-                if (_owner != value)
-                {
-                    _owner = value;
-                    OwnerChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a dictionary of style resources.
-        /// </summary>
-        public IResourceDictionary Resources
-        {
-            get => _resources ?? (Resources = new ResourceDictionary());
-            set
-            {
-                value = value ?? throw new ArgumentNullException(nameof(value));
-
-                var hadResources = _resources?.HasResources ?? false;
-
-                _resources = value;
-
-                if (Owner is object)
-                {
-                    _resources.AddOwner(Owner);
-
-                    if (hadResources || _resources.HasResources)
-                    {
-                        Owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
-                    }
-                }
-            }
-        }
-
         /// <summary>
         /// Gets or sets the style's selector.
         /// </summary>
         public Selector? Selector { get; set; }
-
-        /// <summary>
-        /// Gets the style's setters.
-        /// </summary>
-        [Content]
-        public IList<ISetter> Setters => _setters ??= new List<ISetter>();
-
-        /// <summary>
-        /// Gets the style's animations.
-        /// </summary>
-        public IList<IAnimation> Animations => _animations ??= new List<IAnimation>();
-
-        bool IResourceNode.HasResources => _resources?.Count > 0;
-        IReadOnlyList<IStyle> IStyle.Children => Array.Empty<IStyle>();
-
-        public event EventHandler? OwnerChanged;
-
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
-        {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-
-            var match = Selector is object ? Selector.Match(target) :
-                target == host ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
-
-            if (match.IsMatch && (_setters is object || _animations is object))
-            {
-                var instance = new StyleInstance(this, target, _setters, _animations, match.Activator);
-                target.StyleApplied(instance);
-                instance.Start();
-            }
-
-            return match.Result;
-        }
-
-        public bool TryGetResource(object key, out object? result)
-        {
-            result = null;
-            return _resources?.TryGetResource(key, out result) ?? false;
-        }
 
         /// <summary>
         /// Returns a string representation of the style.
@@ -133,28 +46,21 @@ namespace Avalonia.Styling
             }
         }
 
-        void IResourceProvider.AddOwner(IResourceHost owner)
+        public override SelectorMatchResult TryAttach(IStyleable target, object? host)
         {
-            owner = owner ?? throw new ArgumentNullException(nameof(owner));
+            target = target ?? throw new ArgumentNullException(nameof(target));
 
-            if (Owner != null)
+            var match = Selector is object ? Selector.Match(target) :
+                target == host ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
+
+            if (match.IsMatch && (SettersCore is object || AnimationsCore is object))
             {
-                throw new InvalidOperationException("The Style already has a parent.");
+                var instance = new StyleInstance(this, target, SettersCore, AnimationsCore, match.Activator);
+                target.StyleApplied(instance);
+                instance.Start();
             }
 
-            Owner = owner;
-            _resources?.AddOwner(owner);
-        }
-
-        void IResourceProvider.RemoveOwner(IResourceHost owner)
-        {
-            owner = owner ?? throw new ArgumentNullException(nameof(owner));
-
-            if (Owner == owner)
-            {
-                Owner = null;
-                _resources?.RemoveOwner(owner);
-            }
+            return match.Result;
         }
     }
 }
