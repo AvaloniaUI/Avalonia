@@ -19,6 +19,30 @@ namespace Avalonia.Controls
     /// </summary>
     public class ContextMenu : MenuBase, ISetterValue
     {
+        /// <summary>
+        /// Defines the <see cref="PlacementMode"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
+            Popup.PlacementModeProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
+        /// Defines the <see cref="HorizontalOffset"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> HorizontalOffsetProperty =
+            Popup.HorizontalOffsetProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
+        /// Defines the <see cref="VerticalOffset"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> VerticalOffsetProperty =
+            Popup.VerticalOffsetProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
+        /// Defines the <see cref="PlacementTarget"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Control?> PlacementTargetProperty =
+            Popup.PlacementTargetProperty.AddOwner<ContextMenu>();
+
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup? _popup;
@@ -47,8 +71,45 @@ namespace Avalonia.Controls
         /// </summary>
         static ContextMenu()
         {
-            ItemsPanelProperty.OverrideDefaultValue(typeof(ContextMenu), DefaultPanel);
+            ItemsPanelProperty.OverrideDefaultValue<ContextMenu>(DefaultPanel);
+            PlacementModeProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
+        }
+
+        /// <summary>
+        /// Gets or sets the placement mode of the popup in relation to the <see cref="PlacementTarget"/>.
+        /// </summary>
+        public PlacementMode PlacementMode
+        {
+            get { return GetValue(PlacementModeProperty); }
+            set { SetValue(PlacementModeProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the Horizontal offset of the popup in relation to the <see cref="PlacementTarget"/>
+        /// </summary>
+        public double HorizontalOffset
+        {
+            get { return GetValue(HorizontalOffsetProperty); }
+            set { SetValue(HorizontalOffsetProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the Vertical offset of the popup in relation to the <see cref="PlacementTarget"/>
+        /// </summary>
+        public double VerticalOffset
+        {
+            get { return GetValue(VerticalOffsetProperty); }
+            set { SetValue(VerticalOffsetProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the control that is used to determine the popup's position.
+        /// </summary>
+        public Control? PlacementTarget
+        {
+            get { return GetValue(PlacementTargetProperty); }
+            set { SetValue(PlacementTargetProperty, value); }
         }
 
         /// <summary>
@@ -124,8 +185,10 @@ namespace Avalonia.Controls
             {
                 _popup = new Popup
                 {
-                    PlacementMode = PlacementMode.Pointer,
-                    PlacementTarget = control,
+                    HorizontalOffset = HorizontalOffset,
+                    VerticalOffset = VerticalOffset,
+                    PlacementMode = PlacementMode,
+                    PlacementTarget = PlacementTarget ?? control,
                     StaysOpen = false
                 };
 
