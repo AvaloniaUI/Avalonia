@@ -287,6 +287,21 @@ namespace Avalonia.Controls.Primitives
             return this;
         }
 
+        protected sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            var count = VisualChildren.Count;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (VisualChildren[i] is ILogical logical)
+                {
+                    logical.NotifyResourcesChanged(e);
+                }
+            }
+
+            base.NotifyChildResourcesChanged(e);
+        }
+
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {

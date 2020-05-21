@@ -101,7 +101,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void AttachedToLogicalParent_Should_Be_Called_When_Added_To_Tree()
+        public void AttachedToLogicalTree_Should_Be_Called_When_Added_To_Tree()
         {
             var root = new TestRoot();
             var parent = new Border();
@@ -128,9 +128,9 @@ namespace Avalonia.Styling.UnitTests
             Assert.True(childRaised);
             Assert.True(grandchildRaised);
         }
-
+        
         [Fact]
-        public void AttachedToLogicalParent_Should_Be_Called_Before_Parent_Change_Signalled()
+        public void AttachedToLogicalTree_Should_Be_Called_Before_Parent_Change_Signalled()
         {
             var root = new TestRoot();
             var child = new Border();
@@ -150,7 +150,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void AttachedToLogicalParent_Should_Not_Be_Called_With_GlobalStyles_As_Root()
+        public void AttachedToLogicalTree_Should_Not_Be_Called_With_GlobalStyles_As_Root()
         {
             var globalStyles = Mock.Of<IGlobalStyles>();
             var root = new TestRoot { StylingParent = globalStyles };
@@ -169,7 +169,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void AttachedToLogicalParent_Should_Have_Source_Set()
+        public void AttachedToLogicalTree_Should_Have_Source_Set()
         {
             var root = new TestRoot();
             var canvas = new Canvas();
@@ -191,7 +191,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void AttachedToLogicalParent_Should_Have_Parent_Set()
+        public void AttachedToLogicalTree_Should_Have_Parent_Set()
         {
             var root = new TestRoot();
             var canvas = new Canvas();
@@ -213,7 +213,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void DetachedFromLogicalParent_Should_Be_Called_When_Removed_From_Tree()
+        public void DetachedFromLogicalTree_Should_Be_Called_When_Removed_From_Tree()
         {
             var root = new TestRoot();
             var parent = new Border();
@@ -239,7 +239,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void DetachedFromLogicalParent_Should_Not_Be_Called_With_GlobalStyles_As_Root()
+        public void DetachedFromLogicalTree_Should_Not_Be_Called_With_GlobalStyles_As_Root()
         {
             var globalStyles = Mock.Of<IGlobalStyles>();
             var root = new TestRoot { StylingParent = globalStyles };
@@ -259,7 +259,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Parent_Should_Be_Null_When_DetachedFromLogicalParent_Called()
+        public void Parent_Should_Be_Null_When_DetachedFromLogicalTree_Called()
         {
             var target = new TestControl();
             var root = new TestRoot(target);
@@ -492,20 +492,20 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Resources_Parent_Is_Set()
+        public void Resources_Owner_Is_Set()
         {
             var target = new TestControl();
 
-            Assert.Same(target, ((IResourceNode)target.Resources).ResourceParent);
+            Assert.Same(target, ((ResourceDictionary)target.Resources).Owner);
         }
 
         [Fact]
         public void Assigned_Resources_Parent_Is_Set()
         {
-            var resources = new ResourceDictionary();
-            var target = new TestControl { Resources = resources };
+            var resources = new Mock<IResourceDictionary>();
+            var target = new TestControl { Resources = resources.Object };
 
-            Assert.Same(target, ((IResourceNode)resources).ResourceParent);
+            resources.Verify(x => x.AddOwner(target));
         }
 
         [Fact]
@@ -522,58 +522,25 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Changing_Parent_Notifies_Resources_ParentResourcesChanged()
-        {
-            var resources = new Mock<IResourceDictionary>();
-            var setResourceParent = resources.As<ISetResourceParent>();
-            var target = new TestControl { Resources = resources.Object };
-            var parent = new Decorator { Resources = { { "foo", "bar" } } };
-
-            setResourceParent.ResetCalls();
-            parent.Child = target;
-
-            setResourceParent.Verify(x =>
-                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
-                Times.Once);
-        }
-
-        [Fact]
-        public void Styles_Parent_Is_Set()
+        public void Styles_Owner_Is_Set()
         {
             var target = new TestControl();
 
-            Assert.Same(target, ((IResourceNode)target.Styles).ResourceParent);
+            Assert.Same(target, target.Styles.Owner);
         }
 
         [Fact]
-        public void Changing_Parent_Notifies_Styles_ParentResourcesChanged()
+        public void Adding_To_Logical_Tree_Raises_ResourcesChanged()
         {
-            var style = new Mock<IStyle>();
-            var setResourceParent = style.As<ISetResourceParent>();
-            var target = new TestControl { Styles = { style.Object } };
+            var target = new TestRoot();
             var parent = new Decorator { Resources = { { "foo", "bar" } } };
+            var raised = 0;
 
-            setResourceParent.ResetCalls();
+            target.ResourcesChanged += (s, e) => ++raised;
+
             parent.Child = target;
 
-            setResourceParent.Verify(x =>
-                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
-                Times.Once);
-        }
-
-        [Fact]
-        public void Changing_Resources_Notifies_Styles()
-        {
-            var style = new Mock<IStyle>();
-            var setResourceParent = style.As<ISetResourceParent>();
-            var target = new TestControl { Styles = { style.Object } };
-
-            setResourceParent.ResetCalls();
-            target.Resources.Add("foo", "bar");
-
-            setResourceParent.Verify(x =>
-                x.ParentResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
-                Times.Once);
+            Assert.Equal(1, raised);
         }
 
         [Fact]
