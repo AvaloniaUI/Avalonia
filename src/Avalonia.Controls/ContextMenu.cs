@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
@@ -9,8 +8,9 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.LogicalTree;
 using Avalonia.Styling;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -21,9 +21,9 @@ namespace Avalonia.Controls
     {
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical });
-        private Popup _popup;
-        private List<Control> _attachedControls;
-        private IInputElement _previousFocus;
+        private Popup? _popup;
+        private List<Control>? _attachedControls;
+        private IInputElement? _previousFocus;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContextMenu"/> class.
@@ -56,14 +56,14 @@ namespace Avalonia.Controls
         /// <see cref="P:Avalonia.Controls.ContextMenu.IsOpen" />
         /// property is changing from false to true.
         /// </summary>
-        public event CancelEventHandler ContextMenuOpening;
+        public event CancelEventHandler? ContextMenuOpening;
 
         /// <summary>
         /// Occurs when the value of the
         /// <see cref="P:Avalonia.Controls.ContextMenu.IsOpen" />
         /// property is changing from true to false.
         /// </summary>
-        public event CancelEventHandler ContextMenuClosing;
+        public event CancelEventHandler? ContextMenuClosing;
 
         /// <summary>
         /// Called when the <see cref="Control.ContextMenu"/> property changes on a control.
@@ -77,7 +77,7 @@ namespace Avalonia.Controls
             {
                 control.PointerReleased -= ControlPointerReleased;
                 oldMenu._attachedControls?.Remove(control);
-                ((ISetLogicalParent)oldMenu._popup)?.SetParent(null);
+                ((ISetLogicalParent?)oldMenu._popup)?.SetParent(null);
             }
 
             if (e.NewValue is ContextMenu newMenu)
@@ -97,7 +97,7 @@ namespace Avalonia.Controls
         /// Opens a context menu on the specified control.
         /// </summary>
         /// <param name="control">The control.</param>
-        public void Open(Control control)
+        public void Open(Control? control)
         {
             if (control is null && (_attachedControls is null || _attachedControls.Count == 0))
             {
@@ -113,7 +113,7 @@ namespace Avalonia.Controls
                     nameof(control));
             }
 
-            control ??= _attachedControls[0];
+            control ??= _attachedControls![0];
 
             if (IsOpen)
             {
@@ -204,7 +204,7 @@ namespace Avalonia.Controls
 
             if (_attachedControls is null || _attachedControls.Count == 0)
             {
-                ((ISetLogicalParent)_popup).SetParent(null);
+                ((ISetLogicalParent)_popup!).SetParent(null);
             }
 
             // HACK: Reset the focus when the popup is closed. We need to fix this so it's automatic.
