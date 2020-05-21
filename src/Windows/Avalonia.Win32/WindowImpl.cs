@@ -748,6 +748,16 @@ namespace Avalonia.Win32
 
                     DisableCloseButton(_hwnd);
                 }
+                else
+                {
+                    var style = GetStyle();
+
+                    style |= (WindowStyles.WS_MINIMIZEBOX | WindowStyles.WS_MAXIMIZEBOX | WindowStyles.WS_SYSMENU);
+
+                    SetStyle(style);
+
+                    EnableCloseButton(_hwnd);
+                }
             }
             else
             {
@@ -756,6 +766,14 @@ namespace Avalonia.Win32
 
                 _offScreenMargin = new Thickness();
                 _extendedMargins = new Thickness();
+
+                var style = GetStyle();
+
+                style |= (WindowStyles.WS_MINIMIZEBOX | WindowStyles.WS_MAXIMIZEBOX | WindowStyles.WS_SYSMENU);
+
+                SetStyle(style);
+
+                EnableCloseButton(_hwnd);
             }
 
             ExtendClientAreaToDecorationsChanged?.Invoke(true);
