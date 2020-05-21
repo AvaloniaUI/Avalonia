@@ -311,7 +311,7 @@ namespace Avalonia.X11
             set => _transparencyHelper.TransparencyLevelChanged = value;
         }
 
-        public Thickness ExtendClientAreaToDecorationsHint { get; set; }
+        public bool ExtendClientAreaToDecorationsHint { get; set; }
 
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 

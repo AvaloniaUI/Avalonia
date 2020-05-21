@@ -85,7 +85,7 @@ namespace Avalonia.DesignerSupport.Remote
         public IScreenImpl Screen { get; } = new ScreenStub();
         public Action GotInputWhenDisabled { get; set; }
         
-        public Thickness ExtendClientAreaToDecorationsHint { get; set; }
+        public bool ExtendClientAreaToDecorationsHint { get; set; }
         
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
