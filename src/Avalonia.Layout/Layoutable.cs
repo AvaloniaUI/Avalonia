@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Logging;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Layout
@@ -545,8 +546,8 @@ namespace Avalonia.Layout
                 if (UseLayoutRounding)
                 {
                     var scale = GetLayoutScale();
-                    width = Math.Ceiling(width * scale) / scale;
-                    height = Math.Ceiling(height * scale) / scale;
+                    width = LayoutHelper.RoundLayoutValue(width, scale);
+                    height = LayoutHelper.RoundLayoutValue(height, scale);
                 }
 
                 return NonNegative(new Size(width, height).Inflate(margin));
@@ -623,12 +624,8 @@ namespace Avalonia.Layout
 
                 if (useLayoutRounding)
                 {
-                    size = new Size(
-                        Math.Ceiling(size.Width * scale) / scale, 
-                        Math.Ceiling(size.Height * scale) / scale);
-                    availableSizeMinusMargins = new Size(
-                        Math.Ceiling(availableSizeMinusMargins.Width * scale) / scale, 
-                        Math.Ceiling(availableSizeMinusMargins.Height * scale) / scale);
+                    size = LayoutHelper.RoundLayoutSize(size, scale, scale);
+                    availableSizeMinusMargins = LayoutHelper.RoundLayoutSize(availableSizeMinusMargins, scale, scale);
                 }
 
                 size = ArrangeOverride(size).Constrain(size);
@@ -657,8 +654,8 @@ namespace Avalonia.Layout
 
                 if (useLayoutRounding)
                 {
-                    originX = Math.Floor(originX * scale) / scale;
-                    originY = Math.Floor(originY * scale) / scale;
+                    originX = LayoutHelper.RoundLayoutValue(originX, scale);
+                    originY = LayoutHelper.RoundLayoutValue(originY, scale);
                 }
 
                 Bounds = new Rect(originX, originY, size.Width, size.Height);
