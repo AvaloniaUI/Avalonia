@@ -114,6 +114,10 @@ namespace Avalonia.Native
         {
         }
 
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+        }
+
         public void ShowTaskbarIcon(bool value)
         {
             // NO OP On OSX

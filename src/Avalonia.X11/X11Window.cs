@@ -1051,6 +1051,10 @@ namespace Avalonia.X11
         {
         }
 
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+        }
+
         public Action GotInputWhenDisabled { get; set; }
 
         public void SetIcon(IWindowIconImpl icon)
