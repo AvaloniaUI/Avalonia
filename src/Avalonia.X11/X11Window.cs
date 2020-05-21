@@ -315,6 +315,8 @@ namespace Avalonia.X11
 
         public Thickness ExtendedMargins { get; } = new Thickness();
 
+        public Thickness OffScreenMargin { get; } = new Thickness();
+
         public bool IsClientAreaExtendedToDecorations { get; }
 
         public Action Closed { get; set; }

@@ -43,6 +43,8 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Thickness ExtendedMargins { get; } = new Thickness();
 
+        public Thickness OffScreenMargin { get; } = new Thickness();
+
         public WindowStub(IWindowImpl parent = null)
         {
             if (parent != null)

@@ -102,6 +102,8 @@ namespace Avalonia.Native
 
         public Thickness ExtendedMargins { get; } = new Thickness();
 
+        public Thickness OffScreenMargin { get; } = new Thickness();
+
         public bool IsClientAreaExtendedToDecorations { get; }
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)

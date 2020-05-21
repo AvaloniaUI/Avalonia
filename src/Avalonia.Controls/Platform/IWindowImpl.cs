@@ -104,5 +104,7 @@ namespace Avalonia.Platform
         Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
         
         Thickness ExtendedMargins { get; }
+
+        Thickness OffScreenMargin { get; } 
     }
 }
