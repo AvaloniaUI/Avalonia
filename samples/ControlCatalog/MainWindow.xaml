@@ -10,6 +10,7 @@
         ExtendClientAreaToDecorationsHint="{Binding ExtendClientAreaEnabled}"
         ExtendClientAreaChromeHints="{Binding ChromeHints}"
         ExtendClientAreaTitleBarHeightHint="{Binding TitleBarHeight}"
+        TransparencyLevelHint="{Binding TransparencyLevel}"
         x:Name="MainWindow"
         x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}" Background="{x:Null}">
   <NativeMenu.Menu>

@@ -80,6 +80,18 @@ namespace ControlCatalog.ViewModels
                         ChromeHints |= ExtendClientAreaChromeHints.SystemTitleBar;
                     }
                 });
+
+            SystemTitleBarEnabled = true;
+            SystemChromeButtonsEnabled = true;
+            TitleBarHeight = -1;
+        }
+
+        private int _transparencyLevel;
+
+        public int TransparencyLevel
+        {
+            get { return _transparencyLevel; }
+            set { this.RaiseAndSetIfChanged(ref _transparencyLevel, value); }
         }
 
         private ExtendClientAreaChromeHints _chromeHints;
