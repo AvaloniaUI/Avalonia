@@ -373,13 +373,16 @@ namespace Avalonia.Win32
 
                         if (windowState != _lastWindowState)
                         {
-                            _lastWindowState = windowState;
-
-                            UpdateExtendMargins(_extendChromeHints);
-
-                            ExtendClientAreaToDecorationsChanged?.Invoke(true);
+                            _lastWindowState = windowState;                                                       
 
                             WindowStateChanged?.Invoke(windowState);
+
+                            if (_isClientAreaExtended)
+                            {
+                                UpdateExtendMargins();
+
+                                ExtendClientAreaToDecorationsChanged?.Invoke(true);
+                            }
                         }
 
                         return IntPtr.Zero;

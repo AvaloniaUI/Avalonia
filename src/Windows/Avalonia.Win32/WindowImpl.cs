@@ -668,7 +668,7 @@ namespace Avalonia.Win32
             TaskBarList.MarkFullscreen(_hwnd, fullscreen);
         }
 
-        private MARGINS UpdateExtendMargins(ExtendClientAreaChromeHints hints)
+        private MARGINS UpdateExtendMargins()
         {
             RECT borderThickness = new RECT();
             RECT borderCaptionThickness = new RECT();            
@@ -680,7 +680,7 @@ namespace Avalonia.Win32
             borderCaptionThickness.left *= -1;
             borderCaptionThickness.top *= -1;
 
-            bool wantsTitleBar = hints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar) || _extendTitleBarHint == -1;
+            bool wantsTitleBar = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar) || _extendTitleBarHint == -1;
 
             if (!wantsTitleBar)
             {
@@ -697,7 +697,7 @@ namespace Avalonia.Win32
                 borderCaptionThickness.top = (int)(_extendTitleBarHint * Scaling);                
             }
 
-            margins.cyTopHeight = hints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar) ? borderCaptionThickness.top : 1;
+            margins.cyTopHeight = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar) ? borderCaptionThickness.top : 1;
 
             _extendedMargins = new Thickness(0, borderCaptionThickness.top / Scaling, 0, 0);
 
@@ -713,22 +713,32 @@ namespace Avalonia.Win32
             return margins;
         }
 
-        private void ExtendClientArea (ExtendClientAreaChromeHints hints)
+        private void ExtendClientArea ()
         {
-            if (!_isClientAreaExtended)
+            if (DwmIsCompositionEnabled(out bool compositionEnabled) < 0 || !compositionEnabled)
             {
-                if(DwmIsCompositionEnabled(out bool compositionEnabled) < 0 || !compositionEnabled)
-                {
-                    return;
-                }
+                _isClientAreaExtended = false;
+                return;
+            }                       
 
-                var margins = UpdateExtendMargins(hints);
+            GetWindowRect(_hwnd, out var rcClient);
 
-                var hr = DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+            // Inform the application of the frame change.
+            SetWindowPos(_hwnd,
+                         IntPtr.Zero,
+                         rcClient.left, rcClient.top,
+                         rcClient.Width, rcClient.Height, 
+                         SetWindowPosFlags.SWP_FRAMECHANGED);
+            
+            if(_isClientAreaExtended)
+            {
+                var margins = UpdateExtendMargins();
 
-                if(!hints.HasFlag(ExtendClientAreaChromeHints.SystemChromeButtons) ||
-                    (hints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChromeButtons) &&
-                    !hints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar)))
+                DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
+                if(!_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChromeButtons) ||
+                    (_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChromeButtons) &&
+                    !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar)))
                 {
                     var style = GetStyle();
 
@@ -738,13 +748,17 @@ namespace Avalonia.Win32
 
                     DisableCloseButton(_hwnd);
                 }
-
-                if (hr == 0)
-                {
-                    _isClientAreaExtended = true;                    
-                    ExtendClientAreaToDecorationsChanged?.Invoke(true);
-                }
             }
+            else
+            {
+                var margins = new MARGINS();
+                DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
+                _offScreenMargin = new Thickness();
+                _extendedMargins = new Thickness();
+            }
+
+            ExtendClientAreaToDecorationsChanged?.Invoke(true);
         }
 
         private void ShowWindow(WindowState state)
@@ -1011,7 +1025,9 @@ namespace Avalonia.Win32
 
         public void SetExtendClientAreaToDecorationsHint(bool hint)
         {
-            ExtendClientArea(_extendChromeHints);
+            _isClientAreaExtended = hint;
+            
+            ExtendClientArea();            
         }
 
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
@@ -1019,12 +1035,16 @@ namespace Avalonia.Win32
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
         {
             _extendChromeHints = hints;
+
+            ExtendClientArea();
         }
 
         private double _extendTitleBarHint = -1;
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
             _extendTitleBarHint = titleBarHeight;
+
+            ExtendClientArea();
         }
 
         public bool IsClientAreaExtendedToDecorations => _isClientAreaExtended;
