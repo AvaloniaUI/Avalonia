@@ -13,7 +13,7 @@
         TransparencyLevelHint="{Binding TransparencyLevel}"
         x:Name="MainWindow"
         x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}" Background="{x:Null}">
-  <StackPanel Spacing="2" Margin="0 0 7 0" Height="30" Opacity="0.5" VerticalAlignment="Top" HorizontalAlignment="Right" TextBlock.FontSize="10" Orientation="Horizontal">
+  <StackPanel Spacing="2" Margin="0 0 7 0" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" TextBlock.FontSize="10" Orientation="Horizontal">
     <StackPanel.Styles>
       <Style Selector="Panel">
         <Setter Property="Width" Value="45" />
@@ -21,7 +21,7 @@
         <Setter Property="TextBlock.Foreground" Value="#AFFFFFFF" />
       </Style>
       <Style Selector="Path">        
-        <Setter Property="Fill" Value="#1FFFFFFF" />        
+        <Setter Property="Fill" Value="White" />        
       </Style>
       <Style Selector="Panel:pointerover">
         <Setter Property="Background" Value="#1FFFFFFF" />
