@@ -154,6 +154,10 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
 
         public Action GotInputWhenDisabled { get; set; }
