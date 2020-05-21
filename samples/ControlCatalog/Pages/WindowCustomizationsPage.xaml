@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ControlCatalog.Pages.WindowCustomizationsPage">
-  <StackPanel Spacing="10" Margin="15">    
+  <StackPanel Spacing="10"  Margin="25">
     <CheckBox Content="Extend Client Area to Decorations" IsChecked="{Binding ExtendClientAreaEnabled}" />
     <CheckBox Content="Titlebar" IsChecked="{Binding SystemTitleBarEnabled}" />
     <CheckBox Content="System Chrome Buttons" IsChecked="{Binding SystemChromeButtonsEnabled}" />
