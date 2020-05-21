@@ -98,6 +98,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<ExtendClientAreaChromeHints> ExtendClientAreaChromeHintsProperty =
             AvaloniaProperty.Register<Window, ExtendClientAreaChromeHints>(nameof(ExtendClientAreaChromeHints), ExtendClientAreaChromeHints.Default);
 
+        public static readonly StyledProperty<double> ExtendClientAreaTitleBarHeightHintProperty =
+            AvaloniaProperty.Register<Window, double>(nameof(ExtendClientAreaTitleBarHeightHint), -1);
+
 
         /// <summary>
         /// Defines the <see cref="IsExtendedIntoWindowDecorations"/> property.
@@ -202,6 +205,9 @@ namespace Avalonia.Controls
             ExtendClientAreaChromeHintsProperty.Changed.AddClassHandler<Window>(
                 (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaChromeHints((ExtendClientAreaChromeHints)e.NewValue); });
 
+            ExtendClientAreaTitleBarHeightHintProperty.Changed.AddClassHandler<Window>(
+                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaTitleBarHeightHint((double)e.NewValue); });
+
             MinWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size((double)e.NewValue, w.MinHeight), new Size(w.MaxWidth, w.MaxHeight)));
             MinHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue), new Size(w.MaxWidth, w.MaxHeight)));
             MaxWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size((double)e.NewValue, w.MaxHeight)));
@@ -290,6 +296,12 @@ namespace Avalonia.Controls
             get => GetValue(ExtendClientAreaChromeHintsProperty);
             set => SetValue(ExtendClientAreaChromeHintsProperty, value);
         }
+
+        public double ExtendClientAreaTitleBarHeightHint
+        {
+            get => GetValue(ExtendClientAreaTitleBarHeightHintProperty);
+            set => SetValue(ExtendClientAreaTitleBarHeightHintProperty, value);
+        }        
 
         /// <summary>
         /// Gets if the ClientArea is Extended into the Window Decorations.

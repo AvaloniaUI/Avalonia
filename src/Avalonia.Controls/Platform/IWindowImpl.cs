@@ -101,6 +101,8 @@ namespace Avalonia.Platform
 
         void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints);
 
+        void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight);
+
         Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
         
         Thickness ExtendedMargins { get; }
