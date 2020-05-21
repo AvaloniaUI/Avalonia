@@ -25,6 +25,10 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         }
     }
 
+    /// <summary>
+    /// An <see cref="IPopupPositioner"/> implementation for platforms on which a popup can be
+    /// aritrarily positioned.
+    /// </summary>
     public class ManagedPopupPositioner : IPopupPositioner
     {
         private readonly IManagedPopupPositionerPopup _popup;

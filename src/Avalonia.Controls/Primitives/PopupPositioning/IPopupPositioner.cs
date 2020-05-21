@@ -50,45 +50,47 @@ using Avalonia.VisualTree;
 namespace Avalonia.Controls.Primitives.PopupPositioning
 {
     /// <summary>
-    /// 
-    /// The IPopupPositioner provides a collection of rules for the placement of a
-    /// a popup relative to its parent. Rules can be defined to ensure
-    /// the popup remains within the visible area's borders, and to
-    /// specify how the popup changes its position, such as sliding along
-    /// an axis, or flipping around a rectangle. These positioner-created rules are
-    /// constrained by the requirement that a popup must intersect with or
-    /// be at least partially adjacent to its parent surface.
+    /// Provides positioning parameters to <see cref="IPopupPositioner"/>.
     /// </summary>
+    /// <remarks>
+    /// The IPopupPositioner provides a collection of rules for the placement of a a popup relative
+    /// to its parent. Rules can be defined to ensure the popup remains within the visible area's
+    /// borders, and to specify how the popup changes its position, such as sliding along an axis,
+    /// or flipping around a rectangle. These positioner-created rules are constrained by the
+    /// requirement that a popup must intersect with or be at least partially adjacent to its parent
+    /// surface.
+    /// </remarks>
     public struct PopupPositionerParameters
     {
         private PopupPositioningEdge _gravity;
         private PopupPositioningEdge _anchor;
 
         /// <summary>
-        /// Set the size of the popup that is to be positioned with the positioner
-        /// object. The size is in scaled coordinates.
+        /// Set the size of the popup that is to be positioned with the positioner object, in device-
+        /// independent pixels.
         /// </summary>
         public Size Size { get; set; }
 
         /// <summary>
-        /// Specify the anchor rectangle within the parent that the popup
-        /// will be placed relative to. The rectangle is relative to the
-        /// parent geometry
-        /// 
-        /// The anchor rectangle may not extend outside the window geometry of the
-        /// popup's parent. The anchor rectangle is in scaled coordinates
+        /// Specifies the anchor rectangle within the parent that the popup will be placed relative
+        /// to, in device-independent pixels.
         /// </summary>
+        /// <remarks>
+        /// The rectangle is relative to the parent geometry and may not extend outside the window
+        /// geometry of the popup's parent.
+        /// </remarks>
         public Rect AnchorRectangle { get; set; }
 
-
         /// <summary>
-        /// Defines the anchor point for the anchor rectangle. The specified anchor
-        /// is used derive an anchor point that the popup will be
-        /// positioned relative to. If a corner anchor is set (e.g. 'TopLeft' or
-        /// 'BottomRight'), the anchor point will be at the specified corner;
-        /// otherwise, the derived anchor point will be centered on the specified
-        /// edge, or in the center of the anchor rectangle if no edge is specified.
+        /// Defines the anchor point for the anchor rectangle.
         /// </summary>
+        /// <remarks>
+        /// The specified anchor is used derive an anchor point that the popup will be positioned
+        /// relative to. If a corner anchor is set (e.g. 'TopLeft' or 'BottomRight'), the anchor
+        /// point will be at the specified corner; otherwise, the derived anchor point will be
+        /// centered on the specified edge, or in the center of the anchor rectangle if no edge is
+        /// specified.
+        /// </remarks>
         public PopupPositioningEdge Anchor
         {
             get => _anchor;
@@ -100,13 +102,14 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         }
 
         /// <summary>
-        /// Defines in what direction a popup should be positioned, relative to
-        /// the anchor point of the parent. If a corner gravity is
-        /// specified (e.g. 'BottomRight' or 'TopLeft'), then the popup
-        /// will be placed towards the specified gravity; otherwise, the popup
-        /// will be centered over the anchor point on any axis that had no
-        /// gravity specified.
+        /// Defines in what direction a popup should be positioned, relative to the anchor point of
+        /// the parent.
         /// </summary>
+        /// <remarks>
+        /// If a corner gravity is specified (e.g. 'BottomRight' or 'TopLeft'), then the popup will
+        /// be placed towards the specified gravity; otherwise, the popup will be centered over the
+        /// anchor point on any axis that had no gravity specified.
+        /// </remarks>
         public PopupPositioningEdge Gravity
         {
             get => _gravity;
@@ -118,48 +121,51 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         }
 
         /// <summary>
-        /// Specify how the popup should be positioned if the originally intended
-        /// position caused the popup to be constrained, meaning at least
-        /// partially outside positioning boundaries set by the positioner. The
-        /// adjustment is set by constructing a bitmask describing the adjustment to
-        /// be made when the popup is constrained on that axis.
+        /// Specify how the popup should be positioned if the originally intended position caused
+        /// the popup to be constrained.
+        /// </summary>
+        /// <remarks>
+        /// Adjusts the popup position if the intended position caused the popup to be constrained;
+        /// meaning at least partially outside positioning boundaries set by the positioner. The
+        /// adjustment is set by constructing a bitmask describing the adjustment to be made when
+        /// the popup is constrained on that axis.
         /// 
-        /// If no bit for one axis is set, the positioner will assume that the child
-        /// surface should not change its position on that axis when constrained.
+        /// If no bit for one axis is set, the positioner will assume that the child surface should
+        /// not change its position on that axis when constrained.
         /// 
-        /// If more than one bit for one axis is set, the order of how adjustments
-        /// are applied is specified in the corresponding adjustment descriptions.
+        /// If more than one bit for one axis is set, the order of how adjustments are applied is
+        /// specified in the corresponding adjustment descriptions.
         /// 
         /// The default adjustment is none.
-        /// </summary>
+        /// </remarks>
         public PopupPositionerConstraintAdjustment ConstraintAdjustment { get; set; }
-        
+
         /// <summary>
         /// Specify the popup position offset relative to the position of the
-        /// anchor on the anchor rectangle and the anchor on the popup. For
-        /// example if the anchor of the anchor rectangle is at (x, y), the popup
-        /// has the gravity bottom|right, and the offset is (ox, oy), the calculated
-        /// surface position will be (x + ox, y + oy). The offset position of the
-        /// surface is the one used for constraint testing. See
-        /// set_constraint_adjustment.
-        /// 
-        /// An example use case is placing a popup menu on top of a user interface
-        /// element, while aligning the user interface element of the parent surface
-        /// with some user interface element placed somewhere in the popup.
+        /// anchor on the anchor rectangle and the anchor on the popup.
         /// </summary>
+        /// <remarks>
+        /// For example if the anchor of the anchor rectangle is at (x, y), the popup has the
+        /// gravity bottom|right, and the offset is (ox, oy), the calculated surface position will
+        /// be (x + ox, y + oy). The offset position of the surface is the one used for constraint
+        /// testing. See set_constraint_adjustment.
+        /// 
+        /// An example use case is placing a popup menu on top of a user interface element, while
+        /// aligning the user interface element of the parent surface with some user interface
+        /// element placed somewhere in the popup.
+        /// </remarks>
         public Point Offset { get; set; }
     }
-    
+
     /// <summary>
-    /// The constraint adjustment value define ways how popup position will
-    /// be adjusted if the unadjusted position would result in the popup
-    /// being partly constrained.
-    /// 
-    /// Whether a popup is considered 'constrained' is left to the positioner
-    /// to determine. For example, the popup may be partly outside the
-    /// target platform defined 'work area', thus necessitating the popup's
-    /// position be adjusted until it is entirely inside the work area.
+    /// Defines how a popup position will be adjusted if the unadjusted position would result in
+    /// the popup being partly constrained.
     /// </summary>
+    /// <remarks>
+    /// Whether a popup is considered 'constrained' is left to the positioner to determine. For
+    /// example, the popup may be partly outside the target platform defined 'work area', thus
+    /// necessitating the popup's position be adjusted until it is entirely inside the work area.
+    /// </remarks>
     [Flags]
     public enum PopupPositionerConstraintAdjustment
     {
@@ -171,62 +177,59 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
 
         /// <summary>
         /// Slide the surface along the x axis until it is no longer constrained.
-        ///        First try to slide towards the direction of the gravity on the x axis
-        ///        until either the edge in the opposite direction of the gravity is
-        ///        unconstrained or the edge in the direction of the gravity is
-        ///        constrained.
-        ///
-        ///        Then try to slide towards the opposite direction of the gravity on the
-        ///        x axis until either the edge in the direction of the gravity is
-        ///        unconstrained or the edge in the opposite direction of the gravity is
-        ///        constrained.
         /// </summary>
+        /// <remarks>
+        /// First try to slide towards the direction of the gravity on the x axis until either the
+        /// edge in the opposite direction of the gravity is unconstrained or the edge in the
+        /// direction of the gravity is constrained.
+        ///
+        /// Then try to slide towards the opposite direction of the gravity on the x axis until
+        /// either the edge in the direction of the gravity is unconstrained or the edge in the
+        /// opposite direction of the gravity is constrained.
+        /// </remarks>
         SlideX = 1,
 
-
         /// <summary>
-        ///            Slide the surface along the y axis until it is no longer constrained.
-        /// 
-        /// First try to slide towards the direction of the gravity on the y axis
-        /// until either the edge in the opposite direction of the gravity is
-        /// unconstrained or the edge in the direction of the gravity is
-        /// constrained.
-        /// 
-        /// Then try to slide towards the opposite direction of the gravity on the
-        /// y axis until either the edge in the direction of the gravity is
-        /// unconstrained or the edge in the opposite direction of the gravity is
-        /// constrained.
-        /// */
+        /// Slide the surface along the y axis until it is no longer constrained.
         /// </summary>
+        /// <remarks>
+        /// First try to slide towards the direction of the gravity on the y axis until either the
+        /// edge in the opposite direction of the gravity is unconstrained or the edge in the
+        /// direction of the gravity is constrained.
+        /// 
+        /// Then try to slide towards the opposite direction of the gravity on the y axis until
+        /// either the edge in the direction of the gravity is unconstrained or the edge in the
+        /// opposite direction of the gravity is constrained.
+        /// </remarks>
         SlideY = 2,
 
         /// <summary>
-        /// Invert the anchor and gravity on the x axis if the surface is
-        /// constrained on the x axis. For example, if the left edge of the
-        /// surface is constrained, the gravity is 'left' and the anchor is
-        /// 'left', change the gravity to 'right' and the anchor to 'right'.
-        /// 
-        /// If the adjusted position also ends up being constrained, the resulting
-        /// position of the flip_x adjustment will be the one before the
-        /// adjustment.
+        /// Invert the anchor and gravity on the x axis if the surface is constrained on the x axis.
         /// </summary>
+        /// <remarks>
+        /// For example, if the left edge of the surface is constrained, the gravity is 'left' and
+        /// the anchor is 'left', change the gravity to 'right' and the anchor to 'right'.
+        /// 
+        /// If the adjusted position also ends up being constrained, the resulting position of the
+        /// FlipX adjustment will be the one before the adjustment.
+        /// /// </remarks>
         FlipX = 4,
 
         /// <summary>
-        /// Invert the anchor and gravity on the y axis if the surface is
-        /// constrained on the y axis. For example, if the bottom edge of the
-        /// surface is constrained, the gravity is 'bottom' and the anchor is
-        /// 'bottom', change the gravity to 'top' and the anchor to 'top'.
-        /// 
-        /// The adjusted position is calculated given the original anchor
-        /// rectangle and offset, but with the new flipped anchor and gravity
-        /// values.
-        /// 
-        /// If the adjusted position also ends up being constrained, the resulting
-        /// position of the flip_y adjustment will be the one before the
-        /// adjustment.
+        /// Invert the anchor and gravity on the y axis if the surface is constrained on the y axis.
         /// </summary>
+        /// <remarks>
+        /// For example, if the bottom edge of the surface is constrained, the gravity is 'bottom'
+        /// and the anchor is 'bottom', change the gravity to 'top' and the anchor to 'top'.
+        /// 
+        /// The adjusted position is calculated given the original anchor rectangle and offset, but
+        /// with the new flipped anchor and gravity values.
+        /// 
+        /// If the adjusted position also ends up being constrained, the resulting position of the
+        /// FlipY adjustment will be the one before the adjustment.
+        /// </remarks>
         FlipY = 8,
+
         All = SlideX|SlideY|FlipX|FlipY
     }
 
@@ -267,27 +270,91 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         
     }
 
+    /// <summary>
+    /// Defines the popup position edge for <see cref="PopupPositionerParameters.Anchor"/> and
+    /// <see cref="PopupPositionerParameters.Gravity"/>.
+    /// </summary>
     [Flags]
     public enum PopupPositioningEdge
     {
+        /// <summary>
+        /// The center of the anchor rectangle.
+        /// </summary>
         None,
+
+        /// <summary>
+        /// The top edge of the anchor rectangle.
+        /// </summary>
         Top = 1,
+
+        /// <summary>
+        /// The bottom edge of the anchor rectangle.
+        /// </summary>
         Bottom = 2,
+
+        /// <summary>
+        /// The left edge of the anchor rectangle.
+        /// </summary>
         Left = 4,
+
+        /// <summary>
+        /// The right edge of the anchor rectangle.
+        /// </summary>
         Right = 8,
+
+        /// <summary>
+        /// The top-left corner of the anchor rectangle.
+        /// </summary>
         TopLeft = Top | Left,
+
+        /// <summary>
+        /// The top-right corner of the anchor rectangle.
+        /// </summary>
         TopRight = Top | Right,
+
+        /// <summary>
+        /// The bottom-left corner of the anchor rectangle.
+        /// </summary>
         BottomLeft = Bottom | Left,
+
+        /// <summary>
+        /// The bottom-right corner of the anchor rectangle.
+        /// </summary>
         BottomRight = Bottom | Right,
 
-        
+        /// <summary>
+        /// A mask for the vertical component flags.
+        /// </summary>
         VerticalMask = Top | Bottom,
+
+        /// <summary>
+        /// A mask for the horizontal component flags.
+        /// </summary>
         HorizontalMask = Left | Right,
+
+        /// <summary>
+        /// A mask for all flags.
+        /// </summary>
         AllMask = VerticalMask|HorizontalMask
     }
 
+    /// <summary>
+    /// Positions an <see cref="IPopupHost"/>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="IPopupPositioner"/> is an abstraction of the wayland xdg_positioner spec.
+    /// 
+    /// The popup positioner implementation is determined by the platform implementation. A default
+    /// managed implementation is provided in <see cref="ManagedPopupPositioner"/> for platforms
+    /// on which popups can be arbitrarily positioned.
+    /// </remarks>
     public interface IPopupPositioner
     {
+        /// <summary>
+        /// Updates the position of the associated <see cref="IPopupHost"/> according to the
+        /// specified parameters.
+        /// </summary>
+        /// <param name="parameters">The positioning parameters.</param>
         void Update(PopupPositionerParameters parameters);
     }
 
