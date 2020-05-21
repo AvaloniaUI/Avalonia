@@ -96,13 +96,21 @@ namespace Avalonia.Native
             }
         }
 
-        public Action<WindowState> WindowStateChanged { get; set; }
-
-        public bool ExtendClientAreaToDecorationsHint { get; set; }
+        public Action<WindowState> WindowStateChanged { get; set; }        
 
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
         public Thickness ExtendedMargins { get; } = new Thickness();
+
+        public bool IsClientAreaExtendedToDecorations { get; }
+
+        public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
+        {
+        }
+
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {
+        }
 
         public void ShowTaskbarIcon(bool value)
         {
