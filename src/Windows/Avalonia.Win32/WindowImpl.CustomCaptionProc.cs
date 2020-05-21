@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Input;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -32,6 +31,11 @@ namespace Avalonia.Win32
             else if (GetStyle().HasFlag(WindowStyles.WS_BORDER))
             {
                 border_thickness = new RECT { bottom = 1, left = 1, right = 1, top = 1 };
+            }
+
+            if (_extendTitleBarHint >= 0)
+            {
+                border_thickness.top = (int)(_extendedMargins.Top * Scaling);
             }
 
             // Determine if the hit test is for resizing. Default middle (1,1).
@@ -86,11 +90,13 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCHITTEST:
                     if (lRet == IntPtr.Zero)
                     {
-                        lRet = (IntPtr)HitTestNCA(hWnd, wParam, lParam);
+                        var hittestResult = HitTestNCA(hWnd, wParam, lParam);
+
+                        lRet = (IntPtr)hittestResult;
 
                         uint timestamp = unchecked((uint)GetMessageTime());
 
-                        if (((HitTestValues)lRet) == HitTestValues.HTCAPTION)
+                        if (hittestResult == HitTestValues.HTCAPTION)
                         {
                             var position = PointToClient(PointFromLParam(lParam));
 
@@ -106,11 +112,12 @@ namespace Avalonia.Win32
 
                             if (visual != null)
                             {
-                                lRet = (IntPtr)HitTestValues.HTCLIENT;
+                                hittestResult = HitTestValues.HTCLIENT;
+                                lRet = (IntPtr)hittestResult;
                             }
                         }
 
-                        if (((HitTestValues)lRet) != HitTestValues.HTNOWHERE)
+                        if (hittestResult != HitTestValues.HTNOWHERE)
                         {
                             callDwp = false;
                         }
