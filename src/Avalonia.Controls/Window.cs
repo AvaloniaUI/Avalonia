@@ -113,7 +113,11 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<Window, Thickness> WindowDecorationMarginsProperty =
             AvaloniaProperty.RegisterDirect<Window, Thickness>(nameof(WindowDecorationMargins),
                 o => o.WindowDecorationMargins);
-        
+
+        public static readonly DirectProperty<Window, Thickness> OffScreenMarginProperty =
+            AvaloniaProperty.RegisterDirect<Window, Thickness>(nameof(OffScreenMargin),
+                o => o.OffScreenMargin);
+
 
         /// <summary>
         /// Defines the <see cref="SystemDecorations"/> property.
@@ -302,6 +306,14 @@ namespace Avalonia.Controls
         {
             get => _windowDecorationMargins;
             private set => SetAndRaise(WindowDecorationMarginsProperty, ref _windowDecorationMargins, value);
+        }
+
+        private Thickness _offScreenMargin;
+
+        public Thickness OffScreenMargin
+        {
+            get => _offScreenMargin;
+            private set => SetAndRaise(OffScreenMarginProperty, ref _offScreenMargin, value);
         }
 
         /// <summary>
@@ -507,6 +519,8 @@ namespace Avalonia.Controls
             IsExtendedIntoWindowDecorations = isExtended;
 
             WindowDecorationMargins = PlatformImpl.ExtendedMargins;
+
+            OffScreenMargin = PlatformImpl.OffScreenMargin;
         }
 
         /// <summary>

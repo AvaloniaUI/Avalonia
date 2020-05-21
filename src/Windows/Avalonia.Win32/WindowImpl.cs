@@ -42,7 +42,8 @@ namespace Avalonia.Win32
         private bool _isFullScreenActive;
         private bool _isClientAreaExtended;
         private Thickness _extendedMargins;
-
+        private Thickness _offScreenMargin;
+ 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
 #endif
@@ -667,6 +668,37 @@ namespace Avalonia.Win32
             TaskBarList.MarkFullscreen(_hwnd, fullscreen);
         }
 
+        private MARGINS UpdateExtendMargins()
+        {
+            RECT borderThickness = new RECT();
+            RECT borderCaptionThickness = new RECT();            
+
+            AdjustWindowRectEx(ref borderCaptionThickness, (uint)(GetStyle()), false, 0);
+            AdjustWindowRectEx(ref borderThickness, (uint)(GetStyle() & ~WindowStyles.WS_CAPTION), false, 0);
+            borderThickness.left *= -1;
+            borderThickness.top *= -1;
+            borderCaptionThickness.left *= -1;
+            borderCaptionThickness.top *= -1;
+
+            _extendedMargins = new Thickness(1 / Scaling, borderCaptionThickness.top / Scaling, 1 / Scaling, 1 / Scaling);
+
+            if (WindowState == WindowState.Maximized)
+            {
+                _offScreenMargin = new Thickness(borderThickness.left / Scaling, borderThickness.top / Scaling, borderThickness.right / Scaling, borderThickness.bottom / Scaling);
+            }
+            else
+            {                
+                _offScreenMargin = new Thickness();
+            }
+
+            MARGINS margins = new MARGINS();
+            margins.cxLeftWidth = 1;
+            margins.cxRightWidth = 1;
+            margins.cyBottomHeight = 1;
+            margins.cyTopHeight = borderThickness.top;
+            return margins;
+        }
+
         private void ExtendClientArea (ExtendClientAreaChromeHints hints)
         {
             if (!_isClientAreaExtended)
@@ -1009,6 +1041,8 @@ namespace Avalonia.Win32
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }        
 
         public Thickness ExtendedMargins => _extendedMargins;
+
+        public Thickness OffScreenMargin => _offScreenMargin;
 
         private struct SavedWindowInfo
         {

@@ -374,6 +374,11 @@ namespace Avalonia.Win32
                         if (windowState != _lastWindowState)
                         {
                             _lastWindowState = windowState;
+
+                            UpdateExtendMargins();
+
+                            ExtendClientAreaToDecorationsChanged?.Invoke(true);
+
                             WindowStateChanged?.Invoke(windowState);
                         }
 

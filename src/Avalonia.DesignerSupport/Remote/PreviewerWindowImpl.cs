@@ -91,6 +91,8 @@ namespace Avalonia.DesignerSupport.Remote
 
         public bool IsClientAreaExtendedToDecorations { get; }
 
+        public Thickness OffScreenMargin { get; } = new Thickness();
+
         public void Activate()
         {
         }
