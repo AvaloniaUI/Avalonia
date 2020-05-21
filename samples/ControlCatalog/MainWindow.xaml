@@ -7,84 +7,51 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:ControlCatalog.ViewModels"
         xmlns:v="clr-namespace:ControlCatalog.Views"
-        ExtendClientAreaToDecorationsHint="{Binding ExtendClientAreaEnabled}"
-        ExtendClientAreaChromeHints="{Binding ChromeHints}"
-        ExtendClientAreaTitleBarHeightHint="{Binding TitleBarHeight}"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="Default"
+        ExtendClientAreaTitleBarHeightHint="-1"
         TransparencyLevelHint="{Binding TransparencyLevel}"
         x:Name="MainWindow"
         x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}" Background="{x:Null}">
-  <NativeMenu.Menu>
-    <NativeMenu>
-      <NativeMenuItem Header="File">
-        <NativeMenuItem.Menu>
-          <NativeMenu>
-            <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Open" Clicked="OnOpenClicked" Gesture="Ctrl+O"/>
-            <NativeMenuItemSeperator/>
-            <NativeMenuItem Icon="/Assets/github_icon.png" Header="Recent">
-              <NativeMenuItem.Menu>
-                <NativeMenu/>
-              </NativeMenuItem.Menu>
-            </NativeMenuItem>
-            <NativeMenuItemSeperator/>
-            <NativeMenuItem Header="{x:Static local:MainWindow.MenuQuitHeader}"
-                            Gesture="{x:Static local:MainWindow.MenuQuitGesture}"
-                            Clicked="OnCloseClicked" />
-          </NativeMenu>
-        </NativeMenuItem.Menu>
-      </NativeMenuItem>
-      <NativeMenuItem Header="Edit">
-        <NativeMenuItem.Menu>
-          <NativeMenu>
-            <NativeMenuItem Header="Copy"/>
-            <NativeMenuItem Header="Paste"/>
-          </NativeMenu>
-        </NativeMenuItem.Menu>
-      </NativeMenuItem>
-      <NativeMenuItem Header="Options">
-        <NativeMenuItem.Menu>
-          <NativeMenu>
-           <NativeMenuItem Header="Check Me (None)" 
-                            Command="{Binding ToggleMenuItemCheckedCommand}"
-                            ToggleType="None"
-                            IsChecked="{Binding IsMenuItemChecked}"  />
-            <NativeMenuItem Header="Check Me (CheckBox)" 
-                            Command="{Binding ToggleMenuItemCheckedCommand}"
-                            ToggleType="CheckBox"
-                            IsChecked="{Binding IsMenuItemChecked}"  />
-            <NativeMenuItem Header="Check Me (Radio)" 
-                            Command="{Binding ToggleMenuItemCheckedCommand}"
-                            ToggleType="Radio"
-                            IsChecked="{Binding IsMenuItemChecked}"  />
-          </NativeMenu>
-        </NativeMenuItem.Menu>
-      </NativeMenuItem>
-    </NativeMenu>
-  </NativeMenu.Menu>
+  <StackPanel Spacing="2" Margin="0 0 7 0" Height="30" Opacity="0.5" VerticalAlignment="Top" HorizontalAlignment="Right" TextBlock.FontSize="10" Orientation="Horizontal">
+    <StackPanel.Styles>
+      <Style Selector="Panel">
+        <Setter Property="Width" Value="45" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="TextBlock.Foreground" Value="#AFFFFFFF" />
+      </Style>
+      <Style Selector="Path">        
+        <Setter Property="Fill" Value="#1FFFFFFF" />        
+      </Style>
+      <Style Selector="Panel:pointerover">
+        <Setter Property="Background" Value="#1FFFFFFF" />
+      </Style>
+      <Style Selector="Panel#PART_CloseButton:pointerover">
+        <Setter Property="Background" Value="#AFFF0000" />
+      </Style>
+    </StackPanel.Styles>
+    <Panel>
+      <Path Width="10" Height="10" StrokeThickness="0" Stretch="UniformToFill" Data="M205 1024h819v-819h-205v469l-674 -674l-145 145l674 674h-469v205zM1374 1229h469v-205h-819v819h205v-469l674 674l145 -145z" />
+    </Panel>
+    
+    <Panel>
+      <Path Width="10" Height="10" StrokeThickness="0" Stretch="UniformToFill" Data="M2048 410h-410v-410h-1638v1638h410v410h1638v-1638zM1434 1434h-1229v-1229h1229v1229zM1843 1843h-1229v-205h1024v-1024h205v1229z" />
+    </Panel>
 
-  <Window.DataTemplates>
-    <DataTemplate DataType="vm:NotificationViewModel">
-      <v:CustomNotificationView />
-    </DataTemplate>
-  </Window.DataTemplates>
-  <Panel>  
-    <Panel Margin="{Binding #MainWindow.OffScreenMargin}">
-      <DockPanel LastChildFill="True" Margin="{Binding #MainWindow.WindowDecorationMargins}">
-      <Menu Name="MainMenu" DockPanel.Dock="Top">
-        <MenuItem Header="File">
-          <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
-        </MenuItem>
-        <MenuItem Header="Help">
-          <MenuItem Header="About" Command="{Binding AboutCommand}" />
-        </MenuItem>
-      </Menu>
-      <local:MainView />
-    </DockPanel>
-    </Panel>    
-    <Border IsVisible="{Binding ExtendClientAreaEnabled}" BorderThickness="1 1 1 0" CornerRadius="4 4 0 0" BorderBrush="#55000000" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250 8 0 0">
-      <Border.Background>
-        <SolidColorBrush Color="White" Opacity="0.7" />
-      </Border.Background>
-      <TextBlock Margin="5 5 5 0" Text="Content In TitleBar" />
-    </Border>
-  </Panel>
+    <Panel>
+      <Path Width="10" Height="10" StrokeThickness="0" Stretch="UniformToFill" Data="M2048 2048v-819h-205v469l-1493 -1493h469v-205h-819v819h205v-469l1493 1493h-469v205h819z" />
+    </Panel>
+
+    <Panel>
+      <Path Width="11" Height="1" StrokeThickness="0" Stretch="UniformToFill" Data="M2048 1229v-205h-2048v205h2048z" />
+    </Panel>
+
+    <Panel>      
+      <Path Width="11" Height="10" StrokeThickness="0" Stretch="UniformToFill" Data="M2048 2048v-2048h-2048v2048h2048zM1843 1843h-1638v-1638h1638v1638z" />
+    </Panel>
+
+    <Panel x:Name="PART_CloseButton">
+      <Path Width="11" Height="11" StrokeThickness="0" Stretch="UniformToFill" Data="M1169 1024l879 -879l-145 -145l-879 879l-879 -879l-145 145l879 879l-879 879l145 145l879 -879l879 879l145 -145z" />
+    </Panel>
+  </StackPanel>
 </Window>
