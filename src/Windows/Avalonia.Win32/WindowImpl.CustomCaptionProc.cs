@@ -79,6 +79,10 @@ namespace Avalonia.Win32
 
             switch ((WindowsMessage)msg)
             {
+                case WindowsMessage.WM_DWMCOMPOSITIONCHANGED:
+                    // TODO handle composition changed.
+                    break;
+
                 case WindowsMessage.WM_NCHITTEST:
                     if (lRet == IntPtr.Zero)
                     {
