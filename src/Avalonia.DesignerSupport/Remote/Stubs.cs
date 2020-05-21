@@ -130,7 +130,17 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetParent(IWindowImpl parent)
+        {
+        }
+
+        public void SetEnabled(bool enable)
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
+
+        public Action GotInputWhenDisabled { get; set; }
     }
 
     class ClipboardStub : IClipboard

@@ -23,12 +23,16 @@ namespace Avalonia.Controls.UnitTests.Shapes
             var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
             var target = new Path { Data = geometry };
 
+            var root = new TestRoot(target);
+
             target.Measure(Size.Infinity);
             Assert.True(target.IsMeasureValid);
 
             geometry.Rect = new Rect(0, 0, 20, 20);
 
             Assert.False(target.IsMeasureValid);
+
+            root.Child = null;
         }
     }
 }

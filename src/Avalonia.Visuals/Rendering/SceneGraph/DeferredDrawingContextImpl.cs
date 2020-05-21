@@ -364,7 +364,7 @@ namespace Avalonia.Rendering.SceneGraph
             public int DrawOperationIndex { get; }
         }
 
-        private void Add(IDrawOperation node)
+        private void Add<T>(T node) where T : class, IDrawOperation
         {
             using (var refCounted = RefCountable.Create(node))
             {

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Markup.Data;
+using Avalonia.Markup.Xaml.XamlIl.Runtime;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
@@ -22,15 +23,22 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public object ProvideValue(IServiceProvider serviceProvider)
         {
-            // Look upwards though the ambient context for IResourceProviders which might be able
-            // to give us the resource.
-            foreach (var resourceProvider in serviceProvider.GetParents<IResourceNode>())
+            var stack = serviceProvider.GetService<IAvaloniaXamlIlParentStackProvider>();
+
+            // Look upwards though the ambient context for IResourceHosts and IResourceProviders
+            // which might be able to give us the resource.
+            foreach (var e in stack.Parents)
             {
-                if (resourceProvider.TryGetResource(ResourceKey, out var value))
+                object value;
+
+                if (e is IResourceHost host && host.TryGetResource(ResourceKey, out value))
                 {
                     return value;
                 }
-
+                else if (e is IResourceProvider provider && provider.TryGetResource(ResourceKey, out value))
+                {
+                    return value;
+                }
             }
 
             // The resource still hasn't been found, so add a delayed one-time binding.
