@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
+using Avalonia.Platform;
+using System;
 using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
@@ -62,7 +64,65 @@ namespace ControlCatalog.ViewModels
                 WindowState.Maximized,
                 WindowState.FullScreen,
             };
+
+            this.WhenAnyValue(x => x.SystemChromeButtonsEnabled, x => x.SystemTitleBarEnabled)
+                .Subscribe(x =>
+                {
+                    ChromeHints = ExtendClientAreaChromeHints.NoChrome;
+
+                    if(x.Item1)
+                    {
+                        ChromeHints |= ExtendClientAreaChromeHints.SystemChromeButtons;
+                    }
+
+                    if(x.Item2)
+                    {
+                        ChromeHints |= ExtendClientAreaChromeHints.SystemTitleBar;
+                    }
+                });
         }
+
+        private ExtendClientAreaChromeHints _chromeHints;
+
+        public ExtendClientAreaChromeHints ChromeHints
+        {
+            get { return _chromeHints; }
+            set { this.RaiseAndSetIfChanged(ref _chromeHints, value); }
+        }
+
+
+        private bool _extendClientAreaEnabled;
+
+        public bool ExtendClientAreaEnabled
+        {
+            get { return _extendClientAreaEnabled; }
+            set { this.RaiseAndSetIfChanged(ref _extendClientAreaEnabled, value); }
+        }
+
+        private bool _systemTitleBarEnabled;
+
+        public bool SystemTitleBarEnabled
+        {
+            get { return _systemTitleBarEnabled; }
+            set { this.RaiseAndSetIfChanged(ref _systemTitleBarEnabled, value); }
+        }
+
+        private bool _systemChromeButtonsEnabled;
+
+        public bool SystemChromeButtonsEnabled
+        {
+            get { return _systemChromeButtonsEnabled; }
+            set { this.RaiseAndSetIfChanged(ref _systemChromeButtonsEnabled, value); }
+        }
+
+        private double _titleBarHeight;
+
+        public double TitleBarHeight
+        {
+            get { return _titleBarHeight; }
+            set { this.RaiseAndSetIfChanged(ref _titleBarHeight, value); }
+        }
+
 
         public WindowState WindowState
         {
