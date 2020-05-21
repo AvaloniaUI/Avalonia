@@ -685,12 +685,26 @@ namespace Avalonia.Win32
             borderCaptionThickness.left *= -1;
             borderCaptionThickness.top *= -1;
 
-            if (!hints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar))
+            bool wantsTitleBar = hints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar) || _extendTitleBarHint == -1;
+
+            if (!wantsTitleBar)
             {
                 borderCaptionThickness.top = 1;
             }
 
-            _extendedMargins = new Thickness(1 / Scaling, borderCaptionThickness.top / Scaling, 1 / Scaling, 1 / Scaling);
+            MARGINS margins = new MARGINS();
+            margins.cxLeftWidth = 1;
+            margins.cxRightWidth = 1;
+            margins.cyBottomHeight = 1;
+
+            if (_extendTitleBarHint != -1)
+            {
+                borderCaptionThickness.top = (int)(_extendTitleBarHint * Scaling);                
+            }
+
+            margins.cyTopHeight = hints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar) ? borderCaptionThickness.top : 1;
+
+            _extendedMargins = new Thickness(0, borderCaptionThickness.top / Scaling, 0, 0);
 
             if (WindowState == WindowState.Maximized)
             {
@@ -701,11 +715,6 @@ namespace Avalonia.Win32
                 _offScreenMargin = new Thickness();
             }
 
-            MARGINS margins = new MARGINS();
-            margins.cxLeftWidth = 1;
-            margins.cxRightWidth = 1;
-            margins.cyBottomHeight = 1;
-            margins.cyTopHeight = borderCaptionThickness.top;
             return margins;
         }
 
@@ -737,8 +746,7 @@ namespace Avalonia.Win32
 
                 if (hr == 0)
                 {
-                    _isClientAreaExtended = true;
-                    _extendedMargins = new Thickness(margins.cxLeftWidth / Scaling, margins.cyTopHeight / Scaling, margins.cxRightWidth / Scaling, margins.cyBottomHeight / Scaling);
+                    _isClientAreaExtended = true;                    
                     ExtendClientAreaToDecorationsChanged?.Invoke(true);
                 }
             }
@@ -1016,6 +1024,12 @@ namespace Avalonia.Win32
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
         {
             _extendChromeHints = hints;
+        }
+
+        private double _extendTitleBarHint = -1;
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+            _extendTitleBarHint = titleBarHeight;
         }
 
         public bool IsClientAreaExtendedToDecorations => _isClientAreaExtended;
