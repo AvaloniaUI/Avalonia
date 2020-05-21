@@ -62,8 +62,8 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// </remarks>
     public struct PopupPositionerParameters
     {
-        private PopupPositioningEdge _gravity;
-        private PopupPositioningEdge _anchor;
+        private PopupGravity _gravity;
+        private PopupAnchor _anchor;
 
         /// <summary>
         /// Set the size of the popup that is to be positioned with the positioner object, in device-
@@ -91,7 +91,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         /// centered on the specified edge, or in the center of the anchor rectangle if no edge is
         /// specified.
         /// </remarks>
-        public PopupPositioningEdge Anchor
+        public PopupAnchor Anchor
         {
             get => _anchor;
             set
@@ -110,12 +110,12 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         /// be placed towards the specified gravity; otherwise, the popup will be centered over the
         /// anchor point on any axis that had no gravity specified.
         /// </remarks>
-        public PopupPositioningEdge Gravity
+        public PopupGravity Gravity
         {
             get => _gravity;
             set
             {
-                PopupPositioningEdgeHelper.ValidateEdge(value);
+                PopupPositioningEdgeHelper.ValidateGravity(value);
                 _gravity = value;
             }
         }
@@ -235,18 +235,23 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
 
     static class PopupPositioningEdgeHelper
     {
-        public static void ValidateEdge(this PopupPositioningEdge edge)
+        public static void ValidateEdge(this PopupAnchor edge)
         {
-            if (((edge & PopupPositioningEdge.Left) != 0 && (edge & PopupPositioningEdge.Right) != 0)
+            if (((edge & PopupAnchor.Left) != 0 && (edge & PopupAnchor.Right) != 0)
                 ||
-                ((edge & PopupPositioningEdge.Top) != 0 && (edge & PopupPositioningEdge.Bottom) != 0))
+                ((edge & PopupAnchor.Top) != 0 && (edge & PopupAnchor.Bottom) != 0))
                 throw new ArgumentException("Opposite edges specified");
         }
 
-        public static PopupPositioningEdge Flip(this PopupPositioningEdge edge)
+        public static void ValidateGravity(this PopupGravity gravity)
         {
-            var hmask = PopupPositioningEdge.Left | PopupPositioningEdge.Right;
-            var vmask = PopupPositioningEdge.Top | PopupPositioningEdge.Bottom;
+            ValidateEdge((PopupAnchor)gravity);
+        }
+
+        public static PopupAnchor Flip(this PopupAnchor edge)
+        {
+            var hmask = PopupAnchor.Left | PopupAnchor.Right;
+            var vmask = PopupAnchor.Top | PopupAnchor.Bottom;
             if ((edge & hmask) != 0)
                 edge ^= hmask;
             if ((edge & vmask) != 0)
@@ -254,28 +259,36 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             return edge;
         }
 
-        public static PopupPositioningEdge FlipX(this PopupPositioningEdge edge)
+        public static PopupAnchor FlipX(this PopupAnchor edge)
         {
-            if ((edge & PopupPositioningEdge.HorizontalMask) != 0)
-                edge ^= PopupPositioningEdge.HorizontalMask;
+            if ((edge & PopupAnchor.HorizontalMask) != 0)
+                edge ^= PopupAnchor.HorizontalMask;
             return edge;
         }
         
-        public static PopupPositioningEdge FlipY(this PopupPositioningEdge edge)
+        public static PopupAnchor FlipY(this PopupAnchor edge)
         {
-            if ((edge & PopupPositioningEdge.VerticalMask) != 0)
-                edge ^= PopupPositioningEdge.VerticalMask;
+            if ((edge & PopupAnchor.VerticalMask) != 0)
+                edge ^= PopupAnchor.VerticalMask;
             return edge;
         }
-        
+
+        public static PopupGravity FlipX(this PopupGravity gravity)
+        {
+            return (PopupGravity)FlipX((PopupAnchor)gravity);
+        }
+
+        public static PopupGravity FlipY(this PopupGravity gravity)
+        {
+            return (PopupGravity)FlipY((PopupAnchor)gravity);
+        }
     }
 
     /// <summary>
-    /// Defines the popup position edge for <see cref="PopupPositionerParameters.Anchor"/> and
-    /// <see cref="PopupPositionerParameters.Gravity"/>.
+    /// Defines the edges around an anchor rectangle on which a popup will open.
     /// </summary>
     [Flags]
-    public enum PopupPositioningEdge
+    public enum PopupAnchor
     {
         /// <summary>
         /// The center of the anchor rectangle.
@@ -339,6 +352,58 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     }
 
     /// <summary>
+    /// Defines the direction in which a popup will open.
+    /// </summary>
+    [Flags]
+    public enum PopupGravity
+    {
+        /// <summary>
+        /// The popup will be centered over the anchor edge.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// The popup will be positioned above the anchor edge
+        /// </summary>
+        Top = 1,
+
+        /// <summary>
+        /// The popup will be positioned below the anchor edge
+        /// </summary>
+        Bottom = 2,
+
+        /// <summary>
+        /// The popup will be positioned to the left of the anchor edge
+        /// </summary>
+        Left = 4,
+
+        /// <summary>
+        /// The popup will be positioned to the right of the anchor edge
+        /// </summary>
+        Right = 8,
+
+        /// <summary>
+        /// The popup will be positioned to the top-left of the anchor edge
+        /// </summary>
+        TopLeft = Top | Left,
+
+        /// <summary>
+        /// The popup will be positioned to the top-right of the anchor edge
+        /// </summary>
+        TopRight = Top | Right,
+
+        /// <summary>
+        /// The popup will be positioned to the bottom-left of the anchor edge
+        /// </summary>
+        BottomLeft = Bottom | Left,
+
+        /// <summary>
+        /// The popup will be positioned to the bottom-right of the anchor edge
+        /// </summary>
+        BottomRight = Bottom | Right,
+    }
+
+    /// <summary>
     /// Positions an <see cref="IPopupHost"/>.
     /// </summary>
     /// <remarks>
@@ -363,7 +428,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         public static void ConfigurePosition(ref this PopupPositionerParameters positionerParameters,
             TopLevel topLevel,
             IVisual target, PlacementMode placement, Point offset,
-            PopupPositioningEdge anchor, PopupPositioningEdge gravity)
+            PopupAnchor anchor, PopupGravity gravity, Rect? rect)
         {
             // We need a better way for tracking the last pointer position
             var pointer = topLevel.PointToClient(topLevel.PlatformImpl.MouseDevice.Position);
@@ -373,8 +438,8 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             if (placement == PlacementMode.Pointer)
             {
                 positionerParameters.AnchorRectangle = new Rect(pointer, new Size(1, 1));
-                positionerParameters.Anchor = PopupPositioningEdge.TopLeft;
-                positionerParameters.Gravity = PopupPositioningEdge.BottomRight;
+                positionerParameters.Anchor = PopupAnchor.TopLeft;
+                positionerParameters.Gravity = PopupGravity.BottomRight;
             }
             else
             {
@@ -384,32 +449,33 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                 if (matrix == null)
                 {
                     if (target.GetVisualRoot() == null)
-                        throw new InvalidCastException("Target control is not attached to the visual tree");
-                    throw new InvalidCastException("Target control is not in the same tree as the popup parent");
+                        throw new InvalidOperationException("Target control is not attached to the visual tree");
+                    throw new InvalidOperationException("Target control is not in the same tree as the popup parent");
                 }
 
-                positionerParameters.AnchorRectangle = new Rect(default, target.Bounds.Size)
-                    .TransformToAABB(matrix.Value);
+                var bounds = new Rect(default, target.Bounds.Size);
+                var anchorRect = rect ?? bounds;
+                positionerParameters.AnchorRectangle = anchorRect.Intersect(bounds).TransformToAABB(matrix.Value);
 
                 if (placement == PlacementMode.Right)
                 {
-                    positionerParameters.Anchor = PopupPositioningEdge.TopRight;
-                    positionerParameters.Gravity = PopupPositioningEdge.BottomRight;
+                    positionerParameters.Anchor = PopupAnchor.TopRight;
+                    positionerParameters.Gravity = PopupGravity.BottomRight;
                 }
                 else if (placement == PlacementMode.Bottom)
                 {
-                    positionerParameters.Anchor = PopupPositioningEdge.BottomLeft;
-                    positionerParameters.Gravity = PopupPositioningEdge.BottomRight;
+                    positionerParameters.Anchor = PopupAnchor.BottomLeft;
+                    positionerParameters.Gravity = PopupGravity.BottomRight;
                 }
                 else if (placement == PlacementMode.Left)
                 {
-                    positionerParameters.Anchor = PopupPositioningEdge.TopLeft;
-                    positionerParameters.Gravity = PopupPositioningEdge.BottomLeft;
+                    positionerParameters.Anchor = PopupAnchor.TopLeft;
+                    positionerParameters.Gravity = PopupGravity.BottomLeft;
                 }
                 else if (placement == PlacementMode.Top)
                 {
-                    positionerParameters.Anchor = PopupPositioningEdge.TopLeft;
-                    positionerParameters.Gravity = PopupPositioningEdge.TopRight;
+                    positionerParameters.Anchor = PopupAnchor.TopLeft;
+                    positionerParameters.Gravity = PopupGravity.TopRight;
                 }
                 else if (placement == PlacementMode.AnchorAndGravity)
                 {

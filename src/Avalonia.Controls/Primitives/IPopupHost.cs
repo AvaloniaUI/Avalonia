@@ -45,10 +45,14 @@ namespace Avalonia.Controls.Primitives
         /// <param name="placement">The placement mode.</param>
         /// <param name="offset">The offset, in device-independent pixels.</param>
         /// <param name="anchor">The anchor point.</param>
-        /// <param name="gravity">The anchor gravity.</param>
+        /// <param name="gravity">The popup gravity.</param>
+        /// <param name="rect">
+        /// The anchor rect. If null, the bounds of <paramref name="target"/> will be used.
+        /// </param>
         void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
-            PopupPositioningEdge anchor = PopupPositioningEdge.None,
-            PopupPositioningEdge gravity = PopupPositioningEdge.None);
+            PopupAnchor anchor = PopupAnchor.None,
+            PopupGravity gravity = PopupGravity.None,
+            Rect? rect = null);
 
         /// <summary>
         /// Shows the popup.
