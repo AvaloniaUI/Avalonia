@@ -70,13 +70,7 @@
           <ComboBox x:Name="Themes" SelectedIndex="0">
             <ComboBoxItem>Light</ComboBoxItem>
             <ComboBoxItem>Dark</ComboBoxItem>
-          </ComboBox>
-          <ComboBox x:Name="TransparencyLevels" SelectedIndex="0">
-            <ComboBoxItem>None</ComboBoxItem>
-            <ComboBoxItem>Transparent</ComboBoxItem>
-            <ComboBoxItem>Blur</ComboBoxItem>
-            <ComboBoxItem>AcrylicBlur</ComboBoxItem>
-          </ComboBox>
+          </ComboBox>          
           <ComboBox Items="{Binding WindowStates}" SelectedItem="{Binding WindowState}" />
         </StackPanel>
       </TabControl.Tag>
