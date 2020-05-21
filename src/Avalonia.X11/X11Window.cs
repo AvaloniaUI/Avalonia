@@ -309,13 +309,13 @@ namespace Avalonia.X11
         {
             get => _transparencyHelper.TransparencyLevelChanged;
             set => _transparencyHelper.TransparencyLevelChanged = value;
-        }
-
-        public bool ExtendClientAreaToDecorationsHint { get; set; }
+        }        
 
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
         public Thickness ExtendedMargins { get; } = new Thickness();
+
+        public bool IsClientAreaExtendedToDecorations { get; }
 
         public Action Closed { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
@@ -1039,6 +1039,14 @@ namespace Avalonia.X11
         public void SetEnabled(bool enable)
         {
             _disabled = !enable;
+        }
+
+        public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
+        {
+        }
+
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {
         }
 
         public Action GotInputWhenDisabled { get; set; }
