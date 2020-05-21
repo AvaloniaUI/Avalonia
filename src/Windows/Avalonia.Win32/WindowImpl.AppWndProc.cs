@@ -375,7 +375,7 @@ namespace Avalonia.Win32
                         {
                             _lastWindowState = windowState;
 
-                            UpdateExtendMargins();
+                            UpdateExtendMargins(_extendChromeHints);
 
                             ExtendClientAreaToDecorationsChanged?.Invoke(true);
 
