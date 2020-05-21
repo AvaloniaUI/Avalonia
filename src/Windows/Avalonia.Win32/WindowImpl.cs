@@ -668,7 +668,7 @@ namespace Avalonia.Win32
             TaskBarList.MarkFullscreen(_hwnd, fullscreen);
         }
 
-        private MARGINS UpdateExtendMargins()
+        private MARGINS UpdateExtendMargins(ExtendClientAreaChromeHints hints)
         {
             RECT borderThickness = new RECT();
             RECT borderCaptionThickness = new RECT();            
@@ -679,6 +679,11 @@ namespace Avalonia.Win32
             borderThickness.top *= -1;
             borderCaptionThickness.left *= -1;
             borderCaptionThickness.top *= -1;
+
+            if (!hints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar))
+            {
+                borderCaptionThickness.top = 1;
+            }
 
             _extendedMargins = new Thickness(1 / Scaling, borderCaptionThickness.top / Scaling, 1 / Scaling, 1 / Scaling);
 
@@ -695,7 +700,7 @@ namespace Avalonia.Win32
             margins.cxLeftWidth = 1;
             margins.cxRightWidth = 1;
             margins.cyBottomHeight = 1;
-            margins.cyTopHeight = borderThickness.top;
+            margins.cyTopHeight = borderCaptionThickness.top;
             return margins;
         }
 
@@ -708,35 +713,7 @@ namespace Avalonia.Win32
                     return;
                 }
 
-                RECT border_thickness = new RECT();
-                MARGINS margins = new MARGINS();
-
-                if (GetStyle().HasFlag(WindowStyles.WS_THICKFRAME))
-                {
-                    AdjustWindowRectEx(ref border_thickness, (uint)(GetStyle()), false, 0);
-                    border_thickness.left *= -1;
-                    border_thickness.top *= -1;
-
-                    border_thickness.left = 1;
-                    border_thickness.bottom = 1;
-                    border_thickness.right = 1;                                        
-
-                    if (!hints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar))
-                    {
-                        border_thickness.top = 1;
-                    }
-
-                }
-                else if (GetStyle().HasFlag(WindowStyles.WS_BORDER))
-                {
-                    border_thickness = new RECT { bottom = 1, left = 1, right = 1, top = 1 };
-                }
-
-                // Extend the frame into the client area.                        
-                margins.cxLeftWidth = border_thickness.left;
-                margins.cxRightWidth = border_thickness.right;
-                margins.cyBottomHeight = border_thickness.bottom;
-                margins.cyTopHeight = border_thickness.top;
+                var margins = UpdateExtendMargins(hints);
 
                 var hr = DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
