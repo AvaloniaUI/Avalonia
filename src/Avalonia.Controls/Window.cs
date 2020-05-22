@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -69,7 +70,8 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
     {
-        private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
+        private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();        
+        private CaptionButtons _managedCaptions;
 
         private bool _isExtendedIntoWindowDecorations;
 
@@ -203,7 +205,15 @@ namespace Avalonia.Controls
                 (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaToDecorationsHint((bool)e.NewValue); });
 
             ExtendClientAreaChromeHintsProperty.Changed.AddClassHandler<Window>(
-                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaChromeHints((ExtendClientAreaChromeHints)e.NewValue); });
+                (w, e) =>
+                {
+                    if (w.PlatformImpl != null)
+                    {
+                        w.PlatformImpl.SetExtendClientAreaChromeHints((ExtendClientAreaChromeHints)e.NewValue);
+                    }
+
+                    w.HandleChromeHintsChanged((ExtendClientAreaChromeHints)e.NewValue);
+                });
 
             ExtendClientAreaTitleBarHeightHintProperty.Changed.AddClassHandler<Window>(
                 (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaTitleBarHeightHint((double)e.NewValue); });
@@ -895,6 +905,26 @@ namespace Avalonia.Controls
             Height = clientSize.Height;
 
             base.HandleResized(clientSize);
+        }
+
+        private void HandleChromeHintsChanged (ExtendClientAreaChromeHints hints)
+        {
+            if(hints.HasFlag(ExtendClientAreaChromeHints.ManagedChromeButtons))
+            {
+                if(_managedCaptions == null)
+                {
+                    _managedCaptions = new CaptionButtons(this);
+                }
+
+                _managedCaptions.Attach();
+            }
+            else
+            {
+                if(_managedCaptions != null)
+                {
+                    _managedCaptions.Detach();
+                }
+            }
         }
 
         /// <summary>
