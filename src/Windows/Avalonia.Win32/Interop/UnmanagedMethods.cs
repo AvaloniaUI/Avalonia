@@ -1305,6 +1305,34 @@ namespace Avalonia.Win32.Interop
         [DllImport("dwmapi.dll")]
         public static extern int DwmIsCompositionEnabled(out bool enabled);
 
+        [DllImport("dwmapi.dll")]
+        public static extern void DwmEnableBlurBehindWindow(IntPtr hwnd, ref DWM_BLURBEHIND blurBehind);
+
+        [Flags]
+        public enum DWM_BB
+        {
+            Enable = 1,
+            BlurRegion = 2,
+            TransitionMaximized = 4
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct DWM_BLURBEHIND
+        {
+            public DWM_BB dwFlags;
+            public bool fEnable;
+            public IntPtr hRgnBlur;
+            public bool fTransitionOnMaximized;
+
+            public DWM_BLURBEHIND(bool enabled)
+            {
+                fEnable = enabled ? true : false;
+                hRgnBlur = IntPtr.Zero;
+                fTransitionOnMaximized = false;
+                dwFlags = DWM_BB.Enable;
+            }
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         internal struct RTL_OSVERSIONINFOEX
         {
