@@ -543,7 +543,11 @@ namespace Avalonia.Controls
         {
             IsExtendedIntoWindowDecorations = isExtended;
 
-            WindowDecorationMargins = PlatformImpl.ExtendedMargins;
+            WindowDecorationMargins = new Thickness(
+                PlatformImpl.ExtendedMargins.Left, 
+                PlatformImpl.ExtendedMargins.Top - PlatformImpl.OffScreenMargin.Top, 
+                PlatformImpl.ExtendedMargins.Right, 
+                PlatformImpl.ExtendedMargins.Bottom);
 
             OffScreenMargin = PlatformImpl.OffScreenMargin;
         }
