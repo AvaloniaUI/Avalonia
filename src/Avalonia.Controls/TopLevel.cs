@@ -381,7 +381,9 @@ namespace Avalonia.Controls
         {
             if(_transparencyFallbackBorder != null)
             {
-                if(transparencyLevel == WindowTransparencyLevel.None || TransparencyLevelHint == WindowTransparencyLevel.None)
+                if(transparencyLevel == WindowTransparencyLevel.None || 
+                    TransparencyLevelHint == WindowTransparencyLevel.None || 
+                    transparencyLevel != TransparencyLevelHint)
                 {
                     _transparencyFallbackBorder.Background = TransparencyBackgroundFallback;
                 }
