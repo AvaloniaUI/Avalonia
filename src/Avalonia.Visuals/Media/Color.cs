@@ -130,7 +130,7 @@ namespace Avalonia.Media
                 throw new FormatException();
             }
 
-            if (TryParseInternal(s.AsSpan(), out color))
+            if (s[0] == '#' && TryParseInternal(s.AsSpan(), out color))
             {
                 return true;
             }
@@ -143,6 +143,8 @@ namespace Avalonia.Media
 
                 return true;
             }
+
+            color = default;
 
             return false;
         }
@@ -212,7 +214,7 @@ namespace Avalonia.Media
 
             ReadOnlySpan<char> input = s.Slice(1);
 
-            // Handle shorthand cases like #FFF (RGB) or #FFFF (ARGB)
+            // Handle shorthand cases like #FFF (RGB) or #FFFF (ARGB).
             if (input.Length == 3 || input.Length == 4)
             {
                 var extendedLength = 2 * input.Length;
