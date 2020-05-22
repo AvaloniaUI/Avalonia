@@ -701,7 +701,11 @@ namespace Avalonia.Win32
 
             _extendedMargins = new Thickness(0, borderCaptionThickness.top / Scaling, 0, 0);
 
-            if (WindowState == WindowState.Maximized)
+            if (WindowState == WindowState.Maximized && !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChromeButtons))
+            {
+                _offScreenMargin = new Thickness();                
+            }
+            else if (WindowState == WindowState.Maximized)
             {
                 _offScreenMargin = new Thickness(borderThickness.left / Scaling, borderThickness.top / Scaling, borderThickness.right / Scaling, borderThickness.bottom / Scaling);
             }
