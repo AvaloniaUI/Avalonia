@@ -376,13 +376,27 @@ namespace Avalonia.Controls
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
         }
 
+        private bool TransparencyLevelsMatch (WindowTransparencyLevel requested, WindowTransparencyLevel received)
+        {
+            if(requested == received)
+            {
+                return true;
+            }
+            else if(requested >= WindowTransparencyLevel.Blur && received >= WindowTransparencyLevel.Blur)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         protected virtual void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
         {
             if(_transparencyFallbackBorder != null)
             {
                 if(transparencyLevel == WindowTransparencyLevel.None || 
                     TransparencyLevelHint == WindowTransparencyLevel.None || 
-                    transparencyLevel != TransparencyLevelHint)
+                    !TransparencyLevelsMatch(TransparencyLevelHint, transparencyLevel))
                 {
                     _transparencyFallbackBorder.Background = TransparencyBackgroundFallback;
                 }

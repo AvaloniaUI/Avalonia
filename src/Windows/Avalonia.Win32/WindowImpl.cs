@@ -239,6 +239,11 @@ namespace Avalonia.Win32
             var accent = new AccentPolicy();
             var accentStructSize = Marshal.SizeOf(accent);
 
+            if(transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
+            {
+                transparencyLevel = WindowTransparencyLevel.Blur;
+            }
+
             switch (transparencyLevel)
             {
                 default:
@@ -251,11 +256,13 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowTransparencyLevel.Blur:
-                    accent.AccentState = canUseAcrylic ? AccentState.ACCENT_ENABLE_ACRYLIC : AccentState.ACCENT_ENABLE_BLURBEHIND;
+                    accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
                     break;
 
-                case (WindowTransparencyLevel.Blur + 1): // hack force acrylic on windows 10.
+                case WindowTransparencyLevel.AcrylicBlur:
+                case (WindowTransparencyLevel.AcrylicBlur + 1): // hack-force acrylic.
                     accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
+                    transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
                     break;
             }
 

@@ -395,6 +395,11 @@ namespace Avalonia.Native
         {
             if (TransparencyLevel != transparencyLevel)
             {
+                if (transparencyLevel >= WindowTransparencyLevel.Blur)
+                {
+                    transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
+                }
+
                 TransparencyLevel = transparencyLevel;
 
                 _native.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);

@@ -15,6 +15,11 @@
         /// <summary>
         /// The window background is a blur-behind where nothing is drawn in the window.
         /// </summary>
-        Blur
+        Blur,
+
+        /// <summary>
+        /// The window background is a blur-behind with a high blur radius. This level may fallback to Blur.
+        /// </summary>
+        AcrylicBlur
     }
 }
