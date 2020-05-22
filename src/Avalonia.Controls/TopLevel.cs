@@ -15,7 +15,6 @@ using JetBrains.Annotations;
 
 namespace Avalonia.Controls
 {
-
     /// <summary>
     /// Base class for top-level widgets.
     /// </summary>

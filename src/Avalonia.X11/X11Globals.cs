@@ -75,7 +75,6 @@ namespace Avalonia.X11
             }
         }
 
-
         IntPtr GetSupportingWmCheck(IntPtr window)
         {
             XGetWindowProperty(_x11.Display, _rootWindow, _x11.Atoms._NET_SUPPORTING_WM_CHECK,

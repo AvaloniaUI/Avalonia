@@ -68,7 +68,6 @@ namespace Avalonia.X11
             return WindowTransparencyLevel.Transparent;
         }
 
-
         private bool CanBlur => _globals.WmName == "KWin" && _globals.IsCompositionEnabled;
         
         public void Dispose()

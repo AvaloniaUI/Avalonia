@@ -66,7 +66,7 @@ namespace Avalonia.Win32
         private OleDropTarget _dropTarget;
         private Size _minSize;
         private Size _maxSize;
-        private WindowImpl _parent;        
+        private WindowImpl _parent;
 
         public WindowImpl()
         {
