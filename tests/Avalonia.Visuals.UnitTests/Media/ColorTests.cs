@@ -18,6 +18,17 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [Fact]
+        public void Parse_Parses_RGB_Hash_Shorthand_Color()
+        {
+            var result = Color.Parse("#f84");
+
+            Assert.Equal(0xff, result.R);
+            Assert.Equal(0x88, result.G);
+            Assert.Equal(0x44, result.B);
+            Assert.Equal(0xff, result.A);
+        }
+
+        [Fact]
         public void Parse_Parses_ARGB_Hash_Color()
         {
             var result = Color.Parse("#40ff8844");
@@ -26,6 +37,17 @@ namespace Avalonia.Visuals.UnitTests.Media
             Assert.Equal(0x88, result.G);
             Assert.Equal(0x44, result.B);
             Assert.Equal(0x40, result.A);
+        }
+
+        [Fact]
+        public void Parse_Parses_ARGB_Hash_Shorthand_Color()
+        {
+            var result = Color.Parse("#4f84");
+
+            Assert.Equal(0xff, result.R);
+            Assert.Equal(0x88, result.G);
+            Assert.Equal(0x44, result.B);
+            Assert.Equal(0x44, result.A);
         }
 
         [Fact]
