@@ -58,6 +58,11 @@ namespace Avalonia.Win32
             CreateMessageWindow();
         }
 
+        /// <summary>
+        /// Gets the actual WindowsVersion. Same as the info returned from RtlGetVersion.
+        /// </summary>
+        public static Version WindowsVersion { get; } = RtlGetVersion();
+
         public static bool UseDeferredRendering => Options.UseDeferredRendering;
         internal static bool UseOverlayPopups => Options.OverlayPopups;
         public static Win32PlatformOptions Options { get; private set; }

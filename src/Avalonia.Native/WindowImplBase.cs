@@ -369,6 +369,8 @@ namespace Avalonia.Native
 
         Action<double> ITopLevelImpl.ScalingChanged { get; set; }
 
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
         public IScreenImpl Screen { get; private set; }
 
         // TODO
@@ -388,6 +390,29 @@ namespace Avalonia.Native
         {
             _native.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
         }
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) 
+        {
+            if (TransparencyLevel != transparencyLevel)
+            {
+                if (transparencyLevel >= WindowTransparencyLevel.Blur)
+                {
+                    transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
+                }
+
+                if(transparencyLevel == WindowTransparencyLevel.None)
+                {
+                    transparencyLevel = WindowTransparencyLevel.Transparent;
+                }
+
+                TransparencyLevel = transparencyLevel;
+
+                _native.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
+                TransparencyLevelChanged?.Invoke(TransparencyLevel);
+            }
+        }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.Transparent;
 
         public IPlatformHandle Handle { get; private set; }
     }
