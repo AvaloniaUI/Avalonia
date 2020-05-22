@@ -118,7 +118,7 @@ namespace Avalonia.Controls
 
             PlatformImpl = impl;
 
-            _actualTransparencyLevel = WindowTransparencyLevel.None;
+            _actualTransparencyLevel = PlatformImpl.TransparencyLevel;            
 
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
             var styler = TryGetService<IStyler>(dependencyResolver);
