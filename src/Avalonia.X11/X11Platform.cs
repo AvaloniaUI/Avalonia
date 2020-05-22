@@ -26,6 +26,7 @@ namespace Avalonia.X11
         public IX11Screens X11Screens { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
+        public X11Globals Globals { get; private set; }
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
@@ -36,6 +37,7 @@ namespace Avalonia.X11
                 throw new Exception("XOpenDisplay failed");
             XError.Init();
             Info = new X11Info(Display, DeferredDisplay);
+            Globals = new X11Globals(this);
             //TODO: log
             if (options.UseDBusMenu)
                 DBusHelper.TryInitialize();

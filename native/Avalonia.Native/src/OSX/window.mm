@@ -20,6 +20,7 @@ public:
         View = NULL;
         Window = NULL;
     }
+    NSVisualEffectView* VisualEffect;
     AvnView* View;
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
@@ -47,6 +48,12 @@ public:
         
         [Window setStyleMask:NSWindowStyleMaskBorderless];
         [Window setBackingType:NSBackingStoreBuffered];
+        
+        VisualEffect = [AutoFitContentVisualEffectView new];
+        [VisualEffect setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+        [VisualEffect setMaterial:NSVisualEffectMaterialLight];
+        [VisualEffect setAutoresizesSubviews:true];
+        
         [Window setContentView: View];
     }
     
@@ -381,6 +388,18 @@ public:
             return E_FAIL;
         *ppv = [renderTarget createSurfaceRenderTarget];
         return *ppv == nil ? E_FAIL : S_OK;
+    }
+    
+    virtual HRESULT SetBlurEnabled (bool enable) override
+    {
+        [Window setContentView: enable ? VisualEffect : View];
+        
+        if(enable)
+        {
+            [VisualEffect addSubview:View];
+        }
+        
+        return S_OK;
     }
     
     virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
@@ -910,6 +929,16 @@ protected:
 };
 
 NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEventTrackingRunLoopMode, NSModalPanelRunLoopMode, NSRunLoopCommonModes, NSConnectionReplyMode, nil];
+
+@implementation AutoFitContentVisualEffectView
+-(void)setFrameSize:(NSSize)newSize
+{
+    [super setFrameSize:newSize];
+    if([[self subviews] count] == 0)
+        return;
+    [[self subviews][0] setFrameSize: newSize];
+}
+@end
 
 @implementation AvnView
 {

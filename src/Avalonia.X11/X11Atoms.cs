@@ -185,6 +185,8 @@ namespace Avalonia.X11
         public readonly IntPtr UTF8_STRING;
         public readonly IntPtr UTF16_STRING;
         public readonly IntPtr ATOM_PAIR;
+        public readonly IntPtr MANAGER;
+        public readonly IntPtr _KDE_NET_WM_BLUR_BEHIND_REGION;
 
 
         public X11Atoms(IntPtr display)
