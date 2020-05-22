@@ -400,6 +400,11 @@ namespace Avalonia.Native
                     transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
                 }
 
+                if(transparencyLevel == WindowTransparencyLevel.None)
+                {
+                    transparencyLevel = WindowTransparencyLevel.Transparent;
+                }
+
                 TransparencyLevel = transparencyLevel;
 
                 _native.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
@@ -407,7 +412,7 @@ namespace Avalonia.Native
             }
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.Transparent;
 
         public IPlatformHandle Handle { get; private set; }
     }
