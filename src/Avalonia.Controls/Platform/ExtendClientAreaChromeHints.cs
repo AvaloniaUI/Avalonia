@@ -6,11 +6,10 @@ namespace Avalonia.Platform
     public enum ExtendClientAreaChromeHints
     {
         NoChrome,
-        Default = SystemTitleBar | SystemChromeButtons,        
+        Default = SystemTitleBar,        
         SystemTitleBar = 0x01,
-        SystemChromeButtons = 0x02,
-        ManagedChromeButtons = 0x04,
-        PreferSystemChromeButtons = 0x08,
+        ManagedChromeButtons = 0x02,
+        PreferSystemChromeButtons = 0x04,
         AdaptiveChromeWithTitleBar = SystemTitleBar | PreferSystemChromeButtons,
         AdaptiveChromeWithoutTitleBar = PreferSystemChromeButtons,
     }

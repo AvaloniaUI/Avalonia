@@ -699,18 +699,14 @@ namespace Avalonia.Win32
 
             margins.cyTopHeight = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar) ? borderCaptionThickness.top : 1;
 
-            _extendedMargins = new Thickness(0, borderCaptionThickness.top / Scaling, 0, 0);
-
-            if (WindowState == WindowState.Maximized && !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChromeButtons))
+            if (WindowState == WindowState.Maximized)
             {
-                _offScreenMargin = new Thickness();                
-            }
-            else if (WindowState == WindowState.Maximized)
-            {
+                _extendedMargins = new Thickness(0, (borderCaptionThickness.top - borderThickness.top) / Scaling, 0, 0);
                 _offScreenMargin = new Thickness(borderThickness.left / Scaling, borderThickness.top / Scaling, borderThickness.right / Scaling, borderThickness.bottom / Scaling);
             }
             else
-            {                
+            {
+                _extendedMargins = new Thickness(0, (borderCaptionThickness.top) / Scaling, 0, 0);
                 _offScreenMargin = new Thickness();
             }
 
@@ -739,29 +735,6 @@ namespace Avalonia.Win32
                 var margins = UpdateExtendMargins();
 
                 DwmExtendFrameIntoClientArea(_hwnd, ref margins);
-
-                if(!_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChromeButtons) ||
-                    (_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChromeButtons) &&
-                    !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar)))
-                {
-                    var style = GetStyle();
-
-                    style &= ~(WindowStyles.WS_MINIMIZEBOX | WindowStyles.WS_MAXIMIZEBOX | WindowStyles.WS_SYSMENU);
-
-                    SetStyle(style);
-
-                    DisableCloseButton(_hwnd);
-                }
-                else
-                {
-                    var style = GetStyle();
-
-                    style |= (WindowStyles.WS_MINIMIZEBOX | WindowStyles.WS_MAXIMIZEBOX | WindowStyles.WS_SYSMENU);
-
-                    SetStyle(style);
-
-                    EnableCloseButton(_hwnd);
-                }
             }
             else
             {
@@ -770,14 +743,6 @@ namespace Avalonia.Win32
 
                 _offScreenMargin = new Thickness();
                 _extendedMargins = new Thickness();
-
-                var style = GetStyle();
-
-                style |= (WindowStyles.WS_MINIMIZEBOX | WindowStyles.WS_MAXIMIZEBOX | WindowStyles.WS_SYSMENU);
-
-                SetStyle(style);
-
-                EnableCloseButton(_hwnd);
             }
 
             ExtendClientAreaToDecorationsChanged?.Invoke(true);
