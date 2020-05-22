@@ -55,7 +55,7 @@ namespace Avalonia.Controls.Chrome
         void InvalidateSize ()
         {
             Margin = new Thickness(1, _hostWindow.OffScreenMargin.Top, 1, 1);
-            Height = _hostWindow.WindowDecorationMargins.Top - _hostWindow.OffScreenMargin.Top;
+            Height = _hostWindow.WindowDecorationMargins.Top;
         }
 
         public void Detach()
