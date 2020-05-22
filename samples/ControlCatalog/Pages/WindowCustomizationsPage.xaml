@@ -13,6 +13,7 @@
       <ComboBoxItem>None</ComboBoxItem>
       <ComboBoxItem>Transparent</ComboBoxItem>
       <ComboBoxItem>Blur</ComboBoxItem>
+      <ComboBoxItem>AcrylicBlur</ComboBoxItem>
     </ComboBox>
   </StackPanel>
 </UserControl>
