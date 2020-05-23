@@ -6,6 +6,7 @@ using Avalonia.Dialogs;
 using Avalonia.Platform;
 using System;
 using ReactiveUI;
+using System.Reactive.Linq;
 
 namespace ControlCatalog.ViewModels
 {
@@ -84,7 +85,23 @@ namespace ControlCatalog.ViewModels
             SystemTitleBarEnabled = true;
             SystemChromeButtonsEnabled = true;
             TitleBarHeight = -1;
+
+            Observable.Interval(TimeSpan.FromSeconds(0.05))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(x =>
+            {
+                Test = x.ToString();
+            });
         }
+
+        private string _test;
+
+        public string Test
+        {
+            get { return _test; }
+            set { this.RaiseAndSetIfChanged(ref _test, value); }
+        }
+
 
         private int _transparencyLevel;
 
