@@ -93,6 +93,21 @@ namespace ControlCatalog.Pages
                 window.ShowInTaskbar = false;
                 window.ShowDialog(GetWindow());
             };
+            this.FindControl<Button>("OwnedWindow").Click += delegate
+            {
+                var window = CreateSampleWindow();
+
+                window.Show(GetWindow());
+            };
+
+            this.FindControl<Button>("OwnedWindowNoTaskbar").Click += delegate
+            {
+                var window = CreateSampleWindow();
+
+                window.ShowInTaskbar = false;
+
+                window.Show(GetWindow());
+            };
         }
 
         private Window CreateSampleWindow()
