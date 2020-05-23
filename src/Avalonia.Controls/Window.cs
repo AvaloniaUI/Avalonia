@@ -479,6 +479,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Shows the window as a child of <paramref name="parent"/>.
         /// </summary>
+        /// <param name="parent">Window that will be a parent of the shown window.</param>
         /// <exception cref="InvalidOperationException">
         /// The window has already been closed.
         /// </exception>
