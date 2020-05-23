@@ -4,6 +4,7 @@ namespace Avalonia.Media
 {
     public enum AcrylicBackgroundSource
     {
+        None,
         HostBackDrop,
         BackDrop
     }

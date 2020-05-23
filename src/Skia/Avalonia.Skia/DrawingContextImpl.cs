@@ -284,6 +284,10 @@ namespace Avalonia.Skia
                     Canvas.Clear();
                     Canvas.Restore();
                 }
+                else if(acrylicBrush.BackgroundSource == AcrylicBackgroundSource.None)
+                {
+
+                }
                 else
                 {
                     // save existing? use as bg for shadow
@@ -798,7 +802,7 @@ namespace Avalonia.Skia
             if (brush is IAcrylicBrush acrylicBrush)
             {
                 var tintOpacity = acrylicBrush.TintOpacity;
-                var noiseOpcity = 0.08;
+                var noiseOpcity = 0.045;
 
                 var excl = new SKColor(255, 255, 255, (byte)(255 * acrylicBrush.TintLuminosityOpacity));
                 var tint = new SKColor(acrylicBrush.TintColor.R, acrylicBrush.TintColor.G, acrylicBrush.TintColor.B, (byte)(255 * tintOpacity));
@@ -808,13 +812,16 @@ namespace Avalonia.Skia
                 var tintShader = SKShader.CreateColor(tint);
                 var noiseShader =
                     //SKShader.CreatePerlinNoiseImprovedNoise(0.5f, 0.5f, 4, 0)
-                    SKShader.CreatePerlinNoiseImprovedNoise(1.8f, 1.8f, 2, 0.76829314f)
+                    SKShader.CreatePerlinNoiseTurbulence(12.876f, 12.876f, 2, 0.76829314f)
                     .WithColorFilter(CreateAlphaColorFilter(noiseOpcity));
 
                 var compose = SKShader.CreateCompose(tintShader, noiseShader);
                 paint.Shader = compose;
 
-                paint.ImageFilter = SKImageFilter.CreateBlur(2.4f, 2.4f);
+                if (acrylicBrush.BackgroundSource == AcrylicBackgroundSource.BackDrop)
+                {
+                    paint.ImageFilter = SKImageFilter.CreateBlur(2.4f, 2.4f);
+                }
 
                 return paintWrapper;
             }

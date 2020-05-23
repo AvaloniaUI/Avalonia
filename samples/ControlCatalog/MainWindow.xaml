@@ -13,13 +13,14 @@
         x:Name="MainWindow"
         
         x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}" Background="{x:Null}">
-  <Panel DockPanel.Dock="Left" Width="400" Height="400" Background="Green">
+  <Panel DockPanel.Dock="Left" Width="400" Height="400" Background="Red">
 
     <Button Content="{Binding Test}" Background="Red" FontSize="55" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-    <Panel>
-      <Panel.Background>
-        <AcrylicBrush TintColor="Black" BackgroundSource="BackDrop" TintOpacity="0.0" TintLuminosityOpacity="0.4" />
-      </Panel.Background>
-    </Panel>
+    <Border CornerRadius="30">
+      <Border.Background>
+        
+        <AcrylicBrush TintColor="#222222" BackgroundSource="None" TintOpacity="1" TintLuminosityOpacity="1" />
+      </Border.Background>
+    </Border>
   </Panel>
 </Window>
