@@ -92,7 +92,7 @@ namespace Avalonia.Rendering
         public bool DrawFps { get; set; }
 
         /// <inheritdoc/>
-        public bool DrawDirtyRects { get; set; }
+        public bool DrawDirtyRects { get; set; } = false;
 
         /// <summary>
         /// Gets or sets a path to which rendered frame should be rendered for debugging.

@@ -2,6 +2,25 @@
 
 namespace Avalonia.Media
 {
+    public enum AcrylicBackgroundSource
+    {
+        HostBackDrop,
+        BackDrop
+    }
+
+    public interface IAcrylicBrush : IBrush
+    {
+        AcrylicBackgroundSource BackgroundSource { get; set; }
+
+        Color TintColor { get; set; }
+
+        double TintOpacity { get; set; }
+
+        double TintLuminosityOpacity { get; set; }
+
+        Color FallbackColor { get; set; }
+    }
+
     /// <summary>
     /// A brush that draws with a gradient.
     /// </summary>

@@ -77,7 +77,7 @@ namespace Avalonia.Skia
                 GrContext = _grContext
             };
 
-            return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));
+            return new DrawingContextImpl(_surface, createInfo, Disposable.Create(() => Version++));
         }
 
         /// <inheritdoc />

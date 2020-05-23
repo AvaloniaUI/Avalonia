@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Avalonia.Media;
@@ -66,13 +67,16 @@ namespace Avalonia.Skia
             public GRContext GrContext;
         }
 
+        private SKSurface _surface;
+
         /// <summary>
         /// Create new drawing context.
         /// </summary>
         /// <param name="createInfo">Create info.</param>
         /// <param name="disposables">Array of elements to dispose after drawing has finished.</param>
-        public DrawingContextImpl(CreateInfo createInfo, params IDisposable[] disposables)
+        public DrawingContextImpl(SKSurface surface, CreateInfo createInfo, params IDisposable[] disposables)
         {
+            _surface = surface;
             _dpi = createInfo.Dpi;
             _visualBrushRenderer = createInfo.VisualBrushRenderer;
             _disposables = disposables;
@@ -238,6 +242,20 @@ namespace Avalonia.Skia
             if (rect.Rect.Height > 8192 || rect.Rect.Width > 8192)
                 boxShadows = default;
 
+            if (brush is IAcrylicBrush)
+            {
+                // todo this is only for light mode?
+                // luma > 0.5?
+
+                boxShadows = new BoxShadows(new BoxShadow
+                {
+                    Blur = 2,
+                    OffsetX = 1,
+                    Color = Colors.White,
+                    IsInset = true
+                });
+            }
+
             var rc = rect.Rect.ToSKRect();
             var isRounded = rect.IsRounded;
             var needRoundRect = rect.IsRounded || (boxShadows.HasInsetShadows);
@@ -249,6 +267,68 @@ namespace Avalonia.Skia
                         rect.RadiiTopLeft.ToSKPoint(), rect.RadiiTopRight.ToSKPoint(),
                         rect.RadiiBottomRight.ToSKPoint(), rect.RadiiBottomLeft.ToSKPoint(),
                     });
+
+            if (brush is IAcrylicBrush acrylicBrush)
+            {
+                if (acrylicBrush.BackgroundSource == AcrylicBackgroundSource.HostBackDrop)                
+                {
+                    Canvas.Save();
+                    if (needRoundRect)
+                    {
+                        Canvas.ClipRoundRect(skRoundRect, SKClipOperation.Intersect, true);
+                    }
+                    else
+                    {
+                        Canvas.ClipRect(rc, SKClipOperation.Intersect, true);
+                    }
+                    Canvas.Clear();
+                    Canvas.Restore();
+                }
+                else
+                {
+                    // save existing? use as bg for shadow
+                    Canvas.Save();
+                    if (needRoundRect)
+                    {
+                        Canvas.ClipRoundRect(skRoundRect, SKClipOperation.Intersect, true);
+                    }
+                    else
+                    {
+                        Canvas.ClipRect(rc, SKClipOperation.Intersect   , true);
+                    }
+
+                    if (brush != null)
+                    {
+                        using (var paint = new SKPaint())
+                        {
+                            paint.ImageFilter = SKImageFilter.CreateBlur(5.0f, 5.0f);
+                            
+                            Canvas.GetDeviceClipBounds(out var bounds);
+                            using (var snapshot = _surface.Snapshot())
+                            using (var subset = snapshot.Subset(bounds))
+                            {
+
+                                Canvas.GetLocalClipBounds(out var dest);
+                                //Canvas.SaveLayer(rc, paint);                                
+                                //_surface.Draw(Canvas, rc.Left, rc.Top, paint);
+                                //Canvas.Restore();
+                                Canvas.DrawImage(subset, dest, paint);
+                                //Canvas.Flush();
+
+                                //Canvas.DrawRect(rc, new SKPaint { Color = SKColor.Parse("#FF0000") });
+                                //Canvas.Flush();
+
+                                //using (var file = File.OpenWrite("test.png"))
+                                //{
+                                //    SKBitmap.FromImage(_surface.Snapshot()).Encode(SKEncodedImageFormat.Png, 100).SaveTo(file);
+                                //}
+                            }
+                        }
+                    }
+
+                    Canvas.Restore();
+                }
+            }
 
             foreach (var boxShadow in boxShadows)
             {
@@ -268,7 +348,7 @@ namespace Avalonia.Skia
                                 shadowRect.Inflate(spread, spread);
                             Canvas.ClipRoundRect(skRoundRect,
                                 shadow.ClipOperation, true);
-                            
+
                             var oldTransform = Transform;
                             Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
                             Canvas.DrawRoundRect(shadowRect, shadow.Paint);
@@ -303,37 +383,37 @@ namespace Avalonia.Skia
                     {
                         Canvas.DrawRect(rc, paint.Paint);
                     }
-                  
+
                 }
             }
 
-            foreach (var boxShadow in boxShadows)
-            {
-                if (!boxShadow.IsEmpty && boxShadow.IsInset)
-                {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
-                    {
-                        var spread = (float)boxShadow.Spread;
-                        var offsetX = (float)boxShadow.OffsetX;
-                        var offsetY = (float)boxShadow.OffsetY;
-                        var outerRect = AreaCastingShadowInHole(rc, (float)boxShadow.Blur, spread, offsetX, offsetY);
+            //foreach (var boxShadow in boxShadows)
+            //{
+            //    if (!boxShadow.IsEmpty && boxShadow.IsInset)
+            //    {
+            //        using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
+            //        {
+            //            var spread = (float)boxShadow.Spread;
+            //            var offsetX = (float)boxShadow.OffsetX;
+            //            var offsetY = (float)boxShadow.OffsetY;
+            //            var outerRect = AreaCastingShadowInHole(rc, (float)boxShadow.Blur, spread, offsetX, offsetY);
 
-                        Canvas.Save();
-                        using var shadowRect = new SKRoundRect(skRoundRect);
-                        if (spread != 0)
-                            shadowRect.Deflate(spread, spread);
-                        Canvas.ClipRoundRect(skRoundRect,
-                            shadow.ClipOperation, true);
-                        
-                        var oldTransform = Transform;
-                        Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
-                        using (var outerRRect = new SKRoundRect(outerRect))
-                            Canvas.DrawRoundRectDifference(outerRRect, shadowRect, shadow.Paint);
-                        Transform = oldTransform;
-                        Canvas.Restore();
-                    }
-                }
-            }
+            //            Canvas.Save();
+            //            using var shadowRect = new SKRoundRect(skRoundRect);
+            //            if (spread != 0)
+            //                shadowRect.Deflate(spread, spread);
+            //            Canvas.ClipRoundRect(skRoundRect,
+            //                shadow.ClipOperation, true);
+
+            //            var oldTransform = Transform;
+            //            Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
+            //            using (var outerRRect = new SKRoundRect(outerRect))
+            //                Canvas.DrawRoundRectDifference(outerRRect, shadowRect, shadow.Paint);
+            //            Transform = oldTransform;
+            //            Canvas.Restore();
+            //        }
+            //    }
+            //}
 
             if (pen?.Brush != null)
             {
@@ -653,6 +733,36 @@ namespace Avalonia.Skia
             }
         }
 
+        static SKColor StupidBlend(SKColor bg, SKColor fg)
+        {
+            using (var bmp = new SKBitmap(1, 1))
+            {
+                bmp.SetPixel(0, 0, bg);
+                using (var canvas = new SKCanvas(bmp))
+                using (var paint = new SKPaint
+                {
+                    Color = fg
+                })
+                    canvas.DrawRect(-1, -1, 3, 3, paint);
+                return bmp.GetPixel(0, 0);
+            }
+        }
+
+        static SKColorFilter CreateAlphaColorFilter(double opacity)
+        {
+            if (opacity > 1)
+                opacity = 1;
+            var c = new byte[256];
+            var a = new byte[256];
+            for (var i = 0; i < 256; i++)
+            {
+                c[i] = 255;
+                a[i] = (byte)(i * opacity);
+            }
+
+            return SKColorFilter.CreateTable(a, c, c, c);
+        }
+
         /// <summary>
         /// Creates paint wrapper for given brush.
         /// </summary>
@@ -681,6 +791,30 @@ namespace Avalonia.Skia
             if (brush is IGradientBrush gradient)
             {
                 ConfigureGradientBrush(ref paintWrapper, targetSize, gradient);
+
+                return paintWrapper;
+            }
+
+            if (brush is IAcrylicBrush acrylicBrush)
+            {
+                var tintOpacity = acrylicBrush.TintOpacity;
+                var noiseOpcity = 0.08;
+
+                var excl = new SKColor(255, 255, 255, (byte)(255 * acrylicBrush.TintLuminosityOpacity));
+                var tint = new SKColor(acrylicBrush.TintColor.R, acrylicBrush.TintColor.G, acrylicBrush.TintColor.B, (byte)(255 * tintOpacity));
+
+                tint = StupidBlend(excl, tint);
+
+                var tintShader = SKShader.CreateColor(tint);
+                var noiseShader =
+                    //SKShader.CreatePerlinNoiseImprovedNoise(0.5f, 0.5f, 4, 0)
+                    SKShader.CreatePerlinNoiseImprovedNoise(1.8f, 1.8f, 2, 0.76829314f)
+                    .WithColorFilter(CreateAlphaColorFilter(noiseOpcity));
+
+                var compose = SKShader.CreateCompose(tintShader, noiseShader);
+                paint.Shader = compose;
+
+                paint.ImageFilter = SKImageFilter.CreateBlur(2.4f, 2.4f);
 
                 return paintWrapper;
             }

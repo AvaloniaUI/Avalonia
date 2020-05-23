@@ -33,7 +33,7 @@ namespace Avalonia.Skia
                 DisableTextLcdRendering = true
             };
 
-            return new DrawingContextImpl(nfo, session);
+            return new DrawingContextImpl(null, nfo, session);
         }
 
         public bool IsCorrupted => _renderTarget.IsCorrupted;
