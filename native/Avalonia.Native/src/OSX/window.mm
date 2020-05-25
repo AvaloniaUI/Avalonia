@@ -6,23 +6,6 @@
 #include <OpenGL/gl.h>
 #include "rendertarget.h"
 
-NSComparisonResult compareViews(id firstView, id secondView, void *context) {
-    
-    int firstIndex = [firstView isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")] ? 0 : 1;
-    
-    int secondIndex = [secondView isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")] ? 0 : 1;
-
-    if (firstIndex == secondIndex) {
-        return NSOrderedSame;
-    } else {
-        if (firstIndex < secondIndex) {
-            return NSOrderedAscending;
-        } else {
-            return NSOrderedDescending;
-        }
-    }
-}
-
 class WindowBaseImpl : public virtual ComSingleObject<IAvnWindowBase, &IID_IAvnWindowBase>, public INSWindowHolder
 {
 private:
@@ -792,21 +775,16 @@ private:
         {
             Window.titleVisibility = NSWindowTitleHidden;
             
+            [Window setTitlebarAppearsTransparent:true];
+            
             if(_extendClientHints & AvnChromeHintsSystemTitleBar)
             {
-                [Window setTitlebarAppearsTransparent:true];
-                //View.layer.zPosition = 2;
-                //VisualEffect.layer.zPosition = 0;
+                [VisualEffect ShowTitleBar:true];
             }
             else
             {
-                [Window setTitlebarAppearsTransparent:true];
-                //[Window setTitlebarAppearsTransparent:true];
-                //View.layer.zPosition = 0;
-                //VisualEffect.layer.zPosition = 0;
+                [VisualEffect ShowTitleBar:false];
             }
-            
-            //[Window.contentView.superview sortSubviewsUsingFunction:(NSComparisonResult //(*)(id, id, void*))compareViews context:nil];
             
             if(_extendClientHints & AvnChromeHintsOSXThickTitleBar)
             {
@@ -1035,6 +1013,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [_titleBarMaterial setBlendingMode:NSVisualEffectBlendingModeWithinWindow];
     [_titleBarMaterial setMaterial:NSVisualEffectMaterialTitlebar];
     [_titleBarMaterial setWantsLayer:true];
+    _titleBarMaterial.hidden = true;
     
      [self addSubview:_titleBarMaterial];
     [self addSubview:_content];
@@ -1043,11 +1022,13 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(void) ShowTitleBar: (bool) show;
 {
-    //[_titleBarMaterial removeFromSuperview];
-    
     if(show)
     {
-       
+        _titleBarMaterial.hidden = false;
+    }
+    else
+    {
+        _titleBarMaterial.hidden = true;
     }
 }
 
