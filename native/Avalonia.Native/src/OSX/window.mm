@@ -645,8 +645,6 @@ private:
                 return S_OK;
             }
             
-            auto currentFrame = [Window frame];
-            
             UpdateStyle();
             
             HideOrShowTrafficLights();
@@ -815,7 +813,7 @@ private:
         return S_OK;
     }
     
-    virtual HRESULT SetExtendClientAreaHints (AvnExtendClientAreaChromeHints hints)
+    virtual HRESULT SetExtendClientAreaHints (AvnExtendClientAreaChromeHints hints) override
     {
         _extendClientHints = hints;
         
@@ -823,7 +821,7 @@ private:
         return S_OK;
     }
     
-    virtual HRESULT GetExtendTitleBarHeight (double*ret)
+    virtual HRESULT GetExtendTitleBarHeight (double*ret) override
     {
         if(ret == nullptr)
         {
