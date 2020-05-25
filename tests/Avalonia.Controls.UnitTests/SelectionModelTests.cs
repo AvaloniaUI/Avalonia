@@ -1775,7 +1775,17 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Assigning_Source_With_Less_Items_Than_Selection_Trims_Selection()
+        public void Initializing_Source_With_Less_Items_Than_Selection_Trims_Selection()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel();
+            target.SelectedIndex = new IndexPath(4);
+            target.Source = data;
+            Assert.Empty(target.SelectedIndices);
+        }
+
+        [Fact]
+        public void Initializing_Source_With_Less_Items_Than_Selection_Trims_Selection_RetainSelection()
         {
             var data = new[] { "foo", "bar", "baz" };
             var target = new SelectionModel { RetainSelectionOnReset = true };
@@ -1785,7 +1795,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Assigning_Source_With_Less_Items_Than_Multiple_Selection_Trims_Selection()
+        public void Initializing_Source_With_Less_Items_Than_Multiple_Selection_Trims_Selection()
         {
             var data = new[] { "foo", "bar", "baz" };
             var target = new SelectionModel { RetainSelectionOnReset = true };
@@ -1796,17 +1806,31 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new IndexPath(2), target.SelectedIndices.First());
         }
 
-        // test that going from non-null source to non-null source clears selection
         [Fact]
-        public void Changing_Source_With_Valid_IndexPath_Retains_Selection()
+        public void Initializing_Source_With_Less_Items_Than_Selection_Raises_SelectionChanged()
         {
-            var data = new[] { "foo", "bar", "baz", "boo", "hoo" };
-            var smallerData = new[] { "foo", "bar", "baz" };
-            var target = new SelectionModel { RetainSelectionOnReset = true };
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.SelectedIndex = new IndexPath(4);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                if (raised == 0)
+                {
+                    Assert.Equal(new[] { Path(4) }, e.DeselectedIndices);
+                    Assert.Equal(new object[] { null }, e.DeselectedItems);
+                    Assert.Empty(e.SelectedIndices);
+                    Assert.Empty(e.SelectedItems);
+                }
+
+                ++raised;
+            };
+
             target.Source = data;
-            target.SelectedIndex = new IndexPath(2);
-            target.Source = smallerData;
-            Assert.Equal(1, target.SelectedIndices.Count);
+            
+            Assert.Equal(2, raised);
         }
 
         private int GetSubscriberCount(AvaloniaList<object> list)

@@ -45,12 +45,9 @@ namespace Avalonia.Controls
 
                     if (_rootNode.Source != null)
                     {
-                        if (_rootNode.Source != null)
+                        using (var operation = new Operation(this))
                         {
-                            using (var operation = new Operation(this))
-                            {
-                                ClearSelection(resetAnchor: true);
-                            }
+                            ClearSelection(resetAnchor: true);
                         }
                     }
 

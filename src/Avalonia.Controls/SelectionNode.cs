@@ -101,10 +101,31 @@ namespace Avalonia.Controls
 
                     ItemsSourceView = newDataSource;
 
+                    TrimInvalidSelections();
                     PopulateSelectedItemsFromSelectedIndices();
                     HookupCollectionChangedHandler();
                     OnSelectionChanged();
                 }
+            }
+        }
+
+        private void TrimInvalidSelections()
+        {
+            if (_selected == null || ItemsSourceView == null)
+            {
+                return;
+            }
+
+            var validRange = ItemsSourceView.Count > 0 ? new IndexRange(0, ItemsSourceView.Count - 1) : new IndexRange(-1, -1);
+            var removed = new List<IndexRange>();
+            var removedCount = IndexRange.Intersect(_selected, validRange, removed);
+
+            if (removedCount > 0)
+            {
+                using var operation = _manager.Update();
+                SelectedCount -= removedCount;
+                OnSelectionChanged();
+                _operation!.Deselected(removed);
             }
         }
 
