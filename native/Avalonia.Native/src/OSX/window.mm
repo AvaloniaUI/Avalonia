@@ -475,6 +475,7 @@ private:
     NSRect _preZoomSize;
     bool _transitioningWindowState;
     bool _isClientAreaExtended;
+    AvnExtendClientAreaChromeHints _extendClientHints;
     
     FORWARD_IUNKNOWN()
     BEGIN_INTERFACE_MAP()
@@ -489,6 +490,7 @@ private:
     WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
         _isClientAreaExtended = false;
+        _extendClientHints = AvnChromeHintsNoChrome;
         _fullScreenActive = false;
         _canResize = true;
         _decorations = SystemDecorationsFull;
@@ -509,6 +511,9 @@ private:
                 for (id button in titlebarView.subviews) {
                     if ([button isKindOfClass:[NSButton class]]) {
                         [button setHidden: (_decorations != SystemDecorationsFull)];
+                        [[button layer] setZPosition:5];
+                        [button setWantsLayer:true];
+                        
                     }
                 }
             }
@@ -771,23 +776,73 @@ private:
     virtual HRESULT SetExtendClientArea (bool enable) override
     {
         _isClientAreaExtended = enable;
-        [Window setTitleVisibility:NSWindowTitleHidden];
-        [Window setTitlebarAppearsTransparent:enable];
-        Window.movableByWindowBackground = true;
         
-        NSRect x;
-        x.size.height = 50;
-        x.size.width = Window.frame.size.width;
-        [Window contentLayoutRect] = x;
-        
-        
-        auto customToolbar = [NSToolbar new];
-        
-        customToolbar.showsBaselineSeparator = true;
-        Window.toolbar = customToolbar;
+        if(enable)
+        {
+            Window.titleVisibility = NSWindowTitleHidden;
+            
+            if(_extendClientHints & AvnChromeHintsSystemTitleBar)
+            {
+                [Window setTitlebarAppearsTransparent:false];
+                View.layer.zPosition = 1;
+            }
+            else
+            {
+                [Window setTitlebarAppearsTransparent:true];
+                View.layer.zPosition = 0;
+            }
+            
+            if(_extendClientHints & AvnChromeHintsOSXThickTitleBar)
+            {
+                Window.toolbar = [NSToolbar new];
+                Window.toolbar.showsBaselineSeparator = false;
+            }
+            else
+            {
+                Window.toolbar = nullptr;
+            }
+        }
+        else
+        {
+            Window.titleVisibility = NSWindowTitleVisible;
+            Window.toolbar = nullptr;
+            [Window setTitlebarAppearsTransparent:false];
+            View.layer.zPosition = 0;
+        }
         
         UpdateStyle();
+        
         return S_OK;
+    }
+    
+    virtual HRESULT SetExtendClientAreaHints (AvnExtendClientAreaChromeHints hints)
+    {
+        _extendClientHints = hints;
+        
+        SetExtendClientArea(_isClientAreaExtended);
+        return S_OK;
+    }
+    
+    virtual HRESULT GetExtendTitleBarHeight (double*ret)
+    {
+        if(ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        for (id subview in Window.contentView.superview.subviews)
+        {
+            if ([subview isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")])
+            {
+                NSView *titlebarView = [subview subviews][0];
+                
+                *ret = (double)titlebarView.frame.size.height;
+                
+                return S_OK;
+            }
+        }
+        
+        return E_FAIL;
     }
     
     void EnterFullScreenMode ()

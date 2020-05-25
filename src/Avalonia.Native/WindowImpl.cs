@@ -102,7 +102,7 @@ namespace Avalonia.Native
 
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
-        public Thickness ExtendedMargins { get; } = new Thickness(0, 20, 0, 0);
+        public Thickness ExtendedMargins { get; private set; }
 
         public Thickness OffScreenMargin { get; } = new Thickness();
 
@@ -137,12 +137,17 @@ namespace Avalonia.Native
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
         {
             _isExtended = extendIntoClientAreaHint;
+
             _native.SetExtendClientArea(extendIntoClientAreaHint);
+
+            ExtendedMargins = _isExtended ? new Thickness(0, _native.GetExtendTitleBarHeight(), 0, 0) : new Thickness();
+
             ExtendClientAreaToDecorationsChanged?.Invoke(true);
         }
 
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
         {
+            _native.SetExtendClientAreaHints ((AvnExtendClientAreaChromeHints)hints);
         }
 
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
