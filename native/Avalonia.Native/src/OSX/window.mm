@@ -1009,6 +1009,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 @implementation AutoFitContentVisualEffectView
 {
     NSVisualEffectView* _titleBarMaterial;
+    NSBox* _titleBarUnderline;
     AvnView* _content;
     double _titleBarHeightHint;
 }
@@ -1023,21 +1024,21 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [_titleBarMaterial setWantsLayer:true];
     _titleBarMaterial.hidden = true;
     
-     [self addSubview:_titleBarMaterial];
+    _titleBarUnderline = [NSBox new];
+    _titleBarUnderline.boxType = NSBoxSeparator;
+    _titleBarUnderline.fillColor = [NSColor underPageBackgroundColor];
+    _titleBarUnderline.hidden = true;
+    
+    [self addSubview:_titleBarMaterial];
+    [self addSubview:_titleBarUnderline];
     [self addSubview:_content];
     return self;
 }
 
 -(void) ShowTitleBar: (bool) show
 {
-    if(show)
-    {
-        _titleBarMaterial.hidden = false;
-    }
-    else
-    {
-        _titleBarMaterial.hidden = true;
-    }
+    _titleBarMaterial.hidden = !show;
+    _titleBarUnderline.hidden = !show;
 }
 
 -(void) SetTitleBarHeightHint: (double) height
@@ -1058,6 +1059,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     // TODO get actual titlebar size
     
     double height = _titleBarHeightHint == -1 ? [window getExtendedTitleBarHeight] : _titleBarHeightHint;
+    
     NSRect tbar;
     tbar.origin.x = 0;
     tbar.origin.y = newSize.height - height;
@@ -1065,6 +1067,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     tbar.size.height = height;
     
     [_titleBarMaterial setFrame:tbar];
+    tbar.size.height = height < 1 ? 0 : 1;
+    [_titleBarUnderline setFrame:tbar];
 }
 
 @end
