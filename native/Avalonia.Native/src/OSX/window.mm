@@ -490,7 +490,7 @@ private:
     WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
         _isClientAreaExtended = false;
-        _extendClientHints = AvnChromeHintsNoChrome;
+        _extendClientHints = AvnChromeHintsSystemTitleBar;
         _fullScreenActive = false;
         _canResize = true;
         _decorations = SystemDecorationsFull;
