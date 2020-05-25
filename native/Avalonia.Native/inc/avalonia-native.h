@@ -258,6 +258,7 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT ObtainNSViewHandleRetained(void** retOut) = 0;
     virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
                                               IAvnClipboard* clipboard, IAvnDndResultCallback* cb, void* sourceHandle) = 0;
+    virtual HRESULT SetBlurEnabled (bool enable) = 0;
 };
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
