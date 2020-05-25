@@ -144,7 +144,7 @@ namespace Avalonia.Native
 
             ExtendedMargins = _isExtended ? new Thickness(0, _extendTitleBarHeight == -1 ? _native.GetExtendTitleBarHeight() : _extendTitleBarHeight, 0, 0) : new Thickness();
 
-            ExtendClientAreaToDecorationsChanged?.Invoke(true);
+            ExtendClientAreaToDecorationsChanged?.Invoke(extendIntoClientAreaHint);
         }
 
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
