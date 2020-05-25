@@ -1,6 +1,8 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
@@ -100,14 +102,43 @@ namespace Avalonia.Native
 
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
-        public Thickness ExtendedMargins { get; } = new Thickness();
+        public Thickness ExtendedMargins { get; } = new Thickness(0, 20, 0, 0);
 
         public Thickness OffScreenMargin { get; } = new Thickness();
 
-        public bool IsClientAreaExtendedToDecorations { get; }
+        private bool _isExtended;
+        public bool IsClientAreaExtendedToDecorations => _isExtended;
+
+        protected override bool ChromeHitTest (RawPointerEventArgs e)
+        {
+            if(_isExtended)
+            {
+                if(e.Type == RawPointerEventType.LeftButtonDown)
+                {
+                    var visual = (_inputRoot as Window).Renderer.HitTestFirst(e.Position, _inputRoot as Window, x =>
+                            {
+                                if (x is IInputElement ie && !ie.IsHitTestVisible)
+                                {
+                                    return false;
+                                }
+                                return true;
+                            });
+
+                    if(visual == null)
+                    {
+                        _native.BeginMoveDrag();
+                    }
+                }
+            }
+
+            return false;
+        }
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
         {
+            _isExtended = extendIntoClientAreaHint;
+            _native.SetExtendClientArea(extendIntoClientAreaHint);
+            ExtendClientAreaToDecorationsChanged?.Invoke(true);
         }
 
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
