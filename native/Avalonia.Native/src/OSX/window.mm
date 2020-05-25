@@ -474,6 +474,7 @@ private:
     bool _inSetWindowState;
     NSRect _preZoomSize;
     bool _transitioningWindowState;
+    bool _isClientAreaExtended;
     
     FORWARD_IUNKNOWN()
     BEGIN_INTERFACE_MAP()
@@ -487,6 +488,7 @@ private:
     ComPtr<IAvnWindowEvents> WindowEvents;
     WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
+        _isClientAreaExtended = false;
         _fullScreenActive = false;
         _canResize = true;
         _decorations = SystemDecorationsFull;
@@ -766,6 +768,28 @@ private:
         }
     }
     
+    virtual HRESULT SetExtendClientArea (bool enable) override
+    {
+        _isClientAreaExtended = enable;
+        [Window setTitleVisibility:NSWindowTitleHidden];
+        [Window setTitlebarAppearsTransparent:enable];
+        Window.movableByWindowBackground = true;
+        
+        NSRect x;
+        x.size.height = 50;
+        x.size.width = Window.frame.size.width;
+        [Window contentLayoutRect] = x;
+        
+        
+        auto customToolbar = [NSToolbar new];
+        
+        customToolbar.showsBaselineSeparator = true;
+        Window.toolbar = customToolbar;
+        
+        UpdateStyle();
+        return S_OK;
+    }
+    
     void EnterFullScreenMode ()
     {
         _fullScreenActive = true;
@@ -923,6 +947,11 @@ protected:
         if([Window parentWindow] == nullptr)
         {
             s |= NSWindowStyleMaskMiniaturizable;
+        }
+        
+        if(_isClientAreaExtended)
+        {
+            s |= NSWindowStyleMaskFullSizeContentView | NSWindowStyleMaskTexturedBackground;
         }
         return s;
     }
