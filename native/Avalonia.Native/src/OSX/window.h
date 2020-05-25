@@ -29,7 +29,8 @@ class WindowBaseImpl;
 -(void) showWindowMenuWithAppMenu;
 -(void) applyMenu:(NSMenu* _Nullable)menu;
 -(double) getScaling;
--(double) getTitleBarHeight;
+-(double) getExtendedTitleBarHeight;
+-(void) setIsExtended:(bool)value;
 @end
 
 struct INSWindowHolder

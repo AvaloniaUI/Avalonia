@@ -35,7 +35,7 @@ public:
         View = NULL;
         Window = NULL;
     }
-    NSVisualEffectView* VisualEffect;
+    AutoFitContentVisualEffectView* VisualEffect;
     AvnView* View;
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
@@ -826,6 +826,8 @@ private:
             View.layer.zPosition = 0;
         }
         
+        [Window setIsExtended:enable];
+        
         UpdateStyle();
         
         return S_OK;
@@ -846,7 +848,7 @@ private:
             return E_POINTER;
         }
         
-        *ret = [Window getTitleBarHeight];
+        *ret = [Window getExtendedTitleBarHeight];
         
         return S_OK;
     }
@@ -1049,14 +1051,21 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
 }
 
+-(void)updateSize
+{
+    [self setFrameSize:self.frame.size];
+}
+
 -(void)setFrameSize:(NSSize)newSize
 {
     [super setFrameSize:newSize];
     
     [_content setFrameSize:newSize];
     
+    auto window = objc_cast<AvnWindow>([self window]);
+    
     // TODO get actual titlebar size
-    float height = 38;
+    double height = [window getExtendedTitleBarHeight];
     NSRect tbar;
     tbar.origin.x = 0;
     tbar.origin.y = newSize.height - height;
@@ -1595,8 +1604,14 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _canBecomeKeyAndMain;
     bool _closed;
     bool _isEnabled;
+    bool _isExtended;
     AvnMenu* _menu;
     double _lastScaling;
+}
+
+-(void) setIsExtended:(bool)value;
+{
+    _isExtended = value;
 }
 
 -(double) getScaling
@@ -1604,19 +1619,26 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return _lastScaling;
 }
 
--(double) getTitleBarHeight
+-(double) getExtendedTitleBarHeight
 {
-    for (id subview in self.contentView.superview.subviews)
-   {
-       if ([subview isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")])
-       {
-           NSView *titlebarView = [subview subviews][0];
-           
-           return (double)titlebarView.frame.size.height;
-       }
-   }
-    
-    return -1;
+    if(_isExtended)
+    {
+        for (id subview in self.contentView.superview.subviews)
+        {
+            if ([subview isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")])
+            {
+                NSView *titlebarView = [subview subviews][0];
+
+                return (double)titlebarView.frame.size.height;
+            }
+        }
+
+        return -1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 +(void)closeAll
@@ -1737,6 +1759,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [self setOpaque:NO];
     [self setBackgroundColor: [NSColor clearColor]];
     [self invalidateShadow];
+    _isExtended = false;
     return self;
 }
 
