@@ -313,16 +313,15 @@ namespace Avalonia.Layout
             return finalSize;
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if(property == OrientationProperty || property == HorizontalSpacingProperty || property == VerticalSpacingProperty)
+            if (change.Property == OrientationProperty || change.Property == HorizontalSpacingProperty || change.Property == VerticalSpacingProperty)
             {
                 InvalidateMeasure();
                 InvalidateArrange();
             }
-            
         }
     }
 }
