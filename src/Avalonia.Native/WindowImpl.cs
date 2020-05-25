@@ -16,6 +16,8 @@ namespace Avalonia.Native
         private readonly AvaloniaNativePlatformOptions _opts;
         private readonly GlPlatformFeature _glFeature;
         IAvnWindow _native;
+        private double _extendTitleBarHeight = -1;
+
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             GlPlatformFeature glFeature) : base(opts, glFeature)
         {
@@ -140,7 +142,7 @@ namespace Avalonia.Native
 
             _native.SetExtendClientArea(extendIntoClientAreaHint);
 
-            ExtendedMargins = _isExtended ? new Thickness(0, _native.GetExtendTitleBarHeight(), 0, 0) : new Thickness();
+            ExtendedMargins = _isExtended ? new Thickness(0, _extendTitleBarHeight == -1 ? _native.GetExtendTitleBarHeight() : _extendTitleBarHeight, 0, 0) : new Thickness();
 
             ExtendClientAreaToDecorationsChanged?.Invoke(true);
         }
@@ -152,6 +154,12 @@ namespace Avalonia.Native
 
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
+            _extendTitleBarHeight = titleBarHeight;
+            _native.SetExtendTitleBarHeight(titleBarHeight);
+
+            ExtendedMargins = _isExtended ? new Thickness(0, titleBarHeight == -1 ? _native.GetExtendTitleBarHeight() : titleBarHeight, 0, 0) : new Thickness();
+
+            ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
         }
 
         public void ShowTaskbarIcon(bool value)

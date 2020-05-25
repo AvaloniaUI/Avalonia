@@ -288,6 +288,7 @@ AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
     virtual HRESULT SetExtendClientArea (bool enable) = 0;
     virtual HRESULT SetExtendClientAreaHints (AvnExtendClientAreaChromeHints hints) = 0;
     virtual HRESULT GetExtendTitleBarHeight (double*ret) = 0;
+    virtual HRESULT SetExtendTitleBarHeight (double value) = 0;
 };
 
 AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
