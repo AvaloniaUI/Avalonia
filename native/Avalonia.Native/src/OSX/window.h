@@ -3,9 +3,6 @@
 
 class WindowBaseImpl;
 
-@interface AutoFitContentVisualEffectView : NSVisualEffectView
-@end
-
 @interface AvnView : NSView<NSTextInputClient, NSDraggingDestination>
 -(AvnView* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
 -(NSEvent* _Nonnull) lastMouseDownEvent;
@@ -13,6 +10,11 @@ class WindowBaseImpl;
 -(void) setSwRenderedFrame: (AvnFramebuffer* _Nonnull) fb dispose: (IUnknown* _Nonnull) dispose;
 -(void) onClosed;
 -(AvnPixelSize) getPixelSize;
+@end
+
+@interface AutoFitContentVisualEffectView : NSVisualEffectView
+-(AutoFitContentVisualEffectView* _Nonnull) initWithContent: (AvnView* _Nonnull) content;
+-(void) ShowTitleBar: (bool) show;
 @end
 
 @interface AvnWindow : NSWindow <NSWindowDelegate>
@@ -27,6 +29,7 @@ class WindowBaseImpl;
 -(void) showWindowMenuWithAppMenu;
 -(void) applyMenu:(NSMenu* _Nullable)menu;
 -(double) getScaling;
+-(double) getTitleBarHeight;
 @end
 
 struct INSWindowHolder

@@ -6,7 +6,22 @@
 #include <OpenGL/gl.h>
 #include "rendertarget.h"
 
+NSComparisonResult compareViews(id firstView, id secondView, void *context) {
+    
+    int firstIndex = [firstView isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")] ? 0 : 1;
+    
+    int secondIndex = [secondView isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")] ? 0 : 1;
 
+    if (firstIndex == secondIndex) {
+        return NSOrderedSame;
+    } else {
+        if (firstIndex < secondIndex) {
+            return NSOrderedAscending;
+        } else {
+            return NSOrderedDescending;
+        }
+    }
+}
 
 class WindowBaseImpl : public virtual ComSingleObject<IAvnWindowBase, &IID_IAvnWindowBase>, public INSWindowHolder
 {
@@ -49,12 +64,12 @@ public:
         [Window setStyleMask:NSWindowStyleMaskBorderless];
         [Window setBackingType:NSBackingStoreBuffered];
         
-        VisualEffect = [AutoFitContentVisualEffectView new];
+        VisualEffect = [[AutoFitContentVisualEffectView new] initWithContent:View];
         [VisualEffect setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
         [VisualEffect setMaterial:NSVisualEffectMaterialLight];
         [VisualEffect setAutoresizesSubviews:true];
         
-        [Window setContentView: View];
+        [Window setContentView: VisualEffect];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -392,11 +407,11 @@ public:
     
     virtual HRESULT SetBlurEnabled (bool enable) override
     {
-        [Window setContentView: enable ? VisualEffect : View];
+        //[Window setContentView: enable ? VisualEffect : View];
         
         if(enable)
         {
-            [VisualEffect addSubview:View];
+          //  [VisualEffect addSubview:View];
         }
         
         return S_OK;
@@ -511,9 +526,7 @@ private:
                 for (id button in titlebarView.subviews) {
                     if ([button isKindOfClass:[NSButton class]]) {
                         [button setHidden: (_decorations != SystemDecorationsFull)];
-                        [[button layer] setZPosition:5];
                         [button setWantsLayer:true];
-                        
                     }
                 }
             }
@@ -781,14 +794,19 @@ private:
             
             if(_extendClientHints & AvnChromeHintsSystemTitleBar)
             {
-                [Window setTitlebarAppearsTransparent:false];
-                View.layer.zPosition = 1;
+                [Window setTitlebarAppearsTransparent:true];
+                //View.layer.zPosition = 2;
+                //VisualEffect.layer.zPosition = 0;
             }
             else
             {
                 [Window setTitlebarAppearsTransparent:true];
-                View.layer.zPosition = 0;
+                //[Window setTitlebarAppearsTransparent:true];
+                //View.layer.zPosition = 0;
+                //VisualEffect.layer.zPosition = 0;
             }
+            
+            //[Window.contentView.superview sortSubviewsUsingFunction:(NSComparisonResult //(*)(id, id, void*))compareViews context:nil];
             
             if(_extendClientHints & AvnChromeHintsOSXThickTitleBar)
             {
@@ -828,19 +846,9 @@ private:
             return E_POINTER;
         }
         
-        for (id subview in Window.contentView.superview.subviews)
-        {
-            if ([subview isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")])
-            {
-                NSView *titlebarView = [subview subviews][0];
-                
-                *ret = (double)titlebarView.frame.size.height;
-                
-                return S_OK;
-            }
-        }
+        *ret = [Window getTitleBarHeight];
         
-        return E_FAIL;
+        return S_OK;
     }
     
     void EnterFullScreenMode ()
@@ -1013,12 +1021,56 @@ protected:
 NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEventTrackingRunLoopMode, NSModalPanelRunLoopMode, NSRunLoopCommonModes, NSConnectionReplyMode, nil];
 
 @implementation AutoFitContentVisualEffectView
+NSVisualEffectView* _titleBarMaterial;
+AvnView* _content;
+
+-(AutoFitContentVisualEffectView* _Nonnull) initWithContent: (AvnView* _Nonnull) content;
+{
+    _content = content;
+    _titleBarMaterial = [NSVisualEffectView new];
+    //[_titleBarMaterial setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+    [_titleBarMaterial setMaterial:NSVisualEffectMaterialTitlebar];
+    
+     [self addSubview:_titleBarMaterial];
+    [self addSubview:_content];
+    return self;
+}
+
+-(void) ShowTitleBar: (bool) show;
+{
+    //[_titleBarMaterial removeFromSuperview];
+    
+    if(show)
+    {
+       
+    }
+}
+
+- (void)layout
+{
+    [super layout];
+}
+
+-(void)setFrame:(NSRect)frame
+{
+    [super setFrame:frame];
+    
+    [_content setFrame:frame];
+    
+    [_titleBarMaterial setFrame:frame];
+}
+
 -(void)setFrameSize:(NSSize)newSize
 {
+    auto window = objc_cast<AvnWindow>([self window]);
+    
     [super setFrameSize:newSize];
-    if([[self subviews] count] == 0)
-        return;
-    [[self subviews][0] setFrameSize: newSize];
+    
+    [_content setFrameSize:newSize];
+    
+    [_titleBarMaterial setFrameSize:newSize];
+    
+    [super layout];
 }
 @end
 
@@ -1558,6 +1610,21 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return _lastScaling;
 }
 
+-(double) getTitleBarHeight
+{
+    for (id subview in self.contentView.superview.subviews)
+   {
+       if ([subview isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")])
+       {
+           NSView *titlebarView = [subview subviews][0];
+           
+           return (double)titlebarView.frame.size.height;
+       }
+   }
+    
+    return -1;
+}
+
 +(void)closeAll
 {
     NSArray<NSWindow*>* windows = [NSArray arrayWithArray:[NSApp windows]];
@@ -1703,6 +1770,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         ComPtr<WindowBaseImpl> parent = _parent;
         _parent = NULL;
+        self.contentView = nullptr;
         [self restoreParentWindow];
         parent->BaseEvents->Closed();
         [parent->View onClosed];

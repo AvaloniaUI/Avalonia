@@ -68,7 +68,7 @@ namespace ControlCatalog.ViewModels
             this.WhenAnyValue(x => x.SystemChromeButtonsEnabled, x=>x.ManagedChromeButtonsEnabled, x => x.SystemTitleBarEnabled)
                 .Subscribe(x =>
                 {
-                    ChromeHints = ExtendClientAreaChromeHints.NoChrome;
+                    ChromeHints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
 
                     if(x.Item2)
                     {
