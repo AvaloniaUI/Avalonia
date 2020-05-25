@@ -10,6 +10,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -375,37 +376,46 @@ namespace Avalonia.Controls
             _viewportManager.ResetScrollers();
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (property == ItemsProperty)
+            if (change.Property == ItemsProperty)
             {
-                var newEnumerable = newValue.GetValueOrDefault<IEnumerable>();
-                var newDataSource = newEnumerable as ItemsSourceView;
-                if (newEnumerable != null && newDataSource == null)
+                var oldEnumerable = change.OldValue.GetValueOrDefault<IEnumerable>();
+                var newEnumerable = change.NewValue.GetValueOrDefault<IEnumerable>();
+
+                if (oldEnumerable != newEnumerable)
                 {
-                    newDataSource = new ItemsSourceView(newEnumerable);
+                    var newDataSource = newEnumerable as ItemsSourceView;
+                    if (newEnumerable != null && newDataSource == null)
+                    {
+                        newDataSource = new ItemsSourceView(newEnumerable);
+                    }
+
+                    OnDataSourcePropertyChanged(ItemsSourceView, newDataSource);
                 }
+            }
+            else if (change.Property == ItemTemplateProperty)
+            {
+                OnItemTemplateChanged(
+                    change.OldValue.GetValueOrDefault<IDataTemplate>(),
+                    change.NewValue.GetValueOrDefault<IDataTemplate>());
+            }
+            else if (change.Property == LayoutProperty)
+            {
+                OnLayoutChanged(
+                    change.OldValue.GetValueOrDefault<AttachedLayout>(),
+                    change.NewValue.GetValueOrDefault<AttachedLayout>());
+            }
+            else if (change.Property == HorizontalCacheLengthProperty)
+            {
+                _viewportManager.HorizontalCacheLength = change.NewValue.GetValueOrDefault<double>();
+            }
+            else if (change.Property == VerticalCacheLengthProperty)
+            {
+                _viewportManager.VerticalCacheLength = change.NewValue.GetValueOrDefault<double>();
+            }
 
-                OnDataSourcePropertyChanged(ItemsSourceView, newDataSource);
-            }
-            else if (property == ItemTemplateProperty)
-            {
-                OnItemTemplateChanged(oldValue.GetValueOrDefault<IDataTemplate>(), newValue.GetValueOrDefault<IDataTemplate>());
-            }
-            else if (property == LayoutProperty)
-            {
-                OnLayoutChanged(oldValue.GetValueOrDefault<AttachedLayout>(), newValue.GetValueOrDefault<AttachedLayout>());
-            }
-            else if (property == HorizontalCacheLengthProperty)
-            {
-                _viewportManager.HorizontalCacheLength = newValue.GetValueOrDefault<double>();
-            }
-            else if (property == VerticalCacheLengthProperty)
-            {
-                _viewportManager.VerticalCacheLength = newValue.GetValueOrDefault<double>();
-            }
-
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
         }
 
         internal IControl GetElementImpl(int index, bool forceCreate, bool supressAutoRecycle)
@@ -431,8 +441,16 @@ namespace Avalonia.Controls
 
         private int GetElementIndexImpl(IControl element)
         {
-            var virtInfo = TryGetVirtualizationInfo(element);
-            return _viewManager.GetElementIndex(virtInfo);
+            // Verify that element is actually a child of this ItemsRepeater
+            var parent = element.GetVisualParent();
+            
+            if (parent == this)
+            {
+                var virtInfo = TryGetVirtualizationInfo(element);
+                return _viewManager.GetElementIndex(virtInfo);
+            }
+
+            return -1;
         }
 
         private IControl GetElementFromIndexImpl(int index)

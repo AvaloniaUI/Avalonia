@@ -1459,6 +1459,60 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Batch_Update_Does_Not_Raise_PropertyChanged_Until_Operation_Finished()
+        {
+            var data = new[] { "foo", "bar", "baz", "qux" };
+            var target = new SelectionModel { Source = data };
+            var raised = 0;
+
+            target.SelectedIndex = new IndexPath(1);
+
+            Assert.Equal(new IndexPath(1), target.AnchorIndex);
+
+            target.PropertyChanged += (s, e) => ++raised;
+
+            using (target.Update())
+            {
+                target.ClearSelection();
+
+                Assert.Equal(0, raised);
+
+                target.AnchorIndex = new IndexPath(2);
+
+                Assert.Equal(0, raised);
+
+                target.SelectedIndex = new IndexPath(3);
+
+                Assert.Equal(0, raised);
+            }
+
+            Assert.Equal(new IndexPath(3), target.AnchorIndex);
+            Assert.Equal(5, raised);
+        }
+
+        [Fact]
+        public void Batch_Update_Does_Not_Raise_PropertyChanged_If_Nothing_Changed()
+        {
+            var data = new[] { "foo", "bar", "baz", "qux" };
+            var target = new SelectionModel { Source = data };
+            var raised = 0;
+
+            target.SelectedIndex = new IndexPath(1);
+
+            Assert.Equal(new IndexPath(1), target.AnchorIndex);
+
+            target.PropertyChanged += (s, e) => ++raised;
+
+            using (target.Update())
+            {
+                target.ClearSelection();
+                target.SelectedIndex = new IndexPath(1);
+            }
+
+            Assert.Equal(0, raised);
+        }
+
+        [Fact]
         public void AutoSelect_Selects_When_Enabled()
         {
             var data = new[] { "foo", "bar", "baz" };

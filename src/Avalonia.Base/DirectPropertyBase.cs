@@ -120,6 +120,11 @@ namespace Avalonia
             return o.GetValue<TValue>(this);
         }
 
+        internal override object RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
+        {
+            return o.GetValue<TValue>(this);
+        }
+
         /// <inheritdoc/>
         internal override IDisposable? RouteSetValue(
             IAvaloniaObject o,

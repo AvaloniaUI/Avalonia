@@ -20,6 +20,7 @@ public:
         View = NULL;
         Window = NULL;
     }
+    NSVisualEffectView* VisualEffect;
     AvnView* View;
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
@@ -47,6 +48,12 @@ public:
         
         [Window setStyleMask:NSWindowStyleMaskBorderless];
         [Window setBackingType:NSBackingStoreBuffered];
+        
+        VisualEffect = [AutoFitContentVisualEffectView new];
+        [VisualEffect setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+        [VisualEffect setMaterial:NSVisualEffectMaterialLight];
+        [VisualEffect setAutoresizesSubviews:true];
+        
         [Window setContentView: View];
     }
     
@@ -383,6 +390,18 @@ public:
         return *ppv == nil ? E_FAIL : S_OK;
     }
     
+    virtual HRESULT SetBlurEnabled (bool enable) override
+    {
+        [Window setContentView: enable ? VisualEffect : View];
+        
+        if(enable)
+        {
+            [VisualEffect addSubview:View];
+        }
+        
+        return S_OK;
+    }
+    
     virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
                                               IAvnClipboard* clipboard, IAvnDndResultCallback* cb,
                                               void* sourceHandle) override
@@ -497,12 +516,7 @@ private:
     virtual HRESULT Show () override
     {
         @autoreleasepool
-        {
-            if([Window parentWindow] != nil)
-                [[Window parentWindow] removeChildWindow:Window];
-            
-            [Window setModal:FALSE];
-            
+        {            
             WindowBaseImpl::Show();
             
             HideOrShowTrafficLights();
@@ -511,7 +525,16 @@ private:
         }
     }
     
-    virtual HRESULT ShowDialog (IAvnWindow* parent) override
+    virtual HRESULT SetEnabled (bool enable) override
+    {
+        @autoreleasepool
+        {
+            [Window setEnabled:enable];
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT SetParent (IAvnWindow* parent) override
     {
         @autoreleasepool
         {
@@ -522,12 +545,9 @@ private:
             if(cparent == nullptr)
                 return E_INVALIDARG;
             
-            [Window setModal:TRUE];
-            
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
-            WindowBaseImpl::Show();
             
-            HideOrShowTrafficLights();
+            UpdateStyle();
             
             return S_OK;
         }
@@ -883,15 +903,15 @@ protected:
         switch (_decorations)
         {
             case SystemDecorationsNone:
-                s = s | NSWindowStyleMaskFullSizeContentView | NSWindowStyleMaskMiniaturizable;
+                s = s | NSWindowStyleMaskFullSizeContentView;
                 break;
 
             case SystemDecorationsBorderOnly:
-                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView | NSWindowStyleMaskMiniaturizable;
+                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView;
                 break;
 
             case SystemDecorationsFull:
-                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskBorderless;
+                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskBorderless;
                 
                 if(_canResize)
                 {
@@ -900,11 +920,25 @@ protected:
                 break;
         }
 
+        if([Window parentWindow] == nullptr)
+        {
+            s |= NSWindowStyleMaskMiniaturizable;
+        }
         return s;
     }
 };
 
 NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEventTrackingRunLoopMode, NSModalPanelRunLoopMode, NSRunLoopCommonModes, NSConnectionReplyMode, nil];
+
+@implementation AutoFitContentVisualEffectView
+-(void)setFrameSize:(NSSize)newSize
+{
+    [super setFrameSize:newSize];
+    if([[self subviews] count] == 0)
+        return;
+    [[self subviews][0] setFrameSize: newSize];
+}
+@end
 
 @implementation AvnView
 {
@@ -1081,15 +1115,28 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (bool) ignoreUserInput
 {
     auto parentWindow = objc_cast<AvnWindow>([self window]);
+    
     if(parentWindow == nil || ![parentWindow shouldTryToHandleEvents])
+    {
+        auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
+        
+        if(window != nullptr)
+        {
+            window->WindowEvents->GotInputWhenDisabled();
+        }
+        
         return TRUE;
+    }
+    
     return FALSE;
 }
 
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
     if([self ignoreUserInput])
+    {
         return;
+    }
     
     [self becomeFirstResponder];
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
@@ -1234,7 +1281,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
 {
     if([self ignoreUserInput])
+    {
         return;
+    }
+    
     auto key = s_KeyMap[[event keyCode]];
     
     auto timestamp = [event timestamp] * 1000;
@@ -1416,7 +1466,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     ComPtr<WindowBaseImpl> _parent;
     bool _canBecomeKeyAndMain;
     bool _closed;
-    bool _isModal;
+    bool _isEnabled;
     AvnMenu* _menu;
     double _lastScaling;
 }
@@ -1538,6 +1588,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _parent = parent;
     [self setDelegate:self];
     _closed = false;
+    _isEnabled = true;
     
     _lastScaling = [self backingScaleFactor];
     [self setOpaque:NO];
@@ -1604,28 +1655,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(bool)shouldTryToHandleEvents
 {
-    for(NSWindow* uch in [self childWindows])
-    {
-        auto ch = objc_cast<AvnWindow>(uch);
-        if(ch == nil)
-            continue;
-        
-        if(![ch isModal])
-            continue;
-        
-        return FALSE;
-    }
-    return TRUE;
+    return _isEnabled;
 }
 
--(bool) isModal
+-(void) setEnabled:(bool)enable
 {
-    return _isModal;
-}
-
--(void) setModal: (bool) isModal
-{
-    _isModal = isModal;
+    _isEnabled = enable;
 }
 
 -(void)makeKeyWindow

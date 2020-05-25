@@ -35,5 +35,24 @@ namespace Avalonia.Visuals.UnitTests
 
             Assert.Equal(new Rect(0, 0, 100, 100), result);
         }
+
+        [Fact]
+        public void Normalize_Should_Reverse_Negative_Size()
+        {
+            var result = new Rect(new Point(100, 100), new Point(0, 0)).Normalize();
+
+            Assert.Equal(new Rect(0, 0, 100, 100), result);
+        }
+
+        [Fact]
+        public void Normalize_Should_Make_Invalid_Rects_Empty()
+        {
+            var result = new Rect(
+                double.NegativeInfinity, double.PositiveInfinity, 
+                double.PositiveInfinity, double.PositiveInfinity)
+                .Normalize();
+
+            Assert.Equal(Rect.Empty, result);
+        }
     }
 }

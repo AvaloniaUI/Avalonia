@@ -1,13 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
+using System.IO; 
+using System.Security.Cryptography;
 using System.Linq;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
 using Avalonia.Platform;
+using Avalonia.Visuals.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -58,12 +61,6 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IBitmapImpl LoadBitmap(Stream stream)
-        {
-            return new ImmutableBitmap(stream);
-        }
-
-        /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)
         {
             using (var stream = File.OpenRead(fileName))
@@ -73,9 +70,40 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
+        public IBitmapImpl LoadBitmap(Stream stream)
+        {
+            return new ImmutableBitmap(stream);
+        }
+
+        /// <inheritdoc />
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new ImmutableBitmap(size, dpi, stride, format, data);
+        }
+
+        /// <inheritdoc />
+        public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new ImmutableBitmap(stream, width, true, interpolationMode);
+        }
+
+        /// <inheritdoc />
+        public IBitmapImpl LoadBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new ImmutableBitmap(stream, height, false, interpolationMode);
+        }
+
+        /// <inheritdoc />
+        public IBitmapImpl ResizeBitmap(IBitmapImpl bitmapImpl, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            if (bitmapImpl is ImmutableBitmap ibmp)
+            {
+                return new ImmutableBitmap(ibmp, destinationSize, interpolationMode);
+            }
+            else
+            {
+                throw new Exception("Invalid source bitmap type.");
+            }
         }
 
         /// <inheritdoc />

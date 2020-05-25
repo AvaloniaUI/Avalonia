@@ -3,7 +3,8 @@
     <Setter Property="Cursor" Value="Arrow" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{DynamicResource ThemeControlMidBrush}">
+        <Border Background="{DynamicResource ThemeControlMidBrush}"
+                UseLayoutRounding="False">
           <Grid RowDefinitions="Auto,*,Auto">
             <RepeatButton Name="PART_LineUpButton" HorizontalAlignment="Center"
                           Classes="repeat"
@@ -49,7 +50,8 @@
     <Setter Property="Height" Value="{DynamicResource ScrollBarThickness}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{DynamicResource ThemeControlMidBrush}">
+        <Border Background="{DynamicResource ThemeControlMidBrush}"
+                UseLayoutRounding="False">
           <Grid ColumnDefinitions="Auto,*,Auto">
             <RepeatButton Name="PART_LineUpButton" VerticalAlignment="Center"
                           Classes="repeat"

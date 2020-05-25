@@ -258,6 +258,7 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT ObtainNSViewHandleRetained(void** retOut) = 0;
     virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
                                               IAvnClipboard* clipboard, IAvnDndResultCallback* cb, void* sourceHandle) = 0;
+    virtual HRESULT SetBlurEnabled (bool enable) = 0;
 };
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
@@ -267,7 +268,8 @@ AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
 
 AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
 {
-    virtual HRESULT ShowDialog (IAvnWindow* parent) = 0;
+    virtual HRESULT SetEnabled (bool enable) = 0;
+    virtual HRESULT SetParent (IAvnWindow* parent) = 0;
     virtual HRESULT SetCanResize(bool value) = 0;
     virtual HRESULT SetDecorations(SystemDecorations value) = 0;
     virtual HRESULT SetTitle (void* utf8Title) = 0;
@@ -309,6 +311,8 @@ AVNCOM(IAvnWindowEvents, 06) : IAvnWindowBaseEvents
     virtual bool Closing () = 0;
     
     virtual void WindowStateChanged (AvnWindowState state) = 0;
+    
+    virtual void GotInputWhenDisabled () = 0;
 };
 
 AVNCOM(IAvnMacOptions, 07) : IUnknown
