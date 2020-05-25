@@ -1,0 +1,12 @@
+﻿<ControlTheme xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:local="clr-namespace:ControlCatalog"
+              x:DefaultControlThemeFor="{x:Type local:CustomControl}">
+  <Setter Property="Template">
+    <ControlTemplate TargetType="{x:Type local:CustomControl}">
+      <Border Background="Yellow" BorderBrush="{TemplateBinding Stroke}" BorderThickness="1">
+        <TextBlock>Custom Control</TextBlock>
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</ControlTheme>

@@ -1,3 +1,4 @@
+using System.Linq;
 using XamlIl.Transform;
 using XamlIl.TypeSystem;
 
@@ -26,6 +27,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlIlType INameScope { get; }
         public IXamlIlMethod INameScopeRegister { get; }
         public IXamlIlMethod INameScopeComplete { get; }
+        public IXamlIlType ControlTheme { get; }
+        public IXamlIlProperty ControlThemeTargetType { get; }
         
         public AvaloniaXamlIlWellKnownTypes(XamlIlAstTransformationContext ctx)
         {
@@ -61,6 +64,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             NameScope = ctx.Configuration.TypeSystem.GetType("Avalonia.Controls.NameScope");
             NameScopeSetNameScope = NameScope.GetMethod(new FindMethodMethodSignature("SetNameScope",
                 XamlIlTypes.Void, StyledElement, INameScope) {IsStatic = true});
+            ControlTheme = ctx.Configuration.TypeSystem.GetType("Avalonia.Controls.ControlTheme");
+            ControlThemeTargetType = ControlTheme.GetAllProperties().Single(x => x.Name == "TargetType");
 
             AvaloniaObjectSetValueMethod = AvaloniaObject.FindMethod("SetValue", XamlIlTypes.Void,
                 false, AvaloniaProperty, XamlIlTypes.Object, BindingPriority);

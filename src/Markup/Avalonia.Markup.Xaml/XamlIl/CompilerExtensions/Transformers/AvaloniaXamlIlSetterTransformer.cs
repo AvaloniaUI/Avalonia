@@ -17,23 +17,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                   && on.Type.GetClrType().FullName == "Avalonia.Styling.Setter"))
                 return node;
 
-            var parent = context.ParentNodes().OfType<XamlIlAstObjectNode>()
-                .FirstOrDefault(p => p.Type.GetClrType().FullName == "Avalonia.Styling.Style");
-            
-            if (parent == null)
-                throw new XamlIlParseException(
-                    "Avalonia.Styling.Setter is only valid inside Avalonia.Styling.Style", node);
-            var selectorProperty = parent.Children.OfType<XamlIlAstXamlPropertyValueNode>()
-                .FirstOrDefault(p => p.Property.GetClrProperty().Name == "Selector");
-            if (selectorProperty == null)
-                throw new XamlIlParseException(
-                    "Can not find parent Style Selector", node);
-            var selector = selectorProperty.Values.FirstOrDefault() as XamlIlSelectorNode;
-            if (selector?.TargetType == null)
-                throw new XamlIlParseException(
-                    "Can not resolve parent Style Selector type", node);
-
-
+            var targetType = GetTargetType(context, on);
             var property = @on.Children.OfType<XamlIlAstXamlPropertyValueNode>()
                 .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Property");
             if (property == null)
@@ -43,9 +27,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (propertyName == null)
                 throw new XamlIlParseException("Setter.Property must be a string", node);
 
-
             var avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
-                new XamlIlAstClrTypeReference(selector, selector.TargetType, false), property.Values[0]);
+                new XamlIlAstClrTypeReference(on, targetType, false), property.Values[0]);
             property.Values = new List<IXamlIlAstValueNode>
             {
                 avaloniaPropertyNode
@@ -67,6 +50,43 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             return node;
+        }
+
+        IXamlIlType GetTargetType(XamlIlAstTransformationContext context, XamlIlAstObjectNode node)
+        {
+            var parent = context.ParentNodes().OfType<XamlIlAstObjectNode>()
+                .FirstOrDefault(p =>
+                    p.Type.GetClrType().FullName == "Avalonia.Styling.Style" ||
+                    p.Type.GetClrType().FullName == "Avalonia.Controls.ControlTheme");
+
+            if (parent == null)
+                throw new XamlIlParseException(
+                    "Avalonia.Styling.Setter is only valid inside Avalonia.Styling.Style or Avalonia.Controls.ControlTheme", node);
+
+            if (parent.Type.GetClrType().FullName == "Avalonia.Styling.Style")
+            {
+                var selectorProperty = parent.Children.OfType<XamlIlAstXamlPropertyValueNode>()
+                    .FirstOrDefault(p => p.Property.GetClrProperty().Name == "Selector");
+                if (selectorProperty == null)
+                    throw new XamlIlParseException(
+                        "Can not find parent Style Selector", node);
+                var selector = selectorProperty.Values.FirstOrDefault() as XamlIlSelectorNode;
+                if (selector?.TargetType == null)
+                    throw new XamlIlParseException(
+                        "Can not resolve parent Style Selector type", node);
+                return selector.TargetType;
+            }
+            else
+            {
+                var themeFor = parent.Children.OfType<XamlIlAstXmlDirective>()
+                    .FirstOrDefault(ch => ch.Name == "DefaultControlThemeFor");
+
+                if (themeFor?.Values.FirstOrDefault() is XamlIlTypeExtensionNode tn)
+                    return tn.Value.GetClrType();
+                else
+                    throw new XamlIlParseException(
+                        "ControlTheme must have a x:DefaultControlThemeFor directive.", node);
+            }
         }
 
         class SetterValueProperty : XamlIlAstClrProperty

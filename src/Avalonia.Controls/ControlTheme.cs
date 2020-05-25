@@ -18,6 +18,11 @@ namespace Avalonia.Controls
         /// </summary>
         public Styles Styles => _styles ??= new Styles(Owner);
 
+        /// <summary>
+        /// Gets or sets the control type that the theme applies to.
+        /// </summary>
+        public Type? TargetType { get; set; }
+
         protected override IReadOnlyList<IStyle> GetChildrenCore()
         {
             return (IReadOnlyList<IStyle>?)_styles ?? Array.Empty<IStyle>();

@@ -45,6 +45,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertBefore<XamlIlContentConvertTransformer>(
                 new AvaloniaXamlIlSelectorTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
+                new AvaloniaXamlIlControlThemeMetadataTransformer(),
                 new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer()

@@ -156,15 +156,16 @@ namespace Avalonia.Build.Tasks
                                 new XamlIlAstClrTypeReference(classDirective, classType, false));
                             initialRoot.Children.Remove(classDirective);
                         }
-                        
-                        
+
+                        var controlThemeForDirective = initialRoot.Children.OfType<XamlIlAstXmlDirective>()
+                            .FirstOrDefault(d => d.Namespace == XamlNamespaces.Xaml2006 && d.Name == "DefaultControlThemeFor");
+
                         compiler.Transform(parsed);
                         var populateName = classType == null ? "Populate:" + res.Name : "!XamlIlPopulate";
                         var buildName = classType == null ? "Build:" + res.Name : null; 
                         
                         var classTypeDefinition =
                             classType == null ? null : typeSystem.GetTypeReference(classType).Resolve();
-
 
                         var populateBuilder = classTypeDefinition == null ?
                             builder :
@@ -284,6 +285,24 @@ namespace Avalonia.Build.Tasks
                                 }
                             }
 
+                        }
+
+                        if (controlThemeForDirective != null)
+                        {
+                            var controlType = ((XamlIlTypeExtensionNode)controlThemeForDirective.Values[0]).Value.GetClrType();
+
+                            if (controlType.Methods.Any(x => x.Name == "GetDefaultControlTheme" && x.Parameters.Count == 0))
+                            {
+                                throw new XamlIlParseException($"Default control theme provided for '{controlType.FullName}' " +
+                                    "but the class already overrides GetDefaultControlTheme.", classDirective);
+                            }
+
+                            var controlTypeDefinition = typeSystem.GetTypeReference(controlType).Resolve();
+                            var themeBuilder = typeSystem.CreateTypeBuilder(controlTypeDefinition);
+                            var method = themeBuilder.DefineMethod(typeSystem.FindType("Avalonia.Styling.IStyle"),
+                                new IXamlIlType[0], "GetDefaultControlTheme", false, false, false,
+                                typeSystem.FindType("Avalonia.Controls.Primitives.TemplatedControl")
+                                .FindMethod(x => x.Name == "GetDefaultControlTheme" && x.Parameters.Count == 0));
                         }
 
                         if (buildName != null || classTypeDefinition != null)

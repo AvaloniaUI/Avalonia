@@ -71,6 +71,6 @@
         <MenuItem Header="About" Command="{Binding AboutCommand}" />
       </MenuItem>
     </Menu>
-    <local:MainView />
+    <local:CustomControl />
   </DockPanel>
 </Window>
