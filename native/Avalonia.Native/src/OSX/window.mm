@@ -1021,15 +1021,18 @@ protected:
 NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEventTrackingRunLoopMode, NSModalPanelRunLoopMode, NSRunLoopCommonModes, NSConnectionReplyMode, nil];
 
 @implementation AutoFitContentVisualEffectView
-NSVisualEffectView* _titleBarMaterial;
-AvnView* _content;
+{
+    NSVisualEffectView* _titleBarMaterial;
+    AvnView* _content;
+}
 
 -(AutoFitContentVisualEffectView* _Nonnull) initWithContent: (AvnView* _Nonnull) content;
 {
     _content = content;
     _titleBarMaterial = [NSVisualEffectView new];
-    //[_titleBarMaterial setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+    [_titleBarMaterial setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
     [_titleBarMaterial setMaterial:NSVisualEffectMaterialTitlebar];
+    [_titleBarMaterial setWantsLayer:true];
     
      [self addSubview:_titleBarMaterial];
     [self addSubview:_content];
@@ -1770,7 +1773,6 @@ AvnView* _content;
     {
         ComPtr<WindowBaseImpl> parent = _parent;
         _parent = NULL;
-        self.contentView = nullptr;
         [self restoreParentWindow];
         parent->BaseEvents->Closed();
         [parent->View onClosed];
