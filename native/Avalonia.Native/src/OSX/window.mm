@@ -831,6 +831,12 @@ private:
         return S_OK;
     }
     
+    virtual HRESULT SetExtendTitleBarHeight (double value) override
+    {
+        [VisualEffect SetTitleBarHeightHint:value];
+        return S_OK;
+    }
+    
     void EnterFullScreenMode ()
     {
         _fullScreenActive = true;
@@ -1004,10 +1010,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     NSVisualEffectView* _titleBarMaterial;
     AvnView* _content;
+    double _titleBarHeightHint;
 }
 
 -(AutoFitContentVisualEffectView* _Nonnull) initWithContent: (AvnView* _Nonnull) content;
 {
+    _titleBarHeightHint = -1;
     _content = content;
     _titleBarMaterial = [NSVisualEffectView new];
     [_titleBarMaterial setBlendingMode:NSVisualEffectBlendingModeWithinWindow];
@@ -1020,7 +1028,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return self;
 }
 
--(void) ShowTitleBar: (bool) show;
+-(void) ShowTitleBar: (bool) show
 {
     if(show)
     {
@@ -1032,8 +1040,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
 }
 
--(void)updateSize
+-(void) SetTitleBarHeightHint: (double) height
 {
+    _titleBarHeightHint = height;
+    
     [self setFrameSize:self.frame.size];
 }
 
@@ -1046,7 +1056,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     auto window = objc_cast<AvnWindow>([self window]);
     
     // TODO get actual titlebar size
-    double height = [window getExtendedTitleBarHeight];
+    
+    double height = _titleBarHeightHint == -1 ? [window getExtendedTitleBarHeight] : _titleBarHeightHint;
     NSRect tbar;
     tbar.origin.x = 0;
     tbar.origin.y = newSize.height - height;
