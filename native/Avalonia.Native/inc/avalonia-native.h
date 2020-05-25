@@ -209,8 +209,9 @@ enum AvnExtendClientAreaChromeHints
     AvnChromeHintsNoChrome,
     AvnChromeHintsSystemTitleBar = 0x01,
     AvnChromeHintsManagedChromeButtons = 0x02,
-    AvnChromeHintsPreferSystemChromeButtons = 0x04,
+    AvnChromeHintsSystemChromeButtons = 0x04,
     AvnChromeHintsOSXThickTitleBar = 0x08,
+    AvnChromeHintsDefault = AvnChromeHintsSystemTitleBar | AvnChromeHintsSystemChromeButtons,
 };
 
 AVNCOM(IAvaloniaNativeFactory, 01) : IUnknown

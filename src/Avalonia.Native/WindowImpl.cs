@@ -149,6 +149,11 @@ namespace Avalonia.Native
 
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
         {
+            if(hints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChromeButtons))
+            {
+                hints |= ExtendClientAreaChromeHints.SystemChromeButtons;
+            }
+            
             _native.SetExtendClientAreaHints ((AvnExtendClientAreaChromeHints)hints);
         }
 

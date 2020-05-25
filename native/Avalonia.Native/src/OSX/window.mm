@@ -488,7 +488,7 @@ private:
     WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
         _isClientAreaExtended = false;
-        _extendClientHints = AvnChromeHintsSystemTitleBar;
+        _extendClientHints = AvnChromeHintsDefault;
         _fullScreenActive = false;
         _canResize = true;
         _decorations = SystemDecorationsFull;
@@ -507,8 +507,17 @@ private:
             if ([subview isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")]) {
                 NSView *titlebarView = [subview subviews][0];
                 for (id button in titlebarView.subviews) {
-                    if ([button isKindOfClass:[NSButton class]]) {
-                        [button setHidden: (_decorations != SystemDecorationsFull)];
+                    if ([button isKindOfClass:[NSButton class]])
+                    {
+                        if(_isClientAreaExtended)
+                        {
+                            [button setHidden: !(_extendClientHints & AvnChromeHintsSystemChromeButtons)];
+                        }
+                        else
+                        {
+                            [button setHidden: (_decorations != SystemDecorationsFull)];
+                        }
+                        
                         [button setWantsLayer:true];
                     }
                 }
@@ -805,6 +814,8 @@ private:
         }
         
         [Window setIsExtended:enable];
+        
+        HideOrShowTrafficLights();
         
         UpdateStyle();
         
