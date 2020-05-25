@@ -9,9 +9,11 @@ namespace Avalonia.Platform
         Default = SystemTitleBar,        
         SystemTitleBar = 0x01,
         ManagedChromeButtons = 0x02,
-        PreferSystemChromeButtons = 0x04,
+        SystemChromeButtons = 0x04,
 
         OSXThickTitleBar = 0x08,
+
+        PreferSystemChromeButtons = 0x10,
         
         AdaptiveChromeWithTitleBar = SystemTitleBar | PreferSystemChromeButtons,
         AdaptiveChromeWithoutTitleBar = PreferSystemChromeButtons,

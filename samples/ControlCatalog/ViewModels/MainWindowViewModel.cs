@@ -70,6 +70,11 @@ namespace ControlCatalog.ViewModels
                 {
                     ChromeHints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
 
+                    if(x.Item1)
+                    {
+                        ChromeHints |= ExtendClientAreaChromeHints.SystemChromeButtons;
+                    }
+
                     if(x.Item2)
                     {
                         ChromeHints |= ExtendClientAreaChromeHints.ManagedChromeButtons;
