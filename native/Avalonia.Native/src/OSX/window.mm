@@ -1030,7 +1030,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     _content = content;
     _titleBarMaterial = [NSVisualEffectView new];
-    [_titleBarMaterial setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+    [_titleBarMaterial setBlendingMode:NSVisualEffectBlendingModeWithinWindow];
     [_titleBarMaterial setMaterial:NSVisualEffectMaterialTitlebar];
     [_titleBarMaterial setWantsLayer:true];
     
