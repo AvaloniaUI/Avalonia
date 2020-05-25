@@ -1049,32 +1049,23 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
 }
 
-- (void)layout
-{
-    [super layout];
-}
-
--(void)setFrame:(NSRect)frame
-{
-    [super setFrame:frame];
-    
-    [_content setFrame:frame];
-    
-    [_titleBarMaterial setFrame:frame];
-}
-
 -(void)setFrameSize:(NSSize)newSize
 {
-    auto window = objc_cast<AvnWindow>([self window]);
-    
     [super setFrameSize:newSize];
     
     [_content setFrameSize:newSize];
     
-    [_titleBarMaterial setFrameSize:newSize];
+    // TODO get actual titlebar size
+    float height = 38;
+    NSRect tbar;
+    tbar.origin.x = 0;
+    tbar.origin.y = newSize.height - height;
+    tbar.size.width = newSize.width;
+    tbar.size.height = height;
     
-    [super layout];
+    [_titleBarMaterial setFrame:tbar];
 }
+
 @end
 
 @implementation AvnView
