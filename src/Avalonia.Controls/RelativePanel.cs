@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -37,8 +38,8 @@ namespace Avalonia.Controls
     public partial class RelativePanel : Panel
     {
         // Dependency property for storing intermediate arrange state on the children
-        private static readonly DependencyProperty ArrangeStateProperty =
-            DependencyProperty.Register("ArrangeState", typeof(double[]), typeof(RelativePanel), new PropertyMetadata(null));
+        private static readonly StyledProperty<double[]> ArrangeStateProperty =
+            AvaloniaProperty.Register<RelativePanel, double[]>("ArrangeState");
 
         /// <summary>
         /// When overridden in a derived class, measures the size in layout required for
@@ -55,7 +56,7 @@ namespace Avalonia.Controls
         /// </returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            foreach (var child in Children.OfType<FrameworkElement>())
+            foreach (var child in Children.OfType<Layoutable>())
             {
                 child.Measure(availableSize);
             }
@@ -83,13 +84,13 @@ namespace Avalonia.Controls
             return base.ArrangeOverride(finalSize);
         }
 
-        private IEnumerable<Tuple<UIElement, Rect>> CalculateLocations(Size finalSize)
+        private IEnumerable<Tuple<ILayoutable, Rect>> CalculateLocations(Size finalSize)
         {
             //List of margins for each element between the element and panel (left, top, right, bottom)
             List<double[]> arranges = new List<double[]>(Children.Count);
             //First pass aligns all sides that aren't constrained by other elements
             int arrangedCount = 0;
-            foreach (var child in Children.OfType<UIElement>())
+            foreach (var child in Children.OfType<Layoutable>())
             {
                 //NaN means the arrange value is not constrained yet for that side
                 double[] rect = new[] { double.NaN, double.NaN, double.NaN, double.NaN };
@@ -168,7 +169,7 @@ namespace Avalonia.Controls
             {
                 bool valueChanged = false;
                 i = 0;
-                foreach (var child in Children.OfType<UIElement>())
+                foreach (var child in Children.OfType<Layoutable>())
                 {
                     double[] rect = arranges[i++];
 
@@ -386,7 +387,7 @@ namespace Avalonia.Controls
 
             i = 0;
             //Arrange iterations complete - Apply the results to the child elements
-            foreach (var child in Children.OfType<UIElement>())
+            foreach (var child in Children.OfType<ILayoutable>())
             {
                 double[] rect = arranges[i++];
                 //Measure child again with the new calculated available size
@@ -401,24 +402,24 @@ namespace Avalonia.Controls
                 //    tb.ArrangeOverride(new Rect(rect[0], rect[1], Math.Max(0, finalSize.Width - rect[2] - rect[0]), Math.Max(0, finalSize.Height - rect[3] - rect[1])));
                 //}
                 //else 
-                yield return new Tuple<UIElement, Rect>(child, new Rect(rect[0], rect[1], Math.Max(0, finalSize.Width - rect[2] - rect[0]), Math.Max(0, finalSize.Height - rect[3] - rect[1])));
+                yield return new Tuple<ILayoutable, Rect>(child, new Rect(rect[0], rect[1], Math.Max(0, finalSize.Width - rect[2] - rect[0]), Math.Max(0, finalSize.Height - rect[3] - rect[1])));
             }
         }
 
         //Gets the element that's referred to in the alignment attached properties
-        private UIElement GetDependencyElement(DependencyProperty property, DependencyObject child)
+        private Layoutable GetDependencyElement(AvaloniaProperty property, AvaloniaObject child)
         {
             var dependency = child.GetValue(property);
             if (dependency == null)
                 return null;
-            if (dependency is UIElement)
+            if (dependency is Layoutable)
             {
-                if (Children.Contains((UIElement)dependency))
-                    return (UIElement)dependency;
+                if (Children.Contains((ILayoutable)dependency))
+                    return (Layoutable)dependency;
                 throw new ArgumentException(string.Format("RelativePanel error: Element does not exist in the current context", property.Name));
             }
 
-            throw new ArgumentException("RelativePanel error: Value must be of type UIElement");
+            throw new ArgumentException("RelativePanel error: Value must be of type ILayoutable");
         }
     }
 }

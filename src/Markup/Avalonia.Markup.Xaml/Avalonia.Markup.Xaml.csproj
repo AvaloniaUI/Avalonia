@@ -12,6 +12,7 @@
         <Compile Include="AvaloniaXamlLoader.cs" />
         <Compile Include="Converters\AvaloniaUriTypeConverter.cs" />
         <Compile Include="Converters\FontFamilyTypeConverter.cs" />
+        <Compile Include="Converters\NameReferenceConverter.cs" />
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />
         <Compile Include="Extensions.cs" />
         <Compile Include="MarkupExtension.cs" />
