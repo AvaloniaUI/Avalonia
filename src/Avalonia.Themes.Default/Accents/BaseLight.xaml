@@ -26,13 +26,15 @@
     <Color x:Key="SystemChromeMediumColor">#FFE6E6E6</Color>
     <Color x:Key="SystemChromeMediumLowColor">#FFECECEC</Color>
     <Color x:Key="SystemChromeWhiteColor">#FFFFFFFF</Color>
+    <Color x:Key="SystemErrorTextColor">#FFC50500</Color>
     <Color x:Key="SystemListLowColor">#FFE6E6E6</Color>
     <Color x:Key="SystemListMediumColor">#FFCCCCCC</Color>
+    
     <Color x:Key="SystemChromeAltMediumHighColor">#CCFFFFFF</Color>
     <Color x:Key="SystemChromeAltHighColor">#FFCCCCCC</Color>
     <Color x:Key="SystemRevealListLowColor">#FFE6E6E6</Color>
     <Color x:Key="SystemRevealListMediumColor">#FFCCCCCC</Color>
-    <!--<AcrylicBrush x:Key="SystemControlAcrylicWindowBrush" BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{ThemeResource SystemChromeMediumColor}" />-->
+    <!--<AcrylicBrush x:Key="SystemControlAcrylicWindowBrush" BackgroundSource="HostBackdrop" TintColor="{DynamicResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{DynamicResource SystemChromeMediumColor}" />-->
     <!-- Override system shape defaults -->
     <CornerRadius x:Key="ControlCornerRadius">2,2,2,2</CornerRadius>
     <CornerRadius x:Key="OverlayCornerRadius">4,4,4,4</CornerRadius>
@@ -68,7 +70,7 @@
     <Color x:Key="SystemAccentColorDark1">#FF0064BE</Color>
     <Color x:Key="SystemAccentColorDark2">#FF0055AD</Color>
     <Color x:Key="SystemAccentColorDark3">#FF00459D</Color>
-    <!-- <RevealBackgroundBrush x:Key="SystemControlHighlightListLowRevealBackgroundBrush" TargetTheme="Light" Color="{ThemeResource SystemRevealListMediumColor}" FallbackColor="{ StaticResource SystemListMediumColor}" /> -->
+    <!-- <RevealBackgroundBrush x:Key="SystemControlHighlightListLowRevealBackgroundBrush" TargetTheme="Light" Color="{DynamicResource SystemRevealListMediumColor}" FallbackColor="{ StaticResource SystemListMediumColor}" /> -->
     <Color x:Key="RegionColor">#FFFFFFFF</Color>
     <SolidColorBrush x:Key="RegionBrush" Color="{StaticResource RegionColor}" />
     <Color x:Key="ThemeAccentColor">#CC119EDA</Color>
