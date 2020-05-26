@@ -119,9 +119,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the selected item.
         /// </summary>
-        /// <summary>
-        /// Gets or sets the selected item.
-        /// </summary>
+        /// <remarks>
+        /// Note that setting this property only currently works if the item is expanded to be visible.
+        /// To select non-expanded nodes use `Selection.SelectedIndex`.
+        /// </remarks>
         public object SelectedItem
         {
             get => Selection.SelectedItem;
