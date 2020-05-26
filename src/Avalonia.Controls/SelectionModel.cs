@@ -46,14 +46,25 @@ namespace Avalonia.Controls
 
                     if (_rootNode.Source != null)
                     {
-                        using (var operation = new Operation(this))
+                        // Temporarily prevent auto-select when switching source.
+                        var restoreAutoSelect = _autoSelect;
+                        _autoSelect = false;
+
+                        try
                         {
-                            ClearSelection(resetAnchor: true);
+                            using (var operation = new Operation(this))
+                            {
+                                ClearSelection(resetAnchor: true);
+                            }
+                        }
+                        finally
+                        {
+                            _autoSelect = restoreAutoSelect;
                         }
                     }
 
                     _rootNode.Source = value;
-                    ApplyAutoSelect();
+                    ApplyAutoSelect(true);
 
                     RaisePropertyChanged("Source");
 
@@ -111,7 +122,7 @@ namespace Avalonia.Controls
                 if (_autoSelect != value)
                 {
                     _autoSelect = value;
-                    ApplyAutoSelect();
+                    ApplyAutoSelect(true);
                 }
             }
         }
@@ -185,7 +196,6 @@ namespace Avalonia.Controls
                     using var operation = new Operation(this);
                     ClearSelection(resetAnchor: true);
                     SelectWithPathImpl(value, select: true);
-                    ApplyAutoSelect();
                 }
             }
         }
@@ -381,21 +391,18 @@ namespace Avalonia.Controls
         {
             using var operation = new Operation(this);
             SelectImpl(index, select: false);
-            ApplyAutoSelect();
         }
 
         public void Deselect(int groupIndex, int itemIndex)
         {
             using var operation = new Operation(this);
             SelectWithGroupImpl(groupIndex, itemIndex, select: false);
-            ApplyAutoSelect();
         }
 
         public void DeselectAt(IndexPath index)
         {
             using var operation = new Operation(this);
             SelectWithPathImpl(index, select: false);
-            ApplyAutoSelect();
         }
 
         public bool IsSelected(int index) => _rootNode.IsSelected(index);
@@ -562,7 +569,6 @@ namespace Avalonia.Controls
         {
             using var operation = new Operation(this);
             ClearSelection(resetAnchor: true);
-            ApplyAutoSelect();
         }
 
         public IDisposable Update() => new Operation(this);
@@ -589,7 +595,7 @@ namespace Avalonia.Controls
             }
 
             OnSelectionChanged(e);
-            ApplyAutoSelect();
+            ApplyAutoSelect(true);
         }
 
         internal IObservable<object?>? ResolvePath(object data, IndexPath dataIndexPath)
@@ -816,6 +822,8 @@ namespace Avalonia.Controls
 
             if (--_operationCount == 0)
             {
+                ApplyAutoSelect(false);
+
                 var changes = new List<SelectionNodeOperation>();
                 _rootNode.EndOperation(changes);
 
@@ -837,7 +845,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void ApplyAutoSelect()
+        private void ApplyAutoSelect(bool createOperation)
         {
             if (AutoSelect)
             {
@@ -845,8 +853,15 @@ namespace Avalonia.Controls
 
                 if (SelectedIndex == default && _rootNode.ItemsSourceView?.Count > 0)
                 {
-                    using var operation = new Operation(this);
-                    SelectImpl(0, true);
+                    if (createOperation)
+                    {
+                        using var operation = new Operation(this);
+                        SelectImpl(0, true);
+                    }
+                    else
+                    {
+                        SelectImpl(0, true);
+                    }
                 }
             }
         }

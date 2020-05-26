@@ -1755,6 +1755,30 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void AutoSelect_Is_Applied_At_End_Of_Batch_Update()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { AutoSelect = true, Source = data };
+
+            using (target.Update())
+            {
+                target.ClearSelection();
+
+                Assert.Equal(new IndexPath(), target.SelectedIndex);
+                Assert.Empty(target.SelectedIndices);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+            }
+
+            Assert.Equal(new IndexPath(0), target.SelectedIndex);
+            Assert.Equal(new[] { new IndexPath(0) }, target.SelectedIndices);
+            Assert.Equal("foo", target.SelectedItem);
+            Assert.Equal(new[] { "foo" }, target.SelectedItems);
+
+            Assert.Equal(new IndexPath(0), target.SelectedIndex);
+        }
+
+        [Fact]
         public void Can_Replace_Parent_Children_Collection()
         {
             var root = new Node("Root");
