@@ -1513,6 +1513,47 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Batch_Update_Selection_Is_Correct_Throughout()
+        {
+            var data = new[] { "foo", "bar", "baz", "qux" };
+            var target = new SelectionModel { Source = data };
+            var raised = 0;
+
+            using (target.Update())
+            {
+                target.Select(1);
+
+                Assert.Equal(new IndexPath(1), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndices);
+                Assert.Equal("bar", target.SelectedItem);
+                Assert.Equal(new[] { "bar" }, target.SelectedItems);
+
+                target.Deselect(1);
+
+                Assert.Equal(new IndexPath(), target.SelectedIndex);
+                Assert.Empty(target.SelectedIndices);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+
+                target.SelectRange(new IndexPath(1), new IndexPath(1));
+
+                Assert.Equal(new IndexPath(1), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndices);
+                Assert.Equal("bar", target.SelectedItem);
+                Assert.Equal(new[] { "bar" }, target.SelectedItems);
+
+                target.ClearSelection();
+
+                Assert.Equal(new IndexPath(), target.SelectedIndex);
+                Assert.Empty(target.SelectedIndices);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+            }
+
+            Assert.Equal(0, raised);
+        }
+
+        [Fact]
         public void AutoSelect_Selects_When_Enabled()
         {
             var data = new[] { "foo", "bar", "baz" };

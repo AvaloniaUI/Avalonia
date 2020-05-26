@@ -629,6 +629,8 @@ namespace Avalonia.Controls
             {
                 AnchorIndex = default;
             }
+
+            OnSelectionChanged();
         }
 
         private void OnSelectionChanged(SelectionModelSelectionChangedEventArgs? e = null)
@@ -664,6 +666,8 @@ namespace Avalonia.Controls
             {
                 AnchorIndex = new IndexPath(index);
             }
+
+            OnSelectionChanged();
         }
 
         private void SelectWithGroupImpl(int groupIndex, int itemIndex, bool select)
@@ -680,6 +684,8 @@ namespace Avalonia.Controls
             {
                 AnchorIndex = new IndexPath(groupIndex, itemIndex);
             }
+
+            OnSelectionChanged();
         }
 
         private void SelectWithPathImpl(IndexPath index, bool select)
@@ -708,6 +714,8 @@ namespace Avalonia.Controls
             {
                 AnchorIndex = index;
             }
+
+            OnSelectionChanged();
         }
 
         private void SelectRangeFromAnchorImpl(int index, bool select)
@@ -721,6 +729,7 @@ namespace Avalonia.Controls
             }
 
             _rootNode.SelectRange(new IndexRange(anchorIndex, index), select);
+            OnSelectionChanged();
         }
 
         private void SelectRangeFromAnchorWithGroupImpl(int endGroupIndex, int endItemIndex, bool select)
@@ -754,6 +763,8 @@ namespace Avalonia.Controls
                 int endIndex = groupIdx == endGroupIndex ? endItemIndex : groupNode.DataCount - 1;
                 groupNode.SelectRange(new IndexRange(startIndex, endIndex), select);
             }
+
+            OnSelectionChanged();
         }
 
         private void SelectRangeImpl(IndexPath start, IndexPath end, bool select)
@@ -781,6 +792,8 @@ namespace Avalonia.Controls
                         info.ParentNode!.Select(info.Path.GetAt(info.Path.GetSize() - 1), select);
                     }
                 });
+
+            OnSelectionChanged();
         }
 
         private void BeginOperation()
