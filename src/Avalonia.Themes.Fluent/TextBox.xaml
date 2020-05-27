@@ -1,64 +1,17 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Styles.Resources>
-    <SolidColorBrush x:Key="TextBoxForegroundHeaderThemeBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="TextBoxPlaceholderTextThemeBrush" Color="#AB000000" />
-    <SolidColorBrush x:Key="TextBoxBackgroundThemeBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="TextBoxBorderThemeBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="TextBoxButtonBackgroundThemeBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TextBoxButtonBorderThemeBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TextBoxButtonForegroundThemeBrush" Color="#99FFFFFF" />
-    <SolidColorBrush x:Key="TextBoxButtonPointerOverBackgroundThemeBrush" Color="#FFDEDEDE" />
-    <SolidColorBrush x:Key="TextBoxButtonPointerOverBorderThemeBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TextBoxButtonPointerOverForegroundThemeBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="TextBoxButtonPressedBackgroundThemeBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="TextBoxButtonPressedBorderThemeBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TextBoxButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="TextBoxDisabledBackgroundThemeBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TextBoxDisabledBorderThemeBrush" Color="#66FFFFFF" />
-    <SolidColorBrush x:Key="TextBoxDisabledForegroundThemeBrush" Color="#FF666666" />
-    <SolidColorBrush x:Key="TextBoxForegroundThemeBrush" Color="#FF000000" />
-    <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="SystemControlBackgroundAltHighBrush" />
-    <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-    <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
-    <StaticResource x:Key="TextControlButtonForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-    <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="SystemControlForegroundBaseHighBrush" />
-    <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
-    <StaticResource x:Key="TextControlBackground" ResourceKey="SystemControlBackgroundAltMediumLowBrush" />
-    <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="SystemControlBackgroundAltMediumBrush" />
-    <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-  </Styles.Resources>
-  <Design.PreviewWith>
-    <Border Padding="20" Background="Black">
-      <TextBox Text="Testing"  />
-    </Border>
-  </Design.PreviewWith>
   <Style Selector="TextBox">
-    <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
-    <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
-    <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
-    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
-    <!--<Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
-        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
-        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />-->
-    <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
-    <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
-    <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
+    <Setter Property="SelectionBrush" Value="{DynamicResource HighlightBrush}"/>
     <Setter Property="SelectionForegroundBrush" Value="{DynamicResource HighlightForegroundBrush}"/>
+    <Setter Property="Padding" Value="4"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="border"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}"
-                CornerRadius="{DynamicResource ControlCornerRadius}"
-                MinWidth="{TemplateBinding MinWidth}"
-                MinHeight="{TemplateBinding MinHeight}">
-
+                BorderThickness="{TemplateBinding BorderThickness}">
           <DockPanel Margin="{TemplateBinding Padding}"
                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
@@ -81,8 +34,7 @@
 
             <DataValidationErrors>
               <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
-                            VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
-                            Margin="{TemplateBinding BorderThickness}">
+                            VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
 
                 <Panel>
                   <TextBlock Name="watermark"
@@ -90,7 +42,6 @@
                              Text="{TemplateBinding Watermark}"
                              IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
                   <TextPresenter Name="PART_TextPresenter"
-                                 Background="{TemplateBinding Background}"
                                  Text="{TemplateBinding Text, Mode=TwoWay}"
                                  CaretIndex="{TemplateBinding CaretIndex}"
                                  SelectionStart="{TemplateBinding SelectionStart}"
@@ -110,7 +61,7 @@
     </Setter>
   </Style>
   <Style Selector="TextBox:pointerover /template/ Border#border">
-    <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushPointerOver}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
   </Style>
   <Style Selector="TextBox:focus /template/ Border#border">
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
@@ -121,7 +72,7 @@
   <Style Selector="TextBox /template/ DockPanel">
     <Setter Property="Cursor" Value="IBeam" />
   </Style>
-  <Style Selector="TextBox:disabled /template/ Border#border">
-    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
-  </Style>
+    <Style Selector="TextBox:disabled /template/ Border#border">
+        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    </Style>
 </Styles>
