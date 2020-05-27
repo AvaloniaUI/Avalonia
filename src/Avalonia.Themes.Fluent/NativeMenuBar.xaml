@@ -1,6 +1,6 @@
 <Style xmlns="https://github.com/avaloniaui"
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-       xmlns:local="clr-namespace:Avalonia.Themes.Default"
+       xmlns:local="clr-namespace:Avalonia.Themes.Fluent"
        Selector="NativeMenuBar">
   <Style.Resources>
     <local:InverseBooleanValueConverter x:Key="AvaloniaThemesDefaultNativeMenuBarInverseBooleanValueConverter" Default="True"/>

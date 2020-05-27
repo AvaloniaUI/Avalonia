@@ -12,7 +12,7 @@
     <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj" />
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
-    <AvaloniaResource Include="DefaultTheme.xaml" />
+    <AvaloniaResource Include="FluentTheme.xaml" />
     <AvaloniaResource Include="Accents/*.xaml" />
     <!-- Compatibility with old apps, probably need to replace with AvaloniaResource -->
     <EmbeddedResource Include="**/*.xaml" />
