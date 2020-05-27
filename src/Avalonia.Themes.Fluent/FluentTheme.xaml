@@ -1,8 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Avalonia.Themes.Fluent.FluentTheme">
-  <!-- Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox) -->
-  <StyleInclude Source="resm:Avalonia.Themes.Fluent.Accents.Base.xaml?assembly=Avalonia.Themes.Fluent" />
+  <!-- Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox) -->  
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.ToolTip.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.DataValidationErrors.xaml?assembly=Avalonia.Themes.Fluent"/>
 
