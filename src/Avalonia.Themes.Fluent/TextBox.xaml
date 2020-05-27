@@ -2,6 +2,7 @@
   <Style Selector="TextBox">
     <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+    <Setter Property="CaretBrush" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
@@ -52,8 +53,7 @@
                              IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
                   <TextPresenter Name="PART_TextPresenter"
                                  Text="{TemplateBinding Text, Mode=TwoWay}"
-                                 CaretIndex="{TemplateBinding CaretIndex}"
-                                 Background="{TemplateBinding Background}"
+                                 CaretIndex="{TemplateBinding CaretIndex}"                                 
                                  SelectionStart="{TemplateBinding SelectionStart}"
                                  SelectionEnd="{TemplateBinding SelectionEnd}"
                                  TextAlignment="{TemplateBinding TextAlignment}"
