@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.UnitTests;
@@ -70,7 +71,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.MakrupExtensions
                     var loader = new AvaloniaXamlLoader();
                     var app = Application.Current;
 
-                    loader.Load(xaml, null, app);
+                    try
+                    {
+                        loader.Load(xaml, null, app);
+                    }
+                    catch (KeyNotFoundException)
+                    {
+
+                    }
                 }
             }
 

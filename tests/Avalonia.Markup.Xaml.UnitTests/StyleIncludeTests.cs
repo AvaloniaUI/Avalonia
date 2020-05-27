@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -30,7 +31,14 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 var loader = new AvaloniaXamlLoader();
                 var app = Application.Current;
 
-                loader.Load(xaml, null, app);
+                try
+                {
+                    loader.Load(xaml, null, app);
+                }
+                catch (KeyNotFoundException)
+                {
+
+                }
             }
         }
 
