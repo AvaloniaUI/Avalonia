@@ -44,6 +44,36 @@ namespace Avalonia.Markup.Xaml.UnitTests.MakrupExtensions
                 }
             }
 
+            [Fact]
+            public void Missing_ResourceKey_In_ResourceInclude_Does_Not_Cause_StackOverflow()
+            {
+                var styleXaml = @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <StaticResource x:Key='brush' ResourceKey='missing' />
+</ResourceDictionary>";
+
+                using (StartWithResources(("test:style.xaml", styleXaml)))
+                {
+                    var xaml = @"
+<Application xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source='test:style.xaml'/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>";
+
+                    var loader = new AvaloniaXamlLoader();
+                    var app = Application.Current;
+
+                    loader.Load(xaml, null, app);
+                }
+            }
+
             private IDisposable StartWithResources(params (string, string)[] assets)
             {
                 var assetLoader = new MockAssetLoader(assets);
