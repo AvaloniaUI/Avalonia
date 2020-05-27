@@ -12,8 +12,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
     public class ResourceInclude : IResourceProvider
     {
         private Uri? _baseUri;
-        private IResourceDictionary? _loaded;
-        private bool _isLoading;
+        private IResourceDictionary? _loaded;        
 
         /// <summary>
         /// Gets the loaded resource dictionary.
@@ -22,9 +21,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         {
             get
             {
-                if (!_isLoading)
-                {
-                    _isLoading = true;
+                if (_loaded is null)
+                {                    
                     var loader = new AvaloniaXamlLoader();
                     _loaded = (IResourceDictionary)loader.Load(Source, _baseUri);
                 }

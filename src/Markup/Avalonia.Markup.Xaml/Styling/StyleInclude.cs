@@ -13,8 +13,7 @@ namespace Avalonia.Markup.Xaml.Styling
     public class StyleInclude : IStyle, IResourceProvider
     {
         private readonly Uri _baseUri;
-        private IStyle[]? _loaded;
-        private bool _isLoading;
+        private IStyle[]? _loaded;        
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyleInclude"/> class.
@@ -48,10 +47,8 @@ namespace Avalonia.Markup.Xaml.Styling
         {
             get
             {
-                if (!_isLoading)
+                if (_loaded is null)
                 {
-                    _isLoading = true;
-
                     var loader = new AvaloniaXamlLoader();
                     var loaded = (IStyle)loader.Load(Source, _baseUri);
                     _loaded = new[] { loaded };
