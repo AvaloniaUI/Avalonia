@@ -1,17 +1,26 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style Selector="TextBox">
-    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
-    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
-    <Setter Property="SelectionBrush" Value="{DynamicResource HighlightBrush}"/>
-    <Setter Property="SelectionForegroundBrush" Value="{DynamicResource HighlightForegroundBrush}"/>
-    <Setter Property="Padding" Value="4"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
+    <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
+    <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
+    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />    
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />    
+    <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
+    <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
+    <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="border"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}">
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{DynamicResource ControlCornerRadius}"
+                MinWidth="{TemplateBinding MinWidth}"
+                MinHeight="{TemplateBinding MinHeight}">
           <DockPanel Margin="{TemplateBinding Padding}"
                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
@@ -44,6 +53,7 @@
                   <TextPresenter Name="PART_TextPresenter"
                                  Text="{TemplateBinding Text, Mode=TwoWay}"
                                  CaretIndex="{TemplateBinding CaretIndex}"
+                                 Background="{TemplateBinding Background}"
                                  SelectionStart="{TemplateBinding SelectionStart}"
                                  SelectionEnd="{TemplateBinding SelectionEnd}"
                                  TextAlignment="{TemplateBinding TextAlignment}"
@@ -60,19 +70,58 @@
       </ControlTemplate>
     </Setter>
   </Style>
+
+  <!-- Disabled State -->
+  <Style Selector="TextBox:disabled">
+    <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundDisabled}" />
+  </Style>
+
+  <Style Selector="TextBox:disabled /template/ Border#border">
+    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+    <Setter Property="Background" Value="{DynamicResource TextControlBackgroundDisabled}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushDisabled}" />
+  </Style>
+
+  <Style Selector="TextBox:disabled /template/ TextBlock#watermark, TextBox:disabled /template/ TextBlock#floatingWatermark">
+    <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForegroundDisabled}" />
+  </Style>
+
+  <!-- PointerOver State-->
+  <Style Selector="TextBox:disabled">
+    <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundPointerOver}" />
+  </Style>
+
   <Style Selector="TextBox:pointerover /template/ Border#border">
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushPointerOver}"/>
+    <Setter Property="Background" Value="{DynamicResource TextControlBackgroundPointerOver}" />
   </Style>
+
+  <Style Selector="TextBox:pointerover /template/ TextBlock#watermark, TextBox:pointerover /template/ TextBlock#floatingWatermark">
+    <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForegroundPointerOver}" />
+  </Style>
+
+  <!-- Focused State -->
+  <Style Selector="TextBox:focus">
+    <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundFocused}" />
+  </Style>
+
+  <Style Selector="TextBox:focus /template/ TextBlock#watermark, TextBox:focus /template/ TextBlock#floatingWatermark">
+    <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForegroundFocused}" />
+  </Style>
+
   <Style Selector="TextBox:focus /template/ Border#border">
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource TextControlBackgroundFocused}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushFocused}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThicknessFocused}" />
   </Style>
+
+
   <Style Selector="TextBox:error /template/ Border#border">
     <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
   </Style>
+
   <Style Selector="TextBox /template/ DockPanel">
     <Setter Property="Cursor" Value="IBeam" />
   </Style>
-    <Style Selector="TextBox:disabled /template/ Border#border">
-        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
-    </Style>
+
 </Styles>

@@ -14,5 +14,11 @@
     <Color x:Key="SystemColorWindowText">#FF000000</Color>
     <FontFamily x:Key="ContentControlThemeFontFamily">Segoe UI</FontFamily>
     <sys:Double x:Key="ControlContentThemeFontSize">14</sys:Double>
+
+    <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
+    <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
+    <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
+    <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
+    <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
   </Style.Resources>
 </Style>
