@@ -44,6 +44,48 @@ namespace Avalonia.Markup.Xaml.UnitTests.MakrupExtensions
                 }
             }
 
+            [Fact]
+            public void ResourceInclude_Loads_Resource_Recursively()
+            {
+                var includeXaml = @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <StaticResource x:Key='brush' ResourceKey='otherBrush' />
+</ResourceDictionary>
+";
+
+                var includeXaml1 = @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
+</ResourceDictionary>";
+
+                using (StartWithResources(("test:include.xaml", includeXaml), ("test:include1.xaml", includeXaml1)))
+                {
+                    var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source='test:include.xaml'/>
+                <ResourceInclude Source='test:include1.xaml'/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Name='border' Background='{StaticResource brush}'/>
+</UserControl>";
+
+                    var loader = new AvaloniaXamlLoader();
+                    var userControl = (UserControl)loader.Load(xaml);
+                    var border = userControl.FindControl<Border>("border");
+
+                    var brush = (SolidColorBrush)border.Background;
+                    Assert.Equal(0xff506070, brush.Color.ToUint32());
+                }
+            }
+
             private IDisposable StartWithResources(params (string, string)[] assets)
             {
                 var assetLoader = new MockAssetLoader(assets);

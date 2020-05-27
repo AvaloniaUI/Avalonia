@@ -1,20 +1,7 @@
-<Application xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.App">
+<Application xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='ControlCatalog.App'>
   <Application.Styles>
-    <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml"/>
-    <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseDark.xaml"/>
-    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml"/>
-    <Style Selector="TextBlock.h1">
-      <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}"/>
-      <Setter Property="FontWeight" Value="Medium"/>
-    </Style>
-    <Style Selector="TextBlock.h2">
-      <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}"/>
-    </Style>
-    <Style Selector="TextBlock.h3">
-      <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}"/>
-    </Style>
-    <StyleInclude Source="/SideBar.xaml"/>
+    <StyleInclude Source='avares://Avalonia.Themes.Default/Accents/BaseDark.xaml'/>
   </Application.Styles>
 </Application>

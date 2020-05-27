@@ -1,8 +1,10 @@
+using System;
 using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Markup.Data;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
@@ -55,7 +57,42 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
                 control.Text = "bar";
                 Assert.Equal("bar", data.Foo);
+            }            
+        }
+
+        [Fact]
+        public void ResourceInclude_Loads_Resource_Recursively()
+        {
+            var includeXaml = @"<Style xmlns='https://github.com/avaloniaui'
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+       xmlns:sys='clr-namespace:System;assembly=netstandard'>
+  <Style.Resources>
+    <StaticResource x:Key='Test' ResourceKey='UndefinedResource' />
+  </Style.Resources>
+</Style>
+";
+
+            using (StartWithResources(("test:include.xaml", includeXaml)))
+            {
+                var xaml = @"<Application xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='ControlCatalog.App'>
+  <Application.Styles>
+    <StyleInclude Source='test:include.xaml'/>
+  </Application.Styles>
+</Application>
+";
+
+                var loader = new AvaloniaXamlLoader();
+                var userControl = (Application)loader.Load(xaml);
             }
+        }
+
+        private IDisposable StartWithResources(params (string, string)[] assets)
+        {
+            var assetLoader = new MockAssetLoader(assets);
+            var services = new TestServices(assetLoader: assetLoader);
+            return UnitTestApplication.Start(services);
         }
 
         private class Data
