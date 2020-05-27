@@ -1,0 +1,38 @@
+<Styles xmlns="https://github.com/avaloniaui">
+  <Style Selector="NumericUpDown">
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
+    <Setter Property="Padding" Value="4"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ButtonSpinner Name="PART_Spinner"
+                       Background="{TemplateBinding Background}"
+                       BorderThickness="{TemplateBinding BorderThickness}"
+                       BorderBrush="{TemplateBinding BorderBrush}"
+                       HorizontalContentAlignment="Stretch"
+                       VerticalContentAlignment="Stretch"
+                       AllowSpin="{TemplateBinding AllowSpin}"
+                       ShowButtonSpinner="{TemplateBinding ShowButtonSpinner}"
+                       ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}">
+          <TextBox Name="PART_TextBox"
+                   BorderThickness="0"
+                   Background="{TemplateBinding Background}" 
+                   BorderBrush="{TemplateBinding BorderBrush}"
+                   Padding="{TemplateBinding Padding}"
+                   Watermark="{TemplateBinding Watermark}"
+                   DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
+                   IsReadOnly="{TemplateBinding IsReadOnly}"
+                   Text="{TemplateBinding Text}"
+                   AcceptsReturn="False"
+                   TextWrapping="NoWrap">
+          </TextBox>
+        </ButtonSpinner>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="NumericUpDown /template/ TextBox#PART_TextBox">
+    <Setter Property="Margin" Value="4"/>
+    <Setter Property="MinWidth" Value="20"/>
+  </Style>
+</Styles>
