@@ -48,7 +48,7 @@ namespace Avalonia.Markup.Xaml.Styling
         {
             get
             {
-                if (_loaded is null)
+                if (_loaded == null)
                 {
                     _isLoading = true;
                     var loader = new AvaloniaXamlLoader();
