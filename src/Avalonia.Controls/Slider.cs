@@ -98,11 +98,11 @@ namespace Avalonia.Controls
 
             if (Orientation == Orientation.Horizontal)
             {
-                _track = e.NameScope.Find<Track>("HorizontalThumb");
+                // _track = e.NameScope.Find<Track>("HorizontalThumb");
             }
             else
             {
-                _track = e.NameScope.Find<Track>("VerticalThumb");
+                // _track = e.NameScope.Find<Track>("VerticalThumb");
             }
 
             // _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
