@@ -5,7 +5,7 @@
     <x:Double x:Key="SliderPostContentMargin">15</x:Double>
     <x:Double x:Key="SliderHorizontalHeight">32</x:Double>
     <x:Double x:Key="SliderVerticalWidth">32</x:Double>
-    <CornerRadius x:Key="SliderThumbCornerRadius">10</>
+    <CornerRadius x:Key="SliderThumbCornerRadius">10</CornerRadius>
     <x:Double x:Key="SliderHorizontalThumbWidth">20</x:Double>
     <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
     <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
