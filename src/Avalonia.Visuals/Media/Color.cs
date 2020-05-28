@@ -8,7 +8,6 @@ namespace Avalonia.Media
     /// <summary>
     /// An ARGB color.
     /// </summary>
-    [TypeConverter(typeof(ColorToSolidColorBrushConverter))]
     public readonly struct Color : IEquatable<Color>
     {
         static Color()
