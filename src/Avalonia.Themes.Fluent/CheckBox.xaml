@@ -35,10 +35,12 @@
                 Width="20"
                 CornerRadius="{DynamicResource ControlCornerRadius}" />
 
-            <Viewbox Margin="5" >
-              <Path x:Name="CheckGlyph" Stretch="Uniform" />
+            <Viewbox UseLayoutRounding="False">
+              <Panel>
+                <Panel Height="16" Width="16" />
+                <Path x:Name="CheckGlyph" Stretch="Uniform" VerticalAlignment="Center" />
+              </Panel>
             </Viewbox>
-
           </Grid>
           <ContentPresenter x:Name="ContentPresenter"
                          ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -149,6 +151,7 @@
   <Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
     <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundChecked}" />
     <Setter Property="Data" Value="M1507 31L438 1101L-119 543L-29 453L438 919L1417 -59L1507 31Z" />
+    <Setter Property="Width" Value="9" />
     <Setter Property="Opacity" Value="1" />
   </Style>
 
@@ -208,7 +211,7 @@
   <Style Selector="CheckBox:checked:disabled /template/ Path#CheckGlyph">
     <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundCheckedDisabled}" />
   </Style>
-  
+
 
   <!-- Indeterminate Normal State -->
   <Style Selector="CheckBox:indeterminate /template/ ContentPresenter#ContentPresenter">
@@ -228,6 +231,7 @@
   <Style Selector="CheckBox:indeterminate /template/ Path#CheckGlyph">
     <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundIndeterminate}" />
     <Setter Property="Data" Value="M1536 1536v-1024h-1024v1024h1024z" />
+    <Setter Property="Width" Value="7" />
     <Setter Property="Opacity" Value="1" />
   </Style>
 
@@ -286,5 +290,5 @@
 
   <Style Selector="CheckBox:indeterminate:disabled /template/ Path#CheckGlyph">
     <Setter Property="Fill" Value="{DynamicResource CheckBoxCheckGlyphForegroundIndeterminateDisabled}" />
-  </Style>  
+  </Style>
 </Styles>
