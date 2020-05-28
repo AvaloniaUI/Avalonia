@@ -51,7 +51,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         bool IResourceNode.TryGetResource(object key, out object? value)
         {
-            if(!_isLoading)
+            if (!_isLoading)
             {
                 return Loaded.TryGetResource(key, out value);                
             }
