@@ -1,0 +1,16 @@
+<Style xmlns="https://github.com/avaloniaui" Selector="Carousel">
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}">
+        <CarouselPresenter IsVirtualized="{TemplateBinding IsVirtualized}"
+                           Items="{TemplateBinding Items}"
+                           ItemsPanel="{TemplateBinding ItemsPanel}"
+                           Margin="{TemplateBinding Padding}"
+                           SelectedIndex="{TemplateBinding SelectedIndex}"
+                           PageTransition="{TemplateBinding PageTransition}"/>
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</Style>

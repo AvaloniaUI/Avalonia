@@ -1,0 +1,75 @@
+<Style xmlns="https://github.com/avaloniaui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+       xmlns:sys="clr-namespace:System;assembly=netstandard">
+  <Style.Resources>
+    <Color x:Key="SystemAccentColor">#FF0073CF</Color>
+    <Color x:Key="SystemAltHighColor">#FFFFFFFF</Color>
+    <Color x:Key="SystemAltLowColor">#FFFFFFFF</Color>
+    <Color x:Key="SystemAltMediumColor">#FFFFFFFF</Color>
+    <Color x:Key="SystemAltMediumHighColor">#FFFFFFFF</Color>
+    <Color x:Key="SystemAltMediumLowColor">#FFFFFFFF</Color>
+    <Color x:Key="SystemBaseHighColor">#FF000000</Color>
+    <Color x:Key="SystemBaseLowColor">#FFCCCCCC</Color>
+    <Color x:Key="SystemBaseMediumColor">#FF898989</Color>
+    <Color x:Key="SystemBaseMediumHighColor">#FF5D5D5D</Color>
+    <Color x:Key="SystemBaseMediumLowColor">#FF737373</Color>
+    <Color x:Key="SystemChromeAltLowColor">#FF5D5D5D</Color>
+    <Color x:Key="SystemChromeBlackHighColor">#FF000000</Color>
+    <Color x:Key="SystemChromeBlackLowColor">#FFCCCCCC</Color>
+    <Color x:Key="SystemChromeBlackMediumColor">#FF5D5D5D</Color>
+    <Color x:Key="SystemChromeBlackMediumLowColor">#FF898989</Color>
+    <Color x:Key="SystemChromeDisabledHighColor">#FFCCCCCC</Color>
+    <Color x:Key="SystemChromeDisabledLowColor">#FF898989</Color>
+    <Color x:Key="SystemChromeGrayColor">#FF737373</Color>
+    <Color x:Key="SystemChromeHighColor">#FFCCCCCC</Color>
+    <Color x:Key="SystemChromeLowColor">#FFECECEC</Color>
+    <Color x:Key="SystemChromeMediumColor">#FFE6E6E6</Color>
+    <Color x:Key="SystemChromeMediumLowColor">#FFECECEC</Color>
+    <Color x:Key="SystemChromeWhiteColor">#FFFFFFFF</Color>
+    <Color x:Key="SystemListLowColor">#FFE6E6E6</Color>
+    <Color x:Key="SystemListMediumColor">#FFCCCCCC</Color>
+    <Color x:Key="SystemChromeAltMediumHighColor">#CCFFFFFF</Color>
+    <Color x:Key="SystemChromeAltHighColor">#FFCCCCCC</Color>
+    <Color x:Key="SystemRevealListLowColor">#FFE6E6E6</Color>
+    <Color x:Key="SystemRevealListMediumColor">#FFCCCCCC</Color>
+    <!--<AcrylicBrush x:Key="SystemControlAcrylicWindowBrush" BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{ThemeResource SystemChromeMediumColor}" />-->
+    <!-- Override system shape defaults -->
+    <CornerRadius x:Key="ControlCornerRadius">2,2,2,2</CornerRadius>
+    <CornerRadius x:Key="OverlayCornerRadius">4,4,4,4</CornerRadius>
+    <!-- Override system borders -->
+    <Thickness x:Key="MenuBarItemBorderThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="GridViewItemMultiselectBorderThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="CheckBoxBorderThemeThickness">1</Thickness>
+    <x:Double x:Key="GridViewItemSelectedBorderThemeThickness">1</x:Double>
+    <x:Double x:Key="RadioButtonBorderThemeThickness">1</x:Double>
+    <Thickness x:Key="ButtonBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="CalendarDatePickerBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="TimePickerBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="DatePickerBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="ToggleSwitchOuterBorderStrokeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="RepeatButtonBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="SearchBoxBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="ToggleButtonBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="TextControlBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="ButtonRevealBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="RepeatButtonRevealBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="ToggleButtonRevealBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="AppBarEllipsisButtonRevealBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="AppBarButtonRevealBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="AppBarToggleButtonRevealBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="ListViewItemRevealBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="GridViewItemRevealBorderThemeThickness">1,1,1,1</Thickness>
+    <Thickness x:Key="ComboBoxItemRevealBorderThemeThickness">1,1,1,1</Thickness>
+    <x:Double x:Key="PersonPictureEllipseBadgeStrokeThickness">1</x:Double>
+    <!-- Override system generated accent colors -->
+    <Color x:Key="SystemAccentColorLight1">#FF1D85D7</Color>
+    <Color x:Key="SystemAccentColorLight2">#FF3B97DF</Color>
+    <Color x:Key="SystemAccentColorLight3">#FF58A8E8</Color>
+    <Color x:Key="SystemAccentColorDark1">#FF0064BE</Color>
+    <Color x:Key="SystemAccentColorDark2">#FF0055AD</Color>
+    <Color x:Key="SystemAccentColorDark3">#FF00459D</Color>
+    <!--<RevealBackgroundBrush x:Key="SystemControlHighlightListLowRevealBackgroundBrush" TargetTheme="Light" Color="{ThemeResource SystemRevealListMediumColor}" FallbackColor="{ StaticResource SystemListMediumColor}" />-->
+    <Color x:Key="RegionColor">#FFFFFFFF</Color>
+    <SolidColorBrush x:Key="RegionBrush" Color="{StaticResource RegionColor}" />
+  </Style.Resources>
+</Style>

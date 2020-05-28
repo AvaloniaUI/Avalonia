@@ -1,0 +1,18 @@
+<Style xmlns="https://github.com/avaloniaui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+       xmlns:sys="clr-namespace:System;assembly=netstandard">
+  <Style.Resources>
+    <!-- https://docs.microsoft.com/en-us/previous-versions/windows/apps/dn518235(v=win.10)?redirectedfrom=MSDN -->
+    <!-- SystemColor Color Resources (Reflect OS High Contrast Settings) -->
+    <Color x:Key="SystemColorButtonFaceColor">#FFF0F0F0</Color>
+    <Color x:Key="SystemColorButtonTextColor">#FF000000</Color>
+    <Color x:Key="SystemColorGrayText">#FF6D6D6D</Color>
+    <Color x:Key="SystemColorHighlight">#FF3399FF</Color>
+    <Color x:Key="SystemColorHighlightText">#FFFFFFFF</Color>
+    <Color x:Key="SystemColorHotlight">#FF0066CC</Color>
+    <Color x:Key="SystemColorWindow">#FFFFFFFF</Color>
+    <Color x:Key="SystemColorWindowText">#FF000000</Color>
+    <FontFamily x:Key="ContentControlThemeFontFamily">Segoe UI</FontFamily>
+    <sys:Double x:Key="ControlContentThemeFontSize">14</sys:Double>
+  </Style.Resources>
+</Style>
