@@ -12,11 +12,7 @@
     <Color x:Key="SystemAccentColorLight2">#FF0055AD</Color>
     <Color x:Key="SystemAccentColorLight3">#FF00459D</Color>
 
-    <!--
-      ******************************************************************
-      DEFAULT COMMON CONTROL COLORS
-      ******************************************************************
-      -->
+    <!-- System Control Colors -->
     <Color x:Key="SystemAltHighColor">#FFFFFFFF</Color>
     <Color x:Key="SystemAltLowColor">#33FFFFFF</Color>
     <Color x:Key="SystemAltMediumColor">#99FFFFFF</Color>
@@ -146,11 +142,7 @@
     <StaticResource x:Key="SystemControlDescriptionTextForegroundBrush" ResourceKey="SystemControlPageTextBaseMediumBrush" />
     <x:Boolean x:Key="IsApplicationFocusVisualKindReveal">False</x:Boolean>
 
-    <!--
-      ******************************************************************
-      DEFAULT COMMON CONTROL PROPERTIES
-      ******************************************************************
-      -->
+    <!-- Default Control Settings -->
     <FontFamily x:Key="ContentControlThemeFontFamily">XamlAutoFontFamily</FontFamily>
     <FontFamily x:Key="MTCMediaFontFamily">XamlAutoFontFamily</FontFamily>
     <FontFamily x:Key="PhoneFontFamilyNormal">Segoe WP</FontFamily>

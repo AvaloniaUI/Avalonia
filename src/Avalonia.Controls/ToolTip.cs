@@ -246,7 +246,7 @@ namespace Avalonia.Controls
             if (_popup != null)
             {
                 _popup.SetChild(null);
-                _popup.Hide();
+                _popup.Dispose();
                 _popup = null;
             }
         }
