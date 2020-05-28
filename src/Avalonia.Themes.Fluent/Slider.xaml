@@ -5,7 +5,7 @@
     <x:Double x:Key="SliderPostContentMargin">15</x:Double>
     <x:Double x:Key="SliderHorizontalHeight">32</x:Double>
     <x:Double x:Key="SliderVerticalWidth">32</x:Double>
-    <Thickness x:Key="SliderThumbCornerRadius">10</Thickness>
+    <CornerRadius x:Key="SliderThumbCornerRadius">10</>
     <x:Double x:Key="SliderHorizontalThumbWidth">20</x:Double>
     <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
     <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
@@ -95,6 +95,7 @@
   <Style Selector="Slider:pointerover /template/ Border#VerticalDecreaseRect">
     <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillPointerOver}" />
   </Style>
+  
   <!-- TODO: We don't have an equivalent for this afaik. -->
   <!-- <VisualState Name="FocusDisengaged" />
   <VisualState Name="FocusEngagedHorizontal">
@@ -183,7 +184,7 @@
                   <Thumb Name="HorizontalThumb" Classes="SliderThumbStyle" DataContext="{TemplateBinding Value}" Height="{DynamicResource SliderHorizontalThumbHeight}" Width="{DynamicResource SliderHorizontalThumbWidth}" Grid.Row="0"
                   Grid.RowSpan="3" Grid.Column="1" />
                 </Grid>
-                <Grid Name="VerticalTemplate" RowDefinitions="*,Auto,Auto" MinWidth="{DynamicResource SliderVerticalWidth}" IsVisible="False">
+                <Grid Name="VerticalTemplate" RowDefinitions="*,Auto,Auto" MinWidth="{DynamicResource SliderVerticalWidth}">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="{DynamicResource SliderPreContentMargin}" />
                     <ColumnDefinition Width="Auto" />
