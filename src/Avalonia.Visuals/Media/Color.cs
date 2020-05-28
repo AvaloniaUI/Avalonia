@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Animation.Animators;
 
@@ -7,6 +8,7 @@ namespace Avalonia.Media
     /// <summary>
     /// An ARGB color.
     /// </summary>
+    [TypeConverter(typeof(ColorToSolidColorBrushConverter))]
     public readonly struct Color : IEquatable<Color>
     {
         static Color()

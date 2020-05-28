@@ -94,9 +94,18 @@ namespace Avalonia.Controls
                 _increaseButton.Click -= IncreaseClick;
             }
 
-            _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
-            _track = e.NameScope.Find<Track>("PART_Track");
-            _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
+            // _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
+
+            if (Orientation == Orientation.Horizontal)
+            {
+                _track = e.NameScope.Find<Track>("HorizontalThumb");
+            }
+            else
+            {
+                _track = e.NameScope.Find<Track>("VerticalThumb");
+            }
+
+            // _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
 
             if (_decreaseButton != null)
             {
