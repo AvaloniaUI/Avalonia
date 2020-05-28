@@ -2,7 +2,7 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
        xmlns:sys="clr-namespace:System;assembly=netstandard">
   <Style.Resources>
-    <Color x:Key="SystemAccentColor">#FF0073CF</Color>
+    <Color x:Key="SystemAccentColor">#FF0078D7</Color>
     <Color x:Key="SystemAltHighColor">#FF000000</Color>
     <Color x:Key="SystemAltLowColor">#FF000000</Color>
     <Color x:Key="SystemAltMediumColor">#FF000000</Color>
@@ -62,12 +62,12 @@
     <Thickness x:Key="ComboBoxItemRevealBorderThemeThickness">1,1,1,1</Thickness>
     <x:Double x:Key="PersonPictureEllipseBadgeStrokeThickness">1</x:Double>
     <!-- Override system generated accent colors -->
-    <Color x:Key="SystemAccentColorDark1">#FF1D85D7</Color>
-    <Color x:Key="SystemAccentColorDark2">#FF3B97DF</Color>
-    <Color x:Key="SystemAccentColorDark3">#FF58A8E8</Color>
-    <Color x:Key="SystemAccentColorLight1">#FF0064BE</Color>
-    <Color x:Key="SystemAccentColorLight2">#FF0055AD</Color>
-    <Color x:Key="SystemAccentColorLight3">#FF00459D</Color>
+    <Color x:Key="SystemAccentColorDark1">#FF005A9E</Color>
+    <Color x:Key="SystemAccentColorDark2">#FF004275</Color>
+    <Color x:Key="SystemAccentColorDark3">#FF002642</Color>
+    <Color x:Key="SystemAccentColorLight1">#FF429CE3</Color>
+    <Color x:Key="SystemAccentColorLight2">#FF76B9ED</Color>
+    <Color x:Key="SystemAccentColorLight3">#FFA6D8FF</Color>
     <Color x:Key="RegionColor">#FF000000</Color>
     <SolidColorBrush x:Key="RegionBrush" Color="{StaticResource RegionColor}" />
 
