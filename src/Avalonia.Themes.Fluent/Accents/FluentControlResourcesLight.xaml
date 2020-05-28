@@ -1,5 +1,5 @@
-<Style xmlns="https://github.com/avaloniaui" 
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+<Style xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:sys="clr-namespace:System;assembly=netstandard">
   <Style.Resources>
     <!-- Resources for Button.xaml -->
@@ -38,49 +38,6 @@
     <SolidColorBrush x:Key="ButtonPointerOverForegroundThemeBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="ButtonPressedBackgroundThemeBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="ButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
-
-    <!-- Resources for ListBox.xaml -->
-    <Thickness x:Key="ListBoxBorderThemeThickness">0</Thickness>
-    <SolidColorBrush x:Key="ListBoxBackgroundThemeBrush" Color="#CCFFFFFF" />
-    <SolidColorBrush x:Key="ListBoxBorderThemeBrush" Color="#45000000" />
-    <SolidColorBrush x:Key="ListBoxDisabledForegroundThemeBrush" Color="#66000000" />
-    <SolidColorBrush x:Key="ListBoxFocusBackgroundThemeBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="ListBoxForegroundThemeBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="ListBoxItemDisabledForegroundThemeBrush" Color="#66000000" />
-    <SolidColorBrush x:Key="ListBoxItemPointerOverBackgroundThemeBrush" Color="#21000000" />
-    <SolidColorBrush x:Key="ListBoxItemPointerOverForegroundThemeBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="ListBoxItemPressedBackgroundThemeBrush" Color="#FFD3D3D3" />
-    <SolidColorBrush x:Key="ListBoxItemPressedForegroundThemeBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="ListBoxItemSelectedBackgroundThemeBrush" Color="#FF4617B4" />
-    <SolidColorBrush x:Key="ListBoxItemSelectedDisabledBackgroundThemeBrush" Color="#8C000000" />
-    <SolidColorBrush x:Key="ListBoxItemSelectedDisabledForegroundThemeBrush" Color="#99FFFFFF" />
-    <SolidColorBrush x:Key="ListBoxItemSelectedForegroundThemeBrush" Color="White" />
-    <SolidColorBrush x:Key="ListBoxItemSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
-
-    <!-- Resources for TextBox.xaml -->
-    <SolidColorBrush x:Key="TextBoxForegroundHeaderThemeBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="TextBoxPlaceholderTextThemeBrush" Color="#AB000000" />
-    <SolidColorBrush x:Key="TextBoxBackgroundThemeBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="TextBoxBorderThemeBrush" Color="#A3000000" />
-    <SolidColorBrush x:Key="TextBoxButtonBackgroundThemeBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TextBoxButtonBorderThemeBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TextBoxButtonForegroundThemeBrush" Color="#99000000" />
-    <SolidColorBrush x:Key="TextBoxButtonPointerOverBackgroundThemeBrush" Color="#FFDEDEDE" />
-    <SolidColorBrush x:Key="TextBoxButtonPointerOverBorderThemeBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TextBoxButtonPointerOverForegroundThemeBrush" Color="Black" />
-    <SolidColorBrush x:Key="TextBoxButtonPressedBackgroundThemeBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="TextBoxButtonPressedBorderThemeBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TextBoxButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
-    <SolidColorBrush x:Key="TextBoxDisabledBackgroundThemeBrush" Color="#66CACACA" />
-    <SolidColorBrush x:Key="TextBoxDisabledBorderThemeBrush" Color="#26000000" />
-    <SolidColorBrush x:Key="TextBoxDisabledForegroundThemeBrush" Color="#FF666666" />
-    <SolidColorBrush x:Key="TextBoxForegroundThemeBrush" Color="#FF000000" />
-    <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="SystemControlBackgroundAltHighBrush" />
-    <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-    <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
-    <StaticResource x:Key="TextControlButtonForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-    <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="SystemControlForegroundBaseHighBrush" />
-    <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
 
     <!-- Resources for CheckBox.xaml -->
     <x:Double x:Key="CheckBoxBorderThemeThickness">1</x:Double>
@@ -171,6 +128,25 @@
     <SolidColorBrush x:Key="CheckBoxPressedBackgroundThemeBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="CheckBoxPressedBorderThemeBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="CheckBoxPressedForegroundThemeBrush" Color="#FFFFFFFF" />
+
+    <!-- Resources for ListBox.xaml -->
+    <Thickness x:Key="ListBoxBorderThemeThickness">0</Thickness>
+    <SolidColorBrush x:Key="ListBoxBackgroundThemeBrush" Color="#CCFFFFFF" />
+    <SolidColorBrush x:Key="ListBoxBorderThemeBrush" Color="#45000000" />
+    <SolidColorBrush x:Key="ListBoxDisabledForegroundThemeBrush" Color="#66000000" />
+    <SolidColorBrush x:Key="ListBoxFocusBackgroundThemeBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ListBoxForegroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="ListBoxItemDisabledForegroundThemeBrush" Color="#66000000" />
+    <SolidColorBrush x:Key="ListBoxItemPointerOverBackgroundThemeBrush" Color="#21000000" />
+    <SolidColorBrush x:Key="ListBoxItemPointerOverForegroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="ListBoxItemPressedBackgroundThemeBrush" Color="#FFD3D3D3" />
+    <SolidColorBrush x:Key="ListBoxItemPressedForegroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="ListBoxItemSelectedBackgroundThemeBrush" Color="#FF4617B4" />
+    <SolidColorBrush x:Key="ListBoxItemSelectedDisabledBackgroundThemeBrush" Color="#8C000000" />
+    <SolidColorBrush x:Key="ListBoxItemSelectedDisabledForegroundThemeBrush" Color="#99FFFFFF" />
+    <SolidColorBrush x:Key="ListBoxItemSelectedForegroundThemeBrush" Color="White" />
+    <SolidColorBrush x:Key="ListBoxItemSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
+
     <!-- Resources for Slider.xaml -->
     <x:Double x:Key="SliderOutsideTickBarThemeHeight">4</x:Double>
     <x:Double x:Key="SliderTrackThemeHeight">2</x:Double>
@@ -220,5 +196,30 @@
     <SolidColorBrush x:Key="SliderTrackPointerOverBackgroundThemeBrush" Color="#26000000" />
     <SolidColorBrush x:Key="SliderTrackPressedBackgroundThemeBrush" Color="#33000000" />
     <SolidColorBrush x:Key="SliderHeaderForegroundThemeBrush" Color="#FF000000" />
+
+    <!-- Resources for TextBox.xaml -->
+    <SolidColorBrush x:Key="TextBoxForegroundHeaderThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="TextBoxPlaceholderTextThemeBrush" Color="#AB000000" />
+    <SolidColorBrush x:Key="TextBoxBackgroundThemeBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="TextBoxBorderThemeBrush" Color="#A3000000" />
+    <SolidColorBrush x:Key="TextBoxButtonBackgroundThemeBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="TextBoxButtonBorderThemeBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="TextBoxButtonForegroundThemeBrush" Color="#99000000" />
+    <SolidColorBrush x:Key="TextBoxButtonPointerOverBackgroundThemeBrush" Color="#FFDEDEDE" />
+    <SolidColorBrush x:Key="TextBoxButtonPointerOverBorderThemeBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="TextBoxButtonPointerOverForegroundThemeBrush" Color="Black" />
+    <SolidColorBrush x:Key="TextBoxButtonPressedBackgroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="TextBoxButtonPressedBorderThemeBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="TextBoxButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="TextBoxDisabledBackgroundThemeBrush" Color="#66CACACA" />
+    <SolidColorBrush x:Key="TextBoxDisabledBorderThemeBrush" Color="#26000000" />
+    <SolidColorBrush x:Key="TextBoxDisabledForegroundThemeBrush" Color="#FF666666" />
+    <SolidColorBrush x:Key="TextBoxForegroundThemeBrush" Color="#FF000000" />
+    <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="SystemControlBackgroundAltHighBrush" />
+    <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+    <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+    <StaticResource x:Key="TextControlButtonForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+    <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
   </Style.Resources>
 </Style>
