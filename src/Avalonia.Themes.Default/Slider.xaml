@@ -1,93 +1,256 @@
-<Styles xmlns="https://github.com/avaloniaui">
-  <Style Selector="Slider:horizontal">
-    <Setter Property="MinWidth" Value="40"/>
-    <Setter Property="MinHeight" Value="20"/>
+<Styles xmlns="https://github.com/avaloniaui" 
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <Thickness x:Key="SliderTopHeaderMargin">0,0,0,4</Thickness>
+    <x:Double x:Key="SliderPreContentMargin">15</x:Double>
+    <x:Double x:Key="SliderPostContentMargin">15</x:Double>
+    <x:Double x:Key="SliderHorizontalHeight">32</x:Double>
+    <x:Double x:Key="SliderVerticalWidth">32</x:Double>
+    <x:Double x:Key="SliderThumbCornerRadius">10</x:Double>
+    <x:Double x:Key="SliderHorizontalThumbWidth">20</x:Double>
+    <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
+    <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
+    <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
+  </Styles.Resources>
+
+
+  <!-- Disabled State -->
+  <Style Selector="Slider:disabled /template/ ContentPresenter#HeaderContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource SliderHeaderForegroundDisabled}" />
+  </Style>
+  <Style Selector="Slider:disabled /template/ Rectangle#HorizontalDecreaseRect">
+    <Setter Property="Fill" Value="{DynamicResource SliderTrackValueFillDisabled}" />
+  </Style>
+  <Style Selector="Slider:disabled /template/ Rectangle#HorizontalTrackRect">
+    <Setter Property="Fill" Value="{DynamicResource SliderTrackFillDisabled}" />
+  </Style>
+  <Style Selector="Slider:disabled /template/ Rectangle#VerticalDecreaseRect">
+    <Setter Property="Fill" Value="{DynamicResource SliderTrackValueFillDisabled}" />
+  </Style>
+  <Style Selector="Slider:disabled /template/ Rectangle#VerticalTrackRect">
+    <Setter Property="Fill" Value="{DynamicResource SliderTrackFillDisabled}" />
+  </Style>
+  <Style Selector="Slider:disabled /template/ Thumb#HorizontalThumb">
+    <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundDisabled}" />
+  </Style>
+  <Style Selector="Slider:disabled /template/ Thumb#HorizontalThumb">
+    <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundDisabled}" />
+  </Style>
+
+
+      <VisualState x:Name="Disabled">
+
+        <Storyboard>  
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="" Storyboard.TargetProperty="">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource }" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="Background">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource }" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TopTickBar" Storyboard.TargetProperty="Fill">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderTickBarFillDisabled}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BottomTickBar" Storyboard.TargetProperty="Fill">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderTickBarFillDisabled}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LeftTickBar" Storyboard.TargetProperty="Fill">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderTickBarFillDisabled}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RightTickBar" Storyboard.TargetProperty="Fill">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderTickBarFillDisabled}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SliderContainer" Storyboard.TargetProperty="Background">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderContainerBackgroundDisabled}" />
+          </ObjectAnimationUsingKeyFrames>
+        </Storyboard>
+      </VisualState>
+
+
+  <VisualStateManager.VisualStateGroups>
+    <VisualStateGroup x:Name="CommonStates">
+      <VisualState x:Name="Normal" />
+
+      <VisualState x:Name="Pressed">
+
+        <Storyboard>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalTrackRect" Storyboard.TargetProperty="Fill">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderTrackFillPressed}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalTrackRect" Storyboard.TargetProperty="Fill">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderTrackFillPressed}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="Background">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderThumbBackgroundPressed}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="Background">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderThumbBackgroundPressed}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SliderContainer" Storyboard.TargetProperty="Background">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderContainerBackgroundPressed}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalDecreaseRect" Storyboard.TargetProperty="Fill">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderTrackValueFillPressed}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalDecreaseRect" Storyboard.TargetProperty="Fill">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderTrackValueFillPressed}" />
+          </ObjectAnimationUsingKeyFrames>
+        </Storyboard>
+      </VisualState>
+
+
+      <VisualState x:Name="PointerOver">
+
+        <Storyboard>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalTrackRect" Storyboard.TargetProperty="Fill">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderTrackFillPointerOver}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalTrackRect" Storyboard.TargetProperty="Fill">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderTrackFillPointerOver}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="Background">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderThumbBackgroundPointerOver}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="Background">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderThumbBackgroundPointerOver}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SliderContainer" Storyboard.TargetProperty="Background">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderContainerBackgroundPointerOver}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalDecreaseRect" Storyboard.TargetProperty="Fill">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderTrackValueFillPointerOver}" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalDecreaseRect" Storyboard.TargetProperty="Fill">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="{DynamicResource SliderTrackValueFillPointerOver}" />
+          </ObjectAnimationUsingKeyFrames>
+        </Storyboard>
+      </VisualState>
+
+    </VisualStateGroup>
+    <VisualStateGroup x:Name="FocusEngagementStates">
+      <VisualState x:Name="FocusDisengaged" />
+      <VisualState x:Name="FocusEngagedHorizontal">
+
+        <Storyboard>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SliderContainer" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="False" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="True" />
+          </ObjectAnimationUsingKeyFrames>
+        </Storyboard>
+      </VisualState>
+      <VisualState x:Name="FocusEngagedVertical">
+
+        <Storyboard>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SliderContainer" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="False" />
+          </ObjectAnimationUsingKeyFrames>
+          <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="(Control.IsTemplateFocusTarget)">
+            <DiscreteObjectKeyFrame KeyTime="0" Value="True" />
+          </ObjectAnimationUsingKeyFrames>
+        </Storyboard>
+      </VisualState>
+
+    </VisualStateGroup>
+
+  </VisualStateManager.VisualStateGroups>
+
+
+
+  <Style Selector="Slider">
+    <Setter Property="Background" Value="{DynamicResource SliderTrackFill}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource SliderBorderThemeThickness}" />
+    <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />
+    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="ManipulationMode" Value="None" />
+    <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+    <Setter Property="FocusVisualMargin" Value="-7,0,-7,0" />
+    <Setter Property="IsFocusEngagementEnabled" Value="True" />
+    <!-- NOTE: This was a contract7Present:Setter, not sure if this is correct -->
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
-      <ControlTemplate>
-        <Grid Name="grid">
-          <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto" MinHeight="20"/>
-            <RowDefinition Height="Auto"/>
-          </Grid.RowDefinitions>
-          <Border Name="TrackBackground" Grid.Row="1" Height="4" Margin="6,0" VerticalAlignment="Center"/>
-          <Track Name="PART_Track" Grid.Row="1" Orientation="Horizontal">
-            <Track.DecreaseButton>
-               <RepeatButton Name="PART_DecreaseButton"
-                             Classes="repeattrack" />
-            </Track.DecreaseButton>
-            <Track.IncreaseButton>
-               <RepeatButton Name="PART_IncreaseButton"
-                             Classes="repeattrack" />
-            </Track.IncreaseButton>
-            <Thumb Name="thumb" MinWidth="20" MinHeight="20">
-              <Thumb.Template>
-                <ControlTemplate>
-                  <Grid>
-                    <Ellipse Width="12" Height="12" Fill="{DynamicResource ThemeAccentBrush}"/>
-                  </Grid>
-                </ControlTemplate>
-              </Thumb.Template>
-            </Thumb>
-          </Track>
-        </Grid>
-      </ControlTemplate>
-    </Setter>
-  </Style>
-  <Style Selector="Slider:vertical">
-    <Setter Property="MinWidth" Value="20"/>
-    <Setter Property="MinHeight" Value="40"/>
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto" MinWidth="26"/>
-            <ColumnDefinition Width="Auto"/>
-          </Grid.ColumnDefinitions>
-          <Border Name="TrackBackground" Grid.Column="1" Width="4" Margin="0,6" HorizontalAlignment="Center"/>
-          <Track Name="PART_Track" Grid.Column="1" Orientation="Vertical" IsDirectionReversed="True">
-            <Track.DecreaseButton>
-               <RepeatButton Name="PART_DecreaseButton"
-                             Classes="repeattrack" />
-            </Track.DecreaseButton>
-            <Track.IncreaseButton>
-               <RepeatButton Name="PART_IncreaseButton"
-                             Classes="repeattrack" />
-            </Track.IncreaseButton>
-            <Thumb Name="thumb" MinWidth="20" MinHeight="20">
-              <Thumb.Template>
-                <ControlTemplate>
-                  <Grid>
-                    <Ellipse Width="12" Height="12" Fill="{DynamicResource ThemeAccentBrush}"/>
-                  </Grid>
-                </ControlTemplate>
-              </Thumb.Template>
-            </Thumb>
-          </Track>
-        </Grid>
-      </ControlTemplate>
-    </Setter>
-  </Style>
-  <Style Selector="Slider /template/ Track#PART_Track">
-    <Setter Property="Minimum" Value="{TemplateBinding Minimum}"/>
-    <Setter Property="Maximum" Value="{TemplateBinding Maximum}"/>
-    <Setter Property="Value" Value="{TemplateBinding Value, Mode=TwoWay}"/>
-  </Style>
-  <Style Selector="Slider /template/ Border#TrackBackground">
-    <Setter Property="BorderThickness" Value="2"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowBrush}"/>
-  </Style>
-  <Style Selector="Slider /template/ RepeatButton.repeattrack">
-    <Setter Property="Background" Value="Transparent"/>
-    <Setter Property="Foreground" Value="{DynamicResource ThemeBorderLowBrush}"/>
-    <Setter Property="Template">
+      <Setter.Value>
         <ControlTemplate>
-            <Border Background="{TemplateBinding Background}" />
+          <Grid Margin="{TemplateBinding Padding}">
+            <Grid.Resources>
+              <Style TargetType="Thumb" x:Key="SliderThumbStyle">
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Background" Value="{DynamicResource SliderThumbBackground}" />
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                      <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource SliderThumbCornerRadius}" />
+                    </ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+              </Style>
+            </Grid.Resources>
+
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" Foreground="{DynamicResource SliderHeaderForeground}" Margin="{DynamicResource SliderTopHeaderMargin}" TextWrapping="Wrap" Visibility="Collapsed" x:DeferLoadStrategy="Lazy"/>
+            <Grid x:Name="SliderContainer" Grid.Row="1" Background="{DynamicResource SliderContainerBackground}" Control.IsTemplateFocusTarget="True">
+              <Grid x:Name="HorizontalTemplate" MinHeight="{DynamicResource SliderHorizontalHeight}">
+
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="{DynamicResource SliderPreContentMargin}" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="{DynamicResource SliderPostContentMargin}" />
+                </Grid.RowDefinitions>
+
+                <Rectangle x:Name="HorizontalTrackRect" Fill="{TemplateBinding Background}" Height="{DynamicResource SliderTrackThemeHeight}" Grid.Row="1" Grid.ColumnSpan="3" contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}" contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" contract7NotPresent:RadiusX="{Binding Source={DynamicResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}" contract7NotPresent:RadiusY="{Binding Source={DynamicResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
+                <Rectangle x:Name="HorizontalDecreaseRect" Fill="{TemplateBinding Foreground}" Grid.Row="1" contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}" contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" contract7NotPresent:RadiusX="{Binding Source={DynamicResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}" contract7NotPresent:RadiusY="{Binding Source={DynamicResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
+                <TickBar x:Name="TopTickBar" Visibility="Collapsed" Fill="{DynamicResource SliderTickBarFill}" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Bottom" Margin="0,0,0,4" Grid.ColumnSpan="3" />
+                <TickBar x:Name="HorizontalInlineTickBar" Visibility="Collapsed" Fill="{DynamicResource SliderInlineTickBarFill}" Height="{DynamicResource SliderTrackThemeHeight}" Grid.Row="1" Grid.ColumnSpan="3" />
+                <TickBar x:Name="BottomTickBar" Visibility="Collapsed" Fill="{DynamicResource SliderTickBarFill}" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Top" Margin="0,4,0,0" Grid.Row="2" Grid.ColumnSpan="3" />
+                <Thumb x:Name="HorizontalThumb" Style="{StaticResource SliderThumbStyle}" DataContext="{TemplateBinding Value}" Height="{DynamicResource SliderHorizontalThumbHeight}" Width="{DynamicResource SliderHorizontalThumbWidth}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" FocusVisualMargin="-14,-6,-14,-6" AutomationProperties.AccessibilityView="Raw" />
+              </Grid>
+              <Grid x:Name="VerticalTemplate" MinWidth="{DynamicResource SliderVerticalWidth}" Visibility="Collapsed">
+
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="*" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="{DynamicResource SliderPreContentMargin}" />
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="{DynamicResource SliderPostContentMargin}" />
+                </Grid.ColumnDefinitions>
+
+                <Rectangle x:Name="VerticalTrackRect" Fill="{TemplateBinding Background}" Width="{DynamicResource SliderTrackThemeHeight}" Grid.Column="1" Grid.RowSpan="3" contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}" contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" contract7NotPresent:RadiusX="{Binding Source={DynamicResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}" contract7NotPresent:RadiusY="{Binding Source={DynamicResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
+                <Rectangle x:Name="VerticalDecreaseRect" Fill="{TemplateBinding Foreground}" Grid.Column="1" Grid.Row="2" contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}" contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" contract7NotPresent:RadiusX="{Binding Source={DynamicResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}" contract7NotPresent:RadiusY="{Binding Source={DynamicResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
+                <TickBar x:Name="LeftTickBar" Visibility="Collapsed" Fill="{DynamicResource SliderTickBarFill}" Width="{DynamicResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Right" Margin="0,0,4,0" Grid.RowSpan="3" />
+                <TickBar x:Name="VerticalInlineTickBar" Visibility="Collapsed" Fill="{DynamicResource SliderInlineTickBarFill}" Width="{DynamicResource SliderTrackThemeHeight}" Grid.Column="1" Grid.RowSpan="3" />
+                <TickBar x:Name="RightTickBar" Visibility="Collapsed" Fill="{DynamicResource SliderTickBarFill}" Width="{DynamicResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Left" Margin="4,0,0,0" Grid.Column="2" Grid.RowSpan="3" />
+                <Thumb x:Name="VerticalThumb" Style="{StaticResource SliderThumbStyle}" DataContext="{TemplateBinding Value}" Width="{DynamicResource SliderVerticalThumbWidth}" Height="{DynamicResource SliderVerticalThumbHeight}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" FocusVisualMargin="-6,-14,-6,-14" AutomationProperties.AccessibilityView="Raw" />
+              </Grid>
+
+            </Grid>
+
+          </Grid>
+
         </ControlTemplate>
+      </Setter.Value>
     </Setter>
   </Style>
-    <Style Selector="Slider:disabled /template/ Grid#grid">
-        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
-    </Style>
+
 </Styles>
+
+
+
+
+
+
+    
