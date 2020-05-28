@@ -1,24 +1,92 @@
-<Styles xmlns="https://github.com/avaloniaui">
-  <Style Selector="ProgressBar">
-    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
-    <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}"/>
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel>
+        <ProgressBar VerticalAlignment="Center" IsIndeterminate="True" />
+        <ProgressBar VerticalAlignment="Center" IsIndeterminate="True" Orientation="Vertical" />
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+  <Style Selector="ProgressBar">    
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ProgressBarBorderThemeThickness}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightTransparentBrush}" />
+    <Setter Property="Maximum" Value="100" />
+    <Setter Property="MinHeight" Value="{DynamicResource ProgressBarThemeMinHeight}" />
+    <!--<Setter Property="IsTabStop" Value="False" />-->
+    <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
-          <Border Background="{TemplateBinding Background}"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}">
-            <Border Name="PART_Indicator" Background="{TemplateBinding Foreground}"/>
+          <StackPanel x:Name="IndeterminateRoot" Orientation="Horizontal" Spacing="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseOffset}" Opacity="0">
+            <StackPanel.RenderTransform>
+              <TranslateTransform />
+            </StackPanel.RenderTransform>
+            <Border x:Name="B5" RenderTransformOrigin="0.5,0.5">
+              <Border.RenderTransform>
+                <TranslateTransform />
+              </Border.RenderTransform>
+              <Ellipse x:Name="E5" Fill="{TemplateBinding Foreground}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" RenderTransformOrigin="0.5,0.5">
+                <Ellipse.RenderTransform>
+                  <TranslateTransform />
+                </Ellipse.RenderTransform>
+              </Ellipse>
+            </Border>
+            <Border x:Name="B4" RenderTransformOrigin="0.5,0.5">
+              <Border.RenderTransform>
+                <TranslateTransform />
+              </Border.RenderTransform>
+              <Ellipse x:Name="E4" Fill="{TemplateBinding Foreground}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" RenderTransformOrigin="0.5,0.5">
+                <Ellipse.RenderTransform>
+                  <TranslateTransform />
+                </Ellipse.RenderTransform>
+              </Ellipse>
+            </Border>
+            <Border x:Name="B3" RenderTransformOrigin="0.5,0.5">
+              <Border.RenderTransform>
+                <TranslateTransform />
+              </Border.RenderTransform>
+              <Ellipse x:Name="E3" Fill="{TemplateBinding Foreground}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" RenderTransformOrigin="0.5,0.5">
+                <Ellipse.RenderTransform>
+                  <TranslateTransform />
+                </Ellipse.RenderTransform>
+              </Ellipse>
+            </Border>
+            <Border x:Name="B2" RenderTransformOrigin="0.5,0.5">
+              <Border.RenderTransform>
+                <TranslateTransform />
+              </Border.RenderTransform>
+              <Ellipse x:Name="E2" Fill="{TemplateBinding Foreground}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" RenderTransformOrigin="0.5,0.5">
+                <Ellipse.RenderTransform>
+                  <TranslateTransform />
+                </Ellipse.RenderTransform>
+              </Ellipse>
+            </Border>
+            <Border x:Name="B1" Grid.Column="8" RenderTransformOrigin="0.5,0.5">
+              <Border.RenderTransform>
+                <TranslateTransform />
+              </Border.RenderTransform>
+              <Ellipse x:Name="E1" Fill="{TemplateBinding Foreground}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" RenderTransformOrigin="0.5,0.5">
+                <Ellipse.RenderTransform>
+                  <TranslateTransform />
+                </Ellipse.RenderTransform>
+              </Ellipse>
+            </Border>
+          </StackPanel>
+          <Border
+              x:Name="DeterminateRoot"
+              Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"              
+              CornerRadius="{DynamicResource ControlCornerRadius}">
+            <Border
+                x:Name="PART_Indicator"
+                Margin="{TemplateBinding Padding}"
+                Background="{TemplateBinding Foreground}"
+                HorizontalAlignment="Left"
+                CornerRadius="{DynamicResource ControlCornerRadius}" />
           </Border>
-          <LayoutTransformControl
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                IsVisible="{Binding ShowProgressText, RelativeSource={RelativeSource TemplatedParent}}"
-                Name="PART_LayoutTransformControl">
-            <TextBlock
-                Foreground="{DynamicResource ThemeForegroundBrush}"
-                Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:0}%}" />
-          </LayoutTransformControl>
         </Grid>
       </ControlTemplate>
     </Setter>
@@ -33,10 +101,10 @@
   </Style>
   <Style Selector="ProgressBar:horizontal">
     <Setter Property="MinWidth" Value="200"/>
-    <Setter Property="MinHeight" Value="16"/>
+    <Setter Property="MinHeight" Value="4"/>
   </Style>
   <Style Selector="ProgressBar:vertical">
-    <Setter Property="MinWidth" Value="16"/>
+    <Setter Property="MinWidth" Value="4"/>
     <Setter Property="MinHeight" Value="200"/>
   </Style>
   <Style Selector="ProgressBar:vertical /template/ LayoutTransformControl#PART_LayoutTransformControl">
@@ -48,7 +116,7 @@
   </Style>
   <Style Selector="ProgressBar:horizontal:indeterminate /template/ Border#PART_Indicator">
     <Style.Animations>
-      <Animation Duration="0:0:3"
+      <Animation Duration="0:0:1"
                  IterationCount="Infinite"
                  Easing="LinearEasing">
         <KeyFrame Cue="0%">
