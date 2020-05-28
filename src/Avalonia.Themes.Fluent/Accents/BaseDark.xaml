@@ -161,8 +161,8 @@
     <x:Double x:Key="AppBarExpandButtonCircleDiameter">3</x:Double>
     <x:Double x:Key="AutoSuggestListMaxHeight">374</x:Double>
     <x:Double x:Key="AutoSuggestListBorderOpacity">0</x:Double>
-    <x:Double x:Key="CheckBoxBorderThemeThickness">2</x:Double>
-    <x:Double x:Key="CheckBoxCheckedStrokeThickness">0</x:Double>
+    <Thickness x:Key="CheckBoxBorderThemeThickness">2</Thickness>
+    <Thickness x:Key="CheckBoxCheckedStrokeThickness">0</Thickness>
     <x:Double x:Key="ComboBoxArrowThemeFontSize">21</x:Double>
     <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
     <x:Double x:Key="ComboBoxPopupThemeMinWidth">80</x:Double>

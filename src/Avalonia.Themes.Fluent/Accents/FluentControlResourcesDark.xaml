@@ -28,8 +28,8 @@
     <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
 
     <!-- Resources for Checkbox.xaml -->
-    <x:Double x:Key="CheckBoxBorderThemeThickness">1</x:Double>
-    <x:Double x:Key="CheckBoxCheckedStrokeThickness">0</x:Double>
+    <Thickness x:Key="CheckBoxBorderThemeThickness">1</Thickness>
+    <Thickness x:Key="CheckBoxCheckedStrokeThickness">0</Thickness>
     <StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="CheckBoxForegroundUncheckedPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="CheckBoxForegroundUncheckedPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
