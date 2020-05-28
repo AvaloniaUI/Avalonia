@@ -1,8 +1,8 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Styles.Resources>
     <Thickness x:Key="SliderTopHeaderMargin">0,0,0,4</Thickness>
-    <x:Double x:Key="SliderPreContentMargin">15</x:Double>
-    <x:Double x:Key="SliderPostContentMargin">15</x:Double>
+    <GridLength x:Key="SliderPreContentMargin">15</GridLength>
+    <GridLength x:Key="SliderPostContentMargin">15</GridLength>
     <x:Double x:Key="SliderHorizontalHeight">32</x:Double>
     <x:Double x:Key="SliderVerticalWidth">32</x:Double>
     <CornerRadius x:Key="SliderThumbCornerRadius">10</CornerRadius>
@@ -27,10 +27,10 @@
   <Style Selector="Slider:disabled /template/ Border#VerticalTrackRect">
     <Setter Property="Background" Value="{DynamicResource SliderTrackFillDisabled}" />
   </Style>
-  <Style Selector="Slider:disabled /template/ Thumb#HorizontalThumb">
+  <Style Selector="Slider:disabled /template/ Thumb#HorizontalThumb /template/ Border">
     <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundDisabled}" />
   </Style>
-  <Style Selector="Slider:disabled /template/ Thumb#VerticalThumb">
+  <Style Selector="Slider:disabled /template/ Thumb#VerticalThumb /template/ Border">
     <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundDisabled}" />
   </Style>
   <!-- <Style Selector="Slider:disabled /template/ TickBar#TopTickBar">
@@ -58,10 +58,10 @@
   <Style Selector="Slider:pressed /template/ Border#VerticalTrackRect">
     <Setter Property="Background" Value="{DynamicResource SliderTrackFillPressed}" />
   </Style>
-  <Style Selector="Slider:pressed /template/ Thumb#HorizontalThumb">
+  <Style Selector="Slider:pressed /template/ Thumb#HorizontalThumb /template/ Border">
     <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPressed}" />
   </Style>
-  <Style Selector="Slider:pressed /template/ Thumb#VerticalThumb">
+  <Style Selector="Slider:pressed /template/ Thumb#VerticalThumb /template/ Border">
     <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPressed}" />
   </Style>
   <Style Selector="Slider:pressed /template/ Grid#SliderContainer">
@@ -80,10 +80,10 @@
   <Style Selector="Slider:pointerover /template/ Border#VerticalTrackRect">
     <Setter Property="Background" Value="{DynamicResource SliderTrackFillPointerOver}" />
   </Style>
-  <Style Selector="Slider:pointerover /template/ Thumb#HorizontalThumb">
+  <Style Selector="Slider:pointerover /template/ Thumb#HorizontalThumb /template/ Border">
     <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPointerOver}" />
   </Style>
-  <Style Selector="Slider:pointerover /template/ Thumb#VerticalThumb">
+  <Style Selector="Slider:pointerover /template/ Thumb#VerticalThumb /template/ Border">
     <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPointerOver}" />
   </Style>
   <Style Selector="Slider:pointerover /template/ Grid#SliderContainer">
