@@ -3,7 +3,7 @@
     <Border Padding="20">
       <StackPanel>
         <ProgressBar VerticalAlignment="Center" IsIndeterminate="True" />
-        <ProgressBar VerticalAlignment="Center" IsIndeterminate="True" Orientation="Vertical" />
+        <ProgressBar HorizontalAlignment="Left" IsIndeterminate="True" Orientation="Vertical" />
       </StackPanel>
     </Border>
   </Design.PreviewWith>
@@ -83,8 +83,7 @@
             <Border
                 x:Name="PART_Indicator"
                 Margin="{TemplateBinding Padding}"
-                Background="{TemplateBinding Foreground}"
-                HorizontalAlignment="Left"
+                Background="{TemplateBinding Foreground}"                
                 CornerRadius="{DynamicResource ControlCornerRadius}" />
           </Border>
         </Grid>
@@ -132,7 +131,7 @@
   </Style>
   <Style Selector="ProgressBar:vertical:indeterminate /template/ Border#PART_Indicator">
     <Style.Animations>
-      <Animation Duration="0:0:3"
+      <Animation Duration="0:0:1"
                  IterationCount="Infinite"
                  Easing="LinearEasing">
         <KeyFrame Cue="0%">
