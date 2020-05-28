@@ -1,50 +1,53 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style Selector="CheckBox">
-    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
-    <Setter Property="Background" Value="Transparent"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
-    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
-    <Setter Property="Padding" Value="4,0,0,0"/>
-    <Setter Property="VerticalContentAlignment" Value="Center"/>
-    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundUnchecked}" />
+    <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUnchecked}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushUnchecked}" />
+    <Setter Property="Padding" Value="8,5,0,0" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="VerticalContentAlignment" Value="Top" />
+    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="MinWidth" Value="120" />
+    <Setter Property="MinHeight" Value="32" />
+    <!--<Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+    <Setter Property="FocusVisualMargin" Value="-7,-3,-7,-3" />-->
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="Auto,*">
-          <Border Name="border"
-                  Background="{TemplateBinding Background}"
-                  BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  Width="18"
-                  Height="18"
-                  VerticalAlignment="Center">
-            <Panel>
-              <Path Name="checkMark"
-                    Fill="{DynamicResource HighlightBrush}"
-                    Width="11"
-                    Height="10"
-                    Stretch="Uniform"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Data="M 1145.607177734375,430 C1145.607177734375,430 1141.449951171875,435.0772705078125 1141.449951171875,435.0772705078125 1141.449951171875,435.0772705078125 1139.232177734375,433.0999755859375 1139.232177734375,433.0999755859375 1139.232177734375,433.0999755859375 1138,434.5538330078125 1138,434.5538330078125 1138,434.5538330078125 1141.482177734375,438 1141.482177734375,438 1141.482177734375,438 1141.96875,437.9375 1141.96875,437.9375 1141.96875,437.9375 1147,431.34619140625 1147,431.34619140625 1147,431.34619140625 1145.607177734375,430 1145.607177734375,430 z"/>
-              <Rectangle Name="indeterminateMark"
-                         Fill="{DynamicResource HighlightBrush}"
-                         Width="10"
-                         Height="10"
-                         Stretch="Uniform"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center"/>
-            </Panel>
-          </Border>
-          <ContentPresenter Name="PART_ContentPresenter"
-                            TextBlock.Foreground="{TemplateBinding Foreground}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Content="{TemplateBinding Content}"
-                            Margin="{TemplateBinding Padding}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}"
-                            Grid.Column="1"/>
-        </Grid>
+        <Border Background="{TemplateBinding Background}"
+                         BorderBrush="{TemplateBinding BorderBrush}"
+                         BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{DynamicResource ControlCornerRadius}">
+          <Grid x:Name="RootGrid" ColumnDefinitions="20,*">
+            <Grid VerticalAlignment="Top" Height="32">
+              <Border x:Name="NormalRectangle"
+                  Background="{DynamicResource CheckBoxCheckBackgroundFillUnchecked}"
+                  BorderBrush="{DynamicResource CheckBoxCheckBackgroundStrokeUnchecked}"
+                  BorderThickness="{DynamicResource CheckBoxBorderThemeThickness}"
+                  UseLayoutRounding="False"
+                  Height="20"
+                  Width="20"
+                  CornerRadius="{DynamicResource ControlCornerRadius}" />
+              <!--<FontIcon x:Name="CheckGlyph"
+                  FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                  Glyph="&#xE001;"
+                  FontSize="16"
+                  Foreground="{DynamicResource CheckBoxCheckGlyphForegroundUnchecked}"
+                  Opacity="0" />-->
+
+            </Grid>
+            <ContentPresenter x:Name="ContentPresenter"
+                           ContentTemplate="{TemplateBinding ContentTemplate}"                           
+                           Content="{TemplateBinding Content}"
+                           Margin="{TemplateBinding Padding}"
+                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                           Grid.Column="1" />
+            <!-- TODO: TextWrapping="Wrap" on contentpresenter -->
+          </Grid>
+        </Border>
       </ControlTemplate>
     </Setter>
   </Style>
