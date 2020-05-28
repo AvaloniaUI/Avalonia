@@ -46,9 +46,7 @@
           <Border Padding="{TemplateBinding Padding}"
             Grid.Row="1"
             Grid.Column="0"
-            Margin="{TemplateBinding BorderThickness}"
-                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+            Margin="{TemplateBinding BorderThickness}">
             <DockPanel>
               <TextBlock Name="floatingWatermark"
                          Foreground="{DynamicResource ThemeAccentBrush}"
@@ -75,7 +73,9 @@
                                Opacity="0.5"
                                Text="{TemplateBinding Watermark}"
                                IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
-                    <TextPresenter Name="PART_TextPresenter"                                   
+                    <!-- TODO eliminate this margin... text layout issue? -->
+                    <TextPresenter Name="PART_TextPresenter"
+                                   Margin="0 1 0 0"
                                    Text="{TemplateBinding Text, Mode=TwoWay}"
                                    CaretIndex="{TemplateBinding CaretIndex}"
                                    SelectionStart="{TemplateBinding SelectionStart}"
