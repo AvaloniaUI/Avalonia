@@ -7,7 +7,7 @@ namespace Avalonia.Win32
 {
     class PopupImpl : WindowImpl, IPopupImpl
     {
-        private bool _hasBoxShadow = true;
+        private bool _dropShadowHint = true;
 
         public override void Show()
         {
@@ -38,7 +38,7 @@ namespace Avalonia.Win32
                 IntPtr.Zero,
                 IntPtr.Zero);
 
-            EnableBoxShadow(result, _hasBoxShadow);
+            EnableBoxShadow(result, _dropShadowHint);
 
             return result;
         }
@@ -84,7 +84,7 @@ namespace Avalonia.Win32
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {
-            _hasBoxShadow = enabled;
+            _dropShadowHint = enabled;
 
             if (Handle != null)
             {
