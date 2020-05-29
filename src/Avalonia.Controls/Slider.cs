@@ -44,6 +44,9 @@ namespace Avalonia.Controls
             Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
             Thumb.DragDeltaEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e), RoutingStrategies.Bubble);
+            PointerPressedEvent.AddClassHandler<Slider>((x, e) => x.HandlePointerPressed(e), RoutingStrategies.Tunnel, true);
+            PointerReleasedEvent.AddClassHandler<Slider>((x, e) => x.HandlePointerReleased(), RoutingStrategies.Tunnel, true);
+            PointerCaptureLostEvent.AddClassHandler<Slider>((x, e) => x.HandlePointerReleased(), RoutingStrategies.Tunnel, true);
         }
 
         /// <summary>
@@ -205,6 +208,24 @@ namespace Avalonia.Controls
             }
 
             return value;
+        }
+
+        private void HandlePointerPressed(PointerPressedEventArgs e)
+        {
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            {
+                UpdatePseudoClasses(true);
+            }
+        }
+
+        private void HandlePointerReleased()
+        {
+            UpdatePseudoClasses(false);
+        }
+
+        private void UpdatePseudoClasses(bool isPressed)
+        {
+            PseudoClasses.Set(":pressed", isPressed);
         }
 
         private void UpdatePseudoClasses(Orientation o)

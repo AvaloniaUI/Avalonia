@@ -1,7 +1,10 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
     <Border Margin="20" Width="200">
-      <Slider Value="50" />
+      <StackPanel Spacing="10">
+        <Slider Value="50" />
+        <Slider IsEnabled="False" Value="50" />
+      </StackPanel>
     </Border>
   </Design.PreviewWith>
   <Styles.Resources>
@@ -31,7 +34,7 @@
           <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
             <Grid.Styles>
               <Style Selector="Thumb.SliderThumbStyle">
-                <Setter Property="BorderThickness" Value="0" />                
+                <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="Template">
                   <Setter.Value>
                     <ControlTemplate>
@@ -113,11 +116,11 @@
                       </RepeatButton.Template>
                     </RepeatButton>
                   </Track.IncreaseButton>
-                  <Thumb Classes="SliderThumbStyle" 
-                         Name="thumb" 
-                         Margin="0" Padding="0" 
-                         DataContext="{TemplateBinding Value}" 
-                         Height="{DynamicResource SliderHorizontalThumbHeight}" 
+                  <Thumb Classes="SliderThumbStyle"
+                         Name="thumb"
+                         Margin="0" Padding="0"
+                         DataContext="{TemplateBinding Value}"
+                         Height="{DynamicResource SliderHorizontalThumbHeight}"
                          Width="{DynamicResource SliderHorizontalThumbWidth}" />
                 </Track>
               </Grid>
@@ -138,19 +141,36 @@
   <Style Selector="Slider /template/ Thumb.SliderThumbStyle">
     <Setter Property="Background" Value="{DynamicResource SliderThumbBackground}" />
   </Style>
-  
+
   <Style Selector="Slider /template/ Grid#SliderContainer">
     <Setter Property="Background" Value="{DynamicResource SliderContainerBackground}" />
-  </Style>  
-
-  <!-- Pressed State -->
+  </Style>
 
   <!-- Disabled State -->
+  <Style Selector="Slider:disabled /template/ ContentPresenter#HeaderContentPresenter">
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource SliderHeaderForegroundDisabled}" />
+  </Style>
+
+  <Style Selector="Slider:disabled /template/ RepeatButton#PART_DecreaseButton">
+    <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillDisabled}" />
+  </Style>
+
+  <Style Selector="Slider:disabled /template/ RepeatButton#PART_IncreaseButton">
+    <Setter Property="Background" Value="{DynamicResource SliderTrackFillDisabled}" />
+  </Style>
+
+  <Style Selector="Slider:disabled /template/ Thumb.SliderThumbStyle">
+    <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundDisabled}" />
+  </Style>
+
+  <Style Selector="Slider:pointerover /template/ Grid#SliderContainer">
+    <Setter Property="Background" Value="{DynamicResource SliderContainerBackgroundDisabled}" />
+  </Style>
 
   <!-- PointerOver State -->
   <Style Selector="Slider:pointerover /template/ RepeatButton#PART_IncreaseButton">
     <Setter Property="Background" Value="{DynamicResource SliderTrackFillPointerOver}" />
-  </Style>  
+  </Style>
 
   <Style Selector="Slider:pointerover /template/ Thumb.SliderThumbStyle">
     <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPointerOver}" />
@@ -162,5 +182,22 @@
 
   <Style Selector="Slider:pointerover /template/ RepeatButton#PART_DecreaseButton">
     <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillPointerOver}" />
+  </Style>
+
+  <!-- Pressed State -->
+  <Style Selector="Slider:pressed /template/ RepeatButton#PART_IncreaseButton">
+    <Setter Property="Background" Value="{DynamicResource SliderTrackFillPressed}" />
+  </Style>
+
+  <Style Selector="Slider:pressed /template/ Thumb.SliderThumbStyle">
+    <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPressed}" />
+  </Style>
+
+  <Style Selector="Slider:pointerover /template/ Grid#SliderContainer">
+    <Setter Property="Background" Value="{DynamicResource SliderContainerBackgroundPressed}" />
+  </Style>
+
+  <Style Selector="Slider:pointerover /template/ RepeatButton#PART_DecreaseButton">
+    <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillPressed}" />
   </Style>
 </Styles>
