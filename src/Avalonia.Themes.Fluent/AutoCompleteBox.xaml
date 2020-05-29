@@ -1,4 +1,5 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles xmlns="https://github.com/avaloniaui" 
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
     <Border Padding="20">
       <AutoCompleteBox Width="200">
@@ -43,17 +44,11 @@
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}" />
           
           <Popup Name="PART_Popup"
+                 WindowManagerAddShadowHint="False"
                  MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                  MaxHeight="{TemplateBinding MaxDropDownHeight}"
-                 StaysOpen="False"
-                 PlacementTarget="{TemplateBinding}">
-            <Popup.Styles>
-              <Style Selector="PopupRoot">
-                <Setter Property="WindowManagerAddShadowHint" Value="False" />
-                <Setter Property="TransparencyLevelHint" Value="Transparent" />
-                <Setter Property="Background" Value="{x:Null}" />
-              </Style>
-            </Popup.Styles>
+                 StaysOpen="False"                 
+                 PlacementTarget="{TemplateBinding}">            
             <Border Name="PART_SuggestionsContainer"
                     Padding="{DynamicResource AutoCompleteListMargin}"
                     BorderThickness="{DynamicResource AutoCompleteListBorderThemeThickness}"
