@@ -2,7 +2,7 @@
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="10">
-        <ComboBox>
+        <ComboBox PlaceholderText="Select an item">
           <ComboBoxItem>Item 1</ComboBoxItem>
           <ComboBoxItem>Item 2</ComboBoxItem>
         </ComboBox>
@@ -36,6 +36,7 @@
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="PlaceholderForeground" Value="{DynamicResource ComboBoxPlaceHolderForeground}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Grid RowDefinitions="Auto, *, Auto" ColumnDefinitions="*,32">
@@ -65,7 +66,14 @@
                           BorderThickness="{TemplateBinding BorderThickness}"
                           CornerRadius="{DynamicResource ControlCornerRadius}"
                           Opacity="0" />
-
+          <TextBlock  x:Name="PlaceholderTextBlock"
+                      Grid.Row="1"
+                      Grid.Column="0"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Center"
+                      Margin="{TemplateBinding Padding}"
+                                 Foreground="{TemplateBinding PlaceholderForeground}"
+                                 Text="{TemplateBinding PlaceholderText}" IsVisible="{TemplateBinding SelectionBoxItem, Converter={x:Static ObjectConverters.IsNull}}"/>
           <ContentControl x:Name="ContentPresenter"
                           Content="{TemplateBinding SelectionBoxItem}"
                           ContentTemplate="{TemplateBinding ItemTemplate}"
@@ -74,8 +82,6 @@
                          Margin="{TemplateBinding Padding}"
                          HorizontalAlignment="Left"
                          VerticalAlignment="Center">
-            <TextBlock x:Name="PlaceholderTextBlock"
-                             Text="TODO Implement Placeholder" />
           </ContentControl>
 
           <Border x:Name="DropDownOverlay"
@@ -100,6 +106,7 @@
             </Panel>
           </Viewbox>
           <Popup Name="PART_Popup"
+                 WindowManagerAddShadowHint="False"
                  IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
                  MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                  MaxHeight="{TemplateBinding MaxDropDownHeight}"
