@@ -83,8 +83,8 @@
     <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
 
     <!-- Resources for AutoCompleteBox.xaml -->
-    <StaticResource x:Key="AutoCompleteBoxSuggestionsListBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
-    <StaticResource x:Key="AutoCompleteBoxSuggestionsListBorderBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
+    <StaticResource x:Key="AutoCompleteBoxSuggestionsListBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
+    <StaticResource x:Key="AutoCompleteBoxSuggestionsListBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
     <StaticResource x:Key="AutoCompleteBoxLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
     <x:Double x:Key="AutoCompleteBoxIconFontSize">12</x:Double>
 
