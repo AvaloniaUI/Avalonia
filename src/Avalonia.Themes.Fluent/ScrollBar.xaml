@@ -140,3 +140,586 @@
     <Setter Property="Fill" Value="{DynamicResource ThemeAccentBrush}" />
   </Style>
 </Styles>
+
+
+
+
+
+
+    <Style x:Key="DefaultScrollBarStyle" TargetType="ScrollBar">
+        <Setter Property="MinWidth" Value="{ThemeResource ScrollBarSize}" />
+        <Setter Property="MinHeight" Value="{ThemeResource ScrollBarSize}" />
+        <Setter Property="Background" Value="{ThemeResource ScrollBarBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource ScrollBarForeground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ScrollBarBorderBrush}" />
+        <Setter Property="IsTabStop" Value="False" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid x:Name="Root">
+                        <Grid.Resources>
+                            <ControlTemplate x:Key="RepeatButtonTemplate" TargetType="RepeatButton">
+                                <Grid x:Name="Root" Background="Transparent">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                </Grid>
+                            </ControlTemplate>
+                            <ControlTemplate x:Key="HorizontalIncrementTemplate" TargetType="RepeatButton">
+                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="PointerOver">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushDisabled}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundDisabled}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE0E3;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{ThemeResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
+                                </Grid>
+                            </ControlTemplate>
+                            <ControlTemplate x:Key="HorizontalDecrementTemplate" TargetType="RepeatButton">
+                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="PointerOver">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushDisabled}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundDisabled}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE0E2;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{ThemeResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
+                                </Grid>
+                            </ControlTemplate>
+                            <ControlTemplate x:Key="VerticalIncrementTemplate" TargetType="RepeatButton">
+                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="PointerOver">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushDisabled}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundDisabled}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE0E5;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{ThemeResource ScrollBarButtonArrowIconFontSize}" />
+                                </Grid>
+                            </ControlTemplate>
+                            <ControlTemplate x:Key="VerticalDecrementTemplate" TargetType="RepeatButton">
+                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="PointerOver">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushDisabled}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundDisabled}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE0E4;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{ThemeResource ScrollBarButtonArrowIconFontSize}" />
+                                </Grid>
+                            </ControlTemplate>
+                            <ControlTemplate x:Key="VerticalThumbTemplate" TargetType="Thumb">
+                                <Rectangle x:Name="ThumbVisual" Fill="{TemplateBinding Background}"
+                                           contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter8x}}"
+                                           contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="PointerOver">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ThumbVisual" Storyboard.TargetProperty="Fill">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarThumbFillPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ThumbVisual" Storyboard.TargetProperty="Fill">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarThumbFillPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ThumbVisual" Storyboard.TargetProperty="Fill">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarThumbFillDisabled}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <DoubleAnimation Duration="0" To="0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="ThumbVisual" />
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                </Rectangle>
+                            </ControlTemplate>
+                            <ControlTemplate x:Key="HorizontalThumbTemplate" TargetType="Thumb">
+                                <Rectangle x:Name="ThumbVisual" Fill="{TemplateBinding Background}"
+                                           contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                           contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter8x}}">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="PointerOver">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ThumbVisual" Storyboard.TargetProperty="Fill">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarThumbFillPointerOver}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ThumbVisual" Storyboard.TargetProperty="Fill">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarThumbFillPressed}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ThumbVisual" Storyboard.TargetProperty="Fill">
+                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarThumbFillDisabled}" />
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <DoubleAnimation Duration="0" To="0" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="ThumbVisual" />
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                </Rectangle>
+                            </ControlTemplate>
+                        </Grid.Resources>
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.Background" Value="{ThemeResource ScrollBarBackgroundDisabled}" />
+                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource ScrollBarBorderBrushDisabled}" />
+                                        <Setter Target="Root.Opacity" Value="0.5" />
+                                        <Setter Target="HorizontalTrackRect.Stroke" Value="{ThemeResource ScrollBarTrackStrokeDisabled}" />
+                                        <Setter Target="VerticalTrackRect.Stroke" Value="{ThemeResource ScrollBarTrackStrokeDisabled}" />
+                                        <Setter Target="HorizontalTrackRect.Fill" Value="{ThemeResource ScrollBarTrackFillDisabled}" />
+                                        <Setter Target="VerticalTrackRect.Fill" Value="{ThemeResource ScrollBarTrackFillDisabled}" />
+                                        <Setter Target="HorizontalPanningThumb.Background" Value="{ThemeResource ScrollBarPanningThumbBackgroundDisabled}" />
+                                        <Setter Target="VerticalPanningThumb.Background" Value="{ThemeResource ScrollBarPanningThumbBackgroundDisabled}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="ScrollingIndicatorStates">
+                                <VisualState x:Name="TouchIndicator">
+                                    <VisualState.Setters>
+                                        <Setter Target="HorizontalRoot.Visibility" Value="Collapsed" />
+                                        <Setter Target="VerticalRoot.Visibility" Value="Collapsed" />
+                                        <Setter Target="HorizontalPanningRoot.Opacity" Value="1" />
+                                        <Setter Target="VerticalPanningRoot.Opacity" Value="1" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="MouseIndicator">
+                                    <VisualState.Setters>
+                                        <Setter Target="HorizontalPanningRoot.Visibility" Value="Collapsed" />
+                                        <Setter Target="VerticalPanningRoot.Visibility" Value="Collapsed" />
+                                        <Setter Target="HorizontalRoot.IsHitTestVisible" Value="True" />
+                                        <Setter Target="VerticalRoot.IsHitTestVisible" Value="True" />
+                                        <Setter Target="HorizontalThumb.Opacity" Value="1" />
+                                        <Setter Target="VerticalThumb.Opacity" Value="1" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="NoIndicator">
+                                    <Storyboard>
+                                        <ColorAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" To="{ThemeResource ScrollBarPanningThumbBackgroundColor}" />
+                                        <ColorAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" To="{ThemeResource ScrollBarPanningThumbBackgroundColor}" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="VerticalThumbTransform" Storyboard.TargetProperty="ScaleX" To="{ThemeResource SmallScrollThumbScale}" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="VerticalThumbTransform" Storyboard.TargetProperty="TranslateX" To="{ThemeResource SmallScrollThumbOffset}" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="HorizontalThumbTransform" Storyboard.TargetProperty="ScaleY" To="{ThemeResource SmallScrollThumbScale}" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="HorizontalThumbTransform" Storyboard.TargetProperty="TranslateY" To="{ThemeResource SmallScrollThumbOffset}" />
+
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="VerticalSmallIncrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="VerticalLargeIncrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="VerticalLargeDecrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="VerticalSmallDecrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="VerticalTrackRect" Storyboard.TargetProperty="Opacity" To="0" />
+
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="HorizontalSmallIncrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="HorizontalLargeIncrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="HorizontalLargeDecrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="HorizontalSmallDecrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="HorizontalTrackRect" Storyboard.TargetProperty="Opacity" To="0" />
+
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalRoot" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractDuration}">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Visibility>Collapsed</Visibility>
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalRoot" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractDuration}">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Visibility>Collapsed</Visibility>
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
+                                        </ObjectAnimationUsingKeyFrames>
+
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="HorizontalPanningRoot" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" Storyboard.TargetName="VerticalPanningRoot" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalPanningRoot" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractDuration}">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Visibility>Collapsed</Visibility>
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalPanningRoot" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractDuration}">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Visibility>Collapsed</Visibility>
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="ConsciousStates">
+                                <VisualStateGroup.Transitions>
+                                    <VisualTransition From="Expanded" To="Collapsed">
+                                        <Storyboard>
+                                            <ColorAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" To="{ThemeResource ScrollBarPanningThumbBackgroundColor}" />
+                                            <ColorAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" To="{ThemeResource ScrollBarPanningThumbBackgroundColor}" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalThumbTransform" Storyboard.TargetProperty="ScaleX" To="{ThemeResource SmallScrollThumbScale}" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalThumbTransform" Storyboard.TargetProperty="TranslateX" To="{ThemeResource SmallScrollThumbOffset}" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalThumbTransform" Storyboard.TargetProperty="ScaleY" To="{ThemeResource SmallScrollThumbScale}" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalThumbTransform" Storyboard.TargetProperty="TranslateY" To="{ThemeResource SmallScrollThumbOffset}" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalSmallIncrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalLargeIncrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalLargeDecrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalSmallDecrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalTrackRect" Storyboard.TargetProperty="Opacity" To="0" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalSmallIncrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalLargeIncrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalLargeDecrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalSmallDecrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                            <DoubleAnimation Duration="{ThemeResource ScrollBarContractDuration}" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalTrackRect" Storyboard.TargetProperty="Opacity" To="0" />
+                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="CornerRadius">
+                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractBeginTime}" Value="0" />
+                                            </contract7Present:ObjectAnimationUsingKeyFrames>
+                                            <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="CornerRadius">
+                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractBeginTime}" Value="0" />
+                                            </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualTransition>
+                                </VisualStateGroup.Transitions>
+                                <VisualState x:Name="Collapsed" />
+                                <VisualState x:Name="Expanded">
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.Background" Value="{ThemeResource ScrollBarBackgroundPointerOver}" />
+                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource ScrollBarBorderBrushPointerOver}" />
+                                        <Setter Target="HorizontalTrackRect.Stroke" Value="{ThemeResource ScrollBarTrackStrokePointerOver}" />
+                                        <Setter Target="VerticalTrackRect.Stroke" Value="{ThemeResource ScrollBarTrackStrokePointerOver}" />
+                                        <Setter Target="HorizontalTrackRect.Fill" Value="{ThemeResource ScrollBarTrackFillPointerOver}" />
+                                        <Setter Target="VerticalTrackRect.Fill" Value="{ThemeResource ScrollBarTrackFillPointerOver}" />
+                                    </VisualState.Setters>
+
+                                    <Storyboard>
+                                        <ColorAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" To="{ThemeResource ScrollBarThumbBackgroundColor}" />
+                                        <ColorAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" To="{ThemeResource ScrollBarThumbBackgroundColor}" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalThumbTransform" Storyboard.TargetProperty="ScaleX" To="1.0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalThumbTransform" Storyboard.TargetProperty="TranslateX" To="0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalThumbTransform" Storyboard.TargetProperty="ScaleY" To="1.0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalThumbTransform" Storyboard.TargetProperty="TranslateY" To="0" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalSmallIncrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalLargeIncrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalLargeDecrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalSmallDecrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalTrackRect" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalSmallIncrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalLargeIncrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalLargeDecrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalSmallDecrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="{ThemeResource ScrollBarExpandDuration}" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalTrackRect" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="CornerRadius">
+                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarExpandBeginTime}" Value="0" />
+                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="CornerRadius">
+                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarExpandBeginTime}" Value="0" />
+                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="ExpandedWithoutAnimation">
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.Background" Value="{ThemeResource ScrollBarBackgroundPointerOver}" />
+                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource ScrollBarBorderBrushPointerOver}" />
+                                        <Setter Target="HorizontalTrackRect.Stroke" Value="{ThemeResource ScrollBarTrackStrokePointerOver}" />
+                                        <Setter Target="VerticalTrackRect.Stroke" Value="{ThemeResource ScrollBarTrackStrokePointerOver}" />
+                                        <Setter Target="HorizontalTrackRect.Fill" Value="{ThemeResource ScrollBarTrackFillPointerOver}" />
+                                        <Setter Target="VerticalTrackRect.Fill" Value="{ThemeResource ScrollBarTrackFillPointerOver}" />
+                                        <contract7Present:Setter Target="HorizontalThumb.CornerRadius" Value="0" />
+                                        <contract7Present:Setter Target="VerticalThumb.CornerRadius" Value="0" />
+                                    </VisualState.Setters>
+                                    <!-- The storyboard below cannot be moved to a transition since transitions
+                                             will not be run by the framework when animations are disabled in the system -->
+                                    <Storyboard>
+                                        <ColorAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" To="{ThemeResource ScrollBarThumbBackgroundColor}" />
+                                        <ColorAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" To="{ThemeResource ScrollBarThumbBackgroundColor}" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalThumbTransform" Storyboard.TargetProperty="ScaleX" To="1.0" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalThumbTransform" Storyboard.TargetProperty="TranslateX" To="0" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalThumbTransform" Storyboard.TargetProperty="ScaleY" To="1.0" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalThumbTransform" Storyboard.TargetProperty="TranslateY" To="0" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalSmallIncrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalLargeIncrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalLargeDecrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalSmallDecrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="VerticalTrackRect" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalSmallIncrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalLargeIncrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalLargeDecrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalSmallDecrease" Storyboard.TargetProperty="Opacity" To="1" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarExpandBeginTime}" Storyboard.TargetName="HorizontalTrackRect" Storyboard.TargetProperty="Opacity" To="1" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="CollapsedWithoutAnimation">
+                                    <!-- The storyboard below cannot be moved to a transition since transitions
+                                             will not be run by the framework when animations are disabled in the system -->
+                                    <Storyboard>
+                                        <ColorAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" To="{ThemeResource ScrollBarPanningThumbBackgroundColor}" />
+                                        <ColorAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" To="{ThemeResource ScrollBarPanningThumbBackgroundColor}" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalThumbTransform" Storyboard.TargetProperty="ScaleX" To="{ThemeResource SmallScrollThumbScale}" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalThumbTransform" Storyboard.TargetProperty="TranslateX" To="{ThemeResource SmallScrollThumbOffset}" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalThumbTransform" Storyboard.TargetProperty="ScaleY" To="{ThemeResource SmallScrollThumbScale}" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalThumbTransform" Storyboard.TargetProperty="TranslateY" To="{ThemeResource SmallScrollThumbOffset}" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalSmallIncrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalLargeIncrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalLargeDecrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalSmallDecrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="VerticalTrackRect" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalSmallIncrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalLargeIncrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalLargeDecrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalSmallDecrease" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <DoubleAnimation Duration="0" BeginTime="{ThemeResource ScrollBarContractBeginTime}" Storyboard.TargetName="HorizontalTrackRect" Storyboard.TargetProperty="Opacity" To="0" />
+                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb" Storyboard.TargetProperty="CornerRadius">
+                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractBeginTime}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius}" />
+                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                        <contract7Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb" Storyboard.TargetProperty="CornerRadius">
+                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollBarContractBeginTime}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius}" />
+                                        </contract7Present:ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                        </VisualStateManager.VisualStateGroups>
+                        <Grid x:Name="HorizontalRoot" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" IsHitTestVisible="False">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Rectangle x:Name="HorizontalTrackRect" Opacity="0" Grid.ColumnSpan="5" Margin="0" StrokeThickness="{ThemeResource ScrollBarTrackBorderThemeThickness}" Fill="{ThemeResource ScrollBarTrackFill}" Stroke="{ThemeResource ScrollBarTrackStroke}" />
+                            <RepeatButton x:Name="HorizontalSmallDecrease" Opacity="0" Grid.Column="0" MinHeight="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Template="{StaticResource HorizontalDecrementTemplate}" Width="{ThemeResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
+                            <RepeatButton x:Name="HorizontalLargeDecrease" Opacity="0" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" Template="{StaticResource RepeatButtonTemplate}" Width="0" AllowFocusOnInteraction="False" />
+                            <Thumb x:Name="HorizontalThumb"
+                                   Opacity="0"
+                                   Grid.Column="2"
+                                   Background="{ThemeResource ScrollBarPanningThumbBackground}"
+                                   Template="{StaticResource HorizontalThumbTemplate}"
+                                   Height="{ThemeResource ScrollBarSize}"
+                                   MinWidth="{ThemeResource ScrollBarSize}"
+                                   AutomationProperties.AccessibilityView="Raw"
+                                   VerticalAlignment="Bottom"
+                                   RenderTransformOrigin="0.5,1"
+                                   contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
+                                <Thumb.RenderTransform>
+                                    <CompositeTransform x:Name="HorizontalThumbTransform" ScaleX="1.0" ScaleY="{ThemeResource SmallScrollThumbScale}" TranslateX="0" TranslateY="{ThemeResource SmallScrollThumbOffset}" />
+                                </Thumb.RenderTransform>
+                            </Thumb>
+                            <RepeatButton x:Name="HorizontalLargeIncrease" Opacity="0" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
+                            <RepeatButton x:Name="HorizontalSmallIncrease" Opacity="0" Grid.Column="4" MinHeight="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Template="{StaticResource HorizontalIncrementTemplate}" Width="{ThemeResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
+                        </Grid>
+                        <Grid x:Name="HorizontalPanningRoot" MinWidth="24" Visibility="Collapsed" Opacity="0" contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
+                            <Border x:Name="HorizontalPanningThumb" VerticalAlignment="Bottom" HorizontalAlignment="Left" Background="{ThemeResource ScrollBarPanningThumbBackground}" BorderThickness="0" Height="2" MinWidth="32" Margin="0,2,0,2"/>
+                        </Grid>
+                        <Grid x:Name="VerticalRoot" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" IsHitTestVisible="False">
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Rectangle x:Name="VerticalTrackRect" Opacity="0" Grid.RowSpan="5" Margin="0" StrokeThickness="{ThemeResource ScrollBarTrackBorderThemeThickness}" Fill="{ThemeResource ScrollBarTrackFill}" Stroke="{ThemeResource ScrollBarTrackStroke}" />
+                            <RepeatButton x:Name="VerticalSmallDecrease" Opacity="0" Height="{ThemeResource ScrollBarSize}" MinWidth="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Grid.Row="0" Template="{StaticResource VerticalDecrementTemplate}" HorizontalAlignment="Center" />
+                            <RepeatButton x:Name="VerticalLargeDecrease" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="0" IsTabStop="False" Interval="50" Grid.Row="1" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
+                            <Thumb x:Name="VerticalThumb"
+                                   Opacity="0"
+                                   Grid.Row="2"
+                                   Background="{ThemeResource ScrollBarPanningThumbBackground}"
+                                   Template="{StaticResource VerticalThumbTemplate}"
+                                   Width="{ThemeResource ScrollBarSize}"
+                                   MinHeight="{ThemeResource ScrollBarSize}"
+                                   AutomationProperties.AccessibilityView="Raw"
+                                   RenderTransformOrigin="1,0.5"
+                                   contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
+                                <Thumb.RenderTransform>
+                                    <CompositeTransform x:Name="VerticalThumbTransform" ScaleX="{ThemeResource SmallScrollThumbScale}" ScaleY="1.0" TranslateX="{ThemeResource SmallScrollThumbOffset}" TranslateY="0" />
+                                </Thumb.RenderTransform>
+                            </Thumb>
+                            <RepeatButton x:Name="VerticalLargeIncrease" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" Grid.Row="3" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
+                            <RepeatButton x:Name="VerticalSmallIncrease" Opacity="0" Height="{ThemeResource ScrollBarSize}" MinWidth="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Grid.Row="4" Template="{StaticResource VerticalIncrementTemplate}" HorizontalAlignment="Center" />
+                        </Grid>
+                        <Grid x:Name="VerticalPanningRoot" MinHeight="24" Visibility="Collapsed" Opacity="0" contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
+                            <Border x:Name="VerticalPanningThumb" VerticalAlignment="Top" HorizontalAlignment="Right" Background="{ThemeResource ScrollBarPanningThumbBackground}" BorderThickness="0" Width="2" MinHeight="32" Margin="2,0,2,0"/>
+                        </Grid>
+
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
