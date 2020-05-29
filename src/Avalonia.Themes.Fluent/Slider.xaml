@@ -1,10 +1,16 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
-    <Border Margin="20" Width="200">
-      <StackPanel Spacing="10">
-        <Slider Value="50" />
-        <Slider IsEnabled="False" Value="50" />
-      </StackPanel>
+    <Border Margin="20" Width="200" Height="200">
+      <DockPanel LastChildFill="True">
+        <StackPanel Spacing="10" DockPanel.Dock="Top">
+          <Slider Value="50" />
+          <Slider IsEnabled="False" Value="50" />
+        </StackPanel>
+        <StackPanel Spacing="10" Orientation="Horizontal">
+          <Slider Value="50"  Orientation="Vertical" />
+          <Slider IsEnabled="False" Orientation="Vertical" Value="50" />
+        </StackPanel>
+      </DockPanel>
     </Border>
   </Design.PreviewWith>
   <Styles.Resources>
