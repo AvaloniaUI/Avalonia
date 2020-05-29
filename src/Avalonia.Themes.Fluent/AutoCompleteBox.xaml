@@ -47,14 +47,22 @@
                  MaxHeight="{TemplateBinding MaxDropDownHeight}"
                  StaysOpen="False"
                  PlacementTarget="{TemplateBinding}">
+            <Popup.Styles>
+              <Style Selector="PopupRoot">
+                <Setter Property="WindowManagerAddShadowHint" Value="False" />
+                <Setter Property="TransparencyLevelHint" Value="Transparent" />
+                <Setter Property="Background" Value="{x:Null}" />
+              </Style>
+            </Popup.Styles>
             <Border Name="PART_SuggestionsContainer"
                     Padding="{DynamicResource AutoCompleteListMargin}"
                     BorderThickness="{DynamicResource AutoCompleteListBorderThemeThickness}"
-                    BorderBrush="{DynamicResource AutoCompleteBoxSuggestionsListBorderBrush}"
+                    BorderBrush="{DynamicResource AutoSuggestBoxSuggestionsListBorderBrush}"
                     Background="{DynamicResource AutoCompleteBoxSuggestionsListBackground}"
                     CornerRadius="{DynamicResource OverlayCornerRadius}">
               <ListBox Name="PART_SelectingItemsControl"
                        BorderThickness="0"
+                       Background="Transparent"
                        Foreground="{DynamicResource AutoCompleteBoxSuggestionsListForeground}"
                        ItemTemplate="{TemplateBinding ItemTemplate}"
                        Margin="{DynamicResource AutoCompleteListPadding}" />
