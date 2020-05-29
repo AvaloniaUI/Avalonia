@@ -31,9 +31,11 @@
     <Color x:Key="SystemRevealListLowColor">#FF1D1D1D</Color>
     <Color x:Key="SystemRevealListMediumColor">#FF333333</Color>
     <!--<AcrylicBrush x:Key="SystemControlAcrylicWindowBrush" BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{ThemeResource SystemChromeMediumColor}" />-->
+    
     <!-- Override system shape defaults -->
     <CornerRadius x:Key="ControlCornerRadius">2,2,2,2</CornerRadius>
     <CornerRadius x:Key="OverlayCornerRadius">4,4,4,4</CornerRadius>
+    
     <!-- Override system borders -->
     <Thickness x:Key="MenuBarItemBorderThickness">1,1,1,1</Thickness>
     <Thickness x:Key="GridViewItemMultiselectBorderThickness">1,1,1,1</Thickness>
@@ -59,6 +61,7 @@
     <Thickness x:Key="GridViewItemRevealBorderThemeThickness">1,1,1,1</Thickness>
     <Thickness x:Key="ComboBoxItemRevealBorderThemeThickness">1,1,1,1</Thickness>
     <x:Double x:Key="PersonPictureEllipseBadgeStrokeThickness">1</x:Double>
+    
     <!-- Override system generated accent colors -->
     <Color x:Key="SystemAccentColorDark1">#FF005A9E</Color>
     <Color x:Key="SystemAccentColorDark2">#FF004275</Color>
@@ -68,6 +71,7 @@
     <Color x:Key="SystemAccentColorLight3">#FFA6D8FF</Color>
     <Color x:Key="RegionColor">#FF000000</Color>
     <SolidColorBrush x:Key="RegionBrush" Color="{StaticResource RegionColor}" />
+    
     <!-- BaseResources for Button.xaml -->
     <StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
     <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
@@ -81,6 +85,7 @@
     <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
     <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
     <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    
     <!-- BaseResources for ListBox.xaml -->
     <Thickness x:Key="ListBoxBorderThemeThickness">0</Thickness>
     <SolidColorBrush x:Key="ListBoxBackgroundThemeBrush" Color="#CCFFFFFF" />
@@ -98,6 +103,7 @@
     <SolidColorBrush x:Key="ListBoxItemSelectedDisabledForegroundThemeBrush" Color="#99000000" />
     <SolidColorBrush x:Key="ListBoxItemSelectedForegroundThemeBrush" Color="White" />
     <SolidColorBrush x:Key="ListBoxItemSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
+    
     <!-- BaseResources for TextBox.xaml -->
     <StaticResource x:Key="TextControlForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -129,6 +135,7 @@
     <StaticResource x:Key="TextControlButtonForegroundPressed" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
     <StaticResource x:Key="ContentLinkForegroundColor" ResourceKey="SystemControlHyperlinkTextBrush" />
     <StaticResource x:Key="ContentLinkBackgroundColor" ResourceKey="SystemControlPageBackgroundChromeLowBrush" />
+    
     <!-- BaseResources for CheckBox.xaml -->
     <StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="CheckBoxForegroundUncheckedPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -202,6 +209,7 @@
     <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePressed" ResourceKey="SystemControlForegroundBaseMediumBrush" />
     <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminateDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    
     <!-- BaseResources for RadioButton.xaml -->
     <StaticResource x:Key="RadioButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="RadioButtonForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
