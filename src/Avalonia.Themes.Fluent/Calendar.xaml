@@ -5,7 +5,7 @@
 // All other rights reserved.
 -->
 
-<Styles xmlns="https://github.com/avaloniaui">
+<Styles xmlns="https://github.com/avaloniaui">  
   <Style Selector="Calendar">
     <Setter Property="Foreground" Value="{DynamicResource CalendarViewForeground}" />
     <Setter Property="Background" Value="{DynamicResource CalendarViewBackground}" />

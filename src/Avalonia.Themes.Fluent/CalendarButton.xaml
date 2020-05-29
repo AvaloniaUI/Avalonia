@@ -22,8 +22,9 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Panel>
+          <!-- To mimic WinUI SystemFocusVisual, Focus visual is drawn outside the bounds of the item -->
           <Border Name="Root" Background="{TemplateBinding Background}"
-                  BorderThickness="0" CornerRadius="2" ClipToBounds="True">
+                  BorderThickness="0" CornerRadius="{DynamicResource ControlCornerRadius}" ClipToBounds="True">
 
             <ContentControl Name="Content"
                   ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -40,12 +41,14 @@
           <Border Name="Border"
                   BorderThickness="2"
                   BorderBrush="{TemplateBinding BorderBrush}"
-                  CornerRadius="2"/>
+                  CornerRadius="{DynamicResource ControlCornerRadius}"/>
 
+          <!--Removed for now...WinUI doesn't have selection follow focus, and only uses 
+              focus visual w/ keyboard focus
           <Border Name="FocusVisual" BorderThickness="2"
                      BorderBrush="{DynamicResource SystemControlHighlightBaseHighBrush}"
                      IsHitTestVisible="False"
-                     Margin="-1"  CornerRadius="2"/>
+                     Margin="-2"  CornerRadius="{DynamicResource ControlCornerRadius}"/>-->
         </Panel>
       </ControlTemplate>
     </Setter>
