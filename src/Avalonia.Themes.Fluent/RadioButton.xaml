@@ -2,7 +2,10 @@
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="10">
-        <RadioButton />
+        <RadioButton Content="Option 1" />
+        <RadioButton Content="Option 2" />
+        <RadioButton IsEnabled="False" Content="Option 3" />
+        <RadioButton Content="Option 2" />
       </StackPanel>
     </Border>
   </Design.PreviewWith>
