@@ -24,6 +24,7 @@
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
     <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Name="PART_LayoutRoot">
