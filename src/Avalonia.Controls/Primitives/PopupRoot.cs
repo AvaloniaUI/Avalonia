@@ -17,19 +17,14 @@ namespace Avalonia.Controls.Primitives
     public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
     {
         private readonly TopLevel _parent;
-        private PopupPositionerParameters _positionerParameters;
-
-        public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
-            AvaloniaProperty.Register<PopupRoot, bool>(nameof(WindowManagerAddShadowHint), true);
+        private PopupPositionerParameters _positionerParameters;        
 
         /// <summary>
         /// Initializes static members of the <see cref="PopupRoot"/> class.
         /// </summary>
         static PopupRoot()
         {
-            BackgroundProperty.OverrideDefaultValue(typeof(PopupRoot), Brushes.White);
-
-            WindowManagerAddShadowHintProperty.Changed.AddClassHandler<PopupRoot>((tl, e) => tl.PlatformImpl.SetWindowManagerAddShadowHint((bool)e.NewValue));
+            BackgroundProperty.OverrideDefaultValue(typeof(PopupRoot), Brushes.White);            
         }
 
         /// <summary>
@@ -58,13 +53,7 @@ namespace Avalonia.Controls.Primitives
         /// Gets the platform-specific window implementation.
         /// </summary>
         [CanBeNull]
-        public new IPopupImpl PlatformImpl => (IPopupImpl)base.PlatformImpl;
-        
-        public bool WindowManagerAddShadowHint
-        {
-            get { return GetValue(WindowManagerAddShadowHintProperty); }
-            set { SetValue(WindowManagerAddShadowHintProperty, value); }
-        }
+        public new IPopupImpl PlatformImpl => (IPopupImpl)base.PlatformImpl;               
 
         /// <summary>
         /// Gets the parent control in the event route.
