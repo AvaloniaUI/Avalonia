@@ -158,8 +158,8 @@
     <x:Double x:Key="AppBarThemeMinimalHeight">24</x:Double>
     <x:Double x:Key="AppBarThemeCompactHeight">40</x:Double>
     <x:Double x:Key="AppBarExpandButtonCircleDiameter">3</x:Double>
-    <x:Double x:Key="AutoSuggestListMaxHeight">374</x:Double>
-    <x:Double x:Key="AutoSuggestListBorderOpacity">0</x:Double>
+    <x:Double x:Key="AutoCompleteListMaxHeight">374</x:Double>
+    <x:Double x:Key="AutoCompleteListBorderOpacity">0</x:Double>
     <Thickness x:Key="CheckBoxBorderThemeThickness">2</Thickness>
     <Thickness x:Key="CheckBoxCheckedStrokeThickness">0</Thickness>
     <x:Double x:Key="ComboBoxArrowThemeFontSize">21</x:Double>
@@ -257,10 +257,10 @@
     <Thickness x:Key="AppBarTopBorderThemeThickness">0,0,0,0</Thickness>
     <Thickness x:Key="AppBarTopThemePadding">0,0,0,0</Thickness>
     <Thickness x:Key="AppBarExpandButtonCircleInnerPadding">3,0,3,0</Thickness>
-    <Thickness x:Key="AutoSuggestListBorderThemeThickness">1</Thickness>
-    <Thickness x:Key="AutoSuggestListMargin">0,2,0,2</Thickness>
-    <Thickness x:Key="AutoSuggestListPadding">-1,0,-1,0</Thickness>
-    <Thickness x:Key="AutoSuggestListViewItemMargin">12,11,0,13</Thickness>
+    <Thickness x:Key="AutoCompleteListBorderThemeThickness">1</Thickness>
+    <Thickness x:Key="AutoCompleteListMargin">0,2,0,2</Thickness>
+    <Thickness x:Key="AutoCompleteListPadding">-1,0,-1,0</Thickness>
+    <Thickness x:Key="AutoCompleteListViewItemMargin">12,11,0,13</Thickness>
     <Thickness x:Key="ButtonBorderThemeThickness">2</Thickness>
     <Thickness x:Key="CalendarDatePickerBorderThemeThickness">2</Thickness>
     <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
