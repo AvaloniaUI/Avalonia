@@ -7,6 +7,8 @@ namespace Avalonia.Win32
 {
     class PopupImpl : WindowImpl, IPopupImpl
     {
+        private bool _hasBoxShadow = true;
+
         public override void Show()
         {
             UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
@@ -36,11 +38,7 @@ namespace Avalonia.Win32
                 IntPtr.Zero,
                 IntPtr.Zero);
 
-            var classes = (int)UnmanagedMethods.GetClassLongPtr(result, (int)UnmanagedMethods.ClassLongIndex.GCL_STYLE);
-
-            classes |= (int)UnmanagedMethods.ClassStyles.CS_DROPSHADOW;
-
-            UnmanagedMethods.SetClassLong(result, UnmanagedMethods.ClassLongIndex.GCL_STYLE, new IntPtr(classes));
+            EnableBoxShadow(result, _hasBoxShadow);
 
             return result;
         }
@@ -66,6 +64,32 @@ namespace Avalonia.Win32
             Move(position);
             Resize(size);
             //TODO: We ignore the scaling override for now
+        }
+
+        private void EnableBoxShadow (IntPtr hwnd, bool enabled)
+        {
+            var classes = (int)UnmanagedMethods.GetClassLongPtr(hwnd, (int)UnmanagedMethods.ClassLongIndex.GCL_STYLE);
+
+            if (enabled)
+            {
+                classes |= (int)UnmanagedMethods.ClassStyles.CS_DROPSHADOW;
+            }
+            else
+            {
+                classes &= ~(int)UnmanagedMethods.ClassStyles.CS_DROPSHADOW;
+            }
+
+            UnmanagedMethods.SetClassLong(hwnd, UnmanagedMethods.ClassLongIndex.GCL_STYLE, new IntPtr(classes));
+        }
+
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+            _hasBoxShadow = enabled;
+
+            if (Handle != null)
+            {
+                EnableBoxShadow(Handle.Handle, enabled);
+            }
         }
 
         public IPopupPositioner PopupPositioner { get; }
