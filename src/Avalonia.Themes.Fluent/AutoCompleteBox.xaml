@@ -1,37 +1,64 @@
-<Styles xmlns="https://github.com/avaloniaui">
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <AutoCompleteBox Width="200">
+        <AutoCompleteBox.Items>
+          Alabama
+          Alaska
+          Arizona
+          Arkansas
+          California
+          Colorado
+          Connecticut
+          Delaware
+        </AutoCompleteBox.Items>
+      </AutoCompleteBox>
+    </Border>
+  </Design.PreviewWith>
+
   <Style Selector="AutoCompleteBox">
-    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
-    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
-    <Setter Property="Padding" Value="4"/>
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
+    <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
+    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Panel>
+        <Grid Name="PART_LayoutRoot">
           <TextBox Name="PART_TextBox"
-                   Background="{TemplateBinding Background}" 
-                   BorderBrush="{TemplateBinding BorderBrush}" 
-                   BorderThickness="{TemplateBinding BorderThickness}"
-                   Padding="{TemplateBinding Padding}"
                    Watermark="{TemplateBinding Watermark}"
+                   Width="{TemplateBinding Width}"
+                   Foreground="{TemplateBinding Foreground}"
+                   Background="{TemplateBinding Background}"
+                   BorderBrush="{TemplateBinding BorderBrush}"
+                   BorderThickness="{TemplateBinding BorderThickness}"
+                   FontSize="{TemplateBinding FontSize}"
+                   FontFamily="{TemplateBinding FontFamily}"
+                   FontWeight="{TemplateBinding FontWeight}"
+                   Margin="0"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}" />
           
           <Popup Name="PART_Popup"
                  MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                  MaxHeight="{TemplateBinding MaxDropDownHeight}"
-                 PlacementTarget="{TemplateBinding}"
-                 StaysOpen="False">
-            <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-                    BorderThickness="1">
+                 StaysOpen="False"
+                 PlacementTarget="{TemplateBinding}">
+            <Border Name="PART_SuggestionsContainer"
+                    Padding="{DynamicResource AutoCompleteListMargin}"
+                    BorderThickness="{DynamicResource AutoCompleteListBorderThemeThickness}"
+                    BorderBrush="{DynamicResource AutoCompleteBoxSuggestionsListBorderBrush}"
+                    Background="{DynamicResource AutoCompleteBoxSuggestionsListBackground}"
+                    CornerRadius="{DynamicResource OverlayCornerRadius}">
               <ListBox Name="PART_SelectingItemsControl"
                        BorderThickness="0"
-                       Background="{TemplateBinding Background}"
-                       Foreground="{TemplateBinding Foreground}"
                        ItemTemplate="{TemplateBinding ItemTemplate}"
-                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                       ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                       MaxHeight="{DynamicResource AutoCompleteListMaxHeight}"
+                       Margin="{DynamicResource AutoCompleteListPadding}" />
             </Border>
           </Popup>
-        </Panel>
+        </Grid>
       </ControlTemplate>
     </Setter>
   </Style>
