@@ -37,6 +37,7 @@
                    FontSize="{TemplateBinding FontSize}"
                    FontFamily="{TemplateBinding FontFamily}"
                    FontWeight="{TemplateBinding FontWeight}"
+                   Padding="{TemplateBinding Padding}"
                    Margin="0"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}" />
           
@@ -53,6 +54,7 @@
                     CornerRadius="{DynamicResource OverlayCornerRadius}">
               <ListBox Name="PART_SelectingItemsControl"
                        BorderThickness="0"
+                       Foreground="{DynamicResource AutoCompleteBoxSuggestionsListForeground}"
                        ItemTemplate="{TemplateBinding ItemTemplate}"
                        MaxHeight="{DynamicResource AutoCompleteListMaxHeight}"
                        Margin="{DynamicResource AutoCompleteListPadding}" />
