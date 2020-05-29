@@ -15,6 +15,8 @@ namespace Avalonia.LinuxFramebuffer.Output
         private readonly EglGlPlatformSurface _eglPlatformSurface;
         public PixelSize PixelSize => _mode.Resolution;
         public double Scaling { get; set; }
+        public IGlContext MainContext => _deferredContext;
+
         public DrmOutput(string path = null)
         {
             var card = new DrmCard(path);
@@ -48,7 +50,6 @@ namespace Avalonia.LinuxFramebuffer.Output
         private drmModeModeInfo _mode;
         private EglDisplay _eglDisplay;
         private EglSurface _eglSurface;
-        private EglContext _immediateContext;
         private EglContext _deferredContext;
         private IntPtr _currentBo;
         private IntPtr _gbmTargetSurface;
@@ -129,13 +130,15 @@ namespace Avalonia.LinuxFramebuffer.Output
                 return _eglDisplay.CreateContext(share, _eglDisplay.CreateWindowSurface(offSurf));
             }
             
-            _immediateContext = CreateContext(null);
-            _deferredContext = CreateContext(_immediateContext);
-            
-            _immediateContext.MakeCurrent(_eglSurface);
-            _eglDisplay.GlInterface.ClearColor(0, 0, 0, 0);
-            _eglDisplay.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
-            _eglSurface.SwapBuffers();
+            _deferredContext = CreateContext(null);
+
+            using (_deferredContext.MakeCurrent(_eglSurface))
+            {
+                _deferredContext.GlInterface.ClearColor(0, 0, 0, 0);
+                _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
+                _eglSurface.SwapBuffers();
+            }
+
             var bo = gbm_surface_lock_front_buffer(_gbmTargetSurface);
             var fbId = GetFbIdForBo(bo);
             var connectorId = connector.Id;
@@ -153,9 +156,10 @@ namespace Avalonia.LinuxFramebuffer.Output
             for(var c=0;c<2;c++)
                 using (CreateGlRenderTarget().BeginDraw())
                 {
-                    _eglDisplay.GlInterface.ClearColor(0, 0, 0, 0);
-                    _eglDisplay.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
+                    _deferredContext.GlInterface.ClearColor(0, 0, 0, 0);
+                    _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
                 }
+            
         }
 
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
@@ -179,15 +183,17 @@ namespace Avalonia.LinuxFramebuffer.Output
             class RenderSession : IGlPlatformSurfaceRenderingSession
             {
                 private readonly DrmOutput _parent;
+                private readonly IDisposable _clearContext;
 
-                public RenderSession(DrmOutput parent)
+                public RenderSession(DrmOutput parent, IDisposable clearContext)
                 {
                     _parent = parent;
+                    _clearContext = clearContext;
                 }
 
                 public void Dispose()
                 {
-                    _parent._eglDisplay.GlInterface.Flush();
+                    _parent._deferredContext.GlInterface.Flush();
                     _parent._eglSurface.SwapBuffers();
                     
                     var nextBo = gbm_surface_lock_front_buffer(_parent._gbmTargetSurface);
@@ -225,27 +231,29 @@ namespace Avalonia.LinuxFramebuffer.Output
                         gbm_surface_release_buffer(_parent._gbmTargetSurface, _parent._currentBo);
                         _parent._currentBo = nextBo;
                     }
-                    _parent._eglDisplay.ClearContext();
+                    _clearContext.Dispose();
                 }
 
 
-                public IGlDisplay Display => _parent._eglDisplay;
+                public IGlContext Context => _parent._deferredContext;
 
                 public PixelSize Size => _parent._mode.Resolution;
 
                 public double Scaling => _parent.Scaling;
+
+                public bool IsYFlipped { get; }
             }
 
             public IGlPlatformSurfaceRenderingSession BeginDraw()
             {
-                _parent._deferredContext.MakeCurrent(_parent._eglSurface);
-                return new RenderSession(_parent);
+                return new RenderSession(_parent, _parent._deferredContext.MakeCurrent(_parent._eglSurface));
             }
-            
-            
         }
 
-        IGlContext IWindowingPlatformGlFeature.ImmediateContext => _immediateContext;
+        public IGlContext CreateContext()
+        {
+            throw new NotImplementedException();
+        }
     }
 
 

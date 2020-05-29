@@ -1,7 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
 using Avalonia.Data;
 
 #nullable enable
@@ -9,7 +5,7 @@ using Avalonia.Data;
 namespace Avalonia
 {
     /// <summary>
-    /// Provides information for a avalonia property change.
+    /// Provides information for an Avalonia property change.
     /// </summary>
     public class AvaloniaPropertyChangedEventArgs<T> : AvaloniaPropertyChangedEventArgs
     {
@@ -45,18 +41,27 @@ namespace Avalonia
         /// <summary>
         /// Gets the old value of the property.
         /// </summary>
-        /// <value>
-        /// The old value of the property.
-        /// </value>
+        /// <remarks>
+        /// When <see cref="AvaloniaPropertyChangedEventArgs.IsEffectiveValueChange"/> is true, returns the
+        /// old value of the property on the object. 
+        /// When <see cref="AvaloniaPropertyChangedEventArgs.IsEffectiveValueChange"/> is false, returns
+        /// <see cref="Optional{T}.Empty"/>.
+        /// </remarks>
         public new Optional<T> OldValue { get; private set; }
 
         /// <summary>
         /// Gets the new value of the property.
         /// </summary>
-        /// <value>
-        /// The new value of the property.
-        /// </value>
+        /// <remarks>
+        /// When <see cref="AvaloniaPropertyChangedEventArgs.IsEffectiveValueChange"/> is true, returns the
+        /// value of the property on the object.
+        /// When <see cref="AvaloniaPropertyChangedEventArgs.IsEffectiveValueChange"/> is false returns the
+        /// changed value, or <see cref="Optional{T}.Empty"/> if the value was removed.
+        /// </remarks>
         public new BindingValue<T> NewValue { get; private set; }
+
+        internal void SetOldValue(Optional<T> value) => OldValue = value;
+        internal void SetNewValue(BindingValue<T> value) => NewValue = value;
 
         protected override AvaloniaProperty GetProperty() => Property;
 

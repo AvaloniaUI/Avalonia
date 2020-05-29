@@ -1,7 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -117,45 +115,46 @@ namespace Avalonia.Utilities
                 return true;
             }
 
+            var toUnderl = Nullable.GetUnderlyingType(to) ?? to;
             var from = value.GetType();
 
-            if (to.IsAssignableFrom(from))
+            if (toUnderl.IsAssignableFrom(from))
             {
                 result = value;
                 return true;
             }
 
-            if (to == typeof(string))
+            if (toUnderl == typeof(string))
             {
-                result = Convert.ToString(value);
+                result = Convert.ToString(value, culture);
                 return true;
             }
 
-            if (to.IsEnum && from == typeof(string))
+            if (toUnderl.IsEnum && from == typeof(string))
             {
-                if (Enum.IsDefined(to, (string)value))
+                if (Enum.IsDefined(toUnderl, (string)value))
                 {
-                    result = Enum.Parse(to, (string)value);
+                    result = Enum.Parse(toUnderl, (string)value);
                     return true;
                 }
             }
 
-            if (!from.IsEnum && to.IsEnum)
+            if (!from.IsEnum && toUnderl.IsEnum)
             {
                 result = null;
 
-                if (TryConvert(Enum.GetUnderlyingType(to), value, culture, out object enumValue))
+                if (TryConvert(Enum.GetUnderlyingType(toUnderl), value, culture, out object enumValue))
                 {
-                    result = Enum.ToObject(to, enumValue);
+                    result = Enum.ToObject(toUnderl, enumValue);
                     return true;
                 }
             }
 
-            if (from.IsEnum && IsNumeric(to))
+            if (from.IsEnum && IsNumeric(toUnderl))
             {
                 try
                 {
-                    result = Convert.ChangeType((int)value, to, culture);
+                    result = Convert.ChangeType((int)value, toUnderl, culture);
                     return true;
                 }
                 catch
@@ -166,7 +165,7 @@ namespace Avalonia.Utilities
             }
 
             var convertableFrom = Array.IndexOf(InbuiltTypes, from);
-            var convertableTo = Array.IndexOf(InbuiltTypes, to);
+            var convertableTo = Array.IndexOf(InbuiltTypes, toUnderl);
 
             if (convertableFrom != -1 && convertableTo != -1)
             {
@@ -174,7 +173,7 @@ namespace Avalonia.Utilities
                 {
                     try
                     {
-                        result = Convert.ChangeType(value, to, culture);
+                        result = Convert.ChangeType(value, toUnderl, culture);
                         return true;
                     }
                     catch
@@ -185,7 +184,23 @@ namespace Avalonia.Utilities
                 }
             }
 
-            var cast = FindTypeConversionOperatorMethod(from, to, OperatorType.Implicit | OperatorType.Explicit);
+            var toTypeConverter = TypeDescriptor.GetConverter(toUnderl);
+
+            if (toTypeConverter.CanConvertFrom(from) == true)
+            {
+                result = toTypeConverter.ConvertFrom(null, culture, value);
+                return true;
+            }
+
+            var fromTypeConverter = TypeDescriptor.GetConverter(from);
+
+            if (fromTypeConverter.CanConvertTo(toUnderl) == true)
+            {
+                result = fromTypeConverter.ConvertTo(null, culture, value, toUnderl);
+                return true;
+            }
+
+            var cast = FindTypeConversionOperatorMethod(from, toUnderl, OperatorType.Implicit | OperatorType.Explicit);
 
             if (cast != null)
             {

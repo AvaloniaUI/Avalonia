@@ -1,11 +1,9 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Rendering;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -81,15 +79,20 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateClip(IControl control, TransformedBounds bounds)
         {
-            var clip = control.Clip as RectangleGeometry;
-
-            if (clip == null)
+            if (!(control.Clip is RectangleGeometry clip))
             {
-                clip = new RectangleGeometry { Transform = new MatrixTransform() };
+                clip = new RectangleGeometry();
                 control.Clip = clip;
             }
 
-            clip.Rect = bounds.Bounds;
+            var clipBounds = bounds.Bounds;
+
+            if (bounds.Transform.HasInverse)
+            {
+                clipBounds = bounds.Clip.TransformToAABB(bounds.Transform.Invert());
+            }
+
+            clip.Rect = clipBounds;
         }
 
         private void ChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

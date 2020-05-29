@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using Avalonia.Controls.Generators;
@@ -9,6 +6,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -130,7 +128,7 @@ namespace Avalonia.Controls
                 return;
 
             if (e.Key == Key.F4 ||
-                ((e.Key == Key.Down || e.Key == Key.Up) && ((e.Modifiers & InputModifiers.Alt) != 0)))
+                ((e.Key == Key.Down || e.Key == Key.Up) && ((e.KeyModifiers & KeyModifiers.Alt) != 0)))
             {
                 IsDropDownOpen = !IsDropDownOpen;
                 e.Handled = true;
@@ -221,7 +219,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             if (_popup != null)
             {
@@ -232,8 +230,23 @@ namespace Avalonia.Controls
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
             _popup.Closed += PopupClosed;
+        }
 
-            base.OnTemplateApplied(e);
+        /// <summary>
+        /// Called when the ComboBox popup is closed, with the <see cref="PopupClosedEventArgs"/>
+        /// that caused the popup to close.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// This method can be overridden to control whether the event that caused the popup to close
+        /// is swallowed or passed through.
+        /// </remarks>
+        protected virtual void PopupClosedOverride(PopupClosedEventArgs e)
+        {
+            if (e.CloseEvent is PointerEventArgs pointerEvent)
+            {
+                pointerEvent.Handled = true;
+            }
         }
 
         internal void ItemFocused(ComboBoxItem dropDownItem)
@@ -244,10 +257,12 @@ namespace Avalonia.Controls
             }
         }
 
-        private void PopupClosed(object sender, EventArgs e)
+        private void PopupClosed(object sender, PopupClosedEventArgs e)
         {
             _subscriptionsOnOpen?.Dispose();
             _subscriptionsOnOpen = null;
+
+            PopupClosedOverride(e);
 
             if (CanFocus(this))
             {
@@ -265,7 +280,7 @@ namespace Avalonia.Controls
             var toplevel = this.GetVisualRoot() as TopLevel;
             if (toplevel != null)
             {
-                _subscriptionsOnOpen = toplevel.AddHandler(PointerWheelChangedEvent, (s, ev) =>
+                _subscriptionsOnOpen = toplevel.AddDisposableHandler(PointerWheelChangedEvent, (s, ev) =>
                 {
                     //eat wheel scroll event outside dropdown popup while it's open
                     if (IsDropDownOpen && (ev.Source as IVisual).GetVisualRoot() == toplevel)
@@ -289,9 +304,9 @@ namespace Avalonia.Controls
             {
                 var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
 
-                if (container == null && SelectedItems.Count > 0)
+                if (container == null && SelectedIndex != -1)
                 {
-                    ScrollIntoView(SelectedItems[0]);
+                    ScrollIntoView(Selection.SelectedIndex);
                     container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
                 }
 

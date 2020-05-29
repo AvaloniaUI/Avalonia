@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -16,7 +13,7 @@ namespace Avalonia.Skia
 
         public GlyphTypefaceImpl(SKTypeface typeface)
         {
-            Typeface = typeface;
+            Typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
 
             Face = new Face(GetTable)
             {

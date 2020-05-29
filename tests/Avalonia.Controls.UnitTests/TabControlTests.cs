@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -95,7 +92,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Removal_Should_Set_Next_Tab()
+        public void Removal_Should_Set_First_Tab()
         {
             var collection = new ObservableCollection<TabItem>()
             {
@@ -126,10 +123,8 @@ namespace Avalonia.Controls.UnitTests
             target.SelectedItem = collection[1];
             collection.RemoveAt(1);
 
-            // compare with former [2] now [1] == "3rd"
-            Assert.Same(collection[1], target.SelectedItem);
+            Assert.Same(collection[0], target.SelectedItem);
         }
-
 
         [Fact]
         public void TabItem_Templates_Should_Be_Set_Before_TabItem_ApplyTemplate()
@@ -163,7 +158,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         new Style(x => x.OfType<TabItem>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(TemplatedControl.TemplateProperty, template)
                             }

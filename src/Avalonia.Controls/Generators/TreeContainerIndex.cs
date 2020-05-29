@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -97,9 +94,13 @@ namespace Avalonia.Controls.Generators
         /// <returns>The container, or null of not found.</returns>
         public IControl ContainerFromItem(object item)
         {
-            IControl result;
-            _itemToContainer.TryGetValue(item, out result);
-            return result;
+            if (item != null)
+            {
+                _itemToContainer.TryGetValue(item, out var result);
+                return result;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -109,9 +110,13 @@ namespace Avalonia.Controls.Generators
         /// <returns>The item, or null of not found.</returns>
         public object ItemFromContainer(IControl container)
         {
-            object result;
-            _containerToItem.TryGetValue(container, out result);
-            return result;
+            if (container != null)
+            {
+                _containerToItem.TryGetValue(container, out var result);
+                return result;
+            }
+
+            return null;
         }
     }
 }

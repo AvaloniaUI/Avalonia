@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Data;
 using Xunit;
@@ -30,6 +27,7 @@ namespace Avalonia.Base.UnitTests
             target.PropertyChanged += (s, e) =>
             {
                 Assert.Same(target, s);
+                Assert.Equal(BindingPriority.Unset, e.Priority);
                 Assert.Equal(Class1.FooProperty, e.Property);
                 Assert.Equal("newvalue", (string)e.OldValue);
                 Assert.Equal("foodefault", (string)e.NewValue);
@@ -240,6 +238,17 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void SetValue_Animation_Overrides_LocalValue()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "one", BindingPriority.LocalValue);
+            Assert.Equal("one", target.GetValue(Class1.FooProperty));
+            target.SetValue(Class1.FooProperty, "two", BindingPriority.Animation);
+            Assert.Equal("two", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
         public void Setting_UnsetValue_Reverts_To_Default_Value()
         {
             Class1 target = new Class1();
@@ -270,6 +279,41 @@ namespace Avalonia.Base.UnitTests
             target.SetValue(Class1.FrankProperty, BindingOperations.DoNothing);
 
             Assert.Equal("newvalue", target.GetValue(Class1.FrankProperty));
+        }
+
+        [Fact]
+        public void Disposing_Style_SetValue_Reverts_To_DefaultValue()
+        {
+            Class1 target = new Class1();
+
+            var d = target.SetValue(Class1.FooProperty, "foo", BindingPriority.Style);
+            d.Dispose();
+
+            Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Disposing_Style_SetValue_Reverts_To_Previous_Style_Value()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "foo", BindingPriority.Style);
+            var d = target.SetValue(Class1.FooProperty, "bar", BindingPriority.Style);
+            d.Dispose();
+
+            Assert.Equal("foo", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Disposing_Animation_SetValue_Reverts_To_Previous_Local_Value()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "foo", BindingPriority.LocalValue);
+            var d = target.SetValue(Class1.FooProperty, "bar", BindingPriority.Animation);
+            d.Dispose();
+
+            Assert.Equal("foo", target.GetValue(Class1.FooProperty));
         }
 
         private class Class1 : AvaloniaObject

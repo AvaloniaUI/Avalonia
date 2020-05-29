@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -17,6 +14,10 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 {
     public class VisualBrushTests : TestBase
     {
+        //Whitespaces are used here to be able to compare rendering results in a platform independent way.
+        //Otherwise tests will fail because of slightly different glyph rendering.
+        private static readonly string s_visualBrushText = "           ";
+
         public VisualBrushTests()
             : base(@"Media\VisualBrush")
         {
@@ -48,10 +49,10 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                             Child = new TextBlock
                             {
                                 FontSize = 24,
-                                FontFamily = new FontFamily("Arial"),
+                                FontFamily = TestFontFamily,
                                 Background = Brushes.Green,
                                 Foreground = Brushes.Yellow,
-                                Text = "VisualBrush",
+                                Text = s_visualBrushText
                             }
                         }
                     }
@@ -84,11 +85,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public async Task VisualBrush_NoStretch_NoTile_Alignment_Center()
         {
             Decorator target = new Decorator
@@ -138,11 +135,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public async Task VisualBrush_Fill_NoTile()
         {
             Decorator target = new Decorator
@@ -165,11 +158,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public async Task VisualBrush_Uniform_NoTile()
         {
             Decorator target = new Decorator
@@ -192,11 +181,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public async Task VisualBrush_UniformToFill_NoTile()
         {
             Decorator target = new Decorator
@@ -243,11 +228,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public async Task VisualBrush_NoStretch_NoTile_BottomRightQuarterDest()
         {
             Decorator target = new Decorator
@@ -321,11 +302,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public async Task VisualBrush_NoStretch_FlipX_TopLeftDest()
         {
             Decorator target = new Decorator
@@ -349,11 +326,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public async Task VisualBrush_NoStretch_FlipY_TopLeftDest()
         {
             Decorator target = new Decorator
@@ -377,11 +350,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public async Task VisualBrush_NoStretch_FlipXY_TopLeftDest()
         {
             Decorator target = new Decorator
@@ -405,11 +374,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public async Task VisualBrush_InTree_Visual()
         {
             Border source;
@@ -429,8 +394,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                             HorizontalAlignment = HorizontalAlignment.Left,
                             Child = new TextBlock
                             {
-                                FontFamily = new FontFamily("Courier New"),
-                                Text = "Visual"
+                                FontFamily = TestFontFamily,
+                                Text = s_visualBrushText
                             }
                         }),
                         new Border

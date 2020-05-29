@@ -1,15 +1,13 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
-    public class TextPresenter : TextBlock
+    public class TextPresenter : Control
     {
         public static readonly DirectProperty<TextPresenter, int> CaretIndexProperty =
             TextBox.CaretIndexProperty.AddOwner<TextPresenter>(
@@ -38,32 +36,158 @@ namespace Avalonia.Controls.Presenters
                 o => o.SelectionEnd,
                 (o, v) => o.SelectionEnd = v);
 
+        /// <summary>
+        /// Defines the <see cref="Text"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TextPresenter, string> TextProperty =
+            AvaloniaProperty.RegisterDirect<TextPresenter, string>(
+                nameof(Text),
+                o => o.Text,
+                (o, v) => o.Text = v);
+
+        /// <summary>
+        /// Defines the <see cref="TextAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
+            TextBlock.TextAlignmentProperty.AddOwner<TextPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="TextWrapping"/> property.
+        /// </summary>
+        public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
+            TextBlock.TextWrappingProperty.AddOwner<TextPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="Background"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush> BackgroundProperty =
+            Border.BackgroundProperty.AddOwner<TextPresenter>();
+
         private readonly DispatcherTimer _caretTimer;
         private int _caretIndex;
         private int _selectionStart;
         private int _selectionEnd;
         private bool _caretBlink;
+        private string _text;
+        private FormattedText _formattedText;
+        private Size _constraint;
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(PasswordCharProperty,
-                SelectionBrushProperty, SelectionForegroundBrushProperty,
-                SelectionStartProperty, SelectionEndProperty);
+            AffectsRender<TextPresenter>(SelectionBrushProperty);
+            AffectsMeasure<TextPresenter>(TextProperty, PasswordCharProperty, 
+                TextAlignmentProperty, TextWrappingProperty, TextBlock.FontSizeProperty,
+                TextBlock.FontStyleProperty, TextBlock.FontWeightProperty, TextBlock.FontFamilyProperty);
 
-            Observable.Merge(
-                SelectionStartProperty.Changed,
-                SelectionEndProperty.Changed,
-                PasswordCharProperty.Changed
-            ).AddClassHandler<TextPresenter>((x,_) => x.InvalidateFormattedText());
+            Observable.Merge(TextProperty.Changed, TextBlock.ForegroundProperty.Changed,
+                TextAlignmentProperty.Changed, TextWrappingProperty.Changed,
+                TextBlock.FontSizeProperty.Changed, TextBlock.FontStyleProperty.Changed, 
+                TextBlock.FontWeightProperty.Changed, TextBlock.FontFamilyProperty.Changed,
+                SelectionStartProperty.Changed, SelectionEndProperty.Changed,
+                SelectionForegroundBrushProperty.Changed, PasswordCharProperty.Changed
+            ).AddClassHandler<TextPresenter>((x, _) => x.InvalidateFormattedText());
 
             CaretIndexProperty.Changed.AddClassHandler<TextPresenter>((x, e) => x.CaretIndexChanged((int)e.NewValue));
         }
 
         public TextPresenter()
         {
-            _caretTimer = new DispatcherTimer();
-            _caretTimer.Interval = TimeSpan.FromMilliseconds(500);
+            _text = string.Empty;
+            _caretTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
             _caretTimer.Tick += CaretTimerTick;
+        }
+
+        /// <summary>
+        /// Gets or sets a brush used to paint the control's background.
+        /// </summary>
+        public IBrush Background
+        {
+            get => GetValue(BackgroundProperty);
+            set => SetValue(BackgroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the text.
+        /// </summary>
+        [Content]
+        public string Text
+        {
+            get => _text;
+            set => SetAndRaise(TextProperty, ref _text, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font family.
+        /// </summary>
+        public FontFamily FontFamily
+        {
+            get => TextBlock.GetFontFamily(this);
+            set => TextBlock.SetFontFamily(this, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font size.
+        /// </summary>
+        public double FontSize
+        {
+            get => TextBlock.GetFontSize(this);
+            set => TextBlock.SetFontSize(this, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font style.
+        /// </summary>
+        public FontStyle FontStyle
+        {
+            get => TextBlock.GetFontStyle(this);
+            set => TextBlock.SetFontStyle(this, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font weight.
+        /// </summary>
+        public FontWeight FontWeight
+        {
+            get => TextBlock.GetFontWeight(this);
+            set => TextBlock.SetFontWeight(this, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a brush used to paint the text.
+        /// </summary>
+        public IBrush Foreground
+        {
+            get => TextBlock.GetForeground(this);
+            set => TextBlock.SetForeground(this, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the control's text wrapping mode.
+        /// </summary>
+        public TextWrapping TextWrapping
+        {
+            get => GetValue(TextWrappingProperty);
+            set => SetValue(TextWrappingProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the text alignment.
+        /// </summary>
+        public TextAlignment TextAlignment
+        {
+            get => GetValue(TextAlignmentProperty);
+            set => SetValue(TextAlignmentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the <see cref="FormattedText"/> used to render the text.
+        /// </summary>
+        public FormattedText FormattedText
+        {
+            get
+            {
+                return _formattedText ?? (_formattedText = CreateFormattedText());
+            }
         }
 
         public int CaretIndex
@@ -97,7 +221,7 @@ namespace Avalonia.Controls.Presenters
             get => GetValue(SelectionForegroundBrushProperty);
             set => SetValue(SelectionForegroundBrushProperty, value);
         }
-        
+
         public IBrush CaretBrush
         {
             get => GetValue(CaretBrushProperty);
@@ -138,8 +262,55 @@ namespace Avalonia.Controls.Presenters
             return hit.TextPosition + (hit.IsTrailing ? 1 : 0);
         }
 
+        /// <summary>
+        /// Creates the <see cref="FormattedText"/> used to render the text.
+        /// </summary>
+        /// <param name="constraint">The constraint of the text.</param>
+        /// <param name="text">The text to format.</param>
+        /// <returns>A <see cref="FormattedText"/> object.</returns>
+        private FormattedText CreateFormattedTextInternal(Size constraint, string text)
+        {
+            return new FormattedText
+            {
+                Constraint = constraint,
+                Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily, FontWeight, FontStyle),
+                FontSize = FontSize,
+                Text = text ?? string.Empty,
+                TextAlignment = TextAlignment,
+                TextWrapping = TextWrapping,
+            };
+        }
+
+        /// <summary>
+        /// Invalidates <see cref="FormattedText"/>.
+        /// </summary>
+        protected void InvalidateFormattedText()
+        {
+            _formattedText = null;
+        }
+
+        /// <summary>
+        /// Renders the <see cref="TextPresenter"/> to a drawing context.
+        /// </summary>
+        /// <param name="context">The drawing context.</param>
+        private void RenderInternal(DrawingContext context)
+        {
+            var background = Background;
+
+            if (background != null)
+            {
+                context.FillRectangle(background, new Rect(Bounds.Size));
+            }
+
+            context.DrawText(Foreground, new Point(), FormattedText);
+        }
+
         public override void Render(DrawingContext context)
         {
+            FormattedText.Constraint = Bounds.Size;
+
+            _constraint = Bounds.Size;
+
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
 
@@ -147,10 +318,6 @@ namespace Avalonia.Controls.Presenters
             {
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
-
-                // issue #600: set constraint before any FormattedText manipulation
-                //             see base.Render(...) implementation
-                FormattedText.Constraint = Bounds.Size;
 
                 var rects = FormattedText.HitTestTextRange(start, length);
 
@@ -160,7 +327,7 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
-            base.Render(context);
+            RenderInternal(context);
 
             if (selectionStart == selectionEnd)
             {
@@ -168,7 +335,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (caretBrush is null)
                 {
-                    var backgroundColor = (((Control)TemplatedParent).GetValue(BackgroundProperty) as SolidColorBrush)?.Color;
+                    var backgroundColor = (Background as SolidColorBrush)?.Color;
                     if (backgroundColor.HasValue)
                     {
                         byte red = (byte)~(backgroundColor.Value.R);
@@ -252,20 +419,20 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Creates the <see cref="FormattedText"/> used to render the text.
         /// </summary>
-        /// <param name="constraint">The constraint of the text.</param>
-        /// <param name="text">The text to generated the <see cref="FormattedText"/> for.</param>
         /// <returns>A <see cref="FormattedText"/> object.</returns>
-        protected override FormattedText CreateFormattedText(Size constraint, string text)
+        protected virtual FormattedText CreateFormattedText()
         {
             FormattedText result = null;
 
+            var text = Text;
+
             if (PasswordChar != default(char))
             {
-                result = base.CreateFormattedText(constraint, new string(PasswordChar, text?.Length ?? 0));
+                result = CreateFormattedTextInternal(_constraint, new string(PasswordChar, text?.Length ?? 0));
             }
             else
             {
-                result = base.CreateFormattedText(constraint, text);
+                result = CreateFormattedTextInternal(_constraint, text);
             }
 
             var selectionStart = SelectionStart;
@@ -284,13 +451,39 @@ namespace Avalonia.Controls.Presenters
             return result;
         }
 
+        /// <summary>
+        /// Measures the control.
+        /// </summary>
+        /// <param name="availableSize">The available size for the control.</param>
+        /// <returns>The desired size.</returns>
+        private Size MeasureInternal(Size availableSize)
+        {
+            if (!string.IsNullOrEmpty(Text))
+            {
+                if (TextWrapping == TextWrapping.Wrap)
+                {
+                    _constraint = new Size(availableSize.Width, double.PositiveInfinity);
+                }
+                else
+                {
+                    _constraint = Size.Infinity;
+                }
+
+                _formattedText = null;
+
+                return FormattedText.Bounds.Size;
+            }
+
+            return new Size();
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             var text = Text;
 
             if (!string.IsNullOrEmpty(text))
             {
-                return base.MeasureOverride(availableSize);
+                return MeasureInternal(availableSize);
             }
             else
             {

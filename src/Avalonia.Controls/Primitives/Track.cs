@@ -4,6 +4,7 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Metadata;
@@ -46,12 +47,15 @@ namespace Avalonia.Controls.Primitives
 
         static Track()
         {
-            PseudoClass<Track, Orientation>(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
-            PseudoClass<Track, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
             ThumbProperty.Changed.AddClassHandler<Track>((x,e) => x.ThumbChanged(e));
             IncreaseButtonProperty.Changed.AddClassHandler<Track>((x, e) => x.ButtonChanged(e));
             DecreaseButtonProperty.Changed.AddClassHandler<Track>((x, e) => x.ButtonChanged(e));
             AffectsArrange<Track>(MinimumProperty, MaximumProperty, ValueProperty, OrientationProperty);
+        }
+
+        public Track()
+        {
+            UpdatePseudoClasses(Orientation);
         }
 
         public double Minimum
@@ -276,6 +280,16 @@ namespace Avalonia.Controls.Primitives
             return arrangeSize;
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == OrientationProperty)
+            {
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Orientation>());
+            }
+        }
+
         private static void CoerceLength(ref double componentLength, double trackLength)
         {
             if (componentLength < 0)
@@ -432,6 +446,12 @@ namespace Avalonia.Controls.Primitives
             {
                 DecreaseButton.IsVisible = visible;
             }
+        }
+
+        private void UpdatePseudoClasses(Orientation o)
+        {
+            PseudoClasses.Set(":vertical", o == Orientation.Vertical);
+            PseudoClasses.Set(":horizontal", o == Orientation.Horizontal);
         }
     }
 }

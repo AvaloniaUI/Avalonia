@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -34,7 +31,6 @@ namespace Avalonia
         public AvaloniaObject()
         {
             VerifyAccess();
-            AvaloniaPropertyRegistry.Instance.NotifyInitialized(this);
         }
 
         /// <summary>
@@ -81,8 +77,12 @@ namespace Avalonia
                     _inheritanceParent?.RemoveInheritanceChild(this);
                     _inheritanceParent = value;
 
-                    foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegisteredInherited(GetType()))
+                    var properties = AvaloniaPropertyRegistry.Instance.GetRegisteredInherited(GetType());
+                    var propertiesCount = properties.Count;
+
+                    for (var i = 0; i < propertiesCount; i++)
                     {
+                        var property = properties[i];
                         if (valuestore?.IsSet(property) == true)
                         {
                             // If local value set there can be no change.
@@ -259,6 +259,21 @@ namespace Avalonia
             return registered.InvokeGetter(this);
         }
 
+        /// <inheritdoc/>
+        public Optional<T> GetBaseValue<T>(StyledPropertyBase<T> property, BindingPriority maxPriority)
+        {
+            property = property ?? throw new ArgumentNullException(nameof(property));
+            VerifyAccess();
+
+            if (_values is object &&
+                _values.TryGetValue(property, maxPriority, out var value))
+            {
+                return value;
+            }
+
+            return default;
+        }
+
         /// <summary>
         /// Checks whether a <see cref="AvaloniaProperty"/> is animating.
         /// </summary>
@@ -312,7 +327,10 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
-        public void SetValue<T>(
+        /// <returns>
+        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
+        /// </returns>
+        public IDisposable SetValue<T>(
             StyledPropertyBase<T> property,
             T value,
             BindingPriority priority = BindingPriority.LocalValue)
@@ -336,8 +354,10 @@ namespace Avalonia
             }
             else if (!(value is DoNothingType))
             {
-                Values.SetValue(property, value, priority);
+                return Values.SetValue(property, value, priority);
             }
+
+            return null;
         }
 
         /// <summary>
@@ -453,33 +473,59 @@ namespace Avalonia
             return _propertyChanged?.GetInvocationList();
         }
 
-        void IValueSink.ValueChanged<T>(
-            StyledPropertyBase<T> property,
-            BindingPriority priority,
-            Optional<T> oldValue,
-            BindingValue<T> newValue)
+        void IValueSink.ValueChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            oldValue = oldValue.HasValue ? oldValue : GetInheritedOrDefault(property);
-            newValue = newValue.HasValue ? newValue : newValue.WithValue(GetInheritedOrDefault(property));
+            var property = (StyledPropertyBase<T>)change.Property;
 
-            LogIfError(property, newValue);
+            LogIfError(property, change.NewValue);
 
-            if (!EqualityComparer<T>.Default.Equals(oldValue.Value, newValue.Value))
+            // If the change is to the effective value of the property and no old/new value is set
+            // then fill in the old/new value from property inheritance/default value. We don't do
+            // this for non-effective value changes because these are only needed for property
+            // transitions, where knowing e.g. that an inherited value is active at an arbitrary
+            // priority isn't of any use and would introduce overhead.
+            if (change.IsEffectiveValueChange && !change.OldValue.HasValue)
             {
-                RaisePropertyChanged(property, oldValue, newValue, priority);
+                change.SetOldValue(GetInheritedOrDefault<T>(property));
+            }
 
-                Logger.TryGet(LogEventLevel.Verbose)?.Log(
-                    LogArea.Property,
-                    this,
-                    "{Property} changed from {$Old} to {$Value} with priority {Priority}",
-                    property,
-                    oldValue,
-                    newValue,
-                    (BindingPriority)priority);
+            if (change.IsEffectiveValueChange && !change.NewValue.HasValue)
+            {
+                change.SetNewValue(GetInheritedOrDefault(property));
+            }
+
+            if (!change.IsEffectiveValueChange ||
+                !EqualityComparer<T>.Default.Equals(change.OldValue.Value, change.NewValue.Value))
+            {
+                RaisePropertyChanged(change);
+
+                if (change.IsEffectiveValueChange)
+                {
+                    Logger.TryGet(LogEventLevel.Verbose)?.Log(
+                        LogArea.Property,
+                        this,
+                        "{Property} changed from {$Old} to {$Value} with priority {Priority}",
+                        property,
+                        change.OldValue,
+                        change.NewValue,
+                        change.Priority);
+                }
             }
         }
 
-        void IValueSink.Completed(AvaloniaProperty property, IPriorityValueEntry entry) { }
+        void IValueSink.Completed<T>(
+            StyledPropertyBase<T> property,
+            IPriorityValueEntry entry,
+            Optional<T> oldValue) 
+        {
+            var change = new AvaloniaPropertyChangedEventArgs<T>(
+                this,
+                property,
+                oldValue,
+                default,
+                BindingPriority.Unset);
+            ((IValueSink)this).ValueChanged(change);
+        }
 
         /// <summary>
         /// Called for each inherited property when the <see cref="InheritanceParent"/> changes.
@@ -564,15 +610,20 @@ namespace Avalonia
         /// <summary>
         /// Called when a avalonia property changes on the object.
         /// </summary>
-        /// <param name="property">The property whose value has changed.</param>
-        /// <param name="oldValue">The old value of the property.</param>
-        /// <param name="newValue">The new value of the property.</param>
-        /// <param name="priority">The priority of the new value.</param>
-        protected virtual void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        /// <param name="change">The property change details.</param>
+        protected virtual void OnPropertyChangedCore<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            if (change.IsEffectiveValueChange)
+            {
+                OnPropertyChanged(change);
+            }
+        }
+
+        /// <summary>
+        /// Called when a avalonia property changes on the object.
+        /// </summary>
+        /// <param name="change">The property change details.</param>
+        protected virtual void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
         }
 
@@ -589,57 +640,12 @@ namespace Avalonia
             BindingValue<T> newValue,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            property = property ?? throw new ArgumentNullException(nameof(property));
-
-            VerifyAccess();
-
-            property.Notifying?.Invoke(this, true);
-
-            try
-            {
-                AvaloniaPropertyChangedEventArgs<T> e = null;
-                var hasChanged = property.HasChangedSubscriptions;
-
-                if (hasChanged || _propertyChanged != null)
-                {
-                    e = new AvaloniaPropertyChangedEventArgs<T>(
-                        this,
-                        property,
-                        oldValue,
-                        newValue,
-                        priority);
-                }
-
-                OnPropertyChanged(property, oldValue, newValue, priority);
-
-                if (hasChanged)
-                {
-                    property.NotifyChanged(e);
-                }
-
-                _propertyChanged?.Invoke(this, e);
-
-                if (_inpcChanged != null)
-                {
-                    var inpce = new PropertyChangedEventArgs(property.Name);
-                    _inpcChanged(this, inpce);
-                }
-
-                if (property.Inherits && _inheritanceChildren != null)
-                {
-                    foreach (var child in _inheritanceChildren)
-                    {
-                        child.InheritedPropertyChanged(
-                            property,
-                            oldValue,
-                            newValue.ToOptional());
-                    }
-                }
-            }
-            finally
-            {
-                property.Notifying?.Invoke(this, false);
-            }
+            RaisePropertyChanged(new AvaloniaPropertyChangedEventArgs<T>(
+                this,
+                property,
+                oldValue,
+                newValue,
+                priority));
         }
 
         /// <summary>
@@ -678,7 +684,9 @@ namespace Avalonia
             return property.GetDefaultValue(GetType());
         }
 
-        private T GetValueOrInheritedOrDefault<T>(StyledPropertyBase<T> property)
+        private T GetValueOrInheritedOrDefault<T>(
+            StyledPropertyBase<T> property,
+            BindingPriority maxPriority = BindingPriority.Animation)
         {
             var o = this;
             var inherits = property.Inherits;
@@ -688,7 +696,7 @@ namespace Avalonia
             {
                 var values = o._values;
 
-                if (values?.TryGetValue(property, out value) == true)
+                if (values?.TryGetValue(property, maxPriority, out value) == true)
                 {
                     return value;
                 }
@@ -702,6 +710,51 @@ namespace Avalonia
             }
 
             return property.GetDefaultValue(GetType());
+        }
+
+        protected internal void RaisePropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            VerifyAccess();
+
+            if (change.IsEffectiveValueChange)
+            {
+                change.Property.Notifying?.Invoke(this, true);
+            }
+
+            try
+            {
+                OnPropertyChangedCore(change);
+
+                if (change.IsEffectiveValueChange)
+                {
+                    change.Property.NotifyChanged(change);
+                    _propertyChanged?.Invoke(this, change);
+
+                    if (_inpcChanged != null)
+                    {
+                        var inpce = new PropertyChangedEventArgs(change.Property.Name);
+                        _inpcChanged(this, inpce);
+                    }
+
+                    if (change.Property.Inherits && _inheritanceChildren != null)
+                    {
+                        foreach (var child in _inheritanceChildren)
+                        {
+                            child.InheritedPropertyChanged(
+                                change.Property,
+                                change.OldValue,
+                                change.NewValue.ToOptional());
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                if (change.IsEffectiveValueChange)
+                {
+                    change.Property.Notifying?.Invoke(this, false);
+                }
+            }
         }
 
         /// <summary>

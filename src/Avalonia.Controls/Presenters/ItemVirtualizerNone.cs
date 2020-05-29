@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -67,18 +64,13 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Scrolls the specified item into view.
         /// </summary>
-        /// <param name="item">The item.</param>
-        public override void ScrollIntoView(object item)
+        /// <param name="index">The index of the item.</param>
+        public override void ScrollIntoView(int index)
         {
-            if (Items != null)
+            if (index != -1)
             {
-                var index = Items.IndexOf(item);
-
-                if (index != -1)
-                {
-                    var container = Owner.ItemContainerGenerator.ContainerFromIndex(index);
-                    container?.BringIntoView();
-                }
+                var container = Owner.ItemContainerGenerator.ContainerFromIndex(index);
+                container?.BringIntoView();
             }
         }
 

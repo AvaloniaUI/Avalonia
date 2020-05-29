@@ -1,5 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
-// This source is subject to the Microsoft Public License (Ms-PL).
+﻿// This source is subject to the Microsoft Public License (Ms-PL).
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved. 
 
@@ -65,7 +64,7 @@ namespace Avalonia.Controls
         private const double DATAGRID_minimumColumnHeaderHeight = 4;
         internal const double DATAGRID_maximumStarColumnWidth = 10000;
         internal const double DATAGRID_minimumStarColumnWidth = 0.001;
-        private const double DATAGRID_mouseWheelDelta = 48.0;
+        private const double DATAGRID_mouseWheelDelta = 72.0;
         private const double DATAGRID_maxHeadersThickness = 32768;
 
         private const double DATAGRID_defaultRowHeight = 22;
@@ -148,6 +147,9 @@ namespace Avalonia.Controls
         private byte _verticalScrollChangesIgnored;
 
         private IEnumerable _items;
+
+        public event EventHandler<ScrollEventArgs> HorizontalScroll;
+        public event EventHandler<ScrollEventArgs> VerticalScroll;
 
         /// <summary>
         /// Identifies the CanUserReorderColumns dependency property.
@@ -373,7 +375,11 @@ namespace Avalonia.Controls
         public bool IsValid
         {
             get { return _isValid; }
-            internal set { SetAndRaise(IsValidProperty, ref _isValid, value); }
+            internal set 
+            { 
+                SetAndRaise(IsValidProperty, ref _isValid, value);
+                PseudoClasses.Set(":invalid", !value);
+            }
         }
 
         public static readonly StyledProperty<double> MaxColumnWidthProperty =
@@ -656,8 +662,6 @@ namespace Avalonia.Controls
                 HorizontalScrollBarVisibilityProperty,
                 VerticalScrollBarVisibilityProperty);
 
-            PseudoClass<DataGrid, bool>(IsValidProperty, x => !x, ":invalid");
-
             ItemsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnItemsPropertyChanged(e));
             CanUserResizeColumnsProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnCanUserResizeColumnsChanged(e));
             ColumnWidthProperty.Changed.AddClassHandler<DataGrid>((x, e) => x.OnColumnWidthChanged(e));
@@ -762,7 +766,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// ItemsProperty property changed handler.
         /// </summary>
-        /// <param name="e">AvaloniaPropertyChangedEventArgs.</param>
+        /// <param name="e">The event arguments.</param>
         private void OnItemsPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
@@ -2240,7 +2244,7 @@ namespace Avalonia.Controls
         /// Builds the visual tree for the column header when a new template is applied.
         /// </summary>
         //TODO Validation UI
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             // The template has changed, so we need to refresh the visuals
             _measured = false;
@@ -2472,25 +2476,25 @@ namespace Avalonia.Controls
 
         internal bool ProcessDownKey(KeyEventArgs e)
         {
-            KeyboardHelper.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            KeyboardHelper.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
             return ProcessDownKeyInternal(shift, ctrl);
         }
 
         internal bool ProcessEndKey(KeyEventArgs e)
         {
-            KeyboardHelper.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            KeyboardHelper.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
             return ProcessEndKey(shift, ctrl);
         }
 
         internal bool ProcessEnterKey(KeyEventArgs e)
         {
-            KeyboardHelper.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            KeyboardHelper.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
             return ProcessEnterKey(shift, ctrl);
         }
 
         internal bool ProcessHomeKey(KeyEventArgs e)
         {
-            KeyboardHelper.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            KeyboardHelper.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
             return ProcessHomeKey(shift, ctrl);
         }
 
@@ -2530,25 +2534,25 @@ namespace Avalonia.Controls
 
         internal bool ProcessLeftKey(KeyEventArgs e)
         {
-            KeyboardHelper.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            KeyboardHelper.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
             return ProcessLeftKey(shift, ctrl);
         }
 
         internal bool ProcessNextKey(KeyEventArgs e)
         {
-            KeyboardHelper.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            KeyboardHelper.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
             return ProcessNextKey(shift, ctrl);
         }
 
         internal bool ProcessPriorKey(KeyEventArgs e)
         {
-            KeyboardHelper.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            KeyboardHelper.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
             return ProcessPriorKey(shift, ctrl);
         }
 
         internal bool ProcessRightKey(KeyEventArgs e)
         {
-            KeyboardHelper.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            KeyboardHelper.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
             return ProcessRightKey(shift, ctrl);
         }
 
@@ -2666,7 +2670,7 @@ namespace Avalonia.Controls
 
         internal bool ProcessUpKey(KeyEventArgs e)
         {
-            KeyboardHelper.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            KeyboardHelper.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
             return ProcessUpKey(shift, ctrl);
         }
 
@@ -2934,7 +2938,7 @@ namespace Avalonia.Controls
         //TODO: Ensure left button is checked for
         internal bool UpdateStateOnMouseLeftButtonDown(PointerPressedEventArgs pointerPressedEventArgs, int columnIndex, int slot, bool allowEdit)
         {
-            KeyboardHelper.GetMetaKeyState(pointerPressedEventArgs.InputModifiers, out bool ctrl, out bool shift);
+            KeyboardHelper.GetMetaKeyState(pointerPressedEventArgs.KeyModifiers, out bool ctrl, out bool shift);
             return UpdateStateOnMouseLeftButtonDown(pointerPressedEventArgs, columnIndex, slot, allowEdit, shift, ctrl);
         }
 
@@ -4223,6 +4227,7 @@ namespace Avalonia.Controls
         private void HorizontalScrollBar_Scroll(object sender, ScrollEventArgs e)
         {
             ProcessHorizontalScroll(e.ScrollEventType);
+            HorizontalScroll?.Invoke(sender, e);
         }
 
         private bool IsColumnOutOfBounds(int columnIndex)
@@ -4376,7 +4381,7 @@ namespace Avalonia.Controls
 
         private bool ProcessAKey(KeyEventArgs e)
         {
-            KeyboardHelper.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift, out bool alt);
+            KeyboardHelper.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift, out bool alt);
 
             if (ctrl && !shift && !alt && SelectionMode == DataGridSelectionMode.Extended)
             {
@@ -4442,10 +4447,10 @@ namespace Avalonia.Controls
                     return ProcessAKey(e);
 
                 case Key.C:
-                    return ProcessCopyKey(e.Modifiers);
+                    return ProcessCopyKey(e.KeyModifiers);
 
                 case Key.Insert:
-                    return ProcessCopyKey(e.Modifiers);
+                    return ProcessCopyKey(e.KeyModifiers);
             }
             if (focusDataGrid)
             {
@@ -4644,7 +4649,7 @@ namespace Avalonia.Controls
 
         private bool ProcessF2Key(KeyEventArgs e)
         {
-            KeyboardHelper.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            KeyboardHelper.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
 
             if (!shift && !ctrl &&
                 _editingColumnIndex == -1 && CurrentColumnIndex != -1 && GetRowSelection(CurrentSlot) &&
@@ -5001,7 +5006,7 @@ namespace Avalonia.Controls
 
         private bool ProcessTabKey(KeyEventArgs e)
         {
-            KeyboardHelper.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            KeyboardHelper.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
             return ProcessTabKey(e, shift, ctrl);
         }
 
@@ -5555,6 +5560,7 @@ namespace Avalonia.Controls
         private void VerticalScrollBar_Scroll(object sender, ScrollEventArgs e)
         {
             ProcessVerticalScroll(e.ScrollEventType);
+            VerticalScroll?.Invoke(sender, e);
         }
 
         //TODO: Ensure left button is checked for
@@ -5787,7 +5793,7 @@ namespace Avalonia.Controls
         /// to the Clipboard as text.
         /// </summary>
         /// <returns>Whether or not the DataGrid handled the key press.</returns>
-        private bool ProcessCopyKey(InputModifiers modifiers)
+        private bool ProcessCopyKey(KeyModifiers modifiers)
         {
             KeyboardHelper.GetMetaKeyState(modifiers, out bool ctrl, out bool shift, out bool alt);
 

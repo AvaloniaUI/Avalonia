@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -539,37 +536,19 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(items[1], target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
 
+            SelectionChangedEventArgs receivedArgs = null;
+
+            target.SelectionChanged += (_, args) => receivedArgs = args;
+
+            var removed = items[1];
+
             items.RemoveAt(1);
 
             Assert.Null(target.SelectedItem);
             Assert.Equal(-1, target.SelectedIndex);
-        }
-
-        [Fact]
-        public void Moving_Selected_Item_Should_Update_Selection()
-        {
-            var items = new AvaloniaList<Item>
-            {
-                new Item(),
-                new Item(),
-            };
-
-            var target = new SelectingItemsControl
-            {
-                Items = items,
-                Template = Template(),
-            };
-
-            target.ApplyTemplate();
-            target.SelectedIndex = 0;
-
-            Assert.Equal(items[0], target.SelectedItem);
-            Assert.Equal(0, target.SelectedIndex);
-
-            items.Move(0, 1);
-
-            Assert.Equal(items[1], target.SelectedItem);
-            Assert.Equal(1, target.SelectedIndex);
+            Assert.NotNull(receivedArgs);
+            Assert.Empty(receivedArgs.AddedItems);
+            Assert.Equal(new[] { removed }, receivedArgs.RemovedItems);
         }
 
         [Fact]
@@ -1092,8 +1071,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             items[1] = "Qux";
 
-            Assert.Equal(1, target.SelectedIndex);
-            Assert.Equal("Qux", target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Null(target.SelectedItem);
         }
 
         [Fact]
@@ -1200,6 +1179,28 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
             target.MoveSelection(NavigationDirection.Next, true);
+        }
+
+        [Fact]
+        public void MoveSelection_Does_Select_Disabled_Controls()
+        {
+            // Issue #3426.
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem(),
+                    new ListBoxItem { IsEnabled = false },
+                },
+                SelectedIndex = 0,
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.MoveSelection(NavigationDirection.Next, true);
+
+            Assert.Equal(0, target.SelectedIndex);
         }
 
         [Fact]

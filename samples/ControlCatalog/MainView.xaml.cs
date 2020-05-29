@@ -41,7 +41,7 @@ namespace ControlCatalog
                 Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseDark.xaml?assembly=Avalonia.Themes.Default")
             };
 
-            
+
             var themes = this.Find<ComboBox>("Themes");
             themes.SelectionChanged += (sender, e) =>
             {
@@ -56,6 +56,28 @@ namespace ControlCatalog
                 }
             };
             Styles.Add(light);
+
+            var decorations = this.Find<ComboBox>("Decorations");
+            decorations.SelectionChanged += (sender, e) =>
+            {
+                if (VisualRoot is Window window)
+                    window.SystemDecorations = (SystemDecorations)decorations.SelectedIndex;
+            };
+
+            var transparencyLevels = this.Find<ComboBox>("TransparencyLevels");
+            transparencyLevels.SelectionChanged += (sender, e) =>
+            {
+                if (VisualRoot is Window window)
+                    window.TransparencyLevelHint = (WindowTransparencyLevel)transparencyLevels.SelectedIndex;
+            };
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            var decorations = this.Find<ComboBox>("Decorations");
+            if (VisualRoot is Window window)
+                decorations.SelectedIndex = (int)window.SystemDecorations;
         }
     }
 }

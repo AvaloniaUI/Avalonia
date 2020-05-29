@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +10,7 @@ using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
@@ -363,7 +361,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         new Style(x => x.OfType<TestTemplatedControl>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(
                                     TemplatedControl.TemplateProperty,
@@ -399,7 +397,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         new Style(x => x.OfType<TestTemplatedControl>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(
                                     TemplatedControl.TemplateProperty,
@@ -438,7 +436,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         new Style(x => x.OfType<TestTemplatedControl>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(
                                     TemplatedControl.TemplateProperty,
@@ -458,7 +456,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         new Style(x => x.OfType<TestTemplatedControl>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(
                                     TemplatedControl.TemplateProperty,
@@ -513,6 +511,70 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var newRoot = new TestRoot { Child = target };
                 Assert.True(templateChild.IsAttachedToLogicalTree);
             }
+        }
+
+        [Fact]
+        public void Templated_Child_Should_Find_Resource_In_TemplatedParent()
+        {
+            var target = new ContentControl
+            {
+                Resources =
+                {
+                    { "red", Brushes.Red },
+                },
+                Template = new FuncControlTemplate<ContentControl>((x, scope) =>
+                {
+                    var result = new ContentPresenter
+                    {
+                        Name = "PART_ContentPresenter",
+                        [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
+                    }.RegisterInNameScope(scope);
+
+                    result.Bind(ContentPresenter.BackgroundProperty, result.GetResourceObservable("red"));
+
+                    return result;
+                }),
+            };
+
+            var root = new TestRoot(target);
+            target.ApplyTemplate();
+
+            var contentPresenter = Assert.IsType<ContentPresenter>(target.GetVisualChildren().Single());
+            Assert.Same(Brushes.Red, contentPresenter.Background);
+        }
+
+        [Fact]
+        public void Changing_Resource_In_Templated_Parent_Should_Affect_Templated_Child()
+        {
+            var target = new ContentControl
+            {
+                Resources =
+                {
+                    { "red", Brushes.Red },
+                },
+                Template = new FuncControlTemplate<ContentControl>((x, scope) =>
+                {
+                    var result = new ContentPresenter
+                    {
+                        Name = "PART_ContentPresenter",
+                        [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
+                    }.RegisterInNameScope(scope);
+
+                    result.Bind(ContentPresenter.BackgroundProperty, result.GetResourceObservable("red"));
+
+                    return result;
+                }),
+            };
+
+            var root = new TestRoot(target);
+            target.ApplyTemplate();
+
+            var contentPresenter = Assert.IsType<ContentPresenter>(target.GetVisualChildren().Single());
+            Assert.Same(Brushes.Red, contentPresenter.Background);
+
+            target.Resources["red"] = Brushes.Green;
+
+            Assert.Same(Brushes.Green, contentPresenter.Background);
         }
 
         private static IControl ScrollingContentControlTemplate(ContentControl control, INameScope scope)

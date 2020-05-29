@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -29,14 +26,26 @@ namespace Avalonia.Platform
         void SetTitle(string title);
 
         /// <summary>
-        /// Shows the window as a dialog.
+        /// Sets the parent of the window.
         /// </summary>
-        void ShowDialog(IWindowImpl parent);
+        /// <param name="parent">The parent <see cref="IWindowImpl"/>.</param>
+        void SetParent(IWindowImpl parent);
+        
+        /// <summary>
+        /// Disables the window for example when a modal dialog is open.
+        /// </summary>
+        /// <param name="enable">true if the window is enabled, or false if it is disabled.</param>
+        void SetEnabled(bool enable);
+
+        /// <summary>
+        /// Called when a disabled window received input. Can be used to activate child windows.
+        /// </summary>
+        Action GotInputWhenDisabled { get; set; }        
 
         /// <summary>
         /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
-        void SetSystemDecorations(bool enabled);
+        void SetSystemDecorations(SystemDecorations enabled);
 
         /// <summary>
         /// Sets the icon of this window.

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 //This file will contain actual IID structures
 #define COM_GUIDS_MATERIALIZE
 #include "common.h"
@@ -95,12 +92,11 @@ void SetProcessName(NSString* appTitle) {
     PrivateLSASN asn = ls_get_current_application_asn_func();
     // Constant used by WebKit; what exactly it means is unknown.
     const int magic_session_constant = -2;
-    OSErr err =
+    
     ls_set_application_information_item_func(magic_session_constant, asn,
                                              ls_display_name_key,
                                              process_name,
                                              NULL /* optional out param */);
-    //LOG_IF(ERROR, err) << "Call to set process name failed, err " << err;
 }
 
 class MacOptions : public ComSingleObject<IAvnMacOptions, &IID_IAvnMacOptions>
@@ -154,14 +150,15 @@ public:
 }
 @end
 
-
+static ComPtr<IAvnGCHandleDeallocatorCallback> _deallocator;
 class AvaloniaNative : public ComSingleObject<IAvaloniaNativeFactory, &IID_IAvaloniaNativeFactory>
 {
     
 public:
     FORWARD_IUNKNOWN()
-    virtual HRESULT Initialize() override
+    virtual HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator) override
     {
+        _deallocator = deallocator;
         @autoreleasepool{
             [[ThreadingInitializer new] do];
         }
@@ -174,20 +171,20 @@ public:
         return (IAvnMacOptions*)new MacOptions();
     }
     
-    virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv)  override
+    virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnWindow** ppv)  override
     {
         if(cb == nullptr || ppv == nullptr)
             return E_POINTER;
-        *ppv = CreateAvnWindow(cb);
+        *ppv = CreateAvnWindow(cb, gl);
         return S_OK;
     };
     
-    virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv) override
+    virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnPopup** ppv) override
     {
         if(cb == nullptr || ppv == nullptr)
             return E_POINTER;
         
-        *ppv = CreateAvnPopup(cb);
+        *ppv = CreateAvnPopup(cb, gl);
         return S_OK;
     }
     
@@ -211,7 +208,13 @@ public:
 
     virtual HRESULT CreateClipboard(IAvnClipboard** ppv) override
     {
-        *ppv = ::CreateClipboard ();
+        *ppv = ::CreateClipboard (nil, nil);
+        return S_OK;
+    }
+    
+    virtual HRESULT CreateDndClipboard(IAvnClipboard** ppv) override
+    {
+        *ppv = ::CreateClipboard (nil, [NSPasteboardItem new]);
         return S_OK;
     }
 
@@ -221,9 +224,9 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT ObtainGlFeature(IAvnGlFeature** ppv) override
+    virtual HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv) override
     {
-        auto rv = ::GetGlFeature();
+        auto rv = ::GetGlDisplay();
         if(rv == NULL)
             return E_FAIL;
         rv->AddRef();
@@ -231,39 +234,27 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT CreateMenu (IAvnAppMenu** ppv) override
+    virtual HRESULT CreateMenu (IAvnMenuEvents* cb, IAvnMenu** ppv) override
     {
-        *ppv = ::CreateAppMenu();
+        *ppv = ::CreateAppMenu(cb);
         return S_OK;
     }
     
-    virtual HRESULT CreateMenuItem (IAvnAppMenuItem** ppv) override
+    virtual HRESULT CreateMenuItem (IAvnMenuItem** ppv) override
     {
         *ppv = ::CreateAppMenuItem();
         return S_OK;
     }
     
-    virtual HRESULT CreateMenuItemSeperator (IAvnAppMenuItem** ppv) override
+    virtual HRESULT CreateMenuItemSeperator (IAvnMenuItem** ppv) override
     {
         *ppv = ::CreateAppMenuItemSeperator();
         return S_OK;
     }
     
-    virtual HRESULT SetAppMenu (IAvnAppMenu* appMenu) override
+    virtual HRESULT SetAppMenu (IAvnMenu* appMenu) override
     {
         ::SetAppMenu(s_appTitle, appMenu);
-        return S_OK;
-    }
-    
-    virtual HRESULT ObtainAppMenu(IAvnAppMenu** retOut) override
-    {
-        if(retOut == nullptr)
-        {
-            return E_POINTER;
-        }
-        
-        *retOut = ::GetAppMenu();
-        
         return S_OK;
     }
 };
@@ -272,6 +263,12 @@ extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
 {
     return new AvaloniaNative();
 };
+
+extern void FreeAvnGCHandle(void* handle)
+{
+    if(_deallocator != nil)
+        _deallocator->FreeGCHandle(handle);
+}
 
 NSSize ToNSSize (AvnSize s)
 {

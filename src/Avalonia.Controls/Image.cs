@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 
@@ -72,10 +69,11 @@ namespace Avalonia.Controls
         {
             var source = Source;
 
-            if (source != null)
+            if (source != null && Bounds.Width > 0 && Bounds.Height > 0)
             {
                 Rect viewPort = new Rect(Bounds.Size);
                 Size sourceSize = source.Size;
+
                 Vector scale = Stretch.CalculateScaling(Bounds.Size, sourceSize, StretchDirection);
                 Size scaledSize = sourceSize * scale;
                 Rect destRect = viewPort

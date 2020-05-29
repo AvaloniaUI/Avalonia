@@ -1,8 +1,4 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using Avalonia.Styling;
 
 namespace Avalonia.LogicalTree
 {
@@ -19,7 +15,7 @@ namespace Avalonia.LogicalTree
         /// <param name="source">The control being attached/detached.</param>
         /// <param name="parent">The <see cref="Parent"/>.</param>
         public LogicalTreeAttachmentEventArgs(
-            IStyleRoot root,
+            ILogicalRoot root,
             ILogical source,
             ILogical parent)
         {
@@ -34,7 +30,7 @@ namespace Avalonia.LogicalTree
         /// <summary>
         /// Gets the root of the logical tree that the control is being attached to or detached from.
         /// </summary>
-        public IStyleRoot Root { get; }
+        public ILogicalRoot Root { get; }
 
         /// <summary>
         /// Gets the control that was attached or detached from the logical tree.

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
@@ -54,6 +51,7 @@ namespace Avalonia.Controls
             SelectableMixin.Attach<TreeViewItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue<TreeViewItem>(true);
             ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);
+            ParentProperty.Changed.AddClassHandler<TreeViewItem>((o, e) => o.OnParentChanged(e));
             RequestBringIntoViewEvent.AddClassHandler<TreeViewItem>((x, e) => x.OnRequestBringIntoView(e));
         }
 
@@ -164,9 +162,8 @@ namespace Avalonia.Controls
             // Don't call base.OnKeyDown - let events bubble up to containing TreeView.
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
             _header = e.NameScope.Find<IControl>("PART_Header");
         }
 
@@ -181,6 +178,17 @@ namespace Avalonia.Controls
             }
 
             return logical != null ? result : @default;
+        }
+
+        private void OnParentChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (!((ILogical)this).IsAttachedToLogicalTree && e.NewValue is null)
+            {
+                // If we're not attached to the logical tree, then OnDetachedFromLogicalTree isn't going to be
+                // called when the item is removed. This results in the item not being removed from the index,
+                // causing #3551. In this case, update the index when Parent is changed to null.
+                ItemContainerGenerator.UpdateIndex();
+            }
         }
     }
 }

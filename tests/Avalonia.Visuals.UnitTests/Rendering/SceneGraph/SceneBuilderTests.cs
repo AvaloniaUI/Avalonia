@@ -63,8 +63,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Same(textBlock, textBlockNode.Visual);
                 Assert.Equal(1, textBlockNode.DrawOperations.Count);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
-                Assert.NotNull(textNode.Text);
+                var textNode = (GlyphRunNode)textBlockNode.DrawOperations[0].Item;
+                Assert.NotNull(textNode.GlyphRun);
             }
         }
 
@@ -360,7 +360,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var result = initial.CloneScene();
                 sceneBuilder.Update(result, border);
-                
+
                 var borderNode = (VisualNode)result.Root.Children[0];
                 Assert.Same(border, borderNode.Visual);
 
@@ -371,7 +371,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 var textBlockNode = (VisualNode)borderNode.Children[0];
                 Assert.Same(textBlock, textBlockNode.Visual);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
+                var textNode = (GlyphRunNode)textBlockNode.DrawOperations[0].Item;
                 Assert.Same(initialTextNode.Item, textNode);
             }
         }
@@ -880,15 +880,23 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>(
+                    x => x.PixelSize == new PixelSize(100, 100) &&
+                    x.Dpi == new Vector(96, 96)));
+
                 Image img;
                 var tree = new TestRoot
                 {
                     Child = img = new Image
                     {
-                        Source = new Bitmap(bitmap)
+                        Source = new Bitmap(bitmap),
+                        Height = 100,
+                        Width = 100
                     }
                 };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(new Size(100, 100)));
 
                 Assert.Equal(2, bitmap.RefCount);
                 IRef<IDrawOperation> operation;
@@ -912,15 +920,23 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>(
+                    x => x.PixelSize == new PixelSize(100, 100) &&
+                    x.Dpi == new Vector(96, 96)));
+
                 Image img;
                 var tree = new TestRoot
                 {
                     Child = img = new Image
                     {
-                        Source = new Bitmap(bitmap)
+                        Source = new Bitmap(bitmap),
+                        Width = 100,
+                        Height = 100
                     }
                 };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(new Size(100, 100)));
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();

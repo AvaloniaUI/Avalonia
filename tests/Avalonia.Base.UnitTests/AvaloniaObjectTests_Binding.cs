@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.ComponentModel;
 using System.Reactive.Linq;
@@ -130,6 +127,111 @@ namespace Avalonia.Base.UnitTests
             source.OnCompleted();
 
             Assert.Equal("foo", target.GetValue(property));
+        }
+
+        [Fact]
+        public void Completing_LocalValue_Binding_Raises_PropertyChanged()
+        {
+            var target = new Class1();
+            var source = new BehaviorSubject<BindingValue<string>>("foo");
+            var property = Class1.FooProperty;
+            var raised = 0;
+
+            target.Bind(property, source);
+            Assert.Equal("foo", target.GetValue(property));
+
+            target.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(BindingPriority.Unset, e.Priority);
+                Assert.Equal(property, e.Property);
+                Assert.Equal("foo", e.OldValue as string);
+                Assert.Equal("foodefault", e.NewValue as string);
+                ++raised;
+            };
+
+            source.OnCompleted();
+
+            Assert.Equal("foodefault", target.GetValue(property));
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Completing_Style_Binding_Raises_PropertyChanged()
+        {
+            var target = new Class1();
+            var source = new BehaviorSubject<BindingValue<string>>("foo");
+            var property = Class1.FooProperty;
+            var raised = 0;
+
+            target.Bind(property, source, BindingPriority.Style);
+            Assert.Equal("foo", target.GetValue(property));
+
+            target.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(BindingPriority.Unset, e.Priority);
+                Assert.Equal(property, e.Property);
+                Assert.Equal("foo", e.OldValue as string);
+                Assert.Equal("foodefault", e.NewValue as string);
+                ++raised;
+            };
+
+            source.OnCompleted();
+
+            Assert.Equal("foodefault", target.GetValue(property));
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Completing_LocalValue_Binding_With_Style_Binding_Raises_PropertyChanged()
+        {
+            var target = new Class1();
+            var source = new BehaviorSubject<BindingValue<string>>("foo");
+            var property = Class1.FooProperty;
+            var raised = 0;
+
+            target.Bind(property, new BehaviorSubject<string>("bar"), BindingPriority.Style);
+            target.Bind(property, source);
+            Assert.Equal("foo", target.GetValue(property));
+
+            target.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(BindingPriority.Style, e.Priority);
+                Assert.Equal(property, e.Property);
+                Assert.Equal("foo", e.OldValue as string);
+                Assert.Equal("bar", e.NewValue as string);
+                ++raised;
+            };
+
+            source.OnCompleted();
+
+            Assert.Equal("bar", target.GetValue(property));
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Disposing_LocalValue_Binding_Raises_PropertyChanged()
+        {
+            var target = new Class1();
+            var source = new BehaviorSubject<BindingValue<string>>("foo");
+            var property = Class1.FooProperty;
+            var raised = 0;
+
+            var sub = target.Bind(property, source);
+            Assert.Equal("foo", target.GetValue(property));
+
+            target.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(BindingPriority.Unset, e.Priority);
+                Assert.Equal(property, e.Property);
+                Assert.Equal("foo", e.OldValue as string);
+                Assert.Equal("foodefault", e.NewValue as string);
+                ++raised;
+            };
+
+            sub.Dispose();
+
+            Assert.Equal("foodefault", target.GetValue(property));
+            Assert.Equal(1, raised);
         }
 
         [Fact]

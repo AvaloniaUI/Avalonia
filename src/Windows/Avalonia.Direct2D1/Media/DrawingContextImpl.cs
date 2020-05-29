@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using Avalonia.Media;
@@ -231,9 +228,14 @@ namespace Avalonia.Direct2D1.Media
         }
 
         /// <inheritdoc />
-        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX, double radiusY)
+        public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rrect, BoxShadows boxShadow = default)
         {
-            var rc = rect.ToDirect2D();
+            var rc = rrect.Rect.ToDirect2D();
+            var rect = rrect.Rect;
+            var radiusX = Math.Max(rrect.RadiiTopLeft.X,
+                Math.Max(rrect.RadiiTopRight.X, Math.Max(rrect.RadiiBottomRight.X, rrect.RadiiBottomLeft.X)));
+            var radiusY = Math.Max(rrect.RadiiTopLeft.Y,
+                Math.Max(rrect.RadiiTopRight.Y, Math.Max(rrect.RadiiBottomRight.Y, rrect.RadiiBottomLeft.Y)));
             var isRounded = Math.Abs(radiusX) > double.Epsilon || Math.Abs(radiusY) > double.Epsilon;
 
             if (brush != null)

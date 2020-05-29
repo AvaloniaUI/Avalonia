@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +12,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// </summary>
     public class Scene : IDisposable
     {
-        private Dictionary<IVisual, IVisualNode> _index;
+        private readonly Dictionary<IVisual, IVisualNode> _index;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Scene"/> class.
@@ -86,7 +83,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>The cloned scene.</returns>
         public Scene CloneScene()
         {
-            var index = new Dictionary<IVisual, IVisualNode>();
+            var index = new Dictionary<IVisual, IVisualNode>(_index.Count);
             var root = Clone((VisualNode)Root, null, index);
 
             var result = new Scene(root, index, Layers.Clone(), Generation + 1)
@@ -165,9 +162,19 @@ namespace Avalonia.Rendering.SceneGraph
 
             index.Add(result.Visual, result);
 
-            foreach (var child in source.Children)
+            var children = source.Children;
+            var childrenCount = children.Count;
+
+            if (childrenCount > 0)
             {
-                result.AddChild(Clone((VisualNode)child, result, index));
+                result.TryPreallocateChildren(childrenCount);
+
+                for (var i = 0; i < childrenCount; i++)
+                {
+                    var child = children[i];
+
+                    result.AddChild(Clone((VisualNode)child, result, index));
+                }
             }
 
             return result;

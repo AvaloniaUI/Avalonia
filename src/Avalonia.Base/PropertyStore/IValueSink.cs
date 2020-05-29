@@ -9,12 +9,11 @@ namespace Avalonia.PropertyStore
     /// </summary>
     internal interface IValueSink
     {
-        void ValueChanged<T>(
-            StyledPropertyBase<T> property,
-            BindingPriority priority,
-            Optional<T> oldValue,
-            BindingValue<T> newValue);
+        void ValueChanged<T>(AvaloniaPropertyChangedEventArgs<T> change);
 
-        void Completed(AvaloniaProperty property, IPriorityValueEntry entry);
+        void Completed<T>(
+            StyledPropertyBase<T> property,
+            IPriorityValueEntry entry,
+            Optional<T> oldValue);
     }
 }

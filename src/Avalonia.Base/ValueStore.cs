@@ -37,7 +37,7 @@ namespace Avalonia
         {
             if (_values.TryGetValue(property, out var slot))
             {
-                return slot.ValuePriority < BindingPriority.LocalValue;
+                return slot.Priority < BindingPriority.LocalValue;
             }
 
             return false;
@@ -47,21 +47,24 @@ namespace Avalonia
         {
             if (_values.TryGetValue(property, out var slot))
             {
-                return slot.Value.HasValue;
+                return slot.GetValue().HasValue;
             }
 
             return false;
         }
 
-        public bool TryGetValue<T>(StyledPropertyBase<T> property, out T value)
+        public bool TryGetValue<T>(
+            StyledPropertyBase<T> property,
+            BindingPriority maxPriority,
+            out T value)
         {
             if (_values.TryGetValue(property, out var slot))
             {
-                var v = (IValue<T>)slot;
+                var v = ((IValue<T>)slot).GetValue(maxPriority);
 
-                if (v.Value.HasValue)
+                if (v.HasValue)
                 {
-                    value = v.Value.Value;
+                    value = v.Value;
                     return true;
                 }
             }
@@ -70,35 +73,45 @@ namespace Avalonia
             return false;
         }
 
-        public void SetValue<T>(StyledPropertyBase<T> property, T value, BindingPriority priority)
+        public IDisposable? SetValue<T>(StyledPropertyBase<T> property, T value, BindingPriority priority)
         {
             if (property.ValidateValue?.Invoke(value) == false)
             {
                 throw new ArgumentException($"{value} is not a valid value for '{property.Name}.");
             }
 
+            IDisposable? result = null;
+
             if (_values.TryGetValue(property, out var slot))
             {
-                SetExisting(slot, property, value, priority);
+                result = SetExisting(slot, property, value, priority);
             }
             else if (property.HasCoercion)
             {
                 // If the property has any coercion callbacks then always create a PriorityValue.
                 var entry = new PriorityValue<T>(_owner, property, this);
                 _values.AddValue(property, entry);
-                entry.SetValue(value, priority);
-            }
-            else if (priority == BindingPriority.LocalValue)
-            {
-                _values.AddValue(property, new LocalValueEntry<T>(value));
-                _sink.ValueChanged(property, priority, default, value);
+                result = entry.SetValue(value, priority);
             }
             else
             {
-                var entry = new ConstantValueEntry<T>(property, value, priority);
-                _values.AddValue(property, entry);
-                _sink.ValueChanged(property, priority, default, value);
+                var change = new AvaloniaPropertyChangedEventArgs<T>(_owner, property, default, value, priority);
+
+                if (priority == BindingPriority.LocalValue)
+                {
+                    _values.AddValue(property, new LocalValueEntry<T>(value));
+                    _sink.ValueChanged(change);
+                }
+                else
+                {
+                    var entry = new ConstantValueEntry<T>(property, value, priority, this);
+                    _values.AddValue(property, entry);
+                    _sink.ValueChanged(change);
+                    result = entry;
+                }
             }
+
+            return result;
         }
 
         public IDisposable AddBinding<T>(
@@ -144,13 +157,14 @@ namespace Avalonia
 
                     if (remove)
                     {
-                        var old = TryGetValue(property, out var value) ? value : default;
+                        var old = TryGetValue(property, BindingPriority.LocalValue, out var value) ? value : default;
                         _values.Remove(property);
-                        _sink.ValueChanged(
+                        _sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+                            _owner,
                             property,
-                            BindingPriority.LocalValue,
                             old,
-                            BindingValue<T>.Unset);
+                            default,
+                            BindingPriority.Unset));
                     }
                 }
             }
@@ -171,63 +185,72 @@ namespace Avalonia
         {
             if (_values.TryGetValue(property, out var slot))
             {
+                var slotValue = slot.GetValue();
                 return new Diagnostics.AvaloniaPropertyValue(
                     property,
-                    slot.Value.HasValue ? (object)slot.Value : AvaloniaProperty.UnsetValue,
-                    slot.ValuePriority,
+                    slotValue.HasValue ? slotValue.Value : AvaloniaProperty.UnsetValue,
+                    slot.Priority,
                     null);
             }
 
             return null;
         }
 
-        void IValueSink.ValueChanged<T>(
-            StyledPropertyBase<T> property,
-            BindingPriority priority,
-            Optional<T> oldValue,
-            BindingValue<T> newValue)
+        void IValueSink.ValueChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            _sink.ValueChanged(property, priority, oldValue, newValue);
+            _sink.ValueChanged(change);
         }
 
-        void IValueSink.Completed(AvaloniaProperty property, IPriorityValueEntry entry)
+        void IValueSink.Completed<T>(
+            StyledPropertyBase<T> property,
+            IPriorityValueEntry entry,
+            Optional<T> oldValue)
         {
             if (_values.TryGetValue(property, out var slot))
             {
                 if (slot == entry)
                 {
                     _values.Remove(property);
+                    _sink.Completed(property, entry, oldValue);
                 }
             }
         }
 
-        private void SetExisting<T>(
+        private IDisposable? SetExisting<T>(
             object slot,
             StyledPropertyBase<T> property,
             T value,
             BindingPriority priority)
         {
+            IDisposable? result = null;
+
             if (slot is IPriorityValueEntry<T> e)
             {
                 var priorityValue = new PriorityValue<T>(_owner, property, this, e);
                 _values.SetValue(property, priorityValue);
-                priorityValue.SetValue(value, priority);
+                result = priorityValue.SetValue(value, priority);
             }
             else if (slot is PriorityValue<T> p)
             {
-                p.SetValue(value, priority);
+                result = p.SetValue(value, priority);
             }
             else if (slot is LocalValueEntry<T> l)
             {
                 if (priority == BindingPriority.LocalValue)
                 {
-                    var old = l.Value;
+                    var old = l.GetValue(BindingPriority.LocalValue);
                     l.SetValue(value);
-                    _sink.ValueChanged(property, priority, old, value);
+                    _sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+                        _owner,
+                        property,
+                        old,
+                        value,
+                        priority));
                 }
                 else
                 {
                     var priorityValue = new PriorityValue<T>(_owner, property, this, l);
+                    result = priorityValue.SetValue(value, priority);
                     _values.SetValue(property, priorityValue);
                 }
             }
@@ -235,6 +258,8 @@ namespace Avalonia
             {
                 throw new NotSupportedException("Unrecognised value store slot type.");
             }
+
+            return result;
         }
 
         private IDisposable BindExisting<T>(

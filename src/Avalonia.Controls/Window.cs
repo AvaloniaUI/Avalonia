@@ -1,20 +1,18 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
+using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
-using System.Collections.Generic;
-using System.Linq;
 using JetBrains.Annotations;
-using System.ComponentModel;
-using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -46,10 +44,33 @@ namespace Avalonia.Controls
     }
 
     /// <summary>
+    /// Determines system decorations (title bar, border, etc) for a <see cref="Window"/>
+    /// </summary>
+    public enum SystemDecorations
+    {
+        /// <summary>
+        /// No decorations
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Window border without titlebar
+        /// </summary>
+        BorderOnly = 1,
+
+        /// <summary>
+        /// Fully decorated (default)
+        /// </summary>
+        Full = 2
+    }
+
+    /// <summary>
     /// A top-level window.
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
     {
+        private List<Window> _children = new List<Window>();
+
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
         /// </summary>
@@ -59,8 +80,18 @@ namespace Avalonia.Controls
         /// <summary>
         /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
-        public static readonly StyledProperty<bool> HasSystemDecorationsProperty =
-            AvaloniaProperty.Register<Window, bool>(nameof(HasSystemDecorations), true);
+        [Obsolete("Use SystemDecorationsProperty instead")]
+        public static readonly DirectProperty<Window, bool> HasSystemDecorationsProperty =
+            AvaloniaProperty.RegisterDirect<Window, bool>(
+                nameof(HasSystemDecorations),
+                o => o.HasSystemDecorations,
+                (o, v) => o.HasSystemDecorations = v);
+
+        /// <summary>
+        /// Defines the <see cref="SystemDecorations"/> property.
+        /// </summary>
+        public static readonly StyledProperty<SystemDecorations> SystemDecorationsProperty =
+            AvaloniaProperty.Register<Window, SystemDecorations>(nameof(SystemDecorations), SystemDecorations.Full);
 
         /// <summary>
         /// Enables or disables the taskbar icon
@@ -103,7 +134,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent WindowClosedEvent =
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowClosed", RoutingStrategies.Direct);
-        
+
         /// <summary>
         /// Routed event that can be used for global tracking of opening windows
         /// </summary>
@@ -124,23 +155,19 @@ namespace Avalonia.Controls
         {
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetTitle((string)e.NewValue));
-            HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
-                (s, e) => s.PlatformImpl?.SetSystemDecorations((bool)e.NewValue));
-
             ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue));
 
-            IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
+            IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue)?.PlatformImpl));
 
             CanResizeProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.CanResize((bool)e.NewValue));
 
             WindowStateProperty.Changed.AddClassHandler<Window>(
                 (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.WindowState = (WindowState)e.NewValue; });
-            
+
             MinWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size((double)e.NewValue, w.MinHeight), new Size(w.MaxWidth, w.MaxHeight)));
             MinHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue), new Size(w.MaxWidth, w.MaxHeight)));
             MaxWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size((double)e.NewValue, w.MaxHeight)));
             MaxHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size(w.MaxWidth, (double)e.NewValue)));
-
         }
 
         /// <summary>
@@ -159,9 +186,12 @@ namespace Avalonia.Controls
             : base(impl)
         {
             impl.Closing = HandleClosing;
+            impl.GotInputWhenDisabled = OnGotInputWhenDisabled;
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
+
+            PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
         }
 
         /// <summary>
@@ -191,11 +221,30 @@ namespace Avalonia.Controls
         /// <summary>
         /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
-        /// 
+        [Obsolete("Use SystemDecorations instead")]
         public bool HasSystemDecorations
         {
-            get { return GetValue(HasSystemDecorationsProperty); }
-            set { SetValue(HasSystemDecorationsProperty, value); }
+            get => SystemDecorations == SystemDecorations.Full;
+            set
+            {
+                var oldValue = HasSystemDecorations;
+
+                if (oldValue != value)
+                {
+                    SystemDecorations = value ? SystemDecorations.Full : SystemDecorations.None;
+                    RaisePropertyChanged(HasSystemDecorationsProperty, oldValue, value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the system decorations (title bar, border, etc)
+        /// </summary>
+        /// 
+        public SystemDecorations SystemDecorations
+        {
+            get { return GetValue(SystemDecorationsProperty); }
+            set { SetValue(SystemDecorationsProperty, value); }
         }
 
         /// <summary>
@@ -257,7 +306,7 @@ namespace Avalonia.Controls
                 PlatformImpl?.Move(value);
             }
         }
-        
+
         /// <summary>
         /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
         /// </summary>
@@ -268,22 +317,7 @@ namespace Avalonia.Controls
         /// Should be called from left mouse button press event handler
         /// </summary>
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e) => PlatformImpl?.BeginResizeDrag(edge, e);
-        
-        /// <summary>
-        /// Carries out the arrange pass of the window.
-        /// </summary>
-        /// <param name="finalSize">The final window size.</param>
-        /// <returns>The <paramref name="finalSize"/> parameter unchanged.</returns>
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            using (BeginAutoSizing())
-            {
-                PlatformImpl?.Resize(finalSize);
-            }
 
-            return base.ArrangeOverride(PlatformImpl?.ClientSize ?? default(Size));
-        }
-        
         /// <inheritdoc/>
         Size ILayoutRoot.MaxClientSize => _maxPlatformClientSize;
 
@@ -293,7 +327,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired before a window is closed.
         /// </summary>
-        public event EventHandler<CancelEventArgs> Closing;      
+        public event EventHandler<CancelEventArgs> Closing;
 
         /// <summary>
         /// Closes the window.
@@ -335,9 +369,27 @@ namespace Avalonia.Controls
             {
                 if (close)
                 {
-                    PlatformImpl?.Dispose();
+                    CloseInternal();
                 }
             }
+        }
+
+        private void CloseInternal()
+        {
+            foreach (var child in _children.ToList())
+            {
+                // if we HandleClosing() before then there will be no children.
+                child.CloseInternal();
+            }
+
+            if (Owner is Window owner)
+            {
+                owner.RemoveChild(this);
+            }
+
+            Owner = null;
+
+            PlatformImpl?.Dispose();
         }
 
         /// <summary>
@@ -345,9 +397,31 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual bool HandleClosing()
         {
-            var args = new CancelEventArgs();
-            OnClosing(args);
-            return args.Cancel;
+            bool canClose = true;
+
+            foreach (var child in _children.ToList())
+            {
+                if (!child.HandleClosing())
+                {
+                    child.CloseInternal();
+                }
+                else
+                {
+                    canClose = false;
+                }
+            }
+
+            if (canClose)
+            {
+                var args = new CancelEventArgs();
+                OnClosing(args);
+
+                return args.Cancel;
+            }
+            else
+            {
+                return !canClose;
+            }
         }
 
         protected virtual void HandleWindowStateChanged(WindowState state)
@@ -377,6 +451,14 @@ namespace Avalonia.Controls
             using (BeginAutoSizing())
             {
                 Renderer?.Stop();
+
+                if (Owner is Window owner)
+                {
+                    owner.RemoveChild(this);
+                }
+
+                Owner = null;
+
                 PlatformImpl?.Hide();
             }
 
@@ -405,6 +487,19 @@ namespace Avalonia.Controls
 
             EnsureInitialized();
             IsVisible = true;
+
+            var initialSize = new Size(
+                double.IsNaN(Width) ? ClientSize.Width : Width,
+                double.IsNaN(Height) ? ClientSize.Height : Height);
+
+            if (initialSize != ClientSize)
+            {
+                using (BeginAutoSizing())
+                {
+                    PlatformImpl?.Resize(initialSize);
+                }
+            }
+
             LayoutManager.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
@@ -441,22 +536,12 @@ namespace Avalonia.Controls
         /// <returns>.
         /// A task that can be used to retrieve the result of the dialog when it closes.
         /// </returns>
-        public Task<TResult> ShowDialog<TResult>(Window owner) => ShowDialog<TResult>(owner.PlatformImpl);
-
-        /// <summary>
-        /// Shows the window as a dialog.
-        /// </summary>
-        /// <typeparam name="TResult">
-        /// The type of the result produced by the dialog.
-        /// </typeparam>
-        /// <param name="owner">The dialog's owner window.</param>
-        /// <returns>.
-        /// A task that can be used to retrieve the result of the dialog when it closes.
-        /// </returns>
-        public Task<TResult> ShowDialog<TResult>(IWindowImpl owner)
+        public Task<TResult> ShowDialog<TResult>(Window owner)
         {
             if (owner == null)
+            {
                 throw new ArgumentNullException(nameof(owner));
+            }
 
             if (IsVisible)
             {
@@ -467,30 +552,79 @@ namespace Avalonia.Controls
 
             EnsureInitialized();
             IsVisible = true;
+
+            var initialSize = new Size(
+                double.IsNaN(Width) ? ClientSize.Width : Width,
+                double.IsNaN(Height) ? ClientSize.Height : Height);
+
+            if (initialSize != ClientSize)
+            {
+                using (BeginAutoSizing())
+                {
+                    PlatformImpl?.Resize(initialSize);
+                }
+            }
+
             LayoutManager.ExecuteInitialLayoutPass(this);
 
             var result = new TaskCompletionSource<TResult>();
 
             using (BeginAutoSizing())
             {
-
-                PlatformImpl?.ShowDialog(owner);
+                PlatformImpl.SetParent(owner.PlatformImpl);
+                Owner = owner;
+                owner.AddChild(this);
+                PlatformImpl?.Show();
 
                 Renderer?.Start();
+
                 Observable.FromEventPattern<EventHandler, EventArgs>(
-                    x => this.Closed += x,
-                    x => this.Closed -= x)
+                        x => Closed += x,
+                        x => Closed -= x)
                     .Take(1)
                     .Subscribe(_ =>
                     {
                         owner.Activate();
                         result.SetResult((TResult)(_dialogResult ?? default(TResult)));
                     });
+
                 OnOpened(EventArgs.Empty);
             }
 
-            SetWindowStartupLocation(owner);
+            SetWindowStartupLocation(owner.PlatformImpl);
+
             return result.Task;
+        }
+
+        private void UpdateEnabled()
+        {
+            PlatformImpl.SetEnabled(_children.Count == 0);
+        }
+
+        private void AddChild(Window window)
+        {
+            _children.Add(window);
+            UpdateEnabled();
+        }
+
+        private void RemoveChild(Window window)
+        {
+            _children.Remove(window);
+            UpdateEnabled();
+        }
+
+        private void OnGotInputWhenDisabled()
+        {
+            var firstChild = _children.FirstOrDefault();
+
+            if (firstChild != null)
+            {
+                firstChild.OnGotInputWhenDisabled();
+            }
+            else
+            {
+                Activate();
+            }
         }
 
         private void SetWindowStartupLocation(IWindowBaseImpl owner = null)
@@ -524,36 +658,58 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
             var sizeToContent = SizeToContent;
             var clientSize = ClientSize;
-            Size constraint = clientSize;
+            var constraint = clientSize;
 
-            if ((sizeToContent & SizeToContent.Width) != 0)
+            if (sizeToContent.HasFlagCustom(SizeToContent.Width))
             {
                 constraint = constraint.WithWidth(double.PositiveInfinity);
             }
 
-            if ((sizeToContent & SizeToContent.Height) != 0)
+            if (sizeToContent.HasFlagCustom(SizeToContent.Height))
             {
                 constraint = constraint.WithHeight(double.PositiveInfinity);
             }
 
             var result = base.MeasureOverride(constraint);
 
-            if ((sizeToContent & SizeToContent.Width) == 0)
+            if (!sizeToContent.HasFlagCustom(SizeToContent.Width))
             {
-                result = result.WithWidth(clientSize.Width);
+                if (!double.IsInfinity(availableSize.Width))
+                {
+                    result = result.WithWidth(availableSize.Width);
+                }
+                else
+                {
+                    result = result.WithWidth(clientSize.Width);
+                }
             }
 
-            if ((sizeToContent & SizeToContent.Height) == 0)
+            if (!sizeToContent.HasFlagCustom(SizeToContent.Height))
             {
-                result = result.WithHeight(clientSize.Height);
+                if (!double.IsInfinity(availableSize.Height))
+                {
+                    result = result.WithHeight(availableSize.Height);
+                }
+                else
+                {
+                    result = result.WithHeight(clientSize.Height);
+                }
             }
 
             return result;
+        }
+
+        protected sealed override Size ArrangeSetBounds(Size size)
+        {
+            using (BeginAutoSizing())
+            {
+                PlatformImpl?.Resize(size);
+                return ClientSize;
+            }
         }
 
         protected sealed override void HandleClosed()
@@ -561,6 +717,13 @@ namespace Avalonia.Controls
             RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
 
             base.HandleClosed();
+
+            if (Owner is Window owner)
+            {
+                owner.RemoveChild(this);
+            }
+
+            Owner = null;
         }
 
         /// <inheritdoc/>
@@ -570,6 +733,9 @@ namespace Avalonia.Controls
             {
                 SizeToContent = SizeToContent.Manual;
             }
+
+            Width = clientSize.Width;
+            Height = clientSize.Height;
 
             base.HandleResized(clientSize);
         }
@@ -584,5 +750,25 @@ namespace Avalonia.Controls
         /// <see cref="Closing"/> event needs to be raised.
         /// </remarks>
         protected virtual void OnClosing(CancelEventArgs e) => Closing?.Invoke(this, e);
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            if (change.Property == SystemDecorationsProperty)
+            {
+                var typedNewValue = change.NewValue.GetValueOrDefault<SystemDecorations>();
+
+                PlatformImpl?.SetSystemDecorations(typedNewValue);
+
+                var o = change.OldValue.GetValueOrDefault<SystemDecorations>() == SystemDecorations.Full;
+                var n = typedNewValue == SystemDecorations.Full;
+
+                if (o != n)
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    RaisePropertyChanged(HasSystemDecorationsProperty, o, n);
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
+            }
+        }
     }
 }

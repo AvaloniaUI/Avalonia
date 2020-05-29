@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -452,13 +449,75 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets an <see cref="AvaloniaProperty"/> base value.
+        /// </summary>
+        /// <param name="target">The object.</param>
+        /// <param name="property">The property.</param>
+        /// <param name="maxPriority">The maximum priority for the value.</param>
+        /// <remarks>
+        /// For styled properties, gets the value of the property if set on the object with a
+        /// priority equal or lower to <paramref name="maxPriority"/>, otherwise
+        /// <see cref="AvaloniaProperty.UnsetValue"/>. Note that this method does not return
+        /// property values that come from inherited or default values.
+        /// 
+        /// For direct properties returns <see cref="GetValue(IAvaloniaObject, AvaloniaProperty)"/>.
+        /// </remarks>
+        public static object GetBaseValue(
+            this IAvaloniaObject target,
+            AvaloniaProperty property,
+            BindingPriority maxPriority)
+        {
+            target = target ?? throw new ArgumentNullException(nameof(target));
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
+            return property.RouteGetBaseValue(target, maxPriority);
+        }
+
+        /// <summary>
+        /// Gets an <see cref="AvaloniaProperty"/> base value.
+        /// </summary>
+        /// <param name="target">The object.</param>
+        /// <param name="property">The property.</param>
+        /// <param name="maxPriority">The maximum priority for the value.</param>
+        /// <remarks>
+        /// For styled properties, gets the value of the property if set on the object with a
+        /// priority equal or lower to <paramref name="maxPriority"/>, otherwise
+        /// <see cref="Optional{T}.Empty"/>. Note that this method does not return property values
+        /// that come from inherited or default values.
+        /// 
+        /// For direct properties returns
+        /// <see cref="IAvaloniaObject.GetValue{T}(DirectPropertyBase{T})"/>.
+        /// </remarks>
+        public static Optional<T> GetBaseValue<T>(
+            this IAvaloniaObject target,
+            AvaloniaProperty<T> property,
+            BindingPriority maxPriority)
+        {
+            target = target ?? throw new ArgumentNullException(nameof(target));
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
+            target = target ?? throw new ArgumentNullException(nameof(target));
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
+            return property switch
+            {
+                StyledPropertyBase<T> styled => target.GetBaseValue(styled, maxPriority),
+                DirectPropertyBase<T> direct => target.GetValue(direct),
+                _ => throw new NotSupportedException("Unsupported AvaloniaProperty type.")
+            };
+        }
+
+        /// <summary>
         /// Sets a <see cref="AvaloniaProperty"/> value.
         /// </summary>
         /// <param name="target">The object.</param>
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
-        public static void SetValue(
+        /// <returns>
+        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
+        /// </returns>
+        public static IDisposable SetValue(
             this IAvaloniaObject target,
             AvaloniaProperty property,
             object value,
@@ -467,7 +526,7 @@ namespace Avalonia
             target = target ?? throw new ArgumentNullException(nameof(target));
             property = property ?? throw new ArgumentNullException(nameof(property));
 
-            property.RouteSetValue(target, value, priority);
+            return property.RouteSetValue(target, value, priority);
         }
 
         /// <summary>
@@ -478,7 +537,10 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
-        public static void SetValue<T>(
+        /// <returns>
+        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
+        /// </returns>
+        public static IDisposable SetValue<T>(
             this IAvaloniaObject target,
             AvaloniaProperty<T> property,
             T value,
@@ -490,11 +552,10 @@ namespace Avalonia
             switch (property)
             {
                 case StyledPropertyBase<T> styled:
-                    target.SetValue(styled, value, priority);
-                    break;
+                    return target.SetValue(styled, value, priority);
                 case DirectPropertyBase<T> direct:
                     target.SetValue(direct, value);
-                    break;
+                    return null;
                 default:
                     throw new NotSupportedException("Unsupported AvaloniaProperty type.");
             }

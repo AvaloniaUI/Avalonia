@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,7 +7,9 @@ using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Visuals.Media.Imaging;
 using SharpDX.DirectWrite;
 using GlyphRun = Avalonia.Media.GlyphRun;
 using TextAlignment = Avalonia.Media.TextAlignment;
@@ -109,7 +108,10 @@ namespace Avalonia.Direct2D1
         public static void Initialize()
         {
             InitializeDirect2D();
-            AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(s_instance);
+            AvaloniaLocator.CurrentMutable
+                .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
+                .Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl())
+                .Bind<ITextShaperImpl>().ToConstant(new TextShaperImpl());
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
         }
 
@@ -179,25 +181,41 @@ namespace Avalonia.Direct2D1
         public IGeometryImpl CreateRectangleGeometry(Rect rect) => new RectangleGeometryImpl(rect);
         public IStreamGeometryImpl CreateStreamGeometry() => new StreamGeometryImpl();
 
+        /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)
         {
             return new WicBitmapImpl(fileName);
         }
 
+        /// <inheritdoc />
         public IBitmapImpl LoadBitmap(Stream stream)
         {
             return new WicBitmapImpl(stream);
         }
 
-        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        /// <inheritdoc />
+        public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
-            return new WicBitmapImpl(format, data, size, dpi, stride);
+            return new WicBitmapImpl(stream, width, true, interpolationMode);
         }
 
         /// <inheritdoc />
-        public IFontManagerImpl CreateFontManager()
+        public IBitmapImpl LoadBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
-            return new FontManagerImpl();
+            return new WicBitmapImpl(stream, height, false, interpolationMode);
+        }
+
+        /// <inheritdoc />
+        public IBitmapImpl ResizeBitmap(IBitmapImpl bitmapImpl, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            // https://github.com/sharpdx/SharpDX/issues/959 blocks implementation.
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        {
+            return new WicBitmapImpl(format, data, size, dpi, stride);
         }
 
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
@@ -246,5 +264,7 @@ namespace Avalonia.Direct2D1
 
             return new GlyphRunImpl(run);
         }
+
+        public bool SupportsIndividualRoundRects => false;
     }
 }

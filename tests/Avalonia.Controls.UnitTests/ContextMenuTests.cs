@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Windows.Input;
-using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Markup.Data;
+using Avalonia.Markup.Xaml;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Castle.DynamicProxy.Generators;
 using Moq;
 using Xunit;
 
@@ -159,6 +158,103 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Can_Set_Clear_ContextMenu_Property()
+        {
+            using (Application())
+            {
+                var target = new ContextMenu();
+                var control = new Panel();
+
+                control.ContextMenu = target;
+                control.ContextMenu = null;
+            }
+        }
+
+        [Fact]
+        public void Context_Menu_In_Resources_Can_Be_Shared()
+        {
+            using (Application())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <ContextMenu x:Key='contextMenu'>
+            <MenuItem>Foo</MenuItem>
+        </ContextMenu>
+	</Window.Resources>
+
+    <StackPanel>
+        <TextBlock Name='target1' ContextMenu='{StaticResource contextMenu}'/>
+        <TextBlock Name='target2' ContextMenu='{StaticResource contextMenu}'/>
+    </StackPanel>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var target1 = window.Find<TextBlock>("target1");
+                var target2 = window.Find<TextBlock>("target2");
+                var mouse = new MouseTestHelper();
+
+                Assert.NotNull(target1.ContextMenu);
+                Assert.NotNull(target2.ContextMenu);
+                Assert.Same(target1.ContextMenu, target2.ContextMenu);
+
+                window.Show();
+
+                var menu = target1.ContextMenu;
+                mouse.Click(target1, MouseButton.Right);
+                Assert.True(menu.IsOpen);
+                mouse.Click(target2, MouseButton.Right);
+                Assert.True(menu.IsOpen);
+            }
+        }
+
+        [Fact]
+        public void Context_Menu_Can_Be_Set_In_Style()
+        {
+            using (Application())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='TextBlock'>
+            <Setter Property='ContextMenu'>
+                <ContextMenu>
+                    <MenuItem>Foo</MenuItem>
+                </ContextMenu>
+            </Setter>
+        </Style>
+	</Window.Styles>
+
+    <StackPanel>
+        <TextBlock Name='target1'/>
+        <TextBlock Name='target2'/>
+    </StackPanel>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var target1 = window.Find<TextBlock>("target1");
+                var target2 = window.Find<TextBlock>("target2");
+                var mouse = new MouseTestHelper();
+
+                Assert.NotNull(target1.ContextMenu);
+                Assert.NotNull(target2.ContextMenu);
+                Assert.Same(target1.ContextMenu, target2.ContextMenu);
+
+                window.Show();
+
+                var menu = target1.ContextMenu;
+                mouse.Click(target1, MouseButton.Right);
+                Assert.True(menu.IsOpen);
+                mouse.Click(target2, MouseButton.Right);
+                Assert.True(menu.IsOpen);
+            }
+        }
+
         [Fact(Skip = "The only reason this test was 'passing' before was that the author forgot to call Window.ApplyTemplate()")]
         public void Cancelling_Closing_Leaves_ContextMenuOpen()
         {
@@ -200,16 +296,17 @@ namespace Avalonia.Controls.UnitTests
             screenImpl.Setup(x => x.ScreenCount).Returns(1);
             screenImpl.Setup(X => X.AllScreens).Returns( new[] { new Screen(1, screen, screen, true) });
 
-            popupImpl = MockWindowingPlatform.CreatePopupMock();
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            popupImpl = MockWindowingPlatform.CreatePopupMock(windowImpl.Object);
             popupImpl.SetupGet(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.CreatePopup()).Returns(popupImpl.Object);
 
-            var windowImpl = MockWindowingPlatform.CreateWindowMock(() => popupImpl.Object);
             windowImpl.Setup(x => x.Screen).Returns(screenImpl.Object);
 
             var services = TestServices.StyledWindow.With(
                                         inputManager: new InputManager(),
                                         windowImpl: windowImpl.Object,
-                                        windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object, () => popupImpl.Object));
+                                        windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object, x => popupImpl.Object));
 
             return UnitTestApplication.Start(services);
         }

@@ -22,6 +22,7 @@ namespace Avalonia.PropertyStore
         private readonly IAvaloniaObject _owner;
         private IValueSink _sink;
         private IDisposable? _subscription;
+        private Optional<T> _value;
 
         public BindingEntry(
             IAvaloniaObject owner,
@@ -40,18 +41,21 @@ namespace Avalonia.PropertyStore
         public StyledPropertyBase<T> Property { get; }
         public BindingPriority Priority { get; }
         public IObservable<BindingValue<T>> Source { get; }
-        public Optional<T> Value { get; private set; }
-        Optional<object> IValue.Value => Value.ToObject();
-        BindingPriority IValue.ValuePriority => Priority;
+        Optional<object> IValue.GetValue() => _value.ToObject();
+
+        public Optional<T> GetValue(BindingPriority maxPriority)
+        {
+            return Priority >= maxPriority ? _value : Optional<T>.Empty;
+        }
 
         public void Dispose()
         {
             _subscription?.Dispose();
             _subscription = null;
-            _sink.Completed(Property, this);
+            _sink.Completed(Property, this, _value);
         }
 
-        public void OnCompleted() => _sink.Completed(Property, this);
+        public void OnCompleted() => _sink.Completed(Property, this, _value);
 
         public void OnError(Exception error)
         {
@@ -94,14 +98,14 @@ namespace Avalonia.PropertyStore
                 return;
             }
 
-            var old = Value;
+            var old = _value;
 
             if (value.Type != BindingValueType.DataValidationError)
             {
-                Value = value.ToOptional();
+                _value = value.ToOptional();
             }
 
-            _sink.ValueChanged(Property, Priority, old, value);
+            _sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(_owner, Property, old, value, Priority));
         }
     }
 }

@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
@@ -683,7 +684,7 @@ namespace Avalonia.Controls
                 added.Add(e.NewValue);
             }
 
-            OnSelectionChanged(new SelectionChangedEventArgs(SelectionChangedEvent, added, removed));
+            OnSelectionChanged(new SelectionChangedEventArgs(SelectionChangedEvent, removed, added));
         }
 
         /// <summary>
@@ -1100,6 +1101,7 @@ namespace Avalonia.Controls
                 {
                     _textBoxSubscriptions =
                         _textBox.GetObservable(TextBox.TextProperty)
+                                .Skip(1)
                                 .Subscribe(_ => OnTextBoxTextChanged());
 
                     if (Text != null)
@@ -1212,7 +1214,7 @@ namespace Avalonia.Controls
         /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control
         /// when a new template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
 
             if (DropDownPopup != null)
@@ -1240,7 +1242,7 @@ namespace Avalonia.Controls
                 OpeningDropDown(false);
             }
 
-            base.OnTemplateApplied(e);
+            base.OnApplyTemplate(e);
         }
 
         /// <summary>
@@ -1630,12 +1632,17 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The source object.</param>
         /// <param name="e">The event data.</param>
-        private void DropDownPopup_Closed(object sender, EventArgs e)
+        private void DropDownPopup_Closed(object sender, PopupClosedEventArgs e)
         {
             // Force the drop down dependency property to be false.
             if (IsDropDownOpen)
             {
                 IsDropDownOpen = false;
+            }
+
+            if (e.CloseEvent is PointerEventArgs pointerEvent)
+            {
+                pointerEvent.Handled = true;
             }
 
             // Fire the DropDownClosed event

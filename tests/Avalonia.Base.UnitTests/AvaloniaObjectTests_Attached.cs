@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Xunit;
 
@@ -14,19 +11,6 @@ namespace Avalonia.Base.UnitTests
             var target = new Class2();
 
             Assert.Equal("foodefault", target.GetValue(Class2.FooProperty));
-        }
-
-        [Fact]
-        public void AvaloniaProperty_Initialized_Is_Called_For_Attached_Property()
-        {
-            bool raised = false;
-
-            using (Class1.FooProperty.Initialized.Subscribe(x => raised = true))
-            {
-                new Class3();
-            }
-
-            Assert.True(raised);
         }
 
         private class Base : AvaloniaObject
@@ -45,10 +29,6 @@ namespace Avalonia.Base.UnitTests
         {
             public static readonly AttachedProperty<string> FooProperty =
                 Class1.FooProperty.AddOwner<Class2>();
-        }
-
-        private class Class3 : Base
-        {
         }
     }
 }

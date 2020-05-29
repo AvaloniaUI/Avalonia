@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -152,13 +149,14 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0, double radiusY = 0)
+        public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect,
+            BoxShadows boxShadows = default)
         {
             var next = NextDrawAs<RectangleNode>();
 
-            if (next == null || !next.Item.Equals(Transform, brush, pen, rect, radiusX, radiusY))
+            if (next == null || !next.Item.Equals(Transform, brush, pen, rect, boxShadows))
             {
-                Add(new RectangleNode(Transform, brush, pen, rect, radiusX, radiusY, CreateChildScene(brush)));
+                Add(new RectangleNode(Transform, brush, pen, rect, boxShadows, CreateChildScene(brush)));
             }
             else
             {
@@ -366,7 +364,7 @@ namespace Avalonia.Rendering.SceneGraph
             public int DrawOperationIndex { get; }
         }
 
-        private void Add(IDrawOperation node)
+        private void Add<T>(T node) where T : class, IDrawOperation
         {
             using (var refCounted = RefCountable.Create(node))
             {

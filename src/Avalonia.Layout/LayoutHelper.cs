@@ -1,7 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Layout
@@ -22,16 +20,11 @@ namespace Avalonia.Layout
         /// <returns>The control's size.</returns>
         public static Size ApplyLayoutConstraints(ILayoutable control, Size constraints)
         {
-            var controlWidth = control.Width;
-            var controlHeight = control.Height;
+            var minmax = new MinMax(control);
 
-            double width = (controlWidth > 0) ? controlWidth : constraints.Width;
-            double height = (controlHeight > 0) ? controlHeight : constraints.Height;
-            width = Math.Min(width, control.MaxWidth);
-            width = Math.Max(width, control.MinWidth);
-            height = Math.Min(height, control.MaxHeight);
-            height = Math.Max(height, control.MinHeight);
-            return new Size(width, height);
+            return new Size(
+                MathUtilities.Clamp(constraints.Width, minmax.MinWidth, minmax.MaxWidth),
+                MathUtilities.Clamp(constraints.Height, minmax.MinHeight, minmax.MaxHeight));
         }
 
         public static Size MeasureChild(ILayoutable control, Size availableSize, Thickness padding,
@@ -87,6 +80,98 @@ namespace Avalonia.Layout
             }
 
             InnerInvalidateMeasure(control);
+        }
+
+        /// <summary>
+        /// Rounds a size to integer values for layout purposes, compensating for high DPI screen
+        /// coordinates.
+        /// </summary>
+        /// <param name="size">Input size.</param>
+        /// <param name="dpiScaleX">DPI along x-dimension.</param>
+        /// <param name="dpiScaleY">DPI along y-dimension.</param>
+        /// <returns>Value of size that will be rounded under screen DPI.</returns>
+        /// <remarks>
+        /// This is a layout helper method. It takes DPI into account and also does not return
+        /// the rounded value if it is unacceptable for layout, e.g. Infinity or NaN. It's a helper
+        /// associated with the UseLayoutRounding property and should not be used as a general rounding
+        /// utility.
+        /// </remarks>
+        public static Size RoundLayoutSize(Size size, double dpiScaleX, double dpiScaleY)
+        {
+            return new Size(RoundLayoutValue(size.Width, dpiScaleX), RoundLayoutValue(size.Height, dpiScaleY));
+        }
+
+        /// <summary>
+        /// Calculates the value to be used for layout rounding at high DPI.
+        /// </summary>
+        /// <param name="value">Input value to be rounded.</param>
+        /// <param name="dpiScale">Ratio of screen's DPI to layout DPI</param>
+        /// <returns>Adjusted value that will produce layout rounding on screen at high dpi.</returns>
+        /// <remarks>
+        /// This is a layout helper method. It takes DPI into account and also does not return
+        /// the rounded value if it is unacceptable for layout, e.g. Infinity or NaN. It's a helper
+        /// associated with the UseLayoutRounding property and should not be used as a general rounding
+        /// utility.
+        /// </remarks>
+        public static double RoundLayoutValue(double value, double dpiScale)
+        {
+            double newValue;
+
+            // If DPI == 1, don't use DPI-aware rounding.
+            if (!MathUtilities.AreClose(dpiScale, 1.0))
+            {
+                newValue = Math.Round(value * dpiScale) / dpiScale;
+
+                // If rounding produces a value unacceptable to layout (NaN, Infinity or MaxValue),
+                // use the original value.
+                if (double.IsNaN(newValue) ||
+                    double.IsInfinity(newValue) ||
+                    MathUtilities.AreClose(newValue, double.MaxValue))
+                {
+                    newValue = value;
+                }
+            }
+            else
+            {
+                newValue = Math.Round(value);
+            }
+
+            return newValue;
+        }
+
+
+        /// <summary>
+        /// Calculates the min and max height for a control. Ported from WPF.
+        /// </summary>
+        private readonly struct MinMax
+        {
+            public MinMax(ILayoutable e)
+            {
+                MaxHeight = e.MaxHeight;
+                MinHeight = e.MinHeight;
+                double l = e.Height;
+
+                double height = (double.IsNaN(l) ? double.PositiveInfinity : l);
+                MaxHeight = Math.Max(Math.Min(height, MaxHeight), MinHeight);
+
+                height = (double.IsNaN(l) ? 0 : l);
+                MinHeight = Math.Max(Math.Min(MaxHeight, height), MinHeight);
+
+                MaxWidth = e.MaxWidth;
+                MinWidth = e.MinWidth;
+                l = e.Width;
+
+                double width = (double.IsNaN(l) ? double.PositiveInfinity : l);
+                MaxWidth = Math.Max(Math.Min(width, MaxWidth), MinWidth);
+
+                width = (double.IsNaN(l) ? 0 : l);
+                MinWidth = Math.Max(Math.Min(MaxWidth, width), MinWidth);
+            }
+
+            public double MinWidth { get; }
+            public double MaxWidth { get; }
+            public double MinHeight { get; }
+            public double MaxHeight { get; }
         }
     }
 }

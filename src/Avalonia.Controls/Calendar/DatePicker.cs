@@ -413,7 +413,7 @@ namespace Avalonia.Controls
             DisplayDate = DateTime.Today;
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             if (_calendar != null)
             {
@@ -476,7 +476,7 @@ namespace Avalonia.Controls
             {
                 _dropDownButton.Click += DropDownButton_Click;
                 _buttonPointerPressedSubscription =
-                    _dropDownButton.AddHandler(PointerPressedEvent, DropDownButton_PointerPressed, handledEventsToo: true);
+                    _dropDownButton.AddDisposableHandler(PointerPressedEvent, DropDownButton_PointerPressed, handledEventsToo: true);
             }
 
             if (_textBox != null)
@@ -508,21 +508,15 @@ namespace Avalonia.Controls
                     SetSelectedDate();
                 }
             }
-
-            base.OnTemplateApplied(e);
         }
 
-        protected override void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == SelectedDateProperty)
+            if (change.Property == SelectedDateProperty)
             {
-                DataValidationErrors.SetError(this, newValue.Error);
+                DataValidationErrors.SetError(this, change.NewValue.Error);
             }
         }
 
@@ -788,7 +782,7 @@ namespace Avalonia.Controls
                     removedItems.Add(removedDate.Value);
                 }
 
-                handler(this, new SelectionChangedEventArgs(SelectingItemsControl.SelectionChangedEvent, addedItems, removedItems));
+                handler(this, new SelectionChangedEventArgs(SelectingItemsControl.SelectionChangedEvent, removedItems, addedItems));
             }
         }
         private void OnCalendarClosed(EventArgs e)
@@ -839,7 +833,7 @@ namespace Avalonia.Controls
         }
         private void Calendar_PointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (e.MouseButton == MouseButton.Left)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 e.Handled = true;
             }
@@ -895,12 +889,17 @@ namespace Avalonia.Controls
                 _ignoreButtonClick = false;
             }
         }
-        private void PopUp_Closed(object sender, EventArgs e)
+        private void PopUp_Closed(object sender, PopupClosedEventArgs e)
         {
             IsDropDownOpen = false;
 
             if(!_isPopupClosing)
             {
+                if (e.CloseEvent is PointerEventArgs pointerEvent)
+                {
+                    pointerEvent.Handled = true;
+                }
+
                 _isPopupClosing = true;
                 Threading.Dispatcher.UIThread.InvokeAsync(() => _isPopupClosing = false);
             }
@@ -1008,7 +1007,7 @@ namespace Avalonia.Controls
                     }
                 case Key.Down:
                     { 
-                        if ((e.Modifiers & InputModifiers.Control) == InputModifiers.Control)
+                        if ((e.KeyModifiers & KeyModifiers.Control) == KeyModifiers.Control)
                         {
                             HandlePopUp();
                             return true;

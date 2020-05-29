@@ -1,26 +1,23 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia.Media.Fonts
 {
     public readonly struct FontKey : IEquatable<FontKey>
     {
-        public readonly FontFamily FontFamily;
-        public readonly FontStyle Style;
-        public readonly FontWeight Weight;
-
-        public FontKey(FontFamily fontFamily, FontWeight weight, FontStyle style)
+        public FontKey(string familyName, FontWeight weight, FontStyle style)
         {
-            FontFamily = fontFamily;
+            FamilyName = familyName;
             Style = style;
             Weight = weight;
         }
 
+        public string FamilyName { get; }
+        public FontStyle Style { get; }
+        public FontWeight Weight { get; }
+
         public override int GetHashCode()
         {
-            var hash = FontFamily.GetHashCode();
+            var hash = FamilyName.GetHashCode();
 
             hash = hash * 31 + (int)Style;
             hash = hash * 31 + (int)Weight;
@@ -35,7 +32,7 @@ namespace Avalonia.Media.Fonts
 
         public bool Equals(FontKey other)
         {
-            return FontFamily == other.FontFamily &&
+            return FamilyName == other.FamilyName &&
                 Style == other.Style &&
                    Weight == other.Weight;
         }

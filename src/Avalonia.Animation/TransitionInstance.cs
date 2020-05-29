@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Metadata;
 using System;
 using System.Reactive.Linq;
@@ -22,6 +19,8 @@ namespace Avalonia.Animation
 
         public TransitionInstance(IClock clock, TimeSpan Duration)
         {
+            clock = clock ?? throw new ArgumentNullException(nameof(clock));
+
             _duration = Duration;
             _baseClock = clock;
         }

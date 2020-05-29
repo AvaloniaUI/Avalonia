@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
@@ -14,6 +11,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Data;
+using Avalonia.Layout;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -71,6 +69,18 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<TextBox>();
+
+        /// <summary>
+        /// Defines the <see cref="HorizontalAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
+            ContentControl.HorizontalContentAlignmentProperty.AddOwner<TextBox>();
+
+        /// <summary>
+        /// Defines the <see cref="VerticalAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
+            ContentControl.VerticalContentAlignmentProperty.AddOwner<TextBox>();
 
         public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
@@ -262,6 +272,42 @@ namespace Avalonia.Controls
             }
         }
 
+        public string SelectedText
+        {
+            get { return GetSelection(); }
+            set
+            {
+                _undoRedoHelper.Snapshot();
+                if (string.IsNullOrEmpty(value))
+                {
+                    DeleteSelection();
+                }
+                else
+                {
+                    HandleTextInput(value);
+                } 
+                _undoRedoHelper.Snapshot();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the horizontal alignment of the content within the control.
+        /// </summary>
+        public HorizontalAlignment HorizontalContentAlignment
+        {
+            get { return GetValue(HorizontalContentAlignmentProperty); }
+            set { SetValue(HorizontalContentAlignmentProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the vertical alignment of the content within the control.
+        /// </summary>
+        public VerticalAlignment VerticalContentAlignment
+        {
+            get { return GetValue(VerticalContentAlignmentProperty); }
+            set { SetValue(VerticalContentAlignmentProperty, value); }
+        }
+
         public TextAlignment TextAlignment
         {
             get { return GetValue(TextAlignmentProperty); }
@@ -295,7 +341,7 @@ namespace Avalonia.Controls
             set { SetAndRaise(NewLineProperty, ref _newLine, value); }
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
 
@@ -316,8 +362,7 @@ namespace Avalonia.Controls
                 !AcceptsReturn &&
                 Text?.Length > 0)
             {
-                SelectionStart = 0;
-                SelectionEnd = Text.Length;
+                SelectAll();
             }
             else
             {
@@ -428,8 +473,10 @@ namespace Avalonia.Controls
             {
                 if (!IsPasswordBox)
                 {
+                    _undoRedoHelper.Snapshot();
                     Copy();
                     DeleteSelection();
+                    _undoRedoHelper.Snapshot();
                 }
 
                 handled = true;
@@ -555,6 +602,7 @@ namespace Avalonia.Controls
                         break;
 
                     case Key.Back:
+                        _undoRedoHelper.Snapshot();
                         if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
                         {
                             SetSelectionForControlBackspace();
@@ -578,11 +626,13 @@ namespace Avalonia.Controls
                             CaretIndex -= removedCharacters;
                             SelectionStart = SelectionEnd = CaretIndex;
                         }
+                        _undoRedoHelper.Snapshot();
 
                         handled = true;
                         break;
 
                     case Key.Delete:
+                        _undoRedoHelper.Snapshot();
                         if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
                         {
                             SetSelectionForControlDelete();
@@ -604,6 +654,7 @@ namespace Avalonia.Controls
                             SetTextInternal(text.Substring(0, caretIndex) +
                                             text.Substring(caretIndex + removedCharacters));
                         }
+                        _undoRedoHelper.Snapshot();
 
                         handled = true;
                         break;
@@ -611,7 +662,9 @@ namespace Avalonia.Controls
                     case Key.Enter:
                         if (AcceptsReturn)
                         {
+                            _undoRedoHelper.Snapshot();
                             HandleTextInput(NewLine);
+                            _undoRedoHelper.Snapshot();
                             handled = true;
                         }
 
@@ -620,7 +673,9 @@ namespace Avalonia.Controls
                     case Key.Tab:
                         if (AcceptsTab)
                         {
+                            _undoRedoHelper.Snapshot();
                             HandleTextInput("\t");
+                            _undoRedoHelper.Snapshot();
                             handled = true;
                         }
                         else
@@ -653,12 +708,13 @@ namespace Avalonia.Controls
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            var point = e.GetPosition(_presenter);
-            var index = CaretIndex = _presenter.GetCaretIndex(point);
             var text = Text;
 
-            if (text != null && e.MouseButton == MouseButton.Left)
+            var clickInfo = e.GetCurrentPoint(this);
+            if (text != null && clickInfo.Properties.IsLeftButtonPressed && !(clickInfo.Pointer?.Captured is Border))
             {
+                var point = e.GetPosition(_presenter);
+                var index = CaretIndex = _presenter.GetCaretIndex(point);
                 switch (e.ClickCount)
                 {
                     case 1:
@@ -673,8 +729,7 @@ namespace Avalonia.Controls
                         SelectionEnd = StringUtils.NextWord(text, index);
                         break;
                     case 3:
-                        SelectionStart = 0;
-                        SelectionEnd = text.Length;
+                        SelectAll();
                         break;
                 }
             }
@@ -685,7 +740,8 @@ namespace Avalonia.Controls
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (_presenter != null && e.Pointer.Captured == _presenter)
+            // selection should not change during pointer move if the user right clicks
+            if (_presenter != null && e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 var point = e.GetPosition(_presenter);
 
@@ -698,6 +754,22 @@ namespace Avalonia.Controls
         {
             if (_presenter != null && e.Pointer.Captured == _presenter)
             {
+                if (e.InitialPressMouseButton == MouseButton.Right)
+                {
+                    var point = e.GetPosition(_presenter);
+                    var caretIndex = _presenter.GetCaretIndex(point);
+
+                    // see if mouse clicked inside current selection
+                    // if it did not, we change the selection to where the user clicked
+                    var firstSelection = Math.Min(SelectionStart, SelectionEnd);
+                    var lastSelection = Math.Max(SelectionStart, SelectionEnd);
+                    var didClickInSelection = SelectionStart != SelectionEnd && 
+                        caretIndex >= firstSelection && caretIndex <= lastSelection;
+                    if (!didClickInSelection)
+                    {
+                        CaretIndex = SelectionEnd = SelectionStart = caretIndex;
+                    }
+                }
                 e.Pointer.Capture(null);
             }
         }
@@ -896,7 +968,10 @@ namespace Avalonia.Controls
             CaretIndex = caretIndex;
         }
 
-        private void SelectAll()
+        /// <summary>
+        /// Select all text in the TextBox
+        /// </summary>
+        public void SelectAll()
         {
             SelectionStart = 0;
             SelectionEnd = Text?.Length ?? 0;

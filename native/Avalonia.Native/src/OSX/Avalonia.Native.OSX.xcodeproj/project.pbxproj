@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		1A002B9E232135EE00021753 /* app.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A002B9D232135EE00021753 /* app.mm */; };
+		1A3E5EA823E9E83B00EDE661 /* rendertarget.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */; };
+		1A3E5EAA23E9F26C00EDE661 /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A3E5EA923E9F26C00EDE661 /* IOSurface.framework */; };
+		1A3E5EAE23E9FB1300EDE661 /* cgl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A3E5EAD23E9FB1300EDE661 /* cgl.mm */; };
+		1A3E5EB023E9FE8300EDE661 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A3E5EAF23E9FE8300EDE661 /* QuartzCore.framework */; };
+		1A465D10246AB61600C5858B /* dnd.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A465D0F246AB61600C5858B /* dnd.mm */; };
 		37155CE4233C00EB0034DCE9 /* menu.h in Headers */ = {isa = PBXBuildFile; fileRef = 37155CE3233C00EB0034DCE9 /* menu.h */; };
 		37A517B32159597E00FBA241 /* Screens.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37A517B22159597E00FBA241 /* Screens.mm */; };
 		37C09D8821580FE4006A6758 /* SystemDialogs.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37C09D8721580FE4006A6758 /* SystemDialogs.mm */; };
@@ -18,7 +23,6 @@
 		5B8BD94F215BFEA6005ED2A7 /* clipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */; };
 		AB00E4F72147CA920032A60A /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB00E4F62147CA920032A60A /* main.mm */; };
 		AB1E522C217613570091CD71 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB1E522B217613570091CD71 /* OpenGL.framework */; };
-		AB573DC4217605E400D389A2 /* gl.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB573DC3217605E400D389A2 /* gl.mm */; };
 		AB661C1E2148230F00291242 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB661C1D2148230F00291242 /* AppKit.framework */; };
 		AB661C202148286E00291242 /* window.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB661C1F2148286E00291242 /* window.mm */; };
 		AB8F7D6B21482D7F0057DBA5 /* platformthreading.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */; };
@@ -26,6 +30,11 @@
 
 /* Begin PBXFileReference section */
 		1A002B9D232135EE00021753 /* app.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = app.mm; sourceTree = "<group>"; };
+		1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = rendertarget.mm; sourceTree = "<group>"; };
+		1A3E5EA923E9F26C00EDE661 /* IOSurface.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOSurface.framework; path = System/Library/Frameworks/IOSurface.framework; sourceTree = SDKROOT; };
+		1A3E5EAD23E9FB1300EDE661 /* cgl.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = cgl.mm; sourceTree = "<group>"; };
+		1A3E5EAF23E9FE8300EDE661 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		1A465D0F246AB61600C5858B /* dnd.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = dnd.mm; sourceTree = "<group>"; };
 		37155CE3233C00EB0034DCE9 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = menu.h; sourceTree = "<group>"; };
 		379860FE214DA0C000CD0246 /* KeyTransform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KeyTransform.h; sourceTree = "<group>"; };
 		37A4E71A2178846A00EACBCD /* headers */ = {isa = PBXFileReference; lastKnownFileType = folder; name = headers; path = ../../inc; sourceTree = "<group>"; };
@@ -41,7 +50,6 @@
 		5BF943652167AD1D009CAE35 /* cursor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cursor.h; sourceTree = "<group>"; };
 		AB00E4F62147CA920032A60A /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		AB1E522B217613570091CD71 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
-		AB573DC3217605E400D389A2 /* gl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = gl.mm; sourceTree = "<group>"; };
 		AB661C1D2148230F00291242 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		AB661C1F2148286E00291242 /* window.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = window.mm; sourceTree = "<group>"; };
 		AB661C212148288600291242 /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
@@ -54,6 +62,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A3E5EB023E9FE8300EDE661 /* QuartzCore.framework in Frameworks */,
+				1A3E5EAA23E9F26C00EDE661 /* IOSurface.framework in Frameworks */,
 				AB1E522C217613570091CD71 /* OpenGL.framework in Frameworks */,
 				AB661C1E2148230F00291242 /* AppKit.framework in Frameworks */,
 			);
@@ -65,6 +75,8 @@
 		AB661C1C2148230E00291242 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1A3E5EAF23E9FE8300EDE661 /* QuartzCore.framework */,
+				1A3E5EA923E9F26C00EDE661 /* IOSurface.framework */,
 				AB1E522B217613570091CD71 /* OpenGL.framework */,
 				AB661C1D2148230F00291242 /* AppKit.framework */,
 			);
@@ -78,10 +90,11 @@
 				37DDA9B121933371002E132B /* AvnString.h */,
 				37DDA9AF219330F8002E132B /* AvnString.mm */,
 				37A4E71A2178846A00EACBCD /* headers */,
-				AB573DC3217605E400D389A2 /* gl.mm */,
+				1A3E5EAD23E9FB1300EDE661 /* cgl.mm */,
 				5BF943652167AD1D009CAE35 /* cursor.h */,
 				5B21A981216530F500CEE36E /* cursor.mm */,
 				5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */,
+				1A465D0F246AB61600C5858B /* dnd.mm */,
 				AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */,
 				AB661C212148288600291242 /* common.h */,
 				379860FE214DA0C000CD0246 /* KeyTransform.h */,
@@ -91,6 +104,7 @@
 				AB00E4F62147CA920032A60A /* main.mm */,
 				37155CE3233C00EB0034DCE9 /* menu.h */,
 				520624B222973F4100C4DCEF /* menu.mm */,
+				1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */,
 				37A517B22159597E00FBA241 /* Screens.mm */,
 				37C09D8721580FE4006A6758 /* SystemDialogs.mm */,
 				AB7A61F02147C815003C5833 /* Products */,
@@ -180,12 +194,14 @@
 				5B21A982216530F500CEE36E /* cursor.mm in Sources */,
 				37DDA9B0219330F8002E132B /* AvnString.mm in Sources */,
 				AB8F7D6B21482D7F0057DBA5 /* platformthreading.mm in Sources */,
+				1A3E5EA823E9E83B00EDE661 /* rendertarget.mm in Sources */,
+				1A3E5EAE23E9FB1300EDE661 /* cgl.mm in Sources */,
 				37E2330F21583241000CB7E2 /* KeyTransform.mm in Sources */,
 				520624B322973F4100C4DCEF /* menu.mm in Sources */,
 				37A517B32159597E00FBA241 /* Screens.mm in Sources */,
+				1A465D10246AB61600C5858B /* dnd.mm in Sources */,
 				AB00E4F72147CA920032A60A /* main.mm in Sources */,
 				37C09D8821580FE4006A6758 /* SystemDialogs.mm in Sources */,
-				AB573DC4217605E400D389A2 /* gl.mm in Sources */,
 				AB661C202148286E00291242 /* window.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

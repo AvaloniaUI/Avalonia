@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Data;
 
@@ -19,6 +16,7 @@ namespace Avalonia
         {
             Sender = sender;
             Priority = priority;
+            IsEffectiveValueChange = true;
         }
 
         /// <summary>
@@ -38,19 +36,11 @@ namespace Avalonia
         /// <summary>
         /// Gets the old value of the property.
         /// </summary>
-        /// <value>
-        /// The old value of the property or <see cref="AvaloniaProperty.UnsetValue"/> if the
-        /// property previously had no value.
-        /// </value>
         public object? OldValue => GetOldValue();
 
         /// <summary>
         /// Gets the new value of the property.
         /// </summary>
-        /// <value>
-        /// The new value of the property or <see cref="AvaloniaProperty.UnsetValue"/> if the
-        /// property previously had no value.
-        /// </value>
         public object? NewValue => GetNewValue();
 
         /// <summary>
@@ -61,6 +51,20 @@ namespace Avalonia
         /// </value>
         public BindingPriority Priority { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether the change represents a change to the effective value of
+        /// the property.
+        /// </summary>
+        /// <remarks>
+        /// This will usually be true, except in
+        /// <see cref="AvaloniaObject.OnPropertyChangedCore{T}(AvaloniaPropertyChangedEventArgs{T})"/>
+        /// which recieves notifications for all changes to property values, whether a value with a higher
+        /// priority is present or not. When this property is false, the change that is being signalled
+        /// has not resulted in a change to the property value on the object.
+        /// </remarks>
+        public bool IsEffectiveValueChange { get; private set; }
+
+        internal void MarkNonEffectiveValue() => IsEffectiveValueChange = false;
         protected abstract AvaloniaProperty GetProperty();
         protected abstract object? GetOldValue();
         protected abstract object? GetNewValue();

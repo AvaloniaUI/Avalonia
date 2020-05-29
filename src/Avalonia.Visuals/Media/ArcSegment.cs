@@ -1,5 +1,4 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
+using System.Globalization;
 
 namespace Avalonia.Media
 {
@@ -99,5 +98,8 @@ namespace Avalonia.Media
         {
             ctx.ArcTo(Point, Size, RotationAngle, IsLargeArc, SweepDirection);
         }
+
+        public override string ToString()
+            => $"A {Size} {RotationAngle.ToString(CultureInfo.InvariantCulture)} {(IsLargeArc ? 1 : 0)} {(int)SweepDirection} {Point}";
     }
 }

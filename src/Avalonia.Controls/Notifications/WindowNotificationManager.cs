@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Linq;
@@ -8,6 +5,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
 using Avalonia.Rendering;
+using Avalonia.Data;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Notifications
@@ -68,24 +66,19 @@ namespace Avalonia.Controls.Notifications
                         Install(host);
                     });
             }
+
+            UpdatePseudoClasses(Position);
         }
 
         static WindowNotificationManager()
         {
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopLeft, ":topleft");
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopRight, ":topright");
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomLeft, ":bottomleft");
-            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomRight, ":bottomright");
-
             HorizontalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(Layout.HorizontalAlignment.Stretch);
             VerticalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(Layout.VerticalAlignment.Stretch);
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             var itemsControl = e.NameScope.Find<Panel>("PART_Items");
             _items = itemsControl?.Children;
         }
@@ -143,6 +136,16 @@ namespace Avalonia.Controls.Notifications
             notificationControl.Close();
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == PositionProperty)
+            {
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<NotificationPosition>());
+            }
+        }
+
         /// <summary>
         /// Installs the <see cref="WindowNotificationManager"/> within the <see cref="AdornerLayer"/>
         /// of the host <see cref="Window"/>.
@@ -153,6 +156,14 @@ namespace Avalonia.Controls.Notifications
             var adornerLayer = host.FindDescendantOfType<VisualLayerManager>()?.AdornerLayer;
 
             adornerLayer?.Children.Add(this);
+        }
+
+        private void UpdatePseudoClasses(NotificationPosition position)
+        {
+            PseudoClasses.Set(":topleft", position == NotificationPosition.TopLeft);
+            PseudoClasses.Set(":topright", position == NotificationPosition.TopRight);
+            PseudoClasses.Set(":bottomleft", position == NotificationPosition.BottomLeft);
+            PseudoClasses.Set(":bottomright", position == NotificationPosition.BottomRight);
         }
 
         public bool HitTest(Point point) => VisualChildren.HitTestCustom(point);

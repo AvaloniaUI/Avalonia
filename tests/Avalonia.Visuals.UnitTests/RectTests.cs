@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests
@@ -37,6 +34,25 @@ namespace Avalonia.Visuals.UnitTests
             var result = new Rect(0, 0, 100, 100).Union(new Rect(150, 150, 0, 0));
 
             Assert.Equal(new Rect(0, 0, 100, 100), result);
+        }
+
+        [Fact]
+        public void Normalize_Should_Reverse_Negative_Size()
+        {
+            var result = new Rect(new Point(100, 100), new Point(0, 0)).Normalize();
+
+            Assert.Equal(new Rect(0, 0, 100, 100), result);
+        }
+
+        [Fact]
+        public void Normalize_Should_Make_Invalid_Rects_Empty()
+        {
+            var result = new Rect(
+                double.NegativeInfinity, double.PositiveInfinity, 
+                double.PositiveInfinity, double.PositiveInfinity)
+                .Normalize();
+
+            Assert.Equal(Rect.Empty, result);
         }
     }
 }

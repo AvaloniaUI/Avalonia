@@ -37,6 +37,8 @@ namespace Avalonia.DesignerSupport.Remote
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
 
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
         public WindowStub(IWindowImpl parent = null)
         {
             if (parent != null)
@@ -110,7 +112,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetSystemDecorations(bool enabled)
+        public void SetSystemDecorations(SystemDecorations enabled)
         {
         }
 
@@ -130,7 +132,21 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetParent(IWindowImpl parent)
+        {
+        }
+
+        public void SetEnabled(bool enable)
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
+
+        public Action GotInputWhenDisabled { get; set; }
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
     }
 
     class ClipboardStub : IClipboard
@@ -166,10 +182,10 @@ namespace Avalonia.DesignerSupport.Remote
 
     class SystemDialogsStub : ISystemDialogImpl
     {
-        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent) =>
+        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent) =>
             Task.FromResult((string[])null);
 
-        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent) =>
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent) =>
             Task.FromResult((string)null);
     }
 

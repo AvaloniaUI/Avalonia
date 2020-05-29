@@ -1,9 +1,4 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using System.Reactive;
-using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Input;
@@ -55,9 +50,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static ScrollBar()
         {
-            PseudoClass<ScrollBar, Orientation>(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
-            PseudoClass<ScrollBar, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
-
             Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragComplete(e), RoutingStrategies.Bubble);
         }
@@ -67,13 +59,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public ScrollBar()
         {
-            var isVisible = Observable.Merge(
-                this.GetObservable(MinimumProperty).Select(_ => Unit.Default),
-                this.GetObservable(MaximumProperty).Select(_ => Unit.Default),
-                this.GetObservable(ViewportSizeProperty).Select(_ => Unit.Default),
-                this.GetObservable(VisibilityProperty).Select(_ => Unit.Default))
-                .Select(_ => CalculateIsVisible());
-            this.Bind(IsVisibleProperty, isVisible, BindingPriority.Style);
+            UpdatePseudoClasses(Orientation);
         }
 
         /// <summary>
@@ -107,26 +93,20 @@ namespace Avalonia.Controls.Primitives
         public event EventHandler<ScrollEventArgs> Scroll;
 
         /// <summary>
-        /// Calculates whether the scrollbar should be visible.
+        /// Calculates and updates whether the scrollbar should be visible.
         /// </summary>
-        /// <returns>The scrollbar's visibility.</returns>
-        private bool CalculateIsVisible()
+        private void UpdateIsVisible()
         {
-            switch (Visibility)
+            var isVisible = Visibility switch
             {
-                case ScrollBarVisibility.Visible:
-                    return true;
+                ScrollBarVisibility.Visible => true,
+                ScrollBarVisibility.Disabled => false,
+                ScrollBarVisibility.Hidden => false,
+                ScrollBarVisibility.Auto => (double.IsNaN(ViewportSize) || Maximum > 0),
+                _ => throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.")
+            };
 
-                case ScrollBarVisibility.Disabled:
-                case ScrollBarVisibility.Hidden:
-                    return false;
-
-                case ScrollBarVisibility.Auto:
-                    return double.IsNaN(ViewportSize) || Maximum > 0;
-
-                default:
-                    throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.");
-            }
+            SetValue(IsVisibleProperty, isVisible, BindingPriority.Style);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -143,10 +123,28 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnTemplateApplied(e);
+            base.OnPropertyChanged(change);
 
+            if (change.Property == OrientationProperty)
+            {
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Orientation>());
+            }
+            else
+            {
+                if (change.Property == MinimumProperty ||
+                    change.Property == MaximumProperty ||
+                    change.Property == ViewportSizeProperty ||
+                    change.Property == VisibilityProperty)
+                {
+                    UpdateIsVisible();
+                }
+            }
+        }
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
             if (_lineUpButton != null)
             {
                 _lineUpButton.Click -= LineUpClick;
@@ -251,6 +249,12 @@ namespace Avalonia.Controls.Primitives
         protected void OnScroll(ScrollEventType scrollEventType)
         {
             Scroll?.Invoke(this, new ScrollEventArgs(scrollEventType, Value));
+        }
+
+        private void UpdatePseudoClasses(Orientation o)
+        {
+            PseudoClasses.Set(":vertical", o == Orientation.Vertical);
+            PseudoClasses.Set(":horizontal", o == Orientation.Horizontal);
         }
     }
 }

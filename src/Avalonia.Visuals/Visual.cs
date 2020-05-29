@@ -1,9 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Logging;
@@ -118,6 +114,9 @@ namespace Avalonia
         /// </summary>
         public Visual()
         {
+            // Disable transitions until we're added to the visual tree.
+            DisableTransitions();
+
             var visualChildren = new AvaloniaList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
             visualChildren.Validate = visual => ValidateVisualChild(visual);
@@ -336,7 +335,15 @@ namespace Avalonia
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
             where T : Visual
         {
-            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            static void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Sender is T sender)
+                {
+                    sender.InvalidateVisual();
+                }
+            }
+
+            static void InvalidateAndSubscribe(AvaloniaPropertyChangedEventArgs e)
             {
                 if (e.Sender is T sender)
                 {
@@ -347,7 +354,7 @@ namespace Avalonia
 
                     if (e.NewValue is IAffectsRender newValue)
                     {
-                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);                        
+                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);
                     }
 
                     sender.InvalidateVisual();
@@ -356,7 +363,14 @@ namespace Avalonia
 
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(Invalidate);
+                if (property.CanValueAffectRender())
+                {
+                    property.Changed.Subscribe(e => InvalidateAndSubscribe(e));
+                }
+                else
+                {
+                    property.Changed.Subscribe(e => Invalidate(e));
+                }
             }
         }
 
@@ -382,15 +396,23 @@ namespace Avalonia
                 RenderTransform.Changed += RenderTransformChanged;
             }
 
+            EnableTransitions();
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
 
-            if (VisualChildren != null)
+            var visualChildren = VisualChildren;
+
+            if (visualChildren != null)
             {
-                foreach (Visual child in VisualChildren.OfType<Visual>())
+                var visualChildrenCount = visualChildren.Count;
+
+                for (var i = 0; i < visualChildrenCount; i++)
                 {
-                    child.OnAttachedToVisualTreeCore(e);
+                    if (visualChildren[i] is Visual child)
+                    {
+                        child.OnAttachedToVisualTreeCore(e);
+                    }
                 }
             }
         }
@@ -411,15 +433,23 @@ namespace Avalonia
                 RenderTransform.Changed -= RenderTransformChanged;
             }
 
+            DisableTransitions();
             OnDetachedFromVisualTree(e);
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root?.Renderer?.AddDirty(this);
 
-            if (VisualChildren != null)
+            var visualChildren = VisualChildren;
+
+            if (visualChildren != null)
             {
-                foreach (Visual child in VisualChildren.OfType<Visual>())
+                var visualChildrenCount = visualChildren.Count;
+
+                for (var i = 0; i < visualChildrenCount; i++)
                 {
-                    child.OnDetachedFromVisualTreeCore(e);
+                    if (visualChildren[i] is Visual child)
+                    {
+                        child.OnDetachedFromVisualTreeCore(e);
+                    }
                 }
             }
         }

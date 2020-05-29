@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Data;
 using Avalonia.Reactive;
+using Avalonia.Utilities;
 
 #nullable enable
 
@@ -102,18 +103,9 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        internal override void NotifyInitialized(IAvaloniaObject o)
+        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
         {
-            if (HasNotifyInitializedObservers)
-            {
-                var e = new AvaloniaPropertyChangedEventArgs<TValue>(
-                    o,
-                    this,
-                    default,
-                    InvokeGetter(o),
-                    BindingPriority.Unset);
-                NotifyInitialized(e);
-            }
+            vistor.Visit(this, ref data);
         }
 
         /// <inheritdoc/>
@@ -128,8 +120,13 @@ namespace Avalonia
             return o.GetValue<TValue>(this);
         }
 
+        internal override object RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
+        {
+            return o.GetValue<TValue>(this);
+        }
+
         /// <inheritdoc/>
-        internal override void RouteSetValue(
+        internal override IDisposable? RouteSetValue(
             IAvaloniaObject o,
             object value,
             BindingPriority priority)
@@ -148,6 +145,8 @@ namespace Avalonia
             {
                 throw v.Error!;
             }
+
+            return null;
         }
 
         /// <inheritdoc/>
