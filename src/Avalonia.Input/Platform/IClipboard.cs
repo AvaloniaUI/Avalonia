@@ -14,6 +14,6 @@ namespace Avalonia.Input.Platform
         
         Task<string[]> GetFormatsAsync();
         
-        Task<object> GetFormatAsync(string format);
+        Task<object> GetDataAsync(string format);
     }
 }

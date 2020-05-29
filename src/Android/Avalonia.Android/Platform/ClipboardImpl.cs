@@ -48,6 +48,6 @@ namespace Avalonia.Android.Platform
 
         public Task<string[]> GetFormatsAsync() => throw new PlatformNotSupportedException();
 
-        public Task<object> GetFormatAsync(string format) => throw new PlatformNotSupportedException();
+        public Task<object> GetDataAsync(string format) => throw new PlatformNotSupportedException();
     }
 }

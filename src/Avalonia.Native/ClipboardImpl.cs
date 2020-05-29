@@ -105,7 +105,7 @@ namespace Avalonia.Native
                 return Task.FromResult(n.ToStringArray());
         }
 
-        public async Task<object> GetFormatAsync(string format)
+        public async Task<object> GetDataAsync(string format)
         {
             if (format == DataFormats.Text)
                 return await GetTextAsync();

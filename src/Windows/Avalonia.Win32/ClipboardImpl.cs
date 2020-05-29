@@ -97,7 +97,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public async Task<object> GetFormatAsync(string format)
+        public async Task<object> GetDataAsync(string format)
         {
             Dispatcher.UIThread.VerifyAccess();
             while (true)

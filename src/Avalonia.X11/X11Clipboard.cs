@@ -305,7 +305,7 @@ namespace Avalonia.X11
             return rv.ToArray();
         }
 
-        public async Task<object> GetFormatAsync(string format)
+        public async Task<object> GetDataAsync(string format)
         {
             if (!HasOwner)
                 return null;
