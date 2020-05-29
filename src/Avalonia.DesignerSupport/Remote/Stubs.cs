@@ -156,6 +156,10 @@ namespace Avalonia.DesignerSupport.Remote
         public Task SetTextAsync(string text) => Task.CompletedTask;
 
         public Task ClearAsync() => Task.CompletedTask;
+        public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
+        public Task<string[]> GetFormatsAsync() => Task.FromResult(new string[0]);
+
+        public Task<object> GetFormatAsync(string format) => Task.FromResult((object)null);
     }
 
     class CursorFactoryStub : IStandardCursorFactory

@@ -9,5 +9,11 @@ namespace Avalonia.Input.Platform
         Task SetTextAsync(string text);
 
         Task ClearAsync();
+
+        Task SetDataObjectAsync(IDataObject data);
+        
+        Task<string[]> GetFormatsAsync();
+        
+        Task<object> GetFormatAsync(string format);
     }
 }
