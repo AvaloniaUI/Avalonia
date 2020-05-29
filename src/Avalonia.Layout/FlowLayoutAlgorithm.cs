@@ -394,20 +394,17 @@ namespace Avalonia.Layout
                 // If we did not reach the top or bottom of the extent, we realized one 
                 // extra item before we knew we were outside the realization window. Do not
                 // account for that element in the indicies inside the realization window.
-                if (count > 0)
+                if (direction == GenerateDirection.Forward)
                 {
-                    if (direction == GenerateDirection.Forward)
-                    {
-                        int dataCount = _context.ItemCount;
-                        _lastRealizedDataIndexInsideRealizationWindow = previousIndex == dataCount - 1 ? dataCount - 1 : previousIndex - 1;
-                        _lastRealizedDataIndexInsideRealizationWindow = Math.Max(0, _lastRealizedDataIndexInsideRealizationWindow);
-                    }
-                    else
-                    {
-                        int dataCount = _context.ItemCount;
-                        _firstRealizedDataIndexInsideRealizationWindow = previousIndex == 0 ? 0 : previousIndex + 1;
-                        _firstRealizedDataIndexInsideRealizationWindow = Math.Min(dataCount - 1, _firstRealizedDataIndexInsideRealizationWindow);
-                    }
+                    int dataCount = _context.ItemCount;
+                    _lastRealizedDataIndexInsideRealizationWindow = previousIndex == dataCount - 1 ? dataCount - 1 : previousIndex - 1;
+                    _lastRealizedDataIndexInsideRealizationWindow = Math.Max(0, _lastRealizedDataIndexInsideRealizationWindow);
+                }
+                else
+                {
+                    int dataCount = _context.ItemCount;
+                    _firstRealizedDataIndexInsideRealizationWindow = previousIndex == 0 ? 0 : previousIndex + 1;
+                    _firstRealizedDataIndexInsideRealizationWindow = Math.Min(dataCount - 1, _firstRealizedDataIndexInsideRealizationWindow);
                 }
 
                 _elementManager.DiscardElementsOutsideWindow(direction == GenerateDirection.Forward, currentIndex);
