@@ -137,7 +137,13 @@
     <StaticResource x:Key="TextControlButtonForegroundPressed" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
     <StaticResource x:Key="ContentLinkForegroundColor" ResourceKey="SystemControlHyperlinkTextBrush" />
     <StaticResource x:Key="ContentLinkBackgroundColor" ResourceKey="SystemControlPageBackgroundChromeLowBrush" />
-    
+
+    <!-- Resources for AutoCompleteBox.xaml -->
+    <StaticResource x:Key="AutoCompleteBoxLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
+    <StaticResource x:Key="AutoCompleteBoxSuggestionsListBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+    <StaticResource x:Key="AutoCompleteBoxSuggestionsListBorderBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
+    <x:Double x:Key="AutoCompleteBoxIconFontSize">12</x:Double>
+
     <!-- BaseResources for CheckBox.xaml -->
     <StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="CheckBoxForegroundUncheckedPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
