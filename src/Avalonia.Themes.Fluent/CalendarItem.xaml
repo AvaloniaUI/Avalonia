@@ -21,7 +21,7 @@
         <Border BorderThickness="{TemplateBinding BorderThickness}"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
-                CornerRadius="2">
+                CornerRadius="{DynamicResource ControlCornerRadius}">
           <Border.Styles>
             <Style Selector="Button.CalendarHeader">
               <Setter Property="HorizontalAlignment" Value="Stretch" />
