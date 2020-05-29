@@ -56,7 +56,6 @@
                        BorderThickness="0"
                        Foreground="{DynamicResource AutoCompleteBoxSuggestionsListForeground}"
                        ItemTemplate="{TemplateBinding ItemTemplate}"
-                       MaxHeight="{DynamicResource AutoCompleteListMaxHeight}"
                        Margin="{DynamicResource AutoCompleteListPadding}" />
             </Border>
           </Popup>
