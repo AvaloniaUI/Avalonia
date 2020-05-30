@@ -176,19 +176,19 @@
   </Style>
 
   <Style Selector="Slider /template/ TickBar#TopTickBar">
-    <Setter Property="Background" Value="{DynamicResource SliderTickBarFill}" />
+    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFill}" />
   </Style>
 
   <Style Selector="Slider /template/ TickBar#BottomTickBar">
-    <Setter Property="Background" Value="{DynamicResource SliderTickBarFill}" />
+    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFill}" />
   </Style>
 
   <Style Selector="Slider /template/ TickBar#LeftTickBar">
-    <Setter Property="Background" Value="{DynamicResource SliderTickBarFill}" />
+    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFill}" />
   </Style>
 
   <Style Selector="Slider /template/ TickBar#RightTickBar">
-    <Setter Property="Background" Value="{DynamicResource SliderTickBarFill}" />
+    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFill}" />
   </Style>
 
   <!-- Disabled State -->
@@ -209,19 +209,19 @@
   </Style>
 
   <Style Selector="Slider:disabled /template/ TickBar#TopTickBar">
-    <Setter Property="Background" Value="{DynamicResource SliderTickBarFillDisabled}" />
+    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFillDisabled}" />
   </Style>
 
   <Style Selector="Slider:disabled /template/ TickBar#BottomTickBar">
-    <Setter Property="Background" Value="{DynamicResource SliderTickBarFillDisabled}" />
+    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFillDisabled}" />
   </Style>
 
   <Style Selector="Slider:disabled /template/ TickBar#LeftTickBar">
-    <Setter Property="Background" Value="{DynamicResource SliderTickBarFillDisabled}" />
+    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFillDisabled}" />
   </Style>
 
   <Style Selector="Slider:disabled /template/ TickBar#RightTickBar">
-    <Setter Property="Background" Value="{DynamicResource SliderTickBarFillDisabled}" />
+    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFillDisabled}" />
   </Style>
 
   <Style Selector="Slider:pointerover /template/ Grid#SliderContainer">
