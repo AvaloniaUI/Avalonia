@@ -34,6 +34,8 @@ namespace Avalonia.Controls
         private Track _track;
         private Button _decreaseButton;
         private Button _increaseButton;
+        private IDisposable _decreaseButtonSubscription;
+        private IDisposable _increaseButtonSubscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="Slider"/> class. 
@@ -85,15 +87,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            if (_decreaseButton != null)
-            {
-                _decreaseButton.Click -= DecreaseClick;
-            }
-
-            if (_increaseButton != null)
-            {
-                _increaseButton.Click -= IncreaseClick;
-            }
+            _decreaseButtonSubscription?.Dispose();
+            _increaseButtonSubscription?.Dispose();
 
             _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
             _track = e.NameScope.Find<Track>("PART_Track");
@@ -101,40 +96,49 @@ namespace Avalonia.Controls
 
             if (_decreaseButton != null)
             {
-                _decreaseButton.Click += DecreaseClick;
+                _decreaseButtonSubscription = _decreaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
             }
 
             if (_increaseButton != null)
             {
-                _increaseButton.Click += IncreaseClick;
+                _increaseButtonSubscription = _increaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
             }
         }
 
-        private void DecreaseClick(object sender, RoutedEventArgs e)
+        private void TrackPressed(object sender, PointerPressedEventArgs e)
         {
-            ChangeValueBy(-LargeChange);
+            if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+                return;
+
+            var x = e.GetCurrentPoint(_track);
+
+            var orient = Orientation == Orientation.Horizontal;
+            var pointDen = orient ? _track.Bounds.Width : _track.Bounds.Height;
+            var pointNum = orient ? x.Position.X : x.Position.Y;
+            var invert = orient ? 0 : 1;
+            var calcVal = Math.Abs(invert - (pointNum / pointDen));
+            var range = Maximum - Minimum;
+            
+            Value = calcVal * range;
+
+            e.Handled = true;
         }
 
-        private void IncreaseClick(object sender, RoutedEventArgs e)
-        {
-            ChangeValueBy(LargeChange);
-        }
+        // private void ChangeValueBy(double by)
+        // {
+        //     if (IsSnapToTickEnabled)
+        //     {
+        //         by = by < 0 ? Math.Min(-TickFrequency, by) : Math.Max(TickFrequency, by);
+        //     }
 
-        private void ChangeValueBy(double by)
-        {
-            if (IsSnapToTickEnabled)
-            {
-                by = by < 0 ? Math.Min(-TickFrequency, by) : Math.Max(TickFrequency, by);
-            }
-
-            var value = Value;
-            var next = SnapToTick(Math.Max(Math.Min(value + by, Maximum), Minimum));
-            if (next != value)
-            {
-                Value = next;
-            }
-        }
-
+        //     var value = Value;
+        //     var next = SnapToTick(Math.Max(Math.Min(value + by, Maximum), Minimum));
+        //     if (next != value)
+        //     {
+        //         Value = next;
+        //     }
+        // }
+        
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             base.OnPropertyChanged(change);
@@ -159,8 +163,7 @@ namespace Avalonia.Controls
         /// <param name="e"></param>
         protected virtual void OnThumbDragDelta(VectorEventArgs e)
         {
-            Thumb thumb = e.Source as Thumb;
-            if (thumb != null && _track?.Thumb == thumb)
+            if (e.Source is Thumb thumb && _track?.Thumb == thumb)
             {
                 MoveToNextTick(_track.Value);
             }
