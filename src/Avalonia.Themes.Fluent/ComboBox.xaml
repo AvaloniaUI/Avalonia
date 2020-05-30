@@ -123,6 +123,7 @@
               <ScrollViewer>
                 <ItemsPresenter Name="PART_ItemsPresenter"
                                 Items="{TemplateBinding Items}"
+                                Margin="{DynamicResource ComboBoxDropdownContentMargin}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
                                 ItemTemplate="{TemplateBinding ItemTemplate}"
                                 VirtualizationMode="{TemplateBinding VirtualizationMode}"
