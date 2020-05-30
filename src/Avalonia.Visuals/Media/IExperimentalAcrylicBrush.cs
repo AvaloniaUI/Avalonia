@@ -2,14 +2,14 @@
 {
     public interface IExperimentalAcrylicBrush : IBrush
     {
-        AcrylicBackgroundSource BackgroundSource { get; set; }
+        AcrylicBackgroundSource BackgroundSource { get; }
 
-        Color TintColor { get; set; }
+        Color TintColor { get; }
 
-        double TintOpacity { get; set; }
+        double TintOpacity { get; }
 
-        double TintLuminosityOpacity { get; set; }
+        double TintLuminosityOpacity { get; }
 
-        Color FallbackColor { get; set; }
+        Color FallbackColor { get; }
     }
 }
