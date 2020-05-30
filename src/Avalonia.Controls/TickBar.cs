@@ -41,7 +41,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// TickBar is an element that use for drawing Slider's Ticks.
     /// </summary>
-    public class TickBar : TemplatedControl
+    public class TickBar : Control
     {
         static TickBar()
         {
