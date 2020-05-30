@@ -124,7 +124,7 @@
                 <TickBar Name="VerticalInlineTickBar" Placement="Left" Fill="{DynamicResource SliderInlineTickBarFill}" Width="{DynamicResource SliderTrackThemeHeight}" Grid.Column="1" Grid.RowSpan="3" />
 
                 <TickBar Name="RightTickBar" Placement="Right" Fill="{DynamicResource SliderTickBarFill}" Width="{DynamicResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Left" Margin="4,0,0,0" Grid.Column="2" Grid.RowSpan="3" /> 
-                
+
                 <Track Name="PART_Track" Grid.Column="1" Grid.ColumnSpan="1" Grid.RowSpan="3" Orientation="Vertical">
                   <Track.DecreaseButton>
                     <RepeatButton Name="PART_DecreaseButton" Background="{TemplateBinding Foreground}">
