@@ -48,9 +48,9 @@
       <ControlTemplate>
         <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{DynamicResource ControlCornerRadius}">
           <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
-            <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}" Margin="{DynamicResource SliderTopHeaderMargin}" />
-            <Grid x:Name="SliderContainer" Grid.Row="1">
-              <Grid x:Name="HorizontalTemplate" ColumnDefinitions="Auto,Auto,*" MinHeight="{DynamicResource SliderHorizontalHeight}">
+            <ContentPresenter Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}" Margin="{DynamicResource SliderTopHeaderMargin}" />
+            <Grid Name="SliderContainer" Grid.Row="1">
+              <Grid Name="HorizontalTemplate" ColumnDefinitions="Auto,Auto,*" MinHeight="{DynamicResource SliderHorizontalHeight}">
 
                 <Grid.RowDefinitions>
                   <RowDefinition Height="{DynamicResource SliderPreContentMargin}" />
@@ -58,11 +58,11 @@
                   <RowDefinition Height="{DynamicResource SliderPostContentMargin}" />
                 </Grid.RowDefinitions>
 
-                <!--
-                <TickBar x:Name="TopTickBar" Visibility="Collapsed" Fill="{DynamicResource SliderTickBarFill}" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Bottom" Margin="0,0,0,4" Grid.ColumnSpan="3" />
-                <TickBar x:Name="HorizontalInlineTickBar" Visibility="Collapsed" Fill="{DynamicResource SliderInlineTickBarFill}" Height="{DynamicResource SliderTrackThemeHeight}" Grid.Row="1" Grid.ColumnSpan="3" />
-                <TickBar x:Name="BottomTickBar" Visibility="Collapsed" Fill="{DynamicResource SliderTickBarFill}" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Top" Margin="0,4,0,0" Grid.Row="2" Grid.ColumnSpan="3" />
-                -->
+                <TickBar Name="TopTickBar" Placement="Top" Fill="{DynamicResource SliderTickBarFill}" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Bottom" Margin="0,0,0,4" Grid.ColumnSpan="3" />
+                
+                <TickBar Name="HorizontalInlineTickBar" Placement="Top" Fill="{DynamicResource SliderInlineTickBarFill}" Height="{DynamicResource SliderTrackThemeHeight}" Grid.Row="1" Grid.ColumnSpan="3" />
+                
+                <TickBar Name="BottomTickBar" Placement="Bottom" Fill="{DynamicResource SliderTickBarFill}" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Top" Margin="0,4,0,0" Grid.Row="2" Grid.ColumnSpan="3" />
 
                 <Track Name="PART_Track" Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
                   <Track.DecreaseButton>
@@ -109,22 +109,22 @@
       <ControlTemplate>
         <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{DynamicResource ControlCornerRadius}">
           <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
-            <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}" Margin="{DynamicResource SliderTopHeaderMargin}" />
-            <Grid x:Name="SliderContainer" Grid.Row="1">
-              <Grid x:Name="VerticalTemplate" RowDefinitions="*,Auto,Auto" MinWidth="{DynamicResource SliderVerticalWidth}">
+            <ContentPresenter Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}" Margin="{DynamicResource SliderTopHeaderMargin}" />
+            <Grid Name="SliderContainer" Grid.Row="1">
+              <Grid Name="VerticalTemplate" RowDefinitions="*,Auto,Auto" MinWidth="{DynamicResource SliderVerticalWidth}">
 
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="{DynamicResource SliderPreContentMargin}" />
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="{DynamicResource SliderPostContentMargin}" />
                 </Grid.ColumnDefinitions>
+ 
+                <TickBar Name="LeftTickBar" Placement="Left" Fill="{DynamicResource SliderTickBarFill}" Width="{DynamicResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Right" Margin="0,0,4,0" Grid.RowSpan="3" />
+                
+                <TickBar Name="VerticalInlineTickBar" Placement="Left" Fill="{DynamicResource SliderInlineTickBarFill}" Width="{DynamicResource SliderTrackThemeHeight}" Grid.Column="1" Grid.RowSpan="3" />
 
-                <!-- 
-                <TickBar x:Name="LeftTickBar" Visibility="Collapsed" Fill="{ThemeResource SliderTickBarFill}" Width="{ThemeResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Right" Margin="0,0,4,0" Grid.RowSpan="3" />
-                <TickBar x:Name="VerticalInlineTickBar" Visibility="Collapsed" Fill="{ThemeResource SliderInlineTickBarFill}" Width="{ThemeResource SliderTrackThemeHeight}" Grid.Column="1" Grid.RowSpan="3" />
-                <TickBar x:Name="RightTickBar" Visibility="Collapsed" Fill="{ThemeResource SliderTickBarFill}" Width="{ThemeResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Left" Margin="4,0,0,0" Grid.Column="2" Grid.RowSpan="3" /> 
-                -->
-
+                <TickBar Name="RightTickBar" Placement="Right" Fill="{DynamicResource SliderTickBarFill}" Width="{DynamicResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Left" Margin="4,0,0,0" Grid.Column="2" Grid.RowSpan="3" /> 
+                
                 <Track Name="PART_Track" Grid.Column="1" Grid.ColumnSpan="1" Grid.RowSpan="3" Orientation="Vertical">
                   <Track.DecreaseButton>
                     <RepeatButton Name="PART_DecreaseButton" Background="{TemplateBinding Foreground}">
