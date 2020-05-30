@@ -58,11 +58,11 @@
                   <RowDefinition Height="{DynamicResource SliderPostContentMargin}" />
                 </Grid.RowDefinitions>
 
-                <TickBar Name="TopTickBar" Placement="Top" Fill="{DynamicResource SliderTickBarFill}" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Bottom" Margin="0,0,0,4" Grid.ColumnSpan="3" />
+                <TickBar Name="TopTickBar" Placement="Top" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Bottom" Margin="0,0,0,4" Grid.ColumnSpan="3" />
                 
-                <TickBar Name="HorizontalInlineTickBar" Placement="Top" Fill="{DynamicResource SliderInlineTickBarFill}" Height="{DynamicResource SliderTrackThemeHeight}" Grid.Row="1" Grid.ColumnSpan="3" />
+                <!-- <TickBar Name="HorizontalInlineTickBar" Placement="Top" Fill="{DynamicResource SliderInlineTickBarFill}" Height="{DynamicResource SliderTrackThemeHeight}" Grid.Row="1" Grid.ColumnSpan="3" /> -->
                 
-                <TickBar Name="BottomTickBar" Placement="Bottom" Fill="{DynamicResource SliderTickBarFill}" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Top" Margin="0,4,0,0" Grid.Row="2" Grid.ColumnSpan="3" />
+                <TickBar Name="BottomTickBar" Placement="Bottom" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Top" Margin="0,4,0,0" Grid.Row="2" Grid.ColumnSpan="3" />
 
                 <Track Name="PART_Track" Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
                   <Track.DecreaseButton>
@@ -119,11 +119,11 @@
                   <ColumnDefinition Width="{DynamicResource SliderPostContentMargin}" />
                 </Grid.ColumnDefinitions>
  
-                <TickBar Name="LeftTickBar" Placement="Left" Fill="{DynamicResource SliderTickBarFill}" Width="{DynamicResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Right" Margin="0,0,4,0" Grid.RowSpan="3" />
+                <TickBar Name="LeftTickBar" Placement="Left" Width="{DynamicResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Right" Margin="0,0,4,0" Grid.RowSpan="3" />
                 
-                <TickBar Name="VerticalInlineTickBar" Placement="Left" Fill="{DynamicResource SliderInlineTickBarFill}" Width="{DynamicResource SliderTrackThemeHeight}" Grid.Column="1" Grid.RowSpan="3" />
+                <!-- <TickBar Name="VerticalInlineTickBar" Placement="Left" Fill="{DynamicResource SliderInlineTickBarFill}" Width="{DynamicResource SliderTrackThemeHeight}" Grid.Column="1" Grid.RowSpan="3" /> -->
 
-                <TickBar Name="RightTickBar" Placement="Right" Fill="{DynamicResource SliderTickBarFill}" Width="{DynamicResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Left" Margin="4,0,0,0" Grid.Column="2" Grid.RowSpan="3" /> 
+                <TickBar Name="RightTickBar" Placement="Right" Width="{DynamicResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Left" Margin="4,0,0,0" Grid.Column="2" Grid.RowSpan="3" /> 
 
                 <Track Name="PART_Track" Grid.Column="1" Grid.ColumnSpan="1" Grid.RowSpan="3" Orientation="Vertical">
                   <Track.DecreaseButton>
@@ -175,6 +175,22 @@
     <Setter Property="Background" Value="{DynamicResource SliderContainerBackground}" />
   </Style>
 
+  <Style Selector="Slider /template/ TickBar#TopTickBar">
+    <Setter Property="Background" Value="{DynamicResource SliderTickBarFill}" />
+  </Style>
+
+  <Style Selector="Slider /template/ TickBar#BottomTickBar">
+    <Setter Property="Background" Value="{DynamicResource SliderTickBarFill}" />
+  </Style>
+
+  <Style Selector="Slider /template/ TickBar#LeftTickBar">
+    <Setter Property="Background" Value="{DynamicResource SliderTickBarFill}" />
+  </Style>
+
+  <Style Selector="Slider /template/ TickBar#RightTickBar">
+    <Setter Property="Background" Value="{DynamicResource SliderTickBarFill}" />
+  </Style>
+
   <!-- Disabled State -->
   <Style Selector="Slider:disabled /template/ ContentPresenter#HeaderContentPresenter">
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource SliderHeaderForegroundDisabled}" />
@@ -190,6 +206,22 @@
 
   <Style Selector="Slider:disabled /template/ Thumb.SliderThumbStyle">
     <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundDisabled}" />
+  </Style>
+
+  <Style Selector="Slider:disabled /template/ TickBar#TopTickBar">
+    <Setter Property="Background" Value="{DynamicResource SliderTickBarFillDisabled}" />
+  </Style>
+
+  <Style Selector="Slider:disabled /template/ TickBar#BottomTickBar">
+    <Setter Property="Background" Value="{DynamicResource SliderTickBarFillDisabled}" />
+  </Style>
+
+  <Style Selector="Slider:disabled /template/ TickBar#LeftTickBar">
+    <Setter Property="Background" Value="{DynamicResource SliderTickBarFillDisabled}" />
+  </Style>
+
+  <Style Selector="Slider:disabled /template/ TickBar#RightTickBar">
+    <Setter Property="Background" Value="{DynamicResource SliderTickBarFillDisabled}" />
   </Style>
 
   <Style Selector="Slider:pointerover /template/ Grid#SliderContainer">
