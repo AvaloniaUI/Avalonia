@@ -98,7 +98,7 @@ namespace Avalonia.Controls
             _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
             _track = e.NameScope.Find<Track>("PART_Track");
             _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
- 
+
             if (_decreaseButton != null)
             {
                 _decreaseButton.Click += DecreaseClick;
@@ -197,24 +197,6 @@ namespace Avalonia.Controls
             }
 
             return value;
-        }
-
-        private void HandlePointerPressed(PointerPressedEventArgs e)
-        {
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
-            {
-                UpdatePseudoClasses(true);
-            }
-        }
-
-        private void HandlePointerReleased()
-        {
-            UpdatePseudoClasses(false);
-        }
-
-        private void UpdatePseudoClasses(bool isPressed)
-        {
-            PseudoClasses.Set(":pressed", isPressed);
         }
 
         private void UpdatePseudoClasses(Orientation o)
