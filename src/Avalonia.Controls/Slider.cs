@@ -44,7 +44,7 @@ namespace Avalonia.Controls
             OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
             Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
             Thumb.DragDeltaEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
-            Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e), RoutingStrategies.Bubble);            
+            Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e), RoutingStrategies.Bubble);
         }
 
         /// <summary>
@@ -96,8 +96,14 @@ namespace Avalonia.Controls
             }
 
             _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
-            _track = e.NameScope.Find<Track>("PART_Track");        
+            _track = e.NameScope.Find<Track>("PART_Track");
             _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
+
+            AttachTickBar(e.NameScope.Find<TickBar>("TopTickBar"));
+            AttachTickBar(e.NameScope.Find<TickBar>("BottomTickBar"));
+
+            AttachTickBar(e.NameScope.Find<TickBar>("LeftTickBar"));
+            AttachTickBar(e.NameScope.Find<TickBar>("RightTickBar"));
 
             if (_decreaseButton != null)
             {
@@ -108,6 +114,18 @@ namespace Avalonia.Controls
             {
                 _increaseButton.Click += IncreaseClick;
             }
+        }
+
+        private void AttachTickBar(TickBar tickBar)
+        {
+            if (tickBar is null)
+                return;
+
+            tickBar[~TickBar.TickFrequencyProperty] = this[~TickFrequencyProperty];
+            tickBar[~TickBar.OrientationProperty] = this[~Slider.OrientationProperty];
+            tickBar[~TickBar.MinimumProperty] = this[~Slider.MinimumProperty];
+            tickBar[~TickBar.MaximumProperty] = this[~Slider.MaximumProperty];
+            tickBar[~TickBar.ReservedSpaceProperty] = _track.Thumb[~BoundsProperty];
         }
 
         private void DecreaseClick(object sender, RoutedEventArgs e)

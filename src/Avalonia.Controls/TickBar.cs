@@ -45,7 +45,11 @@ namespace Avalonia.Controls
     {
         static TickBar()
         {
-            AffectsRender<TickBar>(ReservedSpaceProperty, MaximumProperty, MinimumProperty, OrientationProperty, TickFrequencyProperty);
+            AffectsRender<TickBar>(ReservedSpaceProperty,
+                                   MaximumProperty,
+                                   MinimumProperty,
+                                   OrientationProperty,
+                                   TickFrequencyProperty);
         }
 
         public TickBar() : base()
@@ -82,7 +86,6 @@ namespace Avalonia.Controls
             set { SetValue(MinimumProperty, value); }
         }
 
-
         /// <summary>
         /// Defines the <see cref="Maximum"/> property.
         /// </summary>
@@ -97,54 +100,7 @@ namespace Avalonia.Controls
             get { return GetValue(MaximumProperty); }
             set { SetValue(MaximumProperty, value); }
         }
-
-/*
-        /// <summary>
-        /// Defines the <see cref="SelectionStart"/> property.
-        /// </summary>
-        public static readonly StyledProperty<double> SelectionStartProperty =
-            AvaloniaProperty.Register<TickBar, double>(nameof(SelectionStart), 0d);
-
-        /// <summary>
-        /// Logical position where the SelectionStart Tick will be drawn
-        /// </summary>
-        public double SelectionStart
-        {
-            get { return GetValue(SelectionStartProperty); }
-            set { SetValue(SelectionStartProperty, value); }
-        }
-
-        /// <summary>
-        /// Defines the <see cref="SelectionEnd"/> property.
-        /// </summary>
-        public static readonly StyledProperty<double> SelectionEndProperty =
-            AvaloniaProperty.Register<TickBar, double>(nameof(SelectionEnd), 0d);
-
-        /// <summary>
-        /// Logical position where the SelectionEnd Tick will be drawn
-        /// </summary>
-        public double SelectionEnd
-        {
-            get { return GetValue(SelectionEndProperty); }
-            set { SetValue(SelectionEndProperty, value); }
-        }
-
-        /// <summary>
-        /// Defines the <see cref="IsSelectionRangeEnabled"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsSelectionRangeEnabledProperty =
-            AvaloniaProperty.Register<TickBar, bool>(nameof(IsSelectionRangeEnabled));
-
-        /// <summary>
-        /// IsSelectionRangeEnabled specifies whether to draw SelectionStart Tick and SelectionEnd Tick or not.
-        /// </summary>
-        public bool IsSelectionRangeEnabled
-        {
-            get { return GetValue(IsSelectionRangeEnabledProperty); }
-            set { SetValue(IsSelectionRangeEnabledProperty, value); }
-        }
-*/
-
+ 
         /// <summary>
         /// Defines the <see cref="TickFrequency"/> property.
         /// </summary>
@@ -228,15 +184,6 @@ namespace Avalonia.Controls
             set { SetValue(PlacementProperty, value); }
         }
 
-        private static bool IsValidTickBarPlacement(object o)
-        {
-            TickBarPlacement placement = (TickBarPlacement)o;
-            return placement == TickBarPlacement.Left ||
-                   placement == TickBarPlacement.Top ||
-                   placement == TickBarPlacement.Right ||
-                   placement == TickBarPlacement.Bottom;
-        }
-
         /// <summary>
         /// Defines the <see cref="ReservedSpace"/> property.
         /// </summary>
@@ -254,7 +201,6 @@ namespace Avalonia.Controls
             get { return GetValue(ReservedSpaceProperty); }
             set { SetValue(ReservedSpaceProperty, value); }
         }
-
 
         /// <summary>
         /// Draw ticks.
@@ -360,9 +306,6 @@ namespace Avalonia.Controls
             }
 
             var pen = new Pen(Fill, 1.0d);
-            bool snapsToDevicePixels = UseLayoutRounding;
-            // var xLines = snapsToDevicePixels ? new List<double>() : null;
-            // var yLines = snapsToDevicePixels ? new List<double>() : null;
 
             // Is it Vertical?
             if ((Placement == TickBarPlacement.Left) || (Placement == TickBarPlacement.Right))
@@ -383,15 +326,6 @@ namespace Avalonia.Controls
                 dc.DrawLine(pen, new Point(startPoint.X, endPoint.Y),
                                  new Point(startPoint.X + tickLen, endPoint.Y));
 
-                // if (snapsToDevicePixels)
-                // {
-                //     xLines.Add(startPoint.X);
-                //     yLines.Add(startPoint.Y - 0.5);
-                //     xLines.Add(startPoint.X + tickLen);
-                //     yLines.Add(endPoint.Y - 0.5);
-                //     xLines.Add(startPoint.X + tickLen2);
-                // }
-
                 // This property is rarely set so let's try to avoid the GetValue
                 // caching of the mutable default value
                 var ticks = Ticks ?? null;
@@ -401,7 +335,7 @@ namespace Avalonia.Controls
                 {
                     for (int i = 0; i < ticks.Count; i++)
                     {
-                        if (MathUtilities.LessThanOrClose(ticks[i],Minimum) || MathUtilities.GreaterThanOrClose(ticks[i],Maximum))
+                        if (MathUtilities.LessThanOrClose(ticks[i], Minimum) || MathUtilities.GreaterThanOrClose(ticks[i], Maximum))
                         {
                             continue;
                         }
@@ -412,11 +346,6 @@ namespace Avalonia.Controls
                         dc.DrawLine(pen,
                             new Point(startPoint.X, y),
                             new Point(startPoint.X + tickLen2, y));
-
-                        // if (snapsToDevicePixels)
-                        // {
-                        //     yLines.Add(y - 0.5);
-                        // }
                     }
                 }
                 // Draw ticks using specified TickFrequency
@@ -429,42 +358,8 @@ namespace Avalonia.Controls
                         dc.DrawLine(pen,
                             new Point(startPoint.X, y),
                             new Point(startPoint.X + tickLen2, y));
-
-                        // if (snapsToDevicePixels)
-                        // {
-                        //     yLines.Add(y - 0.5);
-                        // }
                     }
                 }
-
-                // Draw Selection Ticks
-                // if (IsSelectionRangeEnabled)
-                // {
-                    // double y0 = (SelectionStart - Minimum) * logicalToPhysical + startPoint.Y;
-                    // Point pt0 = new Point(startPoint.X, y0);
-                    // Point pt1 = new Point(startPoint.X + tickLen2, y0);
-                    // Point pt2 = new Point(startPoint.X + tickLen2, y0 + Math.Abs(tickLen2) * progression);
-
-                    // PathSegment[] segments = new PathSegment[] {
-                    //     new LineSegment(pt2, true),
-                    //     new LineSegment(pt0, true),
-                    // };
-                    // PathGeometry geo = new PathGeometry(new PathFigure[] { new PathFigure(pt1, segments, true) });
-
-                    // dc.DrawGeometry(Fill, pen, geo);
-
-                    // y0 = (SelectionEnd - Minimum) * logicalToPhysical + startPoint.Y;
-                    // pt0 = new Point(startPoint.X, y0);
-                    // pt1 = new Point(startPoint.X + tickLen2, y0);
-                    // pt2 = new Point(startPoint.X + tickLen2, y0 - Math.Abs(tickLen2) * progression);
-
-                    // segments = new PathSegment[] {
-                    //     new LineSegment(pt2, true),
-                    //     new LineSegment(pt0, true),
-                    // };
-                    // geo = new PathGeometry(new PathFigure[] { new PathFigure(pt1, segments, true) });
-                    // dc.DrawGeometry(Fill, pen, geo);
-                // }
             }
             else  // Placement == Top || Placement == Bottom
             {
@@ -484,15 +379,6 @@ namespace Avalonia.Controls
                 dc.DrawLine(pen, new Point(endPoint.X, startPoint.Y),
                                  new Point(endPoint.X, startPoint.Y + tickLen));
 
-                // if (snapsToDevicePixels)
-                // {
-                //     xLines.Add(startPoint.X - 0.5);
-                //     yLines.Add(startPoint.Y);
-                //     xLines.Add(startPoint.X - 0.5);
-                //     yLines.Add(endPoint.Y + tickLen);
-                //     yLines.Add(endPoint.Y + tickLen2);
-                // }
-
                 // This property is rarely set so let's try to avoid the GetValue
                 // caching of the mutable default value
                 var ticks = Ticks ?? null;
@@ -502,7 +388,7 @@ namespace Avalonia.Controls
                 {
                     for (int i = 0; i < ticks.Count; i++)
                     {
-                        if (MathUtilities.LessThanOrClose(ticks[i],Minimum) || MathUtilities.GreaterThanOrClose(ticks[i],Maximum))
+                        if (MathUtilities.LessThanOrClose(ticks[i], Minimum) || MathUtilities.GreaterThanOrClose(ticks[i], Maximum))
                         {
                             continue;
                         }
@@ -512,11 +398,6 @@ namespace Avalonia.Controls
                         dc.DrawLine(pen,
                             new Point(x, startPoint.Y),
                             new Point(x, startPoint.Y + tickLen2));
-
-                        // if (snapsToDevicePixels)
-                        // {
-                        //     xLines.Add(x - 0.5);
-                        // }
                     }
                 }
                 // Draw ticks using specified TickFrequency
@@ -528,65 +409,8 @@ namespace Avalonia.Controls
                         dc.DrawLine(pen,
                             new Point(x, startPoint.Y),
                             new Point(x, startPoint.Y + tickLen2));
-
-                        // if (snapsToDevicePixels)
-                        // {
-                        //     xLines.Add(x - 0.5);
-                        // }
                     }
                 }
-
-                // Draw Selection Ticks
-                // if (IsSelectionRangeEnabled)
-                // {
-                //     double x0 = (SelectionStart - Minimum) * logicalToPhysical + startPoint.X;
-                //     Point pt0 = new Point(x0, startPoint.Y);
-                //     Point pt1 = new Point(x0, startPoint.Y + tickLen2);
-                //     Point pt2 = new Point(x0 + Math.Abs(tickLen2) * progression, startPoint.Y + tickLen2);
-
-                //     PathSegment[] segments = new PathSegment[] {
-                //         new LineSegment(pt2, true),
-                //         new LineSegment(pt0, true),
-                //     };
-                //     PathGeometry geo = new PathGeometry(new PathFigure[] { new PathFigure(pt1, segments, true) });
-
-                //     dc.DrawGeometry(Fill, pen, geo);
-
-                //     x0 = (SelectionEnd - Minimum) * logicalToPhysical + startPoint.X;
-                //     pt0 = new Point(x0, startPoint.Y);
-                //     pt1 = new Point(x0, startPoint.Y + tickLen2);
-                //     pt2 = new Point(x0 - Math.Abs(tickLen2) * progression, startPoint.Y + tickLen2);
-
-                //     segments = new PathSegment[] {
-                //         new LineSegment(pt2, true),
-                //         new LineSegment(pt0, true),
-                //     };
-                //     geo = new PathGeometry(new PathFigure[] { new PathFigure(pt1, segments, true) });
-                //     dc.DrawGeometry(Fill, pen, geo);
-                // }
-            }
-
-            // if (snapsToDevicePixels)
-            // {
-            //     xLines.Add(Bounds.Width);
-            //     yLines.Add(Bounds.Height);
-            //     VisualXSnappingGuidelines = xLines;
-            //     VisualYSnappingGuidelines = yLines;
-            // }
-        }
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            if (TemplatedParent is Slider parent)
-            {
-                this[~TickFrequencyProperty] = parent[~Slider.TickFrequencyProperty];
-                this[~OrientationProperty] = parent[~Slider.OrientationProperty];
-                this[~MinimumProperty] = parent[~Slider.MinimumProperty];
-                this[~MaximumProperty] = parent[~Slider.MaximumProperty];
-
-                // if (parent._track != null)
-                // {
-                ReservedSpace = new Rect(0, 0, 20, 20); // HACK parent._track.Thumb[~BoundsProperty];
-                // }
             }
         }
     }
