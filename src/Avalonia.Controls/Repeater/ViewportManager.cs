@@ -306,8 +306,11 @@ namespace Avalonia.Controls
 
         public void OnMakeAnchor(IControl anchor, bool isAnchorOutsideRealizedRange)
         {
-            _makeAnchorElement = anchor;
-            _isAnchorOutsideRealizedRange = isAnchorOutsideRealizedRange;
+            if (_makeAnchorElement != anchor)
+            {
+                _makeAnchorElement = anchor;
+                _isAnchorOutsideRealizedRange = isAnchorOutsideRealizedRange;
+            }
         }
 
         public void OnBringIntoViewRequested(RequestBringIntoViewEventArgs args)
@@ -334,13 +337,12 @@ namespace Avalonia.Controls
                     ////}
                 }
 
-                // Register to rendering event to go back to how things were before where any child can be the anchor.
-                _isBringIntoViewInProgress = true;
-                ////if (!m_renderingToken)
-                ////{
-                ////    winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{ nullptr };
-                ////    m_renderingToken = compositionTarget.Rendering(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnCompositionTargetRendering });
-                ////}
+                // Register action to go back to how things were before where any child can be the anchor.
+                if (!_isBringIntoViewInProgress)
+                {
+                    _isBringIntoViewInProgress = true;
+                    Dispatcher.UIThread.Post(OnCompositionTargetRendering);
+                }
             }
         }
 
@@ -360,6 +362,26 @@ namespace Avalonia.Controls
             }
 
             return targetChild;
+        }
+
+        private void OnCompositionTargetRendering()
+        {
+            _isBringIntoViewInProgress = false;
+            _makeAnchorElement = null;
+
+            // Now that the item has been brought into view, we can let the anchor provider pick a new anchor.
+            ////foreach (var child in _owner.Children)
+            ////{
+            ////    if (!child.CanBeScrollAnchor)
+            ////    {
+            ////        var info = ItemsRepeater.GetVirtualizationInfo(child);
+
+            ////        if (info.IsRealized && info.IsHeldByLayout)
+            ////        {
+            ////            child.CanBeScrollAnchor = true;
+            ////        }
+            ////    }
+            ////}
         }
 
         public void ResetScrollers()
