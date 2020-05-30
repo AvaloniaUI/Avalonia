@@ -61,7 +61,7 @@
       <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
       <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
       <TabControl.Tag>
-        <StackPanel Width="115" Spacing="4" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8">
+        <StackPanel Background="Black" Width="115" Spacing="4" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8">
           <ComboBox x:Name="Decorations" SelectedIndex="0">
             <ComboBoxItem>No Decorations</ComboBoxItem>
             <ComboBoxItem>Border Only</ComboBoxItem>
