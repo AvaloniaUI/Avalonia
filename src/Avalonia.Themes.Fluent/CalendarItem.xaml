@@ -61,6 +61,9 @@
               <!-- Prevent base button template:pointerover from overriding background here -->
               <Setter Property="Background" Value="{DynamicResource CalendarViewNavigationButtonBackground}"/>
             </Style>
+            <Style Selector="Button.CalendarHeader:disabled /template/ ContentPresenter">
+              <Setter Property="TextBlock.Foreground" Value="{DynamicResource CalendarViewWeekDayForegroundDisabled}"/>
+            </Style>
           </Border.Styles>
           <!--  To keep calendar from resizing when switching DisplayMode
                 In WinUI Min-Width from TemplateSettings
