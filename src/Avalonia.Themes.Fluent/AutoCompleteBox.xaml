@@ -26,6 +26,7 @@
     <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
+    <Setter Property="MaxDropDownHeight" Value="{DynamicResource AutoCompleteListMaxHeight}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Name="PART_LayoutRoot">
