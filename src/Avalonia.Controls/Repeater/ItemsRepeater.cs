@@ -80,6 +80,7 @@ namespace Avalonia.Controls
         static ItemsRepeater()
         {
             ClipToBoundsProperty.OverrideDefaultValue<ItemsRepeater>(true);
+            RequestBringIntoViewEvent.AddClassHandler<ItemsRepeater>((x, e) => x.OnRequestBringIntoView(e));
         }
 
         /// <summary>
@@ -741,6 +742,11 @@ namespace Avalonia.Controls
             {
                 _processingItemsSourceChange = null;
             }
+        }
+
+        private void OnRequestBringIntoView(RequestBringIntoViewEventArgs e)
+        {
+            _viewportManager.OnBringIntoViewRequested(e);
         }
 
         private void InvalidateMeasureForLayout(object sender, EventArgs e) => InvalidateMeasure();
