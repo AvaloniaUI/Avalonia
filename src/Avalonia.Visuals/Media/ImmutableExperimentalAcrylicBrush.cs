@@ -4,10 +4,13 @@ namespace Avalonia.Media
 {
     public readonly struct ImmutableExperimentalAcrylicBrush : IExperimentalAcrylicBrush, IEquatable<ImmutableExperimentalAcrylicBrush>
     {
+        private readonly Color luminosityColor;
+
         public ImmutableExperimentalAcrylicBrush(IExperimentalAcrylicBrush brush)
         {
+            luminosityColor = brush.GetLuminosityColor();
             BackgroundSource = brush.BackgroundSource;
-            TintColor = brush.TintColor;
+            TintColor = brush.GetEffectiveTintColor();
             TintOpacity = brush.TintOpacity;
             TintLuminosityOpacity = brush.TintLuminosityOpacity;
             FallbackColor = brush.FallbackColor;
@@ -20,7 +23,7 @@ namespace Avalonia.Media
 
         public double TintOpacity { get; }
 
-        public double TintLuminosityOpacity { get; }
+        public double? TintLuminosityOpacity { get; }
 
         public Color FallbackColor { get; }
 
@@ -43,6 +46,11 @@ namespace Avalonia.Media
             return obj is ImmutableExperimentalAcrylicBrush other && Equals(other);
         }
 
+        public Color GetEffectiveTintColor()
+        {
+            return TintColor;
+        }
+
         public override int GetHashCode()
         {
             unchecked
@@ -58,6 +66,11 @@ namespace Avalonia.Media
 
                 return hash;
             }
+        }
+
+        public Color GetLuminosityColor()
+        {
+            return luminosityColor;
         }
 
         public static bool operator ==(ImmutableExperimentalAcrylicBrush left, ImmutableExperimentalAcrylicBrush right)

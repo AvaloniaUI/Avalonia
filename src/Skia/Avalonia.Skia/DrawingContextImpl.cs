@@ -713,8 +713,10 @@ namespace Avalonia.Skia
 
                 var noiseOpcity = 0.09 * brush.Opacity;
 
-                var excl = new SKColor(255, 255, 255, (byte)(255 * acrylicBrush.TintLuminosityOpacity));
-                var tint = new SKColor(acrylicBrush.TintColor.R, acrylicBrush.TintColor.G, acrylicBrush.TintColor.B, (byte)(255 * (tintOpacity * acrylicBrush.Opacity * (acrylicBrush.TintColor.A / 255.0))));
+                var tintColor = acrylicBrush.GetEffectiveTintColor();
+                var luminosityColor = acrylicBrush.GetLuminosityColor();
+                var excl = new SKColor(luminosityColor.R, luminosityColor.G, luminosityColor.B, (byte)(255* (luminosityColor.A /255.0) * 0.1));
+                var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, (byte)(255 * ((tintColor.A /255.0) * acrylicBrush.Opacity)));
 
                 tint = SimpleColorBurn(excl, tint);
 
