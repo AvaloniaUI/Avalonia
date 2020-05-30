@@ -227,6 +227,13 @@ namespace Avalonia.Skia
             return bounds;
         }
 
+        private static bool IsLight (Color c)
+        {
+            double lightness = (0.299 * c.R + 0.587 * c.G + 0.114 * c.B) / 255;
+
+            return lightness > 0.5;
+        }
+
 
         /// <inheritdoc />
         public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect, BoxShadows boxShadows = default)
@@ -237,6 +244,17 @@ namespace Avalonia.Skia
             // On OSX Skia breaks OpenGL context when asked to draw, e. g. (0, 0, 623, 6666600) rect
             if (rect.Rect.Height > 8192 || rect.Rect.Width > 8192)
                 boxShadows = default;
+
+            if (brush is IExperimentalAcrylicBrush acrylic && IsLight(acrylic.TintColor))
+            {   
+                boxShadows = new BoxShadows(new BoxShadow
+                {
+                    Blur = 2,
+                    OffsetX = 1,
+                    Color = Colors.White,
+                    IsInset = true
+                });
+            }
 
             var rc = rect.Rect.ToSKRect();
             var isRounded = rect.IsRounded;
@@ -653,6 +671,36 @@ namespace Avalonia.Skia
             }
         }
 
+        static SKColor SimpleColorBurn(SKColor bg, SKColor fg)
+        {
+            using (var bmp = new SKBitmap(1, 1))
+            {
+                bmp.SetPixel(0, 0, bg);
+                using (var canvas = new SKCanvas(bmp))
+                using (var paint = new SKPaint
+                {
+                    Color = fg
+                })
+                    canvas.DrawRect(-1, -1, 3, 3, paint);
+                return bmp.GetPixel(0, 0);
+            }
+        }
+
+        static SKColorFilter CreateAlphaColorFilter(double opacity)
+        {
+            if (opacity > 1)
+                opacity = 1;
+            var c = new byte[256];
+            var a = new byte[256];
+            for (var i = 0; i < 256; i++)
+            {
+                c[i] = 255;
+                a[i] = (byte)(i * opacity);
+            }
+
+            return SKColorFilter.CreateTable(a, c, c, c);
+        }
+
         /// <summary>
         /// Creates paint wrapper for given brush.
         /// </summary>
@@ -672,6 +720,32 @@ namespace Avalonia.Skia
             if (brush is ISolidColorBrush solid)
             {
                 paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte) (solid.Color.A * opacity));
+
+                return paintWrapper;
+            }
+
+            if(brush is IExperimentalAcrylicBrush acrylicBrush)
+            {
+                var tintOpacity = acrylicBrush.TintOpacity;
+                var noiseOpcity = 0.12;
+
+                var excl = new SKColor(255, 255, 255, (byte)(255 * acrylicBrush.TintLuminosityOpacity));
+                var tint = new SKColor(acrylicBrush.TintColor.R, acrylicBrush.TintColor.G, acrylicBrush.TintColor.B, (byte)(255 * tintOpacity));
+
+                tint = SimpleColorBurn(excl, tint);
+
+                var tintShader = SKShader.CreateColor(tint);
+                var noiseShader =
+                    SKShader.CreatePerlinNoiseTurbulence(12.876f, 12.876f, 2, 0.76829314f)
+                    .WithColorFilter(CreateAlphaColorFilter(noiseOpcity));
+
+                var compose = SKShader.CreateCompose(tintShader, noiseShader);
+                paint.Shader = compose;
+
+                if (acrylicBrush.BackgroundSource == AcrylicBackgroundSource.Digger)
+                {
+                    paint.BlendMode = SKBlendMode.Src;
+                }
 
                 return paintWrapper;
             }
