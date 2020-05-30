@@ -39,6 +39,24 @@
     <SolidColorBrush x:Key="ButtonPressedBackgroundThemeBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="ButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
 
+    <!-- Resources for ListBox.xaml -->
+    <Thickness x:Key="ListBoxBorderThemeThickness">0</Thickness>
+    <SolidColorBrush x:Key="ListBoxBackgroundThemeBrush" Color="#CCFFFFFF" />
+    <SolidColorBrush x:Key="ListBoxBorderThemeBrush" Color="#45000000" />
+    <SolidColorBrush x:Key="ListBoxDisabledForegroundThemeBrush" Color="#66000000" />
+    <SolidColorBrush x:Key="ListBoxFocusBackgroundThemeBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ListBoxForegroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="ListBoxItemDisabledForegroundThemeBrush" Color="#66000000" />
+    <SolidColorBrush x:Key="ListBoxItemPointerOverBackgroundThemeBrush" Color="#21000000" />
+    <SolidColorBrush x:Key="ListBoxItemPointerOverForegroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="ListBoxItemPressedBackgroundThemeBrush" Color="#FFD3D3D3" />
+    <SolidColorBrush x:Key="ListBoxItemPressedForegroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="ListBoxItemSelectedBackgroundThemeBrush" Color="#FF4617B4" />
+    <SolidColorBrush x:Key="ListBoxItemSelectedDisabledBackgroundThemeBrush" Color="#8C000000" />
+    <SolidColorBrush x:Key="ListBoxItemSelectedDisabledForegroundThemeBrush" Color="#99FFFFFF" />
+    <SolidColorBrush x:Key="ListBoxItemSelectedForegroundThemeBrush" Color="White" />
+    <SolidColorBrush x:Key="ListBoxItemSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
+
     <!-- Resources for TextBox.xaml -->
     <SolidColorBrush x:Key="TextBoxForegroundHeaderThemeBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="TextBoxPlaceholderTextThemeBrush" Color="#AB000000" />
@@ -63,6 +81,12 @@
     <StaticResource x:Key="TextControlButtonForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
     <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
+
+    <!-- Resources for AutoCompleteBox.xaml -->
+    <StaticResource x:Key="AutoCompleteBoxSuggestionsListBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
+    <StaticResource x:Key="AutoCompleteBoxSuggestionsListBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
+    <StaticResource x:Key="AutoCompleteBoxLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
+    <x:Double x:Key="AutoCompleteBoxIconFontSize">12</x:Double>
 
     <!-- Resources for CheckBox.xaml -->
     <x:Double x:Key="CheckBoxBorderThemeThickness">1</x:Double>
@@ -181,5 +205,58 @@
     <StaticResource x:Key="CalendarViewCalendarItemRevealBorderBrush" ResourceKey="SystemControlTransparentRevealBorderBrush" />
     <StaticResource x:Key="CalendarViewNavigationButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
     <StaticResource x:Key="CalendarViewNavigationButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+    <!-- Resources for RadioButton.xaml -->
+    <x:Double x:Key="RadioButtonBorderThemeThickness">1</x:Double>
+    <StaticResource x:Key="RadioButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="RadioButtonForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="RadioButtonForegroundPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="RadioButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="RadioButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonBackgroundPressed" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonOuterEllipseStroke" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+    <StaticResource x:Key="RadioButtonOuterEllipseStrokePointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+    <StaticResource x:Key="RadioButtonOuterEllipseStrokePressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
+    <StaticResource x:Key="RadioButtonOuterEllipseStrokeDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="RadioButtonOuterEllipseFill" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonOuterEllipseFillPointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonOuterEllipseFillPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+    <StaticResource x:Key="RadioButtonOuterEllipseFillDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="SystemControlHighlightAccentBrush" />
+    <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" ResourceKey="SystemAccentColorLight1" />
+    <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePressed" ResourceKey="SystemAccentColorDark1" />
+    <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokeDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="RadioButtonOuterEllipseCheckedFill" ResourceKey="SystemControlHighlightAccentBrush" />
+    <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" ResourceKey="SystemAccentColorLight1" />
+    <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPressed" ResourceKey="SystemAccentColorDark1" />
+    <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillDisabled" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+    <StaticResource x:Key="RadioButtonCheckGlyphFill" ResourceKey="SystemControlForegroundChromeWhiteBrush" />
+    <StaticResource x:Key="RadioButtonCheckGlyphFillPointerOver" ResourceKey="SystemControlForegroundChromeWhiteBrush" />
+    <StaticResource x:Key="RadioButtonCheckGlyphFillPressed" ResourceKey="SystemControlForegroundChromeWhiteBrush" />
+    <StaticResource x:Key="RadioButtonCheckGlyphFillDisabled" ResourceKey="SystemControlForegroundChromeWhiteBrush" />
+    <StaticResource x:Key="RadioButtonCheckGlyphStroke" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonCheckGlyphStrokePointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonCheckGlyphStrokePressed" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonCheckGlyphStrokeDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <SolidColorBrush x:Key="RadioButtonBackgroundThemeBrush" Color="#CCFFFFFF" />
+    <SolidColorBrush x:Key="RadioButtonBorderThemeBrush" Color="#45000000" />
+    <SolidColorBrush x:Key="RadioButtonContentDisabledForegroundThemeBrush" Color="#66000000" />
+    <SolidColorBrush x:Key="RadioButtonContentForegroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="RadioButtonDisabledBackgroundThemeBrush" Color="#66CACACA" />
+    <SolidColorBrush x:Key="RadioButtonDisabledBorderThemeBrush" Color="#26000000" />
+    <SolidColorBrush x:Key="RadioButtonDisabledForegroundThemeBrush" Color="#66000000" />
+    <SolidColorBrush x:Key="RadioButtonForegroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="RadioButtonPointerOverBackgroundThemeBrush" Color="#DEFFFFFF" />
+    <SolidColorBrush x:Key="RadioButtonPointerOverBorderThemeBrush" Color="#70000000" />
+    <SolidColorBrush x:Key="RadioButtonPointerOverForegroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="RadioButtonPressedBackgroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="RadioButtonPressedBorderThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="RadioButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="RadioButtonContentPointerOverForegroundThemeBrush" Color="{DynamicResource SystemColorHighlightTextColor}" />
   </Style.Resources>
 </Style>
