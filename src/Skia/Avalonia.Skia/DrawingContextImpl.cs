@@ -227,14 +227,6 @@ namespace Avalonia.Skia
             return bounds;
         }
 
-        private static bool IsLight (Color c)
-        {
-            double lightness = (0.299 * c.R + 0.587 * c.G + 0.114 * c.B) / 255;
-
-            return lightness > 0.5;
-        }
-
-
         /// <inheritdoc />
         public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect, BoxShadows boxShadows = default)
         {
@@ -244,17 +236,6 @@ namespace Avalonia.Skia
             // On OSX Skia breaks OpenGL context when asked to draw, e. g. (0, 0, 623, 6666600) rect
             if (rect.Rect.Height > 8192 || rect.Rect.Width > 8192)
                 boxShadows = default;
-
-            if (brush is IExperimentalAcrylicBrush acrylic && IsLight(acrylic.TintColor))
-            {   
-                boxShadows = new BoxShadows(new BoxShadow
-                {
-                    Blur = 2,
-                    OffsetX = 1,
-                    Color = Colors.White,
-                    IsInset = true
-                });
-            }
 
             var rc = rect.Rect.ToSKRect();
             var isRounded = rect.IsRounded;
@@ -726,7 +707,10 @@ namespace Avalonia.Skia
 
             if(brush is IExperimentalAcrylicBrush acrylicBrush)
             {
-                var tintOpacity = acrylicBrush.TintOpacity;
+                var tintOpacity = 
+                    acrylicBrush.BackgroundSource == AcrylicBackgroundSource.Digger ? 
+                    acrylicBrush.TintOpacity : 1;
+
                 var noiseOpcity = 0.12;
 
                 var excl = new SKColor(255, 255, 255, (byte)(255 * acrylicBrush.TintLuminosityOpacity));
