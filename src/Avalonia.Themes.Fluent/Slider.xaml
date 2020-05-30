@@ -50,8 +50,12 @@
           <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
             <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}" Margin="{DynamicResource SliderTopHeaderMargin}" />
             <Grid x:Name="SliderContainer" Grid.Row="1">
+              <Grid.Styles>
+                <Style Selector="TickBar"> 
+                  <Setter Property="ReservedSpace" Value="{Binding #PART_Track.Thumb.Bounds}" />
+                </Style>
+              </Grid.Styles>
               <Grid x:Name="HorizontalTemplate" ColumnDefinitions="Auto,Auto,*" MinHeight="{DynamicResource SliderHorizontalHeight}">
-
                 <Grid.RowDefinitions>
                   <RowDefinition Height="{DynamicResource SliderPreContentMargin}" />
                   <RowDefinition Height="Auto" />
@@ -111,8 +115,12 @@
           <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
             <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}" Margin="{DynamicResource SliderTopHeaderMargin}" />
             <Grid x:Name="SliderContainer" Grid.Row="1">
+              <Grid.Styles>
+                <Style Selector="TickBar"> 
+                  <Setter Property="ReservedSpace" Value="{Binding #PART_Track.Thumb.Bounds}" />
+                </Style>
+              </Grid.Styles>
               <Grid x:Name="VerticalTemplate" RowDefinitions="*,Auto,Auto" MinWidth="{DynamicResource SliderVerticalWidth}">
-
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="{DynamicResource SliderPreContentMargin}" />
                   <ColumnDefinition Width="Auto" />
@@ -172,7 +180,6 @@
     <Setter Property="Orientation" Value="{TemplateBinding Slider.Orientation}" />
     <Setter Property="Minimum" Value="{TemplateBinding Slider.Minimum}" />
     <Setter Property="Maximum" Value="{TemplateBinding Slider.Maximum}" />
-    <Setter Property="ReservedSpace" Value="{Binding #SliderThumb.Bound, Converter={x:Static TickBarConverter.ReservedSpaceBind}}" />
   </Style>
 
   <!-- Normal State -->

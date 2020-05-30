@@ -36,24 +36,6 @@ namespace Avalonia.Controls
         Bottom,
 
         // NOTE: if you add or remove any values in this enum, be sure to update TickBar.IsValidTickBarPlacement()
-    };
-
-    public static class TickBarConverter
-    {
-        public static readonly IValueConverter ReservedSpaceBind =
-            new FuncValueConverter<object, Rect>(x =>
-            {
-                if (x is null)
-                {
-
-                }
-                if (x is Rect y)
-                {
-                    return y;
-                }
-                return new Rect();
-            });
-
     }
 
     /// <summary>
