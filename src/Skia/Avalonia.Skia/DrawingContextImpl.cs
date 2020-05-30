@@ -711,16 +711,16 @@ namespace Avalonia.Skia
                     acrylicBrush.BackgroundSource == AcrylicBackgroundSource.Digger ? 
                     acrylicBrush.TintOpacity : 1;
 
-                var noiseOpcity = 0.12;
+                var noiseOpcity = 0.9;
 
                 var excl = new SKColor(255, 255, 255, (byte)(255 * acrylicBrush.TintLuminosityOpacity));
-                var tint = new SKColor(acrylicBrush.TintColor.R, acrylicBrush.TintColor.G, acrylicBrush.TintColor.B, (byte)(255 * tintOpacity));
+                var tint = new SKColor(acrylicBrush.TintColor.R, acrylicBrush.TintColor.G, acrylicBrush.TintColor.B, (byte)(255 * (tintOpacity * acrylicBrush.Opacity * acrylicBrush.TintColor.A)));
 
                 tint = SimpleColorBurn(excl, tint);
 
                 var tintShader = SKShader.CreateColor(tint);
                 var noiseShader =
-                    SKShader.CreatePerlinNoiseTurbulence(12.876f, 12.876f, 2, 0.76829314f)
+                    SKShader.CreatePerlinNoiseTurbulence(15.876f, 15.876f, 2, 0.76829314f)
                     .WithColorFilter(CreateAlphaColorFilter(noiseOpcity));
 
                 var compose = SKShader.CreateCompose(tintShader, noiseShader);
