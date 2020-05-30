@@ -1,6 +1,6 @@
 using System;
+using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -40,13 +40,11 @@ namespace Avalonia.Controls
         /// </summary>
         static Slider()
         {
+            PressedMixin.Attach<Slider>();
             OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
             Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
             Thumb.DragDeltaEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
-            Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e), RoutingStrategies.Bubble);
-            PointerPressedEvent.AddClassHandler<Slider>((x, e) => x.HandlePointerPressed(e), RoutingStrategies.Tunnel, true);
-            PointerReleasedEvent.AddClassHandler<Slider>((x, e) => x.HandlePointerReleased(), RoutingStrategies.Tunnel, true);
-            PointerCaptureLostEvent.AddClassHandler<Slider>((x, e) => x.HandlePointerReleased(), RoutingStrategies.Tunnel, true);
+            Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e), RoutingStrategies.Bubble);            
         }
 
         /// <summary>

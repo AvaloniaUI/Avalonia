@@ -48,9 +48,9 @@
       <ControlTemplate>
         <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{DynamicResource ControlCornerRadius}">
           <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
-            <ContentPresenter Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}" Margin="{DynamicResource SliderTopHeaderMargin}" />
-            <Grid Name="SliderContainer" Grid.Row="1">
-              <Grid Name="HorizontalTemplate" ColumnDefinitions="Auto,Auto,*" MinHeight="{DynamicResource SliderHorizontalHeight}">
+            <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}" Margin="{DynamicResource SliderTopHeaderMargin}" />
+            <Grid x:Name="SliderContainer" Grid.Row="1">
+              <Grid x:Name="HorizontalTemplate" ColumnDefinitions="Auto,Auto,*" MinHeight="{DynamicResource SliderHorizontalHeight}">
 
                 <Grid.RowDefinitions>
                   <RowDefinition Height="{DynamicResource SliderPreContentMargin}" />
@@ -109,9 +109,9 @@
       <ControlTemplate>
         <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{DynamicResource ControlCornerRadius}">
           <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
-            <ContentPresenter Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}" Margin="{DynamicResource SliderTopHeaderMargin}" />
-            <Grid Name="SliderContainer" Grid.Row="1">
-              <Grid Name="VerticalTemplate" RowDefinitions="*,Auto,Auto" MinWidth="{DynamicResource SliderVerticalWidth}">
+            <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}" Margin="{DynamicResource SliderTopHeaderMargin}" />
+            <Grid x:Name="SliderContainer" Grid.Row="1">
+              <Grid x:Name="VerticalTemplate" RowDefinitions="*,Auto,Auto" MinWidth="{DynamicResource SliderVerticalWidth}">
 
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="{DynamicResource SliderPreContentMargin}" />

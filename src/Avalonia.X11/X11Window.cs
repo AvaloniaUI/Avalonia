@@ -1098,6 +1098,10 @@ namespace Avalonia.X11
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) =>
             _transparencyHelper.SetTransparencyRequest(transparencyLevel);
 
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+        }
+
         public WindowTransparencyLevel TransparencyLevel => _transparencyHelper.CurrentLevel;
     }
 }
