@@ -19,6 +19,8 @@
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxItemForeground}" />
     <Setter Property="Background" Value="{DynamicResource ComboBoxItemBackground}" />
     <Setter Property="Padding" Value="{DynamicResource ComboBoxItemThemePadding}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxItemRevealBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ComboBoxItemRevealBorderThemeThickness}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="Template">
       <ControlTemplate>
