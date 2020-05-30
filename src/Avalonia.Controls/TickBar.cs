@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Utilities;
@@ -37,6 +38,23 @@ namespace Avalonia.Controls
         // NOTE: if you add or remove any values in this enum, be sure to update TickBar.IsValidTickBarPlacement()
     };
 
+    public static class TickBarConverter
+    {
+        public static readonly IValueConverter ReservedSpaceBind =
+            new FuncValueConverter<object, Rect>(x =>
+            {
+                if (x is null)
+                {
+
+                }
+                if (x is Rect y)
+                {
+                    return y;
+                }
+                return new Rect();
+            });
+
+    }
 
     /// <summary>
     /// TickBar is an element that use for drawing Slider's Ticks.
@@ -83,7 +101,10 @@ namespace Avalonia.Controls
         public double Minimum
         {
             get { return GetValue(MinimumProperty); }
-            set { SetValue(MinimumProperty, value); }
+            set
+            {
+                SetValue(MinimumProperty, value);
+            }
         }
 
         /// <summary>
@@ -100,7 +121,7 @@ namespace Avalonia.Controls
             get { return GetValue(MaximumProperty); }
             set { SetValue(MaximumProperty, value); }
         }
- 
+
         /// <summary>
         /// Defines the <see cref="TickFrequency"/> property.
         /// </summary>
@@ -200,6 +221,16 @@ namespace Avalonia.Controls
         {
             get { return GetValue(ReservedSpaceProperty); }
             set { SetValue(ReservedSpaceProperty, value); }
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ReservedSpaceProperty)
+            {
+                // UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Location>());
+            }
         }
 
         /// <summary>

@@ -150,7 +150,7 @@
                       </RepeatButton.Template>
                     </RepeatButton>
                   </Track.IncreaseButton>
-                  <Thumb Classes="SliderThumbStyle" Name="thumb" Margin="0" Padding="0" DataContext="{TemplateBinding Value}" Height="{DynamicResource SliderVerticalThumbHeight}" Width="{DynamicResource SliderVerticalThumbWidth}" />
+                  <Thumb Classes="SliderThumbStyle" Name="SliderThumb" Margin="0" Padding="0" DataContext="{TemplateBinding Value}" Height="{DynamicResource SliderVerticalThumbHeight}" Width="{DynamicResource SliderVerticalThumbWidth}" />
                 </Track>
               </Grid>
             </Grid>
@@ -166,6 +166,15 @@
     <Setter Property="Value" Value="{TemplateBinding Value, Mode=TwoWay}"/>
   </Style>
 
+  <Style Selector="Slider /template/ TickBar">
+    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFill}" />
+    <Setter Property="TickFrequency" Value="{TemplateBinding Slider.TickFrequency}" />
+    <Setter Property="Orientation" Value="{TemplateBinding Slider.Orientation}" />
+    <Setter Property="Minimum" Value="{TemplateBinding Slider.Minimum}" />
+    <Setter Property="Maximum" Value="{TemplateBinding Slider.Maximum}" />
+    <Setter Property="ReservedSpace" Value="{Binding #SliderThumb.Bound, Converter={x:Static TickBarConverter.ReservedSpaceBind}}" />
+  </Style>
+
   <!-- Normal State -->
   <Style Selector="Slider /template/ Thumb.SliderThumbStyle">
     <Setter Property="Background" Value="{DynamicResource SliderThumbBackground}" />
@@ -173,22 +182,6 @@
 
   <Style Selector="Slider /template/ Grid#SliderContainer">
     <Setter Property="Background" Value="{DynamicResource SliderContainerBackground}" />
-  </Style>
-
-  <Style Selector="Slider /template/ TickBar#TopTickBar">
-    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFill}" />
-  </Style>
-
-  <Style Selector="Slider /template/ TickBar#BottomTickBar">
-    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFill}" />
-  </Style>
-
-  <Style Selector="Slider /template/ TickBar#LeftTickBar">
-    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFill}" />
-  </Style>
-
-  <Style Selector="Slider /template/ TickBar#RightTickBar">
-    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFill}" />
   </Style>
 
   <!-- Disabled State -->
@@ -208,22 +201,10 @@
     <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundDisabled}" />
   </Style>
 
-  <Style Selector="Slider:disabled /template/ TickBar#TopTickBar">
+  <Style Selector="Slider:disabled /template/ TickBar">
     <Setter Property="Fill" Value="{DynamicResource SliderTickBarFillDisabled}" />
   </Style>
-
-  <Style Selector="Slider:disabled /template/ TickBar#BottomTickBar">
-    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFillDisabled}" />
-  </Style>
-
-  <Style Selector="Slider:disabled /template/ TickBar#LeftTickBar">
-    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFillDisabled}" />
-  </Style>
-
-  <Style Selector="Slider:disabled /template/ TickBar#RightTickBar">
-    <Setter Property="Fill" Value="{DynamicResource SliderTickBarFillDisabled}" />
-  </Style>
-
+ 
   <Style Selector="Slider:pointerover /template/ Grid#SliderContainer">
     <Setter Property="Background" Value="{DynamicResource SliderContainerBackgroundDisabled}" />
   </Style>
