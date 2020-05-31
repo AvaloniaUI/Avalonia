@@ -267,7 +267,7 @@ namespace Avalonia.Win32
             }
 
             accent.AccentFlags = 2;
-            accent.GradientColor = 0x00FFFFFF;
+            accent.GradientColor = 0x01000000;
 
             var accentPtr = Marshal.AllocHGlobal(accentStructSize);
             Marshal.StructureToPtr(accent, accentPtr, false);
