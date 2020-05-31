@@ -4,6 +4,8 @@ namespace Avalonia.Media
 {
     public class ExperimentalAcrylicBrush : Brush, IExperimentalAcrylicBrush
     {
+        private Color _effectiveTintColor;
+
         static ExperimentalAcrylicBrush()
         {
             AffectsRender<ExperimentalAcrylicBrush>(
@@ -11,6 +13,16 @@ namespace Avalonia.Media
                 BackgroundSourceProperty,
                 TintOpacityProperty,
                 TintLuminosityOpacityProperty);
+
+            TintColorProperty.Changed.AddClassHandler<ExperimentalAcrylicBrush>((b, e) =>
+            {
+                b._effectiveTintColor = GetEffectiveTintColor(b.TintColor, b.TintOpacity);
+            });
+
+            TintOpacityProperty.Changed.AddClassHandler<ExperimentalAcrylicBrush>((b, e) =>
+            {
+                b._effectiveTintColor = GetEffectiveTintColor(b.TintColor, b.TintOpacity);
+            });
         }
         
         /// <summary>
@@ -42,6 +54,8 @@ namespace Avalonia.Media
             get => GetValue(TintColorProperty);
             set => SetValue(TintColorProperty, value);
         }
+
+        Color IExperimentalAcrylicBrush.TintColor => _effectiveTintColor;
 
         public double TintOpacity
         {
@@ -114,11 +128,8 @@ namespace Avalonia.Media
             return new HsvColor { Hue = h, Saturation = s, Value = v };
         }
 
-        public Color GetEffectiveTintColor()
+        private static Color GetEffectiveTintColor(Color tintColor, double tintOpacity)
         {
-            var tintColor = TintColor;
-            double tintOpacity = TintOpacity;
-
             // Update tintColor's alpha with the combined opacity value
             double tintOpacityModifier = GetTintOpacityModifier(tintColor);
 
@@ -134,7 +145,7 @@ namespace Avalonia.Media
             return tintColor;
         }
 
-        double GetTintOpacityModifier(Color tintColor)
+        private static double GetTintOpacityModifier(Color tintColor)
         {
             // This method supresses the maximum allowable tint opacity depending on the luminosity and saturation of a color by 
             // compressing the range of allowable values - for example, a user-defined value of 100% will be mapped to 45% for pure 

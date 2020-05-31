@@ -11,7 +11,5 @@ namespace Avalonia.Media
         double TintOpacity { get; }
 
         Color FallbackColor { get; }
-
-        Color GetEffectiveTintColor();
     }
 }

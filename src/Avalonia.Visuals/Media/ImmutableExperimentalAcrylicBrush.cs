@@ -7,7 +7,7 @@ namespace Avalonia.Media
         public ImmutableExperimentalAcrylicBrush(IExperimentalAcrylicBrush brush)
         {            
             BackgroundSource = brush.BackgroundSource;
-            TintColor = brush.GetEffectiveTintColor();
+            TintColor = brush.TintColor;
             TintOpacity = brush.TintOpacity;
             FallbackColor = brush.FallbackColor;
             Opacity = brush.Opacity;

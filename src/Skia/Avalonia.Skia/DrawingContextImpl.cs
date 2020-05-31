@@ -705,34 +705,35 @@ namespace Avalonia.Skia
                 return paintWrapper;
             }
 
-            if(brush is IExperimentalAcrylicBrush acrylicBrush)
+            if (brush is IExperimentalAcrylicBrush acrylicBrush)
             {
-                var tintOpacity = 
-                    acrylicBrush.BackgroundSource == AcrylicBackgroundSource.Digger ? 
+                var tintOpacity =
+                    acrylicBrush.BackgroundSource == AcrylicBackgroundSource.Digger ?
                     acrylicBrush.TintOpacity : 1;
 
                 var noiseOpcity = 0.04 * brush.Opacity;
 
-                var tintColor = acrylicBrush.GetEffectiveTintColor();
+                var tintColor = acrylicBrush.TintColor;
                 var excl = new SKColor(255, 255, 255, (byte)(255 * 0.1));
-                var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, (byte)(255 * ((tintColor.A /255.0) * acrylicBrush.Opacity)));
+                var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, (byte)(255 * ((tintColor.A / 255.0) * acrylicBrush.Opacity)));
 
                 tint = SimpleColorBurn(excl, tint);
 
-                var tintShader = SKShader.CreateColor(tint);
-                var noiseShader =
+                using (var tintShader = SKShader.CreateColor(tint))
+                using (var noiseShader =
                     SKShader.CreatePerlinNoiseTurbulence(15.876f, 15.876f, 2, 0.76829314f)
-                    .WithColorFilter(CreateAlphaColorFilter(noiseOpcity));
-
-                var compose = SKShader.CreateCompose(tintShader, noiseShader);
-                paint.Shader = compose;
-
-                if (acrylicBrush.BackgroundSource == AcrylicBackgroundSource.Digger)
+                    .WithColorFilter(CreateAlphaColorFilter(noiseOpcity)))
+                using (var compose = SKShader.CreateCompose(tintShader, noiseShader))
                 {
-                    paint.BlendMode = SKBlendMode.Src;
-                }
+                    paint.Shader = compose;
 
-                return paintWrapper;
+                    if (acrylicBrush.BackgroundSource == AcrylicBackgroundSource.Digger)
+                    {
+                        paint.BlendMode = SKBlendMode.Src;
+                    }
+
+                    return paintWrapper;
+                }
             }
 
             paint.Color = new SKColor(255, 255, 255, (byte) (255 * opacity));
