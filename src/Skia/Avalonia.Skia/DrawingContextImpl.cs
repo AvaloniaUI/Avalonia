@@ -34,6 +34,7 @@ namespace Avalonia.Skia
         private readonly SKPaint _strokePaint = new SKPaint();
         private readonly SKPaint _fillPaint = new SKPaint();
         private readonly SKPaint _boxShadowPaint = new SKPaint();
+        private static SKShader s_acrylicNoiseShader;
 
         /// <summary>
         /// Context create info.
@@ -652,21 +653,6 @@ namespace Avalonia.Skia
             }
         }
 
-        static SKColor SimpleColorBurn(SKColor bg, SKColor fg)
-        {
-            using (var bmp = new SKBitmap(1, 1))
-            {
-                bmp.SetPixel(0, 0, bg);
-                using (var canvas = new SKCanvas(bmp))
-                using (var paint = new SKPaint
-                {
-                    Color = fg
-                })
-                    canvas.DrawRect(-1, -1, 3, 3, paint);
-                return bmp.GetPixel(0, 0);
-            }
-        }
-
         static SKColorFilter CreateAlphaColorFilter(double opacity)
         {
             if (opacity > 1)
@@ -711,19 +697,24 @@ namespace Avalonia.Skia
                     acrylicBrush.BackgroundSource == AcrylicBackgroundSource.Digger ?
                     acrylicBrush.TintOpacity : 1;
 
-                var noiseOpcity = 0.06 * brush.Opacity;
+                const double noiseOpcity = 0.06;
 
-                var tintColor = acrylicBrush.TintColor;
-                var excl = new SKColor(255, 255, 255, (byte)(255 * 0.1));
-                var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, (byte)(255 * ((tintColor.A / 255.0) * acrylicBrush.Opacity)));
+                var tintColor = acrylicBrush.TintColor;                
+                var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, (byte)(255 * ((tintColor.A / 255.0) * acrylicBrush.Opacity)));                
+                
+                if(s_acrylicNoiseShader == null)
+                {
+                    using(var stream = typeof(DrawingContextImpl).Assembly.GetManifestResourceStream("Avalonia.Skia.Assets.NoiseAsset_256X256_PNG.png"))
+                    using (var bitmap = SKBitmap.Decode(stream))
+                    {
+                        s_acrylicNoiseShader = SKShader.CreateBitmap(bitmap, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat)
+                            .WithColorFilter(CreateAlphaColorFilter(noiseOpcity));
+                    }
 
-                tint = SimpleColorBurn(excl, tint);
+                }
 
                 using (var tintShader = SKShader.CreateColor(tint))
-                using (var noiseShader =
-                    SKShader.CreatePerlinNoiseTurbulence(15.876f, 15.876f, 2, 0.76829314f)
-                    .WithColorFilter(CreateAlphaColorFilter(noiseOpcity)))
-                using (var compose = SKShader.CreateCompose(tintShader, noiseShader))
+                using (var compose = SKShader.CreateCompose(tintShader, s_acrylicNoiseShader))
                 {
                     paint.Shader = compose;
 
