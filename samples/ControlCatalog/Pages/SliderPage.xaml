@@ -9,7 +9,7 @@
       <Slider Value="0"
               Minimum="0"
               Maximum="100"
-              Width="300"/>
+              Width="300" TickFrequency="10" />
       <Slider Value="0"
               Minimum="0"
               Maximum="100"
