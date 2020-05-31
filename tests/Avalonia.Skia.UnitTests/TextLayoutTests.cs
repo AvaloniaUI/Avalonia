@@ -506,9 +506,8 @@ namespace Avalonia.Skia.UnitTests
             }
         }
 
+        [InlineData("0123456789\r\n0123456789\r\n0123456789", 0, 3)]
         [InlineData("0123456789\r\n0123456789\r\n0123456789", 1, 1)]
-        [InlineData("0123456789\r\n0123456789\r\n0123456789", 2, 2)]
-        [InlineData("0123456789\r\n0123456789\r\n0123456789", 3, 3)]
         [InlineData("0123456789\r\n0123456789\r\n0123456789", 4, 3)]
         [Theory]
         public void Should_Not_Exceed_MaxLines(string text, int maxLines, int expectedLines)
