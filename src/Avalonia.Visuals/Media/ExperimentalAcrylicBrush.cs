@@ -73,32 +73,6 @@ namespace Avalonia.Media
             public float Value { get; set; }
         }
 
-        public static Color FromHsv(HsvColor color)
-        {
-            var i = (float)Math.Floor(color.Hue * 6f);
-            var f = color.Hue * 6f - i;
-            var p = color.Value * (1f - color.Saturation);
-            var q = color.Value * (1f - f * color.Saturation);
-            var t = color.Value * (1f - (1f - f) * color.Saturation);
-
-            switch (i % 6)
-            {
-                case 0:
-                    return new Color(255, (byte)(255.0 * color.Value), (byte)(255.0 * t), (byte)(255.0 * p));
-                case 1:
-                    return new Color(255, (byte)(255.0 * q), (byte)(255.0 * color.Value), (byte)(255.0 * p));
-                case 2:
-                    return new Color(255, (byte)(255.0 * p), (byte)(255.0 * color.Value), (byte)(255.0 * t));
-                case 3:
-                    return new Color(255, (byte)(255.0 * p), (byte)(255.0 * q), (byte)(255.0 * color.Value));
-                case 4:
-                    return new Color(255, (byte)(255.0 * t), (byte)(255.0 * p), (byte)(255.0 * color.Value));
-                default:
-                case 5:
-                    return new Color(255, (byte)(255.0 * color.Value), (byte)(255.0 * p), (byte)(255.0 * q));
-            }
-        }
-
         public static HsvColor RgbToHsv(Color color)
         {
             var r = color.R /255.0f;
@@ -140,65 +114,20 @@ namespace Avalonia.Media
             return new HsvColor { Hue = h, Saturation = s, Value = v };
         }
 
-        public Color GetLuminosityColor ()
-        {
-            return GetLuminosityColor(TintColor, TintLuminosityOpacity);
-        }
-
-        Color GetLuminosityColor(Color tintColor, double? luminosityOpacity)
-        {
-            var rgbTintColor = tintColor;
-
-            // If luminosity opacity is specified, just use the values as is
-            if (luminosityOpacity.HasValue)
-            {
-                return new Color((byte)(255.0 * Math.Min(1.0, Math.Max(0.0, luminosityOpacity.Value))), tintColor.R, tintColor.G, tintColor.B);
-            }
-            else
-            {
-                // To create the Luminosity blend input color without luminosity opacity,
-                // we're taking the TintColor input, converting to HSV, and clamping the V between these values
-                const double minHsvV = 0.125;
-                const double maxHsvV = 0.965;
-
-                var hsvTintColor = RgbToHsv(rgbTintColor);
-
-                var clampedHsvV = Math.Max(Math.Min(hsvTintColor.Value, minHsvV), maxHsvV);                
-                var hsvLuminosityColor = hsvTintColor;
-                hsvLuminosityColor.Value = (float)clampedHsvV;
-
-                var rgbLuminosityColor = FromHsv(hsvLuminosityColor);
-
-                // Now figure out luminosity opacity
-                // Map original *tint* opacity to this range
-                const double minLuminosityOpacity = 0.15;
-                const double maxLuminosityOpacity = 1.03;
-
-                double luminosityOpacityRangeMax = maxLuminosityOpacity - minLuminosityOpacity;
-                double mappedTintOpacity = ((tintColor.A / 255.0) * luminosityOpacityRangeMax) + minLuminosityOpacity;
-
-                // Finally, combine the luminosity opacity and the HsvV-clamped tint color                
-                return  new Color((byte)(255.0 * Math.Min(mappedTintOpacity, 1.0)), rgbLuminosityColor.R, rgbLuminosityColor.G, rgbLuminosityColor.B);
-            }
-
-        }
-
-
         public Color GetEffectiveTintColor()
         {
             var tintColor = TintColor;
             double tintOpacity = TintOpacity;
 
             // Update tintColor's alpha with the combined opacity value
-            // If LuminosityOpacity was specified, we don't intervene into users parameters
-            if (false)//TintLuminosityOpacity() != nullptr)
+            double tintOpacityModifier = GetTintOpacityModifier(tintColor);
+
+            if (false) // non-acrylic blue // TODO detect blur level.
             {
-                //tintColor.A = static_cast<uint8_t>(round(tintColor.A * tintOpacity));
+                tintColor = new Color((byte)(Math.Round(tintColor.A * (((tintOpacity * tintOpacityModifier) * 0.25) + 0.75))), tintColor.R, tintColor.G, tintColor.B);
             }
             else
             {
-                double tintOpacityModifier = GetTintOpacityModifier(tintColor);
-
                 tintColor = new Color((byte)(Math.Round(tintColor.A * tintOpacity * tintOpacityModifier)), tintColor.R, tintColor.G, tintColor.B);
             }
 
@@ -213,18 +142,13 @@ namespace Avalonia.Media
             // the effect increases linearly as luminosity deviates from 50%.  After this effect is calculated, we cancel it out
             // linearly as saturation increases from zero.
 
-            const double midPoint = 0.50; // Mid point of HsvV range that these calculations are based on. This is here for easy tuning.
+            const double midPoint = 0.5; // Mid point of HsvV range that these calculations are based on. This is here for easy tuning.
 
-            const double whiteMaxOpacity = 0.45; // 100% luminosity
-            const double midPointMaxOpacity = 0.90; // 50% luminosity
-            const double blackMaxOpacity = 0.85; // 0% luminosity
+            const double whiteMaxOpacity = 0.40; // 100% luminosity
+            const double midPointMaxOpacity = 0.50; // 50% luminosity
+            const double blackMaxOpacity = 0.84; // 0% luminosity
             
             var hsv = RgbToHsv(tintColor);
-
-            if(tintColor == Colors.Red)
-            {
-
-            }
 
             double opacityModifier = midPointMaxOpacity;
 
