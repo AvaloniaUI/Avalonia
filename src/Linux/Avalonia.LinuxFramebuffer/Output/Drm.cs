@@ -267,6 +267,8 @@ namespace Avalonia.LinuxFramebuffer.Output
         [DllImport(libgbm, SetLastError = true)]
         public static extern uint gbm_bo_get_stride(IntPtr bo);
 
+        [DllImport(libgbm, SetLastError = true)]
+        public static extern uint gbm_bo_get_format(IntPtr bo);
 
         [StructLayout(LayoutKind.Explicit)]
         public struct GbmBoHandle
