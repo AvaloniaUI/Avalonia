@@ -2,7 +2,7 @@
         xmlns:pages="clr-namespace:ControlCatalog.Pages"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ControlCatalog.MainView"
-        Background="Transparent"
+        Background="Black"
         Foreground="{DynamicResource ThemeForegroundBrush}"
         FontSize="{DynamicResource FontSizeNormal}">
   <Grid>
@@ -61,7 +61,7 @@
       <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
       <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
       <TabControl.Tag>
-        <StackPanel Background="Black" Width="115" Spacing="4" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8">
+        <StackPanel Width="115" Spacing="4" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8">
           <ComboBox x:Name="Decorations" SelectedIndex="0">
             <ComboBoxItem>No Decorations</ComboBoxItem>
             <ComboBoxItem>Border Only</ComboBoxItem>
