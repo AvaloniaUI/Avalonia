@@ -41,16 +41,13 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> IsDirectionReversedProperty =
             AvaloniaProperty.Register<Track, bool>(nameof(IsDirectionReversed));
 
-        public static readonly StyledProperty<bool> IgnoreThumbDragProperty =
-            AvaloniaProperty.Register<Track, bool>(nameof(IsThumbDragHandled));
-
         private double _minimum;
         private double _maximum = 100.0;
         private double _value;
 
         static Track()
         {
-            ThumbProperty.Changed.AddClassHandler<Track>((x, e) => x.ThumbChanged(e));
+            ThumbProperty.Changed.AddClassHandler<Track>((x,e) => x.ThumbChanged(e));
             IncreaseButtonProperty.Changed.AddClassHandler<Track>((x, e) => x.ButtonChanged(e));
             DecreaseButtonProperty.Changed.AddClassHandler<Track>((x, e) => x.ButtonChanged(e));
             AffectsArrange<Track>(MinimumProperty, MaximumProperty, ValueProperty, OrientationProperty);
@@ -114,12 +111,6 @@ namespace Avalonia.Controls.Primitives
         {
             get { return GetValue(IsDirectionReversedProperty); }
             set { SetValue(IsDirectionReversedProperty, value); }
-        }
-
-        public bool IsThumbDragHandled
-        {
-            get { return GetValue(IgnoreThumbDragProperty); }
-            set { SetValue(IgnoreThumbDragProperty, value); }
         }
 
         private double ThumbCenterOffset { get; set; }
@@ -431,9 +422,6 @@ namespace Avalonia.Controls.Primitives
 
         private void ThumbDragged(object sender, VectorEventArgs e)
         {
-            if (IsThumbDragHandled)
-                return;
-                
             Value = MathUtilities.Clamp(
                 Value + ValueFromDistance(e.Vector.X, e.Vector.Y),
                 Minimum,
