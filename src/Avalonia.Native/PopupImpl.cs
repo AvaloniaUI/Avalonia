@@ -59,6 +59,11 @@ namespace Avalonia.Native
         }
 
         public override IPopupImpl CreatePopup() => new PopupImpl(_factory, _opts, _glFeature, this);
+
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
     }
 }

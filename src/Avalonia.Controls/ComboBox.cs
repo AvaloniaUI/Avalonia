@@ -51,6 +51,18 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
             ItemsPresenter.VirtualizationModeProperty.AddOwner<ComboBox>();
 
+        /// <summary>
+        /// Defines the <see cref="PlaceholderText"/> property.
+        /// </summary>
+        public static readonly StyledProperty<string> PlaceholderTextProperty =
+            AvaloniaProperty.Register<ComboBox, string>(nameof(PlaceholderText));
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderForeground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush> PlaceholderForegroundProperty =
+            AvaloniaProperty.Register<ComboBox, IBrush>(nameof(PlaceholderForeground));
+
         private bool _isDropDownOpen;
         private Popup _popup;
         private object _selectionBoxItem;
@@ -92,6 +104,24 @@ namespace Avalonia.Controls
         {
             get { return _selectionBoxItem; }
             set { SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the PlaceHolder text.
+        /// </summary>
+        public string PlaceholderText
+        {
+            get { return GetValue(PlaceholderTextProperty); }
+            set { SetValue(PlaceholderTextProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the Brush that renders the placeholder text.
+        /// </summary>
+        public IBrush PlaceholderForeground
+        {
+            get { return GetValue(PlaceholderForegroundProperty); }
+            set { SetValue(PlaceholderForegroundProperty, value); }
         }
 
         /// <summary>

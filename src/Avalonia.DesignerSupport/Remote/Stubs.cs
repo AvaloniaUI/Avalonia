@@ -146,6 +146,10 @@ namespace Avalonia.DesignerSupport.Remote
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
 
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+        }
+
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
     }
 

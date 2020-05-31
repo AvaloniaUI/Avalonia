@@ -41,7 +41,7 @@ namespace ControlCatalog
                 Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseDark.xaml?assembly=Avalonia.Themes.Default")
             };
 
-            
+
             var themes = this.Find<ComboBox>("Themes");
             themes.SelectionChanged += (sender, e) =>
             {
