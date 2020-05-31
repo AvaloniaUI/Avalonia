@@ -157,7 +157,7 @@ namespace Avalonia.Media
 
             const double whiteMaxOpacity = 0.40; // 100% luminosity
             const double midPointMaxOpacity = 0.50; // 50% luminosity
-            const double blackMaxOpacity = 0.84; // 0% luminosity
+            const double blackMaxOpacity = 0.60; // 0% luminosity
             
             var hsv = RgbToHsv(tintColor);
 
