@@ -194,7 +194,7 @@ namespace Avalonia.Controls
             var previous = Minimum;
             var next = Maximum;
 
-            if (MathUtilities.GreaterThan(TickFrequency, 0.0))
+            if (TickFrequency > 0.0)
             {
                 previous = Minimum + (Math.Round((value - Minimum) / TickFrequency) * TickFrequency);
                 next = Math.Min(Maximum, previous + TickFrequency);
