@@ -103,7 +103,7 @@ namespace Avalonia.Controls
 
             if (_track != null)
             {
-                _track.Thumb.IsHitTestVisible = false;
+                _track.IsThumbDragHandled = true;
             }
 
             if (_decreaseButton != null)
