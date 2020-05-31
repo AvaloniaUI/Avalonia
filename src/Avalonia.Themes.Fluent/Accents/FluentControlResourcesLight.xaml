@@ -1,6 +1,6 @@
-<Style xmlns="https://github.com/avaloniaui" 
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
-  xmlns:sys="clr-namespace:System;assembly=netstandard">
+<Style xmlns="https://github.com/avaloniaui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+       xmlns:sys="clr-namespace:System;assembly=netstandard">
   <Style.Resources>
     <!-- Resources for Button.xaml -->
     <StaticResource x:Key="AccentButtonBackground" ResourceKey="SystemControlBackgroundAccentBrush" />
@@ -343,54 +343,5 @@
     <SolidColorBrush x:Key="RadioButtonPressedBorderThemeBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="RadioButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="RadioButtonContentPointerOverForegroundThemeBrush" Color="{DynamicResource SystemColorHighlightTextColor}" />
-    <!-- Resources for Slider.xaml -->
-    <x:Double x:Key="SliderOutsideTickBarThemeHeight">4</x:Double>
-    <x:Double x:Key="SliderTrackThemeHeight">2</x:Double>
-    <Thickness x:Key="SliderBorderThemeThickness">0</Thickness>
-    <Thickness x:Key="SliderHeaderThemeMargin">0,0,0,4</Thickness>
-    <FontWeight x:Key="SliderHeaderThemeFontWeight">Normal</FontWeight>
-    <StaticResource x:Key="SliderContainerBackground" ResourceKey="SystemControlTransparentBrush" />
-    <StaticResource x:Key="SliderContainerBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
-    <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="SystemControlTransparentBrush" />
-    <StaticResource x:Key="SliderContainerBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
-    <StaticResource x:Key="SliderThumbBackground" ResourceKey="SystemControlForegroundAccentBrush" />
-    <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="SystemAccentColorLight1" />
-    <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="SystemAccentColorDark1" />
-    <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
-    <StaticResource x:Key="SliderTrackFill" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
-    <StaticResource x:Key="SliderTrackFillPointerOver" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-    <StaticResource x:Key="SliderTrackFillPressed" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
-    <StaticResource x:Key="SliderTrackFillDisabled" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
-    <StaticResource x:Key="SliderTrackValueFill" ResourceKey="SystemControlHighlightAccentBrush" />
-    <StaticResource x:Key="SliderTrackValueFillPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
-    <StaticResource x:Key="SliderTrackValueFillPressed" ResourceKey="SystemControlHighlightAccentBrush" />
-    <StaticResource x:Key="SliderTrackValueFillDisabled" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
-    <StaticResource x:Key="SliderHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-    <StaticResource x:Key="SliderHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-    <StaticResource x:Key="SliderTickBarFill" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
-    <StaticResource x:Key="SliderTickBarFillDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-    <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="SystemControlBackgroundAltHighBrush" />
-    <SolidColorBrush x:Key="SliderBorderThemeBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="SliderDisabledBorderThemeBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="SliderThumbBackgroundThemeBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="SliderThumbBorderThemeBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="SliderThumbDisabledBackgroundThemeBrush" Color="#FF929292" />
-    <SolidColorBrush x:Key="SliderThumbPointerOverBackgroundThemeBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="SliderThumbPointerOverBorderThemeBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="SliderThumbPressedBackgroundThemeBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="SliderThumbPressedBorderThemeBrush" Color="#FF000000" />
-    <SolidColorBrush x:Key="SliderTickMarkInlineBackgroundThemeBrush" Color="White" />
-    <SolidColorBrush x:Key="SliderTickMarkInlineDisabledForegroundThemeBrush" Color="White" />
-    <SolidColorBrush x:Key="SliderTickmarkOutsideBackgroundThemeBrush" Color="#80000000" />
-    <SolidColorBrush x:Key="SliderTickMarkOutsideDisabledForegroundThemeBrush" Color="#80000000" />
-    <SolidColorBrush x:Key="SliderTrackBackgroundThemeBrush" Color="#1A000000" />
-    <SolidColorBrush x:Key="SliderTrackDecreaseBackgroundThemeBrush" Color="#FF4617B4" />
-    <SolidColorBrush x:Key="SliderTrackDecreaseDisabledBackgroundThemeBrush" Color="#1C000000" />
-    <SolidColorBrush x:Key="SliderTrackDecreasePointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
-    <SolidColorBrush x:Key="SliderTrackDecreasePressedBackgroundThemeBrush" Color="#FF7241E4" />
-    <SolidColorBrush x:Key="SliderTrackDisabledBackgroundThemeBrush" Color="#1A000000" />
-    <SolidColorBrush x:Key="SliderTrackPointerOverBackgroundThemeBrush" Color="#26000000" />
-    <SolidColorBrush x:Key="SliderTrackPressedBackgroundThemeBrush" Color="#33000000" />
-    <SolidColorBrush x:Key="SliderHeaderForegroundThemeBrush" Color="#FF000000" />
   </Style.Resources>
 </Style>
