@@ -134,6 +134,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            base.OnApplyTemplate(e);
+            
             _decreaseButtonPressDispose?.Dispose();
             _decreaseButtonReleaseDispose?.Dispose();
             _increaseButtonSubscription?.Dispose();
@@ -189,7 +191,7 @@ namespace Avalonia.Controls
         private void MoveToPoint(PointerPoint x)
         {
             var orient = Orientation == Orientation.Horizontal;
-            
+
             var pointDen = orient ? _track.Bounds.Width : _track.Bounds.Height;
             pointDen += double.Epsilon; // Just add epsilon to avoid divide by zero exceptions.
 
