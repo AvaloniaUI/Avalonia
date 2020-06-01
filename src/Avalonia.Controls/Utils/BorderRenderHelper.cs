@@ -120,7 +120,7 @@ namespace Avalonia.Controls.Utils
 
                 var rect = new Rect(_size);
                 if (Math.Abs(borderThickness) > double.Epsilon)
-                    rect.Deflate(borderThickness * 0.5);
+                    rect = rect.Deflate(borderThickness * 0.5);
                 var rrect = new RoundedRect(rect, _cornerRadius.TopLeft, _cornerRadius.TopRight,
                     _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
 
