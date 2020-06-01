@@ -189,7 +189,10 @@ namespace Avalonia.Controls
         private void MoveToPoint(PointerPoint x)
         {
             var orient = Orientation == Orientation.Horizontal;
+            
             var pointDen = orient ? _track.Bounds.Width : _track.Bounds.Height;
+            pointDen += double.Epsilon; // Just add epsilon to avoid divide by zero exceptions.
+
             var pointNum = orient ? x.Position.X : x.Position.Y;
             var logicalPos = MathUtilities.Clamp(pointNum / pointDen, 0.0d, 1.0d);
             var invert = orient ? 0 : 1;
