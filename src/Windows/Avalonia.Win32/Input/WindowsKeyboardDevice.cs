@@ -60,6 +60,30 @@ namespace Avalonia.Win32.Input
             return result.ToString();
         }
 
+        public override KeyStates NumLock 
+        {
+          get 
+          {
+            return GetKeyStates(Key.NumLock);
+          }
+        }
+
+        public override KeyStates CapsLock
+        {
+          get
+          {
+            return GetKeyStates(Key.CapsLock);
+          }
+        }
+
+        public override KeyStates ScrollLock
+        {
+          get
+          {
+            return GetKeyStates(Key.Scroll);
+          }
+        }
+
         private void UpdateKeyStates()
         {
             UnmanagedMethods.GetKeyboardState(_keyStates);
