@@ -459,6 +459,7 @@ namespace Avalonia.Controls
         private void UpdateViewport(Rect viewport)
         {
             var currentVisibleWindow = viewport;
+            var oldVisibleWindow = _visibleWindow;
 
             if (-currentVisibleWindow.X <= ItemsRepeater.ClearedElementsArrangePosition.X &&
                 -currentVisibleWindow.Y <= ItemsRepeater.ClearedElementsArrangePosition.Y)
@@ -471,7 +472,10 @@ namespace Avalonia.Controls
                 _visibleWindow = currentVisibleWindow;
             }
 
-            TryInvalidateMeasure();
+            if (_visibleWindow != oldVisibleWindow)
+            {
+                TryInvalidateMeasure();
+            }
         }
 
         private static void ValidateCacheLength(double cacheLength)
