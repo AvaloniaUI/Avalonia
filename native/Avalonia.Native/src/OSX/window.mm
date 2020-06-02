@@ -1016,12 +1016,14 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     NSView* _content;
     NSVisualEffectView* _blurBehind;
     double _titleBarHeightHint;
+    bool _settingSize;
 }
 
 -(AutoFitContentView* _Nonnull) initWithContent:(NSView *)content
 {
     _titleBarHeightHint = -1;
     _content = content;
+    _settingSize = false;
 
     [self setAutoresizesSubviews:true];
     [self setWantsLayer:true];
@@ -1073,6 +1075,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(void)setFrameSize:(NSSize)newSize
 {
+    if(_settingSize)
+    {
+        return;
+    }
+    
+    _settingSize = true;
     [super setFrameSize:newSize];
     
     [_blurBehind setFrameSize:newSize];
@@ -1093,6 +1101,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [_titleBarMaterial setFrame:tbar];
     tbar.size.height = height < 1 ? 0 : 1;
     [_titleBarUnderline setFrame:tbar];
+    _settingSize = false;
 }
 
 -(void) SetContent: (NSView* _Nonnull) content
