@@ -18,7 +18,6 @@ public:
         View = NULL;
         Window = NULL;
     }
-    AutoFitContentVisualEffectView* BlurredContainer;
     AutoFitContentView* StandardContainer;
     AvnView* View;
     AvnWindow* Window;
@@ -49,12 +48,8 @@ public:
         [Window setStyleMask:NSWindowStyleMaskBorderless];
         [Window setBackingType:NSBackingStoreBuffered];
         
-        BlurredContainer = [AutoFitContentVisualEffectView new];
-        [BlurredContainer setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
-        [BlurredContainer setMaterial:NSVisualEffectMaterialLight];
-        BlurredContainer.state = NSVisualEffectStateActive;
-        
-        [Window setContentView: BlurredContainer];
+        [Window setOpaque:false];
+        [Window setContentView: StandardContainer];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -392,16 +387,7 @@ public:
     
     virtual HRESULT SetBlurEnabled (bool enable) override
     {
-        if(enable)
-        {
-            [BlurredContainer SetContent:View];
-            [Window setContentView:BlurredContainer];
-        }
-        else
-        {
-            [StandardContainer SetContent:View];
-            [Window setContentView:StandardContainer];
-        }
+        [StandardContainer ShowBlur:enable];
         
         return S_OK;
     }
@@ -851,7 +837,6 @@ private:
     virtual HRESULT SetExtendTitleBarHeight (double value) override
     {
         [StandardContainer SetTitleBarHeightHint:value];
-        [BlurredContainer SetTitleBarHeightHint:value];
         return S_OK;
     }
     
@@ -1024,91 +1009,12 @@ protected:
 
 NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEventTrackingRunLoopMode, NSModalPanelRunLoopMode, NSRunLoopCommonModes, NSConnectionReplyMode, nil];
 
-@implementation AutoFitContentVisualEffectView
-{
-    NSVisualEffectView* _titleBarMaterial;
-    NSBox* _titleBarUnderline;
-    NSView* _content;
-    double _titleBarHeightHint;
-}
-
--(AutoFitContentVisualEffectView* _Nonnull) init
-{
-    _titleBarHeightHint = -1;
-
-    [self setAutoresizesSubviews:true];
-    [self setWantsLayer:true];
-    
-    _titleBarMaterial = [NSVisualEffectView new];
-    [_titleBarMaterial setBlendingMode:NSVisualEffectBlendingModeWithinWindow];
-    [_titleBarMaterial setMaterial:NSVisualEffectMaterialTitlebar];
-    [_titleBarMaterial setWantsLayer:true];
-    _titleBarMaterial.hidden = true;
-    
-    _titleBarUnderline = [NSBox new];
-    _titleBarUnderline.boxType = NSBoxSeparator;
-    _titleBarUnderline.fillColor = [NSColor underPageBackgroundColor];
-    _titleBarUnderline.hidden = true;
-    
-    [self addSubview:_titleBarMaterial];
-    [self addSubview:_titleBarUnderline];
-    
-    [self setWantsLayer:true];
-    return self;
-}
-
--(void) ShowTitleBar: (bool) show
-{
-    _titleBarMaterial.hidden = !show;
-    _titleBarUnderline.hidden = !show;
-}
-
--(void) SetTitleBarHeightHint: (double) height
-{
-    _titleBarHeightHint = height;
-    
-    [self setFrameSize:self.frame.size];
-}
-
--(void)setFrameSize:(NSSize)newSize
-{
-    [super setFrameSize:newSize];
-    
-    [_content setFrameSize:newSize];
-    
-    auto window = objc_cast<AvnWindow>([self window]);
-    
-    // TODO get actual titlebar size
-    
-    double height = _titleBarHeightHint == -1 ? [window getExtendedTitleBarHeight] : _titleBarHeightHint;
-    
-    NSRect tbar;
-    tbar.origin.x = 0;
-    tbar.origin.y = newSize.height - height;
-    tbar.size.width = newSize.width;
-    tbar.size.height = height;
-    
-    [_titleBarMaterial setFrame:tbar];
-    tbar.size.height = height < 1 ? 0 : 1;
-    [_titleBarUnderline setFrame:tbar];
-}
-
--(void) SetContent: (NSView* _Nonnull) content
-{
-    if(content != nullptr)
-    {
-        [content removeFromSuperview];
-        [self addSubview:content];
-        _content = content;
-    }
-}
-@end
-
 @implementation AutoFitContentView
 {
     NSVisualEffectView* _titleBarMaterial;
     NSBox* _titleBarUnderline;
-    AvnView* _content;
+    NSView* _content;
+    NSVisualEffectView* _blurBehind;
     double _titleBarHeightHint;
 }
 
@@ -1133,10 +1039,23 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     [self addSubview:_titleBarMaterial];
     [self addSubview:_titleBarUnderline];
+    
+    _blurBehind = [NSVisualEffectView new];
+    [_blurBehind setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+    [_blurBehind setMaterial:NSVisualEffectMaterialDark];
+    [_blurBehind setWantsLayer:true];
+    _blurBehind.hidden = true;
+    
+    [self addSubview:_blurBehind];
     [self addSubview:_content];
     
     [self setWantsLayer:true];
     return self;
+}
+
+-(void) ShowBlur:(bool)show
+{
+    _blurBehind.hidden = !show;
 }
 
 -(void) ShowTitleBar: (bool) show
@@ -1156,6 +1075,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     [super setFrameSize:newSize];
     
+    [_blurBehind setFrameSize:newSize];
     [_content setFrameSize:newSize];
     
     auto window = objc_cast<AvnWindow>([self window]);
