@@ -18,7 +18,8 @@ public:
         View = NULL;
         Window = NULL;
     }
-    AutoFitContentVisualEffectView* VisualEffect;
+    AutoFitContentVisualEffectView* BlurredContainer;
+    AutoFitContentView* StandardContainer;
     AvnView* View;
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
@@ -37,6 +38,7 @@ public:
         _glContext = gl;
         renderTarget = [[IOSurfaceRenderTarget alloc] initWithOpenGlContext: gl];
         View = [[AvnView alloc] initWithParent:this];
+        StandardContainer = [[AutoFitContentView new] initWithContent:View];
 
         Window = [[AvnWindow alloc] initWithParent:this];
         
@@ -47,12 +49,12 @@ public:
         [Window setStyleMask:NSWindowStyleMaskBorderless];
         [Window setBackingType:NSBackingStoreBuffered];
         
-        VisualEffect = [[AutoFitContentVisualEffectView new] initWithContent:View];
-        [VisualEffect setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
-        [VisualEffect setMaterial:NSVisualEffectMaterialLight];
-        [VisualEffect setAutoresizesSubviews:true];
+        BlurredContainer = [AutoFitContentVisualEffectView new];
+        [BlurredContainer setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+        [BlurredContainer setMaterial:NSVisualEffectMaterialLight];
+        BlurredContainer.state = NSVisualEffectStateActive;
         
-        [Window setContentView: VisualEffect];
+        [Window setContentView: BlurredContainer];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -390,11 +392,15 @@ public:
     
     virtual HRESULT SetBlurEnabled (bool enable) override
     {
-        //[Window setContentView: enable ? VisualEffect : View];
-        
         if(enable)
         {
-          //  [VisualEffect addSubview:View];
+            [BlurredContainer SetContent:View];
+            [Window setContentView:BlurredContainer];
+        }
+        else
+        {
+            [StandardContainer SetContent:View];
+            [Window setContentView:StandardContainer];
         }
         
         return S_OK;
@@ -788,11 +794,11 @@ private:
             
             if(_extendClientHints & AvnChromeHintsSystemTitleBar)
             {
-                [VisualEffect ShowTitleBar:true];
+                [StandardContainer ShowTitleBar:true];
             }
             else
             {
-                [VisualEffect ShowTitleBar:false];
+                [StandardContainer ShowTitleBar:false];
             }
             
             if(_extendClientHints & AvnChromeHintsOSXThickTitleBar)
@@ -844,7 +850,8 @@ private:
     
     virtual HRESULT SetExtendTitleBarHeight (double value) override
     {
-        [VisualEffect SetTitleBarHeightHint:value];
+        [StandardContainer SetTitleBarHeightHint:value];
+        [BlurredContainer SetTitleBarHeightHint:value];
         return S_OK;
     }
     
@@ -1021,14 +1028,17 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     NSVisualEffectView* _titleBarMaterial;
     NSBox* _titleBarUnderline;
-    AvnView* _content;
+    NSView* _content;
     double _titleBarHeightHint;
 }
 
--(AutoFitContentVisualEffectView* _Nonnull) initWithContent: (AvnView* _Nonnull) content;
+-(AutoFitContentVisualEffectView* _Nonnull) init
 {
     _titleBarHeightHint = -1;
-    _content = content;
+
+    [self setAutoresizesSubviews:true];
+    [self setWantsLayer:true];
+    
     _titleBarMaterial = [NSVisualEffectView new];
     [_titleBarMaterial setBlendingMode:NSVisualEffectBlendingModeWithinWindow];
     [_titleBarMaterial setMaterial:NSVisualEffectMaterialTitlebar];
@@ -1042,7 +1052,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     [self addSubview:_titleBarMaterial];
     [self addSubview:_titleBarUnderline];
-    [self addSubview:_content];
+    
+    [self setWantsLayer:true];
     return self;
 }
 
@@ -1082,6 +1093,97 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [_titleBarUnderline setFrame:tbar];
 }
 
+-(void) SetContent: (NSView* _Nonnull) content
+{
+    if(content != nullptr)
+    {
+        [content removeFromSuperview];
+        [self addSubview:content];
+        _content = content;
+    }
+}
+@end
+
+@implementation AutoFitContentView
+{
+    NSVisualEffectView* _titleBarMaterial;
+    NSBox* _titleBarUnderline;
+    AvnView* _content;
+    double _titleBarHeightHint;
+}
+
+-(AutoFitContentView* _Nonnull) initWithContent:(NSView *)content
+{
+    _titleBarHeightHint = -1;
+    _content = content;
+
+    [self setAutoresizesSubviews:true];
+    [self setWantsLayer:true];
+    
+    _titleBarMaterial = [NSVisualEffectView new];
+    [_titleBarMaterial setBlendingMode:NSVisualEffectBlendingModeWithinWindow];
+    [_titleBarMaterial setMaterial:NSVisualEffectMaterialTitlebar];
+    [_titleBarMaterial setWantsLayer:true];
+    _titleBarMaterial.hidden = true;
+    
+    _titleBarUnderline = [NSBox new];
+    _titleBarUnderline.boxType = NSBoxSeparator;
+    _titleBarUnderline.fillColor = [NSColor underPageBackgroundColor];
+    _titleBarUnderline.hidden = true;
+    
+    [self addSubview:_titleBarMaterial];
+    [self addSubview:_titleBarUnderline];
+    [self addSubview:_content];
+    
+    [self setWantsLayer:true];
+    return self;
+}
+
+-(void) ShowTitleBar: (bool) show
+{
+    _titleBarMaterial.hidden = !show;
+    _titleBarUnderline.hidden = !show;
+}
+
+-(void) SetTitleBarHeightHint: (double) height
+{
+    _titleBarHeightHint = height;
+    
+    [self setFrameSize:self.frame.size];
+}
+
+-(void)setFrameSize:(NSSize)newSize
+{
+    [super setFrameSize:newSize];
+    
+    [_content setFrameSize:newSize];
+    
+    auto window = objc_cast<AvnWindow>([self window]);
+    
+    // TODO get actual titlebar size
+    
+    double height = _titleBarHeightHint == -1 ? [window getExtendedTitleBarHeight] : _titleBarHeightHint;
+    
+    NSRect tbar;
+    tbar.origin.x = 0;
+    tbar.origin.y = newSize.height - height;
+    tbar.size.width = newSize.width;
+    tbar.size.height = height;
+    
+    [_titleBarMaterial setFrame:tbar];
+    tbar.size.height = height < 1 ? 0 : 1;
+    [_titleBarUnderline setFrame:tbar];
+}
+
+-(void) SetContent: (NSView* _Nonnull) content
+{
+    if(content != nullptr)
+    {
+        [content removeFromSuperview];
+        [self addSubview:content];
+        _content = content;
+    }
+}
 @end
 
 @implementation AvnView

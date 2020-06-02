@@ -13,9 +13,17 @@ class WindowBaseImpl;
 @end
 
 @interface AutoFitContentVisualEffectView : NSVisualEffectView
--(AutoFitContentVisualEffectView* _Nonnull) initWithContent: (AvnView* _Nonnull) content;
+-(AutoFitContentVisualEffectView* _Nonnull) init;
 -(void) ShowTitleBar: (bool) show;
 -(void) SetTitleBarHeightHint: (double) height;
+-(void) SetContent: (NSView* _Nonnull) content;
+@end
+
+@interface AutoFitContentView : NSView
+-(AutoFitContentView* _Nonnull) initWithContent: (NSView* _Nonnull) content;
+-(void) ShowTitleBar: (bool) show;
+-(void) SetTitleBarHeightHint: (double) height;
+-(void) SetContent: (NSView* _Nonnull) content;
 @end
 
 @interface AvnWindow : NSWindow <NSWindowDelegate>
