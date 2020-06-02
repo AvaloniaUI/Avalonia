@@ -343,5 +343,8 @@
     <SolidColorBrush x:Key="RadioButtonPressedBorderThemeBrush" Color="#FF000000" />
     <SolidColorBrush x:Key="RadioButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="RadioButtonContentPointerOverForegroundThemeBrush" Color="{DynamicResource SystemColorHighlightTextColor}" />
+    
+    <!--Recources ToggleSwitch-->
+  
   </Style.Resources>
 </Style>
