@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
@@ -58,8 +56,12 @@ namespace Avalonia.Controls.Presenters
                 o => o.Viewport,
                 (o, v) => o.Viewport = v);
 
+        // Arbitrary chosen value, probably need to ask ILogicalScrollable
+        private const int LogicalScrollItemSize = 50;
+
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
+        private bool _arranging;
         private Size _extent;
         private Vector _offset;
         private IDisposable _logicalScrollSubscription;
@@ -75,7 +77,6 @@ namespace Avalonia.Controls.Presenters
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
             ChildProperty.Changed.AddClassHandler<ScrollContentPresenter>((x, e) => x.ChildChanged(e));
-            AffectsArrange<ScrollContentPresenter>(OffsetProperty);
         }
 
         /// <summary>
@@ -243,6 +244,19 @@ namespace Avalonia.Controls.Presenters
                 return base.ArrangeOverride(finalSize);
             }
 
+            try
+            {
+                _arranging = true;
+                return ArrangeWithAnchoring(finalSize);
+            }
+            finally
+            {
+                _arranging = false;
+            }
+        }
+
+        private Size ArrangeWithAnchoring(Size finalSize)
+        {
             var size = new Size(
                 CanHorizontallyScroll ? Math.Max(Child.DesiredSize.Width, finalSize.Width) : finalSize.Width,
                 CanVerticallyScroll ? Math.Max(Child.DesiredSize.Height, finalSize.Height) : finalSize.Height);
@@ -287,8 +301,6 @@ namespace Avalonia.Controls.Presenters
             return finalSize;
         }
 
-        // Arbitrary chosen value, probably need to ask ILogicalScrollable
-        private const int LogicalScrollItemSize = 50;
         private void OnScrollGesture(object sender, ScrollGestureEventArgs e)
         {
             if (Extent.Height > Viewport.Height || Extent.Width > Viewport.Width)
@@ -383,6 +395,16 @@ namespace Avalonia.Controls.Presenters
                 Offset = new Vector(x, y);
                 e.Handled = true;
             }
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            if (change.Property == OffsetProperty && !_arranging)
+            {
+                InvalidateArrange();
+            }
+
+            base.OnPropertyChanged(change);
         }
 
         private void BringIntoViewRequested(object sender, RequestBringIntoViewEventArgs e)
