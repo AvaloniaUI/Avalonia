@@ -23,8 +23,7 @@
       <ScrollViewer Name="scroller"
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollBarVisibility="Auto">
-        <ItemsRepeater Name="repeater" Background="Transparent" Items="{Binding Items}"
-                       VerticalCacheLength="0" HorizontalCacheLength="0">
+        <ItemsRepeater Name="repeater" Background="Transparent" Items="{Binding Items}">
           <ItemsRepeater.ItemTemplate>
             <DataTemplate>
               <TextBlock Focusable="True" Height="{Binding Height}" Text="{Binding Text}"/>
