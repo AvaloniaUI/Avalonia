@@ -1029,7 +1029,7 @@ protected:
             s |= NSWindowStyleMaskMiniaturizable;
         }
         
-        if(_isClientAreaExtended && !_fullScreenActive)
+        if(_isClientAreaExtended)
         {
             s |= NSWindowStyleMaskFullSizeContentView | NSWindowStyleMaskTexturedBackground;
         }
