@@ -586,6 +586,35 @@ private:
             
             if(_lastWindowState != state)
             {
+                if(_isClientAreaExtended)
+                {
+                    if(_lastWindowState == FullScreen)
+                    {
+                        // we exited fs.
+                       if(_extendClientHints & AvnChromeHintsOSXThickTitleBar)
+                       {
+                          Window.toolbar = [NSToolbar new];
+                          Window.toolbar.showsBaselineSeparator = false;
+                       }
+
+                       [Window setTitlebarAppearsTransparent:true];
+
+                       [StandardContainer setFrameSize: StandardContainer.frame.size];
+                    }
+                    else if(state == FullScreen)
+                    {
+                        // we entered fs.
+                        if(_extendClientHints & AvnChromeHintsOSXThickTitleBar)
+                        {
+                            Window.toolbar = nullptr;
+                        }
+                       
+                        [Window setTitlebarAppearsTransparent:false];
+                        
+                        [StandardContainer setFrameSize: StandardContainer.frame.size];
+                    }
+                }
+                
                 _lastWindowState = state;
                 WindowEvents->WindowStateChanged(state);
             }
@@ -849,8 +878,9 @@ private:
         [Window setTitlebarAppearsTransparent:NO];
         [Window setTitle:_lastTitle];
         
-        [Window setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskResizable];
-        
+        Window.styleMask = Window.styleMask | NSWindowStyleMaskTitled | NSWindowStyleMaskResizable;
+        Window.styleMask = Window.styleMask & ~NSWindowStyleMaskFullSizeContentView;
+    
         [Window toggleFullScreen:nullptr];
     }
     
@@ -999,7 +1029,7 @@ protected:
             s |= NSWindowStyleMaskMiniaturizable;
         }
         
-        if(_isClientAreaExtended)
+        if(_isClientAreaExtended && !_fullScreenActive)
         {
             s |= NSWindowStyleMaskFullSizeContentView | NSWindowStyleMaskTexturedBackground;
         }

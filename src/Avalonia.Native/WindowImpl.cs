@@ -54,6 +54,8 @@ namespace Avalonia.Native
 
             void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
             {
+                _parent.InvalidateExtendedMargins();
+
                 _parent.WindowStateChanged?.Invoke((WindowState)state);
             }
 
@@ -136,15 +138,27 @@ namespace Avalonia.Native
             return false;
         }
 
+        private void InvalidateExtendedMargins ()
+        {
+            if(WindowState ==  WindowState.FullScreen)
+            {
+                ExtendedMargins = new Thickness();
+            }
+            else
+            {
+                ExtendedMargins = _isExtended ? new Thickness(0, _extendTitleBarHeight == -1 ? _native.GetExtendTitleBarHeight() : _extendTitleBarHeight, 0, 0) : new Thickness();
+            }
+
+            ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
+        }
+
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
         {
             _isExtended = extendIntoClientAreaHint;
 
             _native.SetExtendClientArea(extendIntoClientAreaHint);
 
-            ExtendedMargins = _isExtended ? new Thickness(0, _extendTitleBarHeight == -1 ? _native.GetExtendTitleBarHeight() : _extendTitleBarHeight, 0, 0) : new Thickness();
-
-            ExtendClientAreaToDecorationsChanged?.Invoke(extendIntoClientAreaHint);
+            InvalidateExtendedMargins();
         }
 
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
