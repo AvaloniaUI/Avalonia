@@ -530,7 +530,7 @@ namespace Avalonia.Controls
             // partially remedey this by triggering also on Bounds changes, but this won't work so 
             // well for nested ItemsRepeaters.
             //
-            // UWP uses the EffectiveBoundsChanged event (which I think was implemented specially
+            // UWP uses the EffectiveViewportChanged event (which I think was implemented specially
             // for this case): we need to implement that in Avalonia.
             return control.GetObservable(Visual.TransformedBoundsProperty)
                 .Merge(control.GetObservable(Visual.BoundsProperty).Select(_ => control.TransformedBounds))
