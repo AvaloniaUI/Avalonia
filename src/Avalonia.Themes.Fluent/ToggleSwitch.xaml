@@ -2,20 +2,21 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
        
   <Design.PreviewWith>
-    <StackPanel Margin="20" Width="200" Spacing="24">
-      <StackPanel Spacing="8">
+    <StackPanel Margin="20" Width="250" Spacing="24">
+ 
+      <StackPanel Spacing="12">
         <TextBlock 
           Text="Automatic updates" 
           Classes="h1"/>
         <TextBlock 
-          Text="Updates will be automaticly Downloaded and installed when shutdown down" 
+          Text="Updates will be automaticly Downloaded and installed shile the computer is shutting down or restarting" 
           TextWrapping="Wrap"/> 
         <ToggleSwitch Content="Updates" 
           FontWeight="Medium" 
           VerticalAlignment="Bottom"/>
       </StackPanel>
       
-      <StackPanel Spacing="8">
+      <StackPanel Spacing="12">
         <TextBlock 
           Text="Previewer"  
           Classes="h1"/>
@@ -31,17 +32,18 @@
     </StackPanel>
   </Design.PreviewWith>
     
-      <Style Selector="ToggleSwitch" >
+      <Style Selector="ToggleSwitch">
         
         <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
         <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
         <Setter Property="MinWidth" Value="72"/>
         <Setter Property="MinHeight" Value="32"/>
+        
         <Setter Property="Template">
           <ControlTemplate>
             <Grid ColumnDefinitions="Auto,*"
-                  RowDefinitions="18,auto"
+                  RowDefinitions="22,auto"
                  >
               <Canvas 
                   Height="24"  
@@ -83,8 +85,7 @@
 
       </Style>
        
-        
-      <Style Selector="ToggleSwitch:unchecked /template/ Ellipse#PART_CircleThumb">
+       <Style Selector="ToggleSwitch:unchecked /template/ Ellipse#PART_CircleThumb">
         <Style.Animations>
           <Animation Duration="0:0:0.4" FillMode="Forward" Easing="CubicEaseOut">
             <KeyFrame Cue="0%">
@@ -103,7 +104,7 @@
         <Style.Animations>
           <Animation Duration="0:0:0.4" FillMode="Forward" Easing="CubicEaseOut">
             <KeyFrame Cue="0%">
-              <Setter Property="Fill" Value="RoyalBlue"/>
+              <Setter Property="Fill" Value="{DynamicResource ToggleSwitchFillOn}"/>
               <Setter Property="Canvas.Left" Value="5"/>
             </KeyFrame>
             <KeyFrame Cue="100%">
@@ -118,14 +119,14 @@
         <Style.Animations>
           <Animation Duration="0:0:0.5" FillMode="Forward" Easing="CubicEaseOut">
             <KeyFrame Cue="0%">
-              <Setter Property="Background" Value="Royalblue"/>
+              <Setter Property="Background" Value="{DynamicResource ToggleSwitchFillOn}"/>
             </KeyFrame>
             <KeyFrame Cue="100%">
               <Setter Property="Background" Value="White"/>
             </KeyFrame>
           </Animation>
         </Style.Animations>
-        <Setter Property="BorderBrush" Value="Silver"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ToggleSwitchStrokeOff}"/>
       </Style>
 
       <Style Selector="ToggleSwitch:checked /template/ Border#PART_BorderBackground">
@@ -135,16 +136,16 @@
               <Setter Property="Background" Value="White"/>
             </KeyFrame>
             <KeyFrame Cue="100%">
-              <Setter Property="Background" Value="RoyalBlue"/>
+              <Setter Property="Background" Value="{DynamicResource ToggleSwitchFillOn}"/>
             </KeyFrame>
           </Animation>
         </Style.Animations>
-        <Setter Property="BorderBrush" Value="Royalblue"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ToggleSwitchFillOn}"/>
       </Style>
-
-   <Style Selector="ToggleSwitch:pressed  /template/ Border#PART_BorderBackground">
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeControlHighBrush}"/>
-  </Style>
+  
+      <Style Selector="ToggleSwitch:pressed  /template/ Border#PART_BorderBackground">
+         <Setter Property="BorderBrush" Value="{DynamicResource ThemeControlHighBrush}"/>
+       </Style>
  
       <Style Selector="ToggleSwitch:checked /template/ ContentControl#PART_TextBooleanValue">
         <Setter Property="Content" Value="On"/>
@@ -163,7 +164,7 @@
       </Style>
       
       <Style Selector="ToggleSwitch:focus:checked /template/ Border#PART_BorderBackground">
-        <Setter Property="Background" Value="RoyalBlue"/>
+        <Setter Property="Background" Value="{DynamicResource ToggleSwitchFillOn}"/>
       </Style>
        
       <Style Selector="ToggleSwitch:focus /template/ Border#PART_BorderBackground:pointerover">
@@ -191,4 +192,6 @@
       <!--<Style Selector="ToggleSwitch:indeterminate /template/ ContentControl#PART_TextBooleanValue">
         <Setter Property="Content" Value="Not set"/>
       </Style>-->
+
+  
 </Styles>
