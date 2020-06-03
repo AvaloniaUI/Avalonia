@@ -346,10 +346,14 @@ namespace Avalonia.Controls
                 }
 
                 // Register action to go back to how things were before where any child can be the anchor.
+                // Register action to go back to how things were before where any child can be the anchor. Here,
+                // WinUI uses CompositionTarget.Rendering but we don't currently have that, so post an action to
+                // run *after* rendering has completed (priority needs to be lower than Render as Transformed
+                // bounds must have been set in order for OnEffectiveViewportChanged to trigger).
                 if (!_isBringIntoViewInProgress)
                 {
                     _isBringIntoViewInProgress = true;
-                    Dispatcher.UIThread.Post(OnCompositionTargetRendering);
+                    Dispatcher.UIThread.Post(OnCompositionTargetRendering, DispatcherPriority.Loaded);
                 }
             }
         }
