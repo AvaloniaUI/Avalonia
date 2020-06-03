@@ -238,6 +238,9 @@ namespace Avalonia.Controls
             
             _popup.ConfigurePosition(control, GetPlacement(control), 
                 new Point(GetHorizontalOffset(control), GetVerticalOffset(control)));
+
+            WindowManagerAddShadowHintChanged(_popup, false);
+
             _popup.Show();
         }
 
@@ -248,6 +251,14 @@ namespace Avalonia.Controls
                 _popup.SetChild(null);
                 _popup.Dispose();
                 _popup = null;
+            }
+        }
+
+        private void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
+        {
+            if (host is PopupRoot pr)
+            {
+                pr.PlatformImpl.SetWindowManagerAddShadowHint(hint);
             }
         }
     }
