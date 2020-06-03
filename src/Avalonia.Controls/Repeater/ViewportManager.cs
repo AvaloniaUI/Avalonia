@@ -5,10 +5,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Layout;
 using Avalonia.Logging;
+using Avalonia.Media;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -345,7 +348,6 @@ namespace Avalonia.Controls
                     ////}
                 }
 
-                // Register action to go back to how things were before where any child can be the anchor.
                 // Register action to go back to how things were before where any child can be the anchor. Here,
                 // WinUI uses CompositionTarget.Rendering but we don't currently have that, so post an action to
                 // run *after* rendering has completed (priority needs to be lower than Render as Transformed
@@ -404,17 +406,12 @@ namespace Avalonia.Controls
             _ensuredScroller = false;
         }
 
-        private void OnEffectiveViewportChanged(TransformedBounds? bounds)
+        private void OnEffectiveViewportChanged(TransformedBounds tb)
         {
-            if (!bounds.HasValue)
-            {
-                return;
-            }
-
-            var globalClip = bounds.Value.Clip;
+            var globalClip = tb.Clip;
             var transform = _owner.GetVisualRoot().TransformToVisual(_owner).Value;
             var clip = globalClip.TransformToAABB(transform);
-            var effectiveViewport = clip.Intersect(bounds.Value.Bounds);
+            var effectiveViewport = clip.Intersect(tb.Bounds);
 
             Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "{LayoutId}: EffectiveViewportChanged event callback", _owner.Layout.LayoutId);
             UpdateViewport(effectiveViewport);
@@ -532,10 +529,66 @@ namespace Avalonia.Controls
             //
             // UWP uses the EffectiveViewportChanged event (which I think was implemented specially
             // for this case): we need to implement that in Avalonia.
-            return control.GetObservable(Visual.TransformedBoundsProperty)
-                .Merge(control.GetObservable(Visual.BoundsProperty).Select(_ => control.TransformedBounds))
-                .Skip(1)
+            return new EffectiveViewportChangedObservable(control)
                 .Subscribe(OnEffectiveViewportChanged);
+        }
+
+        private class EffectiveViewportChangedObservable : SingleSubscriberObservableBase<TransformedBounds>,
+            IObserver<TransformedBounds?>,
+            IObserver<Rect>
+        {
+            private readonly IControl _control;
+            private IDisposable _subscription;
+            private TransformedBounds? _lastBounds;
+            private bool _skipBounds;
+
+            public EffectiveViewportChangedObservable(IControl control) => _control = control;
+
+            void IObserver<TransformedBounds?>.OnNext(TransformedBounds? value)
+            {
+                _lastBounds = value;
+
+                if (value != null)
+                {
+                    PublishNext(value.Value);
+                }
+            }
+
+            void IObserver<Rect>.OnNext(Rect value)
+            {
+                if (_lastBounds.HasValue)
+                {
+                    if (!_skipBounds)
+                    {
+                        PublishNext(new TransformedBounds(
+                            new Rect(value.Size),
+                            _lastBounds.Value.Clip,
+                            _lastBounds.Value.Transform));
+                    }
+
+                    _skipBounds = false;
+                }
+            }
+
+            protected override void Subscribed()
+            {
+                _subscription = new CompositeDisposable(
+                    _control.GetObservable(Visual.TransformedBoundsProperty).Subscribe(this),
+                    _control.GetObservable(Visual.BoundsProperty).Subscribe(this));
+                _lastBounds = null;
+                _skipBounds = true;
+            }
+
+            protected override void Unsubscribed()
+            {
+                _subscription.Dispose();
+                _subscription = null;
+            }
+
+            void IObserver<TransformedBounds?>.OnCompleted() { }
+            void IObserver<TransformedBounds?>.OnError(Exception error) { }
+            void IObserver<Rect>.OnCompleted() { }
+            void IObserver<Rect>.OnError(Exception error) { }
         }
 
         private class ScrollerInfo
