@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Specialized;
 using Avalonia.Data;
+using Avalonia.Logging;
 
 namespace Avalonia.Layout
 {
@@ -379,8 +380,14 @@ namespace Avalonia.Layout
                         ref extent,
                         _orientation.MajorEnd(lastRealizedLayoutBounds) - _orientation.MajorStart(extent) + (remainingItems / itemsPerLine) * lineSize);
                 }
+                else
+                {
+                    Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "{LayoutId}: Estimating extent with no realized elements", LayoutId);
+                }
             }
 
+            Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "{LayoutId}: Extent is ({Size}). Based on lineSize {LineSize} and items per line {ItemsPerLine}",
+                LayoutId, extent.Size, lineSize, itemsPerLine);
             return extent;
         }
 

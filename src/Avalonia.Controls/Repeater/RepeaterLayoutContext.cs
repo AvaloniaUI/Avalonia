@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Layout;
+using Avalonia.Logging;
 
 namespace Avalonia.Controls
 {
@@ -58,7 +59,11 @@ namespace Avalonia.Controls
 
         protected override object GetItemAtCore(int index) => _owner.ItemsSourceView.GetAt(index);
 
-        protected override void RecycleElementCore(ILayoutable element) => _owner.ClearElementImpl((IControl)element);
+        protected override void RecycleElementCore(ILayoutable element)
+        {
+            Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "RepeaterLayout - RecycleElement: {Index}", _owner.GetElementIndex((IControl)element));
+            _owner.ClearElementImpl((IControl)element);
+        }
 
         protected override Rect RealizationRectCore() => _owner.RealizationWindow;
     }

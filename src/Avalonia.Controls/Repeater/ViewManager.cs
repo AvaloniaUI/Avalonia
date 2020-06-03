@@ -11,6 +11,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -60,11 +61,13 @@ namespace Avalonia.Controls
             if (suppressAutoRecycle)
             {
                 virtInfo.AutoRecycleCandidate = false;
+                Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "GetElement: {Index} Not AutoRecycleCandidate:", virtInfo.Index);
             }
             else
             {
                 virtInfo.AutoRecycleCandidate = true;
                 virtInfo.KeepAlive = true;
+                Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "GetElement: {Index} AutoRecycleCandidate:", virtInfo.Index);
             }
 
             return element;
