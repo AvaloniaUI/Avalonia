@@ -26,7 +26,10 @@
         <ItemsRepeater Name="repeater" Background="Transparent" Items="{Binding Items}">
           <ItemsRepeater.ItemTemplate>
             <DataTemplate>
-              <TextBlock Focusable="True" Height="{Binding Height}" Text="{Binding Text}"/>
+              <TextBlock Focusable="True"
+                         Background="{Binding Background}"
+                         Height="{Binding Height}"
+                         Text="{Binding Text}"/>
             </DataTemplate>
           </ItemsRepeater.ItemTemplate>
         </ItemsRepeater>
