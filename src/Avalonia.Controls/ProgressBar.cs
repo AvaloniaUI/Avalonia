@@ -32,6 +32,20 @@ namespace Avalonia.Controls
                 p => p.ContainerAnimationEndPosition,
                 (p, o) => p.ContainerAnimationEndPosition = o);
 
+
+        public static readonly DirectProperty<ProgressBar, double> Container2AnimationStartPositionProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(Container2AnimationStartPosition),
+                p => p.Container2AnimationStartPosition,
+                (p, o) => p.Container2AnimationStartPosition = o);
+
+        public static readonly DirectProperty<ProgressBar, double> Container2AnimationEndPositionProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(Container2AnimationEndPosition),
+                p => p.Container2AnimationEndPosition,
+                (p, o) => p.Container2AnimationEndPosition = o);
+
+
         public static readonly DirectProperty<ProgressBar, double> ContainerAnimationMidPositionProperty =
             AvaloniaProperty.RegisterDirect<ProgressBar, double>(
                 nameof(ContainerAnimationMidPosition),
@@ -107,6 +121,21 @@ namespace Avalonia.Controls
             set => SetAndRaise(ContainerAnimationEndPositionProperty, ref _containerAnimationEndPosition, value);
         }
 
+        private double _container2AnimationStartPosition;
+        public double Container2AnimationStartPosition
+        {
+            get => _container2AnimationStartPosition;
+            set => SetAndRaise(Container2AnimationStartPositionProperty, ref _container2AnimationStartPosition, value);
+        }
+
+        private double _container2AnimationEndPosition;
+        public double Container2AnimationEndPosition
+        {
+            get => _container2AnimationEndPosition;
+            set => SetAndRaise(Container2AnimationEndPositionProperty, ref _container2AnimationEndPosition, value);
+        }
+
+
         private double _containerAnimationMidPosition;
         public double ContainerAnimationMidPosition
         {
@@ -181,9 +210,13 @@ namespace Avalonia.Controls
 
                     var dim = Orientation == Orientation.Horizontal ? bounds.Width : bounds.Height;
                     var barIndicatorWidth = dim * 0.4; // Indicator width at 40% of ProgressBar
+                    var barIndicatorWidth2 = dim * 0.6; // Indicator width at 60% of ProgressBar
 
                     ContainerAnimationStartPosition = barIndicatorWidth * -1.0; // Position at -100%
                     ContainerAnimationEndPosition = barIndicatorWidth * 3.0; // Position at 300%
+                    Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
+                    Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
+
                     ContainerAnimationMidPosition = dim * 0.2;
                     EllipseAnimationEndPosition = (1.0 / 3.0) * dim;
                     EllipseAnimationWellPosition = (2.0 / 3.0) * dim;
