@@ -3,9 +3,14 @@
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// A check box control.
+    /// A WinUi like ToggleSwitch control.
     /// </summary>
     public class ToggleSwitch : ToggleButton
     {
     }
 }
+/********** Todo ***********
+ * 
+ * Implement ContenOff property
+ * Implement ContentOn property.
+*/
