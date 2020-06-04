@@ -383,19 +383,10 @@ namespace Avalonia.Controls
             _isBringIntoViewInProgress = false;
             _makeAnchorElement = null;
 
-            // Now that the item has been brought into view, we can let the anchor provider pick a new anchor.
-            ////foreach (var child in _owner.Children)
-            ////{
-            ////    if (!child.CanBeScrollAnchor)
-            ////    {
-            ////        var info = ItemsRepeater.GetVirtualizationInfo(child);
-
-            ////        if (info.IsRealized && info.IsHeldByLayout)
-            ////        {
-            ////            child.CanBeScrollAnchor = true;
-            ////        }
-            ////    }
-            ////}
+            // HACK: Invalidate measure now that the anchor has been removed so that a layout can be
+            // done with a proper realization rect. This is a hack not present upstream to try to fix
+            // https://github.com/microsoft/microsoft-ui-xaml/issues/1422
+            TryInvalidateMeasure();
         }
 
         public void ResetScrollers()
