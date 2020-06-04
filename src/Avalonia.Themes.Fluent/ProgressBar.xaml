@@ -14,26 +14,25 @@
     <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightTransparentBrush}" />
     <Setter Property="Maximum" Value="100" />
     <Setter Property="MinHeight" Value="{DynamicResource ProgressBarThemeMinHeight}" />
-    <!--<Setter Property="IsTabStop" Value="False" />-->
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
           <StackPanel x:Name="IndeterminateRoot" Orientation="{TemplateBinding Orientation}" Spacing="{TemplateBinding EllipseOffset}">
-            <Border x:Name="B5" RenderTransformOrigin="0.5,0.5">
-              <Ellipse x:Name="E5" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="0.5,0.5" />
+            <Border x:Name="B5" RenderTransformOrigin="50%,50%">
+              <Ellipse x:Name="E5" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="50%,50%" />
             </Border>
-            <Border x:Name="B4" RenderTransformOrigin="0.5,0.5">
-              <Ellipse x:Name="E4" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="0.5,0.5" />
+            <Border x:Name="B4" RenderTransformOrigin="50%,50%">
+              <Ellipse x:Name="E4" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="50%,50%" />
             </Border>
-            <Border x:Name="B3" RenderTransformOrigin="0.5,0.5">
-              <Ellipse x:Name="E3" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="0.5,0.5" />
+            <Border x:Name="B3" RenderTransformOrigin="50%,50%">
+              <Ellipse x:Name="E3" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="50%,50%" />
             </Border>
-            <Border x:Name="B2" RenderTransformOrigin="0.5,0.5">
-              <Ellipse x:Name="E2" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="0.5,0.5" />
+            <Border x:Name="B2" RenderTransformOrigin="50%,50%">
+              <Ellipse x:Name="E2" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="50%,50%" />
             </Border>
-            <Border x:Name="B1" Grid.Column="8" RenderTransformOrigin="0.5,0.5">
-              <Ellipse x:Name="E1" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="0.5,0.5" />
+            <Border x:Name="B1" Grid.Column="8" RenderTransformOrigin="50%,50%">
+              <Ellipse x:Name="E1" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="50%,50%" />
             </Border>
           </StackPanel>
           <Border x:Name="DeterminateRoot" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource ControlCornerRadius}">
