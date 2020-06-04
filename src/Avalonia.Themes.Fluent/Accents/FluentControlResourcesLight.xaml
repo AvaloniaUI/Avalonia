@@ -404,5 +404,6 @@
     <SolidColorBrush x:Key="ToggleSwitchTrackPointerOverBackgroundThemeBrush" Color="#4A000000" />
     <SolidColorBrush x:Key="ToggleSwitchTrackPressedBackgroundThemeBrush" Color="#42000000" />
 
+
   </Style.Resources>
 </Style>
