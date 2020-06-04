@@ -3,6 +3,7 @@ using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Layout;
+using Avalonia.Media;
 
 namespace Avalonia.Controls
 {
@@ -51,7 +52,15 @@ namespace Avalonia.Controls
                 nameof(ContainerAnimationMidPosition),
                 p => p.ContainerAnimationMidPosition,
                 (p, o) => p.ContainerAnimationMidPosition = o);
-                
+
+
+
+        public static readonly DirectProperty<ProgressBar, Geometry> ClipRectProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, Geometry>(
+                nameof(ClipRect),
+                p => p.ClipRect,
+                (p, o) => p.ClipRect = o);
+
         private Border _indicator;
 
         static ProgressBar()
@@ -104,6 +113,40 @@ namespace Avalonia.Controls
             set => SetAndRaise(Container2AnimationStartPositionProperty, ref _container2AnimationStartPosition, value);
         }
 
+       
+              
+       
+       
+        public static readonly DirectProperty<ProgressBar, double> Container2WidthProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(Container2Width),
+                p => p.Container2Width,
+                (p, o) => p.Container2Width = o);
+
+       
+       
+        private double _Container2Width;
+        public double Container2Width
+        {
+            get => _Container2Width;
+            set => SetAndRaise(Container2WidthProperty, ref _Container2Width, value);
+        }
+       
+        public static readonly DirectProperty<ProgressBar, double> ContainerWidthProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(ContainerWidth),
+                p => p.ContainerWidth,
+                (p, o) => p.ContainerWidth = o);
+
+       
+       
+        private double _ContainerWidth;
+        public double ContainerWidth
+        {
+            get => _ContainerWidth;
+            set => SetAndRaise(ContainerWidthProperty, ref _ContainerWidth, value);
+        }
+
         private double _container2AnimationEndPosition;
         public double Container2AnimationEndPosition
         {
@@ -111,14 +154,20 @@ namespace Avalonia.Controls
             set => SetAndRaise(Container2AnimationEndPositionProperty, ref _container2AnimationEndPosition, value);
         }
 
-
         private double _containerAnimationMidPosition;
         public double ContainerAnimationMidPosition
         {
             get => _containerAnimationMidPosition;
             set => SetAndRaise(ContainerAnimationMidPositionProperty, ref _containerAnimationMidPosition, value);
         }
- 
+
+        private Geometry _clipRect;
+        public Geometry ClipRect
+        {
+            get => _clipRect;
+            set => SetAndRaise(ClipRectProperty, ref _clipRect, value);
+        }
+
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
@@ -160,11 +209,27 @@ namespace Avalonia.Controls
                     var barIndicatorWidth = dim * 0.4; // Indicator width at 40% of ProgressBar
                     var barIndicatorWidth2 = dim * 0.6; // Indicator width at 60% of ProgressBar
 
+                    ContainerWidth = barIndicatorWidth;
+                    Container2Width = barIndicatorWidth2;
+
                     ContainerAnimationStartPosition = barIndicatorWidth * -1.0; // Position at -100%
                     ContainerAnimationEndPosition = barIndicatorWidth * 3.0; // Position at 300%
+                    
                     Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
                     Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
-                    ContainerAnimationMidPosition = dim * 0.2; 
+                    
+                    ContainerAnimationMidPosition = dim * 0.2;
+
+                    var padding = Padding;
+                    var rectangle = new RectangleGeometry(
+                        new Rect(
+                            padding.Left,
+                            padding.Top,
+                            bounds.Width - (padding.Right + padding.Left),
+                            bounds.Height - (padding.Bottom + padding.Top)
+                            ));
+
+                    ClipRect = rectangle;
                 }
                 else
                 {
