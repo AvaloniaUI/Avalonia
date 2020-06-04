@@ -7,7 +7,7 @@
       </StackPanel>
     </Border>
   </Design.PreviewWith>
-  <Style Selector="ProgressBar">    
+  <Style Selector="ProgressBar">
     <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
     <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ProgressBarBorderThemeThickness}" />
@@ -19,128 +19,438 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
-          <StackPanel x:Name="IndeterminateRoot" Orientation="Horizontal" Spacing="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseOffset}" Opacity="0">
-            <StackPanel.RenderTransform>
-              <TranslateTransform />
-            </StackPanel.RenderTransform>
+          <StackPanel x:Name="IndeterminateRoot" Orientation="{TemplateBinding Orientation}" Spacing="{TemplateBinding EllipseOffset}">
             <Border x:Name="B5" RenderTransformOrigin="0.5,0.5">
-              <Border.RenderTransform>
-                <TranslateTransform />
-              </Border.RenderTransform>
-              <Ellipse x:Name="E5" Fill="{TemplateBinding Foreground}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" RenderTransformOrigin="0.5,0.5">
-                <Ellipse.RenderTransform>
-                  <TranslateTransform />
-                </Ellipse.RenderTransform>
-              </Ellipse>
+              <Ellipse x:Name="E5" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="0.5,0.5" />
             </Border>
             <Border x:Name="B4" RenderTransformOrigin="0.5,0.5">
-              <Border.RenderTransform>
-                <TranslateTransform />
-              </Border.RenderTransform>
-              <Ellipse x:Name="E4" Fill="{TemplateBinding Foreground}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" RenderTransformOrigin="0.5,0.5">
-                <Ellipse.RenderTransform>
-                  <TranslateTransform />
-                </Ellipse.RenderTransform>
-              </Ellipse>
+              <Ellipse x:Name="E4" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="0.5,0.5" />
             </Border>
             <Border x:Name="B3" RenderTransformOrigin="0.5,0.5">
-              <Border.RenderTransform>
-                <TranslateTransform />
-              </Border.RenderTransform>
-              <Ellipse x:Name="E3" Fill="{TemplateBinding Foreground}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" RenderTransformOrigin="0.5,0.5">
-                <Ellipse.RenderTransform>
-                  <TranslateTransform />
-                </Ellipse.RenderTransform>
-              </Ellipse>
+              <Ellipse x:Name="E3" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="0.5,0.5" />
             </Border>
             <Border x:Name="B2" RenderTransformOrigin="0.5,0.5">
-              <Border.RenderTransform>
-                <TranslateTransform />
-              </Border.RenderTransform>
-              <Ellipse x:Name="E2" Fill="{TemplateBinding Foreground}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" RenderTransformOrigin="0.5,0.5">
-                <Ellipse.RenderTransform>
-                  <TranslateTransform />
-                </Ellipse.RenderTransform>
-              </Ellipse>
+              <Ellipse x:Name="E2" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="0.5,0.5" />
             </Border>
             <Border x:Name="B1" Grid.Column="8" RenderTransformOrigin="0.5,0.5">
-              <Border.RenderTransform>
-                <TranslateTransform />
-              </Border.RenderTransform>
-              <Ellipse x:Name="E1" Fill="{TemplateBinding Foreground}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseDiameter}" RenderTransformOrigin="0.5,0.5">
-                <Ellipse.RenderTransform>
-                  <TranslateTransform />
-                </Ellipse.RenderTransform>
-              </Ellipse>
+              <Ellipse x:Name="E1" Fill="{TemplateBinding Foreground}" Width="{TemplateBinding EllipseDiameter}" Height="{TemplateBinding EllipseDiameter}" RenderTransformOrigin="0.5,0.5" />
             </Border>
           </StackPanel>
-          <Border
-              x:Name="DeterminateRoot"
-              Background="{TemplateBinding Background}"
-              BorderBrush="{TemplateBinding BorderBrush}"
-              BorderThickness="{TemplateBinding BorderThickness}"              
-              CornerRadius="{DynamicResource ControlCornerRadius}">
-            <Border
-                x:Name="PART_Indicator"
-                Margin="{TemplateBinding Padding}"
-                Background="{TemplateBinding Foreground}"                
-                CornerRadius="{DynamicResource ControlCornerRadius}" />
+          <Border x:Name="DeterminateRoot" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource ControlCornerRadius}">
+            <Border x:Name="PART_Indicator" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Foreground}" CornerRadius="{DynamicResource ControlCornerRadius}" />
           </Border>
         </Grid>
       </ControlTemplate>
     </Setter>
   </Style>
   <Style Selector="ProgressBar:horizontal /template/ Border#PART_Indicator">
-    <Setter Property="HorizontalAlignment" Value="Left"/>
-    <Setter Property="VerticalAlignment" Value="Stretch"/>
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
   </Style>
   <Style Selector="ProgressBar:vertical /template/ Border#PART_Indicator">
-    <Setter Property="HorizontalAlignment" Value="Stretch"/>
-    <Setter Property="VerticalAlignment" Value="Bottom"/>
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Bottom" />
   </Style>
   <Style Selector="ProgressBar:horizontal">
-    <Setter Property="MinWidth" Value="200"/>
-    <Setter Property="MinHeight" Value="4"/>
+    <Setter Property="MinWidth" Value="200" />
+    <Setter Property="MinHeight" Value="4" />
   </Style>
   <Style Selector="ProgressBar:vertical">
-    <Setter Property="MinWidth" Value="4"/>
-    <Setter Property="MinHeight" Value="200"/>
+    <Setter Property="MinWidth" Value="4" />
+    <Setter Property="MinHeight" Value="200" />
   </Style>
   <Style Selector="ProgressBar:vertical /template/ LayoutTransformControl#PART_LayoutTransformControl">
     <Setter Property="LayoutTransform">
       <Setter.Value>
-        <RotateTransform Angle="90"/>
+        <RotateTransform Angle="90" />
       </Setter.Value>
     </Setter>
   </Style>
-  <Style Selector="ProgressBar:horizontal:indeterminate /template/ Border#PART_Indicator">
+  <Style Selector="ProgressBar:indeterminate /template/ Border#PART_Indicator">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <!-- Horizontal ProgressBar Animation -->
+  <Style Selector="ProgressBar:horizontal:indeterminate /template/ StackPanel#IndeterminateRoot">
     <Style.Animations>
-      <Animation Duration="0:0:1"
-                 IterationCount="Infinite"
-                 Easing="LinearEasing">
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
         <KeyFrame Cue="0%">
-          <Setter Property="TranslateTransform.X"
-                  Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+          <Setter Property="TranslateTransform.X" Value="{Binding ContainerAnimationStartPosition, RelativeSource={RelativeSource TemplatedParent}}" />
         </KeyFrame>
         <KeyFrame Cue="100%">
-          <Setter Property="TranslateTransform.X"
-                  Value="{Binding IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+          <Setter Property="TranslateTransform.X" Value="{Binding ContainerAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
         </KeyFrame>
       </Animation>
     </Style.Animations>
   </Style>
-  <Style Selector="ProgressBar:vertical:indeterminate /template/ Border#PART_Indicator">
+  <Style Selector="ProgressBar:horizontal:indeterminate /template/ Ellipse#E1">
     <Style.Animations>
-      <Animation Duration="0:0:1"
-                 IterationCount="Infinite"
-                 Easing="LinearEasing">
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:horizontal:indeterminate /template/ Ellipse#E2">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" Delay="0.167" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:horizontal:indeterminate /template/ Ellipse#E3">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" Delay="0.333" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:horizontal:indeterminate /template/ Ellipse#E4">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" Delay="0.5" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:horizontal:indeterminate /template/ Ellipse#E5">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" Delay="0.667" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.X" Value="{Binding EllipseAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:horizontal:indeterminate /template/ Border#B1">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.X" Value="-50" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:0.5">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3">
+          <Setter Property="TranslateTransform.X" Value="100" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:horizontal:indeterminate /template/ Border#B2">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.X" Value="-50" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:0.667">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2.167">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3.167">
+          <Setter Property="TranslateTransform.X" Value="100" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:horizontal:indeterminate /template/ Border#B3">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.X" Value="-50" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:0.833">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2.333">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3.333">
+          <Setter Property="TranslateTransform.X" Value="100" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:horizontal:indeterminate /template/ Border#B4">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.X" Value="-50" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2.5">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3.5">
+          <Setter Property="TranslateTransform.X" Value="100" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:horizontal:indeterminate /template/ Border#B5">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.X" Value="-50" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1.167">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2.667">
+          <Setter Property="TranslateTransform.X" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3.667">
+          <Setter Property="TranslateTransform.X" Value="100" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <!-- Vertical ProgressBar Animation -->
+  <Style Selector="ProgressBar:vertical:indeterminate /template/ StackPanel#IndeterminateRoot">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
         <KeyFrame Cue="0%">
-          <Setter Property="TranslateTransform.Y"
-                  Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+          <Setter Property="TranslateTransform.Y" Value="{Binding ContainerAnimationStartPosition, RelativeSource={RelativeSource TemplatedParent}}" />
         </KeyFrame>
         <KeyFrame Cue="100%">
-          <Setter Property="TranslateTransform.Y"
-                  Value="{Binding IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+          <Setter Property="TranslateTransform.Y" Value="{Binding ContainerAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:vertical:indeterminate /template/ Ellipse#E1">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:vertical:indeterminate /template/ Ellipse#E2">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" Delay="0.167" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:vertical:indeterminate /template/ Ellipse#E3">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" Delay="0.333" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:vertical:indeterminate /template/ Ellipse#E4">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" Delay="0.5" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:vertical:indeterminate /template/ Ellipse#E5">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" Delay="0.667" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationWellPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3" KeySpline="0.4,0,0.6,1">
+          <Setter Property="TranslateTransform.Y" Value="{Binding EllipseAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:vertical:indeterminate /template/ Border#B1">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.Y" Value="-50" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:0.5">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3">
+          <Setter Property="TranslateTransform.Y" Value="100" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:vertical:indeterminate /template/ Border#B2">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.Y" Value="-50" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:0.667">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2.167">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3.167">
+          <Setter Property="TranslateTransform.Y" Value="100" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:vertical:indeterminate /template/ Border#B3">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.Y" Value="-50" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:0.833">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2.333">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3.333">
+          <Setter Property="TranslateTransform.Y" Value="100" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:vertical:indeterminate /template/ Border#B4">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.Y" Value="-50" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2.5">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3.5">
+          <Setter Property="TranslateTransform.Y" Value="100" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressBar:vertical:indeterminate /template/ Border#B5">
+    <Style.Animations>
+      <Animation Duration="0:0:3.917" IterationCount="Infinite">
+        <KeyFrame KeyTime="0">
+          <Setter Property="TranslateTransform.Y" Value="-50" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:1.167">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:2.667">
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+        <KeyFrame KeyTime="0:0:3.667">
+          <Setter Property="TranslateTransform.Y" Value="100" />
         </KeyFrame>
       </Animation>
     </Style.Animations>

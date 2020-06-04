@@ -20,17 +20,47 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
 
-        private static readonly DirectProperty<ProgressBar, double> IndeterminateStartingOffsetProperty =
+        public static readonly DirectProperty<ProgressBar, double> ContainerAnimationStartPositionProperty =
             AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(IndeterminateStartingOffset),
-                p => p.IndeterminateStartingOffset,
-                (p, o) => p.IndeterminateStartingOffset = o);
+                nameof(ContainerAnimationStartPosition),
+                p => p.ContainerAnimationStartPosition,
+                (p, o) => p.ContainerAnimationStartPosition = o);
 
-        private static readonly DirectProperty<ProgressBar, double> IndeterminateEndingOffsetProperty =
+        public static readonly DirectProperty<ProgressBar, double> ContainerAnimationEndPositionProperty =
             AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(IndeterminateEndingOffset),
-                p => p.IndeterminateEndingOffset,
-                (p, o) => p.IndeterminateEndingOffset = o);
+                nameof(ContainerAnimationEndPosition),
+                p => p.ContainerAnimationEndPosition,
+                (p, o) => p.ContainerAnimationEndPosition = o);
+
+        public static readonly DirectProperty<ProgressBar, double> ContainerAnimationMidPositionProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(ContainerAnimationMidPosition),
+                p => p.ContainerAnimationMidPosition,
+                (p, o) => p.ContainerAnimationMidPosition = o);
+
+        public static readonly DirectProperty<ProgressBar, double> EllipseAnimationEndPositionProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(EllipseAnimationEndPosition),
+                p => p.EllipseAnimationEndPosition,
+                (p, o) => p.EllipseAnimationEndPosition = o);
+
+        public static readonly DirectProperty<ProgressBar, double> EllipseAnimationWellPositionProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(EllipseAnimationWellPosition),
+                p => p.EllipseAnimationWellPosition,
+                (p, o) => p.EllipseAnimationWellPosition = o);
+
+        public static readonly DirectProperty<ProgressBar, double> EllipseDiameterProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(EllipseDiameter),
+                p => p.EllipseDiameter,
+                (p, o) => p.EllipseDiameter = o);
+
+        public static readonly DirectProperty<ProgressBar, double> EllipseOffsetProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(EllipseOffset),
+                p => p.EllipseOffset,
+                (p, o) => p.EllipseOffset = o);
 
         private Border _indicator;
 
@@ -62,18 +92,54 @@ namespace Avalonia.Controls
             get => GetValue(OrientationProperty);
             set => SetValue(OrientationProperty, value);
         }
-        private double _indeterminateStartingOffset;
-        private double IndeterminateStartingOffset
+
+        private double _containerAnimationStartPosition;
+        public double ContainerAnimationStartPosition
         {
-            get => _indeterminateStartingOffset;
-            set => SetAndRaise(IndeterminateStartingOffsetProperty, ref _indeterminateStartingOffset, value);
+            get => _containerAnimationStartPosition;
+            set => SetAndRaise(ContainerAnimationStartPositionProperty, ref _containerAnimationStartPosition, value);
         }
 
-        private double _indeterminateEndingOffset;
-        private double IndeterminateEndingOffset
+        private double _containerAnimationEndPosition;
+        public double ContainerAnimationEndPosition
         {
-            get => _indeterminateEndingOffset;
-            set => SetAndRaise(IndeterminateEndingOffsetProperty, ref _indeterminateEndingOffset, value);
+            get => _containerAnimationEndPosition;
+            set => SetAndRaise(ContainerAnimationEndPositionProperty, ref _containerAnimationEndPosition, value);
+        }
+
+        private double _containerAnimationMidPosition;
+        public double ContainerAnimationMidPosition
+        {
+            get => _containerAnimationMidPosition;
+            set => SetAndRaise(ContainerAnimationMidPositionProperty, ref _containerAnimationMidPosition, value);
+        }
+
+        private double _ellipseAnimationEndPosition;
+        public double EllipseAnimationEndPosition
+        {
+            get => _ellipseAnimationEndPosition;
+            set => SetAndRaise(EllipseAnimationEndPositionProperty, ref _ellipseAnimationEndPosition, value);
+        }
+
+        private double _ellipseAnimationWellPosition;
+        public double EllipseAnimationWellPosition
+        {
+            get => _ellipseAnimationWellPosition;
+            set => SetAndRaise(EllipseAnimationWellPositionProperty, ref _ellipseAnimationWellPosition, value);
+        }
+
+        private double _ellipseDiameter;
+        public double EllipseDiameter
+        {
+            get => _ellipseDiameter;
+            set => SetAndRaise(EllipseDiameterProperty, ref _ellipseDiameter, value);
+        }
+
+        private double _ellipseOffset;
+        public double EllipseOffset
+        {
+            get => _ellipseOffset;
+            set => SetAndRaise(EllipseOffsetProperty, ref _ellipseOffset, value);
         }
 
         /// <inheritdoc/>
@@ -111,20 +177,34 @@ namespace Avalonia.Controls
             {
                 if (IsIndeterminate)
                 {
-                    if (Orientation == Orientation.Horizontal)
-                    {
-                        var width = bounds.Width / 5.0;
-                        IndeterminateStartingOffset = -width;
-                        _indicator.Width = width;
-                        IndeterminateEndingOffset = bounds.Width;
+                    // Pulled from ModernWPF.
 
+                    var dim = Orientation == Orientation.Horizontal ? bounds.Width : bounds.Height;
+                    var barIndicatorWidth = dim * 0.4; // Indicator width at 40% of ProgressBar
+
+                    ContainerAnimationStartPosition = barIndicatorWidth * -1.0; // Position at -100%
+                    ContainerAnimationEndPosition = barIndicatorWidth * 3.0; // Position at 300%
+                    ContainerAnimationMidPosition = dim * 0.2;
+                    EllipseAnimationEndPosition = (1.0 / 3.0) * dim;
+                    EllipseAnimationWellPosition = (2.0 / 3.0) * dim;
+
+                    if (dim <= 180.0)
+                    {
+                        // Small ellipse diameter and offset.
+                        EllipseDiameter = 4.0;
+                        EllipseOffset = 4.0;
+                    }
+                    else if (dim <= 280.0)
+                    {
+                        // Medium ellipse diameter and offset.
+                        EllipseDiameter = 5.0;
+                        EllipseOffset = 7.0;
                     }
                     else
                     {
-                        var height = bounds.Height / 5.0;
-                        IndeterminateStartingOffset = -bounds.Height;
-                        _indicator.Height = height;
-                        IndeterminateEndingOffset = height;
+                        // Large ellipse diameter and offset.
+                        EllipseDiameter = 6.0;
+                        EllipseOffset = 9.0;
                     }
                 }
                 else
