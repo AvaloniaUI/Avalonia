@@ -136,7 +136,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        IControl IScrollAnchorProvider.CurrentAnchor => _anchor.Item1;
+        IControl IScrollAnchorProvider.CurrentAnchor => _anchor.control;
 
         /// <summary>
         /// Attempts to bring a portion of the target visual into view by scrolling the content.
