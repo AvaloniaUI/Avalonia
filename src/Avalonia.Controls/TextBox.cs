@@ -347,7 +347,7 @@ namespace Avalonia.Controls
 
             if (IsFocused)
             {
-                DecideCaretVisibility();
+                _presenter?.ShowCaret();
             }
         }
 
@@ -364,14 +364,7 @@ namespace Avalonia.Controls
             {
                 SelectAll();
             }
-            else
-            {
-                DecideCaretVisibility();
-            }
-        }
 
-        private void DecideCaretVisibility()
-        {
             _presenter?.ShowCaret();
         }
 
@@ -975,6 +968,7 @@ namespace Avalonia.Controls
         {
             SelectionStart = 0;
             SelectionEnd = Text?.Length ?? 0;
+            CaretIndex = SelectionEnd;
         }
 
         private bool DeleteSelection()
