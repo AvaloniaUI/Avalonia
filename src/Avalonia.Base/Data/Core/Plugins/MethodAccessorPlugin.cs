@@ -89,7 +89,7 @@ namespace Avalonia.Data.Core.Plugins
                 var returnType = method.ReturnType;
                 bool hasReturn = returnType != typeof(void);
 
-                var signatureTypeCount = hasReturn ? 1 : 0 + parameters.Length;
+                var signatureTypeCount = (hasReturn ? 1 : 0) + parameters.Length;
 
                 var paramTypes = new Type[signatureTypeCount];
 
