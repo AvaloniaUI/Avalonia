@@ -51,31 +51,7 @@ namespace Avalonia.Controls
                 nameof(ContainerAnimationMidPosition),
                 p => p.ContainerAnimationMidPosition,
                 (p, o) => p.ContainerAnimationMidPosition = o);
-
-        public static readonly DirectProperty<ProgressBar, double> EllipseAnimationEndPositionProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(EllipseAnimationEndPosition),
-                p => p.EllipseAnimationEndPosition,
-                (p, o) => p.EllipseAnimationEndPosition = o);
-
-        public static readonly DirectProperty<ProgressBar, double> EllipseAnimationWellPositionProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(EllipseAnimationWellPosition),
-                p => p.EllipseAnimationWellPosition,
-                (p, o) => p.EllipseAnimationWellPosition = o);
-
-        public static readonly DirectProperty<ProgressBar, double> EllipseDiameterProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(EllipseDiameter),
-                p => p.EllipseDiameter,
-                (p, o) => p.EllipseDiameter = o);
-
-        public static readonly DirectProperty<ProgressBar, double> EllipseOffsetProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(EllipseOffset),
-                p => p.EllipseOffset,
-                (p, o) => p.EllipseOffset = o);
-
+                
         private Border _indicator;
 
         static ProgressBar()
@@ -142,35 +118,7 @@ namespace Avalonia.Controls
             get => _containerAnimationMidPosition;
             set => SetAndRaise(ContainerAnimationMidPositionProperty, ref _containerAnimationMidPosition, value);
         }
-
-        private double _ellipseAnimationEndPosition;
-        public double EllipseAnimationEndPosition
-        {
-            get => _ellipseAnimationEndPosition;
-            set => SetAndRaise(EllipseAnimationEndPositionProperty, ref _ellipseAnimationEndPosition, value);
-        }
-
-        private double _ellipseAnimationWellPosition;
-        public double EllipseAnimationWellPosition
-        {
-            get => _ellipseAnimationWellPosition;
-            set => SetAndRaise(EllipseAnimationWellPositionProperty, ref _ellipseAnimationWellPosition, value);
-        }
-
-        private double _ellipseDiameter;
-        public double EllipseDiameter
-        {
-            get => _ellipseDiameter;
-            set => SetAndRaise(EllipseDiameterProperty, ref _ellipseDiameter, value);
-        }
-
-        private double _ellipseOffset;
-        public double EllipseOffset
-        {
-            get => _ellipseOffset;
-            set => SetAndRaise(EllipseOffsetProperty, ref _ellipseOffset, value);
-        }
-
+ 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
@@ -216,29 +164,7 @@ namespace Avalonia.Controls
                     ContainerAnimationEndPosition = barIndicatorWidth * 3.0; // Position at 300%
                     Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
                     Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
-
-                    ContainerAnimationMidPosition = dim * 0.2;
-                    EllipseAnimationEndPosition = (1.0 / 3.0) * dim;
-                    EllipseAnimationWellPosition = (2.0 / 3.0) * dim;
-
-                    if (dim <= 180.0)
-                    {
-                        // Small ellipse diameter and offset.
-                        EllipseDiameter = 4.0;
-                        EllipseOffset = 4.0;
-                    }
-                    else if (dim <= 280.0)
-                    {
-                        // Medium ellipse diameter and offset.
-                        EllipseDiameter = 5.0;
-                        EllipseOffset = 7.0;
-                    }
-                    else
-                    {
-                        // Large ellipse diameter and offset.
-                        EllipseDiameter = 6.0;
-                        EllipseOffset = 9.0;
-                    }
+                    ContainerAnimationMidPosition = dim * 0.2; 
                 }
                 else
                 {
