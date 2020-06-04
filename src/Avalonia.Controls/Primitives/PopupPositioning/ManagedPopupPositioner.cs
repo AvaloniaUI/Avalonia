@@ -25,6 +25,10 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         }
     }
 
+    /// <summary>
+    /// An <see cref="IPopupPositioner"/> implementation for platforms on which a popup can be
+    /// aritrarily positioned.
+    /// </summary>
     public class ManagedPopupPositioner : IPopupPositioner
     {
         private readonly IManagedPopupPositionerPopup _popup;
@@ -35,38 +39,38 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         }
 
 
-        private static Point GetAnchorPoint(Rect anchorRect, PopupPositioningEdge edge)
+        private static Point GetAnchorPoint(Rect anchorRect, PopupAnchor edge)
         {
             double x, y;
-            if ((edge & PopupPositioningEdge.Left) != 0)
+            if ((edge & PopupAnchor.Left) != 0)
                 x = anchorRect.X;
-            else if ((edge & PopupPositioningEdge.Right) != 0)
+            else if ((edge & PopupAnchor.Right) != 0)
                 x = anchorRect.Right;
             else
                 x = anchorRect.X + anchorRect.Width / 2;
-            
-            if ((edge & PopupPositioningEdge.Top) != 0)
+
+            if ((edge & PopupAnchor.Top) != 0)
                 y = anchorRect.Y;
-            else if ((edge & PopupPositioningEdge.Bottom) != 0)
+            else if ((edge & PopupAnchor.Bottom) != 0)
                 y = anchorRect.Bottom;
             else
                 y = anchorRect.Y + anchorRect.Height / 2;
             return new Point(x, y);
         }
 
-        private static Point Gravitate(Point anchorPoint, Size size, PopupPositioningEdge gravity)
+        private static Point Gravitate(Point anchorPoint, Size size, PopupGravity gravity)
         {
             double x, y;
-            if ((gravity & PopupPositioningEdge.Left) != 0)
+            if ((gravity & PopupGravity.Left) != 0)
                 x = -size.Width;
-            else if ((gravity & PopupPositioningEdge.Right) != 0)
+            else if ((gravity & PopupGravity.Right) != 0)
                 x = 0;
             else
                 x = -size.Width / 2;
-            
-            if ((gravity & PopupPositioningEdge.Top) != 0)
+
+            if ((gravity & PopupGravity.Top) != 0)
                 y = -size.Height;
-            else if ((gravity & PopupPositioningEdge.Bottom) != 0)
+            else if ((gravity & PopupGravity.Bottom) != 0)
                 y = 0;
             else
                 y = -size.Height / 2;
@@ -83,18 +87,18 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                 _popup.TranslatePoint(parameters.Offset));
         }
 
-        
+
         private void Update(Size translatedSize, Size originalSize,
-            Rect anchorRect, PopupPositioningEdge anchor, PopupPositioningEdge gravity,
+            Rect anchorRect, PopupAnchor anchor, PopupGravity gravity,
             PopupPositionerConstraintAdjustment constraintAdjustment, Point offset)
         {
             var parentGeometry = _popup.ParentClientAreaScreenGeometry;
             anchorRect = anchorRect.Translate(parentGeometry.TopLeft);
-            
+
             Rect GetBounds()
             {
                 var screens = _popup.Screens;
-                
+
                 var targetScreen = screens.FirstOrDefault(s => s.Bounds.Contains(anchorRect.TopLeft))
                                    ?? screens.FirstOrDefault(s => s.Bounds.Intersects(anchorRect))
                                    ?? screens.FirstOrDefault(s => s.Bounds.Contains(parentGeometry.TopLeft))
@@ -105,35 +109,35 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                 {
                     return targetScreen.Bounds;
                 }
-                
+
                 return targetScreen?.WorkingArea
                        ?? new Rect(0, 0, double.MaxValue, double.MaxValue);
             }
 
             var bounds = GetBounds();
 
-            bool FitsInBounds(Rect rc, PopupPositioningEdge edge = PopupPositioningEdge.AllMask)
+            bool FitsInBounds(Rect rc, PopupAnchor edge = PopupAnchor.AllMask)
             {
-                if ((edge & PopupPositioningEdge.Left) != 0
+                if ((edge & PopupAnchor.Left) != 0
                     && rc.X < bounds.X)
                     return false;
 
-                if ((edge & PopupPositioningEdge.Top) != 0
+                if ((edge & PopupAnchor.Top) != 0
                     && rc.Y < bounds.Y)
                     return false;
 
-                if ((edge & PopupPositioningEdge.Right) != 0
+                if ((edge & PopupAnchor.Right) != 0
                     && rc.Right > bounds.Right)
                     return false;
 
-                if ((edge & PopupPositioningEdge.Bottom) != 0
+                if ((edge & PopupAnchor.Bottom) != 0
                     && rc.Bottom > bounds.Bottom)
                     return false;
 
                 return true;
             }
 
-            Rect GetUnconstrained(PopupPositioningEdge a, PopupPositioningEdge g) =>
+            Rect GetUnconstrained(PopupAnchor a, PopupGravity g) =>
                 new Rect(Gravitate(GetAnchorPoint(anchorRect, a), translatedSize, g) + offset, translatedSize);
 
 
@@ -141,11 +145,11 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
 
             // If flipping geometry and anchor is allowed and helps, use the flipped one,
             // otherwise leave it as is
-            if (!FitsInBounds(geo, PopupPositioningEdge.HorizontalMask)
+            if (!FitsInBounds(geo, PopupAnchor.HorizontalMask)
                 && (constraintAdjustment & PopupPositionerConstraintAdjustment.FlipX) != 0)
             {
                 var flipped = GetUnconstrained(anchor.FlipX(), gravity.FlipX());
-                if (FitsInBounds(flipped, PopupPositioningEdge.HorizontalMask))
+                if (FitsInBounds(flipped, PopupAnchor.HorizontalMask))
                     geo = geo.WithX(flipped.X);
             }
 
@@ -156,14 +160,14 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                 if (geo.Right > bounds.Right)
                     geo = geo.WithX(bounds.Right - geo.Width);
             }
-            
+
             // If flipping geometry and anchor is allowed and helps, use the flipped one,
             // otherwise leave it as is
-            if (!FitsInBounds(geo, PopupPositioningEdge.VerticalMask)
+            if (!FitsInBounds(geo, PopupAnchor.VerticalMask)
                 && (constraintAdjustment & PopupPositionerConstraintAdjustment.FlipY) != 0)
             {
                 var flipped = GetUnconstrained(anchor.FlipY(), gravity.FlipY());
-                if (FitsInBounds(flipped, PopupPositioningEdge.VerticalMask))
+                if (FitsInBounds(flipped, PopupAnchor.VerticalMask))
                     geo = geo.WithY(flipped.Y);
             }
 
