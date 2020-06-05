@@ -658,7 +658,7 @@ namespace Avalonia.Controls.UnitTests
 
             public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
-            public Task<object> GetFormatAsync(string format) => Task.FromResult((object)null);
+            public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
         }
     }
 }
