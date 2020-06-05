@@ -1,4 +1,6 @@
-<Style xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=netstandard">
+<Style xmlns="https://github.com/avaloniaui" 
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+  xmlns:sys="clr-namespace:System;assembly=netstandard">
   <Style.Resources>
     <Color x:Key="SystemAccentColor">#FF0078D7</Color>
     <Color x:Key="SystemAltHighColor">#FF000000</Color>
@@ -31,6 +33,10 @@
     <Color x:Key="SystemRevealListLowColor">#FF1D1D1D</Color>
     <Color x:Key="SystemRevealListMediumColor">#FF333333</Color>
     <!--<AcrylicBrush x:Key="SystemControlAcrylicWindowBrush" BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{ThemeResource SystemChromeMediumColor}" />-->
+    <!--<RevealBackgroundBrush x:Key="SystemControlTransparentRevealBackgroundBrush" TargetTheme="Dark" Color="Transparent" FallbackColor="Transparent" />-->
+    <SolidColorBrush x:Key="SystemControlTransparentRevealBackgroundBrush" Color="Transparent" />
+    <!--<RevealBorderBrush x:Key="SystemControlTransparentRevealBorderBrush" TargetTheme="Dark" Color="Transparent" FallbackColor="Transparent" />-->
+    <SolidColorBrush x:Key="SystemControlTransparentRevealBorderBrush" Color="Transparent" />
     
     <!-- Override system shape defaults -->
     <CornerRadius x:Key="ControlCornerRadius">2,2,2,2</CornerRadius>
@@ -312,6 +318,29 @@
     <StaticResource x:Key="RadioButtonCheckGlyphStrokePointerOver" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="RadioButtonCheckGlyphStrokePressed" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="RadioButtonCheckGlyphStrokeDisabled" ResourceKey="SystemControlTransparentBrush" />
+    
+    <!-- BaseResources for Slider.xaml -->
+    <StaticResource x:Key="SliderContainerBackground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="SliderContainerBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="SliderContainerBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="SliderThumbBackground" ResourceKey="SystemControlForegroundAccentBrush" />
+    <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="SystemControlHighlightChromeAltLowBrush" />
+    <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="SystemControlHighlightChromeHighBrush" />
+    <StaticResource x:Key="SliderThumbBackgroundDisabled" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
+    <StaticResource x:Key="SliderTrackFill" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
+    <StaticResource x:Key="SliderTrackFillPointerOver" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+    <StaticResource x:Key="SliderTrackFillPressed" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
+    <StaticResource x:Key="SliderTrackFillDisabled" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
+    <StaticResource x:Key="SliderTrackValueFill" ResourceKey="SystemControlHighlightAccentBrush" />
+    <StaticResource x:Key="SliderTrackValueFillPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
+    <StaticResource x:Key="SliderTrackValueFillPressed" ResourceKey="SystemControlHighlightAccentBrush" />
+    <StaticResource x:Key="SliderTrackValueFillDisabled" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
+    <StaticResource x:Key="SliderHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="SliderHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="SliderTickBarFill" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
+    <StaticResource x:Key="SliderTickBarFillDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="SystemControlBackgroundAltHighBrush" />
 
     <!-- Resources for ToolTip.xaml -->
     <x:Double x:Key="ToolTipContentThemeFontSize">12</x:Double>
