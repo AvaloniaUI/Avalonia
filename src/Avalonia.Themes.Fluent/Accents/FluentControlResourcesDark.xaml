@@ -290,6 +290,33 @@
     <SolidColorBrush x:Key="CheckBoxPressedBorderThemeBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="CheckBoxPressedForegroundThemeBrush" Color="#FF000000" />
 
+    <!-- Resources for Calendar.xaml, CalendarButton.xaml, CalendarDayButton.xaml, CalendarItem.xaml -->
+    <StaticResource x:Key="CalendarViewFocusBorderBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="CalendarViewSelectedHoverBorderBrush" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
+    <StaticResource x:Key="CalendarViewSelectedPressedBorderBrush" ResourceKey="SystemControlHighlightListAccentHighBrush" />
+    <StaticResource x:Key="CalendarViewSelectedBorderBrush" ResourceKey="SystemControlHighlightAccentBrush" />
+    <StaticResource x:Key="CalendarViewHoverBorderBrush" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+    <StaticResource x:Key="CalendarViewPressedBorderBrush" ResourceKey="SystemControlHighlightBaseMediumBrush" />
+    <StaticResource x:Key="CalendarViewTodayForeground" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
+    <StaticResource x:Key="CalendarViewBlackoutForeground" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="CalendarViewSelectedForeground" ResourceKey="SystemControlHighlightBaseHighBrush" />
+    <StaticResource x:Key="CalendarViewPressedForeground" ResourceKey="SystemControlHighlightBaseHighBrush" />
+    <StaticResource x:Key="CalendarViewOutOfScopeForeground" ResourceKey="SystemControlHyperlinkBaseHighBrush" />
+    <StaticResource x:Key="CalendarViewCalendarItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="CalendarViewOutOfScopeBackground" ResourceKey="SystemControlDisabledChromeMediumLowBrush" />
+    <StaticResource x:Key="CalendarViewCalendarItemBackground" ResourceKey="SystemControlBackgroundAltHighBrush" />
+    <StaticResource x:Key="CalendarViewForeground" ResourceKey="SystemControlHyperlinkBaseMediumHighBrush" />
+    <StaticResource x:Key="CalendarViewBackground" ResourceKey="SystemControlBackgroundAltHighBrush" />
+    <StaticResource x:Key="CalendarViewBorderBrush" ResourceKey="SystemControlForegroundChromeMediumBrush" />
+    <StaticResource x:Key="CalendarViewWeekDayForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="CalendarViewNavigationButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="CalendarViewNavigationButtonForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="CalendarViewNavigationButtonForegroundPressed" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+    <StaticResource x:Key="CalendarViewNavigationButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="CalendarViewCalendarItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
+    <StaticResource x:Key="CalendarViewCalendarItemRevealBorderBrush" ResourceKey="SystemControlTransparentRevealBorderBrush" />
+    <StaticResource x:Key="CalendarViewNavigationButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
+    <StaticResource x:Key="CalendarViewNavigationButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
     <!-- Resources for RadioButton.xaml -->
     <x:Double x:Key="RadioButtonBorderThemeThickness">1</x:Double>
     <StaticResource x:Key="RadioButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
