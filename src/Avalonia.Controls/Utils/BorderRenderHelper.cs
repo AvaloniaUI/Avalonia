@@ -118,12 +118,11 @@ namespace Avalonia.Controls.Utils
                     pen = new Pen(borderBrush, borderThickness);
                 }
 
-                var rrect = new RoundedRect(new Rect(_size), _cornerRadius.TopLeft, _cornerRadius.TopRight,
-                    _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
+                var rect = new Rect(_size);
                 if (Math.Abs(borderThickness) > double.Epsilon)
-                {
-                    rrect = rrect.Deflate(borderThickness * 0.5, borderThickness * 0.5);
-                }
+                    rect = rect.Deflate(borderThickness * 0.5);
+                var rrect = new RoundedRect(rect, _cornerRadius.TopLeft, _cornerRadius.TopRight,
+                    _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
 
                 context.PlatformImpl.DrawRectangle(background, pen, rrect, boxShadows);
             }

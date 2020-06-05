@@ -3,7 +3,7 @@ using System.Linq;
 namespace Avalonia.Data.Converters
 {
     /// <summary>
-    /// Provides a set of useful <see cref="IValueConverter"/>s for working with string values.
+    /// Provides a set of useful <see cref="IValueConverter"/>s for working with bool values.
     /// </summary>
     public static class BoolConverters
     {

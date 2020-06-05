@@ -219,11 +219,20 @@ namespace Avalonia.Controls
         /// </returns>
         public IControl TryGetElement(int index) => GetElementFromIndexImpl(index);
 
+        /// <summary>
+        /// Retrieves the UIElement that corresponds to the item at the specified index in the
+        /// data source.
+        /// </summary>
+        /// <param name="index">The index of the item.</param>
+        /// <returns>
+        /// An <see cref="IControl"/> that corresponds to the item at the specified index. If the
+        /// item is not realized, a new UIElement is created.
+        /// </returns>
+        public IControl GetOrCreateElement(int index) => GetOrCreateElementImpl(index);
+
         internal void PinElement(IControl element) => _viewManager.UpdatePin(element, true);
 
         internal void UnpinElement(IControl element) => _viewManager.UpdatePin(element, false);
-
-        internal IControl GetOrCreateElement(int index) => GetOrCreateElementImpl(index);
 
         internal static VirtualizationInfo TryGetVirtualizationInfo(IControl element)
         {
