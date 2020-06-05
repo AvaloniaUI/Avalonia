@@ -41,7 +41,7 @@ namespace ControlCatalog
             },
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Fluent")
+                Source = new Uri("resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default")
             },
         };
 
@@ -53,7 +53,7 @@ namespace ControlCatalog
             },
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Fluent")
+                Source = new Uri("resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default")
             },
         };
 
