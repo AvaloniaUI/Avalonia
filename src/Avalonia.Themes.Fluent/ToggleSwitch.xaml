@@ -62,7 +62,7 @@
                     Name="PART_CircleThumb"
                     Height="10" Width="10"
                     Canvas.Top="7"
-                    Canvas.Left="5"/>
+                    />
 
                 <ContentControl Name="PART_TextBooleanValue"
                      Canvas.Left="51" VerticalContentAlignment="Bottom" Height="20"/>
@@ -126,7 +126,7 @@
             </KeyFrame>
           </Animation>
         </Style.Animations>
-        <Setter Property="BorderBrush" Value="{DynamicResource ToggleSwitchStrokeOn}"/>
+        <Setter Property="BorderBrush" Value="RoyalBlue"/>
       </Style>
 
       <Style Selector="ToggleSwitch:checked /template/ Border#PART_BorderBackground">
@@ -140,7 +140,7 @@
             </KeyFrame>
           </Animation>
         </Style.Animations>
-        <Setter Property="BorderBrush" Value="{DynamicResource ToggleSwitchStrokeOn}"/>
+        <Setter Property="BorderBrush" Value="Royalblue"/>
       </Style>
   
       <!--<Style Selector="ToggleSwitch:pressed  /template/ Border#PART_BorderBackground">
@@ -163,9 +163,9 @@
         <Setter Property="BorderBrush" Value="Mediumblue"/>
       </Style>
       
-      <Style Selector="ToggleSwitch:focus:checked /template/ Border#PART_BorderBackground">
+      <!--<Style Selector="ToggleSwitch:focus:checked /template/ Border#PART_BorderBackground">
         <Setter Property="Background" Value="{DynamicResource ToggleSwitchFillOn}"/>
-      </Style>
+      </Style>-->
        
       <Style Selector="ToggleSwitch:focus /template/ Border#PART_BorderBackground:pointerover">
          <Setter Property="BorderBrush" Value="cornflowerblue"/>
