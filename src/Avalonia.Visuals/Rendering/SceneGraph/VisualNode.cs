@@ -47,6 +47,9 @@ namespace Avalonia.Rendering.SceneGraph
         public IVisualNode Parent { get; }
 
         /// <inheritdoc/>
+        public CornerRadius CornerRadius { get; }
+
+        /// <inheritdoc/>
         public Matrix Transform { get; set; }
 
         /// <inheritdoc/>

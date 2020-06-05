@@ -282,6 +282,12 @@ namespace Avalonia.Media
         }
 
 
+        public PushedState PushClip(RoundedRect clip)
+        {
+            PlatformImpl.PushClip(clip);
+            return new PushedState(this, PushedState.PushedStateType.Clip);
+        }
+
         /// <summary>
         /// Pushes a clip rectangle.
         /// </summary>

@@ -40,6 +40,21 @@ namespace Avalonia.Skia
             return new SKRect((float)r.X, (float)r.Y, (float)r.Right, (float)r.Bottom);
         }
 
+        public static SKRoundRect ToSKRoundRect(this RoundedRect r)
+        {
+            var rc = r.Rect.ToSKRect();
+            var result = new SKRoundRect();
+
+            result.SetRectRadii(rc,
+                   new[]
+                   {
+                        r.RadiiTopLeft.ToSKPoint(), r.RadiiTopRight.ToSKPoint(),
+                        r.RadiiBottomRight.ToSKPoint(), r.RadiiBottomLeft.ToSKPoint(),
+                   });            
+
+            return result;
+        }
+
         public static Rect ToAvaloniaRect(this SKRect r)
         {
             return new Rect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
