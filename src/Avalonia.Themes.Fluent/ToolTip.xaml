@@ -8,7 +8,7 @@
                 Background="{DynamicResource ThemeAccentBrush}"
                 Margin="5"
                 Padding="50"
-                ToolTip.Tip="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.">
+                ToolTip.Tip="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.">
           <TextBlock>Hover Here</TextBlock>
         </Border>
         <CheckBox Grid.Column="1"
@@ -33,7 +33,7 @@
         </Border>
       </Grid>
   </Design.PreviewWith>
-
+  
   <Style Selector="ToolTip">
     <Setter Property="Foreground" Value="{DynamicResource ToolTipForeground}" />
     <Setter Property="Background" Value="{DynamicResource ToolTipBackground}" />
@@ -64,6 +64,10 @@
     </Setter>
   </Style>
 
+  <Style Selector="ToolTip > TextBlock">
+    <Setter Property="TextWrapping" Value="Wrap"/>
+  </Style>
+  
   <Style Selector="ToolTip">
     <Setter Property="Opacity" Value="0"/>
   </Style>
