@@ -25,20 +25,19 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<ProgressBar, double>(
                 nameof(ContainerAnimationStartPosition),
                 p => p.ContainerAnimationStartPosition,
-                (p, o) => p.ContainerAnimationStartPosition = o);
+                (p, o) => p.ContainerAnimationStartPosition = o, 0d);
 
         public static readonly DirectProperty<ProgressBar, double> ContainerAnimationEndPositionProperty =
             AvaloniaProperty.RegisterDirect<ProgressBar, double>(
                 nameof(ContainerAnimationEndPosition),
                 p => p.ContainerAnimationEndPosition,
-                (p, o) => p.ContainerAnimationEndPosition = o);
-
+                (p, o) => p.ContainerAnimationEndPosition = o, 0d);
 
         public static readonly DirectProperty<ProgressBar, double> Container2AnimationStartPositionProperty =
             AvaloniaProperty.RegisterDirect<ProgressBar, double>(
                 nameof(Container2AnimationStartPosition),
                 p => p.Container2AnimationStartPosition,
-                (p, o) => p.Container2AnimationStartPosition = o);
+                (p, o) => p.Container2AnimationStartPosition = o, 0d);
 
         public static readonly DirectProperty<ProgressBar, double> Container2AnimationEndPositionProperty =
             AvaloniaProperty.RegisterDirect<ProgressBar, double>(
@@ -46,14 +45,17 @@ namespace Avalonia.Controls
                 p => p.Container2AnimationEndPosition,
                 (p, o) => p.Container2AnimationEndPosition = o);
 
-
-        public static readonly DirectProperty<ProgressBar, double> ContainerAnimationMidPositionProperty =
+        public static readonly DirectProperty<ProgressBar, double> Container2WidthProperty =
             AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(ContainerAnimationMidPosition),
-                p => p.ContainerAnimationMidPosition,
-                (p, o) => p.ContainerAnimationMidPosition = o);
-
-
+                nameof(Container2Width),
+                p => p.Container2Width,
+                (p, o) => p.Container2Width = o);
+                
+        public static readonly DirectProperty<ProgressBar, double> ContainerWidthProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(ContainerWidth),
+                p => p.ContainerWidth,
+                (p, o) => p.ContainerWidth = o);
 
         public static readonly DirectProperty<ProgressBar, Geometry> ClipRectProperty =
             AvaloniaProperty.RegisterDirect<ProgressBar, Geometry>(
@@ -113,15 +115,6 @@ namespace Avalonia.Controls
             set => SetAndRaise(Container2AnimationStartPositionProperty, ref _container2AnimationStartPosition, value);
         }
 
-       
-              
-       
-       
-        public static readonly DirectProperty<ProgressBar, double> Container2WidthProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(Container2Width),
-                p => p.Container2Width,
-                (p, o) => p.Container2Width = o);
 
        
        
@@ -131,15 +124,7 @@ namespace Avalonia.Controls
             get => _Container2Width;
             set => SetAndRaise(Container2WidthProperty, ref _Container2Width, value);
         }
-       
-        public static readonly DirectProperty<ProgressBar, double> ContainerWidthProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(ContainerWidth),
-                p => p.ContainerWidth,
-                (p, o) => p.ContainerWidth = o);
 
-       
-       
         private double _ContainerWidth;
         public double ContainerWidth
         {
@@ -153,14 +138,7 @@ namespace Avalonia.Controls
             get => _container2AnimationEndPosition;
             set => SetAndRaise(Container2AnimationEndPositionProperty, ref _container2AnimationEndPosition, value);
         }
-
-        private double _containerAnimationMidPosition;
-        public double ContainerAnimationMidPosition
-        {
-            get => _containerAnimationMidPosition;
-            set => SetAndRaise(ContainerAnimationMidPositionProperty, ref _containerAnimationMidPosition, value);
-        }
-
+ 
         private Geometry _clipRect;
         public Geometry ClipRect
         {
@@ -212,13 +190,11 @@ namespace Avalonia.Controls
                     ContainerWidth = barIndicatorWidth;
                     Container2Width = barIndicatorWidth2;
 
-                    ContainerAnimationStartPosition = barIndicatorWidth * -1.0; // Position at -100%
+                    ContainerAnimationStartPosition = barIndicatorWidth * -1.8; // Position at -180%
                     ContainerAnimationEndPosition = barIndicatorWidth * 3.0; // Position at 300%
                     
                     Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
                     Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
-                    
-                    ContainerAnimationMidPosition = dim * 0.2;
 
                     var padding = Padding;
                     var rectangle = new RectangleGeometry(
