@@ -23,6 +23,8 @@ namespace Avalonia.Layout
             _executeLayoutPass = ExecuteLayoutPass;
         }
 
+        public event EventHandler? LayoutUpdated;
+
         /// <inheritdoc/>
         public void InvalidateMeasure(ILayoutable control)
         {
@@ -126,6 +128,7 @@ namespace Avalonia.Layout
             }
 
             _queued = false;
+            LayoutUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         /// <inheritdoc/>

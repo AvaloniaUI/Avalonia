@@ -10,6 +10,11 @@ namespace Avalonia.Layout
     public interface ILayoutManager
     {
         /// <summary>
+        /// Raised when the layout manager completes a layout pass.
+        /// </summary>
+        event EventHandler LayoutUpdated;
+
+        /// <summary>
         /// Notifies the layout manager that a control requires a measure.
         /// </summary>
         /// <param name="control">The control.</param>
