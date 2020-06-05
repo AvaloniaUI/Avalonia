@@ -1,3 +1,6 @@
+using System;
+
+#nullable enable
 
 namespace Avalonia.Layout
 {

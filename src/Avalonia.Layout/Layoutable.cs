@@ -1,7 +1,8 @@
 using System;
 using Avalonia.Logging;
-using Avalonia.Utilities;
 using Avalonia.VisualTree;
+
+#nullable enable
 
 namespace Avalonia.Layout
 {
@@ -153,7 +154,7 @@ namespace Avalonia.Layout
         /// <summary>
         /// Occurs when a layout pass completes for the control.
         /// </summary>
-        public event EventHandler LayoutUpdated;
+        public event EventHandler? LayoutUpdated;
 
         /// <summary>
         /// Gets or sets the width of the element.

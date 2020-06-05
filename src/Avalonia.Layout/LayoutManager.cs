@@ -3,6 +3,8 @@ using System.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Threading;
 
+#nullable enable
+
 namespace Avalonia.Layout
 {
     /// <summary>
@@ -24,7 +26,7 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         public void InvalidateMeasure(ILayoutable control)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
 
             if (!control.IsAttachedToVisualTree)
@@ -45,7 +47,7 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         public void InvalidateArrange(ILayoutable control)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
 
             if (!control.IsAttachedToVisualTree)
@@ -73,7 +75,7 @@ namespace Avalonia.Layout
             {
                 _running = true;
 
-                Stopwatch stopwatch = null;
+                Stopwatch? stopwatch = null;
 
                 const LogEventLevel timingLogLevel = LogEventLevel.Information;
                 bool captureTiming = Logger.IsEnabled(timingLogLevel);
@@ -117,7 +119,7 @@ namespace Avalonia.Layout
 
                 if (captureTiming)
                 {
-                    stopwatch.Stop();
+                    stopwatch!.Stop();
 
                     Logger.TryGet(timingLogLevel)?.Log(LogArea.Layout, this, "Layout pass finished in {Time}", stopwatch.Elapsed);
                 }
