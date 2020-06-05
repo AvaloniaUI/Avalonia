@@ -1,39 +1,39 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
-      <Grid RowDefinitions="Auto,Auto"
-            ColumnDefinitions="Auto,Auto"
-            HorizontalAlignment="Center">
-        <Border Grid.Column="0"
-                Grid.Row="1"
-                Background="{DynamicResource ThemeAccentBrush}"
+    <Grid RowDefinitions="Auto,Auto"
+          ColumnDefinitions="Auto,Auto"
+          HorizontalAlignment="Center">
+      <Border Grid.Column="0"
+              Grid.Row="1"
+              Background="{DynamicResource ThemeAccentBrush}"
+              Margin="5"
+              Padding="50"
+              ToolTip.Tip="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.">
+        <TextBlock>Hover Here</TextBlock>
+      </Border>
+      <CheckBox Grid.Column="1"
                 Margin="5"
-                Padding="50"
-                ToolTip.Tip="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.">
-          <TextBlock>Hover Here</TextBlock>
-        </Border>
-        <CheckBox Grid.Column="1"
-                  Margin="5"
-                  Grid.Row="0"
-                  IsChecked="{Binding ElementName=Border, Path=(ToolTip.IsOpen)}"
-                  Content="ToolTip Open" />
-        <Border Name="Border"
-                Grid.Column="1"
-                Grid.Row="1"
-                Background="{DynamicResource ThemeAccentBrush}"
-                Margin="5"
-                Padding="50"
-                ToolTip.Placement="Bottom">
-          <ToolTip.Tip>
-            <StackPanel>
-              <TextBlock Classes="h1">ToolTip</TextBlock>
-              <TextBlock Classes="h2">A control which pops up a hint when a control is hovered</TextBlock>
-            </StackPanel>
-          </ToolTip.Tip>
-          <TextBlock>ToolTip bottom placement</TextBlock>
-        </Border>
-      </Grid>
+                Grid.Row="0"
+                IsChecked="{Binding ElementName=Border, Path=(ToolTip.IsOpen)}"
+                Content="ToolTip Open" />
+      <Border Name="Border"
+              Grid.Column="1"
+              Grid.Row="1"
+              Background="{DynamicResource ThemeAccentBrush}"
+              Margin="5"
+              Padding="50"
+              ToolTip.Placement="Bottom">
+        <ToolTip.Tip>
+          <StackPanel>
+            <TextBlock Classes="h1">ToolTip</TextBlock>
+            <TextBlock Classes="h2">A control which pops up a hint when a control is hovered</TextBlock>
+          </StackPanel>
+        </ToolTip.Tip>
+        <TextBlock>ToolTip bottom placement</TextBlock>
+      </Border>
+    </Grid>
   </Design.PreviewWith>
-  
+
   <Style Selector="ToolTip">
     <Setter Property="Foreground" Value="{DynamicResource ToolTipForeground}" />
     <Setter Property="Background" Value="{DynamicResource ToolTipBackground}" />
@@ -44,7 +44,7 @@
     <Setter Property="Padding" Value="{DynamicResource ToolTipBorderThemePadding}" />
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
       </Transitions>
     </Setter>
     <Setter Property="Template">
@@ -58,21 +58,21 @@
           <ContentPresenter Name="PART_ContentPresenter"
                             MaxWidth="320"
                             Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
         </Border>
       </ControlTemplate>
     </Setter>
   </Style>
 
   <Style Selector="ToolTip > TextBlock">
-    <Setter Property="TextWrapping" Value="Wrap"/>
+    <Setter Property="TextWrapping" Value="Wrap" />
   </Style>
-  
+
   <Style Selector="ToolTip">
-    <Setter Property="Opacity" Value="0"/>
+    <Setter Property="Opacity" Value="0" />
   </Style>
 
   <Style Selector="ToolTip:open">
-    <Setter Property="Opacity" Value="1"/>
+    <Setter Property="Opacity" Value="1" />
   </Style>
 </Styles>
