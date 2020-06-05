@@ -21,7 +21,7 @@
 
     <Thickness x:Key="ComboBoxPadding">12,5,0,7</Thickness>
     <Thickness x:Key="ComboBoxEditableTextPadding">11,5,32,6</Thickness>
-    <Thickness x:Key="ComboBoxMinHeight">32</Thickness>
+    <x:Double x:Key="ComboBoxMinHeight">32</x:Double>
   </Styles.Resources>
   <Style Selector="ComboBox">
     <Setter Property="Padding" Value="{DynamicResource ComboBoxPadding}" />

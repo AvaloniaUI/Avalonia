@@ -387,6 +387,9 @@ AVNCOM(IAvnClipboard, 0f) : IUnknown
     virtual HRESULT SetText (char* type, void* utf8Text) = 0;
     virtual HRESULT ObtainFormats(IAvnStringArray**ppv) = 0;
     virtual HRESULT GetStrings(char* type, IAvnStringArray**ppv) = 0;
+    virtual HRESULT SetBytes(char* type, void* utf8Text, int len) = 0;
+    virtual HRESULT GetBytes(char* type, IAvnString**ppv) = 0;
+    
     virtual HRESULT Clear() = 0;
 };
 
