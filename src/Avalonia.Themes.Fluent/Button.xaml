@@ -2,10 +2,8 @@
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="20">
-        <Button Content="Click Me!" Width="100" />
-        <Button Classes="accent"
-                Content="Click Me!"
-                Width="100" />
+        <Button Content="Click Me!" />
+        <Button Classes="accent" Content="Click Me!" />
         <RepeatButton Content="RepeatButton" Width="100" />
       </StackPanel>
     </Border>
