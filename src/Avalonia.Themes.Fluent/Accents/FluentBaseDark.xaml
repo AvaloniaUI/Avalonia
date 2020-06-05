@@ -33,6 +33,10 @@
     <Color x:Key="SystemRevealListLowColor">#FF1D1D1D</Color>
     <Color x:Key="SystemRevealListMediumColor">#FF333333</Color>
     <!--<AcrylicBrush x:Key="SystemControlAcrylicWindowBrush" BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{ThemeResource SystemChromeMediumColor}" />-->
+    <!--<RevealBackgroundBrush x:Key="SystemControlTransparentRevealBackgroundBrush" TargetTheme="Dark" Color="Transparent" FallbackColor="Transparent" />-->
+    <SolidColorBrush x:Key="SystemControlTransparentRevealBackgroundBrush" Color="Transparent" />
+    <!--<RevealBorderBrush x:Key="SystemControlTransparentRevealBorderBrush" TargetTheme="Dark" Color="Transparent" FallbackColor="Transparent" />-->
+    <SolidColorBrush x:Key="SystemControlTransparentRevealBorderBrush" Color="Transparent" />
     
     <!-- Override system shape defaults -->
     <CornerRadius x:Key="ControlCornerRadius">2,2,2,2</CornerRadius>
