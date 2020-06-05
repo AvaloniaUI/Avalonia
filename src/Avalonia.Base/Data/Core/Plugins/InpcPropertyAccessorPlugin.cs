@@ -1,7 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.Linq;
-using System.Reactive.Linq;
 using System.Reflection;
 using Avalonia.Utilities;
 
@@ -31,7 +29,11 @@ namespace Avalonia.Data.Core.Plugins
             Contract.Requires<ArgumentNullException>(propertyName != null);
 
             reference.TryGetTarget(out object instance);
-            var p = instance.GetType().GetRuntimeProperties().FirstOrDefault(x => x.Name == propertyName);
+
+            const BindingFlags bindingFlags = BindingFlags.NonPublic | BindingFlags.Public |
+                                              BindingFlags.Static | BindingFlags.Instance;
+
+            var p = instance.GetType().GetProperty(propertyName, bindingFlags);
 
             if (p != null)
             {
