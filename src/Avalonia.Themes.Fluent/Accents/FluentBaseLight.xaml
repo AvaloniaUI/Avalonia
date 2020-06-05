@@ -317,5 +317,15 @@
     <StaticResource x:Key="RadioButtonCheckGlyphStrokePointerOver" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="RadioButtonCheckGlyphStrokePressed" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="RadioButtonCheckGlyphStrokeDisabled" ResourceKey="SystemControlTransparentBrush" />
+
+    <!-- Resources for ToolTip.xaml -->
+    <x:Double x:Key="ToolTipContentThemeFontSize">12</x:Double>
+    <Thickness x:Key="ToolTipBorderThemeThickness">1</Thickness>
+    <StaticResource x:Key="ToolTipForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="ToolTipBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+    <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
+    <SolidColorBrush x:Key="ToolTipBackgroundThemeBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ToolTipBorderThemeBrush" Color="#FF808080" />
+    <SolidColorBrush x:Key="ToolTipForegroundThemeBrush" Color="#FF666666" />
   </Style.Resources>
 </Style>
