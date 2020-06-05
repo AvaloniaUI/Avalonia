@@ -23,7 +23,6 @@
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.PopupRoot.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.ProgressBar.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.RadioButton.xaml?assembly=Avalonia.Themes.Fluent"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Fluent.RepeatButton.xaml?assembly=Avalonia.Themes.Fluent" />
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.Separator.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.Slider.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.ScrollBar.xaml?assembly=Avalonia.Themes.Fluent"/>
