@@ -181,6 +181,11 @@ namespace Avalonia.Win32
         {
             get
             {
+                if(_isFullScreenActive)
+                {
+                    return WindowState.FullScreen;
+                }
+
                 var placement = default(WINDOWPLACEMENT);
                 GetWindowPlacement(_hwnd, ref placement);
 

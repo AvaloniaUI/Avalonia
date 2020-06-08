@@ -4,7 +4,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class ChromeOverlayLayer : Canvas, ICustomSimpleHitTest
+    public class ChromeOverlayLayer : Panel, ICustomSimpleHitTest
     {
         public Size AvailableSize { get; private set; }
 

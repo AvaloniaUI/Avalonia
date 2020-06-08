@@ -71,7 +71,7 @@ namespace Avalonia.Controls
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
     {
         private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();        
-        private CaptionButtons _managedCaptions;
+        private TitleBar _managedTitleBar;
 
         private bool _isExtendedIntoWindowDecorations;
 
@@ -911,18 +911,18 @@ namespace Avalonia.Controls
         {
             if(hints.HasFlag(ExtendClientAreaChromeHints.ManagedChromeButtons))
             {
-                if(_managedCaptions == null)
+                if(_managedTitleBar == null)
                 {
-                    _managedCaptions = new CaptionButtons(this);
+                    _managedTitleBar = new TitleBar(this);
                 }
 
-                _managedCaptions.Attach();
+                _managedTitleBar.Attach();
             }
             else
             {
-                if(_managedCaptions != null)
+                if(_managedTitleBar != null)
                 {
-                    _managedCaptions.Detach();
+                    _managedTitleBar.Detach();
                 }
             }
         }

@@ -1,22 +1,44 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reactive.Disposables;
-using System.Text;
 using Avalonia.Controls.Primitives;
-using Avalonia.VisualTree;
+using Avalonia.Input;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Chrome
 {
-    public class CaptionButtons : TemplatedControl
+    public class TitleBar : TemplatedControl
     {
         private CompositeDisposable _disposables;
         private Window _hostWindow;
+        private CaptionButtons _captionButtons;
 
-        public void Attach(Window hostWindow)
+        public TitleBar(Window hostWindow)
+        {
+            _hostWindow = hostWindow;
+        }
+
+        public TitleBar()
+        {
+
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            return base.MeasureOverride(availableSize);
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            return base.ArrangeOverride(finalSize);
+        }
+
+        public void Attach()
         {
             if (_disposables == null)
             {
-                _hostWindow = hostWindow;
+                var layer = ChromeOverlayLayer.GetOverlayLayer(_hostWindow);
+
+                layer.Children.Add(this);
 
                 _disposables = new CompositeDisposable
                 {
@@ -44,7 +66,7 @@ namespace Avalonia.Controls.Chrome
             }
         }
 
-        void InvalidateSize ()
+        void InvalidateSize()
         {
             Margin = new Thickness(1, _hostWindow.OffScreenMargin.Top, 1, 1);
             Height = _hostWindow.WindowDecorationMargins.Top;
@@ -60,6 +82,8 @@ namespace Avalonia.Controls.Chrome
 
                 _disposables.Dispose();
                 _disposables = null;
+
+                _captionButtons?.Detach();
             }
         }
 
@@ -67,15 +91,9 @@ namespace Avalonia.Controls.Chrome
         {
             base.OnApplyTemplate(e);
 
-            var closeButton = e.NameScope.Find<Panel>("PART_CloseButton");
-            var restoreButton = e.NameScope.Find<Panel>("PART_RestoreButton");
-            var minimiseButton = e.NameScope.Find<Panel>("PART_MinimiseButton");
-            var fullScreenButton = e.NameScope.Find<Panel>("PART_FullScreenButton");
+            _captionButtons = e.NameScope.Find<CaptionButtons>("PART_CaptionButtons");            
 
-            closeButton.PointerPressed += (sender, e) => _hostWindow.Close();
-            restoreButton.PointerPressed += (sender, e) => _hostWindow.WindowState = _hostWindow.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
-            minimiseButton.PointerPressed += (sender, e) => _hostWindow.WindowState = WindowState.Minimized;
-            fullScreenButton.PointerPressed += (sender, e) => _hostWindow.WindowState = _hostWindow.WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen;
+            _captionButtons.Attach(_hostWindow);
         }
     }
 }
