@@ -68,22 +68,24 @@ namespace ControlCatalog.ViewModels
             this.WhenAnyValue(x => x.SystemChromeButtonsEnabled, x=>x.ManagedChromeButtonsEnabled, x => x.SystemTitleBarEnabled)
                 .Subscribe(x =>
                 {
-                    ChromeHints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
+                    var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
 
                     if(x.Item1)
                     {
-                        ChromeHints |= ExtendClientAreaChromeHints.SystemChromeButtons;
+                        hints |= ExtendClientAreaChromeHints.SystemChromeButtons;
                     }
 
                     if(x.Item2)
                     {
-                        ChromeHints |= ExtendClientAreaChromeHints.ManagedChromeButtons;
+                        hints |= ExtendClientAreaChromeHints.ManagedChromeButtons;
                     }
 
                     if(x.Item3)
                     {
-                        ChromeHints |= ExtendClientAreaChromeHints.SystemTitleBar;
+                        hints |= ExtendClientAreaChromeHints.SystemTitleBar;
                     }
+
+                    ChromeHints = hints;
                 });
 
             SystemTitleBarEnabled = true;

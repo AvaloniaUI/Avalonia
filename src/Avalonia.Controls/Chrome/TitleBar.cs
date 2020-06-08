@@ -2,6 +2,7 @@
 using System.Reactive.Disposables;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Chrome
@@ -63,6 +64,8 @@ namespace Avalonia.Controls.Chrome
                         PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
                     })
                 };
+
+                _captionButtons?.Attach(_hostWindow);
             }
         }
 
