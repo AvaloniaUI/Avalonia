@@ -1,4 +1,5 @@
 using System;
+using System.Security.Authentication.ExtendedProtection;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -244,9 +245,7 @@ namespace Avalonia.Controls
 
             set
             {
-                value = ValidateOffset(this, value);
-
-                if (SetAndRaise(OffsetProperty, ref _offset, value))
+                if (SetAndRaise(OffsetProperty, ref _offset, CoerceOffset(Extent, Viewport, value)))
                 {
                     CalculatedPropertiesChanged();
                 }
@@ -485,22 +484,6 @@ namespace Avalonia.Controls
         {
             var result = Math.Max(x, y);
             return double.IsNaN(result) ? 0 : result;
-        }
-
-        private static Vector ValidateOffset(AvaloniaObject o, Vector value)
-        {
-            ScrollViewer scrollViewer = o as ScrollViewer;
-
-            if (scrollViewer != null)
-            {
-                var extent = scrollViewer.Extent;
-                var viewport = scrollViewer.Viewport;
-                return CoerceOffset(extent, viewport, value);
-            }
-            else
-            {
-                return value;
-            }
         }
 
         private void ChildChanged(IControl child)

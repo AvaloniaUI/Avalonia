@@ -90,6 +90,8 @@ namespace Avalonia.Controls.Presenters
             this.GetObservable(ChildProperty).Subscribe(UpdateScrollableSubscription);
         }
 
+        internal event EventHandler<EventArgs> PreArrange;
+
         /// <summary>
         /// Gets or sets a value indicating whether the content can be scrolled horizontally.
         /// </summary>
@@ -123,7 +125,7 @@ namespace Avalonia.Controls.Presenters
         public Vector Offset
         {
             get { return _offset; }
-            set { SetAndRaise(OffsetProperty, ref _offset, value); }
+            set { SetAndRaise(OffsetProperty, ref _offset, ScrollViewer.CoerceOffset(Extent, Viewport, value)); }
         }
 
         /// <summary>
@@ -214,7 +216,7 @@ namespace Avalonia.Controls.Presenters
         {
             _anchorCandidates?.Remove(element);
 
-            if (_anchor.Item1 == element)
+            if (_anchor.control == element)
             {
                 _anchor = default;
             }
@@ -239,6 +241,8 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
+            PreArrange?.Invoke(this, EventArgs.Empty);
+
             if (_logicalScrollSubscription != null || Child == null)
             {
                 return base.ArrangeOverride(finalSize);
@@ -270,15 +274,12 @@ namespace Avalonia.Controls.Presenters
                     TranslateBounds(_anchor.control, Child, out var updatedBounds) &&
                     updatedBounds.Position != _anchor.bounds.Position)
                 {
-                    return updatedBounds.Position - _anchor.bounds.Position;
+                    var offset = updatedBounds.Position - _anchor.bounds.Position;
+                    return offset;
                 }
 
                 return default;
             }
-
-            // Check whether our previous anchor (if any) has moved relative to Child since the last
-            // arrange, and if so adjust the offset to bring it back into place.
-            Offset += TrackAnchor();
 
             // Calculate the new anchor element.
             _anchor = CalculateCurrentAnchor();
@@ -287,11 +288,27 @@ namespace Avalonia.Controls.Presenters
             ArrangeOverrideImpl(size, -Offset);
 
             // If the anchor moved during the arrange, we need to adjust the offset and do another arrange.
-            var postOffset = TrackAnchor();
+            var anchorShift = TrackAnchor();
 
-            if (postOffset != default)
+            if (anchorShift != default)
             {
-                Offset += postOffset;
+                var newOffset = Offset + anchorShift;
+                var newExtent = Extent;
+                var maxOffset = new Vector(Extent.Width - Viewport.Width, Extent.Height - Viewport.Height);
+
+                if (newOffset.X > maxOffset.X)
+                {
+                    newExtent = newExtent.WithWidth(newOffset.X + Viewport.Width);
+                }
+
+                if (newOffset.Y > maxOffset.Y)
+                {
+                    newExtent = newExtent.WithHeight(newOffset.Y + Viewport.Height);
+                }
+
+                Extent = newExtent;
+                Offset = newOffset;
+                System.Diagnostics.Debug.WriteLine($"Shifting due to anchor by {anchorShift} to {Offset + anchorShift} with max {Extent - Viewport}");
                 ArrangeOverrideImpl(size, -Offset);
             }
 
@@ -471,14 +488,13 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        (IControl, Rect) CalculateCurrentAnchor()
+        private (IControl, Rect) CalculateCurrentAnchor()
         {
             if (_anchorCandidates == null)
             {
                 return default;
             }
 
-            var thisBounds = new Rect(Bounds.Size);
             var bestCandidate = default(IControl);
             var bestCandidateDistance = double.MaxValue;
 
@@ -486,9 +502,7 @@ namespace Avalonia.Controls.Presenters
             // ScrollContentPresenter.
             foreach (var element in _anchorCandidates)
             {
-                if (element.IsVisible && 
-                    TranslateBounds(element, this, out var bounds) &&
-                    bounds.Intersects(thisBounds))
+                if (element.IsVisible && GetViewportBounds(element, out var bounds))
                 {
                     var distance = (Vector)bounds.Position;
                     var candidateDistance = Math.Abs(distance.Length);
@@ -511,6 +525,18 @@ namespace Avalonia.Controls.Presenters
             }
 
             return default;
+        }
+
+        private bool GetViewportBounds(IControl element, out Rect bounds)
+        {
+            // We want the bounds relative to the new Offset, regardless of whether the child
+            // control has actually been arranged to this offset yet, so translate first to the
+            // child control and then apply Offset rather than translating directly to this
+            // control.
+            var thisBounds = new Rect(Bounds.Size);
+            var childBounds = TranslateBounds(element, Child);
+            bounds = new Rect(childBounds.Position - Offset, childBounds.Size);
+            return bounds.Intersects(thisBounds);
         }
 
         private Rect TranslateBounds(IControl control, IControl to)
