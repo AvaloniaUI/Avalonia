@@ -12,7 +12,7 @@
               <Setter Property="Background" Value="Transparent" />
             </Style>
             <Style Selector="Panel:pointerover">
-              <Setter Property="Background" Value="#1FFFFFFF" />
+              <Setter Property="Background" Value="#CFFFFFFF" />
             </Style>
             <Style Selector="Panel#PART_CloseButton:pointerover">
               <Setter Property="Background" Value="#AFFF0000" />
@@ -39,7 +39,7 @@
               <Viewbox.RenderTransform>
                 <RotateTransform Angle="-90" />
               </Viewbox.RenderTransform>
-              <Path Stretch="UniformToFill" Fill="{TemplateBinding Foreground}"/>              
+              <Path Stretch="UniformToFill" Fill="{TemplateBinding Foreground}"/>
             </Viewbox>
           </Panel>
 
@@ -64,4 +64,4 @@
   <Style Selector="CaptionButtons:fullscreen Panel#PART_FullScreenButton Path">
     <Setter Property="Data" Value="M205 1024h819v-819h-205v469l-674 -674l-145 145l674 674h-469v205zM1374 1229h469v-205h-819v819h205v-469l674 674l145 -145z" />
   </Style>
-</Styles>
+ Styles>

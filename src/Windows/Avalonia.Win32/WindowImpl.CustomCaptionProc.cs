@@ -90,6 +90,10 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCHITTEST:
                     if (lRet == IntPtr.Zero)
                     {
+                        if(WindowState == WindowState.FullScreen)
+                        {
+                            return (IntPtr)HitTestValues.HTCLIENT;
+                        }
                         var hittestResult = HitTestNCA(hWnd, wParam, lParam);
 
                         lRet = (IntPtr)hittestResult;

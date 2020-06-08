@@ -1,0 +1,68 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border>
+      <TitleBar Background="SkyBlue" Height="30" Width="300" Foreground="Black" />
+    </Border>
+  </Design.PreviewWith>
+  <Style Selector="TitleBar">
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+    <Setter Property="Background" Value="Red" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel HorizontalAlignment="{TemplateBinding HorizontalAlignment}" VerticalAlignment="Stretch">
+          <Panel x:Name="PART_MouseTracker" Height="15" VerticalAlignment="Top" />
+          <Panel x:Name="PART_Container">
+            <Border x:Name="PART_Background" Background="{TemplateBinding Background}" />
+            <CaptionButtons x:Name="PART_CaptionButtons" VerticalAlignment="Top" HorizontalAlignment="Right" Foreground="{TemplateBinding Foreground}" />
+          </Panel>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="TitleBar /template/ Border#PART_Background">
+    <Setter Property="IsHitTestVisible" Value="False" />
+  </Style>
+
+  <Style Selector="TitleBar:fullscreen /template/ Border#PART_Background">
+    <Setter Property="IsHitTestVisible" Value="True" />
+  </Style>
+  
+  
+
+  <Style Selector="TitleBar:fullscreen /template/ Panel#PART_MouseTracker">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <Style Selector="TitleBar:fullscreen:not(:pointerover) /template/ Panel#PART_Container">
+    <Style.Animations>
+      <Animation Duration="0:0:.5" Easing="SineEaseInOut">
+        <KeyFrame Cue="0%">
+          <Setter Property="TranslateTransform.Y" Value="0"/>
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="TranslateTransform.Y" Value="-30"/>
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+    <Setter Property="TranslateTransform.Y" Value="-30" />
+  </Style>
+
+  <Style Selector="TitleBar:fullscreen:pointerover /template/ Panel#PART_Container">
+    <Style.Animations>
+      <Animation Duration="0:0:.5" Easing="SineEaseInOut">
+        <KeyFrame Cue="0%">          
+          <Setter Property="TranslateTransform.Y" Value="-30"/>          
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="TranslateTransform.Y" Value="0"/>
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>    
+  </Style>
+
+  
+  
+</Styles>
