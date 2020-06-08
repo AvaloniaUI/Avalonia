@@ -262,5 +262,35 @@ namespace Avalonia.Utilities
                 return val;
             }
         }
+
+        /// <summary>
+        /// Converts an angle in degrees to radians.
+        /// </summary>
+        /// <param name="angle">The angle in degrees.</param>
+        /// <returns>The angle in radians.</returns>
+        public static double Deg2Rad(double angle)
+        {
+            return angle * (Math.PI / 180d);
+        }
+
+        /// <summary>
+        /// Converts an angle in gradians to radians.
+        /// </summary>
+        /// <param name="angle">The angle in gradians.</param>
+        /// <returns>The angle in radians.</returns>
+        public static double Grad2Rad(double angle)
+        {
+            return angle * (Math.PI / 200d);
+        }
+
+        /// <summary>
+        /// Converts an angle in turns to radians.
+        /// </summary>
+        /// <param name="angle">The angle in turns.</param>
+        /// <returns>The angle in radians.</returns>
+        public static double Turn2Rad(double angle)
+        {
+            return angle * 2 * Math.PI;
+        }
     }
 }
