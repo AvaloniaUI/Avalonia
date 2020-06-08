@@ -308,7 +308,6 @@ namespace Avalonia.Controls.Presenters
 
                 Extent = newExtent;
                 Offset = newOffset;
-                System.Diagnostics.Debug.WriteLine($"Shifting due to anchor by {anchorShift} to {Offset + anchorShift} with max {Extent - Viewport}");
                 ArrangeOverrideImpl(size, -Offset);
             }
 
