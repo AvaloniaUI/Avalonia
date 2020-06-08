@@ -288,6 +288,7 @@ namespace Avalonia.Controls
         private void OnLayoutUpdated(object sender, EventArgs args)
         {
             _owner.LayoutUpdated -= OnLayoutUpdated;
+            _layoutUpdatedSubscribed = false;
             if (_managingViewportDisabled)
             {
                 return;
@@ -424,6 +425,7 @@ namespace Avalonia.Controls
             if (_layoutUpdatedSubscribed)
             {
                 _owner.LayoutUpdated -= OnLayoutUpdated;
+                _layoutUpdatedSubscribed = false;
             }
         }
 
@@ -538,7 +540,12 @@ namespace Avalonia.Controls
         private void ScrollContentPresenterPreArrange(object sender, EventArgs e)
         {
             var scp = (ScrollContentPresenter)sender;
-            OnEffectiveViewportChanged(new Rect((Point)scp.Offset, scp.Viewport));
+            var effectiveViewport = new Rect((Point)scp.Offset, scp.Viewport);
+
+            if (effectiveViewport != _visibleWindow)
+            {
+                OnEffectiveViewportChanged(effectiveViewport);
+            }
         }
 
         private class ScrollerInfo
