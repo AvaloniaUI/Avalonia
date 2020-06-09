@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
 
 namespace Avalonia.Utilities
 {

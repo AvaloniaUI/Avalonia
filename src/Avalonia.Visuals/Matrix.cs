@@ -9,6 +9,8 @@ namespace Avalonia
     /// </summary>
     public readonly struct Matrix : IEquatable<Matrix>
     {
+        private const float DecomposeEpsilon = 0.0001f;
+
         private readonly double _m11;
         private readonly double _m12;
         private readonly double _m21;
@@ -54,7 +56,7 @@ namespace Avalonia
         /// <summary>
         /// HasInverse Property - returns true if this matrix is invertible, false otherwise.
         /// </summary>
-        public bool HasInverse => GetDeterminant() != 0;
+        public bool HasInverse => Math.Abs(GetDeterminant()) >= double.Epsilon;
 
         /// <summary>
         /// The first element of the first row
@@ -286,7 +288,7 @@ namespace Avalonia
         {
             double d = GetDeterminant();
 
-            if (d == 0)
+            if (Math.Abs(d) < double.Epsilon)
             {
                 throw new InvalidOperationException("Transform is not invertible.");
             }
@@ -325,8 +327,9 @@ namespace Avalonia
             decomposed = default;
 
             var determinant = matrix.GetDeterminant();
-
-            if (determinant == 0)
+            
+            // Based upon constant in System.Numerics.Matrix4x4.
+            if (Math.Abs(determinant) < DecomposeEpsilon)
             {
                 return false;
             }
