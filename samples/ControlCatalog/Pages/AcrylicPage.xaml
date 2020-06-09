@@ -3,13 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ControlCatalog.Pages.AcrylicPage">
-  <UserControl.Background>
-    <ExperimentalAcrylicBrush
-              TintColor="#000000"
-              TintOpacity="{Binding #TintOpacitySlider.Value}"
-              BackgroundSource="Digger" />
-  </UserControl.Background>
+             x:Class="ControlCatalog.Pages.AcrylicPage">  
   <Border Padding="20" HorizontalAlignment="Center">
     <StackPanel Spacing="20">
       <Slider Name="TintOpacitySlider" Minimum="0" Maximum="1" Value="1" />
@@ -86,7 +80,7 @@
         <Border Height="200" Width="200" CornerRadius="5" BoxShadow="2 2 16 0 Black">
           <Border.Background>
             <ExperimentalAcrylicBrush
-              TintColor="#7F7F7F"
+              TintColor="#3c3c3c"
               TintOpacity="{Binding #TintOpacitySlider.Value}"
               BackgroundSource="Digger" />
           </Border.Background>

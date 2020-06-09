@@ -661,7 +661,7 @@ namespace Avalonia.Skia
             var a = new byte[256];
             for (var i = 0; i < 256; i++)
             {
-                c[i] = 255;
+                c[i] = (byte)i;
                 a[i] = (byte)(i * opacity);
             }
 
@@ -697,7 +697,7 @@ namespace Avalonia.Skia
                     acrylicBrush.BackgroundSource == AcrylicBackgroundSource.Digger ?
                     acrylicBrush.TintOpacity : 1;
 
-                const double noiseOpcity = 0.06;
+                const double noiseOpcity = 0.02;
 
                 var tintColor = acrylicBrush.TintColor;                
                 var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, (byte)(255 * ((tintColor.A / 255.0) * acrylicBrush.Opacity)));                
