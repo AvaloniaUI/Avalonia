@@ -152,9 +152,12 @@ namespace Avalonia.Controls
                 nameof(VerticalScrollBarVisibility),
                 ScrollBarVisibility.Auto);
 
+        internal const double DefaultSmallChange = 16;
+
         private Size _extent;
         private Vector _offset;
         private Size _viewport;
+        private Size _smallChange = new Size(DefaultSmallChange, DefaultSmallChange);
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollViewer"/> class.
@@ -335,6 +338,54 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         IControl IScrollAnchorProvider.CurrentAnchor => null; // TODO: Implement
+
+        /// <summary>
+        /// Scrolls the content up one line.
+        /// </summary>
+        public void LineUp()
+        {
+            Offset -= new Vector(0, _smallChange.Height);
+        }
+
+        /// <summary>
+        /// Scrolls the content down one line.
+        /// </summary>
+        public void LineDown()
+        {
+            Offset += new Vector(0, _smallChange.Height);
+        }
+
+        /// <summary>
+        /// Scrolls the content left one line.
+        /// </summary>
+        public void LineLeft()
+        {
+            Offset -= new Vector(_smallChange.Width, 0);
+        }
+
+        /// <summary>
+        /// Scrolls the content right one line.
+        /// </summary>
+        public void LineRight()
+        {
+            Offset += new Vector(_smallChange.Width, 0);
+        }
+
+        /// <summary>
+        /// Scrolls to the top-left corner of the content.
+        /// </summary>
+        public void ScrollToHome()
+        {
+            Offset = new Vector(double.NegativeInfinity, double.NegativeInfinity);
+        }
+
+        /// <summary>
+        /// Scrolls to the bottom-left corner of the content.
+        /// </summary>
+        public void ScrollToEnd()
+        {
+            Offset = new Vector(double.NegativeInfinity, double.PositiveInfinity);
+        }
 
         /// <summary>
         /// Gets the value of the HorizontalScrollBarVisibility attached property.
