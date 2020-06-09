@@ -124,10 +124,8 @@ namespace Avalonia.Controls.Primitives
             }, DispatcherPriority.Layout);
         }
 
-        Point IManagedPopupPositionerPopup.TranslatePoint(Point pt) => pt;
-
-        Size IManagedPopupPositionerPopup.TranslateSize(Size size) => size;
-        
+        double IManagedPopupPositionerPopup.Scaling => 1;
+       
         public static IPopupHost CreatePopupHost(IVisual target, IAvaloniaDependencyResolver dependencyResolver)
         {
             var platform = (target.GetVisualRoot() as TopLevel)?.PlatformImpl?.CreatePopup();

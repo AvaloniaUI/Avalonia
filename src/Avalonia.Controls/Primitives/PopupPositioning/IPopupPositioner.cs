@@ -230,7 +230,23 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         /// </remarks>
         FlipY = 8,
 
-        All = SlideX|SlideY|FlipX|FlipY
+        /// <summary>
+        /// Horizontally resize the surface
+        /// </summary>
+        /// <remarks>
+        /// Resize the surface horizontally so that it is completely unconstrained.
+        /// </remarks>
+        ResizeX = 16,
+
+        /// <summary>
+        /// Vertically resize the surface
+        /// </summary>
+        /// <remarks>
+        /// Resize the surface vertically so that it is completely unconstrained.
+        /// </remarks>
+        ResizeY = 16,
+
+        All = SlideX|SlideY|FlipX|FlipY|ResizeX|ResizeY
     }
 
     static class PopupPositioningEdgeHelper

@@ -50,7 +50,8 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<PopupPositionerConstraintAdjustment> PlacementConstraintAdjustmentProperty =
             AvaloniaProperty.Register<Popup, PopupPositionerConstraintAdjustment>(
                 nameof(PlacementConstraintAdjustment),
-                PopupPositionerConstraintAdjustment.FlipX | PopupPositionerConstraintAdjustment.FlipY);
+                PopupPositionerConstraintAdjustment.FlipX | PopupPositionerConstraintAdjustment.FlipY |
+                PopupPositionerConstraintAdjustment.ResizeX | PopupPositionerConstraintAdjustment.ResizeY);
 
         /// <summary>
         /// Defines the <see cref="PlacementGravity"/> property.
