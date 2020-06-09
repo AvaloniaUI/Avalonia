@@ -52,6 +52,7 @@ namespace Avalonia.Controls.Primitives
         void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
             PopupAnchor anchor = PopupAnchor.None,
             PopupGravity gravity = PopupGravity.None,
+            PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
             Rect? rect = null);
 
         /// <summary>

@@ -72,10 +72,11 @@ namespace Avalonia.Controls.Primitives
 
         public void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
             PopupAnchor anchor = PopupAnchor.None, PopupGravity gravity = PopupGravity.None,
+            PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
             Rect? rect = null)
         {
             _positionerParameters.ConfigurePosition((TopLevel)_overlayLayer.GetVisualRoot(), target, placement, offset, anchor,
-                gravity, rect);
+                gravity, constraintAdjustment, rect);
             UpdatePosition();
         }
 

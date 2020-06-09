@@ -42,6 +42,14 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, PopupAnchor>(nameof(PlacementAnchor));
 
         /// <summary>
+        /// Defines the <see cref="PlacementConstraintAdjustment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PopupPositionerConstraintAdjustment> PlacementConstraintAdjustmentProperty =
+            AvaloniaProperty.Register<Popup, PopupPositionerConstraintAdjustment>(
+                nameof(PlacementConstraintAdjustment),
+                PopupPositionerConstraintAdjustment.FlipX | PopupPositionerConstraintAdjustment.FlipY);
+
+        /// <summary>
         /// Defines the <see cref="PlacementGravity"/> property.
         /// </summary>
         public static readonly StyledProperty<PopupGravity> PlacementGravityProperty =
@@ -163,6 +171,16 @@ namespace Avalonia.Controls.Primitives
         {
             get { return GetValue(PlacementAnchorProperty); }
             set { SetValue(PlacementAnchorProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value describing how the popup position will be adjusted if the
+        /// unadjusted position would result in the popup being partly constrained.
+        /// </summary>
+        public PopupPositionerConstraintAdjustment PlacementConstraintAdjustment
+        {
+            get { return GetValue(PlacementConstraintAdjustmentProperty); }
+            set { SetValue(PlacementConstraintAdjustmentProperty, value); }
         }
 
         /// <summary>
@@ -311,6 +329,7 @@ namespace Avalonia.Controls.Primitives
                 new Point(HorizontalOffset, VerticalOffset),
                 PlacementAnchor,
                 PlacementGravity,
+                PlacementConstraintAdjustment,
                 PlacementRect);
 
             DeferCleanup(SubscribeToEventHandler<IPopupHost, EventHandler<TemplateAppliedEventArgs>>(popupHost, RootTemplateApplied,
