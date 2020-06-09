@@ -20,18 +20,6 @@ namespace Avalonia.Controls.Chrome
 
                 _disposables = new CompositeDisposable
                 {
-                    _hostWindow.GetObservable(Window.WindowDecorationMarginsProperty)
-                    .Subscribe(x =>
-                    {
-                        Height = x.Top;
-                    }),
-
-                    _hostWindow.GetObservable(Window.ExtendClientAreaTitleBarHeightHintProperty)
-                    .Subscribe(x => InvalidateSize()),
-
-                    _hostWindow.GetObservable(Window.OffScreenMarginProperty)
-                    .Subscribe(x => InvalidateSize()),
-
                     _hostWindow.GetObservable(Window.WindowStateProperty)
                     .Subscribe(x =>
                     {
@@ -42,12 +30,6 @@ namespace Avalonia.Controls.Chrome
                     })
                 };
             }
-        }
-
-        void InvalidateSize ()
-        {
-            Margin = new Thickness(1, _hostWindow.OffScreenMargin.Top, 1, 1);
-            Height = _hostWindow.WindowDecorationMargins.Top;
         }
 
         public void Detach()

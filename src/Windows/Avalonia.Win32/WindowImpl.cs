@@ -671,6 +671,8 @@ namespace Avalonia.Win32
             }
 
             TaskBarList.MarkFullscreen(_hwnd, fullscreen);
+            
+            ExtendClientArea();
         }
 
         private MARGINS UpdateExtendMargins()
@@ -724,33 +726,41 @@ namespace Avalonia.Win32
             {
                 _isClientAreaExtended = false;
                 return;
-            }                       
+            }
 
-            GetWindowRect(_hwnd, out var rcClient);
-
-            // Inform the application of the frame change.
-            SetWindowPos(_hwnd,
-                         IntPtr.Zero,
-                         rcClient.left, rcClient.top,
-                         rcClient.Width, rcClient.Height, 
-                         SetWindowPosFlags.SWP_FRAMECHANGED);
-            
-            if(_isClientAreaExtended)
+            if (!_isClientAreaExtended || WindowState == WindowState.FullScreen)
             {
-                var margins = UpdateExtendMargins();
-
-                DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+                _extendedMargins = new Thickness(0, 0, 0, 0);
+                _offScreenMargin = new Thickness();
             }
             else
             {
-                var margins = new MARGINS();
-                DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+                GetWindowRect(_hwnd, out var rcClient);
 
-                _offScreenMargin = new Thickness();
-                _extendedMargins = new Thickness();
+                // Inform the application of the frame change.
+                SetWindowPos(_hwnd,
+                             IntPtr.Zero,
+                             rcClient.left, rcClient.top,
+                             rcClient.Width, rcClient.Height,
+                             SetWindowPosFlags.SWP_FRAMECHANGED);
+
+                if (_isClientAreaExtended)
+                {
+                    var margins = UpdateExtendMargins();
+
+                    DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+                }
+                else
+                {
+                    var margins = new MARGINS();
+                    DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
+                    _offScreenMargin = new Thickness();
+                    _extendedMargins = new Thickness();
+                }
             }
 
-            ExtendClientAreaToDecorationsChanged?.Invoke(true);
+            ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
         }
 
         private void ShowWindow(WindowState state)

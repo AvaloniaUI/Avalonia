@@ -5,21 +5,25 @@
     </Border>
   </Design.PreviewWith>
   <Style Selector="TitleBar">
-    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
-    <Setter Property="Background" Value="Red" />
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>    
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="Transparent" />
     <Setter Property="Template">
       <ControlTemplate>
         <Panel HorizontalAlignment="{TemplateBinding HorizontalAlignment}" VerticalAlignment="Stretch">
-          <Panel x:Name="PART_MouseTracker" Height="15" VerticalAlignment="Top" />
+          <Panel x:Name="PART_MouseTracker" Height="1" VerticalAlignment="Top" />
           <Panel x:Name="PART_Container">
             <Border x:Name="PART_Background" Background="{TemplateBinding Background}" />
-            <CaptionButtons x:Name="PART_CaptionButtons" VerticalAlignment="Top" HorizontalAlignment="Right" Foreground="{TemplateBinding Foreground}" />
+            <CaptionButtons x:Name="PART_CaptionButtons" VerticalAlignment="Stretch" HorizontalAlignment="Right" Foreground="{TemplateBinding Foreground}" MaxHeight="30" />
           </Panel>
         </Panel>
       </ControlTemplate>
     </Setter>
+  </Style>
+
+  <Style Selector="TitleBar:fullscreen">
+    <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
   </Style>
 
   <Style Selector="TitleBar /template/ Border#PART_Background">
