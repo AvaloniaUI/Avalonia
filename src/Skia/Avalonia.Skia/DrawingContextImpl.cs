@@ -697,10 +697,10 @@ namespace Avalonia.Skia
                     acrylicBrush.BackgroundSource == AcrylicBackgroundSource.Digger ?
                     acrylicBrush.TintOpacity : 1;
 
-                const double noiseOpcity = 0.02;
+                const double noiseOpcity = 0.0225;
 
                 var tintColor = acrylicBrush.TintColor;                
-                var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, (byte)(255 * ((tintColor.A / 255.0) * acrylicBrush.Opacity)));                
+                var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, (byte)(255 * ((tintColor.A / 255.0) * acrylicBrush.Opacity * tintOpacity)));                
                 
                 if(s_acrylicNoiseShader == null)
                 {

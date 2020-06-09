@@ -135,7 +135,7 @@ namespace Avalonia.Media
 
             if (false) // non-acrylic blue // TODO detect blur level.
             {
-                tintColor = new Color((byte)(Math.Round(tintColor.A * (((tintOpacity * tintOpacityModifier) * 0.25) + 0.75))), tintColor.R, tintColor.G, tintColor.B);
+                tintColor = new Color((byte)(Math.Round(tintColor.A * (((tintOpacity * tintOpacityModifier) * 0.15) + 0.85))), tintColor.R, tintColor.G, tintColor.B);
             }
             else
             {
@@ -157,7 +157,7 @@ namespace Avalonia.Media
 
             const double whiteMaxOpacity = 0.40; // 100% luminosity
             const double midPointMaxOpacity = 0.50; // 50% luminosity
-            const double blackMaxOpacity = 0.60; // 0% luminosity
+            const double blackMaxOpacity = 0.80; // 0% luminosity
             
             var hsv = RgbToHsv(tintColor);
 
