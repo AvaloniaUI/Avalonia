@@ -8,6 +8,9 @@ namespace Avalonia.Utilities
     /// </summary>
     public static class MathUtilities
     {
+        // smallest such that 1.0+DoubleEpsilon != 1.0
+        private const double DoubleEpsilon = 2.2204460492503131e-016;
+
         /// <summary>
         /// AreClose - Returns whether or not two doubles are "close".  That is, whether or 
         /// not they are within epsilon of each other.
@@ -18,7 +21,7 @@ namespace Avalonia.Utilities
         {
             //in case they are Infinities (then epsilon check does not work)
             if (value1 == value2) return true;
-            double eps = (Math.Abs(value1) + Math.Abs(value2) + 10.0) * double.Epsilon;
+            double eps = (Math.Abs(value1) + Math.Abs(value2) + 10.0) * DoubleEpsilon;
             double delta = value1 - value2;
             return (-eps < delta) && (eps > delta);
         }
@@ -78,7 +81,7 @@ namespace Avalonia.Utilities
         /// <param name="value"> The double to compare to 1. </param>
         public static bool IsOne(double value)
         {
-            return Math.Abs(value - 1.0) < 10.0 * double.Epsilon;
+            return Math.Abs(value - 1.0) < 10.0 * DoubleEpsilon;
         }
 
         /// <summary>
@@ -88,7 +91,7 @@ namespace Avalonia.Utilities
         /// <param name="value"> The double to compare to 0. </param>
         public static bool IsZero(double value)
         {
-            return Math.Abs(value) < 10.0 * double.Epsilon;
+            return Math.Abs(value) < 10.0 * DoubleEpsilon;
         }
 
         /// <summary>
