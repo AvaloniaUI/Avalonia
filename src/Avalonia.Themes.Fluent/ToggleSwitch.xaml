@@ -1,177 +1,236 @@
+<!--Version zo 8-62020 17:30 -->
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-       
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=netstandard">
+
   <Design.PreviewWith>
     <StackPanel Margin="20" Width="250" Spacing="24">
- 
+
       <StackPanel Spacing="12">
-        <TextBlock 
-          Text="Automatic updates" 
+        <TextBlock
+          Text="Automatic updates"
           Classes="h1"/>
-        <TextBlock 
-          Text="Updates will be automaticly Downloaded and installed shile the computer is shutting down or restarting" 
-          TextWrapping="Wrap"/> 
-        <ToggleSwitch Content="Updates" 
-          FontWeight="Medium" 
+        <TextBlock
+          Text="Updates will be automaticly Downloaded and installed shile the computer is shutting down or restarting"
+          TextWrapping="Wrap"/>
+        <ToggleSwitch Content="Enable automatic Updates?"
+         
           VerticalAlignment="Bottom"/>
       </StackPanel>
-      
+
       <StackPanel Spacing="12">
-        <TextBlock 
-          Text="Previewer"  
+        <TextBlock
+          Text="Previewer"
           Classes="h1"/>
-        <TextBlock  
+        <TextBlock
           Text="The previewer Shows a preview off your code, this could slow down your system"
-          TextWrapping="Wrap"/> 
-        <ToggleSwitch 
-          Content="Previewer" 
+          TextWrapping="Wrap"/>
+        <ToggleSwitch
+          Content="Previewer"
           IsChecked="True"
-          FontWeight="Medium"/>
+          />
       </StackPanel>
-      
+
     </StackPanel>
   </Design.PreviewWith>
+
+
+  <Style Selector="ToggleSwitch">
+
+    <Setter Property="Foreground" Value="{DynamicResource ToggleSwitchContentForeground}" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     
-      <Style Selector="ToggleSwitch">
-        
-        <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
-        <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
-        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
-        <Setter Property="MinWidth" Value="72"/>
-        <Setter Property="MinHeight" Value="32"/>
-        
-        <Setter Property="Template">
-          <ControlTemplate>
-            <Grid ColumnDefinitions="Auto,*"
-                  RowDefinitions="22,auto"
-                 >
-              <Canvas 
-                  Height="24"  
-                  Grid.Row="1" 
-                  Grid.Column="0">
+    <!--<Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />-->
+    <!--<Setter Property="FocusVisualMargin" Value="-7,-3,-7,-3" />-->    
+    <Setter Property="MinWidth" Value="72"/>
+    <Setter Property="MinHeight" Value="32"/>
 
-                <Border 
-                    Name="PART_BorderBackground"
-                    Height="20" Width="44"
-                    Canvas.Top="2"
-                    Canvas.Left="0"
-                    BorderThickness="2"
-                    CornerRadius="100"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid
+          ColumnDefinitions="Auto,*"
+          RowDefinitions="22,auto"
+          Background="{TemplateBinding Background}">
+          
+          <Canvas
+              Height="24"
+              Grid.Row="1"
+              Grid.Column="0">
 
-                <Ellipse 
-                    Name="PART_CircleThumb"
-                    Height="10" Width="10"
-                    Canvas.Top="7"
-                    />
+            <Border
+                Name="PART_BorderBackground"
+                Height="18" Width="40"
+                Canvas.Top="2"
+                Canvas.Left="0"
+                Background="{TemplateBinding Background}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="100"/>
 
-                <ContentControl Name="PART_TextBooleanValue"
-                     Canvas.Left="51" VerticalContentAlignment="Bottom" Height="20"/>
+            <Ellipse
+                Name="PART_CircleThumb"
+                Height="10" Width="10"
+                Canvas.Top="6"/>
 
-              </Canvas>
+            <ContentControl
+                Name="PART_TextBooleanValue"
+                Canvas.Left="54"
+                VerticalContentAlignment="Bottom"
+                Height="20"/>
+          </Canvas>
 
-              <ContentPresenter 
-                  Name="PART_ContentPresenter"
-                  ContentTemplate="{TemplateBinding ContentTemplate}"
-                  Content="{TemplateBinding Content}"
-                  Margin="{TemplateBinding Padding}"
-                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                  Background="Transparent"
-                  IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}"
-                  Grid.Row="0" Grid.Column="0"/>
-            </Grid>
-          </ControlTemplate>
-        </Setter>
+          <ContentPresenter
+              Name="PART_ContentPresenter"
+              ContentTemplate="{TemplateBinding ContentTemplate}"
+              Content="{TemplateBinding Content}"
+              Margin="{TemplateBinding Padding}"
+              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+              Background="Transparent"
+              IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}"
+              Grid.Row="0" Grid.Column="0"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
 
-      </Style>
-       
-       <Style Selector="ToggleSwitch:unchecked /template/ Ellipse#PART_CircleThumb">
-        <Style.Animations>
-          <Animation Duration="0:0:0.4" FillMode="Forward" Easing="CubicEaseOut">
-            <KeyFrame Cue="0%">
-              <Setter Property="Fill" Value="White"/>
-              <Setter Property="Canvas.Left" Value="28"/>
-            </KeyFrame>
-            <KeyFrame Cue="100%">
-              <Setter Property="Fill" Value="royalBlue"/>
-              <Setter Property="Canvas.Left" Value="5"/>
-            </KeyFrame>
-          </Animation>
-        </Style.Animations>
-      </Style>
-      
-    <Style Selector="ToggleSwitch:checked /template/ Ellipse#PART_CircleThumb">
-        <Style.Animations>
-          <Animation Duration="0:0:0.4" FillMode="Forward" Easing="CubicEaseOut">
-            <KeyFrame Cue="0%">
-              <Setter Property="Fill" Value="royalBlue"/>
-              <Setter Property="Canvas.Left" Value="5"/>
-            </KeyFrame>
-            <KeyFrame Cue="100%">
-              <Setter Property="Fill" Value="White"/>
-              <Setter Property="Canvas.Left" Value="28"/>
-            </KeyFrame>
-          </Animation>
-        </Style.Animations>
-      </Style>
-  
-      <Style Selector="ToggleSwitch:unchecked /template/ Border#PART_BorderBackground">
-        <Style.Animations>
-          <Animation Duration="0:0:0.5" FillMode="Forward" Easing="CubicEaseOut">
-            <KeyFrame Cue="0%">
-              <Setter Property="Background" Value="Royalblue"/>
-            </KeyFrame>
-            <KeyFrame Cue="100%">
-              <Setter Property="Background" Value="White"/>
-            </KeyFrame>
-          </Animation>
-        </Style.Animations>
-        <Setter Property="BorderBrush" Value="RoyalBlue"/>
-      </Style>
+  </Style>
 
-      <Style Selector="ToggleSwitch:checked /template/ Border#PART_BorderBackground">
-        <Style.Animations>
-          <Animation Duration="0:0:0.5" FillMode="Forward" Easing="CubicEaseOut">
-             <KeyFrame Cue="0%">
-              <Setter Property="Background" Value="White"/>
-            </KeyFrame>
-            <KeyFrame Cue="100%">
-              <Setter Property="Background" Value="RoyalBlue"/>
-            </KeyFrame>
-          </Animation>
-        </Style.Animations>
-        <Setter Property="BorderBrush" Value="Royalblue"/>
-      </Style>
-  
-      <!--<Style Selector="ToggleSwitch:pressed  /template/ Border#PART_BorderBackground">
-         <Setter Property="BorderBrush" Value="{DynamicResource ThemeControlHighBrush}"/>
-       </Style>-->
- 
-      <Style Selector="ToggleSwitch:checked /template/ ContentControl#PART_TextBooleanValue">
-        <Setter Property="Content" Value="On"/>
-      </Style>
+  <!--Position Transition Thump-->
+  <Style Selector="ToggleSwitch /template/ Ellipse#PART_CircleThumb">
+    <Setter Property="Canvas.Left" Value="{DynamicResource ThumbLeft}"/>
+    <Setter Property="Fill" Value="White" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Canvas.Left" Duration="0:0:0.4" Easing="CubicEaseOut"/>
+      </Transitions>
+    </Setter>
+  </Style>
 
-      <Style Selector="ToggleSwitch:unchecked /template/ ContentControl#PART_TextBooleanValue">
-        <Setter Property="Content" Value="Off"/>
-      </Style>
+  <!--Color thumbAnimation  Off-->
+  <Style Selector="ToggleSwitch:unchecked /template/ Ellipse#PART_CircleThumb">
+    <Setter Property="Canvas.Left" Value="{DynamicResource ThumbLeft}"/>
+    <!--psition animation is handled by transition-->
+    <Style.Animations>
+      <Animation Duration="0:0:0.4" FillMode="Forward" Easing="CubicEaseOut" >
+        <KeyFrame Cue="0%">
+          <Setter Property="Fill" Value="White"/>
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="Fill" Value="Royalblue"/>
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
 
-      <Style Selector="ToggleSwitch /template/ Border#PART_BorderBackground:pointerover">
-        <Setter Property="BorderBrush" Value="cornflowerblue"/>
-      </Style>
+  <!--color thumbAnimation  Onn-->
+  <Style Selector="ToggleSwitch:checked /template/ Ellipse#PART_CircleThumb">
+    <Setter Property="Canvas.Left" Value="{DynamicResource ThumbRight}"/>
+    <!--psition animation is handled by transition-->
+    <Style.Animations>
+      <Animation Duration="0:0:0.4" FillMode="Forward" Easing="CubicEaseOut">
+        <KeyFrame Cue="0%">
+          <Setter Property="Fill" Value="Royalblue"/>
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="Fill" Value="White"/>
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
 
-      <Style Selector="ToggleSwitch:focus /template/ Border#PART_BorderBackground">
-        <Setter Property="BorderBrush" Value="Mediumblue"/>
-      </Style>
-      
-      <!--<Style Selector="ToggleSwitch:focus:checked /template/ Border#PART_BorderBackground">
-        <Setter Property="Background" Value="{DynamicResource ToggleSwitchFillOn}"/>
-      </Style>-->
-       
-      <Style Selector="ToggleSwitch:focus /template/ Border#PART_BorderBackground:pointerover">
-         <Setter Property="BorderBrush" Value="cornflowerblue"/>
-      </Style>
-  
-     <!--<Style Selector="ToggleSwitch:checked /template/ Border#PART_BorderBackground:pointerover">
+  <!--color BackGround Animation  Off-->
+  <Style Selector="ToggleSwitch:unchecked /template/ Border#PART_BorderBackground">
+    <Style.Animations>
+      <Animation Duration="0:0:0.4" FillMode="Forward" Easing="CubicEaseOut">
+        <KeyFrame Cue="0%">
+          <Setter Property="Background" Value="Royalblue"/>
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="Background" Value="White"/>
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+    <Setter Property="BorderBrush" Value="Royalblue"/>
+  </Style>
+
+  <!--color BackGrounf Animation  On-->
+  <Style Selector="ToggleSwitch:checked /template/ Border#PART_BorderBackground">
+    <Style.Animations>
+      <Animation Duration="0:0:0.4" FillMode="Forward" Easing="CubicEaseOut">
+        <KeyFrame Cue="0%">
+          <Setter Property="Background" Value="white"/>
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="Background" Value="Royalblue"/>
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+    <Setter Property="BorderBrush" Value="Royalblue"/>
+  </Style>
+
+
+
+  <!--<Style Selector="ToggleSwitch /template/ Border#PART_BorderBackground">
+      <Setter Property="Opacity" Value="100" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.2" Easing="CubicEaseOut"/>
+        </Transitions>
+      </Setter>
+    </Style>-->
+
+  <!--Setting the On/Of Text. This will be changed in the near future -->
+  <Style Selector="ToggleSwitch:checked /template/ ContentControl#PART_TextBooleanValue">
+    <Setter Property="Content" Value="On"/>
+  </Style>
+
+  <Style Selector="ToggleSwitch:unchecked /template/ ContentControl#PART_TextBooleanValue">
+    <Setter Property="Content" Value="Off"/>
+  </Style>
+
+  <!--BackGround MouseOver-->
+  <Style Selector="ToggleSwitch /template/ Border#PART_BorderBackground:pointerover">
+    <Setter Property="BorderBrush" Value="cornflowerblue"/>
+  </Style>
+
+  <!--BackGround Mouseover and checked-->
+  <!--<Style Selector="ToggleSwitch:checked /template/ Border#PART_BorderBackground:pointerover">
+        <Setter Property="Opacity" Value="50"/>
+   </Style>-->
+
+  <!--BackGround Focus-->
+  <Style Selector="ToggleSwitch:focus /template/ Border#PART_BorderBackground">
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeForegroundBrush}"/>
+  </Style>
+
+  <!--BackGround Focus + Mouseover-->
+  <Style Selector="ToggleSwitch:focus /template/ Border#PART_BorderBackground:pointerover">
+    <Setter Property="BorderBrush" Value="cornflowerblue"/>
+  </Style>
+
+  <!--Control disabled-->
+  <Style Selector="ToggleSwitch:disabled">
+    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
+  </Style>
+
+
+  <!--****** PRESSED ******-->
+  <!--Pressed is triggered the same time as checked, so i dont handle Pressed-->
+  <!--This is probebly because the checked is set on mousedown, Should this be changed to mouseUp?-->
+
+
+  <!--****** iNDETERMINATE ******-->
+  <!--What should i do here?-->
+
+  <!--<Style Selector="ToggleSwitch:indeterminate /template/ ContentControl#PART_TextBooleanValue">
+            <Setter Property="Content" Value="Not set"/>
+         </Style>-->
+
+
+  <!--<Style Selector="ToggleSwitch:checked /template/ Border#PART_BorderBackground:pointerover">
          <Style.Animations>
           <Animation Duration="0:0:0.1" FillMode="Forward" Easing="CubicEaseOut">
              <KeyFrame Cue="0%">
@@ -183,15 +242,16 @@
           </Animation>
           </Style.Animations>
       </Style>-->
-        
-      <Style Selector="ToggleSwitch:disabled">
-        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
-      </Style>
-      
-  
-      <!--<Style Selector="ToggleSwitch:indeterminate /template/ ContentControl#PART_TextBooleanValue">
-        <Setter Property="Content" Value="Not set"/>
-      </Style>-->
 
-  
+
+  <Styles.Resources>
+
+    <sys:Double x:Key="ThumbLeft">5</sys:Double>
+    <sys:Double x:Key="ThumbRight">26</sys:Double>
+    <Color x:Key="ColorFILLOn">RoyalBlue</Color>
+    <!--Animating a color via a resource does not work!-->
+    <Color x:Key="ColorFILLOff">White</Color>
+
+  </Styles.Resources>
+
 </Styles>
