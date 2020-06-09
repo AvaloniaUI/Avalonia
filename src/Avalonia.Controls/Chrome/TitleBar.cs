@@ -18,21 +18,6 @@ namespace Avalonia.Controls.Chrome
             _hostWindow = hostWindow;
         }
 
-        public TitleBar()
-        {
-
-        }
-
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            return base.MeasureOverride(availableSize);
-        }
-
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            return base.ArrangeOverride(finalSize);
-        }
-
         public void Attach()
         {
             if (_disposables == null)
@@ -44,10 +29,7 @@ namespace Avalonia.Controls.Chrome
                 _disposables = new CompositeDisposable
                 {
                     _hostWindow.GetObservable(Window.WindowDecorationMarginsProperty)
-                    .Subscribe(x =>
-                    {
-                        Height = x.Top;
-                    }),
+                    .Subscribe(x => InvalidateSize()),
 
                     _hostWindow.GetObservable(Window.ExtendClientAreaTitleBarHeightHintProperty)
                     .Subscribe(x => InvalidateSize()),
@@ -71,8 +53,16 @@ namespace Avalonia.Controls.Chrome
 
         void InvalidateSize()
         {
-            Margin = new Thickness(1, _hostWindow.OffScreenMargin.Top, 1, 1);
-            Height = _hostWindow.WindowDecorationMargins.Top;
+            Margin = new Thickness(
+                _hostWindow.OffScreenMargin.Left,
+                _hostWindow.OffScreenMargin.Top,
+                _hostWindow.OffScreenMargin.Right,
+                _hostWindow.OffScreenMargin.Bottom);
+
+            if (_hostWindow.WindowState != WindowState.FullScreen)
+            {
+                Height = _hostWindow.WindowDecorationMargins.Top;
+            }
         }
 
         public void Detach()
@@ -94,7 +84,7 @@ namespace Avalonia.Controls.Chrome
         {
             base.OnApplyTemplate(e);
 
-            _captionButtons = e.NameScope.Find<CaptionButtons>("PART_CaptionButtons");            
+            _captionButtons = e.NameScope.Find<CaptionButtons>("PART_CaptionButtons");
 
             _captionButtons.Attach(_hostWindow);
         }
