@@ -43,6 +43,7 @@ namespace Avalonia.X11
         private bool _wasMappedAtLeastOnce = false;
         private double? _scalingOverride;
         private bool _disabled;
+        private TransparencyHelper _transparencyHelper;
 
         public object SyncRoot { get; } = new object();
 
@@ -176,6 +177,9 @@ namespace Avalonia.X11
             UpdateSizeHints(null);
             _xic = XCreateIC(_x11.Xim, XNames.XNInputStyle, XIMProperties.XIMPreeditNothing | XIMProperties.XIMStatusNothing,
                 XNames.XNClientWindow, _handle, IntPtr.Zero);
+            _transparencyHelper = new TransparencyHelper(_x11, _handle, platform.Globals);
+            _transparencyHelper.SetTransparencyRequest(WindowTransparencyLevel.None);
+
             XFlush(_x11.Display);
             if(_popup)
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
@@ -300,6 +304,13 @@ namespace Avalonia.X11
         public Action Activated { get; set; }
         public Func<bool> Closing { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
+
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged
+        {
+            get => _transparencyHelper.TransparencyLevelChanged;
+            set => _transparencyHelper.TransparencyLevelChanged = value;
+        }
+
         public Action Closed { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
 
@@ -1083,5 +1094,14 @@ namespace Avalonia.X11
 
         public IPopupPositioner PopupPositioner { get; }
         public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) =>
+            _transparencyHelper.SetTransparencyRequest(transparencyLevel);
+
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+        }
+
+        public WindowTransparencyLevel TransparencyLevel => _transparencyHelper.CurrentLevel;
     }
 }

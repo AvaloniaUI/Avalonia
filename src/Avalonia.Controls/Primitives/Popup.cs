@@ -20,6 +20,9 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public class Popup : Control, IVisualTreeHost
     {
+        public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
+            AvaloniaProperty.Register<PopupRoot, bool>(nameof(WindowManagerAddShadowHint), true);
+
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
@@ -108,7 +111,7 @@ namespace Avalonia.Controls.Primitives
         {
             IsHitTestVisibleProperty.OverrideDefaultValue<Popup>(false);
             ChildProperty.Changed.AddClassHandler<Popup>((x, e) => x.ChildChanged(e));
-            IsOpenProperty.Changed.AddClassHandler<Popup>((x, e) => x.IsOpenChanged((AvaloniaPropertyChangedEventArgs<bool>)e));
+            IsOpenProperty.Changed.AddClassHandler<Popup>((x, e) => x.IsOpenChanged((AvaloniaPropertyChangedEventArgs<bool>)e));            
         }
 
         /// <summary>
@@ -122,6 +125,12 @@ namespace Avalonia.Controls.Primitives
         public event EventHandler? Opened;
 
         public IPopupHost? Host => _openState?.PopupHost;
+
+        public bool WindowManagerAddShadowHint
+        {
+            get { return GetValue(WindowManagerAddShadowHintProperty); }
+            set { SetValue(WindowManagerAddShadowHintProperty, value); }
+        }
 
         /// <summary>
         /// Gets or sets the control to display in the popup.
@@ -352,6 +361,8 @@ namespace Avalonia.Controls.Primitives
 
             _openState = new PopupOpenState(topLevel, popupHost, cleanupPopup);
 
+            WindowManagerAddShadowHintChanged(popupHost, WindowManagerAddShadowHint);
+
             popupHost.Show();
 
             using (BeginIgnoringIsOpen())
@@ -389,6 +400,14 @@ namespace Avalonia.Controls.Primitives
             subscribe(target, handler);
 
             return Disposable.Create((unsubscribe, target, handler), state => state.unsubscribe(state.target, state.handler));
+        }
+
+        private void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
+        {
+            if(host is PopupRoot pr)
+            {
+                pr.PlatformImpl.SetWindowManagerAddShadowHint(hint);
+            }
         }
 
         /// <summary>

@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -122,6 +123,8 @@ namespace Avalonia.Win32
 
         public Action<WindowState> WindowStateChanged { get; set; }
 
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
         public Thickness BorderThickness
         {
             get
@@ -204,6 +207,81 @@ namespace Avalonia.Win32
                     _showWindowState = value;
                 }
             }
+        }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public void SetTransparencyLevelHint (WindowTransparencyLevel transparencyLevel)
+        {
+            TransparencyLevel = EnableBlur(transparencyLevel);
+        }
+
+        private WindowTransparencyLevel EnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            bool canUseTransparency = false;
+            bool canUseAcrylic = false;
+
+            if (Win32Platform.WindowsVersion.Major >= 10)
+            {
+                canUseTransparency = true;
+
+                if (Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628)
+                {
+                    canUseAcrylic = true;
+                }
+            }
+
+            if (!canUseTransparency || DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
+            {
+                return WindowTransparencyLevel.None;
+            }
+
+            var accent = new AccentPolicy();
+            var accentStructSize = Marshal.SizeOf(accent);
+
+            if(transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
+            {
+                transparencyLevel = WindowTransparencyLevel.Blur;
+            }
+
+            switch (transparencyLevel)
+            {
+                default:
+                case WindowTransparencyLevel.None:
+                    accent.AccentState = AccentState.ACCENT_DISABLED;
+                    break;
+
+                case WindowTransparencyLevel.Transparent:
+                    accent.AccentState = AccentState.ACCENT_ENABLE_TRANSPARENTGRADIENT;
+                    break;
+
+                case WindowTransparencyLevel.Blur:
+                    accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
+                    break;
+
+                case WindowTransparencyLevel.AcrylicBlur:
+                case (WindowTransparencyLevel.AcrylicBlur + 1): // hack-force acrylic.
+                    accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
+                    transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
+                    break;
+            }
+
+            accent.AccentFlags = 2;
+            accent.GradientColor = 0x00FFFFFF;
+
+            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+
+            var data = new WindowCompositionAttributeData();
+            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
+            data.SizeOfData = accentStructSize;
+            data.Data = accentPtr;
+
+            SetWindowCompositionAttribute(_hwnd, ref data);
+
+            Marshal.FreeHGlobal(accentPtr);            
+
+            return transparencyLevel;
         }
 
         public IEnumerable<object> Surfaces => new object[] { Handle, _gl, _framebuffer };
@@ -780,9 +858,14 @@ namespace Avalonia.Win32
 
                 if (!_isFullScreenActive)
                 {
+                    var margin = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0;
+
                     var margins = new MARGINS
                     {
-                        cyBottomHeight = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0
+                        cyBottomHeight = margin,
+                        cxRightWidth = margin,
+                        cxLeftWidth = margin,
+                        cyTopHeight = margin
                     };
 
                     DwmExtendFrameIntoClientArea(_hwnd, ref margins);
