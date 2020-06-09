@@ -115,7 +115,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [Fact]
-        public void Can_Interpolate_Matrix()
+        public void Interpolation_Fallback_To_Matrix()
         {
             double progress = 0.5d;
 
@@ -123,6 +123,11 @@ namespace Avalonia.Visuals.UnitTests.Media
             var to = TransformOperations.Parse("translate(100px, 100px) rotate(1215deg)");
 
             var interpolated = TransformOperations.Interpolate(from, to, progress);
+
+            var operations = interpolated.Operations;
+
+            Assert.Single(operations);
+            Assert.Equal(TransformOperation.OperationType.Matrix, operations[0].Type);
         }
     }
 }
