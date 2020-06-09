@@ -82,5 +82,6 @@
   
   <ItemGroup>
     <UpToDateCheckInput Include="@(AvaloniaResource)" />
+    <UpToDateCheckInput Include="@(AvaloniaXaml)" />
   </ItemGroup>
 </Project>
