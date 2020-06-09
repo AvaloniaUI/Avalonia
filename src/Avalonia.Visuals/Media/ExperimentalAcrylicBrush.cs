@@ -139,10 +139,16 @@ namespace Avalonia.Media
             }
             else
             {
-                tintColor = new Color((byte)(Math.Round(tintColor.A * tintOpacity * tintOpacityModifier)), tintColor.R, tintColor.G, tintColor.B);
+                tintColor = new Color((byte)(255 * ((255.0 / tintColor.A) * tintOpacity) * tintOpacityModifier), tintColor.R, tintColor.G, tintColor.B);
             }
 
             return tintColor;
+        }
+
+        private static double AdjustOpacity(double opacity)
+        {
+            var result = Math.Max((1.0 - Math.Pow((1.0 - opacity), 3.85)), 0.92);
+            return result;
         }
 
         private static double GetTintOpacityModifier(Color tintColor)
@@ -155,9 +161,9 @@ namespace Avalonia.Media
 
             const double midPoint = 0.5; // Mid point of HsvV range that these calculations are based on. This is here for easy tuning.
 
-            const double whiteMaxOpacity = 0.40; // 100% luminosity
-            const double midPointMaxOpacity = 0.50; // 50% luminosity
-            const double blackMaxOpacity = 0.80; // 0% luminosity
+            double whiteMaxOpacity = AdjustOpacity(0.45); // 100% luminosity
+            double midPointMaxOpacity = AdjustOpacity(0.40); // 50% luminosity
+            double blackMaxOpacity = AdjustOpacity(0.60); // 0% luminosity
             
             var hsv = RgbToHsv(tintColor);
 
@@ -189,7 +195,7 @@ namespace Avalonia.Media
                 if (hsv.Saturation > 0)
                 {
                     // Dampen opacity suppression based on how much saturation there is
-                    maxOpacitySuppression *= Math.Max(1 - (hsv.Saturation * 2), 0.0);
+                    //maxOpacitySuppression *= Math.Max(1 - (hsv.Saturation * 2), 0.0);
                 }
 
                 double opacitySuppression = maxOpacitySuppression * normalizedDeviation;

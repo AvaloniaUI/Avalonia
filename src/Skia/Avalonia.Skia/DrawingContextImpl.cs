@@ -668,6 +668,27 @@ namespace Avalonia.Skia
             return SKColorFilter.CreateTable(a, c, c, c);
         }
 
+        static byte Blend(byte leftColor, byte leftAlpha, byte rightColor, byte rightAlpha)
+        {
+            var ca = leftColor / 255d;
+            var aa = leftAlpha / 255d;
+            var cb = rightColor / 255d;
+            var ab = rightAlpha / 255d;
+            var r = (ca * aa + cb * ab * (1 - aa)) / (aa + ab * (1 - aa));
+            return (byte)(r * 255);
+        }
+        static SKColor Blend(SKColor left, SKColor right)
+        {
+            var aa = left.Alpha / 255d;
+            var ab = right.Alpha / 255d;
+            return new SKColor(
+                Blend(left.Red, left.Alpha, right.Red, right.Alpha),
+                Blend(left.Green, left.Alpha, right.Green, right.Alpha),
+                Blend(left.Blue, left.Alpha, right.Blue, right.Alpha),
+                (byte)((aa + ab * (1 - aa)) * 255)
+            );
+        }        
+
         /// <summary>
         /// Creates paint wrapper for given brush.
         /// </summary>
@@ -700,9 +721,14 @@ namespace Avalonia.Skia
                 const double noiseOpcity = 0.0225;
 
                 var tintColor = acrylicBrush.TintColor;                
-                var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, (byte)(255 * ((tintColor.A / 255.0) * acrylicBrush.Opacity * tintOpacity)));                
+                var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, tintColor.A);
+                var tracingPaper = new SKColor(0xaf, 0x7f, 0x7f, 0x7f);
+
+                //tint = Blend(tracingPaper, tint);
+
                 
-                if(s_acrylicNoiseShader == null)
+
+                if (s_acrylicNoiseShader == null)
                 {
                     using(var stream = typeof(DrawingContextImpl).Assembly.GetManifestResourceStream("Avalonia.Skia.Assets.NoiseAsset_256X256_PNG.png"))
                     using (var bitmap = SKBitmap.Decode(stream))
