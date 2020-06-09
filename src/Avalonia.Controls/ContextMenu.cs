@@ -20,7 +20,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class ContextMenu : MenuBase, ISetterValue
     {
-
         /// <summary>
         /// Defines the <see cref="HorizontalOffset"/> property.
         /// </summary>
@@ -38,6 +37,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<PopupAnchor> PlacementAnchorProperty =
             Popup.PlacementAnchorProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
+        /// Defines the <see cref="PlacementConstraintAdjustment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PopupPositionerConstraintAdjustment> PlacementConstraintAdjustmentProperty =
+            Popup.PlacementConstraintAdjustmentProperty.AddOwner<ContextMenu>();
 
         /// <summary>
         /// Defines the <see cref="PlacementGravity"/> property.
@@ -122,6 +127,16 @@ namespace Avalonia.Controls
         {
             get { return GetValue(PlacementAnchorProperty); }
             set { SetValue(PlacementAnchorProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value describing how the context menu position will be adjusted if the
+        /// unadjusted position would result in the context menu being partly constrained.
+        /// </summary>
+        public PopupPositionerConstraintAdjustment PlacementConstraintAdjustment
+        {
+            get { return GetValue(PlacementConstraintAdjustmentProperty); }
+            set { SetValue(PlacementConstraintAdjustmentProperty, value); }
         }
 
         /// <summary>
@@ -245,6 +260,7 @@ namespace Avalonia.Controls
                     HorizontalOffset = HorizontalOffset,
                     VerticalOffset = VerticalOffset,
                     PlacementAnchor = PlacementAnchor,
+                    PlacementConstraintAdjustment = PlacementConstraintAdjustment,
                     PlacementGravity = PlacementGravity,
                     PlacementMode = PlacementMode,
                     PlacementRect = PlacementRect,

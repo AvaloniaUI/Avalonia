@@ -428,13 +428,14 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         public static void ConfigurePosition(ref this PopupPositionerParameters positionerParameters,
             TopLevel topLevel,
             IVisual target, PlacementMode placement, Point offset,
-            PopupAnchor anchor, PopupGravity gravity, Rect? rect)
+            PopupAnchor anchor, PopupGravity gravity,
+            PopupPositionerConstraintAdjustment constraintAdjustment, Rect? rect)
         {
             // We need a better way for tracking the last pointer position
             var pointer = topLevel.PointToClient(topLevel.PlatformImpl.MouseDevice.Position);
             
             positionerParameters.Offset = offset;
-            positionerParameters.ConstraintAdjustment = PopupPositionerConstraintAdjustment.All;
+            positionerParameters.ConstraintAdjustment = constraintAdjustment;
             if (placement == PlacementMode.Pointer)
             {
                 positionerParameters.AnchorRectangle = new Rect(pointer, new Size(1, 1));
