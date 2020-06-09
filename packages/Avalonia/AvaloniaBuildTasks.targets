@@ -31,9 +31,12 @@
   
   <Target Name="GenerateAvaloniaResources" 
           BeforeTargets="CoreCompile;CoreResGen"
-          Inputs="@(AvaloniaResource);$(MSBuildAllProjects)"
+          Inputs="@(AvaloniaResource);@(AvaloniaXaml);$(MSBuildAllProjects)"
           Outputs="$(AvaloniaResourcesTemporaryFilePath)"
-          DependsOnTargets="$(BuildAvaloniaResourcesDependsOn)">
+	  DependsOnTargets="$(BuildAvaloniaResourcesDependsOn)">
+    <ItemGroup>
+        <AvaloniaResource Include="@(AvaloniaXaml)"/>
+    </ItemGroup>
     <GenerateAvaloniaResourcesTask
       Condition="'$(_AvaloniaUseExternalMSBuild)' != 'true'"
       Output="$(AvaloniaResourcesTemporaryFilePath)"

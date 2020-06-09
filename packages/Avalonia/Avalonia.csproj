@@ -41,6 +41,10 @@
       <Pack>true</Pack>
       <PackagePath>build\</PackagePath>
     </Content>
+    <Content Include="AvaloniaItemSchema.xaml">
+      <Pack>true</Pack>
+      <PackagePath>build\</PackagePath>
+    </Content>
   </ItemGroup>
   <Import Project="..\..\build\SharedVersion.props" />
   <Import Project="..\..\build\NetFX.props" />

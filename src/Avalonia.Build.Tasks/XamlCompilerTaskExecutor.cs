@@ -25,7 +25,8 @@ namespace Avalonia.Build.Tasks
     public static partial class XamlCompilerTaskExecutor
     {
         static bool CheckXamlName(IResource r) => r.Name.ToLowerInvariant().EndsWith(".xaml")
-                                               || r.Name.ToLowerInvariant().EndsWith(".paml");
+                                               || r.Name.ToLowerInvariant().EndsWith(".paml")
+                                               || r.Name.ToLowerInvariant().EndsWith(".axaml");
         
         public class CompileResult
         {
