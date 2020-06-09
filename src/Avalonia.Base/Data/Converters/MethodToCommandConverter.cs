@@ -1,0 +1,182 @@
+﻿using System;
+using System.Globalization;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Windows.Input;
+using Avalonia.Utilities;
+
+namespace Avalonia.Data.Converters
+{
+    class MethodToCommandConverter : ICommand
+    {
+        readonly static Func<object, bool> AlwaysEnabled = (_) => true;
+        readonly static MethodInfo tryConvert = typeof(TypeUtilities)
+            .GetMethod(nameof(TypeUtilities.TryConvert), BindingFlags.Public | BindingFlags.Static);
+        readonly static PropertyInfo currentCulture = typeof(CultureInfo)
+            .GetProperty(nameof(CultureInfo.CurrentCulture), BindingFlags.Public | BindingFlags.Static);
+        readonly Func<object, bool> canExecute;
+        readonly Action<object> execute;
+
+        public MethodToCommandConverter(Delegate action)
+        {
+            var target = action.Target;
+            var canExecuteMethodName = "Can" + action.Method.Name;
+            var parameters = action.Method.GetParameters();
+            var parameterInfo = parameters.Length == 0 ? null : parameters[0].ParameterType;
+
+            if (parameterInfo == null)
+            {
+                execute = CreateExecute(target, action.Method);
+            }
+            else
+            {
+                execute = CreateExecute(target, action.Method, parameterInfo);
+            }
+
+            var canExecuteMethod = action.Method.DeclaringType.GetRuntimeMethods()
+                .FirstOrDefault(m => m.Name == canExecuteMethodName
+                    && m.GetParameters().Length == 1
+                    && m.GetParameters()[0].ParameterType == typeof(object));
+            if (canExecuteMethod == null)
+            {
+                canExecute = AlwaysEnabled;
+            }
+            else
+            {
+                canExecute = CreateCanExecute(target, canExecuteMethod);
+                var dependencyProperties = canExecuteMethod
+                    .GetCustomAttributes(typeof(Metadata.DependsOnAttribute), true)
+                    .OfType<Metadata.DependsOnAttribute>()
+                    .Select(x => x.Name)
+                    .ToArray();
+                if (dependencyProperties.Any()
+                    && target is System.ComponentModel.INotifyPropertyChanged inpc)
+                {
+                    System.ComponentModel.PropertyChangedEventHandler invalidateCanExecuteHandler = (s, e) =>
+                   {
+                       if (string.IsNullOrWhiteSpace(e.PropertyName)
+                           || dependencyProperties.Contains(e.PropertyName))
+                       {
+                           Threading.Dispatcher.UIThread.Post(() => CanExecuteChanged?.Invoke(this, EventArgs.Empty)
+                               , Threading.DispatcherPriority.Input);
+                       }
+                   };
+                    inpc.PropertyChanged += invalidateCanExecuteHandler;
+                }
+            }
+
+
+        }
+
+#pragma warning disable 0067
+        public event EventHandler CanExecuteChanged;
+#pragma warning restore 0067
+
+        public bool CanExecute(object parameter) => canExecute(parameter);
+
+        public void Execute(object parameter) => execute(parameter);
+
+
+        static Action<object> CreateExecute(object target
+            , System.Reflection.MethodInfo method)
+        {
+
+            var parameter = Expression.Parameter(typeof(object), "parameter");
+
+            var instance = Expression.Convert
+            (
+                Expression.Constant(target),
+                method.DeclaringType
+            );
+
+
+            var call = Expression.Call
+            (
+                instance,
+                method
+            );
+
+
+            return Expression
+                .Lambda<Action<object>>(call, parameter)
+                .Compile();
+        }
+
+        static Action<object> CreateExecute(object target
+            , System.Reflection.MethodInfo method
+            , Type parameterType)
+        {
+
+            var parameter = Expression.Parameter(typeof(object), "parameter");
+
+            var instance = Expression.Convert
+            (
+                Expression.Constant(target),
+                method.DeclaringType
+            );
+
+            Expression body;
+
+            if (parameterType == typeof(object))
+            {
+                body = Expression.Call(instance,
+                    method,
+                    parameter
+                    );
+            }
+            else
+            {
+                var arg0 = Expression.Variable(typeof(object), "argX");
+                var convertCall = Expression.Call(tryConvert,
+                     Expression.Constant(parameterType),
+                     parameter,
+                      Expression.Property(null, currentCulture),
+                     arg0
+                    );
+
+                var call = Expression.Call(instance,
+                    method,
+                    Expression.Convert(arg0, parameterType)
+                    );
+                body = Expression.Block(new[] { arg0 },
+                    convertCall,
+                    call
+                    );
+
+            }
+            Action<object> action = null;
+            try
+            {
+                action = Expression
+                   .Lambda<Action<object>>(body, parameter)
+                   .Compile();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return action;
+        }
+
+        static Func<object, bool> CreateCanExecute(object target
+            , System.Reflection.MethodInfo method)
+        {
+            var parameter = Expression.Parameter(typeof(object), "parameter");
+            var instance = Expression.Convert
+            (
+                Expression.Constant(target),
+                method.DeclaringType
+            );
+            var call = Expression.Call
+            (
+                instance,
+                method,
+                parameter
+            );
+            return Expression
+                .Lambda<Func<object, bool>>(call, parameter)
+                .Compile();
+        }
+    }
+}
