@@ -29,37 +29,21 @@
   <Style Selector="TitleBar:fullscreen /template/ Border#PART_Background">
     <Setter Property="IsHitTestVisible" Value="True" />
   </Style>
-  
+
   <Style Selector="TitleBar:fullscreen /template/ Panel#PART_MouseTracker">
     <Setter Property="Background" Value="Transparent" />
   </Style>
 
-  <Style Selector="TitleBar:fullscreen:not(:pointerover) /template/ Panel#PART_Container">
-    <Style.Animations>
-      <Animation Duration="0:0:.5" Easing="SineEaseInOut" FillMode="Both">
-        <KeyFrame Cue="0%">
-          <Setter Property="TranslateTransform.Y" Value="0"/>
-        </KeyFrame>
-        <KeyFrame Cue="100%">
-          <Setter Property="TranslateTransform.Y" Value="-30"/>
-        </KeyFrame>
-      </Animation>
-    </Style.Animations>
+  <Style Selector="TitleBar:fullscreen /template/ Panel#PART_Container">
+    <Setter Property="RenderTransform" Value="translateY(-30px)" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:.25" />
+      </Transitions>
+    </Setter>
   </Style>
 
   <Style Selector="TitleBar:fullscreen:pointerover /template/ Panel#PART_Container">
-    <Style.Animations>
-      <Animation Duration="0:0:.5" Easing="SineEaseInOut" FillMode="Both">
-        <KeyFrame Cue="0%">          
-          <Setter Property="TranslateTransform.Y" Value="-30"/>          
-        </KeyFrame>
-        <KeyFrame Cue="100%">
-          <Setter Property="TranslateTransform.Y" Value="0"/>
-        </KeyFrame>
-      </Animation>
-    </Style.Animations>    
+    <Setter Property="RenderTransform" Value="none" />
   </Style>
-
-  
-  
 </Styles>
