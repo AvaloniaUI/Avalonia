@@ -11,6 +11,7 @@
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Visuals/Avalonia.Visuals.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Styling/Avalonia.Styling.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Themes.Default/Avalonia.Themes.Default.csproj" />
+      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Themes.Fluent/Avalonia.Themes.Fluent.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.OpenGL/Avalonia.OpenGL.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Dialogs/Avalonia.Dialogs.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Markup/Avalonia.Markup/Avalonia.Markup.csproj" />

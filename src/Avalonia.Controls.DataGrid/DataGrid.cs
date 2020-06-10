@@ -1,5 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
-// This source is subject to the Microsoft Public License (Ms-PL).
+﻿// This source is subject to the Microsoft Public License (Ms-PL).
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved. 
 
@@ -767,7 +766,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// ItemsProperty property changed handler.
         /// </summary>
-        /// <param name="e">AvaloniaPropertyChangedEventArgs.</param>
+        /// <param name="e">The event arguments.</param>
         private void OnItemsPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
@@ -2245,7 +2244,7 @@ namespace Avalonia.Controls
         /// Builds the visual tree for the column header when a new template is applied.
         /// </summary>
         //TODO Validation UI
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             // The template has changed, so we need to refresh the visuals
             _measured = false;

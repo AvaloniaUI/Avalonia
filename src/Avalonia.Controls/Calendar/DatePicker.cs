@@ -413,7 +413,7 @@ namespace Avalonia.Controls
             DisplayDate = DateTime.Today;
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             if (_calendar != null)
             {
@@ -508,21 +508,15 @@ namespace Avalonia.Controls
                     SetSelectedDate();
                 }
             }
-
-            base.OnTemplateApplied(e);
         }
 
-        protected override void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == SelectedDateProperty)
+            if (change.Property == SelectedDateProperty)
             {
-                DataValidationErrors.SetError(this, newValue.Error);
+                DataValidationErrors.SetError(this, change.NewValue.Error);
             }
         }
 
@@ -839,7 +833,7 @@ namespace Avalonia.Controls
         }
         private void Calendar_PointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (e.MouseButton == MouseButton.Left)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 e.Handled = true;
             }

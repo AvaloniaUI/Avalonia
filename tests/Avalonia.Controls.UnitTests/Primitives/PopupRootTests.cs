@@ -77,8 +77,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 var templatedChild = ((Visual)target.Host).GetVisualChildren().Single();
                 
-                Assert.IsType<VisualLayerManager>(templatedChild);
-                var contentPresenter = templatedChild.VisualChildren.Single();
+                Assert.IsType<Panel>(templatedChild);
+
+                var visualLayerManager = templatedChild.GetVisualChildren().Skip(1).Single();
+
+                Assert.IsType<VisualLayerManager>(visualLayerManager);
+
+                var contentPresenter = visualLayerManager.VisualChildren.Single();
                 Assert.IsType<ContentPresenter>(contentPresenter);
                 
                 
@@ -352,7 +357,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 set => SetValue(PopupContentProperty, value);
             }
 
-            protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+            protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
             {
                 Popup = (Popup)this.GetVisualChildren().Single();
             }

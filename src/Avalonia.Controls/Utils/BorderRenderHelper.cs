@@ -1,17 +1,30 @@
 ﻿using System;
 using Avalonia.Media;
+using Avalonia.Platform;
 
 namespace Avalonia.Controls.Utils
 {
     internal class BorderRenderHelper
     {
         private bool _useComplexRendering;
+        private bool? _backendSupportsIndividualCorners;
         private StreamGeometry _backgroundGeometryCache;
         private StreamGeometry _borderGeometryCache;
+        private Size _size;
+        private Thickness _borderThickness;
+        private CornerRadius _cornerRadius;
+        private bool _initialized;
 
-        public void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius)
+        void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius)
         {
-            if (borderThickness.IsUniform && cornerRadius.IsUniform)
+            _backendSupportsIndividualCorners ??= AvaloniaLocator.Current.GetService<IPlatformRenderInterface>()
+                .SupportsIndividualRoundRects;
+            _size = finalSize;
+            _borderThickness = borderThickness;
+            _cornerRadius = cornerRadius;
+            _initialized = true;
+
+            if (borderThickness.IsUniform && (cornerRadius.IsUniform || _backendSupportsIndividualCorners == true))
             {
                 _backgroundGeometryCache = null;
                 _borderGeometryCache = null;
@@ -67,7 +80,19 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        public void Render(DrawingContext context, Size size, Thickness borders, CornerRadius radii, IBrush background, IBrush borderBrush)
+        public void Render(DrawingContext context,
+            Size finalSize, Thickness borderThickness, CornerRadius cornerRadius,
+            IBrush background, IBrush borderBrush, BoxShadows boxShadows)
+        {
+            if (_size != finalSize
+                || _borderThickness != borderThickness
+                || _cornerRadius != cornerRadius
+                || !_initialized)
+                Update(finalSize, borderThickness, cornerRadius);
+            RenderCore(context, background, borderBrush, boxShadows);
+        }
+
+        void RenderCore(DrawingContext context, IBrush background, IBrush borderBrush, BoxShadows boxShadows)
         {
             if (_useComplexRendering)
             {
@@ -85,9 +110,7 @@ namespace Avalonia.Controls.Utils
             }
             else
             {
-                var borderThickness = borders.Top;
-                var top = borderThickness * 0.5;
-
+                var borderThickness = _borderThickness.Top;
                 IPen pen = null;
 
                 if (borderThickness > 0)
@@ -95,11 +118,15 @@ namespace Avalonia.Controls.Utils
                     pen = new Pen(borderBrush, borderThickness);
                 }
 
-                var rect = new Rect(top, top, size.Width - borderThickness, size.Height - borderThickness);
+                var rect = new Rect(_size);
+                if (Math.Abs(borderThickness) > double.Epsilon)
+                    rect = rect.Deflate(borderThickness * 0.5);
+                var rrect = new RoundedRect(rect, _cornerRadius.TopLeft, _cornerRadius.TopRight,
+                    _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
 
-                context.DrawRectangle(background, pen, rect, radii.TopLeft, radii.TopLeft);
+                context.PlatformImpl.DrawRectangle(background, pen, rrect, boxShadows);
             }
-        }    
+        }
 
         private static void CreateGeometry(StreamGeometryContext context, Rect boundRect, BorderGeometryKeypoints keypoints)
         {

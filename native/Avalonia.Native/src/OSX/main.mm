@@ -92,12 +92,11 @@ void SetProcessName(NSString* appTitle) {
     PrivateLSASN asn = ls_get_current_application_asn_func();
     // Constant used by WebKit; what exactly it means is unknown.
     const int magic_session_constant = -2;
-    OSErr err =
+    
     ls_set_application_information_item_func(magic_session_constant, asn,
                                              ls_display_name_key,
                                              process_name,
                                              NULL /* optional out param */);
-    //LOG_IF(ERROR, err) << "Call to set process name failed, err " << err;
 }
 
 class MacOptions : public ComSingleObject<IAvnMacOptions, &IID_IAvnMacOptions>
@@ -151,14 +150,15 @@ public:
 }
 @end
 
-
+static ComPtr<IAvnGCHandleDeallocatorCallback> _deallocator;
 class AvaloniaNative : public ComSingleObject<IAvaloniaNativeFactory, &IID_IAvaloniaNativeFactory>
 {
     
 public:
     FORWARD_IUNKNOWN()
-    virtual HRESULT Initialize() override
+    virtual HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator) override
     {
+        _deallocator = deallocator;
         @autoreleasepool{
             [[ThreadingInitializer new] do];
         }
@@ -208,7 +208,13 @@ public:
 
     virtual HRESULT CreateClipboard(IAvnClipboard** ppv) override
     {
-        *ppv = ::CreateClipboard ();
+        *ppv = ::CreateClipboard (nil, nil);
+        return S_OK;
+    }
+    
+    virtual HRESULT CreateDndClipboard(IAvnClipboard** ppv) override
+    {
+        *ppv = ::CreateClipboard (nil, [NSPasteboardItem new]);
         return S_OK;
     }
 
@@ -228,39 +234,27 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT CreateMenu (IAvnAppMenu** ppv) override
+    virtual HRESULT CreateMenu (IAvnMenuEvents* cb, IAvnMenu** ppv) override
     {
-        *ppv = ::CreateAppMenu();
+        *ppv = ::CreateAppMenu(cb);
         return S_OK;
     }
     
-    virtual HRESULT CreateMenuItem (IAvnAppMenuItem** ppv) override
+    virtual HRESULT CreateMenuItem (IAvnMenuItem** ppv) override
     {
         *ppv = ::CreateAppMenuItem();
         return S_OK;
     }
     
-    virtual HRESULT CreateMenuItemSeperator (IAvnAppMenuItem** ppv) override
+    virtual HRESULT CreateMenuItemSeperator (IAvnMenuItem** ppv) override
     {
         *ppv = ::CreateAppMenuItemSeperator();
         return S_OK;
     }
     
-    virtual HRESULT SetAppMenu (IAvnAppMenu* appMenu) override
+    virtual HRESULT SetAppMenu (IAvnMenu* appMenu) override
     {
         ::SetAppMenu(s_appTitle, appMenu);
-        return S_OK;
-    }
-    
-    virtual HRESULT ObtainAppMenu(IAvnAppMenu** retOut) override
-    {
-        if(retOut == nullptr)
-        {
-            return E_POINTER;
-        }
-        
-        *retOut = ::GetAppMenu();
-        
         return S_OK;
     }
 };
@@ -269,6 +263,12 @@ extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
 {
     return new AvaloniaNative();
 };
+
+extern void FreeAvnGCHandle(void* handle)
+{
+    if(_deallocator != nil)
+        _deallocator->FreeGCHandle(handle);
+}
 
 NSSize ToNSSize (AvnSize s)
 {

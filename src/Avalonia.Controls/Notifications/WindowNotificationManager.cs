@@ -77,10 +77,8 @@ namespace Avalonia.Controls.Notifications
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             var itemsControl = e.NameScope.Find<Panel>("PART_Items");
             _items = itemsControl?.Children;
         }
@@ -138,17 +136,13 @@ namespace Avalonia.Controls.Notifications
             notificationControl.Close();
         }
 
-        protected override void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == PositionProperty)
+            if (change.Property == PositionProperty)
             {
-                UpdatePseudoClasses(newValue.GetValueOrDefault<NotificationPosition>());
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<NotificationPosition>());
             }
         }
 

@@ -162,17 +162,18 @@ namespace Avalonia.Rendering.SceneGraph
 
             index.Add(result.Visual, result);
 
-            int childCount = source.Children.Count;
+            var children = source.Children;
+            var childrenCount = children.Count;
 
-            if (childCount > 0)
+            if (childrenCount > 0)
             {
-                Span<IVisualNode> children = result.AddChildrenSpan(childCount);
+                result.TryPreallocateChildren(childrenCount);
 
-                for (var i = 0; i < childCount; i++)
+                for (var i = 0; i < childrenCount; i++)
                 {
-                    var child = source.Children[i];
+                    var child = children[i];
 
-                    children[i] = Clone((VisualNode)child, result, index);
+                    result.AddChild(Clone((VisualNode)child, result, index));
                 }
             }
 

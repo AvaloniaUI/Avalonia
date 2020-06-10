@@ -332,7 +332,7 @@ namespace Avalonia.Skia.UnitTests
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    maxWidth : 200, 
+                    maxWidth : 200,
                     maxHeight : 125,
                     textStyleOverrides: spans);
 
@@ -506,10 +506,50 @@ namespace Avalonia.Skia.UnitTests
             }
         }
 
+        [InlineData("0123456789\r\n0123456789\r\n0123456789", 0, 3)]
+        [InlineData("0123456789\r\n0123456789\r\n0123456789", 1, 1)]
+        [InlineData("0123456789\r\n0123456789\r\n0123456789", 4, 3)]
+        [Theory]
+        public void Should_Not_Exceed_MaxLines(string text, int maxLines, int expectedLines)
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    maxWidth: 50,
+                    maxLines: maxLines);
+
+                Assert.Equal(expectedLines, layout.TextLines.Count);
+            }
+        }
+
+        private const string Text = "日本でTest一番読まれている英字新聞・ジャパンタイムズが発信する国内外ニュースと、様々なジャンルの特集記事。";
+
+        [Fact(Skip= "Only used for profiling.")]
+        public void Should_Wrap()
+        {
+            using (Start())
+            {
+                for (var i = 0; i < 2000; i++)
+                {
+                    var layout = new TextLayout(
+                        Text,
+                        Typeface.Default,
+                        12,
+                        Brushes.Black,
+                        textWrapping: TextWrapping.Wrap,
+                        maxWidth: 50);
+                }
+            }
+        }
+
         public static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(renderInterface: new PlatformRenderInterface(null), 
+                .With(renderInterface: new PlatformRenderInterface(null),
                     textShaperImpl: new TextShaperImpl(),
                     fontManagerImpl : new CustomFontManagerImpl()));
 

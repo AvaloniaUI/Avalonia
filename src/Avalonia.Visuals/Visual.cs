@@ -114,6 +114,9 @@ namespace Avalonia
         /// </summary>
         public Visual()
         {
+            // Disable transitions until we're added to the visual tree.
+            DisableTransitions();
+
             var visualChildren = new AvaloniaList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
             visualChildren.Validate = visual => ValidateVisualChild(visual);
@@ -393,6 +396,7 @@ namespace Avalonia
                 RenderTransform.Changed += RenderTransformChanged;
             }
 
+            EnableTransitions();
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
@@ -429,6 +433,7 @@ namespace Avalonia
                 RenderTransform.Changed -= RenderTransformChanged;
             }
 
+            DisableTransitions();
             OnDetachedFromVisualTree(e);
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root?.Renderer?.AddDirty(this);

@@ -75,8 +75,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedIndex = 2;
             items.RemoveAt(2);
 
-            Assert.Equal(2, target.SelectedIndex);
-            Assert.Equal("qux", target.SelectedItem);
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal("foo", target.SelectedItem);
         }
 
         [Fact]

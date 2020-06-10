@@ -83,6 +83,7 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public IScreenImpl Screen { get; } = new ScreenStub();
+        public Action GotInputWhenDisabled { get; set; }
 
         public void Activate()
         {
@@ -113,6 +114,14 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public void SetTopmost(bool value)
+        {
+        }
+
+        public void SetParent(IWindowImpl parent)
+        {
+        }
+
+        public void SetEnabled(bool enable)
         {
         }
     }

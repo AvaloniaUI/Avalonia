@@ -1,0 +1,54 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Avalonia.Themes.Fluent.FluentTheme">
+  <!-- Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox) -->  
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ToolTip.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.DataValidationErrors.xaml?assembly=Avalonia.Themes.Fluent"/>
+
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.FocusAdorner.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.Button.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.Carousel.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.CheckBox.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ComboBox.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ComboBoxItem.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ContentControl.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.GridSplitter.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ItemsControl.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ListBox.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ListBoxItem.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.Menu.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ContextMenu.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.MenuItem.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.OverlayPopupHost.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.PopupRoot.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ProgressBar.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.RadioButton.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.Separator.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.Slider.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ScrollBar.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ScrollViewer.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.TabStrip.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.TabStripItem.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <!-- TabControl needs to come after TabStrip as it redefines the inner TabStrip.ItemsPanel-->
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.TabControl.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.TabItem.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.TextBox.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ToggleButton.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.Expander.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.TreeView.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.TreeViewItem.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.UserControl.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.Window.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.EmbeddableControlRoot.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.CalendarButton.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.CalendarDayButton.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.CalendarItem.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.Calendar.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.DatePicker.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ButtonSpinner.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.NumericUpDown.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.AutoCompleteBox.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.WindowNotificationManager.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.NotificationCard.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.NativeMenuBar.xaml?assembly=Avalonia.Themes.Fluent"/>
+</Styles>

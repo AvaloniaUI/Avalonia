@@ -22,6 +22,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using static Avalonia.X11.XLib;
 // ReSharper disable FieldCanBeMadeReadOnly.Global
@@ -40,8 +41,9 @@ namespace Avalonia.X11
 
     internal class X11Atoms
     {
+        private readonly IntPtr _display;
 
-// Our atoms
+        // Our atoms
         public readonly IntPtr AnyPropertyType = (IntPtr)0;
         public readonly IntPtr XA_PRIMARY = (IntPtr)1;
         public readonly IntPtr XA_SECONDARY = (IntPtr)2;
@@ -156,6 +158,7 @@ namespace Avalonia.X11
         public readonly IntPtr _NET_SYSTEM_TRAY_OPCODE;
         public readonly IntPtr _NET_WM_STATE_MAXIMIZED_HORZ;
         public readonly IntPtr _NET_WM_STATE_MAXIMIZED_VERT;
+        public readonly IntPtr _NET_WM_STATE_FULLSCREEN;
         public readonly IntPtr _XEMBED;
         public readonly IntPtr _XEMBED_INFO;
         public readonly IntPtr _MOTIF_WM_HINTS;
@@ -184,10 +187,15 @@ namespace Avalonia.X11
         public readonly IntPtr UTF8_STRING;
         public readonly IntPtr UTF16_STRING;
         public readonly IntPtr ATOM_PAIR;
+        public readonly IntPtr MANAGER;
+        public readonly IntPtr _KDE_NET_WM_BLUR_BEHIND_REGION;
+        public readonly IntPtr INCR;
 
-
+        private readonly Dictionary<string, IntPtr> _namesToAtoms  = new Dictionary<string, IntPtr>();
+        private readonly Dictionary<IntPtr, string> _atomsToNames = new Dictionary<IntPtr, string>();
         public X11Atoms(IntPtr display)
         {
+            _display = display;
 
             // make sure this array stays in sync with the statements below
 
@@ -201,7 +209,33 @@ namespace Avalonia.X11
             XInternAtoms(display, atomNames, atomNames.Length, true, atoms);
 
             for (var c = 0; c < fields.Length; c++)
+            {
+                _namesToAtoms[fields[c].Name] = atoms[c];
+                _atomsToNames[atoms[c]] = fields[c].Name;
                 fields[c].SetValue(this, atoms[c]);
+            }
+        }
+
+        public IntPtr GetAtom(string name)
+        {
+            if (_namesToAtoms.TryGetValue(name, out var rv))
+                return rv;
+            var atom = XInternAtom(_display, name, false);
+            _namesToAtoms[name] = atom;
+            _atomsToNames[atom] = name;
+            return atom;
+        }
+
+        public string GetAtomName(IntPtr atom)
+        {
+            if (_atomsToNames.TryGetValue(atom, out var rv))
+                return rv;
+            var name = XLib.GetAtomName(_display, atom);
+            if (name == null)
+                return null;
+            _atomsToNames[atom] = name;
+            _namesToAtoms[name] = atom;
+            return name;
         }
     }
 }

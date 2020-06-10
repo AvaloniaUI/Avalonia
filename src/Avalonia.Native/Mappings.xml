@@ -19,5 +19,7 @@
         <map param=".*::.*::ppv" return="true"/>
         <map param=".*::.*::ret" return="true"/>
         <map param=".*::.*::retOut" attribute="out" return="true"/>
+        <map method="IAvnAppMenu:.*" visibility="private" />
+        <map method="IAvnAppMenuItem:.*" visibility="private" />
     </mapping>
 </config>

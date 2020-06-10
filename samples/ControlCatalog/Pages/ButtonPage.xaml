@@ -24,7 +24,10 @@
             </Style>
           </Button.Styles>          
         </Button>
-      </StackPanel>
+        <RepeatButton Name="RepeatButton">
+          <TextBlock Name="RepeatButtonTextBlock" Text="Repeat Button: 0" />
+        </RepeatButton>      
+    </StackPanel>
 
       <StackPanel Orientation="Vertical" Spacing="8" Width="150">
         <Button BorderThickness="0">No Border</Button>
