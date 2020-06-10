@@ -6,8 +6,22 @@
              x:Class="ControlCatalog.Pages.AcrylicPage">
   <Border Padding="20" HorizontalAlignment="Center">
     <StackPanel Spacing="20">
-      <Slider Name="TintOpacitySlider" Minimum="0" Maximum="1" Value="1" />
-      <Slider Name="TintLuminositySlider" Minimum="0" Maximum="1" Value="0.9" />
+
+      <Border Width="660" CornerRadius="5" BoxShadow="2 2 16 0 Black">
+        <Border.Background>
+          <ExperimentalAcrylicBrush
+            TintColor="White"
+            BackgroundSource="Digger" />
+        </Border.Background>
+        <StackPanel Spacing="20" Margin="40">
+          <TextBlock Text="TintOpacity" Foreground="Black" />
+          <Slider Name="TintOpacitySlider" Minimum="0" Maximum="1" Value="0.9" />
+          <TextBlock Text="{Binding #TintOpacitySlider.Value}" Foreground="Black" />
+          <TextBlock Text="TintLuminocity" Foreground="Black" />
+          <Slider Name="TintLuminositySlider" Minimum="0" Maximum="1" Value="0.8" />
+          <TextBlock Text="{Binding #TintLuminositySlider.Value}" Foreground="Black" />
+        </StackPanel>
+      </Border>
 
       <StackPanel Orientation="Horizontal" Spacing="20">
         <Border Height="200" Width="200" CornerRadius="5" BoxShadow="2 2 16 0 Black">
@@ -112,7 +126,7 @@
             TintOpacity="{Binding #TintOpacitySlider.Value}"
             TintLuminosityOpacity="{Binding #TintLuminositySlider.Value}"
             BackgroundSource="Digger" />
-        </Border.Background>        
+        </Border.Background>
       </Border>
     </StackPanel>
   </Border>

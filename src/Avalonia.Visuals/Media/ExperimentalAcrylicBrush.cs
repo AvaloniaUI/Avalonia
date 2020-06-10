@@ -44,10 +44,10 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<ExperimentalAcrylicBrush, AcrylicBackgroundSource>(nameof(BackgroundSource));
 
         public static readonly StyledProperty<double> TintOpacityProperty =
-            AvaloniaProperty.Register<ExperimentalAcrylicBrush, double>(nameof(TintOpacity));
+            AvaloniaProperty.Register<ExperimentalAcrylicBrush, double>(nameof(TintOpacity), 0.9);
 
         public static readonly StyledProperty<double> TintLuminosityOpacityProperty =
-            AvaloniaProperty.Register<ExperimentalAcrylicBrush, double>(nameof(TintLuminosityOpacity), 0.9);
+            AvaloniaProperty.Register<ExperimentalAcrylicBrush, double>(nameof(TintLuminosityOpacity), 0.8);
 
         public static readonly StyledProperty<Color> FallbackColorProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicBrush, Color>(nameof(FallbackColor));
