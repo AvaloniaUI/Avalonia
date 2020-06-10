@@ -726,8 +726,6 @@ namespace Avalonia.Skia
 
                 //tint = Blend(tracingPaper, tint);
 
-                
-
                 if (s_acrylicNoiseShader == null)
                 {
                     using(var stream = typeof(DrawingContextImpl).Assembly.GetManifestResourceStream("Avalonia.Skia.Assets.NoiseAsset_256X256_PNG.png"))
@@ -736,11 +734,13 @@ namespace Avalonia.Skia
                         s_acrylicNoiseShader = SKShader.CreateBitmap(bitmap, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat)
                             .WithColorFilter(CreateAlphaColorFilter(noiseOpcity));
                     }
-
                 }
-
+                
+                using (var backdrop = SKShader.CreateColor(new SKColor(acrylicBrush.LuminosityColor.R, acrylicBrush.LuminosityColor.G, acrylicBrush.LuminosityColor.B, (byte)Math.Round((acrylicBrush.LuminosityColor.A * 0.75)))))
+                using (var backdropResult = SKShader.CreateCompose(backdrop, backdrop, SKBlendMode.Luminosity))
                 using (var tintShader = SKShader.CreateColor(tint))
-                using (var compose = SKShader.CreateCompose(tintShader, s_acrylicNoiseShader))
+                using (var effectiveTint = SKShader.CreateCompose (backdropResult, tintShader))
+                using (var compose = SKShader.CreateCompose(effectiveTint, s_acrylicNoiseShader))
                 {
                     paint.Shader = compose;
 

@@ -11,11 +11,14 @@ namespace Avalonia.Media
             TintOpacity = brush.TintOpacity;
             FallbackColor = brush.FallbackColor;
             Opacity = brush.Opacity;
+            LuminosityColor = brush.LuminosityColor;
         }
 
         public AcrylicBackgroundSource BackgroundSource { get; }
 
         public Color TintColor { get; }
+
+        public Color LuminosityColor { get; }
 
         public double TintOpacity { get; }
 

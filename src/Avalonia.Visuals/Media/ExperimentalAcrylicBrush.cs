@@ -5,6 +5,7 @@ namespace Avalonia.Media
     public class ExperimentalAcrylicBrush : Brush, IExperimentalAcrylicBrush
     {
         private Color _effectiveTintColor;
+        private Color _effectiveLuminosityColor;
 
         static ExperimentalAcrylicBrush()
         {
@@ -17,11 +18,19 @@ namespace Avalonia.Media
             TintColorProperty.Changed.AddClassHandler<ExperimentalAcrylicBrush>((b, e) =>
             {
                 b._effectiveTintColor = GetEffectiveTintColor(b.TintColor, b.TintOpacity);
+                b._effectiveLuminosityColor = b.GetEffectiveLuminosityColor();
             });
 
             TintOpacityProperty.Changed.AddClassHandler<ExperimentalAcrylicBrush>((b, e) =>
             {
                 b._effectiveTintColor = GetEffectiveTintColor(b.TintColor, b.TintOpacity);
+                b._effectiveLuminosityColor = b.GetEffectiveLuminosityColor();
+            });
+
+            TintLuminosityOpacityProperty.Changed.AddClassHandler<ExperimentalAcrylicBrush>((b, e) =>
+            {
+                b._effectiveTintColor = GetEffectiveTintColor(b.TintColor, b.TintOpacity);
+                b._effectiveLuminosityColor = b.GetEffectiveLuminosityColor();
             });
         }
         
@@ -37,8 +46,8 @@ namespace Avalonia.Media
         public static readonly StyledProperty<double> TintOpacityProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicBrush, double>(nameof(TintOpacity));
 
-        public static readonly StyledProperty<double> TintLuminosityOpacityProperty =
-            AvaloniaProperty.Register<ExperimentalAcrylicBrush, double>(nameof(TintLuminosityOpacity));
+        public static readonly StyledProperty<double?> TintLuminosityOpacityProperty =
+            AvaloniaProperty.Register<ExperimentalAcrylicBrush, double?>(nameof(TintLuminosityOpacity));
 
         public static readonly StyledProperty<Color> FallbackColorProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicBrush, Color>(nameof(FallbackColor));
@@ -56,6 +65,8 @@ namespace Avalonia.Media
         }
 
         Color IExperimentalAcrylicBrush.TintColor => _effectiveTintColor;
+
+        Color IExperimentalAcrylicBrush.LuminosityColor => _effectiveLuminosityColor;
 
         public double TintOpacity
         {
@@ -161,9 +172,9 @@ namespace Avalonia.Media
 
             const double midPoint = 0.5; // Mid point of HsvV range that these calculations are based on. This is here for easy tuning.
 
-            double whiteMaxOpacity = AdjustOpacity(0.45); // 100% luminosity
-            double midPointMaxOpacity = AdjustOpacity(0.40); // 50% luminosity
-            double blackMaxOpacity = AdjustOpacity(0.60); // 0% luminosity
+            double whiteMaxOpacity = 0.45; // 100% luminosity
+            double midPointMaxOpacity = 0.90; // 50% luminosity
+            double blackMaxOpacity = 0.85; // 0% luminosity
             
             var hsv = RgbToHsv(tintColor);
 
@@ -204,6 +215,116 @@ namespace Avalonia.Media
             }
 
             return opacityModifier;
+        }
+
+        Color GetEffectiveLuminosityColor()
+        {            
+            double tintOpacity = TintOpacity;
+
+            // Purposely leaving out tint opacity modifier here because GetLuminosityColor needs the *original* tint opacity set by the user.
+            var tintColor = new Color((byte)(Math.Round(TintColor.A * tintOpacity)), TintColor.R, TintColor.G, TintColor.B);
+
+            double? luminosityOpacity = TintLuminosityOpacity;
+
+            return GetLuminosityColor(tintColor, luminosityOpacity);
+        }
+
+        public static Color FromHsv(HsvColor color)
+        {
+            float r = 0;
+            float g = 0;
+            float b = 0;
+
+            var i = (float)Math.Floor(color.Hue * 6f);
+            var f = color.Hue * 6f - i;
+            var p = color.Value * (1f - color.Saturation);
+            var q = color.Value * (1f - f * color.Saturation);
+            var t = color.Value * (1f - (1f - f) * color.Saturation);
+
+            switch (i % 6)
+            {
+                case 0:
+                    r = color.Value;
+                    g = t;
+                    b = p;
+                    break;
+                case 1:
+                    r = q;
+                    g = color.Value;
+                    b = p;
+                    break;
+                case 2:
+                    r = p;
+                    g = color.Value;
+                    b = t;
+                    break;
+                case 3:
+                    r = p;
+                    g = q;
+                    b = color.Value;
+                    break;
+                case 4:
+                    r = t;
+                    g = p;
+                    b = color.Value;
+                    break;
+                case 5:
+                    r = color.Value;
+                    g = p;
+                    b = q;
+                    break;
+            }
+
+            return new Color(Trim(r), Trim(g), Trim(b), 255);
+        }
+
+        private static byte Trim(double value)
+        {
+            value = Math.Min(Math.Floor(value * 256), 255);
+
+            if (value < 0)
+            {
+                return 0;
+            }
+            else if (value > 255)
+            {
+                return 255;
+            }
+
+            return (byte)value;
+        }
+
+        double Luminosity (Color color)
+        {
+            return 0.299 * color.R + 0.587 * color.G + 0.114 * color.B;
+        }
+
+        // The tintColor passed into this method should be the original, unmodified color created using user values for TintColor + TintOpacity
+        Color GetLuminosityColor(Color tintColor, double? luminosityOpacity)
+        {
+            var luminosityColor = new Color(255, 127, 127, 127);
+
+            var modifier = GetTintOpacityModifier(luminosityColor);
+
+            // If luminosity opacity is specified, just use the values as is
+            if (luminosityOpacity.HasValue)
+            {                
+                return new Color((byte)(255 * Math.Max(Math.Min(luminosityOpacity.Value * modifier, 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
+            }
+            else
+            {
+                // Now figure out luminosity opacity
+                // Map original *tint* opacity to this range
+                const double minLuminosityOpacity = 0.15;
+                const double maxLuminosityOpacity = 1.03;
+
+                double luminosityOpacityRangeMax = maxLuminosityOpacity - minLuminosityOpacity;
+                double mappedTintOpacity = ((tintColor.A / 255.0) * luminosityOpacityRangeMax) + minLuminosityOpacity;
+
+                // Finally, combine the luminosity opacity and the HsvV-clamped tint color
+                return new Color(Trim(Math.Min(mappedTintOpacity * modifier, 1.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);                                
+            }
+
         }
     }
 }

@@ -6,7 +6,9 @@ namespace Avalonia.Media
     {
         AcrylicBackgroundSource BackgroundSource { get; }
 
-        Color TintColor { get; }        
+        Color TintColor { get; }
+        
+        Color LuminosityColor { get; }
 
         double TintOpacity { get; }
 
