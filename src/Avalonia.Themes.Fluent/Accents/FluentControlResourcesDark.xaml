@@ -39,6 +39,30 @@
     <SolidColorBrush x:Key="ButtonPressedBackgroundThemeBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="ButtonPressedForegroundThemeBrush" Color="#FF000000" />
 
+    <!-- Resources for RepeatButton.xaml -->
+    <Thickness x:Key="RepeatButtonBorderThemeThickness">1</Thickness>
+    <StaticResource x:Key="RepeatButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+    <SolidColorBrush x:Key="RepeatButtonBackgroundPointerOver" Color="{StaticResource SystemBaseHighColor}" Opacity="0.1" />
+    <StaticResource x:Key="RepeatButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+    <StaticResource x:Key="RepeatButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+    <StaticResource x:Key="RepeatButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="RepeatButtonForegroundPointerOver" ResourceKey="SystemControlHighlightBaseHighBrush" />
+    <StaticResource x:Key="RepeatButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
+    <StaticResource x:Key="RepeatButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="RepeatButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
+    <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    <SolidColorBrush x:Key="RepeatButtonBorderThemeBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="RepeatButtonDisabledBackgroundThemeBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="RepeatButtonDisabledBorderThemeBrush" Color="#66FFFFFF" />
+    <SolidColorBrush x:Key="RepeatButtonDisabledForegroundThemeBrush" Color="#66FFFFFF" />
+    <SolidColorBrush x:Key="RepeatButtonForegroundThemeBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="RepeatButtonPointerOverBackgroundThemeBrush" Color="#21FFFFFF" />
+    <SolidColorBrush x:Key="RepeatButtonPointerOverForegroundThemeBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="RepeatButtonPressedBackgroundThemeBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="RepeatButtonPressedForegroundThemeBrush" Color="#FF000000" />
+    
     <!-- Resources for ComboBox.xaml -->
     <x:Double x:Key="ComboBoxArrowThemeFontSize">21</x:Double>
     <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
