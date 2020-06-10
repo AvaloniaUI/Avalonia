@@ -53,14 +53,14 @@ namespace Avalonia.Base.UnitTests.Utilities
         }
 
         [Fact]
-        public void Clamp_Input_NaN_Return_NaN()
+        public void Float_Clamp_Input_NaN_Return_NaN()
         {
             var clamp = MathUtilities.Clamp(double.NaN, 0.0, 1.0);
             Assert.True(double.IsNaN(clamp));
         }
 
         [Fact]
-        public void Clamp_Input_NegativeInfinity_Return_Min()
+        public void Float_Clamp_Input_NegativeInfinity_Return_Min()
         {
             const double min = 0.0;
             const double max = 1.0;
@@ -69,12 +69,54 @@ namespace Avalonia.Base.UnitTests.Utilities
         }
 
         [Fact]
-        public void Clamp_Input_PositiveInfinity_Return_Max()
+        public void Float_Clamp_Input_PositiveInfinity_Return_Max()
         {
             const double min = 0.0;
             const double max = 1.0;
             var actual = MathUtilities.Clamp(double.PositiveInfinity, min, max);
             Assert.Equal(max, actual);
+        }
+
+        [Fact]
+        public void Zero_Less_Than_One()
+        {
+            var actual = MathUtilities.LessThan(0, 1);
+            Assert.True(actual);
+        }
+
+        [Fact]
+        public void One_Not_Less_Than_Zero()
+        {
+            var actual = MathUtilities.LessThan(1, 0);
+            Assert.False(actual);
+        }
+
+        [Fact]
+        public void Zero_Not_Greater_Than_One()
+        {
+            var actual = MathUtilities.GreaterThan(0, 1);
+            Assert.False(actual);
+        }
+
+        [Fact]
+        public void One_Greater_Than_Zero()
+        {
+            var actual = MathUtilities.GreaterThan(1, 0);
+            Assert.True(actual);
+        }
+
+        [Fact]
+        public void One_Less_Than_Or_Close_One()
+        {
+            var actual = MathUtilities.LessThanOrClose(1, 1);
+            Assert.True(actual);
+        }
+
+        [Fact]
+        public void One_Greater_Than_Or_Close_One()
+        {
+            var actual = MathUtilities.GreaterThanOrClose(1, 1);
+            Assert.True(actual);
         }
     }
 }
