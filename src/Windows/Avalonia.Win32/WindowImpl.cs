@@ -169,7 +169,7 @@ namespace Avalonia.Win32
 
         public IPlatformHandle Handle { get; private set; }
 
-        public Size MaxAutoSizeHint => new Size(_maxTrackSize.X / Scaling, _maxTrackSize.Y / Scaling);
+        public virtual Size MaxAutoSizeHint => new Size(_maxTrackSize.X / Scaling, _maxTrackSize.Y / Scaling);
 
         public IMouseDevice MouseDevice => _mouseDevice;
 
@@ -202,6 +202,8 @@ namespace Avalonia.Win32
         }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        protected IntPtr Hwnd => _hwnd;
 
         public void SetTransparencyLevelHint (WindowTransparencyLevel transparencyLevel)
         {

@@ -80,6 +80,7 @@ namespace Avalonia.UnitTests
 
             popupImpl.SetupAllProperties();
             popupImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
+            popupImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             popupImpl.Setup(x => x.Scaling).Returns(1);
             popupImpl.Setup(x => x.PopupPositioner).Returns(positioner);
             
