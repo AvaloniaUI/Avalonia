@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -70,6 +71,9 @@ namespace Avalonia.Controls
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
     {
         private List<Window> _children = new List<Window>();
+        private TitleBar _managedTitleBar;
+
+        private bool _isExtendedIntoWindowDecorations;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -86,6 +90,39 @@ namespace Avalonia.Controls
                 nameof(HasSystemDecorations),
                 o => o.HasSystemDecorations,
                 (o, v) => o.HasSystemDecorations = v);
+
+        /// <summary>
+        /// Defines the <see cref="ExtendClientAreaToDecorationsHint"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> ExtendClientAreaToDecorationsHintProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(ExtendClientAreaToDecorationsHint), false);
+
+        public static readonly StyledProperty<ExtendClientAreaChromeHints> ExtendClientAreaChromeHintsProperty =
+            AvaloniaProperty.Register<Window, ExtendClientAreaChromeHints>(nameof(ExtendClientAreaChromeHints), ExtendClientAreaChromeHints.Default);
+
+        public static readonly StyledProperty<double> ExtendClientAreaTitleBarHeightHintProperty =
+            AvaloniaProperty.Register<Window, double>(nameof(ExtendClientAreaTitleBarHeightHint), -1);
+
+
+        /// <summary>
+        /// Defines the <see cref="IsExtendedIntoWindowDecorations"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Window, bool> IsExtendedIntoWindowDecorationsProperty =
+            AvaloniaProperty.RegisterDirect<Window, bool>(nameof(IsExtendedIntoWindowDecorations),
+                o => o.IsExtendedIntoWindowDecorations,
+                unsetValue: false);
+
+        /// <summary>
+        /// Defines the <see cref="WindowDecorationMargins"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Window, Thickness> WindowDecorationMarginsProperty =
+            AvaloniaProperty.RegisterDirect<Window, Thickness>(nameof(WindowDecorationMargins),
+                o => o.WindowDecorationMargins);
+
+        public static readonly DirectProperty<Window, Thickness> OffScreenMarginProperty =
+            AvaloniaProperty.RegisterDirect<Window, Thickness>(nameof(OffScreenMargin),
+                o => o.OffScreenMargin);
+
 
         /// <summary>
         /// Defines the <see cref="SystemDecorations"/> property.
@@ -164,6 +201,23 @@ namespace Avalonia.Controls
             WindowStateProperty.Changed.AddClassHandler<Window>(
                 (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.WindowState = (WindowState)e.NewValue; });
 
+            ExtendClientAreaToDecorationsHintProperty.Changed.AddClassHandler<Window>(
+                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaToDecorationsHint((bool)e.NewValue); });
+
+            ExtendClientAreaChromeHintsProperty.Changed.AddClassHandler<Window>(
+                (w, e) =>
+                {
+                    if (w.PlatformImpl != null)
+                    {
+                        w.PlatformImpl.SetExtendClientAreaChromeHints((ExtendClientAreaChromeHints)e.NewValue);
+                    }
+
+                    w.HandleChromeHintsChanged((ExtendClientAreaChromeHints)e.NewValue);
+                });
+
+            ExtendClientAreaTitleBarHeightHintProperty.Changed.AddClassHandler<Window>(
+                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.SetExtendClientAreaTitleBarHeightHint((double)e.NewValue); });
+
             MinWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size((double)e.NewValue, w.MinHeight), new Size(w.MaxWidth, w.MaxHeight)));
             MinHeightProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue), new Size(w.MaxWidth, w.MaxHeight)));
             MaxWidthProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size((double)e.NewValue, w.MaxHeight)));
@@ -188,6 +242,7 @@ namespace Avalonia.Controls
             impl.Closing = HandleClosing;
             impl.GotInputWhenDisabled = OnGotInputWhenDisabled;
             impl.WindowStateChanged = HandleWindowStateChanged;
+            impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
 
@@ -235,6 +290,52 @@ namespace Avalonia.Controls
                     RaisePropertyChanged(HasSystemDecorationsProperty, oldValue, value);
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets or sets if the ClientArea is Extended into the Window Decorations (chrome or border).
+        /// </summary>
+        public bool ExtendClientAreaToDecorationsHint
+        {
+            get { return GetValue(ExtendClientAreaToDecorationsHintProperty); }
+            set { SetValue(ExtendClientAreaToDecorationsHintProperty, value); }
+        }
+
+        public ExtendClientAreaChromeHints ExtendClientAreaChromeHints
+        {
+            get => GetValue(ExtendClientAreaChromeHintsProperty);
+            set => SetValue(ExtendClientAreaChromeHintsProperty, value);
+        }
+
+        public double ExtendClientAreaTitleBarHeightHint
+        {
+            get => GetValue(ExtendClientAreaTitleBarHeightHintProperty);
+            set => SetValue(ExtendClientAreaTitleBarHeightHintProperty, value);
+        }        
+
+        /// <summary>
+        /// Gets if the ClientArea is Extended into the Window Decorations.
+        /// </summary>
+        public bool IsExtendedIntoWindowDecorations
+        {
+            get => _isExtendedIntoWindowDecorations;
+            private set => SetAndRaise(IsExtendedIntoWindowDecorationsProperty, ref _isExtendedIntoWindowDecorations, value);
+        }
+
+        private Thickness _windowDecorationMargins;
+
+        public Thickness WindowDecorationMargins
+        {
+            get => _windowDecorationMargins;
+            private set => SetAndRaise(WindowDecorationMarginsProperty, ref _windowDecorationMargins, value);
+        }
+
+        private Thickness _offScreenMargin;
+
+        public Thickness OffScreenMargin
+        {
+            get => _offScreenMargin;
+            private set => SetAndRaise(OffScreenMarginProperty, ref _offScreenMargin, value);
         }
 
         /// <summary>
@@ -436,6 +537,15 @@ namespace Avalonia.Controls
             {
                 Renderer.Start();
             }
+        }
+
+        protected virtual void ExtendClientAreaToDecorationsChanged(bool isExtended)
+        {
+            IsExtendedIntoWindowDecorations = isExtended;
+
+            WindowDecorationMargins = PlatformImpl.ExtendedMargins;
+
+            OffScreenMargin = PlatformImpl.OffScreenMargin;
         }
 
         /// <summary>
@@ -738,6 +848,26 @@ namespace Avalonia.Controls
             Height = clientSize.Height;
 
             base.HandleResized(clientSize);
+        }
+
+        private void HandleChromeHintsChanged (ExtendClientAreaChromeHints hints)
+        {
+            if(hints.HasFlag(ExtendClientAreaChromeHints.ManagedChromeButtons))
+            {
+                if(_managedTitleBar == null)
+                {
+                    _managedTitleBar = new TitleBar(this);
+                }
+
+                _managedTitleBar.Attach();
+            }
+            else
+            {
+                if(_managedTitleBar != null)
+                {
+                    _managedTitleBar.Detach();
+                }
+            }
         }
 
         /// <summary>

@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
+using Avalonia.Platform;
+using System;
 using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
@@ -62,7 +64,93 @@ namespace ControlCatalog.ViewModels
                 WindowState.Maximized,
                 WindowState.FullScreen,
             };
+
+            this.WhenAnyValue(x => x.SystemChromeButtonsEnabled, x=>x.ManagedChromeButtonsEnabled, x => x.SystemTitleBarEnabled)
+                .Subscribe(x =>
+                {
+                    var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
+
+                    if(x.Item1)
+                    {
+                        hints |= ExtendClientAreaChromeHints.SystemChromeButtons;
+                    }
+
+                    if(x.Item2)
+                    {
+                        hints |= ExtendClientAreaChromeHints.ManagedChromeButtons;
+                    }
+
+                    if(x.Item3)
+                    {
+                        hints |= ExtendClientAreaChromeHints.SystemTitleBar;
+                    }
+
+                    ChromeHints = hints;
+                });
+
+            SystemTitleBarEnabled = true;
+            SystemChromeButtonsEnabled = true;
+            TitleBarHeight = -1;
         }
+
+        private int _transparencyLevel;
+
+        public int TransparencyLevel
+        {
+            get { return _transparencyLevel; }
+            set { this.RaiseAndSetIfChanged(ref _transparencyLevel, value); }
+        }
+
+        private ExtendClientAreaChromeHints _chromeHints;
+
+        public ExtendClientAreaChromeHints ChromeHints
+        {
+            get { return _chromeHints; }
+            set { this.RaiseAndSetIfChanged(ref _chromeHints, value); }
+        }
+
+
+        private bool _extendClientAreaEnabled;
+
+        public bool ExtendClientAreaEnabled
+        {
+            get { return _extendClientAreaEnabled; }
+            set { this.RaiseAndSetIfChanged(ref _extendClientAreaEnabled, value); }
+        }
+
+        private bool _systemTitleBarEnabled;
+
+        public bool SystemTitleBarEnabled
+        {
+            get { return _systemTitleBarEnabled; }
+            set { this.RaiseAndSetIfChanged(ref _systemTitleBarEnabled, value); }
+        }
+
+        private bool _systemChromeButtonsEnabled;
+
+        public bool SystemChromeButtonsEnabled
+        {
+            get { return _systemChromeButtonsEnabled; }
+            set { this.RaiseAndSetIfChanged(ref _systemChromeButtonsEnabled, value); }
+        }
+
+        private bool _managedChromeButtonsEnabled;
+
+        public bool ManagedChromeButtonsEnabled
+        {
+            get { return _managedChromeButtonsEnabled; }
+            set { this.RaiseAndSetIfChanged(ref _managedChromeButtonsEnabled, value); }
+        }
+
+
+        private double _titleBarHeight;
+
+        public double TitleBarHeight
+        {
+            get { return _titleBarHeight; }
+            set { this.RaiseAndSetIfChanged(ref _titleBarHeight, value); }
+        }
+
 
         public WindowState WindowState
         {

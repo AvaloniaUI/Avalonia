@@ -40,7 +40,10 @@ namespace Avalonia.Win32
 
         private SavedWindowInfo _savedWindowInfo;
         private bool _isFullScreenActive;
-
+        private bool _isClientAreaExtended;
+        private Thickness _extendedMargins;
+        private Thickness _offScreenMargin;
+ 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
 #endif
@@ -66,7 +69,7 @@ namespace Avalonia.Win32
         private OleDropTarget _dropTarget;
         private Size _minSize;
         private Size _maxSize;
-        private WindowImpl _parent;
+        private WindowImpl _parent;        
 
         public WindowImpl()
         {
@@ -185,6 +188,11 @@ namespace Avalonia.Win32
         {
             get
             {
+                if(_isFullScreenActive)
+                {
+                    return WindowState.FullScreen;
+                }
+
                 var placement = default(WINDOWPLACEMENT);
                 GetWindowPlacement(_hwnd, ref placement);
 
@@ -668,6 +676,96 @@ namespace Avalonia.Win32
             }
 
             TaskBarList.MarkFullscreen(_hwnd, fullscreen);
+            
+            ExtendClientArea();
+        }
+
+        private MARGINS UpdateExtendMargins()
+        {
+            RECT borderThickness = new RECT();
+            RECT borderCaptionThickness = new RECT();            
+
+            AdjustWindowRectEx(ref borderCaptionThickness, (uint)(GetStyle()), false, 0);
+            AdjustWindowRectEx(ref borderThickness, (uint)(GetStyle() & ~WindowStyles.WS_CAPTION), false, 0);
+            borderThickness.left *= -1;
+            borderThickness.top *= -1;
+            borderCaptionThickness.left *= -1;
+            borderCaptionThickness.top *= -1;
+
+            bool wantsTitleBar = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar) || _extendTitleBarHint == -1;
+
+            if (!wantsTitleBar)
+            {
+                borderCaptionThickness.top = 1;
+            }
+
+            MARGINS margins = new MARGINS();
+            margins.cxLeftWidth = 1;
+            margins.cxRightWidth = 1;
+            margins.cyBottomHeight = 1;
+
+            if (_extendTitleBarHint != -1)
+            {
+                borderCaptionThickness.top = (int)(_extendTitleBarHint * Scaling);                
+            }
+
+            margins.cyTopHeight = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar) ? borderCaptionThickness.top : 1;
+
+            if (WindowState == WindowState.Maximized)
+            {
+                _extendedMargins = new Thickness(0, (borderCaptionThickness.top - borderThickness.top) / Scaling, 0, 0);
+                _offScreenMargin = new Thickness(borderThickness.left / Scaling, borderThickness.top / Scaling, borderThickness.right / Scaling, borderThickness.bottom / Scaling);
+            }
+            else
+            {
+                _extendedMargins = new Thickness(0, (borderCaptionThickness.top) / Scaling, 0, 0);
+                _offScreenMargin = new Thickness();
+            }
+
+            return margins;
+        }
+
+        private void ExtendClientArea ()
+        {
+            if (DwmIsCompositionEnabled(out bool compositionEnabled) < 0 || !compositionEnabled)
+            {
+                _isClientAreaExtended = false;
+                return;
+            }
+
+            if (!_isClientAreaExtended || WindowState == WindowState.FullScreen)
+            {
+                _extendedMargins = new Thickness(0, 0, 0, 0);
+                _offScreenMargin = new Thickness();
+            }
+            else
+            {
+                GetWindowRect(_hwnd, out var rcClient);
+
+                // Inform the application of the frame change.
+                SetWindowPos(_hwnd,
+                             IntPtr.Zero,
+                             rcClient.left, rcClient.top,
+                             rcClient.Width, rcClient.Height,
+                             SetWindowPosFlags.SWP_FRAMECHANGED);
+
+                if (_isClientAreaExtended)
+                {
+                    var margins = UpdateExtendMargins();
+
+                    DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+                }
+                else
+                {
+                    var margins = new MARGINS();
+                    DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
+                    _offScreenMargin = new Thickness();
+                    _extendedMargins = new Thickness();
+                }
+            }
+
+            ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
         }
 
         private void ShowWindow(WindowState state)
@@ -818,9 +916,10 @@ namespace Avalonia.Win32
                 // Otherwise it will still show in the taskbar.
             }
 
+            WindowStyles style;
             if ((oldProperties.IsResizable != newProperties.IsResizable) || forceChanges)
             {
-                var style = GetStyle();
+                style = GetStyle();
 
                 if (newProperties.IsResizable)
                 {
@@ -841,7 +940,7 @@ namespace Avalonia.Win32
 
             if ((oldProperties.Decorations != newProperties.Decorations) || forceChanges)
             {
-                var style = GetStyle();
+                style = GetStyle();
 
                 const WindowStyles fullDecorationFlags = WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU;
 
@@ -886,7 +985,26 @@ namespace Avalonia.Win32
                         SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
                         SetWindowPosFlags.SWP_FRAMECHANGED);
                 }
-            }
+            }            
+        }
+
+        private const int MF_BYCOMMAND = 0x0;
+        private const int MF_BYPOSITION = 0x400;
+        private const int MF_REMOVE = 0x1000;
+        private const int MF_ENABLED = 0x0;
+        private const int MF_GRAYED = 0x1;
+        private const int MF_DISABLED = 0x2;
+        private const int SC_CLOSE = 0xF060;
+
+        void DisableCloseButton(IntPtr hwnd)
+        {
+            EnableMenuItem(GetSystemMenu(hwnd, false), SC_CLOSE,
+                           MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+        }
+        void EnableCloseButton(IntPtr hwnd)
+        {
+            EnableMenuItem(GetSystemMenu(hwnd, false), SC_CLOSE,
+                           MF_BYCOMMAND | MF_ENABLED);
         }
 
 #if USE_MANAGED_DRAG
@@ -911,6 +1029,38 @@ namespace Avalonia.Win32
         }
 
         IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
+
+        public void SetExtendClientAreaToDecorationsHint(bool hint)
+        {
+            _isClientAreaExtended = hint;
+            
+            ExtendClientArea();            
+        }
+
+        private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
+
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {
+            _extendChromeHints = hints;
+
+            ExtendClientArea();
+        }
+
+        private double _extendTitleBarHint = -1;
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+            _extendTitleBarHint = titleBarHeight;
+
+            ExtendClientArea();
+        }
+
+        public bool IsClientAreaExtendedToDecorations => _isClientAreaExtended;
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }        
+
+        public Thickness ExtendedMargins => _extendedMargins;
+
+        public Thickness OffScreenMargin => _offScreenMargin;
 
         private struct SavedWindowInfo
         {

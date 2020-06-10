@@ -1,0 +1,19 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border>
+      <TitleBar Background="SkyBlue" Height="30" Width="300" Foreground="Black" />
+    </Border>
+  </Design.PreviewWith>
+  <Style Selector="TitleBar">
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>    
+    <Setter Property="MaxHeight" Value="30" />
+    <Setter Property="Background" Value="Red" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}" HorizontalAlignment="Stretch">
+          <CaptionButtons Name="PART_CaptionButtons" HorizontalAlignment="Right" Foreground="{TemplateBinding Foreground}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>

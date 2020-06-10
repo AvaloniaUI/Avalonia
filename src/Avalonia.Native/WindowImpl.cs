@@ -1,6 +1,8 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
@@ -14,6 +16,8 @@ namespace Avalonia.Native
         private readonly AvaloniaNativePlatformOptions _opts;
         private readonly GlPlatformFeature _glFeature;
         IAvnWindow _native;
+        private double _extendTitleBarHeight = -1;
+
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             GlPlatformFeature glFeature) : base(opts, glFeature)
         {
@@ -50,6 +54,8 @@ namespace Avalonia.Native
 
             void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
             {
+                _parent.InvalidateExtendedMargins();
+
                 _parent.WindowStateChanged?.Invoke((WindowState)state);
             }
 
@@ -96,7 +102,84 @@ namespace Avalonia.Native
             }
         }
 
-        public Action<WindowState> WindowStateChanged { get; set; }
+        public Action<WindowState> WindowStateChanged { get; set; }        
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public Thickness ExtendedMargins { get; private set; }
+
+        public Thickness OffScreenMargin { get; } = new Thickness();
+
+        private bool _isExtended;
+        public bool IsClientAreaExtendedToDecorations => _isExtended;
+
+        protected override bool ChromeHitTest (RawPointerEventArgs e)
+        {
+            if(_isExtended)
+            {
+                if(e.Type == RawPointerEventType.LeftButtonDown)
+                {
+                    var visual = (_inputRoot as Window).Renderer.HitTestFirst(e.Position, _inputRoot as Window, x =>
+                            {
+                                if (x is IInputElement ie && !ie.IsHitTestVisible)
+                                {
+                                    return false;
+                                }
+                                return true;
+                            });
+
+                    if(visual == null)
+                    {
+                        _native.BeginMoveDrag();
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private void InvalidateExtendedMargins ()
+        {
+            if(WindowState ==  WindowState.FullScreen)
+            {
+                ExtendedMargins = new Thickness();
+            }
+            else
+            {
+                ExtendedMargins = _isExtended ? new Thickness(0, _extendTitleBarHeight == -1 ? _native.GetExtendTitleBarHeight() : _extendTitleBarHeight, 0, 0) : new Thickness();
+            }
+
+            ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
+        }
+
+        public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
+        {
+            _isExtended = extendIntoClientAreaHint;
+
+            _native.SetExtendClientArea(extendIntoClientAreaHint);
+
+            InvalidateExtendedMargins();
+        }
+
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {
+            if(hints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChromeButtons))
+            {
+                hints |= ExtendClientAreaChromeHints.SystemChromeButtons;
+            }
+            
+            _native.SetExtendClientAreaHints ((AvnExtendClientAreaChromeHints)hints);
+        }
+
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+            _extendTitleBarHeight = titleBarHeight;
+            _native.SetExtendTitleBarHeight(titleBarHeight);
+
+            ExtendedMargins = _isExtended ? new Thickness(0, titleBarHeight == -1 ? _native.GetExtendTitleBarHeight() : titleBarHeight, 0, 0) : new Thickness();
+
+            ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
+        }
 
         public void ShowTaskbarIcon(bool value)
         {
