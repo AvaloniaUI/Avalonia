@@ -193,7 +193,7 @@ namespace Avalonia.Controls
             var orient = Orientation == Orientation.Horizontal;
 
             var pointDen = orient ? _track.Bounds.Width : _track.Bounds.Height;
-            pointDen += double.Epsilon; // Just add epsilon to avoid divide by zero exceptions.
+            pointDen += MathUtilities.DoubleEpsilon; // Just add epsilon to avoid divide by zero exceptions.
 
             var pointNum = orient ? x.Position.X : x.Position.Y;
             var logicalPos = MathUtilities.Clamp(pointNum / pointDen, 0.0d, 1.0d);

@@ -7,4 +7,5 @@ using Avalonia.Metadata;
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Data.Converters")]
 [assembly: InternalsVisibleTo("Avalonia.Base.UnitTests")]
 [assembly: InternalsVisibleTo("Avalonia.UnitTests")]
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")] 
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
+[assembly: InternalsVisibleTo("Avalonia.Controls")]

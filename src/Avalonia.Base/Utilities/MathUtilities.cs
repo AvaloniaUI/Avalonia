@@ -9,7 +9,7 @@ namespace Avalonia.Utilities
     public static class MathUtilities
     {
         // smallest such that 1.0+DoubleEpsilon != 1.0
-        private const double DoubleEpsilon = 2.2204460492503131e-016;
+        internal static readonly double DoubleEpsilon = 2.2204460492503131e-016;
 
         /// <summary>
         /// AreClose - Returns whether or not two doubles are "close".  That is, whether or 
