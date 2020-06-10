@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Utilities;
 using Xunit;
 
@@ -18,6 +19,7 @@ namespace Avalonia.Base.UnitTests.Utilities
             var actual = MathUtilities.AreClose(x, y);
 
             Assert.True(actual);
+            Assert.Equal(x, Math.Round(y, 14));
         }
 
         [Fact]
@@ -32,6 +34,7 @@ namespace Avalonia.Base.UnitTests.Utilities
             var actual = MathUtilities.IsOne(x);
 
             Assert.True(actual);
+            Assert.Equal(1.0, Math.Round(x, 15));
         }
 
         [Fact]
@@ -46,6 +49,32 @@ namespace Avalonia.Base.UnitTests.Utilities
             var actual = MathUtilities.IsZero(x);
 
             Assert.True(actual);
+            Assert.Equal(0.0, Math.Round(x, 15));
+        }
+
+        [Fact]
+        public void Clamp_Input_NaN_Return_NaN()
+        {
+            var clamp = MathUtilities.Clamp(double.NaN, 0.0, 1.0);
+            Assert.True(double.IsNaN(clamp));
+        }
+
+        [Fact]
+        public void Clamp_Input_NegativeInfinity_Return_Min()
+        {
+            const double min = 0.0;
+            const double max = 1.0;
+            var actual = MathUtilities.Clamp(double.NegativeInfinity, min, max);
+            Assert.Equal(min, actual);
+        }
+
+        [Fact]
+        public void Clamp_Input_PositiveInfinity_Return_Max()
+        {
+            const double min = 0.0;
+            const double max = 1.0;
+            var actual = MathUtilities.Clamp(double.PositiveInfinity, min, max);
+            Assert.Equal(max, actual);
         }
     }
 }
