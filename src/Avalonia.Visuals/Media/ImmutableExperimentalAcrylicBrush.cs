@@ -34,7 +34,8 @@ namespace Avalonia.Media
                 Opacity == other.Opacity &&
                 TintOpacity == other.TintOpacity &&
                 BackgroundSource == other.BackgroundSource &&
-                FallbackColor == other.FallbackColor;
+                FallbackColor == other.FallbackColor && LuminosityColor == other.LuminosityColor;
+                
         }
 
         public override bool Equals(object obj)
@@ -58,6 +59,7 @@ namespace Avalonia.Media
                 hash = (hash * 23) + TintOpacity.GetHashCode();
                 hash = (hash * 23) + BackgroundSource.GetHashCode();
                 hash = (hash * 23) + FallbackColor.GetHashCode();
+                hash = (hash * 23) + LuminosityColor.GetHashCode();
 
                 return hash;
             }

@@ -677,17 +677,18 @@ namespace Avalonia.Skia
             var r = (ca * aa + cb * ab * (1 - aa)) / (aa + ab * (1 - aa));
             return (byte)(r * 255);
         }
-        static SKColor Blend(SKColor left, SKColor right)
+
+        static Color Blend(Color left, Color right)
         {
-            var aa = left.Alpha / 255d;
-            var ab = right.Alpha / 255d;
-            return new SKColor(
-                Blend(left.Red, left.Alpha, right.Red, right.Alpha),
-                Blend(left.Green, left.Alpha, right.Green, right.Alpha),
-                Blend(left.Blue, left.Alpha, right.Blue, right.Alpha),
-                (byte)((aa + ab * (1 - aa)) * 255)
+            var aa = left.A / 255d;
+            var ab = right.A / 255d;
+            return new Color(
+                (byte)((aa + ab * (1 - aa)) * 255),
+                Blend(left.R, left.A, right.R, right.A),
+                Blend(left.G, left.A, right.G, right.A),
+                Blend(left.B, left.A, right.B, right.A)                
             );
-        }        
+        }
 
         /// <summary>
         /// Creates paint wrapper for given brush.
@@ -722,9 +723,6 @@ namespace Avalonia.Skia
 
                 var tintColor = acrylicBrush.TintColor;                
                 var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, tintColor.A);
-                var tracingPaper = new SKColor(0xaf, 0x7f, 0x7f, 0x7f);
-
-                //tint = Blend(tracingPaper, tint);
 
                 if (s_acrylicNoiseShader == null)
                 {
@@ -736,10 +734,9 @@ namespace Avalonia.Skia
                     }
                 }
                 
-                using (var backdrop = SKShader.CreateColor(new SKColor(acrylicBrush.LuminosityColor.R, acrylicBrush.LuminosityColor.G, acrylicBrush.LuminosityColor.B, (byte)Math.Round((acrylicBrush.LuminosityColor.A * 0.75)))))
-                using (var backdropResult = SKShader.CreateCompose(backdrop, backdrop, SKBlendMode.Luminosity))
+                using (var backdrop = SKShader.CreateColor(new SKColor(acrylicBrush.LuminosityColor.R, acrylicBrush.LuminosityColor.G, acrylicBrush.LuminosityColor.B, acrylicBrush.LuminosityColor.A)))                
                 using (var tintShader = SKShader.CreateColor(tint))
-                using (var effectiveTint = SKShader.CreateCompose (backdropResult, tintShader))
+                using (var effectiveTint = SKShader.CreateCompose (backdrop, tintShader))
                 using (var compose = SKShader.CreateCompose(effectiveTint, s_acrylicNoiseShader))
                 {
                     paint.Shader = compose;

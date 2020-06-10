@@ -33,7 +33,7 @@ namespace Avalonia.Media
                 b._effectiveLuminosityColor = b.GetEffectiveLuminosityColor();
             });
         }
-        
+
         /// <summary>
         /// Defines the <see cref="TintColor"/> property.
         /// </summary>
@@ -46,8 +46,8 @@ namespace Avalonia.Media
         public static readonly StyledProperty<double> TintOpacityProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicBrush, double>(nameof(TintOpacity));
 
-        public static readonly StyledProperty<double?> TintLuminosityOpacityProperty =
-            AvaloniaProperty.Register<ExperimentalAcrylicBrush, double?>(nameof(TintLuminosityOpacity));
+        public static readonly StyledProperty<double> TintLuminosityOpacityProperty =
+            AvaloniaProperty.Register<ExperimentalAcrylicBrush, double>(nameof(TintLuminosityOpacity), 0.9);
 
         public static readonly StyledProperty<Color> FallbackColorProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicBrush, Color>(nameof(FallbackColor));
@@ -80,7 +80,7 @@ namespace Avalonia.Media
             set => SetValue(FallbackColorProperty, value);
         }
 
-        public double? TintLuminosityOpacity
+        public double TintLuminosityOpacity
         {
             get => GetValue(TintLuminosityOpacityProperty);
             set => SetValue(TintLuminosityOpacityProperty, value);
@@ -100,7 +100,7 @@ namespace Avalonia.Media
 
         public static HsvColor RgbToHsv(Color color)
         {
-            var r = color.R /255.0f;
+            var r = color.R / 255.0f;
             var g = color.G / 255.0f;
             var b = color.B / 255.0f;
             var max = Math.Max(r, Math.Max(g, b));
@@ -172,10 +172,10 @@ namespace Avalonia.Media
 
             const double midPoint = 0.5; // Mid point of HsvV range that these calculations are based on. This is here for easy tuning.
 
-            double whiteMaxOpacity = 0.45; // 100% luminosity
+            double whiteMaxOpacity = 0.65; // 100% luminosity
             double midPointMaxOpacity = 0.90; // 50% luminosity
             double blackMaxOpacity = 0.85; // 0% luminosity
-            
+
             var hsv = RgbToHsv(tintColor);
 
             double opacityModifier = midPointMaxOpacity;
@@ -218,7 +218,7 @@ namespace Avalonia.Media
         }
 
         Color GetEffectiveLuminosityColor()
-        {            
+        {
             double tintOpacity = TintOpacity;
 
             // Purposely leaving out tint opacity modifier here because GetLuminosityColor needs the *original* tint opacity set by the user.
@@ -226,7 +226,7 @@ namespace Avalonia.Media
 
             double? luminosityOpacity = TintLuminosityOpacity;
 
-            return GetLuminosityColor(tintColor, luminosityOpacity);
+            return GetLuminosityColor(luminosityOpacity);
         }
 
         public static Color FromHsv(HsvColor color)
@@ -294,37 +294,19 @@ namespace Avalonia.Media
             return (byte)value;
         }
 
-        double Luminosity (Color color)
+        double Luminosity(Color color)
         {
             return 0.299 * color.R + 0.587 * color.G + 0.114 * color.B;
         }
 
         // The tintColor passed into this method should be the original, unmodified color created using user values for TintColor + TintOpacity
-        Color GetLuminosityColor(Color tintColor, double? luminosityOpacity)
+        Color GetLuminosityColor(double? luminosityOpacity)
         {
             var luminosityColor = new Color(255, 127, 127, 127);
 
             var modifier = GetTintOpacityModifier(luminosityColor);
 
-            // If luminosity opacity is specified, just use the values as is
-            if (luminosityOpacity.HasValue)
-            {                
-                return new Color((byte)(255 * Math.Max(Math.Min(luminosityOpacity.Value * modifier, 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
-            }
-            else
-            {
-                // Now figure out luminosity opacity
-                // Map original *tint* opacity to this range
-                const double minLuminosityOpacity = 0.15;
-                const double maxLuminosityOpacity = 1.03;
-
-                double luminosityOpacityRangeMax = maxLuminosityOpacity - minLuminosityOpacity;
-                double mappedTintOpacity = ((tintColor.A / 255.0) * luminosityOpacityRangeMax) + minLuminosityOpacity;
-
-                // Finally, combine the luminosity opacity and the HsvV-clamped tint color
-                return new Color(Trim(Math.Min(mappedTintOpacity * modifier, 1.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);                                
-            }
-
+            return new Color((byte)(255 * Math.Max(Math.Min(luminosityOpacity.Value * modifier, 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
         }
     }
 }
