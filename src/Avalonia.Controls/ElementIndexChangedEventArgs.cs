@@ -8,11 +8,12 @@ using System;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Provides data for the <see cref="ItemsRepeater.ElementIndexChanged"/> event.
+    /// Provides notification that a recyclable element has been reused to represent a different
+    /// item index.
     /// </summary>
-    public class ItemsRepeaterElementIndexChangedEventArgs : EventArgs
+    public class ElementIndexChangedEventArgs : EventArgs
     {
-        internal ItemsRepeaterElementIndexChangedEventArgs(IControl element, int oldIndex, int newIndex)
+        public ElementIndexChangedEventArgs(IControl element, int oldIndex, int newIndex)
         {
             Element = element;
             OldIndex = oldIndex;

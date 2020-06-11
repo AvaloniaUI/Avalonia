@@ -6,11 +6,11 @@
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Provides data for the <see cref="ItemsRepeater.ElementPrepared"/> event.
+    /// Provides notification that a recyclable element has been prepared for use.
     /// </summary>
-    public class ItemsRepeaterElementPreparedEventArgs
+    public class ElementPreparedEventArgs
     {
-        internal ItemsRepeaterElementPreparedEventArgs(IControl element, int index)
+        public ElementPreparedEventArgs(IControl element, int index)
         {
             Element = element;
             Index = index;
