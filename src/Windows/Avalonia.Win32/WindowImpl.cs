@@ -529,7 +529,7 @@ namespace Avalonia.Win32
                 0,
                 atom,
                 null,
-                (int)WindowStyles.WS_OVERLAPPEDWINDOW,
+                (int)(WindowStyles.WS_OVERLAPPEDWINDOW | WindowStyles.WS_CLIPCHILDREN),
                 CW_USEDEFAULT,
                 CW_USEDEFAULT,
                 CW_USEDEFAULT,
