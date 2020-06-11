@@ -43,6 +43,11 @@ namespace Avalonia.Native
                 _parent = parent;
             }
 
+            public void GotInputWhenDisabled()
+            {
+                // NOP on Popup
+            }
+
             bool IAvnWindowEvents.Closing()
             {
                 return true;
@@ -54,6 +59,11 @@ namespace Avalonia.Native
         }
 
         public override IPopupImpl CreatePopup() => new PopupImpl(_factory, _opts, _glFeature, this);
+
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
     }
 }

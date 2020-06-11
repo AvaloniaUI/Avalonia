@@ -526,17 +526,17 @@ namespace Avalonia.Input
         {
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == IsFocusedProperty)
+            if (change.Property == IsFocusedProperty)
             {
-                UpdatePseudoClasses(newValue.GetValueOrDefault<bool>(), null);
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>(), null);
             }
-            else if (property == IsPointerOverProperty)
+            else if (change.Property == IsPointerOverProperty)
             {
-                UpdatePseudoClasses(null, newValue.GetValueOrDefault<bool>());
+                UpdatePseudoClasses(null, change.NewValue.GetValueOrDefault<bool>());
             }
         }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Reactive.Subjects;
+using Avalonia.Data;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -61,6 +62,56 @@ namespace Avalonia.Base.UnitTests
             var target = new Class3();
 
             Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void GetBaseValue_LocalValue_Ignores_Default_Value()
+        {
+            var target = new Class3();
+
+            target.SetValue(Class1.FooProperty, "animated", BindingPriority.Animation);
+            Assert.False(target.GetBaseValue(Class1.FooProperty, BindingPriority.LocalValue).HasValue);
+        }
+
+        [Fact]
+        public void GetBaseValue_LocalValue_Returns_Local_Value()
+        {
+            var target = new Class3();
+
+            target.SetValue(Class1.FooProperty, "local");
+            target.SetValue(Class1.FooProperty, "animated", BindingPriority.Animation);
+            Assert.Equal("local", target.GetBaseValue(Class1.FooProperty, BindingPriority.LocalValue).Value);
+        }
+
+        [Fact]
+        public void GetBaseValue_LocalValue_Returns_Style_Value()
+        {
+            var target = new Class3();
+
+            target.SetValue(Class1.FooProperty, "style", BindingPriority.Style);
+            target.SetValue(Class1.FooProperty, "animated", BindingPriority.Animation);
+            Assert.Equal("style", target.GetBaseValue(Class1.FooProperty, BindingPriority.LocalValue).Value);
+        }
+
+        [Fact]
+        public void GetBaseValue_Style_Ignores_LocalValue_Animated_Value()
+        {
+            var target = new Class3();
+
+            target.Bind(Class1.FooProperty, new BehaviorSubject<string>("animated"), BindingPriority.Animation);
+            target.SetValue(Class1.FooProperty, "local");
+            Assert.False(target.GetBaseValue(Class1.FooProperty, BindingPriority.Style).HasValue);
+        }
+
+        [Fact]
+        public void GetBaseValue_Style_Returns_Style_Value()
+        {
+            var target = new Class3();
+
+            target.SetValue(Class1.FooProperty, "local");
+            target.SetValue(Class1.FooProperty, "style", BindingPriority.Style);
+            target.Bind(Class1.FooProperty, new BehaviorSubject<string>("animated"), BindingPriority.Animation);
+            Assert.Equal("style", target.GetBaseValue(Class1.FooProperty, BindingPriority.Style));
         }
 
         private class Class1 : AvaloniaObject

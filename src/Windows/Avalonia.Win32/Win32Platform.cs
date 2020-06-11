@@ -36,7 +36,7 @@ namespace Avalonia
     public class Win32PlatformOptions
     {
         public bool UseDeferredRendering { get; set; } = true;
-        public bool AllowEglInitialization { get; set; }
+        public bool AllowEglInitialization { get; set; } = true;
         public bool? EnableMultitouch { get; set; }
         public bool OverlayPopups { get; set; }
     }
@@ -57,6 +57,11 @@ namespace Avalonia.Win32
             SetDpiAwareness();
             CreateMessageWindow();
         }
+
+        /// <summary>
+        /// Gets the actual WindowsVersion. Same as the info returned from RtlGetVersion.
+        /// </summary>
+        public static Version WindowsVersion { get; } = RtlGetVersion();
 
         public static bool UseDeferredRendering => Options.UseDeferredRendering;
         internal static bool UseOverlayPopups => Options.OverlayPopups;

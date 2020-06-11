@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -45,7 +46,6 @@ namespace Avalonia.Win32
 #endif
 
         private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
-        private readonly List<WindowImpl> _disabledBy;
         private readonly TouchDevice _touchDevice;
         private readonly MouseDevice _mouseDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
@@ -70,7 +70,6 @@ namespace Avalonia.Win32
 
         public WindowImpl()
         {
-            _disabledBy = new List<WindowImpl>();
             _touchDevice = new TouchDevice();
             _mouseDevice = new WindowsMouseDevice();
 
@@ -123,6 +122,8 @@ namespace Avalonia.Win32
         public Action<PixelPoint> PositionChanged { get; set; }
 
         public Action<WindowState> WindowStateChanged { get; set; }
+
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
         public Thickness BorderThickness
         {
@@ -206,6 +207,81 @@ namespace Avalonia.Win32
                     _showWindowState = value;
                 }
             }
+        }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public void SetTransparencyLevelHint (WindowTransparencyLevel transparencyLevel)
+        {
+            TransparencyLevel = EnableBlur(transparencyLevel);
+        }
+
+        private WindowTransparencyLevel EnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            bool canUseTransparency = false;
+            bool canUseAcrylic = false;
+
+            if (Win32Platform.WindowsVersion.Major >= 10)
+            {
+                canUseTransparency = true;
+
+                if (Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628)
+                {
+                    canUseAcrylic = true;
+                }
+            }
+
+            if (!canUseTransparency || DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
+            {
+                return WindowTransparencyLevel.None;
+            }
+
+            var accent = new AccentPolicy();
+            var accentStructSize = Marshal.SizeOf(accent);
+
+            if(transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
+            {
+                transparencyLevel = WindowTransparencyLevel.Blur;
+            }
+
+            switch (transparencyLevel)
+            {
+                default:
+                case WindowTransparencyLevel.None:
+                    accent.AccentState = AccentState.ACCENT_DISABLED;
+                    break;
+
+                case WindowTransparencyLevel.Transparent:
+                    accent.AccentState = AccentState.ACCENT_ENABLE_TRANSPARENTGRADIENT;
+                    break;
+
+                case WindowTransparencyLevel.Blur:
+                    accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
+                    break;
+
+                case WindowTransparencyLevel.AcrylicBlur:
+                case (WindowTransparencyLevel.AcrylicBlur + 1): // hack-force acrylic.
+                    accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
+                    transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
+                    break;
+            }
+
+            accent.AccentFlags = 2;
+            accent.GradientColor = 0x00FFFFFF;
+
+            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+
+            var data = new WindowCompositionAttributeData();
+            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
+            data.SizeOfData = accentStructSize;
+            data.Data = accentPtr;
+
+            SetWindowCompositionAttribute(_hwnd, ref data);
+
+            Marshal.FreeHGlobal(accentPtr);            
+
+            return transparencyLevel;
         }
 
         public IEnumerable<object> Surfaces => new object[] { Handle, _gl, _framebuffer };
@@ -342,30 +418,24 @@ namespace Avalonia.Win32
 
         public void Hide()
         {
-            if (_parent != null)
-            {
-                _parent._disabledBy.Remove(this);
-                _parent.UpdateEnabled();
-                _parent = null;
-            }
-
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
         }
 
         public virtual void Show()
         {
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, IntPtr.Zero);
+            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent != null ? _parent._hwnd : IntPtr.Zero);
             ShowWindow(_showWindowState);
         }
 
-        public void ShowDialog(IWindowImpl parent)
+        public Action GotInputWhenDisabled { get; set; }
+
+        public void SetParent(IWindowImpl parent)
         {
             _parent = (WindowImpl)parent;
-            _parent._disabledBy.Add(this);
-            _parent.UpdateEnabled();
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, ((WindowImpl)parent)._hwnd);
-            ShowWindow(_showWindowState);
+            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent._hwnd);
         }
+
+        public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
 
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
@@ -666,7 +736,7 @@ namespace Avalonia.Win32
             }
         }        
 
-        private WindowStyles GetWindowStateStyles ()
+        private WindowStyles GetWindowStateStyles()
         {
             return GetStyle() & WindowStateMask;
         }
@@ -719,11 +789,6 @@ namespace Avalonia.Win32
             {
                 SetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE, (uint)style);
             }
-        }
-
-        private void UpdateEnabled()
-        {
-            EnableWindow(_hwnd, _disabledBy.Count == 0);
         }
 
         private void UpdateWindowProperties(WindowProperties newProperties, bool forceChanges = false)
@@ -793,9 +858,14 @@ namespace Avalonia.Win32
 
                 if (!_isFullScreenActive)
                 {
+                    var margin = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0;
+
                     var margins = new MARGINS
                     {
-                        cyBottomHeight = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0
+                        cyBottomHeight = margin,
+                        cxRightWidth = margin,
+                        cxLeftWidth = margin,
+                        cyTopHeight = margin
                     };
 
                     DwmExtendFrameIntoClientArea(_hwnd, ref margins);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
@@ -200,6 +201,30 @@ namespace Avalonia.Native
             {
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
             }
+
+            public AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
+                AvnInputModifiers modifiers,
+                AvnDragDropEffects effects,
+                IAvnClipboard clipboard, IntPtr dataObjectHandle)
+            {
+                var device = AvaloniaLocator.Current.GetService<IDragDropDevice>();
+
+                IDataObject dataObject = null;
+                if (dataObjectHandle != IntPtr.Zero)
+                    dataObject = GCHandle.FromIntPtr(dataObjectHandle).Target as IDataObject;
+                
+                using(var clipboardDataObject = new ClipboardDataObject(clipboard))
+                {
+                    if (dataObject == null)
+                        dataObject = clipboardDataObject;
+                    
+                    var args = new RawDragEvent(device, (RawDragEventType)type,
+                        _parent._inputRoot, position.ToAvaloniaPoint(), dataObject, (DragDropEffects)effects,
+                        (RawInputModifiers)modifiers);
+                    _parent.Input(args);
+                    return (AvnDragDropEffects)args.Effects;
+                }
+            }
         }
 
         public void Activate()
@@ -344,6 +369,8 @@ namespace Avalonia.Native
 
         Action<double> ITopLevelImpl.ScalingChanged { get; set; }
 
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
         public IScreenImpl Screen { get; private set; }
 
         // TODO
@@ -357,6 +384,35 @@ namespace Avalonia.Native
         {
 
         }
+
+        internal void BeginDraggingSession(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard clipboard,
+            IAvnDndResultCallback callback, IntPtr sourceHandle)
+        {
+            _native.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
+        }
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) 
+        {
+            if (TransparencyLevel != transparencyLevel)
+            {
+                if (transparencyLevel >= WindowTransparencyLevel.Blur)
+                {
+                    transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
+                }
+
+                if(transparencyLevel == WindowTransparencyLevel.None)
+                {
+                    transparencyLevel = WindowTransparencyLevel.Transparent;
+                }
+
+                TransparencyLevel = transparencyLevel;
+
+                _native.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
+                TransparencyLevelChanged?.Invoke(TransparencyLevel);
+            }
+        }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.Transparent;
 
         public IPlatformHandle Handle { get; private set; }
     }

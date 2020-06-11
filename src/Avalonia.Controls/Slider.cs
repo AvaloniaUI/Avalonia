@@ -1,12 +1,40 @@
 using System;
+using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
+
+    /// <summary>
+    /// Enum which describes how to position the ticks in a <see cref="Slider"/>.
+    /// </summary>
+    public enum TickPlacement
+    {
+        /// <summary>
+        /// No tick marks will appear.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// Tick marks  will appear above the track for a horizontal <see cref="Slider"/>, or to the left of the track for a vertical <see cref="Slider"/>.
+        /// </summary>
+        TopLeft,
+
+        /// <summary>
+        /// Tick marks will appear below the track for a horizontal <see cref="Slider"/>, or to the right of the track for a vertical <see cref="Slider"/>.
+        /// </summary>
+        BottomRight,
+
+        /// <summary>
+        /// Tick marks appear on both sides of either a horizontal or vertical <see cref="Slider"/>.
+        /// </summary>
+        Outside
+    }
+
     /// <summary>
     /// A control that lets the user select from a range of values by moving a Thumb control along a Track.
     /// </summary>
@@ -30,19 +58,31 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> TickFrequencyProperty =
             AvaloniaProperty.Register<Slider, double>(nameof(TickFrequency), 0.0);
 
+        /// <summary>
+        /// Defines the <see cref="TickPlacement"/> property.
+        /// </summary>
+        public static readonly StyledProperty<TickPlacement> TickPlacementProperty =
+            AvaloniaProperty.Register<TickBar, TickPlacement>(nameof(TickPlacement), 0d);
+
         // Slider required parts
+        private bool _isDragging = false;
         private Track _track;
         private Button _decreaseButton;
         private Button _increaseButton;
+        private IDisposable _decreaseButtonPressDispose;
+        private IDisposable _decreaseButtonReleaseDispose;
+        private IDisposable _increaseButtonSubscription;
+        private IDisposable _increaseButtonReleaseDispose;
+        private IDisposable _pointerMovedDispose;
 
         /// <summary>
         /// Initializes static members of the <see cref="Slider"/> class. 
         /// </summary>
         static Slider()
         {
+            PressedMixin.Attach<Slider>();
             OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
             Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
-            Thumb.DragDeltaEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e), RoutingStrategies.Bubble);
         }
 
@@ -81,70 +121,97 @@ namespace Avalonia.Controls
             set { SetValue(TickFrequencyProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value that indicates where to draw 
+        /// tick marks in relation to the track.
+        /// </summary>
+        public TickPlacement TickPlacement
+        {
+            get { return GetValue(TickPlacementProperty); }
+            set { SetValue(TickPlacementProperty, value); }
+        }
+
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            if (_decreaseButton != null)
-            {
-                _decreaseButton.Click -= DecreaseClick;
-            }
-
-            if (_increaseButton != null)
-            {
-                _increaseButton.Click -= IncreaseClick;
-            }
+            base.OnApplyTemplate(e);
+            
+            _decreaseButtonPressDispose?.Dispose();
+            _decreaseButtonReleaseDispose?.Dispose();
+            _increaseButtonSubscription?.Dispose();
+            _increaseButtonReleaseDispose?.Dispose();
+            _pointerMovedDispose?.Dispose();
 
             _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
             _track = e.NameScope.Find<Track>("PART_Track");
             _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
 
+            if (_track != null)
+            {
+                _track.IsThumbDragHandled = true;
+            }
+
             if (_decreaseButton != null)
             {
-                _decreaseButton.Click += DecreaseClick;
+                _decreaseButtonPressDispose = _decreaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
+                _decreaseButtonReleaseDispose = _decreaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
             }
 
             if (_increaseButton != null)
             {
-                _increaseButton.Click += IncreaseClick;
+                _increaseButtonSubscription = _increaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
+                _increaseButtonReleaseDispose = _increaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
+            }
+
+            _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
+        }
+
+        private void TrackMoved(object sender, PointerEventArgs e)
+        {
+            if (_isDragging)
+            {
+                MoveToPoint(e.GetCurrentPoint(_track));
             }
         }
 
-        private void DecreaseClick(object sender, RoutedEventArgs e)
+        private void TrackReleased(object sender, PointerReleasedEventArgs e)
         {
-            ChangeValueBy(-LargeChange);
+            _isDragging = false;
         }
 
-        private void IncreaseClick(object sender, RoutedEventArgs e)
+        private void TrackPressed(object sender, PointerPressedEventArgs e)
         {
-            ChangeValueBy(LargeChange);
-        }
-
-        private void ChangeValueBy(double by)
-        {
-            if (IsSnapToTickEnabled)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                by = by < 0 ? Math.Min(-TickFrequency, by) : Math.Max(TickFrequency, by);
-            }
-
-            var value = Value;
-            var next = SnapToTick(Math.Max(Math.Min(value + by, Maximum), Minimum));
-            if (next != value)
-            {
-                Value = next;
+                MoveToPoint(e.GetCurrentPoint(_track));
+                _isDragging = true;
             }
         }
 
-        protected override void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        private void MoveToPoint(PointerPoint x)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            var orient = Orientation == Orientation.Horizontal;
 
-            if (property == OrientationProperty)
+            var pointDen = orient ? _track.Bounds.Width : _track.Bounds.Height;
+            pointDen += double.Epsilon; // Just add epsilon to avoid divide by zero exceptions.
+
+            var pointNum = orient ? x.Position.X : x.Position.Y;
+            var logicalPos = MathUtilities.Clamp(pointNum / pointDen, 0.0d, 1.0d);
+            var invert = orient ? 0 : 1;
+            var calcVal = Math.Abs(invert - logicalPos);
+            var range = Maximum - Minimum;
+            var finalValue = calcVal * range;
+
+            Value = IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue;
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == OrientationProperty)
             {
-                UpdatePseudoClasses(newValue.GetValueOrDefault<Orientation>());
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Orientation>());
             }
         }
 
@@ -154,19 +221,7 @@ namespace Avalonia.Controls
         /// <param name="e"></param>
         protected virtual void OnThumbDragStarted(VectorEventArgs e)
         {
-        }
-
-        /// <summary>
-        /// Called when user dragging the <see cref="Thumb"/>.
-        /// </summary>
-        /// <param name="e"></param>
-        protected virtual void OnThumbDragDelta(VectorEventArgs e)
-        {
-            Thumb thumb = e.Source as Thumb;
-            if (thumb != null && _track?.Thumb == thumb)
-            {
-                MoveToNextTick(_track.Value);
-            }
+            _isDragging = true;
         }
 
         /// <summary>
@@ -175,15 +230,7 @@ namespace Avalonia.Controls
         /// <param name="e"></param>
         protected virtual void OnThumbDragCompleted(VectorEventArgs e)
         {
-        }
-
-        /// <summary>
-        /// Searches for the closest tick and sets Value to that tick.
-        /// </summary>
-        /// <param name="value">Value that want to snap to closest Tick.</param>
-        private void MoveToNextTick(double value)
-        {
-            Value = SnapToTick(Math.Max(Minimum, Math.Min(Maximum, value)));
+            _isDragging = false;
         }
 
         /// <summary>
@@ -192,14 +239,17 @@ namespace Avalonia.Controls
         /// <param name="value">Value that want to snap to closest Tick.</param>
         private double SnapToTick(double value)
         {
-            if (IsSnapToTickEnabled && TickFrequency > 0.0)
+            var previous = Minimum;
+            var next = Maximum;
+
+            if (TickFrequency > 0.0)
             {
-                double previous = Minimum + (Math.Round(((value - Minimum) / TickFrequency)) * TickFrequency);
-                double next = Math.Min(Maximum, previous + TickFrequency);
-                value = value > (previous + next) * 0.5 ? next : previous;
+                previous = Minimum + (Math.Round((value - Minimum) / TickFrequency) * TickFrequency);
+                next = Math.Min(Maximum, previous + TickFrequency);
             }
 
-            return value;
+            // Choose the closest value between previous and next. If tie, snap to 'next'.
+            return MathUtilities.GreaterThanOrClose(value, (previous + next) * 0.5) ? next : previous;
         }
 
         private void UpdatePseudoClasses(Orientation o)

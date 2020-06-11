@@ -1,5 +1,9 @@
 ﻿using System;
+using Avalonia.Data.Converters;
+using Avalonia.LogicalTree;
 using Avalonia.Reactive;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -11,8 +15,11 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         /// <param name="key">The resource key.</param>
         /// <returns>The resource, or <see cref="AvaloniaProperty.UnsetValue"/> if not found.</returns>
-        public static object FindResource(this IResourceNode control, object key)
+        public static object? FindResource(this IResourceHost control, object key)
         {
+            control = control ?? throw new ArgumentNullException(nameof(control));
+            key = key ?? throw new ArgumentNullException(nameof(key));
+
             if (control.TryFindResource(key, out var value))
             {
                 return value;
@@ -28,16 +35,16 @@ namespace Avalonia.Controls
         /// <param name="key">The resource key.</param>
         /// <param name="value">On return, contains the resource if found, otherwise null.</param>
         /// <returns>True if the resource was found; otherwise false.</returns>
-        public static bool TryFindResource(this IResourceNode control, object key, out object value)
+        public static bool TryFindResource(this IResourceHost control, object key, out object? value)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
-            Contract.Requires<ArgumentNullException>(key != null);
+            control = control ?? throw new ArgumentNullException(nameof(control));
+            key = key ?? throw new ArgumentNullException(nameof(key));
 
-            var current = control;
+            IResourceHost? current = control;
 
             while (current != null)
             {
-                if (current is IResourceNode host)
+                if (current is IResourceHost host)
                 {
                     if (host.TryGetResource(key, out value))
                     {
@@ -45,27 +52,46 @@ namespace Avalonia.Controls
                     }
                 }
 
-                current = current.ResourceParent;
+                current = (current as IStyledElement)?.StylingParent as IResourceHost;
             }
 
             value = null;
             return false;
         }
 
-        public static IObservable<object> GetResourceObservable(this IResourceNode target, object key)
+        public static IObservable<object?> GetResourceObservable(
+            this IStyledElement control,
+            object key,
+            Func<object?, object?>? converter = null)
         {
-            return new ResourceObservable(target, key);
+            control = control ?? throw new ArgumentNullException(nameof(control));
+            key = key ?? throw new ArgumentNullException(nameof(key));
+
+            return new ResourceObservable(control, key, converter);
         }
 
-        private class ResourceObservable : LightweightObservableBase<object>
+        public static IObservable<object?> GetResourceObservable(
+            this IResourceProvider resourceProvider,
+            object key,
+            Func<object?, object?>? converter = null)
         {
-            private readonly IResourceNode _target;
-            private readonly object _key;
+            resourceProvider = resourceProvider ?? throw new ArgumentNullException(nameof(resourceProvider));
+            key = key ?? throw new ArgumentNullException(nameof(key));
 
-            public ResourceObservable(IResourceNode target, object key)
+            return new FloatingResourceObservable(resourceProvider, key, converter);
+        }
+
+        private class ResourceObservable : LightweightObservableBase<object?>
+        {
+            private readonly IStyledElement _target;
+            private readonly object _key;
+            private readonly Func<object?, object?>? _converter;
+
+            public ResourceObservable(IStyledElement target, object key, Func<object?, object?>? converter)
             {
                 _target = target;
                 _key = key;
+                _converter = converter;
             }
 
             protected override void Initialize()
@@ -78,15 +104,81 @@ namespace Avalonia.Controls
                 _target.ResourcesChanged -= ResourcesChanged;
             }
 
-            protected override void Subscribed(IObserver<object> observer, bool first)
+            protected override void Subscribed(IObserver<object?> observer, bool first)
             {
-                observer.OnNext(_target.FindResource(_key));
+                observer.OnNext(Convert(_target.FindResource(_key)));
             }
 
             private void ResourcesChanged(object sender, ResourcesChangedEventArgs e)
             {
-                PublishNext(_target.FindResource(_key));
+                PublishNext(Convert(_target.FindResource(_key)));
             }
+
+            private object? Convert(object? value) => _converter?.Invoke(value) ?? value;
+        }
+
+        private class FloatingResourceObservable : LightweightObservableBase<object?>
+        {
+            private readonly IResourceProvider _target;
+            private readonly object _key;
+            private readonly Func<object?, object?>? _converter;
+            private IResourceHost? _owner;
+
+            public FloatingResourceObservable(IResourceProvider target, object key, Func<object?, object?>? converter)
+            {
+                _target = target;
+                _key = key;
+                _converter = converter;
+            }
+
+            protected override void Initialize()
+            {
+                _target.OwnerChanged += OwnerChanged;
+                _owner = _target.Owner;
+            }
+
+            protected override void Deinitialize()
+            {
+                _target.OwnerChanged -= OwnerChanged;
+                _owner = null;
+            }
+
+            protected override void Subscribed(IObserver<object?> observer, bool first)
+            {
+                if (_target.Owner is object)
+                {
+                    observer.OnNext(Convert(_target.Owner?.FindResource(_key)));
+                }
+            }
+
+            private void PublishNext()
+            {
+                PublishNext(Convert(_target.Owner?.FindResource(_key)));
+            }
+
+            private void OwnerChanged(object sender, EventArgs e)
+            {
+                if (_owner is object)
+                {
+                    _owner.ResourcesChanged -= ResourcesChanged;
+                }
+
+                _owner = _target.Owner;
+
+                if (_owner is object)
+                {
+                    _owner.ResourcesChanged += ResourcesChanged;
+                }
+
+                PublishNext();
+            }
+
+            private void ResourcesChanged(object sender, ResourcesChangedEventArgs e)
+            {
+                PublishNext();
+            }
+
+            private object? Convert(object? value) => _converter?.Invoke(value) ?? value;
         }
     }
 }

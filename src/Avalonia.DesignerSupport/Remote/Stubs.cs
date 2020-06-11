@@ -37,6 +37,8 @@ namespace Avalonia.DesignerSupport.Remote
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
 
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
         public WindowStub(IWindowImpl parent = null)
         {
             if (parent != null)
@@ -130,7 +132,25 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetParent(IWindowImpl parent)
+        {
+        }
+
+        public void SetEnabled(bool enable)
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
+
+        public Action GotInputWhenDisabled { get; set; }
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+        }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
     }
 
     class ClipboardStub : IClipboard
@@ -140,6 +160,10 @@ namespace Avalonia.DesignerSupport.Remote
         public Task SetTextAsync(string text) => Task.CompletedTask;
 
         public Task ClearAsync() => Task.CompletedTask;
+        public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
+        public Task<string[]> GetFormatsAsync() => Task.FromResult(new string[0]);
+
+        public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
     }
 
     class CursorFactoryStub : IStandardCursorFactory
