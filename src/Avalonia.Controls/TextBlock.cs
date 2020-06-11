@@ -71,6 +71,14 @@ namespace Avalonia.Controls
                 inherits: true);
 
         /// <summary>
+        /// Defines the <see cref="MaxLines"/> property.
+        /// </summary>
+        public static readonly StyledProperty<int> MaxLinesProperty =
+            AvaloniaProperty.Register<TextBlock, int>(
+                nameof(MaxLines),
+                validate: IsValidMaxLines);
+
+        /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
         public static readonly DirectProperty<TextBlock, string> TextProperty =
@@ -220,6 +228,15 @@ namespace Avalonia.Controls
         {
             get { return GetValue(ForegroundProperty); }
             set { SetValue(ForegroundProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum number of text lines.
+        /// </summary>
+        public int MaxLines
+        {
+            get => GetValue(MaxLinesProperty);
+            set => SetValue(MaxLinesProperty, value);
         }
 
         /// <summary>
@@ -404,7 +421,8 @@ namespace Avalonia.Controls
                 TextTrimming,
                 TextDecorations,
                 constraint.Width,
-                constraint.Height);
+                constraint.Height,
+                MaxLines);
         }
 
         /// <summary>
@@ -451,5 +469,7 @@ namespace Avalonia.Controls
 
             InvalidateMeasure();
         }
+
+        private static bool IsValidMaxLines(int maxLines) => maxLines >= 0;
     }
 }
