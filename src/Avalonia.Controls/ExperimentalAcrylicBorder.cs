@@ -2,6 +2,7 @@
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
+using System;
 
 namespace Avalonia.Controls
 {
@@ -36,6 +37,38 @@ namespace Avalonia.Controls
         {
             get => GetValue(MaterialProperty);
             set => SetValue(MaterialProperty, value);
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            var tl = (e.Root as TopLevel);
+
+            tl.GetObservable(TopLevel.ActualTransparencyLevelProperty)
+                .Subscribe(x =>
+                {
+                    switch (x)
+                    {
+                        case WindowTransparencyLevel.Transparent:
+                        case WindowTransparencyLevel.None:
+                            Material.PlatformTransparencyCompensationLevel = 1;
+                            break;
+
+                        case WindowTransparencyLevel.Blur:
+                            Material.PlatformTransparencyCompensationLevel = 0.85;
+                            break;
+
+                        case WindowTransparencyLevel.AcrylicBlur:
+                            Material.PlatformTransparencyCompensationLevel = 0;
+                            break;
+                    }
+                });
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
         }
 
 

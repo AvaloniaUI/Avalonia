@@ -13,7 +13,8 @@ namespace Avalonia.Media
                 TintColorProperty,
                 BackgroundSourceProperty,
                 TintOpacityProperty,
-                TintLuminosityOpacityProperty);
+                TintLuminosityOpacityProperty,
+                PlatformTransparencyCompensationLevelProperty);
 
             TintColorProperty.Changed.AddClassHandler<ExperimentalAcrylicMaterial>((b, e) =>
             {
@@ -28,6 +29,12 @@ namespace Avalonia.Media
             });
 
             TintLuminosityOpacityProperty.Changed.AddClassHandler<ExperimentalAcrylicMaterial>((b, e) =>
+            {
+                b._effectiveTintColor = GetEffectiveTintColor(b.TintColor, b.TintOpacity);
+                b._effectiveLuminosityColor = b.GetEffectiveLuminosityColor();
+            });
+
+            PlatformTransparencyCompensationLevelProperty.Changed.AddClassHandler<ExperimentalAcrylicMaterial>((b, e) =>
             {
                 b._effectiveTintColor = GetEffectiveTintColor(b.TintColor, b.TintOpacity);
                 b._effectiveLuminosityColor = b.GetEffectiveLuminosityColor();
@@ -48,6 +55,9 @@ namespace Avalonia.Media
 
         public static readonly StyledProperty<double> TintLuminosityOpacityProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicMaterial, double>(nameof(TintLuminosityOpacity), 0.5);
+
+        public static readonly StyledProperty<double> PlatformTransparencyCompensationLevelProperty =
+            AvaloniaProperty.Register<ExperimentalAcrylicMaterial, double>(nameof(PlatformTransparencyCompensationLevel), 0.0);
 
         public static readonly StyledProperty<Color> FallbackColorProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicMaterial, Color>(nameof(FallbackColor));
@@ -83,6 +93,12 @@ namespace Avalonia.Media
         {
             get => GetValue(TintLuminosityOpacityProperty);
             set => SetValue(TintLuminosityOpacityProperty, value);
+        }
+
+        public double PlatformTransparencyCompensationLevel
+        {
+            get => GetValue(PlatformTransparencyCompensationLevelProperty);
+            set => SetValue(PlatformTransparencyCompensationLevelProperty, value);
         }
 
         Color IExperimentalAcrylicMaterial.LuminosityColor => _effectiveLuminosityColor;
@@ -314,7 +330,9 @@ namespace Avalonia.Media
 
             var luminosityColor = new Color(255, Trim(lightness), Trim(lightness), Trim(lightness));
 
-            return new Color((byte)(255 * Math.Max(Math.Min(((luminosityOpacity.Value)), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
+            var compensationMultiplier = 1 - PlatformTransparencyCompensationLevel;
+
+            return new Color((byte)(255 * Math.Max(Math.Min(PlatformTransparencyCompensationLevel + ( luminosityOpacity.Value * compensationMultiplier), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
         }
 
         /// <summary>
