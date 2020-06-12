@@ -235,7 +235,7 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-            _flyoutButton = e.NameScope.Find<Avalonia.Controls.Button>("FlyoutButton");
+            _flyoutButton = e.NameScope.Find<Button>("FlyoutButton");
             _dayText = e.NameScope.Find<TextBlock>("DayText");
             _monthText = e.NameScope.Find<TextBlock>("MonthText");
             _yearText = e.NameScope.Find<TextBlock>("YearText");
@@ -253,20 +253,10 @@ namespace Avalonia.Controls
             {
                 _flyoutButton.Click += OnFlyoutButtonClicked;
             }
-
-
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            //switch (e.Key)
-            //{
-            //    case Key.Tab:
-            //        //FocusManager.Instance.Focus(_presenter, NavigationMethod.Tab);
-            //        //Debug.WriteLine(FocusManager.Instance.Current.ToString());
-            //        e.Handled = true;
-            //        break;
-            //}
             base.OnKeyDown(e);
         }
 
@@ -471,12 +461,6 @@ namespace Avalonia.Controls
 
         private void OnFlyoutButtonClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            //Need to position the popup before displaying it
-            //We want to position the selected item overtop of the DatePicker
-            //We want to see the DatePicker left/right borders on either side of the popup
-            //_flyout.Width = this.Width - 2;
-            //_flyout.IsOpen = true;
-
             _presenter.YearFormat = YearFormat;
             _presenter.DayFormat = DayFormat;
             _presenter.MonthFormat = MonthFormat;
@@ -503,7 +487,7 @@ namespace Avalonia.Controls
 
 
         //Template Items
-        private Avalonia.Controls.Button _flyoutButton;
+        private Button _flyoutButton;
         private TextBlock _dayText;
         private TextBlock _monthText;
         private TextBlock _yearText;

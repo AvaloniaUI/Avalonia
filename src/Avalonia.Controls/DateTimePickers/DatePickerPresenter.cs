@@ -7,7 +7,6 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -141,8 +140,12 @@ namespace Avalonia.Controls
             get => _maxYear;
             set
             {
+                if (value < MinYear)
+                    throw new InvalidOperationException("MaxDate cannot be less than MinDate");
                 SetAndRaise(MaxYearProperty, ref _maxYear, value);
-                //Coerce date if needed
+
+                if (Date > value)
+                    Date = value;
             }
         }
 
@@ -154,8 +157,12 @@ namespace Avalonia.Controls
             get => _minYear;
             set
             {
+                if (value > MaxYear)
+                    throw new InvalidOperationException("MinDate cannot be greater than MaxDate");
                 SetAndRaise(MinYearProperty, ref _minYear, value);
-                //Coerce date if needed
+
+                if (Date < value)
+                    Date = value;
             }
         }
 
@@ -577,7 +584,6 @@ namespace Avalonia.Controls
                 while (_dayItems.Count < daysInMonth)
                 {
                     curDt = new DateTimeOffset(date.Date.Year, date.Date.Month, dayIndex, 0, 0, 0, date.Offset);
-                    Debug.WriteLine($"ADDED {curDt}");
                     DatePickerPresenterItem dppi = new DatePickerPresenterItem(curDt);
                     dppi.DisplayText = formatter.Format(curDt);
                     _dayItems.Add(dppi);
@@ -588,7 +594,6 @@ namespace Avalonia.Controls
             {
                 while (_dayItems.Count > daysInMonth)
                 {
-                    Debug.WriteLine($"REMOVED {_dayItems[_dayItems.Count - 1].GetStoredDate()}");
                     _dayItems.RemoveAt(_dayItems.Count - 1);
                 }
             }
@@ -806,7 +811,6 @@ namespace Avalonia.Controls
                     _pickerContainer.Children.Move(_pickerContainer.Children.IndexOf(_yearSelector), Grid.GetColumn(_yearSelector));
                 }
             }
-
         }
 
         private void OnPopupOpened(object sender, EventArgs e)
@@ -843,7 +847,6 @@ namespace Avalonia.Controls
                     Date = new DateTimeOffset(currentDate.Date.Year, currentDate.Date.Month, itemDate.Date.Day, 0, 0, 0, Date.Offset);
                 }
             }
-
         }
 
         /// <summary>
@@ -909,7 +912,6 @@ namespace Avalonia.Controls
                     {
                         Date = new DateTimeOffset(itemDate.Date.Year, currentDate.Date.Month, currentDate.Date.Day, 0, 0, 0, Date.Offset);
                     }
-
                 }
             }
         }
@@ -944,8 +946,8 @@ namespace Avalonia.Controls
 
         //Template Items
         private Grid _pickerContainer;
-        private Avalonia.Controls.Button _acceptButton;
-        private Avalonia.Controls.Button _dismissButton;
+        private Button _acceptButton;
+        private Button _dismissButton;
         private Rectangle _spacer1;
         private Rectangle _spacer2;
 
