@@ -10,14 +10,14 @@ namespace Avalonia.Media
             TintColor = brush.TintColor;
             TintOpacity = brush.TintOpacity;
             FallbackColor = brush.FallbackColor;
-            LuminosityColor = brush.LuminosityColor;
+            MaterialColor = brush.MaterialColor;
         }
 
         public AcrylicBackgroundSource BackgroundSource { get; }
 
         public Color TintColor { get; }
 
-        public Color LuminosityColor { get; }
+        public Color MaterialColor { get; }
 
         public double TintOpacity { get; }
 
@@ -30,7 +30,7 @@ namespace Avalonia.Media
                 TintColor == other.TintColor &&                
                 TintOpacity == other.TintOpacity &&
                 BackgroundSource == other.BackgroundSource &&
-                FallbackColor == other.FallbackColor && LuminosityColor == other.LuminosityColor;
+                FallbackColor == other.FallbackColor && MaterialColor == other.MaterialColor;
 
         }
 
@@ -54,7 +54,7 @@ namespace Avalonia.Media
                 hash = (hash * 23) + TintOpacity.GetHashCode();
                 hash = (hash * 23) + BackgroundSource.GetHashCode();
                 hash = (hash * 23) + FallbackColor.GetHashCode();
-                hash = (hash * 23) + LuminosityColor.GetHashCode();
+                hash = (hash * 23) + MaterialColor.GetHashCode();
 
                 return hash;
             }

@@ -13,7 +13,7 @@ namespace Avalonia.Media
                 TintColorProperty,
                 BackgroundSourceProperty,
                 TintOpacityProperty,
-                TintLuminosityOpacityProperty,
+                MaterialOpacityProperty,
                 PlatformTransparencyCompensationLevelProperty);
 
             TintColorProperty.Changed.AddClassHandler<ExperimentalAcrylicMaterial>((b, e) =>
@@ -28,7 +28,7 @@ namespace Avalonia.Media
                 b._effectiveLuminosityColor = b.GetEffectiveLuminosityColor();
             });
 
-            TintLuminosityOpacityProperty.Changed.AddClassHandler<ExperimentalAcrylicMaterial>((b, e) =>
+            MaterialOpacityProperty.Changed.AddClassHandler<ExperimentalAcrylicMaterial>((b, e) =>
             {
                 b._effectiveTintColor = GetEffectiveTintColor(b.TintColor, b.TintOpacity);
                 b._effectiveLuminosityColor = b.GetEffectiveLuminosityColor();
@@ -53,8 +53,8 @@ namespace Avalonia.Media
         public static readonly StyledProperty<double> TintOpacityProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicMaterial, double>(nameof(TintOpacity), 0.8);
 
-        public static readonly StyledProperty<double> TintLuminosityOpacityProperty =
-            AvaloniaProperty.Register<ExperimentalAcrylicMaterial, double>(nameof(TintLuminosityOpacity), 0.5);
+        public static readonly StyledProperty<double> MaterialOpacityProperty =
+            AvaloniaProperty.Register<ExperimentalAcrylicMaterial, double>(nameof(MaterialOpacity), 0.5);
 
         public static readonly StyledProperty<double> PlatformTransparencyCompensationLevelProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicMaterial, double>(nameof(PlatformTransparencyCompensationLevel), 0.0);
@@ -89,10 +89,10 @@ namespace Avalonia.Media
             set => SetValue(FallbackColorProperty, value);
         }
 
-        public double TintLuminosityOpacity
+        public double MaterialOpacity
         {
-            get => GetValue(TintLuminosityOpacityProperty);
-            set => SetValue(TintLuminosityOpacityProperty, value);
+            get => GetValue(MaterialOpacityProperty);
+            set => SetValue(MaterialOpacityProperty, value);
         }
 
         public double PlatformTransparencyCompensationLevel
@@ -101,7 +101,7 @@ namespace Avalonia.Media
             set => SetValue(PlatformTransparencyCompensationLevelProperty, value);
         }
 
-        Color IExperimentalAcrylicMaterial.LuminosityColor => _effectiveLuminosityColor;
+        Color IExperimentalAcrylicMaterial.MaterialColor => _effectiveLuminosityColor;
 
         Color IExperimentalAcrylicMaterial.TintColor => _effectiveTintColor;
 
@@ -232,7 +232,7 @@ namespace Avalonia.Media
             // Purposely leaving out tint opacity modifier here because GetLuminosityColor needs the *original* tint opacity set by the user.
             var tintColor = new Color((byte)(Math.Round(TintColor.A * tintOpacity)), TintColor.R, TintColor.G, TintColor.B);
 
-            double? luminosityOpacity = TintLuminosityOpacity;
+            double? luminosityOpacity = MaterialOpacity;
 
             return GetLuminosityColor(luminosityOpacity);
         }
@@ -327,7 +327,10 @@ namespace Avalonia.Media
 
             var lightness = (max + min) / 2.0;
 
-            lightness = 0.125 + (lightness * 0.75);  // centralise and reduce the range of the opaque layer. 
+            // centralise and reduce the range of the opaque layer. 
+            // this is done so pure white and pure black still have the effect of being blended with something.
+            // i.e. they get a little darker / lighter.
+            lightness = 0.125 + (lightness * 0.75);              
 
             var luminosityColor = new Color(255, Trim(lightness), Trim(lightness), Trim(lightness));
 

@@ -753,7 +753,7 @@ namespace Avalonia.Skia
                 }
             }
 
-            using (var backdrop = SKShader.CreateColor(new SKColor(material.LuminosityColor.R, material.LuminosityColor.G, material.LuminosityColor.B, material.LuminosityColor.A)))
+            using (var backdrop = SKShader.CreateColor(new SKColor(material.MaterialColor.R, material.MaterialColor.G, material.MaterialColor.B, material.MaterialColor.A)))
             using (var tintShader = SKShader.CreateColor(tint))
             using (var effectiveTint = SKShader.CreateCompose(backdrop, tintShader))
             using (var compose = SKShader.CreateCompose(effectiveTint, s_acrylicNoiseShader))

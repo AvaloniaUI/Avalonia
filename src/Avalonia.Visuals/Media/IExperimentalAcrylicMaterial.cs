@@ -6,9 +6,9 @@
 
         Color TintColor { get; }
 
-        Color LuminosityColor { get; }
-
         double TintOpacity { get; }
+
+        Color MaterialColor { get; }        
 
         Color FallbackColor { get; }
     }
