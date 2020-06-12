@@ -1,0 +1,235 @@
+<!--
+// (c) Copyright Microsoft Corporation.
+// This source is subject to the Microsoft Public License (Ms-PL).
+// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// All other rights reserved.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=netstandard">
+  <Styles.Resources>
+    <Thickness x:Key="TimePickerTopHeaderMargin">0,0,0,4</Thickness>
+    <x:Double x:Key="TimePickerFlyoutPresenterHighlightHeight">40</x:Double>
+    <x:Double x:Key="TimePickerFlyoutPresenterAcceptDismissHostGridHeight">41</x:Double>
+    <x:Double x:Key="TimePickerThemeMinWidth">242</x:Double>
+    <x:Double x:Key="TimePickerThemeMaxWidth">456</x:Double>
+    <x:Double x:Key="TimePickerFlyoutPresenterItemHeight">40</x:Double>
+    <Thickness x:Key="TimePickerFlyoutPresenterItemPadding">0,3,0,6</Thickness>
+    <Thickness x:Key="TimePickerHostPadding">0,3,0,6</Thickness>
+
+    <!-- These are technically declared in the Light/Dark resource dictionary, but are the same-->
+    <x:Double x:Key="TimePickerSelectorThemeMinWidth">80</x:Double>
+    <x:Double x:Key="TimePickerSpacerThemeWidth">1</x:Double>
+    <Thickness x:Key="TimePickerBorderThemeThickness">1</Thickness>
+    <Thickness x:Key="TimePickerHeaderThemeMargin">0,0,0,4</Thickness>
+    <Thickness x:Key="TimePickerFirstHostThemeMargin">0,0,20,0</Thickness>
+    <Thickness x:Key="TimePickerThirdHostThemeMargin">20,0,0,0</Thickness>
+    <FontWeight x:Key="TimePickerHeaderThemeFontWeight">Normal</FontWeight>
+  </Styles.Resources>
+
+  <Style Selector="TimePicker">
+    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="Foreground" Value="{DynamicResource TimePickerButtonForeground}" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid Name="LayoutRoot" Margin="{TemplateBinding Padding}" RowDefinitions="Auto,*">
+          <Grid.Styles>
+            <Style Selector="Button.TimePickerFlyoutButtonStyle">
+              <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackground}"/>
+              <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrush}"/>
+              <Setter Property="BorderThickness" Value="{DynamicResource TimePickerBorderThemeThickness}"/>
+              <Setter Property="Template">
+                <ControlTemplate>
+                  <Border Background="{TemplateBinding Background}">
+                    <ContentPresenter Name="ContentPresenter"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Content="{TemplateBinding Content}"
+                                TextBlock.Foreground="{TemplateBinding Foreground}"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch"
+                                CornerRadius="{DynamicResource ControlCornerRadius}" />
+                  </Border>
+                </ControlTemplate>
+              </Setter>
+            </Style>
+            <Style Selector="Button.TimePickerFlyoutButtonStyle:pointerover /template/ ContentPresenter">
+              <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundPointerOver}"/>
+              <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrushPointerOver}"/>
+              <Setter Property="TextBlock.Foreground" Value="{DynamicResource TimePickerButtonForegroundPointerOver}"/>
+            </Style>
+            <Style Selector="Button.TimePickerFlyoutButtonStyle:pressed /template/ ContentPresenter">
+              <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundPressed}"/>
+              <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrushPressed}"/>
+              <Setter Property="TextBlock.Foreground" Value="{DynamicResource TimePickerButtonForegroundPressed}"/>
+            </Style>
+            <Style Selector="Button.TimePickerFlyoutButtonStyle:disabled /template/ ContentPresenter">
+              <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundDisabled}"/>
+              <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrushDisabled}"/>
+              <Setter Property="TextBlock.Foreground" Value="{DynamicResource TimePickerButtonForegroundDisabled}"/>
+            </Style>
+            <!-- Need separation of keyboard & pointer focus for this to work
+            <Style Selector="Button.TimePickerFlyoutButtonStyle:focus /template/ ContentPresenter">
+              <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundFocused}"/>
+              <Setter Property="TextBlock.Foreground" Value="{DynamicResource TimePickerButtonForegroundFocused}"/>
+            </Style>-->
+          </Grid.Styles>
+          <ContentPresenter x:Name="HeaderContentPresenter"
+                 Grid.Row="0"
+                 Content="{TemplateBinding Header}"
+                 ContentTemplate="{TemplateBinding HeaderTemplate}"
+                 Margin="{DynamicResource TimePickerTopHeaderMargin}"
+                 MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Top" />
+
+          <Button x:Name="FlyoutButton" Classes="TimePickerFlyoutButtonStyle"
+                  Grid.Row="1"
+                  Foreground="{TemplateBinding Foreground}"
+                  Background="{TemplateBinding Background}"
+                  IsEnabled="{TemplateBinding IsEnabled}"
+                  MinWidth="{StaticResource TimePickerThemeMinWidth}"
+                  MaxWidth="{StaticResource TimePickerThemeMaxWidth}"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Stretch"
+                  VerticalAlignment="Top">
+            <Grid Name="FlyoutButtonContentGrid">
+              <!--Ignore col defs here, set in code-->
+              <Border x:Name="FirstPickerHost" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <TextBlock x:Name="HourTextBlock"
+                    HorizontalAlignment="Center"
+                    Padding="{DynamicResource TimePickerHostPadding}"
+                    FontFamily="{TemplateBinding FontFamily}"
+                    FontWeight="{TemplateBinding FontWeight}"
+                    FontSize="{TemplateBinding FontSize}" />
+              </Border>
+              <Rectangle x:Name="FirstColumnDivider"
+                  Fill="{DynamicResource TimePickerSpacerFill}"
+                  HorizontalAlignment="Center"
+                  Width="{DynamicResource TimePickerSpacerThemeWidth}"
+                  Grid.Column="1" />
+              <Border x:Name="SecondPickerHost" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <TextBlock x:Name="MinuteTextBlock"
+                    HorizontalAlignment="Center"
+                    Padding="{DynamicResource TimePickerHostPadding}"
+                    FontFamily="{TemplateBinding FontFamily}"
+                    FontWeight="{TemplateBinding FontWeight}"
+                    FontSize="{TemplateBinding FontSize}"/>
+              </Border>
+              <Rectangle x:Name="SecondColumnDivider"
+                  Fill="{DynamicResource TimePickerSpacerFill}"
+                  HorizontalAlignment="Center"
+                  Width="{DynamicResource TimePickerSpacerThemeWidth}"
+                  Grid.Column="3" />
+              <Border x:Name="ThirdPickerHost" Grid.Column="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <TextBlock x:Name="PeriodTextBlock"
+                    HorizontalAlignment="Center"
+                    Padding="{DynamicResource TimePickerHostPadding}"
+                    FontFamily="{TemplateBinding FontFamily}"
+                    FontWeight="{TemplateBinding FontWeight}"
+                    FontSize="{TemplateBinding FontSize}" />
+              </Border>
+            </Grid>
+          </Button>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="TimePicker /template/ ContentPresenter#HeaderContentPresenter">
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TimePickerHeaderForeground}"/>
+  </Style>
+
+  <Style Selector="TimePicker:disabled /template/ ContentPresenter#HeaderContentPresenter">
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TimePickerHeaderForegroundDisabled}"/>
+  </Style>
+  <Style Selector="TimePicker:disabled /template/ Rectangle">
+    <Setter Property="Fill" Value="{DynamicResource TimePickerSpacerFillDisabled}"/>
+  </Style>
+  <!-- Changes foreground for watermark text when SelectedTime is null -->
+  <Style Selector="TimePicker:hasnotime /template/ Button#FlyoutButton TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
+  </Style>
+  
+  <!--WinUI: TimePickerFlyoutPresenter-->
+  <Style Selector="TimePickerPresenter">
+    <Setter Property="Width" Value="242" />
+    <Setter Property="MinWidth" Value="242" />
+    <Setter Property="MaxHeight" Value="398" />
+    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Background" Value="{DynamicResource TimePickerFlyoutPresenterBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TimePickerFlyoutPresenterBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource DateTimeFlyoutBorderThickness}" />
+    <!-- Added Property -->
+    <Setter Property="SelectorItemTemplate">
+      <DataTemplate DataType="TimePickerPresenterItem">
+        <Panel>
+          <TextBlock Text="{Binding DisplayText}"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     Padding="{DynamicResource TimePickerFlyoutPresenterItemPadding}"/>
+        </Panel>
+      </DataTemplate>
+    </Setter>
+    <Setter Property="Template">
+        <ControlTemplate>
+            <Border Name="Background"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{DynamicResource OverlayCornerRadius}"
+                    Padding="{DynamicResource DateTimeFlyoutBorderPadding}"
+                    MaxHeight="398">
+                <Grid Name="ContentPanel" RowDefinitions="*,Auto">
+                    <Grid Name="PickerHost">
+                        <!--Ignore col defs here, set in code-->
+                        <Rectangle x:Name="HighlightRect" IsHitTestVisible="False"
+                                Fill="{DynamicResource TimePickerFlyoutPresenterHighlightFill}"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="5"
+                                VerticalAlignment="Center"
+                                Height="{DynamicResource TimePickerFlyoutPresenterHighlightHeight}" />
+                        <Border x:Name="FirstPickerHost" Grid.Column="0" />
+                        <Rectangle x:Name="FirstPickerSpacing"
+                            Fill="{DynamicResource TimePickerFlyoutPresenterSpacerFill}"
+                            HorizontalAlignment="Center"
+                            Width="{DynamicResource TimePickerSpacerThemeWidth}"
+                            Grid.Column="1" />
+                        <Border x:Name="SecondPickerHost" Grid.Column="2" />
+                        <Rectangle x:Name="SecondPickerSpacing"
+                            Fill="{DynamicResource TimePickerFlyoutPresenterSpacerFill}"
+                            HorizontalAlignment="Center"
+                            Width="{DynamicResource TimePickerSpacerThemeWidth}"
+                            Grid.Column="3" />
+                        <Border x:Name="ThirdPickerHost" Grid.Column="4" />
+                    </Grid>
+
+                    <Grid Grid.Row="1" Height="{DynamicResource TimePickerFlyoutPresenterAcceptDismissHostGridHeight}"
+                          Name="AcceptDismissHostGrid" ColumnDefinitions="*,*">
+                        <Rectangle Height="{DynamicResource TimePickerSpacerThemeWidth}"
+                                VerticalAlignment="Top"
+                                Fill="{DynamicResource TimePickerFlyoutPresenterSpacerFill}"
+                                Grid.ColumnSpan="2" />
+                        <Button Name="AcceptButton" Grid.Column="0" Classes="DateTimeFlyoutButtonStyle"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <Path Stroke="{Binding $parent[Button].Foreground}" StrokeLineCap="Round"
+                                  StrokeThickness="0.75" Data="M0.5,8.5 5,13.5 15.5,3" />
+                        </Button>
+                        <Button Name="DismissButton" Grid.Column="1" Classes="DateTimeFlyoutButtonStyle"
+                                    FontSize="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <Path Stroke="{Binding $parent[Button].Foreground}" StrokeLineCap="Round"
+                                  StrokeThickness="0.75" Data="M2,2 14,14 M2,14 14 2" />
+                        </Button>
+                    </Grid>
+                </Grid>
+            </Border>
+        </ControlTemplate>
+    </Setter>
+  </Style>
+ 
+</Styles>

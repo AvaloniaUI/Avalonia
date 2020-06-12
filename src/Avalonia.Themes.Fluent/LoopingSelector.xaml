@@ -1,0 +1,92 @@
+<!--
+// (c) Copyright Microsoft Corporation.
+// This source is subject to the Microsoft Public License (Ms-PL).
+// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// All other rights reserved.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=netstandard">
+
+  <Style Selector="LoopingSelector">
+    <Setter Property="ItemHeight" Value="40"/>
+    <Setter Property="ItemTemplate">
+      <DataTemplate>
+        <Panel>
+          <TextBlock Text="{Binding DisplayText}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </Panel>
+      </DataTemplate>
+    </Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid Background="Transparent">
+          <ScrollViewer Name="Scroller" HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Hidden" />
+          <!--The up/down repeatbuttons for the looping selector uses this style 
+              They appear opaque, the only base resources that don't have an alpha
+              component is the SystemChrome colors, so that's probably what's used...
+              Will use that here, as default background here is transparent.
+              SystemControlPageBackgroundChromeLowBrush is the brush/color that matched best
+              Button Style Class defined in DatePicker.xaml
+          -->
+          <RepeatButton Name="UpButton" Classes="DateTimeFlyoutButtonStyle" Height="22"
+                        Padding="0"  VerticalAlignment="Top" HorizontalAlignment="Stretch"
+                      Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}">
+            <Viewbox Height="10" Width="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Path Stroke="{Binding $parent[RepeatButton].Foreground}" StrokeThickness="1" Data="M 0,9 L 9,0 L 18,9"/>
+            </Viewbox>
+          </RepeatButton>
+
+          <RepeatButton Name="DownButton" Classes="DateTimeFlyoutButtonStyle"
+                        Height="22" Padding="0" VerticalAlignment="Bottom" HorizontalAlignment="Stretch"
+                        Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}">
+            <Viewbox Height="10" Width="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Path Stroke="{Binding $parent[RepeatButton].Foreground}" StrokeThickness="1" Data="M 0,0 L 9,9 L 18,0"/>
+            </Viewbox>
+          </RepeatButton>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="LoopingSelector /template/ RepeatButton">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
+  <Style Selector="LoopingSelector:pointerover /template/ RepeatButton">
+    <Setter Property="IsVisible" Value="True"/>
+  </Style>
+
+  <Style Selector="LoopingSelectorItem">
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SystemControlTransparentBrush}"/>
+    <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel Name="Root" Background="{TemplateBinding Background}">
+          <ContentPresenter Name="ContentPresenter"
+                            TextBlock.Foreground="{TemplateBinding Foreground}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Padding="{TemplateBinding Padding}"
+                            Margin="2,0"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="LoopingSelectorItem:pointerover /template/ Panel#Root">
+    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundListLowBrush}"/>
+  </Style>
+  <Style Selector="LoopingSelectorItem:pressed /template/ Panel#Root">
+    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}"/>
+  </Style>
+  <Style Selector="LoopingSelectorItem:selected /template/ Panel#Root">
+    <Setter Property="Background" Value="Transparent"/>
+  </Style>
+  
+  
+</Styles>
