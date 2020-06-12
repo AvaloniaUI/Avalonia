@@ -7,12 +7,12 @@
   <Border Padding="20" HorizontalAlignment="Center">
     <StackPanel Spacing="20">
 
-      <Border Width="660" CornerRadius="5" BoxShadow="2 2 16 0 Black">
-        <Border.Background>
-          <ExperimentalAcrylicBrush
+      <ExperimentalAcrylicBorder Width="660" CornerRadius="5">
+        <ExperimentalAcrylicBorder.Material>
+          <ExperimentalAcrylicMaterial
             TintColor="White"
             BackgroundSource="Digger" />
-        </Border.Background>
+        </ExperimentalAcrylicBorder.Material>
         <StackPanel Spacing="20" Margin="40">
           <TextBlock Text="TintOpacity" Foreground="Black" />
           <Slider Name="TintOpacitySlider" Minimum="0" Maximum="1" Value="0.9" />
@@ -21,113 +21,115 @@
           <Slider Name="TintLuminositySlider" Minimum="0" Maximum="1" Value="0.8" />
           <TextBlock Text="{Binding #TintLuminositySlider.Value}" Foreground="Black" />
         </StackPanel>
-      </Border>
+      </ExperimentalAcrylicBorder>
+
 
       <StackPanel Orientation="Horizontal" Spacing="20">
-        <Border Height="200" Width="200" CornerRadius="5" BoxShadow="2 2 16 0 Black">
-          <Border.Background>
-            <ExperimentalAcrylicBrush
+        <ExperimentalAcrylicBorder Height="200" Width="200" CornerRadius="5">
+          <ExperimentalAcrylicBorder.Material>
+            <ExperimentalAcrylicMaterial
               TintColor="#FF0000"
               TintOpacity="{Binding #TintOpacitySlider.Value}"
               TintLuminosityOpacity="{Binding #TintLuminositySlider.Value}"
               BackgroundSource="Digger" />
-          </Border.Background>
-        </Border>
+          </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
 
-        <Border Height="200" Width="200" CornerRadius="5" BoxShadow="2 2 16 0 Black">
-          <Border.Background>
-            <ExperimentalAcrylicBrush
+        <ExperimentalAcrylicBorder Height="200" Width="200" CornerRadius="5">
+          <ExperimentalAcrylicBorder.Material>
+            <ExperimentalAcrylicMaterial
               TintColor="#00FF00"
               TintOpacity="{Binding #TintOpacitySlider.Value}"
               TintLuminosityOpacity="{Binding #TintLuminositySlider.Value}"
               BackgroundSource="Digger" />
-          </Border.Background>
-        </Border>
+          </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
 
-        <Border Height="200" Width="200" CornerRadius="5" BoxShadow="2 2 16 0 Black">
-          <Border.Background>
-            <ExperimentalAcrylicBrush
+        <ExperimentalAcrylicBorder Height="200" Width="200" CornerRadius="5">
+          <ExperimentalAcrylicBorder.Material>
+            <ExperimentalAcrylicMaterial
               TintColor="#000000"
               TintOpacity="{Binding #TintOpacitySlider.Value}"
               TintLuminosityOpacity="{Binding #TintLuminositySlider.Value}"
               BackgroundSource="Digger" />
-          </Border.Background>
-        </Border>
+          </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
       </StackPanel>
 
+
       <StackPanel Orientation="Horizontal" Spacing="20">
-        <Border Height="200" Width="200" CornerRadius="5" BoxShadow="2 2 16 0 Black">
-          <Border.Background>
-            <ExperimentalAcrylicBrush
+        <ExperimentalAcrylicBorder Height="200" Width="200" CornerRadius="5">
+          <ExperimentalAcrylicBorder.Material>
+            <ExperimentalAcrylicMaterial
               TintColor="#0000FF"
               TintOpacity="{Binding #TintOpacitySlider.Value}"
               TintLuminosityOpacity="{Binding #TintLuminositySlider.Value}"
               BackgroundSource="Digger" />
-          </Border.Background>
-        </Border>
+          </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
 
-        <Border Height="200" Width="200" CornerRadius="5" BoxShadow="2 2 16 0 Black">
-          <Border.Background>
-            <ExperimentalAcrylicBrush
+        <ExperimentalAcrylicBorder Height="200" Width="200" CornerRadius="5">
+          <ExperimentalAcrylicBorder.Material>
+            <ExperimentalAcrylicMaterial
               TintColor="#FFFF00"
               TintOpacity="{Binding #TintOpacitySlider.Value}"
               TintLuminosityOpacity="{Binding #TintLuminositySlider.Value}"
               BackgroundSource="Digger" />
-          </Border.Background>
-        </Border>
+          </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
 
-        <Border Height="200" Width="200" CornerRadius="5" BoxShadow="2 2 16 0 Black">
-          <Border.Background>
-            <ExperimentalAcrylicBrush
+        <ExperimentalAcrylicBorder Height="200" Width="200" CornerRadius="5">
+          <ExperimentalAcrylicBorder.Material>
+            <ExperimentalAcrylicMaterial
               TintColor="#000000"
               TintOpacity="{Binding #TintOpacitySlider.Value}"
               TintLuminosityOpacity="{Binding #TintLuminositySlider.Value}"
               BackgroundSource="Digger" />
-          </Border.Background>
-        </Border>
+          </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
       </StackPanel>
 
       <StackPanel Orientation="Horizontal" Spacing="20">
-        <Border Height="200" Width="200" CornerRadius="5" BoxShadow="2 2 16 0 Black">
-          <Border.Background>
-            <ExperimentalAcrylicBrush
+        <ExperimentalAcrylicBorder Height="200" Width="200" CornerRadius="5">
+          <ExperimentalAcrylicBorder.Material>
+            <ExperimentalAcrylicMaterial
               TintColor="White"
               TintOpacity="{Binding #TintOpacitySlider.Value}"
               TintLuminosityOpacity="{Binding #TintLuminositySlider.Value}"
               BackgroundSource="Digger" />
-          </Border.Background>
-        </Border>
+          </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
 
-        <Border Height="200" Width="200" CornerRadius="5" BoxShadow="2 2 16 0 Black">
-          <Border.Background>
-            <ExperimentalAcrylicBrush
+        <ExperimentalAcrylicBorder Height="200" Width="200" CornerRadius="5">
+          <ExperimentalAcrylicBorder.Material>
+            <ExperimentalAcrylicMaterial
               TintColor="#3c3c3c"
               TintOpacity="{Binding #TintOpacitySlider.Value}"
               TintLuminosityOpacity="{Binding #TintLuminositySlider.Value}"
               BackgroundSource="Digger" />
-          </Border.Background>
-        </Border>
+          </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
 
-        <Border Height="200" Width="200" CornerRadius="5" BoxShadow="2 2 16 0 Black">
-          <Border.Background>
-            <ExperimentalAcrylicBrush
+        <ExperimentalAcrylicBorder Height="200" Width="200" CornerRadius="5">
+          <ExperimentalAcrylicBorder.Material>
+            <ExperimentalAcrylicMaterial
               TintColor="White"
               TintOpacity="{Binding #TintOpacitySlider.Value}"
               TintLuminosityOpacity="{Binding #TintLuminositySlider.Value}"
               BackgroundSource="Digger" />
-          </Border.Background>
-        </Border>
+          </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
       </StackPanel>
 
-      <Border Height="200" Width="660" CornerRadius="5" BoxShadow="2 2 16 0 Black">
-        <Border.Background>
-          <ExperimentalAcrylicBrush
+      <ExperimentalAcrylicBorder Height="200" Width="660" CornerRadius="5">
+        <ExperimentalAcrylicBorder.Material>
+          <ExperimentalAcrylicMaterial
             TintColor="Red"
             TintOpacity="{Binding #TintOpacitySlider.Value}"
             TintLuminosityOpacity="{Binding #TintLuminositySlider.Value}"
             BackgroundSource="Digger" />
-        </Border.Background>
-      </Border>
+        </ExperimentalAcrylicBorder.Material>
+      </ExperimentalAcrylicBorder>
     </StackPanel>
   </Border>
 </UserControl>
