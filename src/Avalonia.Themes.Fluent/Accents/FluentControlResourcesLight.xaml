@@ -345,8 +345,12 @@
     <SolidColorBrush x:Key="RadioButtonContentPointerOverForegroundThemeBrush" Color="{DynamicResource SystemColorHighlightTextColor}" />
     
     <!--Recources ToggleSwitch-->
-    <x:Double x:Key="ToggleSwitchOnStrokeThickness">0</x:Double>
-    <x:Double x:Key="ToggleSwitchOuterBorderStrokeThickness">1</x:Double>
+    <!--<x:Double x:Key="ToggleSwitchOnStrokeThickness">0</x:Double>-->
+    
+    
+    <Thickness x:Key="ToggleSwitchOnStrokeThickness">0</Thickness>
+    <!--<x:Double x:Key="ToggleSwitchOuterBorderStrokeThickness">1</x:Double>-->
+    <Thickness x:Key="ToggleSwitchOuterBorderStrokeThickness">1</Thickness>
     <StaticResource x:Key="ToggleSwitchContentForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="ToggleSwitchContentForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
     <StaticResource x:Key="ToggleSwitchHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -379,7 +383,6 @@
     <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="SystemControlHighlightChromeWhiteBrush" />
     <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
     <StaticResource x:Key="ToggleSwitchKnobFillOnDisabled" ResourceKey="SystemControlPageBackgroundBaseLowBrush" />
-
     <SolidColorBrush x:Key="ToggleSwitchCurtainBackgroundThemeBrush" Color="#FF4617B4" />
     <SolidColorBrush x:Key="ToggleSwitchCurtainDisabledBackgroundThemeBrush" Color="Transparent" />
     <SolidColorBrush x:Key="ToggleSwitchCurtainPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
@@ -403,7 +406,6 @@
     <SolidColorBrush x:Key="ToggleSwitchTrackDisabledBackgroundThemeBrush" Color="#1F000000" />
     <SolidColorBrush x:Key="ToggleSwitchTrackPointerOverBackgroundThemeBrush" Color="#4A000000" />
     <SolidColorBrush x:Key="ToggleSwitchTrackPressedBackgroundThemeBrush" Color="#42000000" />
-
 
   </Style.Resources>
 </Style>
