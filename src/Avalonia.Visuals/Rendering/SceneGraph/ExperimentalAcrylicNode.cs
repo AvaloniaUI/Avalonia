@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -68,7 +69,7 @@ namespace Avalonia.Rendering.SceneGraph
             }
             else
             {
-                context.DrawRectangle(new SolidColorBrush(Material.FallbackColor), null, Rect);
+                context.DrawRectangle(new ImmutableSolidColorBrush(Material.FallbackColor), null, Rect);
             }            
         }
 
