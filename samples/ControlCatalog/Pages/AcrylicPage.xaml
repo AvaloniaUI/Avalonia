@@ -13,13 +13,17 @@
             TintColor="White"
             BackgroundSource="Digger" />
         </ExperimentalAcrylicBorder.Material>
-        <StackPanel Spacing="20" Margin="40">
-          <TextBlock Text="TintOpacity" Foreground="Black" />
-          <Slider Name="TintOpacitySlider" Minimum="0" Maximum="1" Value="0.9" />
-          <TextBlock Text="{Binding #TintOpacitySlider.Value}" Foreground="Black" />
-          <TextBlock Text="TintLuminocity" Foreground="Black" />
-          <Slider Name="TintLuminositySlider" Minimum="0" Maximum="1" Value="0.8" />
-          <TextBlock Text="{Binding #TintLuminositySlider.Value}" Foreground="Black" />
+        <StackPanel Spacing="5" Margin="40 10">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="TintOpacity" Foreground="Black" />
+            <Slider Name="TintOpacitySlider" Minimum="0" Maximum="1" Value="0.9" Width="400" />
+            <TextBlock Text="{Binding #TintOpacitySlider.Value}" Foreground="Black" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="TintLuminocity" Foreground="Black" />
+            <Slider Name="TintLuminositySlider" Minimum="0" Maximum="1" Value="0.8" Width="400" />
+            <TextBlock Text="{Binding #TintLuminositySlider.Value}" Foreground="Black" />
+          </StackPanel>
         </StackPanel>
       </ExperimentalAcrylicBorder>
 
