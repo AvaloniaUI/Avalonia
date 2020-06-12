@@ -238,12 +238,12 @@ namespace Avalonia.Controls
 
         public void OnElementPrepared(IControl element)
         {
-            _scroller.RegisterAnchorCandidate(element);
+            _scroller?.RegisterAnchorCandidate(element);
         }
 
         public void OnElementCleared(IControl element)
         {
-            _scroller.UnregisterAnchorCandidate(element);
+            _scroller?.UnregisterAnchorCandidate(element);
         }
 
         public void OnOwnerMeasuring()
@@ -364,7 +364,7 @@ namespace Avalonia.Controls
         private IControl GetImmediateChildOfRepeater(IControl descendant)
         {
             var targetChild = descendant;
-            var parent = descendant.Parent;
+            var parent = (IControl)descendant.VisualParent;
             while (parent != null && parent != _owner)
             {
                 targetChild = parent;
@@ -384,13 +384,16 @@ namespace Avalonia.Controls
             _isBringIntoViewInProgress = false;
             _makeAnchorElement = null;
 
-            foreach (var child in _owner.Children)
+            if (_scroller is object)
             {
-                var info = ItemsRepeater.GetVirtualizationInfo(child);
-
-                if (info.IsRealized && info.IsHeldByLayout)
+                foreach (var child in _owner.Children)
                 {
-                    _scroller.RegisterAnchorCandidate(child);
+                    var info = ItemsRepeater.GetVirtualizationInfo(child);
+
+                    if (info.IsRealized && info.IsHeldByLayout)
+                    {
+                        _scroller.RegisterAnchorCandidate(child);
+                    }
                 }
             }
 
