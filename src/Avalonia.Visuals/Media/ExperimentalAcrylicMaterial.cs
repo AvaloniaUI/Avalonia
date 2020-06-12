@@ -321,12 +321,13 @@ namespace Avalonia.Media
         // The tintColor passed into this method should be the original, unmodified color created using user values for TintColor + TintOpacity
         Color GetLuminosityColor(double? luminosityOpacity)
         {
-            var hsv = RgbToHsv(TintColor);
-
+            // Calculate the HSL lightness value of the color.
             var max = (float)RGBMax(TintColor) / 255.0f;
             var min = (float)RGBMin(TintColor) / 255.0f;
 
-            var lightness = (max + min) / 2.0f;
+            var lightness = (max + min) / 2.0;
+
+            lightness = 0.125 + (lightness * 0.75);  // centralise and reduce the range of the opaque layer. 
 
             var luminosityColor = new Color(255, Trim(lightness), Trim(lightness), Trim(lightness));
 
