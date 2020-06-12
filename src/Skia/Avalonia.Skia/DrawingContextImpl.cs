@@ -249,7 +249,7 @@ namespace Avalonia.Skia
 
             if (material != null)
             {
-                using (var paint = CreateAcrylicPaint(_fillPaint, material, rect.Rect.Size))
+                using (var paint = CreateAcrylicPaint(_fillPaint, material))
                 {
                     if (isRounded)
                     {
@@ -726,7 +726,7 @@ namespace Avalonia.Skia
             );
         }
 
-        internal PaintWrapper CreateAcrylicPaint (SKPaint paint, IExperimentalAcrylicMaterial material, Size targetSize, bool disposePaint = false)
+        internal PaintWrapper CreateAcrylicPaint (SKPaint paint, IExperimentalAcrylicMaterial material, bool disposePaint = false)
         {
             var paintWrapper = new PaintWrapper(paint, disposePaint);
 
