@@ -2,32 +2,144 @@
 
 namespace Avalonia.Media
 {
-    public class ExperimentalAcrylicBrush : Brush, IExperimentalAcrylicBrush
+    /// <summary>
+    /// Represents a mutable brush which can return an immutable clone of itself.
+    /// </summary>
+    public interface IMutableExperimentalAcrylicMaterial : IExperimentalAcrylicMaterial, IAffectsRender
+    {
+        /// <summary>
+        /// Creates an immutable clone of the brush.
+        /// </summary>
+        /// <returns>The immutable clone.</returns>
+        IExperimentalAcrylicMaterial ToImmutable();
+    }
+
+    public interface IExperimentalAcrylicMaterial
+    {
+        AcrylicBackgroundSource BackgroundSource { get; }
+
+        Color TintColor { get; }
+
+        Color LuminosityColor { get; }
+
+        double TintOpacity { get; }
+
+        Color FallbackColor { get; }
+    }
+
+    public static class MaterialExtensions
+    {
+        /// <summary>
+        /// Converts a brush to an immutable brush.
+        /// </summary>
+        /// <param name="material">The brush.</param>
+        /// <returns>
+        /// The result of calling <see cref="IMutableBrush.ToImmutable"/> if the brush is mutable,
+        /// otherwise <paramref name="material"/>.
+        /// </returns>
+        public static IExperimentalAcrylicMaterial ToImmutable(this IExperimentalAcrylicMaterial material)
+        {
+            Contract.Requires<ArgumentNullException>(material != null);
+
+            return (material as IMutableExperimentalAcrylicMaterial)?.ToImmutable() ?? material;
+        }
+    }
+
+    public readonly struct ImmutableExperimentalAcrylicMaterial : IExperimentalAcrylicMaterial, IEquatable<ImmutableExperimentalAcrylicMaterial>
+    {
+        public ImmutableExperimentalAcrylicMaterial(IExperimentalAcrylicMaterial brush)
+        {
+            BackgroundSource = brush.BackgroundSource;
+            TintColor = brush.TintColor;
+            TintOpacity = brush.TintOpacity;
+            FallbackColor = brush.FallbackColor;
+            LuminosityColor = brush.LuminosityColor;
+        }
+
+        public AcrylicBackgroundSource BackgroundSource { get; }
+
+        public Color TintColor { get; }
+
+        public Color LuminosityColor { get; }
+
+        public double TintOpacity { get; }
+
+        public Color FallbackColor { get; }
+
+        public bool Equals(ImmutableExperimentalAcrylicMaterial other)
+        {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            return
+                TintColor == other.TintColor &&                
+                TintOpacity == other.TintOpacity &&
+                BackgroundSource == other.BackgroundSource &&
+                FallbackColor == other.FallbackColor && LuminosityColor == other.LuminosityColor;
+
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ImmutableExperimentalAcrylicMaterial other && Equals(other);
+        }
+
+        public Color GetEffectiveTintColor()
+        {
+            return TintColor;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+
+                hash = (hash * 23) + TintColor.GetHashCode();                
+                hash = (hash * 23) + TintOpacity.GetHashCode();
+                hash = (hash * 23) + BackgroundSource.GetHashCode();
+                hash = (hash * 23) + FallbackColor.GetHashCode();
+                hash = (hash * 23) + LuminosityColor.GetHashCode();
+
+                return hash;
+            }
+        }
+
+        public static bool operator ==(ImmutableExperimentalAcrylicMaterial left, ImmutableExperimentalAcrylicMaterial right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ImmutableExperimentalAcrylicMaterial left, ImmutableExperimentalAcrylicMaterial right)
+        {
+            return !left.Equals(right);
+        }
+    }
+
+    public class ExperimentalAcrylicMaterial : AvaloniaObject, IMutableExperimentalAcrylicMaterial
     {
         private Color _effectiveTintColor;
         private Color _effectiveLuminosityColor;
 
-        static ExperimentalAcrylicBrush()
+        static ExperimentalAcrylicMaterial()
         {
-            AffectsRender<ExperimentalAcrylicBrush>(
+            AffectsRender<ExperimentalAcrylicMaterial>(
                 TintColorProperty,
                 BackgroundSourceProperty,
                 TintOpacityProperty,
                 TintLuminosityOpacityProperty);
 
-            TintColorProperty.Changed.AddClassHandler<ExperimentalAcrylicBrush>((b, e) =>
+            TintColorProperty.Changed.AddClassHandler<ExperimentalAcrylicMaterial>((b, e) =>
             {
                 b._effectiveTintColor = GetEffectiveTintColor(b.TintColor, b.TintOpacity);
                 b._effectiveLuminosityColor = b.GetEffectiveLuminosityColor();
             });
 
-            TintOpacityProperty.Changed.AddClassHandler<ExperimentalAcrylicBrush>((b, e) =>
+            TintOpacityProperty.Changed.AddClassHandler<ExperimentalAcrylicMaterial>((b, e) =>
             {
                 b._effectiveTintColor = GetEffectiveTintColor(b.TintColor, b.TintOpacity);
                 b._effectiveLuminosityColor = b.GetEffectiveLuminosityColor();
             });
 
-            TintLuminosityOpacityProperty.Changed.AddClassHandler<ExperimentalAcrylicBrush>((b, e) =>
+            TintLuminosityOpacityProperty.Changed.AddClassHandler<ExperimentalAcrylicMaterial>((b, e) =>
             {
                 b._effectiveTintColor = GetEffectiveTintColor(b.TintColor, b.TintOpacity);
                 b._effectiveLuminosityColor = b.GetEffectiveLuminosityColor();
@@ -38,19 +150,22 @@ namespace Avalonia.Media
         /// Defines the <see cref="TintColor"/> property.
         /// </summary>
         public static readonly StyledProperty<Color> TintColorProperty =
-            AvaloniaProperty.Register<ExperimentalAcrylicBrush, Color>(nameof(TintColor));
+            AvaloniaProperty.Register<ExperimentalAcrylicMaterial, Color>(nameof(TintColor));
 
         public static readonly StyledProperty<AcrylicBackgroundSource> BackgroundSourceProperty =
-            AvaloniaProperty.Register<ExperimentalAcrylicBrush, AcrylicBackgroundSource>(nameof(BackgroundSource));
+            AvaloniaProperty.Register<ExperimentalAcrylicMaterial, AcrylicBackgroundSource>(nameof(BackgroundSource));
 
         public static readonly StyledProperty<double> TintOpacityProperty =
-            AvaloniaProperty.Register<ExperimentalAcrylicBrush, double>(nameof(TintOpacity), 0.9);
+            AvaloniaProperty.Register<ExperimentalAcrylicMaterial, double>(nameof(TintOpacity), 0.8);
 
         public static readonly StyledProperty<double> TintLuminosityOpacityProperty =
-            AvaloniaProperty.Register<ExperimentalAcrylicBrush, double>(nameof(TintLuminosityOpacity), 0.8);
+            AvaloniaProperty.Register<ExperimentalAcrylicMaterial, double>(nameof(TintLuminosityOpacity), 0.5);
 
         public static readonly StyledProperty<Color> FallbackColorProperty =
-            AvaloniaProperty.Register<ExperimentalAcrylicBrush, Color>(nameof(FallbackColor));
+            AvaloniaProperty.Register<ExperimentalAcrylicMaterial, Color>(nameof(FallbackColor));
+
+        /// <inheritdoc/>
+        public event EventHandler Invalidated;
 
         public AcrylicBackgroundSource BackgroundSource
         {
@@ -63,10 +178,6 @@ namespace Avalonia.Media
             get => GetValue(TintColorProperty);
             set => SetValue(TintColorProperty, value);
         }
-
-        Color IExperimentalAcrylicBrush.TintColor => _effectiveTintColor;
-
-        Color IExperimentalAcrylicBrush.LuminosityColor => _effectiveLuminosityColor;
 
         public double TintOpacity
         {
@@ -86,10 +197,9 @@ namespace Avalonia.Media
             set => SetValue(TintLuminosityOpacityProperty, value);
         }
 
-        public override IBrush ToImmutable()
-        {
-            return new ImmutableExperimentalAcrylicBrush(this);
-        }
+        Color IExperimentalAcrylicMaterial.LuminosityColor => _effectiveLuminosityColor;
+
+        Color IExperimentalAcrylicMaterial.TintColor => _effectiveTintColor;
 
         public struct HsvColor
         {
@@ -172,7 +282,7 @@ namespace Avalonia.Media
 
             const double midPoint = 0.5; // Mid point of HsvV range that these calculations are based on. This is here for easy tuning.
 
-            double whiteMaxOpacity = 0.65; // 100% luminosity
+            double whiteMaxOpacity = 0.45; // 100% luminosity
             double midPointMaxOpacity = 0.90; // 50% luminosity
             double blackMaxOpacity = 0.85; // 0% luminosity
 
@@ -307,6 +417,39 @@ namespace Avalonia.Media
             var modifier = GetTintOpacityModifier(luminosityColor);
 
             return new Color((byte)(255 * Math.Max(Math.Min(luminosityOpacity.Value * modifier, 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
+        }
+
+        /// <summary>
+        /// Marks a property as affecting the brush's visual representation.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// After a call to this method in a brush's static constructor, any change to the
+        /// property will cause the <see cref="Invalidated"/> event to be raised on the brush.
+        /// </remarks>
+        protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
+            where T : ExperimentalAcrylicMaterial
+        {
+            static void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                (e.Sender as T)?.RaiseInvalidated(EventArgs.Empty);
+            }
+
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(e => Invalidate(e));
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="Invalidated"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected void RaiseInvalidated(EventArgs e) => Invalidated?.Invoke(this, e);
+
+        public IExperimentalAcrylicMaterial ToImmutable()
+        {
+            return new ImmutableExperimentalAcrylicMaterial(this);
         }
     }
 }

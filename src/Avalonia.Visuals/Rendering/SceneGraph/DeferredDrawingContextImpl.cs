@@ -11,7 +11,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// A drawing context which builds a scene graph.
     /// </summary>
-    internal class DeferredDrawingContextImpl : IDrawingContextImpl
+    internal class DeferredDrawingContextImpl : IDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
     {
         private readonly ISceneBuilder _sceneBuilder;
         private VisualNode _node;
@@ -163,7 +163,22 @@ namespace Avalonia.Rendering.SceneGraph
                 ++_drawOperationindex;
             }
         }
-        
+
+        /// <inheritdoc/>
+        public void DrawRectangle(IExperimentalAcrylicMaterial material, RoundedRect rect)
+        {
+            var next = NextDrawAs<ExperimentalAcrylicNode>();
+
+            if (next == null || !next.Item.Equals(Transform, material, rect))
+            {
+                Add(new ExperimentalAcrylicNode(Transform, material, rect));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+
         public void Custom(ICustomDrawOperation custom)
         {
             var next = NextDrawAs<CustomDrawOperation>();

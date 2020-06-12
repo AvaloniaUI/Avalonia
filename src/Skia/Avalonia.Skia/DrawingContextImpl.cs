@@ -17,7 +17,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia based drawing context.
     /// </summary>
-    internal class DrawingContextImpl : IDrawingContextImpl, ISkiaDrawingContextImpl
+    internal class DrawingContextImpl : IDrawingContextImpl, ISkiaDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
     {
         private IDisposable[] _disposables;
         private readonly Vector _dpi;
@@ -226,6 +226,42 @@ namespace Avalonia.Skia
             offset_bounds.Offset(-offsetX, -offsetY);
             bounds.Union(offset_bounds);
             return bounds;
+        }
+
+        /// <inheritdoc />
+        public void DrawRectangle(IExperimentalAcrylicMaterial material, RoundedRect rect)
+        {
+            if (rect.Rect.Height <= 0 || rect.Rect.Width <= 0)
+                return;
+            
+            var rc = rect.Rect.ToSKRect();
+            var isRounded = rect.IsRounded;
+            var needRoundRect = rect.IsRounded;
+            using var skRoundRect = needRoundRect ? new SKRoundRect() : null;
+
+            if (needRoundRect)
+                skRoundRect.SetRectRadii(rc,
+                    new[]
+                    {
+                        rect.RadiiTopLeft.ToSKPoint(), rect.RadiiTopRight.ToSKPoint(),
+                        rect.RadiiBottomRight.ToSKPoint(), rect.RadiiBottomLeft.ToSKPoint(),
+                    });
+
+            if (material != null)
+            {
+                using (var paint = CreateAcrylicPaint(_fillPaint, material, rect.Rect.Size))
+                {
+                    if (isRounded)
+                    {
+                        Canvas.DrawRoundRect(skRoundRect, paint.Paint);
+                    }
+                    else
+                    {
+                        Canvas.DrawRect(rc, paint.Paint);
+                    }
+
+                }
+            }
         }
 
         /// <inheritdoc />
@@ -690,6 +726,49 @@ namespace Avalonia.Skia
             );
         }
 
+        internal PaintWrapper CreateAcrylicPaint (SKPaint paint, IExperimentalAcrylicMaterial material, Size targetSize, bool disposePaint = false)
+        {
+            var paintWrapper = new PaintWrapper(paint, disposePaint);
+
+            paint.IsAntialias = true;
+
+            double opacity = _currentOpacity;
+
+            var tintOpacity =
+                material.BackgroundSource == AcrylicBackgroundSource.Digger ?
+                material.TintOpacity : 1;
+
+            const double noiseOpcity = 0.0225;
+
+            var tintColor = material.TintColor;
+            var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, tintColor.A);
+
+            if (s_acrylicNoiseShader == null)
+            {
+                using (var stream = typeof(DrawingContextImpl).Assembly.GetManifestResourceStream("Avalonia.Skia.Assets.NoiseAsset_256X256_PNG.png"))
+                using (var bitmap = SKBitmap.Decode(stream))
+                {
+                    s_acrylicNoiseShader = SKShader.CreateBitmap(bitmap, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat)
+                        .WithColorFilter(CreateAlphaColorFilter(noiseOpcity));
+                }
+            }
+
+            using (var backdrop = SKShader.CreateColor(new SKColor(material.LuminosityColor.R, material.LuminosityColor.G, material.LuminosityColor.B, material.LuminosityColor.A)))
+            using (var tintShader = SKShader.CreateColor(tint))
+            using (var effectiveTint = SKShader.CreateCompose(backdrop, tintShader))
+            using (var compose = SKShader.CreateCompose(effectiveTint, s_acrylicNoiseShader))
+            {
+                paint.Shader = compose;
+
+                if (material.BackgroundSource == AcrylicBackgroundSource.Digger)
+                {
+                    paint.BlendMode = SKBlendMode.Src;
+                }
+
+                return paintWrapper;
+            }
+        }
+
         /// <summary>
         /// Creates paint wrapper for given brush.
         /// </summary>
@@ -711,43 +790,6 @@ namespace Avalonia.Skia
                 paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte) (solid.Color.A * opacity));
 
                 return paintWrapper;
-            }
-
-            if (brush is IExperimentalAcrylicBrush acrylicBrush)
-            {
-                var tintOpacity =
-                    acrylicBrush.BackgroundSource == AcrylicBackgroundSource.Digger ?
-                    acrylicBrush.TintOpacity : 1;
-
-                const double noiseOpcity = 0.0225;
-
-                var tintColor = acrylicBrush.TintColor;                
-                var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, tintColor.A);
-
-                if (s_acrylicNoiseShader == null)
-                {
-                    using(var stream = typeof(DrawingContextImpl).Assembly.GetManifestResourceStream("Avalonia.Skia.Assets.NoiseAsset_256X256_PNG.png"))
-                    using (var bitmap = SKBitmap.Decode(stream))
-                    {
-                        s_acrylicNoiseShader = SKShader.CreateBitmap(bitmap, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat)
-                            .WithColorFilter(CreateAlphaColorFilter(noiseOpcity));
-                    }
-                }
-                
-                using (var backdrop = SKShader.CreateColor(new SKColor(acrylicBrush.LuminosityColor.R, acrylicBrush.LuminosityColor.G, acrylicBrush.LuminosityColor.B, acrylicBrush.LuminosityColor.A)))                
-                using (var tintShader = SKShader.CreateColor(tint))
-                using (var effectiveTint = SKShader.CreateCompose (backdrop, tintShader))
-                using (var compose = SKShader.CreateCompose(effectiveTint, s_acrylicNoiseShader))
-                {
-                    paint.Shader = compose;
-
-                    if (acrylicBrush.BackgroundSource == AcrylicBackgroundSource.Digger)
-                    {
-                        paint.BlendMode = SKBlendMode.Src;
-                    }
-
-                    return paintWrapper;
-                }
             }
 
             paint.Color = new SKColor(255, 255, 255, (byte) (255 * opacity));
@@ -879,7 +921,7 @@ namespace Avalonia.Skia
             };
 
             return new SurfaceRenderTarget(createInfo);
-        }
+        }        
 
         /// <summary>
         /// Skia cached paint state.
