@@ -90,7 +90,7 @@ namespace Avalonia.Controls.Presenters
             this.GetObservable(ChildProperty).Subscribe(UpdateScrollableSubscription);
         }
 
-        internal event EventHandler<EventArgs> PreArrange;
+        internal event EventHandler<VectorEventArgs> PreArrange;
 
         /// <summary>
         /// Gets or sets a value indicating whether the content can be scrolled horizontally.
@@ -241,7 +241,10 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            PreArrange?.Invoke(this, EventArgs.Empty);
+            PreArrange?.Invoke(this, new VectorEventArgs
+            {
+                Vector = new Vector(finalSize.Width, finalSize.Height),
+            });
 
             if (_logicalScrollSubscription != null || Child == null)
             {

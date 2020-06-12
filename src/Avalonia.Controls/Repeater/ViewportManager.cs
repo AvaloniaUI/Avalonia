@@ -9,6 +9,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.Media;
@@ -537,10 +538,10 @@ namespace Avalonia.Controls
             return Disposable.Empty;
         }
 
-        private void ScrollContentPresenterPreArrange(object sender, EventArgs e)
+        private void ScrollContentPresenterPreArrange(object sender, VectorEventArgs e)
         {
             var scp = (ScrollContentPresenter)sender;
-            var effectiveViewport = new Rect((Point)scp.Offset, scp.Viewport);
+            var effectiveViewport = new Rect((Point)scp.Offset, new Size(e.Vector.X, e.Vector.Y));
 
             if (effectiveViewport != _visibleWindow)
             {
