@@ -2,118 +2,6 @@
 
 namespace Avalonia.Media
 {
-    /// <summary>
-    /// Represents a mutable brush which can return an immutable clone of itself.
-    /// </summary>
-    public interface IMutableExperimentalAcrylicMaterial : IExperimentalAcrylicMaterial, IAffectsRender
-    {
-        /// <summary>
-        /// Creates an immutable clone of the brush.
-        /// </summary>
-        /// <returns>The immutable clone.</returns>
-        IExperimentalAcrylicMaterial ToImmutable();
-    }
-
-    public interface IExperimentalAcrylicMaterial
-    {
-        AcrylicBackgroundSource BackgroundSource { get; }
-
-        Color TintColor { get; }
-
-        Color LuminosityColor { get; }
-
-        double TintOpacity { get; }
-
-        Color FallbackColor { get; }
-    }
-
-    public static class MaterialExtensions
-    {
-        /// <summary>
-        /// Converts a brush to an immutable brush.
-        /// </summary>
-        /// <param name="material">The brush.</param>
-        /// <returns>
-        /// The result of calling <see cref="IMutableBrush.ToImmutable"/> if the brush is mutable,
-        /// otherwise <paramref name="material"/>.
-        /// </returns>
-        public static IExperimentalAcrylicMaterial ToImmutable(this IExperimentalAcrylicMaterial material)
-        {
-            Contract.Requires<ArgumentNullException>(material != null);
-
-            return (material as IMutableExperimentalAcrylicMaterial)?.ToImmutable() ?? material;
-        }
-    }
-
-    public readonly struct ImmutableExperimentalAcrylicMaterial : IExperimentalAcrylicMaterial, IEquatable<ImmutableExperimentalAcrylicMaterial>
-    {
-        public ImmutableExperimentalAcrylicMaterial(IExperimentalAcrylicMaterial brush)
-        {
-            BackgroundSource = brush.BackgroundSource;
-            TintColor = brush.TintColor;
-            TintOpacity = brush.TintOpacity;
-            FallbackColor = brush.FallbackColor;
-            LuminosityColor = brush.LuminosityColor;
-        }
-
-        public AcrylicBackgroundSource BackgroundSource { get; }
-
-        public Color TintColor { get; }
-
-        public Color LuminosityColor { get; }
-
-        public double TintOpacity { get; }
-
-        public Color FallbackColor { get; }
-
-        public bool Equals(ImmutableExperimentalAcrylicMaterial other)
-        {
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            return
-                TintColor == other.TintColor &&                
-                TintOpacity == other.TintOpacity &&
-                BackgroundSource == other.BackgroundSource &&
-                FallbackColor == other.FallbackColor && LuminosityColor == other.LuminosityColor;
-
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is ImmutableExperimentalAcrylicMaterial other && Equals(other);
-        }
-
-        public Color GetEffectiveTintColor()
-        {
-            return TintColor;
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                int hash = 17;
-
-                hash = (hash * 23) + TintColor.GetHashCode();                
-                hash = (hash * 23) + TintOpacity.GetHashCode();
-                hash = (hash * 23) + BackgroundSource.GetHashCode();
-                hash = (hash * 23) + FallbackColor.GetHashCode();
-                hash = (hash * 23) + LuminosityColor.GetHashCode();
-
-                return hash;
-            }
-        }
-
-        public static bool operator ==(ImmutableExperimentalAcrylicMaterial left, ImmutableExperimentalAcrylicMaterial right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(ImmutableExperimentalAcrylicMaterial left, ImmutableExperimentalAcrylicMaterial right)
-        {
-            return !left.Equals(right);
-        }
-    }
-
     public class ExperimentalAcrylicMaterial : AvaloniaObject, IMutableExperimentalAcrylicMaterial
     {
         private Color _effectiveTintColor;
@@ -266,12 +154,6 @@ namespace Avalonia.Media
             return tintColor;
         }
 
-        private static double AdjustOpacity(double opacity)
-        {
-            var result = Math.Max((1.0 - Math.Pow((1.0 - opacity), 3.85)), 0.92);
-            return result;
-        }
-
         private static double GetTintOpacityModifier(Color tintColor)
         {
             // This method supresses the maximum allowable tint opacity depending on the luminosity and saturation of a color by 
@@ -282,9 +164,9 @@ namespace Avalonia.Media
 
             const double midPoint = 0.5; // Mid point of HsvV range that these calculations are based on. This is here for easy tuning.
 
-            double whiteMaxOpacity = 0.45; // 100% luminosity
-            double midPointMaxOpacity = 0.90; // 50% luminosity
-            double blackMaxOpacity = 0.85; // 0% luminosity
+            const double whiteMaxOpacity = 0.45; // 100% luminosity
+            const double midPointMaxOpacity = 0.50; // 50% luminosity
+            const double blackMaxOpacity = 0.85; // 0% luminosity
 
             var hsv = RgbToHsv(tintColor);
 
@@ -316,7 +198,7 @@ namespace Avalonia.Media
                 if (hsv.Saturation > 0)
                 {
                     // Dampen opacity suppression based on how much saturation there is
-                    //maxOpacitySuppression *= Math.Max(1 - (hsv.Saturation * 2), 0.0);
+                    maxOpacitySuppression *= Math.Max(1 - (hsv.Saturation * 2), 0.0);
                 }
 
                 double opacitySuppression = maxOpacitySuppression * normalizedDeviation;
@@ -404,19 +286,35 @@ namespace Avalonia.Media
             return (byte)value;
         }
 
-        double Luminosity(Color color)
+        private static float RGBMax(Color color)
         {
-            return 0.299 * color.R + 0.587 * color.G + 0.114 * color.B;
+            if (color.R > color.G)
+                return (color.R > color.B) ? color.R : color.B;
+            else
+                return (color.G > color.B) ? color.G : color.B;
+        }
+
+        private static float RGBMin(Color color)
+        {
+            if (color.R < color.G)
+                return (color.R < color.B) ? color.R : color.B;
+            else
+                return (color.G < color.B) ? color.G : color.B;
         }
 
         // The tintColor passed into this method should be the original, unmodified color created using user values for TintColor + TintOpacity
         Color GetLuminosityColor(double? luminosityOpacity)
         {
-            var luminosityColor = new Color(255, 127, 127, 127);
+            var hsv = RgbToHsv(TintColor);
 
-            var modifier = GetTintOpacityModifier(luminosityColor);
+            var max = (float)RGBMax(TintColor) / 255.0f;
+            var min = (float)RGBMin(TintColor) / 255.0f;
 
-            return new Color((byte)(255 * Math.Max(Math.Min(luminosityOpacity.Value * modifier, 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
+            var lightness = (max + min) / 2.0f;
+
+            var luminosityColor = new Color(255, Trim(lightness), Trim(lightness), Trim(lightness));
+
+            return new Color((byte)(255 * Math.Max(Math.Min(((luminosityOpacity.Value)), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
         }
 
         /// <summary>
