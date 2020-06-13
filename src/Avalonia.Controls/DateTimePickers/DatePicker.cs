@@ -234,6 +234,7 @@ namespace Avalonia.Controls
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            _areControlsAvailable = false;
             base.OnApplyTemplate(e);
             _flyoutButton = e.NameScope.Find<Button>("FlyoutButton");
             _dayText = e.NameScope.Find<TextBlock>("DayText");

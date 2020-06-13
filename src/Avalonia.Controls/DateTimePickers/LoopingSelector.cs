@@ -215,6 +215,10 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            if(_scroller != null)
+            {
+                _scroller.Content = null;
+            }
             base.OnApplyTemplate(e);
             _scroller = e.NameScope.Find<ScrollViewer>("Scroller");
 
@@ -387,9 +391,7 @@ namespace Avalonia.Controls.Primitives
             int itemCount = ItemCount;
             //How many containers we ideally want
             int desiredItemsLoaded = (_totalItemsInViewport * 2) + 1;
-            //How many we can actually load
-            int itemsToLoad = itemCount < desiredItemsLoaded ? itemCount : desiredItemsLoaded;
-
+            
             var realizedContainerCount = _panel.Children.Count;
 
             if (ShouldLoop)
@@ -411,6 +413,8 @@ namespace Avalonia.Controls.Primitives
                 }
                 else if (realizedContainerCount > desiredItemsLoaded) //Remove extra containers
                 {
+                    //Technically not needed now as we don't move the containers when looping, just
+                    //swap content, but is here in case of future improvements
                     _panel.Children.RemoveRange(realizedContainerCount - delta, delta);
                 }
             }
@@ -423,7 +427,7 @@ namespace Avalonia.Controls.Primitives
                 //First index of realized items
                 int selIndex = SelectedIndex;
                 selIndex = selIndex == -1 ? 0 : selIndex;
-                //TODO: Clean this up...
+
                 int numItemsAboveSelected = _totalItemsInViewport;
                 if (selIndex - numItemsAboveSelected < 0)
                     numItemsAboveSelected = selIndex;
@@ -433,14 +437,11 @@ namespace Avalonia.Controls.Primitives
                     numItemsBelowSelected = ItemCount - selIndex - 1;
 
                 int neededContainers = numItemsBelowSelected + numItemsAboveSelected + 1;
-                int desiredContainers = (_totalItemsInViewport * 2) + 1;
                 int currentCount = _panel.Children.Count;
-
 
                 //Do we need containers?
                 var numContsToAddRemove = neededContainers - currentCount;
-                // Debug.WriteLine($"Above: {numItemsAboveSelected} | Below: {numItemsBelowSelected} | Add/Remove: {numContsToAddRemove}");
-
+                
                 if (numContsToAddRemove > 0) //Add Containers
                 {
                     List<LoopingSelectorItem> panelItems = new List<LoopingSelectorItem>();
@@ -458,8 +459,6 @@ namespace Avalonia.Controls.Primitives
                 {
                     numContsToAddRemove = Math.Abs(numContsToAddRemove);
                     _panel.Children.RemoveRange(currentCount - numContsToAddRemove, numContsToAddRemove);
-                    //Debug.WriteLine($"Containers removed {numContsToAddRemove}");
-
                 }
             }
 

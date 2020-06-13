@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -114,6 +115,22 @@ namespace Avalonia.Controls
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            //If template is reapplied (theme change, etc.), remove the looping selector
+            //from the existing host, placement logic is a lot nice here compared to DatePicker,
+            //so we don't destroy the loopingselectors
+            if(_firstPickerHost != null && _firstPickerHost.Child != null)
+            {
+                _firstPickerHost.Child = null;                
+            }
+            if (_secondPickerHost != null && _secondPickerHost.Child != null)
+            {
+                _secondPickerHost.Child = null;
+            }
+            if (_thirdPickerHost != null && _thirdPickerHost.Child != null)
+            {
+                _thirdPickerHost.Child = null;
+            }
+
             base.OnApplyTemplate(e);
 
             //Requirement, throw if not found
@@ -132,7 +149,6 @@ namespace Avalonia.Controls
                 _acceptButton.Click += OnAcceptButtonClicked;
             if (_dismissButton != null)
                 _dismissButton.Click += OnDismissButtonClicked;
-
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -203,8 +219,6 @@ namespace Avalonia.Controls
 
             _hostPopup.PlacementTarget = target;
 
-            this.Width = target.Bounds.Width - 2;
-
             //Need to open the popup first, so the template is applied & our 
             //template items are available
             _hostPopup.IsOpen = true;
@@ -238,7 +252,6 @@ namespace Avalonia.Controls
                 _hourSelector.ShouldLoop = true;
                 _hourSelector.ItemTemplate = SelectorItemTemplate;
                 _firstPickerHost.Child = _hourSelector;
-
 
                 if (_hourItems == null)
                 {
@@ -276,51 +289,63 @@ namespace Avalonia.Controls
                 }
             }
 
+            if (_hourSelector.Parent == null)
+                _firstPickerHost.Child = _hourSelector;
+
             if (_minuteSelector == null)
             {
                 _minuteSelector = new LoopingSelector();
                 _minuteSelector.ShouldLoop = true;
                 _minuteSelector.ItemTemplate = SelectorItemTemplate;
                 _secondPickerHost.Child = _minuteSelector;
+            }
 
-                if (_minuteItems == null)
+            if (_minuteSelector.Parent == null)
+                _secondPickerHost.Child = _minuteSelector;
+
+            //Ensure minute selector items are up to date
+            if (_minuteItems == null)
+            {
+                _minuteItems = new AvaloniaList<TimePickerPresenterItem>();
+                DateTimeFormatter formatter = new DateTimeFormatter("{minute}");
+
+                var inc = MinuteIncrement;
+                for (int i = 0; i < 60; i += inc)
                 {
-                    _minuteItems = new AvaloniaList<TimePickerPresenterItem>();
-                    DateTimeFormatter formatter = new DateTimeFormatter("{minute}");
-
-                    var inc = MinuteIncrement;
-                    for (int i = 0; i < 60; i += inc)
-                    {
-                        var min = TimeSpan.FromMinutes(i);
-                        TimePickerPresenterItem tppi = new TimePickerPresenterItem(min);
-                        tppi.DisplayText = formatter.Format(min);
-                        _minuteItems.Add(tppi);
-                    }
-
-                    _minuteSelector.Items = _minuteItems;
+                    var min = TimeSpan.FromMinutes(i);
+                    TimePickerPresenterItem tppi = new TimePickerPresenterItem(min);
+                    tppi.DisplayText = formatter.Format(min);
+                    _minuteItems.Add(tppi);
                 }
-                else if (_hasMinuteIncChanged)
-                {
-                    _minuteItems.Clear();
-                    DateTimeFormatter formatter = new DateTimeFormatter("{minute}");
 
-                    var inc = MinuteIncrement;
-                    for (int i = 0; i < 60; i += inc)
-                    {
-                        var min = TimeSpan.FromMinutes(i);
-                        TimePickerPresenterItem tppi = new TimePickerPresenterItem(min);
-                        tppi.DisplayText = formatter.Format(min);
-                        _minuteItems.Add(tppi);
-                    }
+                _minuteSelector.Items = _minuteItems;
+            }
+            else if (_hasMinuteIncChanged)
+            {
+                _minuteItems.Clear();
+                DateTimeFormatter formatter = new DateTimeFormatter("{minute}");
+
+                var inc = MinuteIncrement;
+                for (int i = 0; i < 60; i += inc)
+                {
+                    var min = TimeSpan.FromMinutes(i);
+                    TimePickerPresenterItem tppi = new TimePickerPresenterItem(min);
+                    tppi.DisplayText = formatter.Format(min);
+                    _minuteItems.Add(tppi);
                 }
             }
 
-            if (_periodSelector == null && clock == "12HourClock")
+            if (clock == "12HourClock")
             {
-                _periodSelector = new LoopingSelector();
-                _periodSelector.ShouldLoop = false;
-                _periodSelector.ItemTemplate = SelectorItemTemplate;
-                _thirdPickerHost.Child = _periodSelector;
+                if(_periodSelector == null)
+                {
+                    _periodSelector = new LoopingSelector();
+                    _periodSelector.ShouldLoop = false;
+                    _periodSelector.ItemTemplate = SelectorItemTemplate;
+                }
+
+                if(_periodSelector.Parent == null)
+                    _thirdPickerHost.Child = _periodSelector;
 
                 if (_periodItems == null || _periodItems.Count == 0)
                 {
@@ -337,11 +362,14 @@ namespace Avalonia.Controls
                     _periodSelector.Items = _periodItems;
                 }
             }
-            else if (_periodSelector != null && clock == "24HourClock")
+            else if (clock == "24HourClock")
             {
                 _thirdPickerHost.Child = null;
-                _periodSelector.Items = null;
-                _periodSelector = null;
+                if(_periodSelector != null)
+                {
+                    _periodSelector.Items = null;
+                    _periodSelector = null;
+                }
                 if (_periodItems != null && _periodItems.Count > 0)
                     _periodItems.Clear();
             }
@@ -399,7 +427,7 @@ namespace Avalonia.Controls
             var min = Time.Minutes;
             if (minInc == 1)
             {
-                _minuteSelector.SelectedIndex = min - 1;
+                _minuteSelector.SelectedIndex = min;
             }
             else
             {
@@ -427,7 +455,7 @@ namespace Avalonia.Controls
             //TODO: figure out a dynamic way to set the offset
             //for now, hardcode what lines up with default behavior of 9 items displayed
             //This offset occurs AFTER adjustment for screen bounds occurs, so may need to adjust for that too
-            _hostPopup.Host.ConfigurePosition(_hostPopup.PlacementTarget, PlacementMode.Top, new Point(1, -191.5));
+            _hostPopup.Host.ConfigurePosition(_hostPopup.PlacementTarget, PlacementMode.Top, new Point(0, -191.5));
         }
 
         private void OnPopupClosed(object sender, PopupClosedEventArgs e)

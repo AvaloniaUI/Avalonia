@@ -198,15 +198,20 @@ namespace Avalonia.Controls
 
         private void SetSelectedTimeText()
         {
+            if (_hourText == null || _minuteText == null || _periodText == null)
+                return;
+
             var time = SelectedTime;
             if (time.HasValue)
             {
                 //DateTimeFormatter will automatically handle the correct format for 
                 //hours/minutes based on culture settings
                 DateTimeFormatter formatter = new DateTimeFormatter("{hour}");
+                formatter.Clock = ClockIdentifier;
                 _hourText.Text = formatter.Format(time.Value);
 
                 formatter = new DateTimeFormatter("{minute}");
+                formatter.Clock = ClockIdentifier;
                 _minuteText.Text = formatter.Format(time.Value);
                 PseudoClasses.Set(":hasnotime", false);
 
@@ -237,7 +242,6 @@ namespace Avalonia.Controls
             _presenter.ShowAt(this);
         }
 
-
         private void OnPresenterTimeChanged(object sender, TimePickerValueChangedEventArgs e)
         {
             SelectedTime = e.NewTime;
@@ -261,6 +265,5 @@ namespace Avalonia.Controls
         private TimeSpan? _selectedTime;
         private int _minuteIncrement = 1;
         private string _clockIdentifier = "12HourClock";
-
     }
 }

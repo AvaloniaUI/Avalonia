@@ -259,6 +259,28 @@ namespace Avalonia.Controls
             {
                 _dismissButton.Click += OnDismissButtonClicked;
             }
+
+            //If template is reapplied (theme change, etc), make sure the looping selectors
+            //are removed from the old grid & placed into new one. However, since placement
+            //logic is complex, it's easier to just destroy and recreate the loopingselectors
+            if(_yearSelector != null)
+            {
+                _yearSelector.SelectionChanged -= OnYearSelectionChanged;
+                _yearSelector.Items = null;
+                _yearSelector = null;
+            }
+            if(_monthSelector != null)
+            {
+                _monthSelector.SelectionChanged -= OnMonthSelectionChanged;
+                _monthSelector.Items = null;
+                _monthSelector = null;
+            }
+            if(_daySelector != null)
+            {
+                _daySelector.SelectionChanged -= OnDaySelectionChanged;
+                _daySelector.Items = null;
+                _daySelector = null;
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -281,7 +303,6 @@ namespace Avalonia.Controls
             }
             base.OnKeyDown(e);
         }
-
 
         private void OnDismissButtonClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
@@ -313,7 +334,7 @@ namespace Avalonia.Controls
                 _hostPopup = new Avalonia.Controls.Primitives.Popup();
                 _hostPopup.Child = this;
                 _hostPopup.PlacementMode = PlacementMode.Bottom;
-                _hostPopup.StaysOpen = true;
+                _hostPopup.StaysOpen = false;
                 ((ISetLogicalParent)_hostPopup).SetParent(target);
                 _hostPopup.Closed += OnPopupClosed;
                 _hostPopup.Opened += OnPopupOpened;
@@ -325,8 +346,6 @@ namespace Avalonia.Controls
                 throw new ArgumentNullException("Target cannot be null");
 
             _hostPopup.PlacementTarget = target;
-
-            this.Width = target.Bounds.Width - 2;
 
             //Need to open the popup first, so the template is applied & our 
             //template items are available
@@ -413,10 +432,12 @@ namespace Avalonia.Controls
         {
             Contract.Requires<NullReferenceException>(_pickerContainer != null);
 
+            //If creating the selectors, we only create, but don't add...
+            //See note in SetGrid() for reasoning
+            //We do remove here though, if needed
             if (yearVis && _yearSelector == null)
             {
                 _yearSelector = new LoopingSelector();
-                _pickerContainer.Children.Add(_yearSelector);
                 _yearSelector.SelectionChanged += OnYearSelectionChanged;
                 _yearSelector.ShouldLoop = false;
                 _yearSelector.ItemTemplate = YearSelectorItemTemplate;
@@ -433,7 +454,6 @@ namespace Avalonia.Controls
             if (monthVis && _monthSelector == null)
             {
                 _monthSelector = new LoopingSelector();
-                _pickerContainer.Children.Add(_monthSelector);
                 _monthSelector.SelectionChanged += OnMonthSelectionChanged;
                 _monthSelector.ShouldLoop = true;
                 _monthSelector.ItemTemplate = MonthSelectorItemTemplate;
@@ -450,7 +470,6 @@ namespace Avalonia.Controls
             if (dayVis && _daySelector == null)
             {
                 _daySelector = new LoopingSelector();
-                _pickerContainer.Children.Add(_daySelector);
                 _daySelector.SelectionChanged += OnDaySelectionChanged;
                 _daySelector.ShouldLoop = true;
                 _daySelector.ItemTemplate = DaySelectorItemTemplate;
@@ -603,11 +622,10 @@ namespace Avalonia.Controls
             {
                 _daySelector.SelectedIndex = daysInMonth - 1;
             }
-
         }
 
         /// <summary>
-        /// Sets the selector grid up, placing the selectors and spacers in the 
+        /// Sets the selector grid up, adding and placing the selectors and spacers in the 
         /// correct location
         /// </summary>
         private void SetGrid()
@@ -618,7 +636,7 @@ namespace Avalonia.Controls
             //Display order of date is based on user's culture, we attempt
             //to figure out the normal date pattern
             //Not sure if better way exists, but it works...
-            var fmt = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;
+            var fmt = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;
             var monthfmt = Regex.Match(fmt, "(M|MM)");
             var yearfmt = Regex.Match(fmt, "(Y|YY|YYY|YYYY|y|yy|yyy|yyyy)");
             var dayfmt = Regex.Match(fmt, "(d|dd)");
@@ -635,12 +653,16 @@ namespace Avalonia.Controls
                 dayIndex = dayfmt.Index;
             }
 
-
             bool showMonth = MonthVisible;
             bool showDay = DayVisible;
             bool showYear = YearVisible;
 
             _pickerContainer.ColumnDefinitions.Clear();
+
+            //Below we add the selectors to the container grid (if not already done)
+            //and set the respective columns for each control
+            //We also need to add the selectors in the order they should appear, so 
+            //navigation via Tab key works, since we don't have a TabIndex property
 
             if (showMonth && !showDay && !showYear) //Month Only
             {
@@ -654,6 +676,9 @@ namespace Avalonia.Controls
 
                 _spacer1.IsVisible = false;
                 _spacer2.IsVisible = false;
+
+                if (_monthSelector.Parent == null)
+                    _pickerContainer.Children.Add(_monthSelector);
 
                 Grid.SetColumn(_monthSelector, 0);
             }
@@ -670,6 +695,9 @@ namespace Avalonia.Controls
                 _spacer1.IsVisible = false;
                 _spacer2.IsVisible = false;
 
+                if (_daySelector.Parent == null)
+                    _pickerContainer.Children.Add(_daySelector);
+
                 Grid.SetColumn(_daySelector, 0);
             }
             else if (!showMonth && !showDay && showYear) //Year Only
@@ -684,6 +712,9 @@ namespace Avalonia.Controls
 
                 _spacer1.IsVisible = false;
                 _spacer2.IsVisible = false;
+
+                if (_yearSelector.Parent == null)
+                    _pickerContainer.Children.Add(_yearSelector);
 
                 Grid.SetColumn(_yearSelector, 0);
             }
@@ -701,8 +732,27 @@ namespace Avalonia.Controls
                 _spacer1.IsVisible = true;
                 _spacer2.IsVisible = false;
 
-                Grid.SetColumn(_monthSelector, monthIndex < dayIndex ? 0 : 2);
-                Grid.SetColumn(_daySelector, monthIndex < dayIndex ? 2 : 0);
+                if(monthIndex < dayIndex)
+                {
+                    if (_monthSelector.Parent == null)
+                        _pickerContainer.Children.Add(_monthSelector);
+                    if (_daySelector.Parent == null)
+                        _pickerContainer.Children.Add(_daySelector);
+
+                    Grid.SetColumn(_monthSelector, 0);
+                    Grid.SetColumn(_daySelector, 2);
+                }
+                else
+                {
+                    if (_daySelector.Parent == null)
+                        _pickerContainer.Children.Add(_daySelector);
+                    if (_monthSelector.Parent == null)
+                        _pickerContainer.Children.Add(_monthSelector);
+
+                    Grid.SetColumn(_monthSelector, 2);
+                    Grid.SetColumn(_daySelector, 0);
+                }
+
                 Grid.SetColumn(_spacer1, 1);
             }
             else if (showMonth && !showDay && showYear) //Month and Year Only
@@ -719,8 +769,27 @@ namespace Avalonia.Controls
                 _spacer1.IsVisible = true;
                 _spacer2.IsVisible = false;
 
-                Grid.SetColumn(_monthSelector, monthIndex < yearIndex ? 0 : 2);
-                Grid.SetColumn(_yearSelector, monthIndex < yearIndex ? 2 : 0);
+                if (monthIndex < yearIndex)
+                {
+                    if (_monthSelector.Parent == null)
+                        _pickerContainer.Children.Add(_monthSelector);
+                    if (_yearSelector.Parent == null)
+                        _pickerContainer.Children.Add(_yearSelector);
+
+                    Grid.SetColumn(_monthSelector, 0);
+                    Grid.SetColumn(_yearSelector, 2);
+                }
+                else
+                {
+                    if (_yearSelector.Parent == null)
+                        _pickerContainer.Children.Add(_yearSelector);
+                    if (_monthSelector.Parent == null)
+                        _pickerContainer.Children.Add(_monthSelector);
+
+                    Grid.SetColumn(_monthSelector, 2);
+                    Grid.SetColumn(_yearSelector, 0);
+                }
+
                 Grid.SetColumn(_spacer1, 1);
             }
             else if (!showMonth && showDay && showYear) //Day and Year Only
@@ -736,8 +805,27 @@ namespace Avalonia.Controls
                 _spacer1.IsVisible = true;
                 _spacer2.IsVisible = false;
 
-                Grid.SetColumn(_yearSelector, dayIndex < yearIndex ? 2 : 0);
-                Grid.SetColumn(_daySelector, dayIndex < yearIndex ? 0 : 2);
+                if (dayIndex < yearIndex)
+                {
+                    if (_daySelector.Parent == null)
+                        _pickerContainer.Children.Add(_daySelector);
+                    if (_yearSelector.Parent == null)
+                        _pickerContainer.Children.Add(_yearSelector);
+
+                    Grid.SetColumn(_daySelector, 0);
+                    Grid.SetColumn(_yearSelector, 2);
+                }
+                else
+                {
+                    if (_yearSelector.Parent == null)
+                        _pickerContainer.Children.Add(_yearSelector);
+                    if (_daySelector.Parent == null)
+                        _pickerContainer.Children.Add(_daySelector);
+
+                    Grid.SetColumn(_daySelector, 2);
+                    Grid.SetColumn(_yearSelector, 0);
+                }
+
                 Grid.SetColumn(_spacer1, 1);
             }
             else if (showMonth && showDay && showYear) //All Visible
@@ -767,14 +855,88 @@ namespace Avalonia.Controls
                 bool isYearSecond = (yearIndex > monthIndex && yearIndex < dayIndex) ||
                     (yearIndex < monthIndex && yearIndex > dayIndex);
 
-                Grid.SetColumn(_monthSelector, isMonthFirst ? 0 : isMonthSecond ? 2 : 4);
-                Grid.SetColumn(_yearSelector, isYearFirst ? 0 : (isMonthSecond || isDaySecond) ? 4 : 2);
-                Grid.SetColumn(_daySelector, isDayFirst ? 0 : (isMonthSecond || isYearSecond) ? 4 : 2);
+                
+                if(isMonthFirst)
+                {
+                    if(_monthSelector.Parent == null)
+                        _pickerContainer.Children.Add(_monthSelector);
+                    Grid.SetColumn(_monthSelector, 0);
+
+                    if (isDaySecond)
+                    {
+                        if(_daySelector.Parent == null)
+                            _pickerContainer.Children.Add(_daySelector);
+                        Grid.SetColumn(_daySelector, 2);
+                        if(_yearSelector.Parent == null)
+                            _pickerContainer.Children.Add(_yearSelector);
+                        Grid.SetColumn(_yearSelector, 4);
+                    }
+                    else
+                    {
+                        if(_yearSelector.Parent == null)
+                            _pickerContainer.Children.Add(_yearSelector);
+                        Grid.SetColumn(_yearSelector, 2);
+                        if(_daySelector.Parent == null)
+                            _pickerContainer.Children.Add(_daySelector);
+                        Grid.SetColumn(_daySelector, 4);
+                    }
+
+                }
+                else if (isDayFirst)
+                {
+                    if(_daySelector.Parent == null)
+                        _pickerContainer.Children.Add(_daySelector);
+                    Grid.SetColumn(_daySelector, 0);
+
+                    if (isMonthSecond)
+                    {
+                        if (_monthSelector.Parent == null)
+                            _pickerContainer.Children.Add(_monthSelector);
+                        Grid.SetColumn(_monthSelector, 2);
+                        if (_yearSelector.Parent == null)
+                            _pickerContainer.Children.Add(_yearSelector);
+                        Grid.SetColumn(_yearSelector, 4);
+                    }
+                    else
+                    {
+                        if (_yearSelector.Parent == null)
+                            _pickerContainer.Children.Add(_yearSelector);
+                        Grid.SetColumn(_yearSelector, 2);
+                        if (_monthSelector.Parent == null)
+                            _pickerContainer.Children.Add(_monthSelector);
+                        Grid.SetColumn(_monthSelector, 3);
+                    }
+                }
+                else //year first
+                {
+                    if(_yearSelector.Parent == null)
+                        _pickerContainer.Children.Add(_yearSelector);
+                    Grid.SetColumn(_yearSelector, 0);
+
+                    if (isMonthSecond)
+                    {
+                        if (_monthSelector.Parent == null)
+                            _pickerContainer.Children.Add(_monthSelector);
+                        Grid.SetColumn(_monthSelector, 2);
+                        if (_daySelector.Parent == null)
+                            _pickerContainer.Children.Add(_daySelector);
+                        Grid.SetColumn(_daySelector, 4);
+                    }
+                    else
+                    {
+                        if (_daySelector.Parent == null)
+                            _pickerContainer.Children.Add(_daySelector);
+                        Grid.SetColumn(_daySelector, 2);
+                        if (_monthSelector.Parent == null)
+                            _pickerContainer.Children.Add(_monthSelector);
+                        Grid.SetColumn(_monthSelector, 4);
+                    }
+                }
 
                 Grid.SetColumn(_spacer1, 1);
                 Grid.SetColumn(_spacer2, 3);
             }
-            else
+            else //This should probably never happen, but jic
             {
                 if (_monthSelector != null)
                     _monthSelector.IsVisible = false;
@@ -785,32 +947,7 @@ namespace Avalonia.Controls
 
                 _spacer1.IsVisible = false;
                 _spacer2.IsVisible = false;
-            }
-
-            //Now to ensure we handle tab navigation correctly, we need to make sure the 
-            //selectors are in order in the Grid's children collection so we navigate from
-            //left to right
-            if (MonthVisible && _monthSelector != null)
-            {
-                if (_pickerContainer.Children.IndexOf(_monthSelector) != Grid.GetColumn(_monthSelector))
-                {
-                    _pickerContainer.Children.Move(_pickerContainer.Children.IndexOf(_monthSelector), Grid.GetColumn(_monthSelector));
-                }
-            }
-            if (DayVisible && _daySelector != null)
-            {
-                if (_pickerContainer.Children.IndexOf(_daySelector) != Grid.GetColumn(_daySelector))
-                {
-                    _pickerContainer.Children.Move(_pickerContainer.Children.IndexOf(_daySelector), Grid.GetColumn(_daySelector));
-                }
-            }
-            if (YearVisible && _yearSelector != null)
-            {
-                if (_pickerContainer.Children.IndexOf(_yearSelector) != Grid.GetColumn(_yearSelector))
-                {
-                    _pickerContainer.Children.Move(_pickerContainer.Children.IndexOf(_yearSelector), Grid.GetColumn(_yearSelector));
-                }
-            }
+            }            
         }
 
         private void OnPopupOpened(object sender, EventArgs e)
@@ -818,8 +955,7 @@ namespace Avalonia.Controls
             //TODO: figure out a dynamic way to set the offset
             //for now, hardcode what lines up with default behavior of 9 items displayed
             //This offset occurs AFTER adjustment for screen bounds occurs, so may need to adjust for that too
-            _hostPopup.Host.ConfigurePosition(_hostPopup.PlacementTarget, PlacementMode.Top, new Point(1, -191.5));
-
+            _hostPopup.Host.ConfigurePosition(_hostPopup.PlacementTarget, PlacementMode.Top, new Point(0, -191.5));
         }
 
         private void OnPopupClosed(object sender, PopupClosedEventArgs e)
@@ -968,6 +1104,5 @@ namespace Avalonia.Controls
         private DateTimeOffset _initDate;
 
         private bool _suppressUpdateSelection;
-
     }
 }
