@@ -6,50 +6,89 @@ namespace Avalonia.Base.UnitTests.Utilities
 {
     public class MathUtilitiesTests
     {
+        private const double AnyValue = 42.42;
+        private readonly double _calculatedAnyValue;
+        private readonly double _one;
+        private readonly double _zero;
+
+        public MathUtilitiesTests()
+        {
+            _calculatedAnyValue = 0.0;
+            _one = 0.0;
+            _zero = 1.0;
+
+            const int N = 10;
+            var dxAny = AnyValue / N;
+            var dxOne = 1.0 / N;
+            var dxZero = _zero / N;
+
+            for (var i = 0; i < N; ++i)
+            {
+                _calculatedAnyValue += dxAny;
+                _one += dxOne;
+                _zero -= dxZero;
+            }
+        }
+
         [Fact]
         public void Two_Equivalent_Double_Values_Are_Close()
         {
-            const int N = 10;
-            var x = 42.42;
-            var y = 0.0;
-            var dx = x / N;
-
-            for (var i = 0; i < N; ++i)
-                y += dx;
-            var actual = MathUtilities.AreClose(x, y);
+            var actual = MathUtilities.AreClose(AnyValue, _calculatedAnyValue);
 
             Assert.True(actual);
-            Assert.Equal(x, Math.Round(y, 14));
+            Assert.Equal(AnyValue, Math.Round(_calculatedAnyValue, 14));
+        }
+
+        [Fact]
+        public void Two_Equivalent_Single_Values_Are_Close()
+        {
+            var expectedValue = (float)AnyValue;
+            var actualValue = (float)_calculatedAnyValue;
+            
+            var actual = MathUtilities.AreClose(expectedValue, actualValue);
+
+            Assert.True(actual);
+            Assert.Equal((float) Math.Round(expectedValue, 5), (float) Math.Round(actualValue, 4));
         }
 
         [Fact]
         public void Calculated_Double_One_Is_One()
         {
-            const int N = 10;
-            var dx = 1.0 / N;
-            var x = 0.0;
-            
-            for (var i = 0; i < N; ++i)
-                x += dx;
-            var actual = MathUtilities.IsOne(x);
+            var actual = MathUtilities.IsOne(_one);
 
             Assert.True(actual);
-            Assert.Equal(1.0, Math.Round(x, 15));
+            Assert.Equal(1.0, Math.Round(_one, 15));
+        }
+
+        [Fact]
+        public void Calculated_Single_One_Is_One()
+        {
+            var actualValue = (float)_one;
+            
+            var actual = MathUtilities.IsOne(actualValue);
+
+            Assert.True(actual);
+            Assert.Equal(1.0f, (float) Math.Round(actualValue, 7));
         }
 
         [Fact]
         public void Calculated_Double_Zero_Is_Zero()
         {
-            const int N = 10;
-            var x = 1.0;
-            var dx = x / N;
-            
-            for (var i = 0; i < N; ++i)
-                x -= dx;
-            var actual = MathUtilities.IsZero(x);
+            var actual = MathUtilities.IsZero(_zero);
 
             Assert.True(actual);
-            Assert.Equal(0.0, Math.Round(x, 15));
+            Assert.Equal(0.0, Math.Round(_zero, 15));
+        }
+
+        [Fact]
+        public void Calculated_Single_Zero_Is_Zero()
+        {
+            var actualValue = (float)_zero;
+
+            var actual = MathUtilities.IsZero(actualValue);
+
+            Assert.True(actual);
+            Assert.Equal(0.0f, (float) Math.Round(actualValue, 7));
         }
 
         [Fact]
