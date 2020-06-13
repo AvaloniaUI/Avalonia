@@ -157,5 +157,24 @@ namespace Avalonia.Base.UnitTests.Utilities
             var actual = MathUtilities.GreaterThanOrClose(1, 1);
             Assert.True(actual);
         }
+
+        [Fact]
+        public void Round_Layout_Value_Without_DPI_Aware()
+        {
+            const double value = 5e-15;
+            var expectedValue = Math.Round(value);
+            var actualValue = MathUtilities.RoundLayoutValue(value, 1.0);
+            Assert.Equal(expectedValue, actualValue);
+        }
+
+        [Fact]
+        public void Round_Layout_Value_With_DPI_Aware()
+        {
+            const double dpiScale = 1.25;
+            const double value = 42.5;
+            var expectedValue = Math.Round(value * dpiScale) / dpiScale;
+            var actualValue = MathUtilities.RoundLayoutValue(value, dpiScale);
+            Assert.Equal(expectedValue, actualValue);
+        }
     }
 }

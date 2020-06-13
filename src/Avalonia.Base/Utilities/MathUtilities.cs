@@ -221,7 +221,7 @@ namespace Avalonia.Utilities
             double newValue;
 
             // If DPI == 1, don't use DPI-aware rounding.
-            if (!MathUtilities.AreClose(dpiScale, 1.0))
+            if (!MathUtilities.IsOne(dpiScale))
             {
                 newValue = Math.Round(value * dpiScale) / dpiScale;
                 // If rounding produces a value unacceptable to layout (NaN, Infinity or MaxValue), use the original value.
