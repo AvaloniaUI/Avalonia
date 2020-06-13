@@ -181,7 +181,7 @@ namespace Avalonia.Media
             const double midPoint = 0.5; // Mid point of HsvV range that these calculations are based on. This is here for easy tuning.
 
             const double whiteMaxOpacity = 0.15; // 100% luminosity
-            const double midPointMaxOpacity = 0.45; // 50% luminosity
+            const double midPointMaxOpacity = 0.40; // 50% luminosity
             const double blackMaxOpacity = 0.40; // 0% luminosity
 
             var hsv = RgbToHsv(tintColor);
