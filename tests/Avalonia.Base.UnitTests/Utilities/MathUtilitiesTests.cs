@@ -117,44 +117,86 @@ namespace Avalonia.Base.UnitTests.Utilities
         }
 
         [Fact]
-        public void Zero_Less_Than_One()
+        public void Double_Float_Zero_Less_Than_One()
         {
-            var actual = MathUtilities.LessThan(0, 1);
+            var actual = MathUtilities.LessThan(0d, 1d);
             Assert.True(actual);
         }
 
         [Fact]
-        public void One_Not_Less_Than_Zero()
+        public void Single_Float_Zero_Less_Than_One()
         {
-            var actual = MathUtilities.LessThan(1, 0);
+            var actual = MathUtilities.LessThan(0f, 1f);
+            Assert.True(actual);
+        }
+
+        [Fact]
+        public void Double_Float_One_Not_Less_Than_Zero()
+        {
+            var actual = MathUtilities.LessThan(1d, 0d);
             Assert.False(actual);
         }
 
         [Fact]
-        public void Zero_Not_Greater_Than_One()
+        public void Single_Float_One_Not_Less_Than_Zero()
         {
-            var actual = MathUtilities.GreaterThan(0, 1);
+            var actual = MathUtilities.LessThan(1f, 0f);
             Assert.False(actual);
         }
 
         [Fact]
-        public void One_Greater_Than_Zero()
+        public void Double_Float_Zero_Not_Greater_Than_One()
         {
-            var actual = MathUtilities.GreaterThan(1, 0);
+            var actual = MathUtilities.GreaterThan(0d, 1d);
+            Assert.False(actual);
+        }
+
+        [Fact]
+        public void Single_Float_Zero_Not_Greater_Than_One()
+        {
+            var actual = MathUtilities.GreaterThan(0f, 1f);
+            Assert.False(actual);
+        }
+
+        [Fact]
+        public void Double_Float_One_Greater_Than_Zero()
+        {
+            var actual = MathUtilities.GreaterThan(1d, 0d);
             Assert.True(actual);
         }
 
         [Fact]
-        public void One_Less_Than_Or_Close_One()
+        public void Single_Float_One_Greater_Than_Zero()
         {
-            var actual = MathUtilities.LessThanOrClose(1, 1);
+            var actual = MathUtilities.GreaterThan(1f, 0f);
             Assert.True(actual);
         }
 
         [Fact]
-        public void One_Greater_Than_Or_Close_One()
+        public void Double_Float_One_Less_Than_Or_Close_One()
         {
-            var actual = MathUtilities.GreaterThanOrClose(1, 1);
+            var actual = MathUtilities.LessThanOrClose(1d, 1d);
+            Assert.True(actual);
+        }
+
+        [Fact]
+        public void Single_Float_One_Less_Than_Or_Close_One()
+        {
+            var actual = MathUtilities.LessThanOrClose(1f, 1f);
+            Assert.True(actual);
+        }
+
+        [Fact]
+        public void Double_Float_One_Greater_Than_Or_Close_One()
+        {
+            var actual = MathUtilities.GreaterThanOrClose(1d, 1d);
+            Assert.True(actual);
+        }
+
+        [Fact]
+        public void Single_Float_One_Greater_Than_Or_Close_One()
+        {
+            var actual = MathUtilities.GreaterThanOrClose(1f, 1f);
             Assert.True(actual);
         }
 
