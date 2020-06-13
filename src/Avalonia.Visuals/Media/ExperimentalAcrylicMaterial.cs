@@ -182,7 +182,7 @@ namespace Avalonia.Media
 
             const double whiteMaxOpacity = 0.45; // 100% luminosity
             const double midPointMaxOpacity = 0.50; // 50% luminosity
-            const double blackMaxOpacity = 0.85; // 0% luminosity
+            const double blackMaxOpacity = 0.45; // 0% luminosity
 
             var hsv = RgbToHsv(tintColor);
 
@@ -327,16 +327,15 @@ namespace Avalonia.Media
 
             var lightness = (max + min) / 2.0;
 
-            // centralise and reduce the range of the opaque layer. 
-            // this is done so pure white and pure black still have the effect of being blended with something.
-            // i.e. they get a little darker / lighter.
-            lightness = 0.125 + (lightness * 0.75);              
+            // 0 opacity closer to white, 1 opacity, close to the lightness of the pixel.
+            // TintOpacity multiplied in, so we endup with pure white if there is no TintOpacity.
+            lightness = 1 - (1 - lightness) * luminosityOpacity.Value * TintOpacity;
 
             var luminosityColor = new Color(255, Trim(lightness), Trim(lightness), Trim(lightness));
 
-            var compensationMultiplier = 1 - PlatformTransparencyCompensationLevel;
-
-            return new Color((byte)(255 * Math.Max(Math.Min(PlatformTransparencyCompensationLevel + ( luminosityOpacity.Value * compensationMultiplier), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
+            //var compensationMultiplier = 1 - PlatformTransparencyCompensationLevel;
+            //return new Color((byte)(255 * Math.Max(Math.Min(PlatformTransparencyCompensationLevel + ( luminosityOpacity.Value * compensationMultiplier), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
+            return new Color((byte)(255 * Math.Max(Math.Min((luminosityOpacity.Value), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
         }
 
         /// <summary>
