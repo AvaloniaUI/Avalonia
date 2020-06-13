@@ -188,6 +188,11 @@ namespace Avalonia.Utilities
         /// <returns>The clamped value.</returns>
         public static double Clamp(double val, double min, double max)
         {
+            if (min > max)
+            {
+                throw new ArgumentException($"{min} cannot be greater than {max}.");
+            }
+
             if (val < min)
             {
                 return min;
