@@ -56,11 +56,11 @@ namespace Avalonia.Controls
                             break;
 
                         case WindowTransparencyLevel.Blur:
-                            Material.PlatformTransparencyCompensationLevel = 0.90;
+                            Material.PlatformTransparencyCompensationLevel = 0.80;
                             break;
 
                         case WindowTransparencyLevel.AcrylicBlur:
-                            Material.PlatformTransparencyCompensationLevel = 0.70;
+                            Material.PlatformTransparencyCompensationLevel = 0.0;
                             break;
                     }
                 });
