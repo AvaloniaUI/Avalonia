@@ -318,6 +318,28 @@ namespace Avalonia.Media
                 return (color.G < color.B) ? color.G : color.B;
         }
 
+        static byte Blend(byte leftColor, byte leftAlpha, byte rightColor, byte rightAlpha)
+        {
+            var ca = leftColor / 255d;
+            var aa = leftAlpha / 255d;
+            var cb = rightColor / 255d;
+            var ab = rightAlpha / 255d;
+            var r = (ca * aa + cb * ab * (1 - aa)) / (aa + ab * (1 - aa));
+            return (byte)(r * 255);
+        }
+
+        static Color Blend(Color left, Color right)
+        {
+            var aa = left.A / 255d;
+            var ab = right.A / 255d;
+            return new Color(
+                (byte)((aa + ab * (1 - aa)) * 255),
+                Blend(left.R, left.A, right.R, right.A),
+                Blend(left.G, left.A, right.G, right.A),
+                Blend(left.B, left.A, right.B, right.A)
+            );
+        }
+
         // The tintColor passed into this method should be the original, unmodified color created using user values for TintColor + TintOpacity
         Color GetLuminosityColor(double? luminosityOpacity)
         {
@@ -325,15 +347,15 @@ namespace Avalonia.Media
             var max = (float)RGBMax(TintColor) / 255.0f;
             var min = (float)RGBMin(TintColor) / 255.0f;
 
-            var lightness = (max + min) / 2.0;            
+            var lightness = (max + min) / 2.0;
 
-            // 0 opacity closer to white, 1 opacity, close to the lightness of the pixel.
-            lightness = 1 -((1 - lightness) * luminosityOpacity.Value);
+            lightness = 1 - ((1 - lightness) * luminosityOpacity.Value);
 
             lightness = 0.13 + (lightness * 0.74);
-            var luminosityColor = new Color(255, Trim(lightness), Trim(lightness), Trim(lightness));            
 
-            //luminosityColor = new Color(255, Trim(lightness * modifier), Trim(lightness * modifier), Trim(lightness * modifier));
+            var luminosityColor = new Color(255, Trim(lightness), Trim(lightness), Trim(lightness));
+
+            luminosityColor = Blend(luminosityColor, new Color((byte)Math.Round(255 * TintOpacity), TintColor.R, TintColor.G, TintColor.B));
 
             //var compensationMultiplier = 1 - PlatformTransparencyCompensationLevel;
             //return new Color((byte)(255 * Math.Max(Math.Min(PlatformTransparencyCompensationLevel + ( luminosityOpacity.Value * compensationMultiplier), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
