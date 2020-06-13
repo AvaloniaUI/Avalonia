@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Utils
 {
@@ -119,7 +120,7 @@ namespace Avalonia.Controls.Utils
                 }
 
                 var rect = new Rect(_size);
-                if (Math.Abs(borderThickness) > double.Epsilon)
+                if (!MathUtilities.IsZero(borderThickness))
                     rect = rect.Deflate(borderThickness * 0.5);
                 var rrect = new RoundedRect(rect, _cornerRadius.TopLeft, _cornerRadius.TopRight,
                     _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
