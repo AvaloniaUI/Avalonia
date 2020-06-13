@@ -161,7 +161,7 @@ namespace Avalonia.Base.UnitTests.Utilities
         [Fact]
         public void Round_Layout_Value_Without_DPI_Aware()
         {
-            const double value = 5e-15;
+            const double value = 42.5;
             var expectedValue = Math.Round(value);
             var actualValue = MathUtilities.RoundLayoutValue(value, 1.0);
             Assert.Equal(expectedValue, actualValue);
