@@ -357,9 +357,8 @@ namespace Avalonia.Media
 
             luminosityColor = Blend(luminosityColor, new Color(255, TintColor.R, TintColor.G, TintColor.B));
 
-            //var compensationMultiplier = 1 - PlatformTransparencyCompensationLevel;
-            //return new Color((byte)(255 * Math.Max(Math.Min(PlatformTransparencyCompensationLevel + ( luminosityOpacity.Value * compensationMultiplier), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
-            return new Color((byte)(255 * Math.Max(Math.Min((luminosityOpacity.Value), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
+            var compensationMultiplier = 1 - PlatformTransparencyCompensationLevel;
+            return new Color((byte)(255 * Math.Max(Math.Min(PlatformTransparencyCompensationLevel + ( luminosityOpacity.Value * compensationMultiplier), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);            
         }
 
         /// <summary>
