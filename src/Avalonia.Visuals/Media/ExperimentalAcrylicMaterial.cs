@@ -180,9 +180,9 @@ namespace Avalonia.Media
 
             const double midPoint = 0.5; // Mid point of HsvV range that these calculations are based on. This is here for easy tuning.
 
-            const double whiteMaxOpacity = 0.45; // 100% luminosity
-            const double midPointMaxOpacity = 0.50; // 50% luminosity
-            const double blackMaxOpacity = 0.45; // 0% luminosity
+            const double whiteMaxOpacity = 0.15; // 100% luminosity
+            const double midPointMaxOpacity = 0.45; // 50% luminosity
+            const double blackMaxOpacity = 0.40; // 0% luminosity
 
             var hsv = RgbToHsv(tintColor);
 
@@ -325,13 +325,15 @@ namespace Avalonia.Media
             var max = (float)RGBMax(TintColor) / 255.0f;
             var min = (float)RGBMin(TintColor) / 255.0f;
 
-            var lightness = (max + min) / 2.0;
+            var lightness = (max + min) / 2.0;            
 
             // 0 opacity closer to white, 1 opacity, close to the lightness of the pixel.
-            // TintOpacity multiplied in, so we endup with pure white if there is no TintOpacity.
-            lightness = 1 - (1 - lightness) * luminosityOpacity.Value * TintOpacity;
+            lightness = 1 -((1 - lightness) * luminosityOpacity.Value);
 
-            var luminosityColor = new Color(255, Trim(lightness), Trim(lightness), Trim(lightness));
+            lightness = 0.13 + (lightness * 0.74);
+            var luminosityColor = new Color(255, Trim(lightness), Trim(lightness), Trim(lightness));            
+
+            //luminosityColor = new Color(255, Trim(lightness * modifier), Trim(lightness * modifier), Trim(lightness * modifier));
 
             //var compensationMultiplier = 1 - PlatformTransparencyCompensationLevel;
             //return new Color((byte)(255 * Math.Max(Math.Min(PlatformTransparencyCompensationLevel + ( luminosityOpacity.Value * compensationMultiplier), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
