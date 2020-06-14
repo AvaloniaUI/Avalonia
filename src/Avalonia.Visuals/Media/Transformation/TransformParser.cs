@@ -198,16 +198,12 @@ namespace Avalonia.Media.Transformation
                     VerifyZeroOrUnit(function, in scaleX, Unit.None);
                     VerifyZeroOrUnit(function, in scaleY, Unit.None);
 
-                    if (function == TransformFunction.ScaleX)
-                    {
-                        scaleY = UnitValue.Zero;
-                    }
-                    else if (function == TransformFunction.ScaleY)
+                    if (function == TransformFunction.ScaleY)
                     {
                         scaleY = scaleX;
-                        scaleX = UnitValue.Zero;
+                        scaleX = UnitValue.One;
                     }
-                    else if (count == 1)
+                    else if (function == TransformFunction.Scale && count == 1)
                     {
                         scaleY = scaleX;
                     }
@@ -233,18 +229,10 @@ namespace Avalonia.Media.Transformation
                     VerifyZeroOrAngle(function, in skewX);
                     VerifyZeroOrAngle(function, in skewY);
 
-                    if (function == TransformFunction.SkewX)
-                    {
-                        skewY = UnitValue.Zero;
-                    }
-                    else if (function == TransformFunction.SkewY)
+                    if (function == TransformFunction.SkewY)
                     {
                         skewY = skewX;
                         skewX = UnitValue.Zero;
-                    }
-                    else if (count == 1)
-                    {
-                        skewY = skewX;
                     }
 
                     builder.AppendSkew(ToRadians(in skewX), ToRadians(in skewY));
@@ -286,18 +274,10 @@ namespace Avalonia.Media.Transformation
                     VerifyZeroOrUnit(function, in translateX, Unit.Pixel);
                     VerifyZeroOrUnit(function, in translateY, Unit.Pixel);
 
-                    if (function == TransformFunction.TranslateX)
-                    {
-                        translateY = UnitValue.Zero;
-                    }
-                    else if (function == TransformFunction.TranslateY)
+                    if (function == TransformFunction.TranslateY)
                     {
                         translateY = translateX;
                         translateX = UnitValue.Zero;
-                    }
-                    else if (count == 1)
-                    {
-                        translateY = translateX;
                     }
 
                     builder.AppendTranslate(translateX.Value, translateY.Value);
@@ -358,6 +338,7 @@ namespace Avalonia.Media.Transformation
             switch (unit)
             {
                 case Unit.Radian:
+                case Unit.Gradian:
                 case Unit.Degree:
                 case Unit.Turn:
                 {
