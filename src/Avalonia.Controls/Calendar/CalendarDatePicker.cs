@@ -16,29 +16,29 @@ namespace Avalonia.Controls
 {
     /// <summary>
     /// Provides data for the
-    /// <see cref="E:Avalonia.Controls.DatePicker.DateValidationError" />
+    /// <see cref="E:Avalonia.Controls.CalendarDatePicker.DateValidationError" />
     /// event.
     /// </summary>
-    public class DatePickerDateValidationErrorEventArgs : EventArgs
+    public class CalendarDatePickerDateValidationErrorEventArgs : EventArgs
     {
         private bool _throwException;
 
         /// <summary>
         /// Initializes a new instance of the
-        /// <see cref="T:Avalonia.Controls.DatePickerDateValidationErrorEventArgs" />
+        /// <see cref="T:Avalonia.Controls.CalendarDatePickerDateValidationErrorEventArgs" />
         /// class.
         /// </summary>
         /// <param name="exception">
         /// The initial exception from the
-        /// <see cref="E:Avalonia.Controls.DatePicker.DateValidationError" />
+        /// <see cref="E:Avalonia.Controls.CalendarDatePicker.DateValidationError" />
         /// event.
         /// </param>
         /// <param name="text">
         /// The text that caused the
-        /// <see cref="E:Avalonia.Controls.DatePicker.DateValidationError" />
+        /// <see cref="E:Avalonia.Controls.CalendarDatePicker.DateValidationError" />
         /// event.
         /// </param>
-        public DatePickerDateValidationErrorEventArgs(Exception exception, string text)
+        public CalendarDatePickerDateValidationErrorEventArgs(Exception exception, string text)
         {
             this.Text = text;
             this.Exception = exception;
@@ -46,7 +46,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets the initial exception associated with the
-        /// <see cref="E:Avalonia.Controls.DatePicker.DateValidationError" />
+        /// <see cref="E:Avalonia.Controls.CalendarDatePicker.DateValidationError" />
         /// event.
         /// </summary>
         /// <value>
@@ -56,7 +56,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets the text that caused the
-        /// <see cref="E:Avalonia.Controls.DatePicker.DateValidationError" />
+        /// <see cref="E:Avalonia.Controls.CalendarDatePicker.DateValidationError" />
         /// event.
         /// </summary>
         /// <value>
@@ -66,7 +66,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets a value indicating whether
-        /// <see cref="P:Avalonia.Controls.DatePickerDateValidationErrorEventArgs.Exception" />
+        /// <see cref="P:Avalonia.Controls.CalendarDatePickerDateValidationErrorEventArgs.Exception" />
         /// should be thrown.
         /// </summary>
         /// <value>
@@ -74,7 +74,7 @@ namespace Avalonia.Controls
         /// </value>
         /// <exception cref="T:System.ArgumentException">
         /// If set to true and
-        /// <see cref="P:Avalonia.Controls.DatePickerDateValidationErrorEventArgs.Exception" />
+        /// <see cref="P:Avalonia.Controls.CalendarDatePickerDateValidationErrorEventArgs.Exception" />
         /// is null.
         /// </exception>
         public bool ThrowException
@@ -93,9 +93,9 @@ namespace Avalonia.Controls
 
     /// <summary>
     /// Specifies date formats for a
-    /// <see cref="T:Avalonia.Controls.DatePicker" />.
+    /// <see cref="T:Avalonia.Controls.CalendarDatePicker" />.
     /// </summary>
-    public enum DatePickerFormat
+    public enum CalendarDatePickerFormat
     {
         /// <summary>
         /// Specifies that the date should be displayed using unabbreviated days
@@ -115,7 +115,7 @@ namespace Avalonia.Controls
         Custom = 2
     }
 
-    public class DatePicker : TemplatedControl
+    public class CalendarDatePicker : TemplatedControl
     {
         private const string ElementTextBox = "PART_TextBox";
         private const string ElementButton = "PART_Button";
@@ -154,59 +154,59 @@ namespace Avalonia.Controls
         /// </value>
         public CalendarBlackoutDatesCollection BlackoutDates { get; private set; }
 
-        public static readonly DirectProperty<DatePicker, DateTime> DisplayDateProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, DateTime>(
+        public static readonly DirectProperty<CalendarDatePicker, DateTime> DisplayDateProperty =
+            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime>(
                 nameof(DisplayDate),
                 o => o.DisplayDate,
                 (o, v) => o.DisplayDate = v);
-        public static readonly DirectProperty<DatePicker, DateTime?> DisplayDateStartProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, DateTime?>(
+        public static readonly DirectProperty<CalendarDatePicker, DateTime?> DisplayDateStartProperty =
+            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime?>(
                 nameof(DisplayDateStart),
                 o => o.DisplayDateStart,
                 (o, v) => o.DisplayDateStart = v);
-        public static readonly DirectProperty<DatePicker, DateTime?> DisplayDateEndProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, DateTime?>(
+        public static readonly DirectProperty<CalendarDatePicker, DateTime?> DisplayDateEndProperty =
+            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime?>(
                 nameof(DisplayDateEnd),
                 o => o.DisplayDateEnd,
                 (o, v) => o.DisplayDateEnd = v);
         public static readonly StyledProperty<DayOfWeek> FirstDayOfWeekProperty =
-            AvaloniaProperty.Register<DatePicker, DayOfWeek>(nameof(FirstDayOfWeek));
+            AvaloniaProperty.Register<CalendarDatePicker, DayOfWeek>(nameof(FirstDayOfWeek));
 
-        public static readonly DirectProperty<DatePicker, bool> IsDropDownOpenProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, bool>(
+        public static readonly DirectProperty<CalendarDatePicker, bool> IsDropDownOpenProperty =
+            AvaloniaProperty.RegisterDirect<CalendarDatePicker, bool>(
                 nameof(IsDropDownOpen),
                 o => o.IsDropDownOpen,
                 (o, v) => o.IsDropDownOpen = v);
 
         public static readonly StyledProperty<bool> IsTodayHighlightedProperty =
-            AvaloniaProperty.Register<DatePicker, bool>(nameof(IsTodayHighlighted));
-        public static readonly DirectProperty<DatePicker, DateTime?> SelectedDateProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, DateTime?>(
+            AvaloniaProperty.Register<CalendarDatePicker, bool>(nameof(IsTodayHighlighted));
+        public static readonly DirectProperty<CalendarDatePicker, DateTime?> SelectedDateProperty =
+            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime?>(
                 nameof(SelectedDate),
                 o => o.SelectedDate,
                 (o, v) => o.SelectedDate = v);
 
-        public static readonly StyledProperty<DatePickerFormat> SelectedDateFormatProperty =
-            AvaloniaProperty.Register<DatePicker, DatePickerFormat>(
+        public static readonly StyledProperty<CalendarDatePickerFormat> SelectedDateFormatProperty =
+            AvaloniaProperty.Register<CalendarDatePicker, CalendarDatePickerFormat>(
                 nameof(SelectedDateFormat),
-                defaultValue: DatePickerFormat.Short,
+                defaultValue: CalendarDatePickerFormat.Short,
                 validate: IsValidSelectedDateFormat);
 
         public static readonly StyledProperty<string> CustomDateFormatStringProperty =
-            AvaloniaProperty.Register<DatePicker, string>(
+            AvaloniaProperty.Register<CalendarDatePicker, string>(
                 nameof(CustomDateFormatString),
                 defaultValue: "d",
                 validate: IsValidDateFormatString);
 
-        public static readonly DirectProperty<DatePicker, string> TextProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, string>(
+        public static readonly DirectProperty<CalendarDatePicker, string> TextProperty =
+            AvaloniaProperty.RegisterDirect<CalendarDatePicker, string>(
                 nameof(Text),
                 o => o.Text,
                 (o, v) => o.Text = v);
         public static readonly StyledProperty<string> WatermarkProperty =
-            TextBox.WatermarkProperty.AddOwner<DatePicker>();
+            TextBox.WatermarkProperty.AddOwner<CalendarDatePicker>();
         public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
-            TextBox.UseFloatingWatermarkProperty.AddOwner<DatePicker>();
+            TextBox.UseFloatingWatermarkProperty.AddOwner<CalendarDatePicker>();
 
 
         /// <summary>
@@ -218,9 +218,9 @@ namespace Avalonia.Controls
         /// </value>
         /// <exception cref="T:System.ArgumentOutOfRangeException">
         /// The specified date is not in the range defined by
-        /// <see cref="P:Avalonia.Controls.DatePicker.DisplayDateStart" />
+        /// <see cref="P:Avalonia.Controls.CalendarDatePicker.DisplayDateStart" />
         /// and
-        /// <see cref="P:Avalonia.Controls.DatePicker.DisplayDateEnd" />.
+        /// <see cref="P:Avalonia.Controls.CalendarDatePicker.DisplayDateEnd" />.
         /// </exception>
         public DateTime DisplayDate
         {
@@ -320,7 +320,7 @@ namespace Avalonia.Controls
         /// <exception cref="T:System.ArgumentOutOfRangeException">
         /// An specified format is not valid.
         /// </exception>
-        public DatePickerFormat SelectedDateFormat
+        public CalendarDatePickerFormat SelectedDateFormat
         {
             get { return GetValue(SelectedDateFormatProperty); }
             set { SetValue(SelectedDateFormatProperty, value); }
@@ -380,33 +380,33 @@ namespace Avalonia.Controls
         /// Occurs when <see cref="P:Avalonia.Controls.DatePicker.Text" />
         /// is assigned a value that cannot be interpreted as a date.
         /// </summary>
-        public event EventHandler<DatePickerDateValidationErrorEventArgs> DateValidationError;
+        public event EventHandler<CalendarDatePickerDateValidationErrorEventArgs> DateValidationError;
 
         /// <summary>
         /// Occurs when the
-        /// <see cref="P:Avalonia.Controls.DatePicker.SelectedDate" />
+        /// <see cref="P:Avalonia.Controls.CalendarDatePicker.SelectedDate" />
         /// property is changed.
         /// </summary>
         public event EventHandler<SelectionChangedEventArgs> SelectedDateChanged;
 
-        static DatePicker()
+        static CalendarDatePicker()
         {
-            FocusableProperty.OverrideDefaultValue<DatePicker>(true);
+            FocusableProperty.OverrideDefaultValue<CalendarDatePicker>(true);
 
-            DisplayDateProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnDisplayDateChanged(e));
-            DisplayDateStartProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnDisplayDateStartChanged(e));
-            DisplayDateEndProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnDisplayDateEndChanged(e));
-            IsDropDownOpenProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnIsDropDownOpenChanged(e));
-            SelectedDateProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnSelectedDateChanged(e));
-            SelectedDateFormatProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnSelectedDateFormatChanged(e));
-            CustomDateFormatStringProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnCustomDateFormatStringChanged(e));
-            TextProperty.Changed.AddClassHandler<DatePicker>((x,e) => x.OnTextChanged(e));
+            DisplayDateProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnDisplayDateChanged(e));
+            DisplayDateStartProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnDisplayDateStartChanged(e));
+            DisplayDateEndProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnDisplayDateEndChanged(e));
+            IsDropDownOpenProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnIsDropDownOpenChanged(e));
+            SelectedDateProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnSelectedDateChanged(e));
+            SelectedDateFormatProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnSelectedDateFormatChanged(e));
+            CustomDateFormatStringProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnCustomDateFormatStringChanged(e));
+            TextProperty.Changed.AddClassHandler<CalendarDatePicker>((x,e) => x.OnTextChanged(e));
         }
         /// <summary>
         /// Initializes a new instance of the
         /// <see cref="T:Avalonia.Controls.DatePicker" /> class.
         /// </summary>
-        public DatePicker()
+        public CalendarDatePicker()
         {
             FirstDayOfWeek = DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
             _defaultText = string.Empty;
@@ -662,12 +662,12 @@ namespace Avalonia.Controls
                 // change is coming from the Calendar UI itself, so, we
                 // shouldn't change the DisplayDate since it will automatically
                 // be changed by the Calendar
-                if ((day.Month != DisplayDate.Month || day.Year != DisplayDate.Year) && (_calendar == null || !_calendar.DatePickerDisplayDateFlag))
+                if ((day.Month != DisplayDate.Month || day.Year != DisplayDate.Year) && (_calendar == null || !_calendar.CalendarDatePickerDisplayDateFlag))
                 {
                     DisplayDate = day;
                 }
                 if(_calendar != null)
-                    _calendar.DatePickerDisplayDateFlag = false;
+                    _calendar.CalendarDatePickerDisplayDateFlag = false;
             }
             else
             {
@@ -707,7 +707,7 @@ namespace Avalonia.Controls
         }
         private void OnCustomDateFormatStringChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if(SelectedDateFormat == DatePickerFormat.Custom)
+            if(SelectedDateFormat == CalendarDatePickerFormat.Custom)
             {
                 OnDateFormatChanged();
             }
@@ -752,15 +752,15 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Raises the
-        /// <see cref="E:Avalonia.Controls.DatePicker.DateValidationError" />
+        /// <see cref="E:Avalonia.Controls.CalendarDatePicker.DateValidationError" />
         /// event.
         /// </summary>
         /// <param name="e">
         /// A
-        /// <see cref="T:Avalonia.Controls.DatePickerDateValidationErrorEventArgs" />
+        /// <see cref="T:Avalonia.Controls.CalendarDatePickerDateValidationErrorEventArgs" />
         /// that contains the event data.
         /// </param>
-        protected virtual void OnDateValidationError(DatePickerDateValidationErrorEventArgs e)
+        protected virtual void OnDateValidationError(CalendarDatePickerDateValidationErrorEventArgs e)
         {
             DateValidationError?.Invoke(this, e);
         }
@@ -959,7 +959,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    var dateValidationError = new DatePickerDateValidationErrorEventArgs(new ArgumentOutOfRangeException(nameof(text), "SelectedDate value is not valid."), text);
+                    var dateValidationError = new CalendarDatePickerDateValidationErrorEventArgs(new ArgumentOutOfRangeException(nameof(text), "SelectedDate value is not valid."), text);
                     OnDateValidationError(dateValidationError);
 
                     if (dateValidationError.ThrowException)
@@ -970,7 +970,7 @@ namespace Avalonia.Controls
             }
             catch (FormatException ex)
             {
-                DatePickerDateValidationErrorEventArgs textParseError = new DatePickerDateValidationErrorEventArgs(ex, text);
+                CalendarDatePickerDateValidationErrorEventArgs textParseError = new CalendarDatePickerDateValidationErrorEventArgs(ex, text);
                 OnDateValidationError(textParseError);
 
                 if (textParseError.ThrowException)
@@ -986,11 +986,11 @@ namespace Avalonia.Controls
 
             switch (SelectedDateFormat)
             {
-                case DatePickerFormat.Short:
+                case CalendarDatePickerFormat.Short:
                     return string.Format(CultureInfo.CurrentCulture, d.ToString(dtfi.ShortDatePattern, dtfi));
-                case DatePickerFormat.Long:
+                case CalendarDatePickerFormat.Long:
                     return string.Format(CultureInfo.CurrentCulture, d.ToString(dtfi.LongDatePattern, dtfi));
-                case DatePickerFormat.Custom:
+                case CalendarDatePickerFormat.Custom:
                     return string.Format(CultureInfo.CurrentCulture, d.ToString(CustomDateFormatString, dtfi));
             }
             return null;
@@ -1118,12 +1118,12 @@ namespace Avalonia.Controls
 
                     switch (SelectedDateFormat)
                     {
-                        case DatePickerFormat.Long:
+                        case CalendarDatePickerFormat.Long:
                             {
                                 watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, dtfi.LongDatePattern.ToString());
                                 break;
                             }
-                        case DatePickerFormat.Short:
+                        case CalendarDatePickerFormat.Short:
                         default:
                             {
                                 watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, dtfi.ShortDatePattern.ToString());
@@ -1139,11 +1139,11 @@ namespace Avalonia.Controls
             }
         }
 
-        private static bool IsValidSelectedDateFormat(DatePickerFormat value)
+        private static bool IsValidSelectedDateFormat(CalendarDatePickerFormat value)
         {
-            return value == DatePickerFormat.Long
-                || value == DatePickerFormat.Short
-                || value == DatePickerFormat.Custom;
+            return value == CalendarDatePickerFormat.Long
+                || value == CalendarDatePickerFormat.Short
+                || value == CalendarDatePickerFormat.Custom;
         }
         private static bool IsValidDateFormatString(string formatString)
         {
