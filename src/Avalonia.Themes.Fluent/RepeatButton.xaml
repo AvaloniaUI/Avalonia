@@ -54,7 +54,7 @@
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource RepeatButtonForegroundPressed}" />
   </Style>
 
-  <Style Selector="RepeatButton:disabled">
+  <Style Selector="RepeatButton:disabled /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource RepeatButtonBackgroundDisabled}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RepeatButtonBorderBrushDisabled}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource RepeatButtonForegroundDisabled}" />
