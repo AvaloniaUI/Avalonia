@@ -337,7 +337,6 @@ namespace Avalonia.Controls
                 _hostPopup.StaysOpen = false;
                 ((ISetLogicalParent)_hostPopup).SetParent(target);
                 _hostPopup.Closed += OnPopupClosed;
-                _hostPopup.Opened += OnPopupOpened;
                 _hostPopup.WindowManagerAddShadowHint = false;
                 _hostPopup.Focusable = false;
             }
@@ -423,6 +422,22 @@ namespace Avalonia.Controls
 
             _suppressUpdateSelection = false;
             OnOpened();
+
+            //Dynamic position logic for popup
+            //Get item height from an available looping selector
+            //Get the max height of the popup (constrained in template) and subtract the accept/dismiss region out of that
+            //Popup is placed below the control, so we subtract (half of the remaining distance + half an item)
+            //Note, adjustments for screen bounds are done before this adjustment, so that will throw off the placement
+            //Equivalent behavior in WinUI though
+            var itemHeight = _monthSelector != null ? _monthSelector.ItemHeight : _yearSelector != null ? _yearSelector.ItemHeight :
+                _daySelector != null ? _daySelector.ItemHeight : 0;
+            var maxHeight = MaxHeight;
+            var acceptDismissButtonHeight = _acceptButton != null ? _acceptButton.Bounds.Height : 41;
+            var deltaY = -(maxHeight - acceptDismissButtonHeight) / 2 - itemHeight / 2;
+
+            //The extra 5 px I think is related to default popup placement behavior
+            _hostPopup.Host.ConfigurePosition(_hostPopup.PlacementTarget, PlacementMode.Top, new Point(0, deltaY + 5));
+
         }
 
         /// <summary>
@@ -948,14 +963,6 @@ namespace Avalonia.Controls
                 _spacer1.IsVisible = false;
                 _spacer2.IsVisible = false;
             }            
-        }
-
-        private void OnPopupOpened(object sender, EventArgs e)
-        {
-            //TODO: figure out a dynamic way to set the offset
-            //for now, hardcode what lines up with default behavior of 9 items displayed
-            //This offset occurs AFTER adjustment for screen bounds occurs, so may need to adjust for that too
-            _hostPopup.Host.ConfigurePosition(_hostPopup.PlacementTarget, PlacementMode.Top, new Point(0, -191.5));
         }
 
         private void OnPopupClosed(object sender, PopupClosedEventArgs e)
