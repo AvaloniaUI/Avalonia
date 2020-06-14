@@ -29,7 +29,8 @@
                ScrollViewer.HorizontalScrollBarVisibility="Disabled">
           <pages:DataGridPage/>
       </TabItem>
-      <TabItem Header="DatePicker"><pages:DatePickerPage/></TabItem>
+      <TabItem Header="CalendarDatePicker">
+        <pages:CalendarDatePickerPage/></TabItem>
       <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
       <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
       <TabItem Header="Image"
