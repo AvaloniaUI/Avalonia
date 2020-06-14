@@ -184,6 +184,12 @@ namespace Avalonia.Controls.Primitives
             set
             {
                 SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
+
+                _totalItemsInViewport = (int)Math.Ceiling(Bounds.Height / (value == 0 ? 1 : value));
+                if (_totalItemsInViewport % 2 == 0)
+                    _totalItemsInViewport += 1;
+
+                UpdateOffset();
             }
         }
 
@@ -215,7 +221,7 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            if(_scroller != null)
+            if (_scroller != null)
             {
                 _scroller.Content = null;
             }
@@ -301,9 +307,15 @@ namespace Avalonia.Controls.Primitives
         {
             var selIndex = SelectedIndex;
             if (selIndex == ItemCount - 1)
-                SelectedIndex = 0;
+            {
+                if (ShouldLoop)
+                    SelectedIndex = 0;
+            }
             else
+            {
                 SelectedIndex++;
+            }
+
             e.Handled = true;
         }
 
@@ -311,9 +323,15 @@ namespace Avalonia.Controls.Primitives
         {
             var selIndex = SelectedIndex;
             if (selIndex == 0)
-                SelectedIndex = ItemCount - 1;
+            {
+                if (ShouldLoop)
+                    SelectedIndex = ItemCount - 1;
+            }
             else
+            {
                 SelectedIndex--;
+            }
+
             e.Handled = true;
         }
 
@@ -352,10 +370,7 @@ namespace Avalonia.Controls.Primitives
                 case NotifyCollectionChangedAction.Add:
                     ItemCount += e.NewItems.Count;
                     var index = e.NewStartingIndex;
-                    //if (IsContainerIndexLoaded(index))
-                    //{
-                    //    AddContainers(index, e.NewItems);
-                    //}
+                    
                     EnsureContainers();
                     UpdateOffset();
                     break;
@@ -383,7 +398,7 @@ namespace Avalonia.Controls.Primitives
         /// Ensures we have the correct number of containers in the LoopingSelectorPanel
         /// This will add, remove, or clear the panel as necessary
         /// </summary>
-        private void EnsureContainers()
+        private void EnsureContainers(bool setContent = true)
         {
             if (Bounds.Height == 0)
                 return;
@@ -391,7 +406,7 @@ namespace Avalonia.Controls.Primitives
             int itemCount = ItemCount;
             //How many containers we ideally want
             int desiredItemsLoaded = (_totalItemsInViewport * 2) + 1;
-            
+
             var realizedContainerCount = _panel.Children.Count;
 
             if (ShouldLoop)
@@ -414,7 +429,7 @@ namespace Avalonia.Controls.Primitives
                 else if (realizedContainerCount > desiredItemsLoaded) //Remove extra containers
                 {
                     //Technically not needed now as we don't move the containers when looping, just
-                    //swap content, but is here in case of future improvements
+                    //swap content, but may be called if resized
                     _panel.Children.RemoveRange(realizedContainerCount - delta, delta);
                 }
             }
@@ -441,7 +456,7 @@ namespace Avalonia.Controls.Primitives
 
                 //Do we need containers?
                 var numContsToAddRemove = neededContainers - currentCount;
-                
+
                 if (numContsToAddRemove > 0) //Add Containers
                 {
                     List<LoopingSelectorItem> panelItems = new List<LoopingSelectorItem>();
@@ -462,7 +477,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            if (ItemCount > 0)
+            if (setContent && ItemCount > 0)
                 SetItemContent();
         }
 
@@ -519,6 +534,44 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <summary>
+        /// Handles recycling of containers
+        /// </summary>
+        private void RecycleContainersIfNecessaryOnScroll(double newOffset, double oldOffset)
+        {
+            var children = _panel.Children;
+            var initY = (Bounds.Height / 2.0) - (ItemHeight / 2.0);
+            var recThresTop = initY - (_totalItemsInViewport * ItemHeight);
+            var recThresBot = initY + (_totalItemsInViewport * ItemHeight);
+            var scrollChange = newOffset - oldOffset;
+
+            var numContsAbove = children.Where(x => (x.Bounds.Bottom - scrollChange) <= recThresTop).Count();
+            var numContsBelow = children.Where(x => (x.Bounds.Top - scrollChange) >= recThresBot).Count();
+
+            if (numContsAbove > 0)
+            {
+                var recycleCount = numContsAbove;
+                var lastItemContent = (children[children.Count - 1] as LoopingSelectorItem).Content;
+                var index = Items.IndexOf(lastItemContent);
+                _panel.Children.MoveRange(0, recycleCount, children.Count);
+            }
+            else if (numContsBelow > 0)
+            {
+                var recycleCount = numContsBelow;
+                var firstItemContent = (children[0] as LoopingSelectorItem).Content;
+                var index = Items.IndexOf(firstItemContent);
+                var paneItemCount = _panel.Children.Count;
+
+                _panel.Children.MoveRange(paneItemCount - recycleCount, recycleCount, 0);
+            }
+
+            //Probably not ideal to re-set every item's content, but trying to set
+            //the content of just the recycled items was doing weird things
+            //We have a small number of containers loaded, so this shouldn't have
+            //too big of impact
+            SetItemContent();
+        }
+
         private object GetElementAt(int index)
         {
             if (index < 0 || index >= ItemCount)
@@ -540,6 +593,7 @@ namespace Avalonia.Controls.Primitives
 
             _preventUpdateSelection = true;
 
+            var oldOffY = _panel.Offset.Y;
             if (ShouldLoop)
             {
                 //We measure for 10x as many items, so when we set the SelectedIndex
@@ -549,7 +603,6 @@ namespace Avalonia.Controls.Primitives
                 selIndex = selIndex == -1 ? 0 : selIndex;
                 var extent = ItemCount * ItemHeight;
                 _panel.Offset = new Vector(0, (selIndex * ItemHeight) + (extent * 5));
-
             }
             else
             {
@@ -560,9 +613,11 @@ namespace Avalonia.Controls.Primitives
                     _panel.Offset = new Vector(0, 0);
                 else
                     _panel.Offset = new Vector(0, selIndex * ItemHeight);
+
+                EnsureContainers(false);
             }
 
-            EnsureContainers();
+            RecycleContainersIfNecessaryOnScroll(_panel.Offset.Y, oldOffY);
 
             _preventUpdateSelection = false;
         }
@@ -571,7 +626,7 @@ namespace Avalonia.Controls.Primitives
         /// Updates the SelectedIndex when scrolling occurs
         /// </summary>
         /// <param name="offsetY"></param>
-        internal void SetSelectedIndexFromOffset(double offsetY)
+        internal void SetSelectedIndexFromOffset(double oldOffsetY, double offsetY)
         {
             if (_preventUpdateSelection)
                 return;
@@ -586,13 +641,14 @@ namespace Avalonia.Controls.Primitives
                 var pixelOffset = offsetY - extent * numExtents;
 
                 SelectedIndex = (int)(pixelOffset / ItemHeight);
+                RecycleContainersIfNecessaryOnScroll(offsetY, oldOffsetY);
             }
             else
             {
                 SelectedIndex = (int)(offsetY / ItemHeight);
+                EnsureContainers(false);
+                RecycleContainersIfNecessaryOnScroll(offsetY, oldOffsetY);
             }
-
-            EnsureContainers();
 
             _preventMovingScrollWhenSelecting = false;
         }
@@ -612,7 +668,8 @@ namespace Avalonia.Controls.Primitives
         {
             //Ideally we always want this to be odd, since the selected item is placed in the middle,
             //so we have the same number of items above and below at all times
-            _totalItemsInViewport = (int)Math.Ceiling(x.Height / ItemHeight);
+            var itmHgt = ItemHeight;
+            _totalItemsInViewport = (int)Math.Ceiling(x.Height / (itmHgt == 0 ? 1 : itmHgt));
             if (_totalItemsInViewport % 2 == 0)
                 _totalItemsInViewport += 1;
 
