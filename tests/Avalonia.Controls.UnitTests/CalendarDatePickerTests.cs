@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class DatePickerTests
+    public class CalendarDatePickerTests
     {
         private static bool CompareDates(DateTime first, DateTime second)
         {
@@ -30,7 +30,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 bool handled = false;
-                DatePicker datePicker = CreateControl();
+                CalendarDatePicker datePicker = CreateControl();
                 datePicker.SelectedDateChanged += (s,e) =>
                 {
                     handled = true;
@@ -47,7 +47,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(Services))
             {
-                DatePicker datePicker = CreateControl();
+                CalendarDatePicker datePicker = CreateControl();
                 datePicker.BlackoutDates.AddDatesInPast();
 
                 DateTime goodValue = DateTime.Today.AddDays(1);
@@ -65,7 +65,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(Services))
             {
-                DatePicker datePicker = CreateControl();
+                CalendarDatePicker datePicker = CreateControl();
                 datePicker.SelectedDate = DateTime.Today.AddDays(5);
 
                 Assert.ThrowsAny<ArgumentOutOfRangeException>(
@@ -76,10 +76,10 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<IStandardCursorFactory>());
 
-        private DatePicker CreateControl()
+        private CalendarDatePicker CreateControl()
         {
             var datePicker =
-                new DatePicker
+                new CalendarDatePicker
                 {
                     Template = CreateTemplate()
                 };
@@ -90,7 +90,7 @@ namespace Avalonia.Controls.UnitTests
 
         private IControlTemplate CreateTemplate()
         {
-            return new FuncControlTemplate<DatePicker>((control, scope) =>
+            return new FuncControlTemplate<CalendarDatePicker>((control, scope) =>
             {
                 var textBox = 
                     new TextBox
