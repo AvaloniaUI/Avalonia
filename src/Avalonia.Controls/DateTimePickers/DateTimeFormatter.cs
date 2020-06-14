@@ -168,7 +168,7 @@ namespace Avalonia.Controls
                 var hr = dt.Hour;
 
                 if (Clock == "12HourClock")
-                    hr = hr >= 13 ? hr - 12 : hr;
+                    hr = hr >= 13 ? hr - 12 : hr == 0 ? 12 : hr;
 
                 if (len == -1)
                     return hr.ToString($"D{resolvedLength}");
@@ -245,7 +245,7 @@ namespace Avalonia.Controls
                 var hr = ts.Hours;
 
                 if (Clock == "12HourClock")
-                    hr = hr >= 13 ? hr - 12 : hr;
+                    hr = hr >= 13 ? hr - 12 : hr == 0 ? 12 : hr;
 
                 if (len == -1)
                     return hr.ToString($"D{resolvedLength}");
