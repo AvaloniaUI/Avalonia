@@ -27,6 +27,10 @@ namespace Avalonia
             }
         }
 
+        public static bool operator ==(RoundedRect left, RoundedRect right) => left.Equals(right);
+
+        public static bool operator !=(RoundedRect left, RoundedRect right) => !left.Equals(right);
+
         public Rect Rect { get; }
         public Vector RadiiTopLeft { get; }
         public Vector RadiiTopRight { get; }
@@ -72,6 +76,13 @@ namespace Avalonia
         public RoundedRect(Rect rect) : this(rect, 0)
         {
             
+        }
+
+        public RoundedRect(in Rect bounds, in CornerRadius radius) : this(bounds,
+            radius.TopLeft, radius.TopRight,
+            radius.BottomRight, radius.BottomLeft)
+        {
+
         }
 
         public static implicit operator RoundedRect(Rect r) => new RoundedRect(r);

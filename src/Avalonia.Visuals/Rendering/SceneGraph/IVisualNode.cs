@@ -29,7 +29,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the corner radius of visual. Contents are clipped to this radius.
         /// </summary>
-        CornerRadius CornerRadius { get; }
+        CornerRadius ClipToBoundsRadius { get; }
 
         /// <summary>
         /// Gets the bounds of the node's geometry in global coordinates.

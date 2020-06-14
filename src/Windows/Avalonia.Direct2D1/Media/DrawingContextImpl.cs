@@ -359,6 +359,12 @@ namespace Avalonia.Direct2D1.Media
             _deviceContext.PushAxisAlignedClip(clip.ToSharpDX(), AntialiasMode.PerPrimitive);
         }
 
+        public void PushClip(RoundedRect clip)
+        {
+            //TODO: radius
+            _deviceContext.PushAxisAlignedClip(clip.Rect.ToDirect2D(), AntialiasMode.PerPrimitive);
+        }
+
         public void PopClip()
         {
             _deviceContext.PopAxisAlignedClip();

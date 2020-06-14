@@ -207,7 +207,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             throw new NotSupportedException("Creating layers on a deferred drawing context not supported");
         }
-
+        
         /// <inheritdoc/>
         public void PopClip()
         {
@@ -270,6 +270,21 @@ namespace Avalonia.Rendering.SceneGraph
 
         /// <inheritdoc/>
         public void PushClip(Rect clip)
+        {
+            var next = NextDrawAs<ClipNode>();
+
+            if (next == null || !next.Item.Equals(clip))
+            {
+                Add(new ClipNode(clip));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+        
+        /// <inheritdoc />
+        public void PushClip(RoundedRect clip)
         {
             var next = NextDrawAs<ClipNode>();
 

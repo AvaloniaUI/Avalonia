@@ -29,6 +29,13 @@
               Padding="16">
         <TextBlock>Rounded Corners</TextBlock>
       </Border>
+      <Border BorderBrush="{DynamicResource ThemeAccentBrush2}"
+              BorderThickness="4"
+              CornerRadius="8" ClipToBounds="True">
+        <Border Background="Red" Padding="16">
+          <TextBlock>Clipped Rounded Corners</TextBlock>
+        </Border>
+      </Border>
     </StackPanel>    
   </StackPanel>
 </UserControl>
