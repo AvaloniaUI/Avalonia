@@ -17,7 +17,7 @@
               <Setter Property="Background" Value="Transparent" />
             </Style>
             <Style Selector="Panel:pointerover.captionButton">
-              <Setter Property="Background" Value="#7f7f7f7f" />
+              <Setter Property="Background" Value="Red" />
             </Style>
             <Style Selector="Panel#PART_CloseButton:pointerover">
               <Setter Property="Background" Value="#AFFF0000" />

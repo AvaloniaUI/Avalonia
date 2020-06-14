@@ -12,10 +12,10 @@
               <Setter Property="Background" Value="Transparent" />
             </Style>
             <Style Selector="Panel:pointerover">
-              <Setter Property="Background" Value="#CFFFFFFF" />
+              <Setter Property="Background" Value="#7F7f7f7f" />
             </Style>
             <Style Selector="Panel#PART_CloseButton:pointerover">
-              <Setter Property="Background" Value="#AFFF0000" />
+              <Setter Property="Background" Value="#7FFF0000" />
             </Style>
             <Style Selector="Viewbox">
               <Setter Property="Width" Value="11" />
