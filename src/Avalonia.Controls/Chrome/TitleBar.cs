@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Primitives;
-using Avalonia.Input;
-using Avalonia.LogicalTree;
-using Avalonia.Media;
 
 namespace Avalonia.Controls.Chrome
 {
@@ -16,6 +13,11 @@ namespace Avalonia.Controls.Chrome
         public TitleBar(Window hostWindow)
         {
             _hostWindow = hostWindow;
+        }
+
+        public TitleBar()
+        {
+
         }
 
         public void Attach()
@@ -94,6 +96,8 @@ namespace Avalonia.Controls.Chrome
             _captionButtons = e.NameScope.Find<CaptionButtons>("PART_CaptionButtons");
 
             _captionButtons.Attach(_hostWindow);
+
+            InvalidateSize();
         }
     }
 }

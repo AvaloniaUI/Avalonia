@@ -5,7 +5,7 @@
     </Border>
   </Design.PreviewWith>
   <Style Selector="TitleBar">
-    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>    
+    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>    
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Background" Value="Transparent" />

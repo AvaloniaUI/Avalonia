@@ -1,6 +1,11 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style Selector="CaptionButtons">
-    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+  <Design.PreviewWith>
+    <Border Padding="20" Background="Black">
+      <CaptionButtons Height="30" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+    </Border>
+  </Design.PreviewWith>
+  <Style Selector="CaptionButtons">    
+    <Setter Property="Foreground" Value="{TemplateBinding Foreground}"/>
     <Setter Property="Canvas.Right" Value="0" />
     <Setter Property="MaxHeight" Value="30" />
     <Setter Property="Template">
@@ -11,8 +16,8 @@
               <Setter Property="Width" Value="45" />
               <Setter Property="Background" Value="Transparent" />
             </Style>
-            <Style Selector="Panel:pointerover">
-              <Setter Property="Background" Value="#1FFFFFFF" />
+            <Style Selector="Panel:pointerover.captionButton">
+              <Setter Property="Background" Value="#7f7f7f7f" />
             </Style>
             <Style Selector="Panel#PART_CloseButton:pointerover">
               <Setter Property="Background" Value="#AFFF0000" />
@@ -22,19 +27,19 @@
               <Setter Property="Margin" Value="2" />
             </Style>
           </StackPanel.Styles>
-          <Panel x:Name="PART_FullScreenButton">
+          <Panel x:Name="PART_FullScreenButton" Classes="captionButton">
             <Viewbox>
               <Path Stretch="UniformToFill" Fill="{TemplateBinding Foreground}" />
             </Viewbox>
           </Panel>
 
-          <Panel x:Name="PART_MinimiseButton">
+          <Panel x:Name="PART_MinimiseButton"  Classes="captionButton">
             <Viewbox>
               <Path Stretch="UniformToFill" Fill="{TemplateBinding Foreground}" Data="M2048 1229v-205h-2048v205h2048z" />
             </Viewbox>
           </Panel>
 
-          <Panel x:Name="PART_RestoreButton">
+          <Panel x:Name="PART_RestoreButton"  Classes="captionButton">
             <Viewbox>
               <Viewbox.RenderTransform>
                 <RotateTransform Angle="-90" />
@@ -43,7 +48,7 @@
             </Viewbox>
           </Panel>
 
-          <Panel x:Name="PART_CloseButton">
+          <Panel x:Name="PART_CloseButton"  Classes="captionButton">
             <Viewbox>
               <Path Stretch="UniformToFill" Fill="{TemplateBinding Foreground}" Data="M1169 1024l879 -879l-145 -145l-879 879l-879 -879l-145 145l879 879l-879 879l145 145l879 -879l879 879l145 -145z" />
             </Viewbox>
