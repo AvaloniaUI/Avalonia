@@ -45,7 +45,7 @@
   <StyleInclude Source="resm:Avalonia.Themes.Default.CalendarDayButton.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.CalendarItem.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.Calendar.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.DatePicker.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.CalendarDatePicker.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.ButtonSpinner.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.NumericUpDown.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.AutoCompleteBox.xaml?assembly=Avalonia.Themes.Default"/>
