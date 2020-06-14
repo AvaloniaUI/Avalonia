@@ -54,16 +54,16 @@
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
   </Style>
   
-  <Style Selector="Button:disabled">
+  <Style Selector="Button:disabled /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ButtonBackgroundDisabled}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushDisabled}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource ButtonForegroundDisabled}" />
   </Style>
 
-  <Style Selector="Button.accent">
-    <Setter Property="Foreground" Value="{DynamicResource AccentButtonForeground}" />
+  <Style Selector="Button.accent /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource AccentButtonBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBorderBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource AccentButtonForeground}" />
   </Style>
 
   <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
@@ -78,7 +78,7 @@
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource AccentButtonForegroundPressed}" />
   </Style>
 
-  <Style Selector="Button.accent:disabled">
+  <Style Selector="Button.accent:disabled /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundDisabled}" />
     <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBorderBrushDisabled}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource AccentButtonForegroundDisabled}" />
