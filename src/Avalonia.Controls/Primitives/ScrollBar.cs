@@ -3,6 +3,7 @@ using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -44,6 +45,7 @@ namespace Avalonia.Controls.Primitives
         private Button _lineDownButton;
         private Button _pageUpButton;
         private Button _pageDownButton;
+        private DispatcherTimer _collapseTimer;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollBar"/> class. 
@@ -143,6 +145,22 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override void OnPointerEnter(PointerEventArgs e)
+        {
+            base.OnPointerEnter(e);
+
+            ResetCollapseTimer();
+
+            Expand();
+        }
+
+        protected override void OnPointerLeave(PointerEventArgs e)
+        {
+            base.OnPointerLeave(e);
+
+            CollapseAfterDelay();
+        }
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             if (_lineUpButton != null)
@@ -191,6 +209,50 @@ namespace Avalonia.Controls.Primitives
             {
                 _pageDownButton.Click += PageDownClick;
             }
+        }
+
+        private void CollapseAfterDelay()
+        {
+            if (_collapseTimer != null)
+            {
+                _collapseTimer.Stop();
+            }
+            else
+            {
+                _collapseTimer = new DispatcherTimer(TimeSpan.FromSeconds(2), DispatcherPriority.Normal, OnCollapseTimerTick);
+            }
+
+            _collapseTimer.Start();
+        }
+
+        private void ResetCollapseTimer(bool restart = false)
+        {
+            if (_collapseTimer != null && _collapseTimer.IsEnabled)
+            {
+                _collapseTimer.Stop();
+
+                if (restart)
+                {
+                    _collapseTimer.Start();
+                }
+            }
+        }
+
+        private void OnCollapseTimerTick(object sender, EventArgs e)
+        {
+            ResetCollapseTimer();
+
+            Collapse();
+        }
+
+        private void Collapse()
+        {
+            PseudoClasses.Set(":expanded", false);
+        }
+
+        private void Expand()
+        {
+            PseudoClasses.Set(":expanded", true);
         }
 
         private void LineUpClick(object sender, RoutedEventArgs e)
