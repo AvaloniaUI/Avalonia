@@ -48,6 +48,8 @@ namespace Avalonia.Controls.Chrome
                 };
 
                 _captionButtons?.Attach(_hostWindow);
+
+                InvalidateSize();
             }
         }
 
