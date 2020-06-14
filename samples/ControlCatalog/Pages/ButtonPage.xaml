@@ -26,7 +26,8 @@
         </Button>
         <RepeatButton Name="RepeatButton">
           <TextBlock Name="RepeatButtonTextBlock" Text="Repeat Button: 0" />
-        </RepeatButton>      
+        </RepeatButton>
+        <ToggleButton Content="Toggle Button"/>
     </StackPanel>
 
       <StackPanel Orientation="Vertical" Spacing="8" Width="150">
