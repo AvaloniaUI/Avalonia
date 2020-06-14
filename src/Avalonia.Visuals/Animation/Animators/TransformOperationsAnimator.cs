@@ -4,11 +4,24 @@ using Avalonia.Media.Transformation;
 
 namespace Avalonia.Animation.Animators
 {
-    public class TransformOperationsAnimator : Animator<ITransform>
+    public class TransformOperationsAnimator : Animator<TransformOperations>
     {
         public TransformOperationsAnimator()
         {
             Validate = ValidateTransform;
+        }
+
+        public override TransformOperations Interpolate(double progress, TransformOperations oldValue, TransformOperations newValue)
+        {
+            var oldTransform = EnsureOperations(oldValue);
+            var newTransform = EnsureOperations(newValue);
+
+            return TransformOperations.Interpolate(oldTransform, newTransform, progress);
+        }
+
+        internal static TransformOperations EnsureOperations(ITransform value)
+        {
+            return value as TransformOperations ?? TransformOperations.Identity;
         }
 
         private void ValidateTransform(AnimatorKeyFrame kf)
@@ -17,19 +30,6 @@ namespace Avalonia.Animation.Animators
             {
                 throw new InvalidOperationException($"All keyframes must be of type {typeof(TransformOperations)}.");
             }
-        }
-
-        public override ITransform Interpolate(double progress, ITransform oldValue, ITransform newValue)
-        {
-            var oldTransform = Cast(oldValue);
-            var newTransform = Cast(newValue);
-
-            return TransformOperations.Interpolate(oldTransform, newTransform, progress);
-        }
-
-        private static TransformOperations Cast(ITransform value)
-        {
-            return value as TransformOperations ?? TransformOperations.Identity;
         }
     }
 }

@@ -13,12 +13,15 @@ namespace Avalonia.Animation
             ITransform oldValue,
             ITransform newValue)
         {
+            var oldTransform = TransformOperationsAnimator.EnsureOperations(oldValue);
+            var newTransform = TransformOperationsAnimator.EnsureOperations(newValue);
+
             return progress
                 .Select(p =>
                 {
                     var f = Easing.Ease(p);
 
-                    return _operationsAnimator.Interpolate(f, oldValue, newValue);
+                    return _operationsAnimator.Interpolate(f, oldTransform, newTransform);
                 });
         }
     }
