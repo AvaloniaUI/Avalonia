@@ -54,7 +54,7 @@ namespace Avalonia
         /// <summary>
         /// HasInverse Property - returns true if this matrix is invertible, false otherwise.
         /// </summary>
-        public bool HasInverse => Math.Abs(GetDeterminant()) >= double.Epsilon;
+        public bool HasInverse => !MathUtilities.IsZero(GetDeterminant());
 
         /// <summary>
         /// The first element of the first row
@@ -286,7 +286,7 @@ namespace Avalonia
         {
             double d = GetDeterminant();
 
-            if (Math.Abs(d) < double.Epsilon)
+            if (MathUtilities.IsZero(d))
             {
                 throw new InvalidOperationException("Transform is not invertible.");
             }
