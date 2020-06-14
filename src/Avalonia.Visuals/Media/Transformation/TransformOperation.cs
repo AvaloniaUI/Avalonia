@@ -2,6 +2,9 @@ using System.Runtime.InteropServices;
 
 namespace Avalonia.Media.Transformation
 {
+    /// <summary>
+    /// Represents a single primitive transform (like translation, rotation, scale, etc.).
+    /// </summary>
     public struct TransformOperation
     {
         public OperationType Type;
@@ -18,8 +21,14 @@ namespace Avalonia.Media.Transformation
             Identity
         }
 
+        /// <summary>
+        /// Returns whether operation produces the identity matrix.
+        /// </summary>
         public bool IsIdentity => Matrix.IsIdentity;
 
+        /// <summary>
+        /// Bakes this operation to a transform matrix.
+        /// </summary>
         public void Bake()
         {
             Matrix = Matrix.Identity;
@@ -53,11 +62,22 @@ namespace Avalonia.Media.Transformation
             }
         }
 
-        public static bool IsOperationIdentity(ref TransformOperation? operation)
-        {
-            return !operation.HasValue || operation.Value.IsIdentity;
-        }
+        /// <summary>
+        /// Returns new identity transform operation.
+        /// </summary>
+        public static TransformOperation Identity =>
+            new TransformOperation { Matrix = Matrix.Identity, Type = OperationType.Identity };
 
+        /// <summary>
+        /// Attempts to interpolate between two transform operations.
+        /// </summary>
+        /// <param name="from">Source operation.</param>
+        /// <param name="to">Target operation.</param>
+        /// <param name="progress">Interpolation progress.</param>
+        /// <param name="result">Interpolation result that will be filled in when operation was successful.</param>
+        /// <remarks>
+        /// Based upon https://www.w3.org/TR/css-transforms-1/#interpolation-of-transform-functions.
+        /// </remarks>
         public static bool TryInterpolate(TransformOperation? from, TransformOperation? to, double progress,
             ref TransformOperation result)
         {
@@ -69,8 +89,10 @@ namespace Avalonia.Media.Transformation
                 return true;
             }
 
-            TransformOperation fromValue = fromIdentity ? default : from.Value;
-            TransformOperation toValue = toIdentity ? default : to.Value;
+            // ReSharper disable PossibleInvalidOperationException
+            TransformOperation fromValue = fromIdentity ? Identity : from.Value;
+            TransformOperation toValue = toIdentity ? Identity : to.Value;
+            // ReSharper restore PossibleInvalidOperationException
 
             var interpolationType = toIdentity ? fromValue.Type : toValue.Type;
 
@@ -139,7 +161,7 @@ namespace Avalonia.Media.Transformation
                 {
                     var fromMatrix = fromIdentity ? Matrix.Identity : fromValue.Matrix;
                     var toMatrix = toIdentity ? Matrix.Identity : toValue.Matrix;
-                    
+
                     if (!Matrix.TryDecomposeTransform(fromMatrix, out Matrix.Decomposed fromDecomposed) ||
                         !Matrix.TryDecomposeTransform(toMatrix, out Matrix.Decomposed toDecomposed))
                     {
@@ -163,6 +185,11 @@ namespace Avalonia.Media.Transformation
             }
 
             return true;
+        }
+
+        private static bool IsOperationIdentity(ref TransformOperation? operation)
+        {
+            return !operation.HasValue || operation.Value.IsIdentity;
         }
 
         [StructLayout(LayoutKind.Explicit)]

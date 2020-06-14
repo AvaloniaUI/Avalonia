@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 
 namespace Avalonia.Media.Transformation
 {
+    /// <summary>
+    /// Contains a list of <see cref="TransformOperation"/> that represent primitive transforms that will be
+    /// applied in declared order.
+    /// </summary>
     public sealed class TransformOperations : ITransform
     {
         public static TransformOperations Identity { get; } = new TransformOperations(new List<TransformOperation>());
@@ -19,6 +22,9 @@ namespace Avalonia.Media.Transformation
             Value = ApplyTransforms();
         }
 
+        /// <summary>
+        /// Returns whether all operations combined together produce the identity matrix.
+        /// </summary>
         public bool IsIdentity { get; }
 
         public IReadOnlyList<TransformOperation> Operations => _operations;

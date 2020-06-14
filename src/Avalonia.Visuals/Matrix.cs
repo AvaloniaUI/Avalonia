@@ -9,8 +9,6 @@ namespace Avalonia
     /// </summary>
     public readonly struct Matrix : IEquatable<Matrix>
     {
-        private const float DecomposeEpsilon = 0.0001f;
-
         private readonly double _m11;
         private readonly double _m12;
         private readonly double _m21;
@@ -322,14 +320,19 @@ namespace Avalonia
             }
         }
 
+        /// <summary>
+        /// Decomposes given matrix into transform operations.
+        /// </summary>
+        /// <param name="matrix">Matrix to decompose.</param>
+        /// <param name="decomposed">Decomposed matrix.</param>
+        /// <returns>The status of the operation.</returns>
         public static bool TryDecomposeTransform(Matrix matrix, out Decomposed decomposed)
         {
             decomposed = default;
 
             var determinant = matrix.GetDeterminant();
             
-            // Based upon constant in System.Numerics.Matrix4x4.
-            if (Math.Abs(determinant) < DecomposeEpsilon)
+            if (MathUtilities.IsZero(determinant))
             {
                 return false;
             }
