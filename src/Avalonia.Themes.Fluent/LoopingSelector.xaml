@@ -23,16 +23,9 @@
         <Grid Background="Transparent">
           <ScrollViewer Name="Scroller" HorizontalScrollBarVisibility="Disabled"
                         VerticalScrollBarVisibility="Hidden" />
-          <!--The up/down repeatbuttons for the looping selector uses this style 
-              They appear opaque, the only base resources that don't have an alpha
-              component is the SystemChrome colors, so that's probably what's used...
-              Will use that here, as default background here is transparent.
-              SystemControlPageBackgroundChromeLowBrush is the brush/color that matched best
-              Button Style Class defined in DatePicker.xaml
-          -->
           <RepeatButton Name="UpButton" Classes="DateTimeFlyoutButtonStyle" Height="22"
                         Padding="0"  VerticalAlignment="Top" HorizontalAlignment="Stretch"
-                      Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}">
+                      Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
             <Viewbox Height="10" Width="10" HorizontalAlignment="Center" VerticalAlignment="Center">
               <Path Stroke="{Binding $parent[RepeatButton].Foreground}" StrokeThickness="1" Data="M 0,9 L 9,0 L 18,9"/>
             </Viewbox>
@@ -40,7 +33,7 @@
 
           <RepeatButton Name="DownButton" Classes="DateTimeFlyoutButtonStyle"
                         Height="22" Padding="0" VerticalAlignment="Bottom" HorizontalAlignment="Stretch"
-                        Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}">
+                        Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
             <Viewbox Height="10" Width="10" HorizontalAlignment="Center" VerticalAlignment="Center">
               <Path Stroke="{Binding $parent[RepeatButton].Foreground}" StrokeThickness="1" Data="M 0,0 L 9,9 L 18,0"/>
             </Viewbox>
