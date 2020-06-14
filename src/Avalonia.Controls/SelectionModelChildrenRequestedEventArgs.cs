@@ -16,15 +16,17 @@ namespace Avalonia.Controls
     {
         private object? _source;
         private IndexPath _sourceIndexPath;
+        private IndexPath _finalIndexPath;
         private bool _throwOnAccess;
         
         internal SelectionModelChildrenRequestedEventArgs(
             object source,
             IndexPath sourceIndexPath,
+            IndexPath finalIndexPath,
             bool throwOnAccess)
         {
             source = source ?? throw new ArgumentNullException(nameof(source));
-            Initialize(source, sourceIndexPath, throwOnAccess);
+            Initialize(source, sourceIndexPath, finalIndexPath, throwOnAccess);
         }
 
         /// <summary>
@@ -65,9 +67,26 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the index of the final object which is being attempted to be retrieved.
+        /// </summary>
+        public IndexPath FinalIndex
+        {
+            get
+            {
+                if (_throwOnAccess)
+                {
+                    throw new ObjectDisposedException(nameof(SelectionModelChildrenRequestedEventArgs));
+                }
+
+                return _finalIndexPath;
+            }
+        }
+
         internal void Initialize(
             object? source,
             IndexPath sourceIndexPath,
+            IndexPath finalIndexPath,
             bool throwOnAccess)
         {
             if (!throwOnAccess && source == null)
@@ -77,6 +96,7 @@ namespace Avalonia.Controls
 
             _source = source;
             _sourceIndexPath = sourceIndexPath;
+            _finalIndexPath = finalIndexPath;
             _throwOnAccess = throwOnAccess;
         }
     }

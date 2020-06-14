@@ -32,6 +32,26 @@ namespace ControlCatalog
 
             }
 
+            var themes = this.Find<ComboBox>("Themes");
+            themes.SelectionChanged += (sender, e) =>
+            {
+                switch (themes.SelectedIndex)
+                {
+                    case 0:
+                        Application.Current.Styles[0] = App.FluentDark;
+                        break;
+                    case 1:
+                        Application.Current.Styles[0] = App.FluentLight;
+                        break;
+                    case 2:
+                        Application.Current.Styles[0] = App.DefaultLight;
+                        break;
+                    case 3:
+                        Application.Current.Styles[0] = App.DefaultDark;
+                        break;
+                }
+            };            
+
             var decorations = this.Find<ComboBox>("Decorations");
             decorations.SelectionChanged += (sender, e) =>
             {
