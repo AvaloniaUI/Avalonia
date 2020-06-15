@@ -106,7 +106,7 @@ namespace Avalonia.Controls
                 OnContentPresenter = presenter;
                 result = true;
             }
-            if (presenter.Name == "PART_OffContentPresenter")
+            else if (presenter.Name == "PART_OffContentPresenter")
             {
                 OffContentPresenter = presenter;
                 result = true;

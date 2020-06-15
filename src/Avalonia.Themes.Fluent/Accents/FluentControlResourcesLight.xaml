@@ -350,7 +350,7 @@
     
     <Thickness x:Key="ToggleSwitchOnStrokeThickness">0</Thickness>
     <!--<x:Double x:Key="ToggleSwitchOuterBorderStrokeThickness">1</x:Double>-->
-    <Thickness x:Key="ToggleSwitchOuterBorderStrokeThickness">1</Thickness>
+    <Thickness x:Key="ToggleSwitchOuterBorderStrokeThickness">1.5</Thickness>
     <StaticResource x:Key="ToggleSwitchContentForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="ToggleSwitchContentForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
     <StaticResource x:Key="ToggleSwitchHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
