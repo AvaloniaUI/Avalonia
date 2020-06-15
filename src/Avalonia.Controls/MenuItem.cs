@@ -105,6 +105,7 @@ namespace Avalonia.Controls
         static MenuItem()
         {
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
+            PressedMixin.Attach<MenuItem>();
             CommandProperty.Changed.Subscribe(CommandChanged);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
             HeaderProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.HeaderChanged(e));
@@ -534,11 +535,13 @@ namespace Avalonia.Controls
             if (oldValue != null)
             {
                 LogicalChildren.Remove(oldValue);
+                PseudoClasses.Remove(":icon");
             }
 
             if (newValue != null)
             {
                 LogicalChildren.Add(newValue);
+                PseudoClasses.Add(":icon");
             }
         }
 
@@ -566,11 +569,13 @@ namespace Avalonia.Controls
             {
                 RaiseEvent(new RoutedEventArgs(SubmenuOpenedEvent));
                 IsSelected = true;
+                PseudoClasses.Add(":open");
             }
             else
             {
                 CloseSubmenus();
                 SelectedIndex = -1;
+                PseudoClasses.Remove(":open");
             }
         }
 
