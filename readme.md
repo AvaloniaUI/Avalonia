@@ -1,6 +1,4 @@
-# Avalonia UI
-
-<img src='https://avatars2.githubusercontent.com/u/14075148?s=200&v=4' width='100' />
+| # Avalonia UI | <img src='https://avatars2.githubusercontent.com/u/14075148?s=200&v=4' width='100' /> |
 
 ![image](https://user-images.githubusercontent.com/4672627/84708576-28281900-af37-11ea-8c88-e29dfcfa0558.png)
 
