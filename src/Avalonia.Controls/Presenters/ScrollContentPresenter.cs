@@ -207,6 +207,12 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         void IScrollAnchorProvider.RegisterAnchorCandidate(IControl element)
         {
+            if (!this.IsVisualAncestorOf(element))
+            {
+                throw new InvalidOperationException(
+                    "An anchor control must be a visual descendent of the ScrollContentPresenter.");
+            }
+
             _anchorCandidates ??= new List<IControl>();
             _anchorCandidates.Add(element);
         }
@@ -531,14 +537,19 @@ namespace Avalonia.Controls.Presenters
 
         private bool GetViewportBounds(IControl element, out Rect bounds)
         {
-            // We want the bounds relative to the new Offset, regardless of whether the child
-            // control has actually been arranged to this offset yet, so translate first to the
-            // child control and then apply Offset rather than translating directly to this
-            // control.
-            var thisBounds = new Rect(Bounds.Size);
-            var childBounds = TranslateBounds(element, Child);
-            bounds = new Rect(childBounds.Position - Offset, childBounds.Size);
-            return bounds.Intersects(thisBounds);
+            if (TranslateBounds(element, Child, out var childBounds))
+            {
+                // We want the bounds relative to the new Offset, regardless of whether the child
+                // control has actually been arranged to this offset yet, so translate first to the
+                // child control and then apply Offset rather than translating directly to this
+                // control.
+                var thisBounds = new Rect(Bounds.Size);
+                bounds = new Rect(childBounds.Position - Offset, childBounds.Size);
+                return bounds.Intersects(thisBounds);
+            }
+
+            bounds = default;
+            return false;
         }
 
         private Rect TranslateBounds(IControl control, IControl to)
