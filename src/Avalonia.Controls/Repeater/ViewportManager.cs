@@ -405,7 +405,16 @@ namespace Avalonia.Controls
 
         public void ResetScrollers()
         {
-            _scroller = null;
+            if (_scroller is object)
+            {
+                foreach (var child in _owner.Children)
+                {
+                    _scroller.UnregisterAnchorCandidate(child);
+                }
+
+                _scroller = null;
+            }
+
             _effectiveViewportChangedRevoker?.Dispose();
             _effectiveViewportChangedRevoker = null;
             _ensuredScroller = false;
