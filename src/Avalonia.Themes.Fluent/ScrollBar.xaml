@@ -12,13 +12,13 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid x:Name="Root">
-          
-          <Border x:Name="VerticalRoot" 
+
+          <Border x:Name="VerticalRoot"
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}">
             <Grid RowDefinitions="Auto,*,Auto">
 
-              <Rectangle x:Name="TrackRect" Grid.RowSpan="3" Margin="0"/>
+              <Rectangle x:Name="TrackRect" Grid.RowSpan="3" Margin="0" />
 
               <RepeatButton Name="PART_LineUpButton"
                             HorizontalAlignment="Center"
@@ -26,8 +26,7 @@
                             Grid.Row="0"
                             Focusable="False"
                             MinWidth="{DynamicResource ScrollBarSize}"
-                            Height="{DynamicResource ScrollBarSize}">
-              </RepeatButton>
+                            Height="{DynamicResource ScrollBarSize}" />
 
               <Track Grid.Row="1"
                      Minimum="{TemplateBinding Minimum}"
@@ -39,29 +38,27 @@
                 <Track.DecreaseButton>
                   <RepeatButton Name="PART_PageUpButton"
                                 Classes="largeIncrease"
-                                Focusable="False"/>
+                                Focusable="False" />
                 </Track.DecreaseButton>
                 <Track.IncreaseButton>
                   <RepeatButton Name="PART_PageDownButton"
                                 Classes="largeIncrease"
-                                Focusable="False"/>
+                                Focusable="False" />
                 </Track.IncreaseButton>
                 <Thumb Classes="thumb"
                        Opacity="1"
                        Width="{DynamicResource ScrollBarSize}"
                        MinHeight="{DynamicResource ScrollBarSize}"
-                       RenderTransformOrigin="100%,50%">
-                </Thumb>
+                       RenderTransformOrigin="100%,50%" />
               </Track>
 
-              <RepeatButton Name="PART_LineDownButton" 
+              <RepeatButton Name="PART_LineDownButton"
                             HorizontalAlignment="Center"
                             Classes="line down"
                             Grid.Row="2"
                             Focusable="False"
                             MinWidth="{DynamicResource ScrollBarSize}"
-                            Height="{DynamicResource ScrollBarSize}">
-              </RepeatButton>
+                            Height="{DynamicResource ScrollBarSize}" />
 
             </Grid>
           </Border>
@@ -76,12 +73,12 @@
       <ControlTemplate>
         <Grid x:Name="Root">
 
-          <Border x:Name="HorizontalRoot" 
+          <Border x:Name="HorizontalRoot"
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}">
             <Grid ColumnDefinitions="Auto,*,Auto">
 
-              <Rectangle x:Name="TrackRect" Grid.ColumnSpan="3" Margin="0"/>
+              <Rectangle x:Name="TrackRect" Grid.ColumnSpan="3" Margin="0" />
 
               <RepeatButton Name="PART_LineUpButton"
                             VerticalAlignment="Center"
@@ -89,8 +86,7 @@
                             Grid.Column="0"
                             Focusable="False"
                             MinHeight="{DynamicResource ScrollBarSize}"
-                            Width="{DynamicResource ScrollBarSize}">
-              </RepeatButton>
+                            Width="{DynamicResource ScrollBarSize}" />
 
               <Track Grid.Column="1"
                      Minimum="{TemplateBinding Minimum}"
@@ -112,18 +108,16 @@
                        Opacity="1"
                        Height="{DynamicResource ScrollBarSize}"
                        MinWidth="{DynamicResource ScrollBarSize}"
-                       RenderTransformOrigin="50%,100%">
-                </Thumb>
+                       RenderTransformOrigin="50%,100%" />
               </Track>
 
-              <RepeatButton Name="PART_LineDownButton" 
+              <RepeatButton Name="PART_LineDownButton"
                             VerticalAlignment="Center"
                             Classes="line down"
                             Grid.Column="2"
                             Focusable="False"
                             MinHeight="{DynamicResource ScrollBarSize}"
-                            Width="{DynamicResource ScrollBarSize}">
-              </RepeatButton>
+                            Width="{DynamicResource ScrollBarSize}" />
 
             </Grid>
           </Border>
@@ -154,29 +148,29 @@
   </Style>
 
   <Style Selector="ScrollBar:vertical /template/ Thumb.thumb">
-    <Setter Property="RenderTransform" Value="{DynamicResource VerticalSmallScrollThumbScaleTransform}"/>
+    <Setter Property="RenderTransform" Value="{DynamicResource VerticalSmallScrollThumbScaleTransform}" />
   </Style>
 
   <Style Selector="ScrollBar:horizontal /template/ Thumb.thumb">
-    <Setter Property="RenderTransform" Value="{DynamicResource HorizontalSmallScrollThumbScaleTransform}"/>
+    <Setter Property="RenderTransform" Value="{DynamicResource HorizontalSmallScrollThumbScaleTransform}" />
   </Style>
 
   <Style Selector="ScrollBar:expanded /template/ Thumb.thumb">
-    <Setter Property="RenderTransform" Value="none"/>
+    <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Background" Value="{DynamicResource ScrollBarThumbBackgroundColor}" />
   </Style>
 
   <Style Selector="ScrollBar /template/ Thumb.thumb /template/ Border#ThumbVisual">
-    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Transitions">
       <Transitions>
-        <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.1"/>
+        <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.1" />
       </Transitions>
     </Setter>
   </Style>
 
   <Style Selector="ScrollBar:expanded /template/ Thumb.thumb /template/ Border#ThumbVisual">
-    <Setter Property="CornerRadius" Value="0"/>
+    <Setter Property="CornerRadius" Value="0" />
   </Style>
 
   <Style Selector="ScrollBar /template/ Thumb.thumb:pointerover">
@@ -194,9 +188,14 @@
   <Style Selector="ScrollBar /template/ RepeatButton.line">
     <Setter Property="Template">
       <ControlTemplate>
-        <Border x:Name="Root" Background="{DynamicResource ScrollBarButtonBackground}"
-                BorderBrush="{DynamicResource ScrollBarButtonBorderBrush}">
-          <Path VerticalAlignment="Center" HorizontalAlignment="Center" Fill="{DynamicResource ScrollBarButtonArrowForeground}" />
+        <Border x:Name="Root">
+          <Viewbox Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
+                   Height="{DynamicResource ScrollBarButtonArrowIconFontSize}">
+            <Path x:Name="Arrow"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              Width="20" Height="20" />
+          </Viewbox>
         </Border>
       </ControlTemplate>
     </Setter>
@@ -208,24 +207,62 @@
     </Setter>
   </Style>
 
-  <Style Selector="ScrollBar:vertical /template/ RepeatButton.line.up /template/ Path">
-    <Setter Property="Data" Value="M 0 4 L 8 4 L 4 0 Z" />
+  <Style Selector="ScrollBar /template/ RepeatButton.line /template/ Border#Root" >
+    <Setter Property="Background" Value="{DynamicResource ScrollBarButtonBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ScrollBarButtonBorderBrush}" />
   </Style>
 
-  <Style Selector="ScrollBar:vertical /template/ RepeatButton.line.down /template/ Path">
-    <Setter Property="Data" Value="M 0 0 L 4 4 L 8 0 Z" />
+  <Style Selector="ScrollBar /template/ RepeatButton.line:pointerover /template/ Border#Root" >
+    <Setter Property="Background" Value="{DynamicResource ScrollBarButtonBackgroundPointerOver}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ScrollBarButtonBorderBrushPointerOver}" />
   </Style>
 
-  <Style Selector="ScrollBar:horizontal /template/ RepeatButton.line.up /template/ Path">
-    <Setter Property="Data" Value="M 4 0 L 4 8 L 0 4 Z" />
+  <Style Selector="ScrollBar /template/ RepeatButton.line:pressed /template/ Border#Root" >
+    <Setter Property="Background" Value="{DynamicResource ScrollBarButtonBackgroundPressed}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ScrollBarButtonBorderBrushPressed}" />
   </Style>
 
-  <Style Selector="ScrollBar:horizontal /template/ RepeatButton.line.down /template/ Path">
-    <Setter Property="Data" Value="M 0 0 L 4 4 L 0 8 Z" />
+  <Style Selector="ScrollBar /template/ RepeatButton.line:disabled /template/ Border#Root" >
+    <Setter Property="Background" Value="{DynamicResource ScrollBarButtonBackgroundPressed}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ScrollBarButtonBorderBrushDisabled}" />
+  </Style>
+
+  <Style Selector="ScrollBar /template/ RepeatButton.line /template/ Path#Arrow" >
+    <Setter Property="Fill" Value="{DynamicResource ScrollBarButtonArrowForeground}" />
+  </Style>
+
+  <Style Selector="ScrollBar /template/ RepeatButton.line:pointerover /template/ Path#Arrow" >
+    <Setter Property="Fill" Value="{DynamicResource ScrollBarButtonArrowForegroundPointerOver}" />
+  </Style>
+
+  <Style Selector="ScrollBar /template/ RepeatButton.line:pressed /template/ Path#Arrow" >
+    <Setter Property="Fill" Value="{DynamicResource ScrollBarButtonArrowForegroundPressed}" />
+  </Style>
+
+  <Style Selector="ScrollBar /template/ RepeatButton.line:disabled /template/ Path#Arrow" >
+    <Setter Property="Fill" Value="{DynamicResource ScrollBarButtonArrowForegroundDisabled}" />
   </Style>
 
   <Style Selector="ScrollBar:expanded /template/ RepeatButton.line">
     <Setter Property="Opacity" Value="1" />
+  </Style>
+
+  <Style Selector="ScrollBar:vertical /template/ RepeatButton.line.up /template/ Path">
+    <Setter Property="Data"
+            Value="M 19.091797 14.970703 L 10 5.888672 L 0.908203 14.970703 L 0.029297 14.091797 L 10 4.111328 L 19.970703 14.091797 Z" />
+  </Style>
+
+  <Style Selector="ScrollBar:vertical /template/ RepeatButton.line.down /template/ Path">
+    <Setter Property="Data"
+            Value="M 18.935547 4.560547 L 19.814453 5.439453 L 10 15.253906 L 0.185547 5.439453 L 1.064453 4.560547 L 10 13.496094 Z" />
+  </Style>
+
+  <Style Selector="ScrollBar:horizontal /template/ RepeatButton.line.up /template/ Path">
+    <Setter Property="Data" Value="M 14.091797 19.970703 L 4.111328 10 L 14.091797 0.029297 L 14.970703 0.908203 L 5.888672 10 L 14.970703 19.091797 Z" />
+  </Style>
+
+  <Style Selector="ScrollBar:horizontal /template/ RepeatButton.line.down /template/ Path">
+    <Setter Property="Data" Value="M 5.029297 19.091797 L 14.111328 10 L 5.029297 0.908203 L 5.908203 0.029297 L 15.888672 10 L 5.908203 19.970703 Z" />
   </Style>
 
   <Style Selector="ScrollBar /template/ Rectangle#TrackRect">
@@ -235,7 +272,7 @@
     <Setter Property="Opacity" Value="0" />
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Opacity"  Duration="0:0:0.1" />
+        <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
       </Transitions>
     </Setter>
   </Style>
@@ -253,8 +290,8 @@
       </ControlTemplate>
     </Setter>
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="VerticalAlignment" Value="Stretch"/>
-    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Opacity" Value="0" />
   </Style>
 
