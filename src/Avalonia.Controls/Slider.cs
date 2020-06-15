@@ -201,7 +201,7 @@ namespace Avalonia.Controls
             var invert = orient ? 0 : 1;
             var calcVal = Math.Abs(invert - logicalPos);
             var range = Maximum - Minimum;
-            var finalValue = calcVal * range;
+            var finalValue = calcVal * range + Minimum;
 
             Value = IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue;
         }
