@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
 
 namespace Avalonia.Utilities
 {
@@ -190,7 +189,7 @@ namespace Avalonia.Utilities
         {
             if (min > max)
             {
-                throw new ArgumentException($"{min} cannot be greater than {max}.");
+                ThrowCannotBeGreaterThanException(min, max);
             }
 
             if (val < min)
@@ -251,7 +250,7 @@ namespace Avalonia.Utilities
         {
             if (min > max)
             {
-                throw new ArgumentException($"{min} cannot be greater than {max}.");
+                ThrowCannotBeGreaterThanException(min, max);
             }
 
             if (val < min)
@@ -266,6 +265,11 @@ namespace Avalonia.Utilities
             {
                 return val;
             }
+        }
+
+        private static void ThrowCannotBeGreaterThanException(double min, double max)
+        {
+            throw new ArgumentException($"{min} cannot be greater than {max}.");
         }
     }
 }
