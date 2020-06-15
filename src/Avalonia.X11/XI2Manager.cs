@@ -237,6 +237,22 @@ namespace Avalonia.X11
                         RawPointerEventType.Move, ev.Position, ev.Modifiers));
             }
 
+            if (ev.Type == XiEventType.XI_ButtonPress && ev.Button >= 4 && ev.Button <= 7 && !ev.Emulated)
+            {
+                Vector? scrollDelta = ev.Button switch
+                {
+                    4 => new Vector(0, 1),
+                    5 => new Vector(0, -1),
+                    6 => new Vector(1, 0),
+                    7 => new Vector(-1, 0),
+                    _ => null
+                };
+
+                if (scrollDelta.HasValue)
+                    client.ScheduleXI2Input(new RawMouseWheelEventArgs(client.MouseDevice, ev.Timestamp,
+                        client.InputRoot, ev.Position, scrollDelta.Value, ev.Modifiers));
+            }
+
             if (ev.Type == XiEventType.XI_ButtonPress || ev.Type == XiEventType.XI_ButtonRelease)
             {
                 var down = ev.Type == XiEventType.XI_ButtonPress;
