@@ -1,12 +1,12 @@
-# Avalonia
+# Avalonia UI
 
 <img src='https://avatars2.githubusercontent.com/u/14075148?s=200&v=4' width='100' />
 
 ![image](https://user-images.githubusercontent.com/4672627/84708576-28281900-af37-11ea-8c88-e29dfcfa0558.png)
 
-![image](https://user-images.githubusercontent.com/4672627/84708947-c3b98980-af37-11ea-8c9d-503334615bbf.png)
-
 ![image](https://user-images.githubusercontent.com/4672627/84707589-5b69a880-af35-11ea-87a6-7ad57a31d314.png)
+
+![image](https://user-images.githubusercontent.com/4672627/84708947-c3b98980-af37-11ea-8c9d-503334615bbf.png)
 
 | Gitter Chat | Build Status (Win, Linux, OSX) | Open Collective | NuGet | MyGet |
 |---|---|---|---|---|
