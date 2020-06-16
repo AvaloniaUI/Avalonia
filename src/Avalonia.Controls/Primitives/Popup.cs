@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
@@ -38,10 +39,43 @@ namespace Avalonia.Controls.Primitives
                 (o, v) => o.IsOpen = v);
 
         /// <summary>
+        /// Defines the <see cref="PlacementAnchor"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PopupAnchor> PlacementAnchorProperty =
+            AvaloniaProperty.Register<Popup, PopupAnchor>(nameof(PlacementAnchor));
+
+        /// <summary>
+        /// Defines the <see cref="PlacementConstraintAdjustment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PopupPositionerConstraintAdjustment> PlacementConstraintAdjustmentProperty =
+            AvaloniaProperty.Register<Popup, PopupPositionerConstraintAdjustment>(
+                nameof(PlacementConstraintAdjustment),
+                PopupPositionerConstraintAdjustment.FlipX | PopupPositionerConstraintAdjustment.FlipY |
+                PopupPositionerConstraintAdjustment.ResizeX | PopupPositionerConstraintAdjustment.ResizeY);
+
+        /// <summary>
+        /// Defines the <see cref="PlacementGravity"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PopupGravity> PlacementGravityProperty =
+            AvaloniaProperty.Register<Popup, PopupGravity>(nameof(PlacementGravity));
+
+        /// <summary>
         /// Defines the <see cref="PlacementMode"/> property.
         /// </summary>
         public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
             AvaloniaProperty.Register<Popup, PlacementMode>(nameof(PlacementMode), defaultValue: PlacementMode.Bottom);
+
+        /// <summary>
+        /// Defines the <see cref="PlacementRect"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Rect?> PlacementRectProperty =
+            AvaloniaProperty.Register<Popup, Rect?>(nameof(PlacementRect));
+
+        /// <summary>
+        /// Defines the <see cref="PlacementTarget"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Control?> PlacementTargetProperty =
+            AvaloniaProperty.Register<Popup, Control?>(nameof(PlacementTarget));
 
 #pragma warning disable 618
         /// <summary>
@@ -62,12 +96,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<double> VerticalOffsetProperty =
             AvaloniaProperty.Register<Popup, double>(nameof(VerticalOffset));
-
-        /// <summary>
-        /// Defines the <see cref="PlacementTarget"/> property.
-        /// </summary>
-        public static readonly StyledProperty<Control?> PlacementTargetProperty =
-            AvaloniaProperty.Register<Popup, Control?>(nameof(PlacementTarget));
 
         /// <summary>
         /// Defines the <see cref="StaysOpen"/> property.
@@ -146,12 +174,68 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets the anchor point on the <see cref="PlacementRect"/> when <see cref="PlacementMode"/>
+        /// is <see cref="PlacementMode.AnchorAndGravity"/>.
+        /// </summary>
+        public PopupAnchor PlacementAnchor
+        {
+            get { return GetValue(PlacementAnchorProperty); }
+            set { SetValue(PlacementAnchorProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value describing how the popup position will be adjusted if the
+        /// unadjusted position would result in the popup being partly constrained.
+        /// </summary>
+        public PopupPositionerConstraintAdjustment PlacementConstraintAdjustment
+        {
+            get { return GetValue(PlacementConstraintAdjustmentProperty); }
+            set { SetValue(PlacementConstraintAdjustmentProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value which defines in what direction the popup should open
+        /// when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
+        /// </summary>
+        public PopupGravity PlacementGravity
+        {
+            get { return GetValue(PlacementGravityProperty); }
+            set { SetValue(PlacementGravityProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the placement mode of the popup in relation to the <see cref="PlacementTarget"/>.
         /// </summary>
         public PlacementMode PlacementMode
         {
             get { return GetValue(PlacementModeProperty); }
             set { SetValue(PlacementModeProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the the anchor rectangle within the parent that the popup will be placed
+        /// relative to when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
+        /// </summary>
+        /// <remarks>
+        /// The placement rect defines a rectangle relative to <see cref="PlacementTarget"/> around
+        /// which the popup will be opened, with <see cref="PlacementAnchor"/> determining which edge
+        /// of the placement target is used.
+        /// 
+        /// If unset, the anchor rectangle will be the bounds of the <see cref="PlacementTarget"/>.
+        /// </remarks>
+        public Rect? PlacementRect
+        {
+            get { return GetValue(PlacementRectProperty); }
+            set { SetValue(PlacementRectProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the control that is used to determine the popup's position.
+        /// </summary>
+        public Control? PlacementTarget
+        {
+            get { return GetValue(PlacementTargetProperty); }
+            set { SetValue(PlacementTargetProperty, value); }
         }
 
         [Obsolete("This property has no effect")]
@@ -162,7 +246,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets the Horizontal offset of the popup in relation to the <see cref="PlacementTarget"/>
+        /// Gets or sets the Horizontal offset of the popup in relation to the <see cref="PlacementTarget"/>.
         /// </summary>
         public double HorizontalOffset
         {
@@ -171,21 +255,12 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets the Vertical offset of the popup in relation to the <see cref="PlacementTarget"/>
+        /// Gets or sets the Vertical offset of the popup in relation to the <see cref="PlacementTarget"/>.
         /// </summary>
         public double VerticalOffset
         {
             get { return GetValue(VerticalOffsetProperty); }
             set { SetValue(VerticalOffsetProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the control that is used to determine the popup's position.
-        /// </summary>
-        public Control? PlacementTarget
-        {
-            get { return GetValue(PlacementTargetProperty); }
-            set { SetValue(PlacementTargetProperty, value); }
         }
 
         /// <summary>
@@ -260,8 +335,12 @@ namespace Avalonia.Controls.Primitives
 
             popupHost.ConfigurePosition(
                 placementTarget,
-                PlacementMode, 
-                new Point(HorizontalOffset, VerticalOffset));
+                PlacementMode,
+                new Point(HorizontalOffset, VerticalOffset),
+                PlacementAnchor,
+                PlacementGravity,
+                PlacementConstraintAdjustment,
+                PlacementRect);
 
             DeferCleanup(SubscribeToEventHandler<IPopupHost, EventHandler<TemplateAppliedEventArgs>>(popupHost, RootTemplateApplied,
                 (x, handler) => x.TemplateApplied += handler,

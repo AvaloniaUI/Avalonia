@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.LogicalTree;
 using Avalonia.Styling;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -19,11 +20,59 @@ namespace Avalonia.Controls
     /// </summary>
     public class ContextMenu : MenuBase, ISetterValue
     {
+        /// <summary>
+        /// Defines the <see cref="HorizontalOffset"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> HorizontalOffsetProperty =
+            Popup.HorizontalOffsetProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
+        /// Defines the <see cref="VerticalOffset"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> VerticalOffsetProperty =
+            Popup.VerticalOffsetProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
+        /// Defines the <see cref="PlacementAnchor"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PopupAnchor> PlacementAnchorProperty =
+            Popup.PlacementAnchorProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
+        /// Defines the <see cref="PlacementConstraintAdjustment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PopupPositionerConstraintAdjustment> PlacementConstraintAdjustmentProperty =
+            Popup.PlacementConstraintAdjustmentProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
+        /// Defines the <see cref="PlacementGravity"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PopupGravity> PlacementGravityProperty =
+            Popup.PlacementGravityProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
+        /// Defines the <see cref="PlacementMode"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
+            Popup.PlacementModeProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
+        /// Defines the <see cref="PlacementRect"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Rect?> PlacementRectProperty =
+            AvaloniaProperty.Register<Popup, Rect?>(nameof(PlacementRect));
+
+        /// <summary>
+        /// Defines the <see cref="PlacementTarget"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Control?> PlacementTargetProperty =
+            Popup.PlacementTargetProperty.AddOwner<ContextMenu>();
+
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical });
-        private Popup _popup;
-        private List<Control> _attachedControls;
-        private IInputElement _previousFocus;
+        private Popup? _popup;
+        private List<Control>? _attachedControls;
+        private IInputElement? _previousFocus;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContextMenu"/> class.
@@ -47,8 +96,92 @@ namespace Avalonia.Controls
         /// </summary>
         static ContextMenu()
         {
-            ItemsPanelProperty.OverrideDefaultValue(typeof(ContextMenu), DefaultPanel);
+            ItemsPanelProperty.OverrideDefaultValue<ContextMenu>(DefaultPanel);
+            PlacementModeProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
+        }
+
+        /// <summary>
+        /// Gets or sets the Horizontal offset of the context menu in relation to the <see cref="PlacementTarget"/>.
+        /// </summary>
+        public double HorizontalOffset
+        {
+            get { return GetValue(HorizontalOffsetProperty); }
+            set { SetValue(HorizontalOffsetProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the Vertical offset of the context menu in relation to the <see cref="PlacementTarget"/>.
+        /// </summary>
+        public double VerticalOffset
+        {
+            get { return GetValue(VerticalOffsetProperty); }
+            set { SetValue(VerticalOffsetProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the anchor point on the <see cref="PlacementRect"/> when <see cref="PlacementMode"/>
+        /// is <see cref="PlacementMode.AnchorAndGravity"/>.
+        /// </summary>
+        public PopupAnchor PlacementAnchor
+        {
+            get { return GetValue(PlacementAnchorProperty); }
+            set { SetValue(PlacementAnchorProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value describing how the context menu position will be adjusted if the
+        /// unadjusted position would result in the context menu being partly constrained.
+        /// </summary>
+        public PopupPositionerConstraintAdjustment PlacementConstraintAdjustment
+        {
+            get { return GetValue(PlacementConstraintAdjustmentProperty); }
+            set { SetValue(PlacementConstraintAdjustmentProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value which defines in what direction the context menu should open
+        /// when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
+        /// </summary>
+        public PopupGravity PlacementGravity
+        {
+            get { return GetValue(PlacementGravityProperty); }
+            set { SetValue(PlacementGravityProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the placement mode of the context menu in relation to the<see cref="PlacementTarget"/>.
+        /// </summary>
+        public PlacementMode PlacementMode
+        {
+            get { return GetValue(PlacementModeProperty); }
+            set { SetValue(PlacementModeProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the the anchor rectangle within the parent that the context menu will be placed
+        /// relative to when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
+        /// </summary>
+        /// <remarks>
+        /// The placement rect defines a rectangle relative to <see cref="PlacementTarget"/> around
+        /// which the popup will be opened, with <see cref="PlacementAnchor"/> determining which edge
+        /// of the placement target is used.
+        /// 
+        /// If unset, the anchor rectangle will be the bounds of the <see cref="PlacementTarget"/>.
+        /// </remarks>
+        public Rect? PlacementRect
+        {
+            get { return GetValue(PlacementRectProperty); }
+            set { SetValue(PlacementRectProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the control that is used to determine the popup's position.
+        /// </summary>
+        public Control? PlacementTarget
+        {
+            get { return GetValue(PlacementTargetProperty); }
+            set { SetValue(PlacementTargetProperty, value); }
         }
 
         /// <summary>
@@ -56,14 +189,14 @@ namespace Avalonia.Controls
         /// <see cref="P:Avalonia.Controls.ContextMenu.IsOpen" />
         /// property is changing from false to true.
         /// </summary>
-        public event CancelEventHandler ContextMenuOpening;
+        public event CancelEventHandler? ContextMenuOpening;
 
         /// <summary>
         /// Occurs when the value of the
         /// <see cref="P:Avalonia.Controls.ContextMenu.IsOpen" />
         /// property is changing from true to false.
         /// </summary>
-        public event CancelEventHandler ContextMenuClosing;
+        public event CancelEventHandler? ContextMenuClosing;
 
         /// <summary>
         /// Called when the <see cref="Control.ContextMenu"/> property changes on a control.
@@ -77,7 +210,7 @@ namespace Avalonia.Controls
             {
                 control.PointerReleased -= ControlPointerReleased;
                 oldMenu._attachedControls?.Remove(control);
-                ((ISetLogicalParent)oldMenu._popup)?.SetParent(null);
+                ((ISetLogicalParent?)oldMenu._popup)?.SetParent(null);
             }
 
             if (e.NewValue is ContextMenu newMenu)
@@ -97,7 +230,7 @@ namespace Avalonia.Controls
         /// Opens a context menu on the specified control.
         /// </summary>
         /// <param name="control">The control.</param>
-        public void Open(Control control)
+        public void Open(Control? control)
         {
             if (control is null && (_attachedControls is null || _attachedControls.Count == 0))
             {
@@ -113,7 +246,7 @@ namespace Avalonia.Controls
                     nameof(control));
             }
 
-            control ??= _attachedControls[0];
+            control ??= _attachedControls![0];
 
             if (IsOpen)
             {
@@ -124,8 +257,14 @@ namespace Avalonia.Controls
             {
                 _popup = new Popup
                 {
-                    PlacementMode = PlacementMode.Pointer,
-                    PlacementTarget = control,
+                    HorizontalOffset = HorizontalOffset,
+                    VerticalOffset = VerticalOffset,
+                    PlacementAnchor = PlacementAnchor,
+                    PlacementConstraintAdjustment = PlacementConstraintAdjustment,
+                    PlacementGravity = PlacementGravity,
+                    PlacementMode = PlacementMode,
+                    PlacementRect = PlacementRect,
+                    PlacementTarget = PlacementTarget ?? control,
                     StaysOpen = false
                 };
 
@@ -204,7 +343,7 @@ namespace Avalonia.Controls
 
             if (_attachedControls is null || _attachedControls.Count == 0)
             {
-                ((ISetLogicalParent)_popup).SetParent(null);
+                ((ISetLogicalParent)_popup!).SetParent(null);
             }
 
             // HACK: Reset the focus when the popup is closed. We need to fix this so it's automatic.
