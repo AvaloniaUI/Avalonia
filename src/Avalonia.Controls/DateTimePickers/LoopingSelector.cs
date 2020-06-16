@@ -545,8 +545,22 @@ namespace Avalonia.Controls.Primitives
             var recThresBot = initY + (_totalItemsInViewport * ItemHeight);
             var scrollChange = newOffset - oldOffset;
 
-            var numContsAbove = children.Where(x => (x.Bounds.Bottom - scrollChange) <= recThresTop).Count();
-            var numContsBelow = children.Where(x => (x.Bounds.Top - scrollChange) >= recThresBot).Count();
+            int numContsAbove = 0;
+            for(int i = 0; i < children.Count; i++)
+            {
+                if (children[i].Bounds.Bottom - scrollChange <= recThresTop)
+                    numContsAbove++;
+            }
+
+            int numContsBelow = 0;
+            for (int i = 0; i < children.Count; i++)
+            {
+                if (children[i].Bounds.Bottom - scrollChange >= recThresBot)
+                    numContsBelow++;
+            }
+
+            //var numContsAbove = children.Where(x => (x.Bounds.Bottom - scrollChange) <= recThresTop).Count();
+            //var numContsBelow = children.Where(x => (x.Bounds.Top - scrollChange) >= recThresBot).Count();
 
             if (numContsAbove > 0)
             {
