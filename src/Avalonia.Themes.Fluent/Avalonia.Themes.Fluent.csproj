@@ -17,14 +17,6 @@
     <!-- Compatibility with old apps, probably need to replace with AvaloniaResource -->
     <EmbeddedResource Include="**/*.xaml" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="ToggleSwitch.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="ToggleSwitch.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </EmbeddedResource>
-  </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\Rx.props" />
 </Project>
