@@ -15,14 +15,14 @@ namespace Avalonia.Controls
     public class ToggleSwitch : ToggleButton
     {
         public static readonly StyledProperty<object> OffContentProperty =
-         AvaloniaProperty.Register<ToggleSwitch, object>(nameof(OffContent));
+         AvaloniaProperty.Register<ToggleSwitch, object>(nameof(OffContent), defaultValue:"Off");
 
         public static readonly StyledProperty<IDataTemplate> OffContentTemplateProperty =
             AvaloniaProperty.Register<ToggleSwitch, IDataTemplate>(nameof(OffContentTemplate));
 
 
         public static readonly StyledProperty<object> OnContentProperty =
-      AvaloniaProperty.Register<ToggleSwitch, object>(nameof(OnContent));
+      AvaloniaProperty.Register<ToggleSwitch, object>(nameof(OnContent), defaultValue: "On");
 
         public static readonly StyledProperty<IDataTemplate> OnContentTemplateProperty =
             AvaloniaProperty.Register<ToggleSwitch, IDataTemplate>(nameof(OnContentTemplate));
