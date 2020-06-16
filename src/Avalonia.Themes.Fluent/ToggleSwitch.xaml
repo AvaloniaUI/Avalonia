@@ -100,50 +100,30 @@
               Grid.Row="1"
               Height="20"
               Width="40"
-              CornerRadius="100"
+              CornerRadius="10"
               BorderThickness="{DynamicResource ToggleSwitchOuterBorderStrokeThickness}" />
 
             <Border x:Name="SwitchKnobBounds"
               Grid.Row="1"
               Height="20"
               Width="40"
-              CornerRadius="100"
+              CornerRadius="10"
               BorderThickness="{DynamicResource ToggleSwitchOnStrokeThickness}"/>
 
-            <Canvas x:Name="SwitchKnob"
-               Grid.Row="1"
+            <Canvas x:Name="SwitchKnob" Grid.Row="1"
                HorizontalAlignment="Left"
-               Width="20"
-               Height="20">
+               Width="20" Height="20">
 
               <Grid x:Name="MovingKnobs"
-                Width="20"
-                Height="20"  >
+                Width="20" Height="20">
 
                 <Ellipse x:Name="SwitchKnobOn"
-                 Width="10"
-                Height="10"/>
-
+                         Width="10" Height="10" />
 
                 <Ellipse x:Name="SwitchKnobOff"
-                  Width="10"
-                   Height="10"  />
-
-                <!--<Grid.RenderTransform>
-                          <TranslateTransform x:Name="KnobTranslateTransform" />
-                       </Grid.RenderTransform>-->
+                         Width="10" Height="10" />
               </Grid>
             </Canvas>
-
-            <!--<Thumb x:Name="SwitchThumb"
-                   Grid.RowSpan="3"
-                   Grid.ColumnSpan="3">
-                   <Thumb.Template>
-                     <ControlTemplate>
-                       <Rectangle Fill="Transparent" />
-                     </ControlTemplate>
-                   </Thumb.Template>
-                 </Thumb>-->
           </Grid>
         </Grid>
       </ControlTemplate>
@@ -253,10 +233,6 @@
     <Setter Property="BorderBrush" Value="{DynamicResource ToggleSwitchStrokeOnDisabled}"/>
   </Style>
 
-  <!--<Style Selector="ToggleSwitch:disabled /template/ Grid#SwitchAreaGrid"> 
-        <Setter Property="Background" Value="20"/>
-      </Style>-->
-
   <!-- CheckedState -->
   <Style Selector="ToggleSwitch:checked /template/ Grid#MovingKnobs">
     <Setter Property="Canvas.Left" Value="{DynamicResource KnobOnPosition}"/>
@@ -286,7 +262,6 @@
     <Setter Property="Opacity" Value="1"/>
   </Style>
 
-
   <!--UncheckedState -->
   <Style Selector="ToggleSwitch:unchecked /template/ Grid#MovingKnobs">
     <Setter Property="Canvas.Left" Value="{DynamicResource KnobOffPosition}"/>
@@ -315,8 +290,4 @@
   <Style Selector="ToggleSwitch:unchecked /template/ ContentPresenter#PART_OnContentPresenter">
     <Setter Property="Opacity" Value="0"/>
   </Style>
-
-  <!--<Style Selector="ToggleSwitch:checked /template/Grid#MovingKnobs">
-     <Setter Property="Canvas.Left" Value="{StaticResource KnobOffPosition}"/>
-   </Style>-->
 </Styles>
