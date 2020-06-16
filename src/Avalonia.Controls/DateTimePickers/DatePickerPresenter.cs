@@ -511,7 +511,6 @@ namespace Avalonia.Controls
                 _dayItems.Clear();
 
             var format = DayFormat;
-            DateTimeFormatter formatter = new DateTimeFormatter(format);
             var date = Date;
             GregorianCalendar gc = new GregorianCalendar();
             var daysInMonth = gc.GetDaysInMonth(date.Date.Year, date.Date.Month);
@@ -522,9 +521,8 @@ namespace Avalonia.Controls
                 curDt = new DateTimeOffset(date.Date.Year, date.Date.Month, dayIndex, 0, 0, 0, date.Offset);
 
                 DatePickerPresenterItem dppi = new DatePickerPresenterItem(curDt);
-                dppi.DisplayText = formatter.Format(curDt);
+                dppi.DisplayText = curDt.ToString(format);
                 _dayItems.Add(dppi);
-
                 dayIndex++;
             }
         }
@@ -541,7 +539,6 @@ namespace Avalonia.Controls
                 _monthItems.Clear();
 
             var format = MonthFormat;
-            DateTimeFormatter formatter = new DateTimeFormatter(format);
             var date = Date;
             int monthIndex = 1;
             DateTimeOffset curDt;
@@ -550,7 +547,7 @@ namespace Avalonia.Controls
                 curDt = new DateTimeOffset(date.Date.Year, monthIndex, 1, 0, 0, 0, date.Offset);
 
                 DatePickerPresenterItem dppi = new DatePickerPresenterItem(curDt);
-                dppi.DisplayText = formatter.Format(curDt);
+                dppi.DisplayText = curDt.ToString(format);
                 _monthItems.Add(dppi);
 
                 monthIndex++;
@@ -568,14 +565,13 @@ namespace Avalonia.Controls
                 _yearItems.Clear();
 
             var format = YearFormat;
-            DateTimeFormatter formatter = new DateTimeFormatter(format);
             var curDt = MinYear.Date;
             var max = MaxYear.Date;
 
             while (curDt <= max)
             {
                 DatePickerPresenterItem dppi = new DatePickerPresenterItem(curDt);
-                dppi.DisplayText = formatter.Format(curDt);
+                dppi.DisplayText = curDt.ToString(format);
                 _yearItems.Add(dppi);
                 curDt = curDt.AddYears(1);
             }
@@ -594,7 +590,7 @@ namespace Avalonia.Controls
             if (!forceRecreate && daysInMonth == _dayItems.Count)
                 return;
 
-            DateTimeFormatter formatter = new DateTimeFormatter(DayFormat);
+            var format = DayFormat;
             if (forceRecreate)
             {
                 //We're not actually going to recreate the entire list, we're just
@@ -604,7 +600,7 @@ namespace Avalonia.Controls
                 DateTimeOffset curDt = new DateTimeOffset(Date.Date.Year, Date.Date.Month, 1, 0, 0, 0, Date.Offset);
                 for (int i = 0; i < _dayItems.Count; i++)
                 {
-                    _dayItems[i].UpdateStoredDate(curDt, formatter.Format(curDt));
+                    _dayItems[i].UpdateStoredDate(curDt, curDt.ToString(format));
                     curDt = curDt.AddDays(1);
                 }
             }
@@ -619,7 +615,7 @@ namespace Avalonia.Controls
                 {
                     curDt = new DateTimeOffset(date.Date.Year, date.Date.Month, dayIndex, 0, 0, 0, date.Offset);
                     DatePickerPresenterItem dppi = new DatePickerPresenterItem(curDt);
-                    dppi.DisplayText = formatter.Format(curDt);
+                    dppi.DisplayText = curDt.ToString(format);
                     _dayItems.Add(dppi);
                     dayIndex++;
                 }
@@ -1100,13 +1096,13 @@ namespace Avalonia.Controls
         private LoopingSelector _daySelector;
 
         private DateTimeOffset _date;
-        private string _dayFormat = "{day.integer}";
+        private string _dayFormat = "%d";
         private bool _dayVisible = true;
         private DateTimeOffset _maxYear;
         private DateTimeOffset _minYear;
-        private string _monthFormat = "{month.full}";
+        private string _monthFormat = "MMMM";
         private bool _monthVisible = true;
-        private string _yearFormat = "{year.full}";
+        private string _yearFormat = "yyyy";
         private bool _yearVisible = true;
         private DateTimeOffset _initDate;
 

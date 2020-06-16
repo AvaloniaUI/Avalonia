@@ -34,14 +34,14 @@
       <StackPanel Orientation="Vertical">
         <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
                 BorderThickness="1" Padding="15">
-          <DatePicker x:Name="Control2" DayFormat="{}{day.integer} ({dayofweek.abbreviated})"
+          <DatePicker x:Name="Control2" DayFormat="d (ddd)"
                              YearVisible="False" />
         </Border>
         <Panel Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
           <TextBlock Padding="15">
             <TextBlock.Text>
               <x:String>
-                &lt;DatePicker DayFormat="{}{day.integer} ({dayofweek.abbreviated})" YearVisible="False" /&gt;
+                &lt;DatePicker DayFormat="d (ddd)" YearVisible="False" /&gt;
               </x:String>
             </TextBlock.Text>
           </TextBlock>

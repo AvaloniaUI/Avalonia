@@ -447,9 +447,9 @@ namespace Avalonia.Controls
             {
                 PseudoClasses.Set(":hasnodate", false);
                 var selDate = SelectedDate.Value;
-                _monthText.Text = new DateTimeFormatter(MonthFormat).Format(selDate);
-                _yearText.Text = new DateTimeFormatter(YearFormat).Format(selDate);
-                _dayText.Text = new DateTimeFormatter(DayFormat).Format(selDate);
+                _monthText.Text = selDate.ToString(MonthFormat);
+                _yearText.Text = selDate.ToString(YearFormat);
+                _dayText.Text = selDate.ToString(DayFormat);
             }
             else
             {
@@ -504,13 +504,13 @@ namespace Avalonia.Controls
         private int _dayIndex;
         private int _yearIndex;
 
-        private string _dayFormat = "{day.integer}";
+        private string _dayFormat = "%d";
         private bool _dayVisible = true;
         private DateTimeOffset _maxYear;
         private DateTimeOffset _minYear;
-        private string _monthFormat = "{month.full}";
+        private string _monthFormat = "MMMM";
         private bool _monthVisible = true;
-        private string _yearFormat = "{year.full}";
+        private string _yearFormat = "yyyy";
         private bool _yearVisible = true;
         private DateTimeOffset? _selectedDate;
     }

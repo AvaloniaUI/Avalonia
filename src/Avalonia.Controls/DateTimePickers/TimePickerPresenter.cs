@@ -94,8 +94,6 @@ namespace Avalonia.Controls
             {
                 var old = _Time;
                 SetAndRaise(TimeProperty, ref _Time, value);
-                //SelectedTimeChanged?.Invoke(this, new TimePickerSelectedValueChangedEventArgs(old, value));
-                //SetSelectedTimeText();
             }
         }
 
@@ -269,16 +267,14 @@ namespace Avalonia.Controls
                 if (_hourItems == null)
                 {
                     _hourItems = new AvaloniaList<TimePickerPresenterItem>();
-                    DateTimeFormatter formatter = new DateTimeFormatter("{hour}");
-                    formatter.Clock = clock;
-
+                    
                     int numItems = clock == "12HourClock" ? 12 : 24;
 
                     for (int i = 0; i < numItems; i++)
                     {
                         var hr = clock == "12HourClock" ? TimeSpan.FromHours(i + 1) : TimeSpan.FromHours(i);
                         TimePickerPresenterItem tppi = new TimePickerPresenterItem(hr);
-                        tppi.DisplayText = formatter.Format(hr);
+                        tppi.DisplayText = TimePicker.GetTimeFormat(hr, true, clock);
                         _hourItems.Add(tppi);
                     }
 
@@ -287,8 +283,6 @@ namespace Avalonia.Controls
                 else if (_hasClockChanged)
                 {
                     _hourItems.Clear();
-                    DateTimeFormatter formatter = new DateTimeFormatter("{hour}");
-                    formatter.Clock = clock;
 
                     int numItems = clock == "12HourClock" ? 12 : 24;
 
@@ -296,7 +290,7 @@ namespace Avalonia.Controls
                     {
                         var hr = clock == "12HourClock" ? TimeSpan.FromHours(i + 1) : TimeSpan.FromHours(i);
                         TimePickerPresenterItem tppi = new TimePickerPresenterItem(hr);
-                        tppi.DisplayText = formatter.Format(hr);
+                        tppi.DisplayText = TimePicker.GetTimeFormat(hr, true, clock);
                         _hourItems.Add(tppi);
                     }
                 }
@@ -320,14 +314,13 @@ namespace Avalonia.Controls
             if (_minuteItems == null)
             {
                 _minuteItems = new AvaloniaList<TimePickerPresenterItem>();
-                DateTimeFormatter formatter = new DateTimeFormatter("{minute}");
-
+                
                 var inc = MinuteIncrement;
                 for (int i = 0; i < 60; i += inc)
                 {
                     var min = TimeSpan.FromMinutes(i);
                     TimePickerPresenterItem tppi = new TimePickerPresenterItem(min);
-                    tppi.DisplayText = formatter.Format(min);
+                    tppi.DisplayText = TimePicker.GetTimeFormat(min);
                     _minuteItems.Add(tppi);
                 }
 
@@ -336,14 +329,13 @@ namespace Avalonia.Controls
             else if (_hasMinuteIncChanged)
             {
                 _minuteItems.Clear();
-                DateTimeFormatter formatter = new DateTimeFormatter("{minute}");
-
+                
                 var inc = MinuteIncrement;
                 for (int i = 0; i < 60; i += inc)
                 {
                     var min = TimeSpan.FromMinutes(i);
                     TimePickerPresenterItem tppi = new TimePickerPresenterItem(min);
-                    tppi.DisplayText = formatter.Format(min);
+                    tppi.DisplayText = TimePicker.GetTimeFormat(min);
                     _minuteItems.Add(tppi);
                 }
             }

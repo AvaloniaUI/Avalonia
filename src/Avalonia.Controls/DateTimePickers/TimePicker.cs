@@ -204,15 +204,9 @@ namespace Avalonia.Controls
             var time = SelectedTime;
             if (time.HasValue)
             {
-                //DateTimeFormatter will automatically handle the correct format for 
-                //hours/minutes based on culture settings
-                DateTimeFormatter formatter = new DateTimeFormatter("{hour}");
-                formatter.Clock = ClockIdentifier;
-                _hourText.Text = formatter.Format(time.Value);
+                _hourText.Text = GetTimeFormat(time.Value, true, ClockIdentifier);
 
-                formatter = new DateTimeFormatter("{minute}");
-                formatter.Clock = ClockIdentifier;
-                _minuteText.Text = formatter.Format(time.Value);
+                _minuteText.Text = GetTimeFormat(time.Value);
                 PseudoClasses.Set(":hasnotime", false);
 
                 if (time.Value.Hours >= 12)
@@ -230,6 +224,34 @@ namespace Avalonia.Controls
                     _periodText.Text = CultureInfo.CurrentCulture.DateTimeFormat.PMDesignator;
                 else
                     _periodText.Text = CultureInfo.CurrentCulture.DateTimeFormat.AMDesignator;
+            }
+        }
+
+        /// <summary>
+        /// Helps formatting timespans for use in TimePicker and TimePickerPresenter
+        /// </summary>
+        /// <param name="timeSpan">Timespan to format</param>
+        /// <param name="forHour">True if formatting hour, false if minute</param>
+        /// <param name="clockIdentifier"></param>
+        /// <returns></returns>
+        internal static string GetTimeFormat(TimeSpan timeSpan, bool forHour = false, string clockIdentifier = "12HourClock")
+        {
+            var fmt = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.ToLower();
+
+            if (forHour)
+            {
+                var hr = timeSpan.Hours;
+
+                if (clockIdentifier == "12HourClock" && hr > 12)
+                    hr -= 12;
+                else if (clockIdentifier == "12HourClock" && hr == 0)
+                    hr = 12;
+
+                return fmt.Contains("hh") ? hr.ToString("D2") : hr.ToString();
+            }
+            else
+            {
+                return timeSpan.ToString("mm");
             }
         }
 
