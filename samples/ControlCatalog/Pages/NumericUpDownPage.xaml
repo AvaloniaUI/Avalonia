@@ -50,22 +50,22 @@
         <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="2">Text:</TextBlock>
         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding #upDown.Text}" VerticalAlignment="Center" Margin="2" />
       </Grid>
-      <Grid Grid.Row="0" Grid.Column="2" Margin="10,2,2,2" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto, 120">
+      <Grid Grid.Row="0" Grid.Column="2" Margin="10,2,2,2" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto, Auto">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Minimum:</TextBlock>
         <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding #upDown.Minimum}"
-                       CultureInfo="{Binding #upDown.CultureInfo}" VerticalAlignment="Center" Margin="2" Width="70" HorizontalAlignment="Center"/>
+                       CultureInfo="{Binding #upDown.CultureInfo}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
 
         <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Maximum:</TextBlock>
         <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding #upDown.Maximum}"
-                       CultureInfo="{Binding #upDown.CultureInfo}" VerticalAlignment="Center" Margin="2" Width="70" HorizontalAlignment="Center"/>
+                       CultureInfo="{Binding #upDown.CultureInfo}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Increment:</TextBlock>
         <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding #upDown.Increment}" VerticalAlignment="Center"
-                       Margin="2" Width="70" HorizontalAlignment="Center"/>
+                       Margin="2" HorizontalAlignment="Center"/>
 
         <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Value:</TextBlock>
         <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding #upDown.Value}" VerticalAlignment="Center"
-                       Margin="2" Width="70" HorizontalAlignment="Center"/>
+                       Margin="2" HorizontalAlignment="Center"/>
 
       </Grid>
     </Grid>
@@ -73,7 +73,7 @@
     <StackPanel Margin="2,10,2,2" Orientation="Horizontal" Spacing="10">
       <TextBlock FontSize="14" FontWeight="Bold" VerticalAlignment="Center">Usage of NumericUpDown:</TextBlock>
       <NumericUpDown Name="upDown" Minimum="0" Maximum="10" Increment="0.5"
-                     CultureInfo="en-US" VerticalAlignment="Center" Width="100"
+                     CultureInfo="en-US" VerticalAlignment="Center"
                      Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
     </StackPanel>
 

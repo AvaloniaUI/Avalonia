@@ -238,6 +238,10 @@ namespace Avalonia.X11
 
         [DllImport(libX11)]
         public static extern int XChangeProperty(IntPtr display, IntPtr window, IntPtr property, IntPtr type,
+            int format, PropertyMode mode, byte[] data, int nelements);
+        
+        [DllImport(libX11)]
+        public static extern int XChangeProperty(IntPtr display, IntPtr window, IntPtr property, IntPtr type,
             int format, PropertyMode mode, uint[] data, int nelements);
 
         [DllImport(libX11)]
