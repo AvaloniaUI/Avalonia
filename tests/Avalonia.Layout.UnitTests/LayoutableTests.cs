@@ -213,9 +213,7 @@ namespace Avalonia.Layout.UnitTests
             {
                 Child = border1 = new Border
                 {
-                    Child = border2 = new Border
-                    {
-                    }
+                    Child = border2 = new Border(),
                 },
                 LayoutManager = layoutManager,
             };

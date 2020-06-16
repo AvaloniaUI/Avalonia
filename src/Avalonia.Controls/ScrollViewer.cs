@@ -602,16 +602,19 @@ namespace Avalonia.Controls
 
         private void RaiseScrollChanged()
         {
-            var e = new ScrollChangedEventArgs(
-                new Vector(Extent.Width - _oldExtent.Width, Extent.Height - _oldExtent.Height),
-                Offset - _oldOffset,
-                new Vector(Viewport.Width - _oldViewport.Width, Viewport.Height - _oldViewport.Height));
+            var extentDelta = new Vector(Extent.Width - _oldExtent.Width, Extent.Height - _oldExtent.Height);
+            var offsetDelta = Offset - _oldOffset;
+            var viewportDelta = new Vector(Viewport.Width - _oldViewport.Width, Viewport.Height - _oldViewport.Height);
 
-            OnScrollChanged(e);
+            if (extentDelta != default || offsetDelta != default || viewportDelta != default)
+            {
+                var e = new ScrollChangedEventArgs(extentDelta, offsetDelta, viewportDelta);
+                OnScrollChanged(e);
 
-            _oldExtent = Extent;
-            _oldOffset = Offset;
-            _oldViewport = Viewport;
+                _oldExtent = Extent;
+                _oldOffset = Offset;
+                _oldViewport = Viewport;
+            }
         }
     }
 }
