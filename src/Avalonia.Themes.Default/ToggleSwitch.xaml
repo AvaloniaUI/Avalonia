@@ -78,6 +78,7 @@
             <Grid x:Name="SwitchAreaGrid"
               Grid.RowSpan="3"
               Grid.ColumnSpan="3"
+              TemplatedControl.IsTemplateFocusTarget="True"
               Margin="0,5" />
 
             <ContentPresenter x:Name="PART_OffContentPresenter"
