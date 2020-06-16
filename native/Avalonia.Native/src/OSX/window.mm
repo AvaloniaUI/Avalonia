@@ -1074,7 +1074,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     _blurBehind = [NSVisualEffectView new];
     [_blurBehind setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
-    [_blurBehind setMaterial:NSVisualEffectMaterialLight];
+    [_blurBehind setMaterial:NSVisualEffectMaterialUltraDark];
     [_blurBehind setWantsLayer:true];
     _blurBehind.hidden = true;
     
