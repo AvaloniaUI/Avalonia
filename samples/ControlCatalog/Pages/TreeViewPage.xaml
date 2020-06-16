@@ -20,6 +20,7 @@
 
         <Button Command="{Binding AddItemCommand}">Add</Button>
         <Button Command="{Binding RemoveItemCommand}">Remove</Button>
+        <Button Command="{Binding SelectRandomItemCommand}">Select Random</Button>
 
         <ComboBox SelectedIndex="{Binding SelectionMode, Mode=TwoWay}">
           <ComboBoxItem>Single</ComboBoxItem>

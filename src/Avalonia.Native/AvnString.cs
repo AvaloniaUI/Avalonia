@@ -5,6 +5,7 @@ namespace Avalonia.Native.Interop
     unsafe partial class IAvnString
     {
         private string _managed;
+        private byte[] _bytes;
 
         public string String
         {
@@ -19,6 +20,20 @@ namespace Avalonia.Native.Interop
                 }
 
                 return _managed;
+            }
+        }
+
+        public byte[] Bytes
+        {
+            get
+            {
+                if (_bytes == null)
+                {
+                    _bytes = new byte[Length()];
+                    Marshal.Copy(Pointer(), _bytes, 0, _bytes.Length);
+                }
+
+                return _bytes;
             }
         }
 
