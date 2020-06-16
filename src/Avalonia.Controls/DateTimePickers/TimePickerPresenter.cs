@@ -237,15 +237,15 @@ namespace Avalonia.Controls
             //Get item height from a hour looping selector (always available)
             //Get the max height of the popup (constrained in template) and subtract the accept/dismiss region out of that
             //Popup is placed below the control, so we subtract (half of the remaining distance + half an item)
-            //Note, adjustments for screen bounds are done before this adjustment, so that will throw off the placement
-            //Equivalent behavior in WinUI though
             var itemHeight = _hourSelector.ItemHeight;
             var maxHeight = MaxHeight;
             var acceptDismissButtonHeight = _acceptButton != null ? _acceptButton.Bounds.Height : 41;
             var deltaY = -(maxHeight - acceptDismissButtonHeight) / 2 - itemHeight / 2;
 
             //The extra 5 px I think is related to default popup placement behavior
-            _hostPopup.Host.ConfigurePosition(_hostPopup.PlacementTarget, PlacementMode.Top, new Point(0, deltaY + 5));
+            _hostPopup.Host.ConfigurePosition(_hostPopup.PlacementTarget, PlacementMode.AnchorAndGravity, new Point(0, deltaY + 5),
+                Primitives.PopupPositioning.PopupAnchor.Bottom, Primitives.PopupPositioning.PopupGravity.Bottom,
+                 Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY);
         }
 
         /// <summary>
