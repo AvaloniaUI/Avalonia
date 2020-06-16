@@ -54,10 +54,10 @@ namespace Avalonia.Controls.Chrome
             var minimiseButton = e.NameScope.Find<Panel>("PART_MinimiseButton");
             var fullScreenButton = e.NameScope.Find<Panel>("PART_FullScreenButton");
 
-            closeButton.PointerPressed += (sender, e) => _hostWindow.Close();
-            restoreButton.PointerPressed += (sender, e) => _hostWindow.WindowState = _hostWindow.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
-            minimiseButton.PointerPressed += (sender, e) => _hostWindow.WindowState = WindowState.Minimized;
-            fullScreenButton.PointerPressed += (sender, e) => _hostWindow.WindowState = _hostWindow.WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen;
+            closeButton.PointerReleased += (sender, e) => _hostWindow.Close();
+            restoreButton.PointerReleased += (sender, e) => _hostWindow.WindowState = _hostWindow.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            minimiseButton.PointerReleased += (sender, e) => _hostWindow.WindowState = WindowState.Minimized;
+            fullScreenButton.PointerReleased += (sender, e) => _hostWindow.WindowState = _hostWindow.WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen;
         }
     }
 }
