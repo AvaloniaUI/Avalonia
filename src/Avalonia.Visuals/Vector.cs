@@ -154,9 +154,7 @@ namespace Avalonia
         /// <returns>True if vectors are nearly equal.</returns>
         public bool NearlyEquals(Vector other)
         {
-            const float tolerance = float.Epsilon;
-
-            return Math.Abs(_x - other._x) < tolerance && Math.Abs(_y - other._y) < tolerance;
+            return MathUtilities.AreClose(_x, other._x) && MathUtilities.AreClose(_y, other._y);
         }
 
         public override bool Equals(object obj) => obj is Vector other && Equals(other);
