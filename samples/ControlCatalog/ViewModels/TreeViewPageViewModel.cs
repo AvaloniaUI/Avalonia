@@ -23,12 +23,14 @@ namespace ControlCatalog.ViewModels
 
             AddItemCommand = ReactiveCommand.Create(AddItem);
             RemoveItemCommand = ReactiveCommand.Create(RemoveItem);
+            SelectRandomItemCommand = ReactiveCommand.Create(SelectRandomItem);
         }
 
         public ObservableCollection<Node> Items { get; }
         public SelectionModel Selection { get; }
         public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
         public ReactiveCommand<Unit, Unit> RemoveItemCommand { get; }
+        public ReactiveCommand<Unit, Unit> SelectRandomItemCommand { get; }
 
         public SelectionMode SelectionMode
         {
@@ -72,6 +74,15 @@ namespace ControlCatalog.ViewModels
 
                 return false;
             }
+        }
+
+        private void SelectRandomItem()
+        {
+            var random = new Random();
+            var depth = random.Next(4);
+            var indexes = Enumerable.Range(0, 4).Select(x => random.Next(10));
+            var path = new IndexPath(indexes);
+            Selection.SelectedIndex = path;
         }
 
         private void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)

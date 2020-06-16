@@ -5,4 +5,5 @@
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.Accents.Base.xaml?assembly=Avalonia.Themes.Fluent" />
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.Accents.FluentBaseDark.xaml?assembly=Avalonia.Themes.Fluent" />
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.Accents.FluentControlResourcesDark.xaml?assembly=Avalonia.Themes.Fluent" />
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.FluentTheme.xaml?assembly=Avalonia.Themes.Fluent" />
 </Styles>

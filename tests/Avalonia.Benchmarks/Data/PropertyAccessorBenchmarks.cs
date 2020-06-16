@@ -1,17 +1,15 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using Avalonia.Data.Core.Plugins;
 using BenchmarkDotNet.Attributes;
-using JetBrains.Annotations;
 
 namespace Avalonia.Benchmarks.Data
 {
     [MemoryDiagnoser, InProcess]
     public class PropertyAccessorBenchmarks
     {
-        private readonly InpcPropertyAccessorPlugin _plugin = new InpcPropertyAccessorPlugin();
-        private readonly TestObject _targetStrongRef = new TestObject();
+        private readonly InpcPropertyAccessorPlugin _inpcPlugin = new InpcPropertyAccessorPlugin();
+        private readonly MethodAccessorPlugin _methodPlugin = new MethodAccessorPlugin();
+        private readonly AccessorTestObject _targetStrongRef = new AccessorTestObject();
         private readonly WeakReference<object> _targetWeakRef;
 
         public PropertyAccessorBenchmarks()
@@ -20,38 +18,27 @@ namespace Avalonia.Benchmarks.Data
         }
 
         [Benchmark]
-        public void InpcAccessor()
+        public void InpcAccessorMatch()
         {
-            _plugin.Start(_targetWeakRef, nameof(TestObject.Test));
+            _inpcPlugin.Match(_targetWeakRef, nameof(AccessorTestObject.Test));
         }
 
-        private class TestObject : INotifyPropertyChanged
+        [Benchmark]
+        public void InpcAccessorStart()
         {
-            private string _test;
+            _inpcPlugin.Start(_targetWeakRef, nameof(AccessorTestObject.Test));
+        }
 
-            public string Test
-            {
-                get => _test;
-                set
-                {
-                    if (_test == value)
-                    {
-                        return;
-                    }
+        [Benchmark]
+        public void MethodAccessorMatch()
+        {
+            _methodPlugin.Match(_targetWeakRef, nameof(AccessorTestObject.Execute));
+        }
 
-                    _test = value;
-
-                    OnPropertyChanged();
-                }
-            }
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            [NotifyPropertyChangedInvocator]
-            protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
+        [Benchmark]
+        public void MethodAccessorStart()
+        {
+            _methodPlugin.Start(_targetWeakRef, nameof(AccessorTestObject.Execute));
         }
     }
 }

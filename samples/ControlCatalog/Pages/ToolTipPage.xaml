@@ -18,7 +18,7 @@
                     ToolTip.Tip="This is a ToolTip">
                 <TextBlock>Hover Here</TextBlock>
             </Border>
-            <CheckBox Grid.Column="1"
+            <ToggleSwitch Grid.Column="1"
                       Margin="5"
                       Grid.Row="0"
                       IsChecked="{Binding ElementName=Border, Path=(ToolTip.IsOpen)}"

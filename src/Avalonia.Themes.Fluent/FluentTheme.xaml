@@ -45,11 +45,12 @@
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.CalendarDayButton.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.CalendarItem.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.Calendar.xaml?assembly=Avalonia.Themes.Fluent"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Fluent.DatePicker.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.CalendarDatePicker.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.ButtonSpinner.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.NumericUpDown.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.AutoCompleteBox.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.WindowNotificationManager.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.NotificationCard.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.NativeMenuBar.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.ToggleSwitch.xaml?assembly=Avalonia.Themes.Fluent"/>
 </Styles>

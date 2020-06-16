@@ -71,10 +71,12 @@ namespace Avalonia.Controls.Primitives
         }
 
         public void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
-            PopupPositioningEdge anchor = PopupPositioningEdge.None, PopupPositioningEdge gravity = PopupPositioningEdge.None)
+            PopupAnchor anchor = PopupAnchor.None, PopupGravity gravity = PopupGravity.None,
+            PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
+            Rect? rect = null)
         {
             _positionerParameters.ConfigurePosition((TopLevel)_overlayLayer.GetVisualRoot(), target, placement, offset, anchor,
-                gravity);
+                gravity, constraintAdjustment, rect);
             UpdatePosition();
         }
 
@@ -122,10 +124,8 @@ namespace Avalonia.Controls.Primitives
             }, DispatcherPriority.Layout);
         }
 
-        Point IManagedPopupPositionerPopup.TranslatePoint(Point pt) => pt;
-
-        Size IManagedPopupPositionerPopup.TranslateSize(Size size) => size;
-        
+        double IManagedPopupPositionerPopup.Scaling => 1;
+       
         public static IPopupHost CreatePopupHost(IVisual target, IAvaloniaDependencyResolver dependencyResolver)
         {
             var platform = (target.GetVisualRoot() as TopLevel)?.PlatformImpl?.CreatePopup();
