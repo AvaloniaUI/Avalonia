@@ -32,30 +32,25 @@ namespace ControlCatalog
 
             }
 
-            //var light = new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            //{
-            //    Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default")
-            //};
-            //var dark = new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            //{
-            //    Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseDark.xaml?assembly=Avalonia.Themes.Default")
-            //};
-
-
-            //var themes = this.Find<ComboBox>("Themes");
-            //themes.SelectionChanged += (sender, e) =>
-            //{
-            //    switch (themes.SelectedIndex)
-            //    {
-            //        case 0:
-            //            Styles[0] = light;
-            //            break;
-            //        case 1:
-            //            Styles[0] = dark;
-            //            break;
-            //    }
-            //};
-            //Styles.Add(light);
+            var themes = this.Find<ComboBox>("Themes");
+            themes.SelectionChanged += (sender, e) =>
+            {
+                switch (themes.SelectedIndex)
+                {
+                    case 0:
+                        Application.Current.Styles[0] = App.FluentDark;
+                        break;
+                    case 1:
+                        Application.Current.Styles[0] = App.FluentLight;
+                        break;
+                    case 2:
+                        Application.Current.Styles[0] = App.DefaultLight;
+                        break;
+                    case 3:
+                        Application.Current.Styles[0] = App.DefaultDark;
+                        break;
+                }
+            };            
 
             var decorations = this.Find<ComboBox>("Decorations");
             decorations.SelectionChanged += (sender, e) =>

@@ -101,10 +101,31 @@ namespace Avalonia.Controls
 
                     ItemsSourceView = newDataSource;
 
+                    TrimInvalidSelections();
                     PopulateSelectedItemsFromSelectedIndices();
                     HookupCollectionChangedHandler();
                     OnSelectionChanged();
                 }
+            }
+        }
+
+        private void TrimInvalidSelections()
+        {
+            if (_selected == null || ItemsSourceView == null)
+            {
+                return;
+            }
+
+            var validRange = ItemsSourceView.Count > 0 ? new IndexRange(0, ItemsSourceView.Count - 1) : new IndexRange(-1, -1);
+            var removed = new List<IndexRange>();
+            var removedCount = IndexRange.Intersect(_selected, validRange, removed);
+
+            if (removedCount > 0)
+            {
+                using var operation = _manager.Update();
+                SelectedCount -= removedCount;
+                OnSelectionChanged();
+                _operation!.Deselected(removed);
             }
         }
 
@@ -141,7 +162,7 @@ namespace Avalonia.Controls
         // create a bunch of leaf node instances - instead i use the same instance m_leafNode to avoid 
         // an explosion of node objects. However, I'm still creating the m_childrenNodes 
         // collection unfortunately.
-        public SelectionNode? GetAt(int index, bool realizeChild)
+        public SelectionNode? GetAt(int index, bool realizeChild, IndexPath finalIndexPath)
         {
             SelectionNode? child = null;
             
@@ -171,7 +192,7 @@ namespace Avalonia.Controls
                     if (childData != null)
                     {
                         var childDataIndexPath = IndexPath.CloneWithChildIndex(index);
-                        resolver = _manager.ResolvePath(childData, childDataIndexPath);
+                        resolver = _manager.ResolvePath(childData, childDataIndexPath, finalIndexPath);
                     }
 
                     if (resolver != null)
@@ -843,7 +864,7 @@ namespace Avalonia.Controls
                     int notSelectedCount = 0;
                     for (int i = 0; i < ChildrenNodeCount; i++)
                     {
-                        var child = GetAt(i, realizeChild: false);
+                        var child = GetAt(i, false, default);
 
                         if (child != null)
                         {
