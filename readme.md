@@ -1,10 +1,16 @@
-<img src='https://avatars2.githubusercontent.com/u/14075148?s=200&v=4' width='100' />
+# Avalonia UI
 
-# Avalonia
+![image](https://user-images.githubusercontent.com/4672627/84708576-28281900-af37-11ea-8c88-e29dfcfa0558.png)
+
+![image](https://user-images.githubusercontent.com/4672627/84707589-5b69a880-af35-11ea-87a6-7ad57a31d314.png)
+
+![image](https://user-images.githubusercontent.com/4672627/84708947-c3b98980-af37-11ea-8c9d-503334615bbf.png)
 
 | Gitter Chat | Build Status (Win, Linux, OSX) | Open Collective | NuGet | MyGet |
 |---|---|---|---|---|
 |  [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) | [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) | [![Backers on Open Collective](https://opencollective.com/Avalonia/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/Avalonia/sponsors/badge.svg)](#sponsors) | [![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) | [![MyGet](https://img.shields.io/myget/avalonia-ci/vpre/Avalonia.svg?label=myget)](https://www.myget.org/gallery/avalonia-ci) |
+
+<img src='https://avatars2.githubusercontent.com/u/14075148?s=200&v=4' width='50' /> 
 
 ## About
 
