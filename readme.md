@@ -26,6 +26,15 @@ Install-Package Avalonia
 Install-Package Avalonia.Desktop
 ```
 
+## Showcase
+
+Examples of UIs built with Avalonia
+![image](https://user-images.githubusercontent.com/4672627/84707589-5b69a880-af35-11ea-87a6-7ad57a31d314.png)
+
+![image](https://user-images.githubusercontent.com/4672627/84708576-28281900-af37-11ea-8c88-e29dfcfa0558.png)
+
+![image](https://user-images.githubusercontent.com/4672627/84708947-c3b98980-af37-11ea-8c9d-503334615bbf.png)
+
 ## JetBrains Rider
 
 If you need to develop Avalonia app with JetBrains Rider, go and *vote* on [this issue](https://youtrack.jetbrains.com/issue/RIDER-39247) in their tracker. JetBrains won't do things without their users telling them that they want the feature, so only **YOU** can make it happen.
