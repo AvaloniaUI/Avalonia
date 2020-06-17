@@ -1,13 +1,14 @@
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A control which decorates a child with a border and background.
     /// </summary>
-    public partial class Border : Decorator
+    public partial class Border : Decorator, IVisualWithRoundRectClip
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -129,5 +130,7 @@ namespace Avalonia.Controls
         {
             return LayoutHelper.ArrangeChild(Child, finalSize, Padding, BorderThickness);
         }
+
+        public CornerRadius ClipToBoundsRadius => CornerRadius;
     }
 }
