@@ -1,9 +1,7 @@
-﻿using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Mixins;
-using Avalonia.Controls.Presenters;
+﻿using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
-
 
 namespace Avalonia.Controls
 {
