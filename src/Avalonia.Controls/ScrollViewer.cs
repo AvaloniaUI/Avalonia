@@ -181,6 +181,9 @@ namespace Avalonia.Controls
         private Size _extent;
         private Vector _offset;
         private Size _viewport;
+        private Size _oldExtent;
+        private Vector _oldOffset;
+        private Size _oldViewport;
         private Size _largeChange;
         private Size _smallChange = new Size(DefaultSmallChange, DefaultSmallChange);
 
@@ -198,6 +201,7 @@ namespace Avalonia.Controls
         /// </summary>
         public ScrollViewer()
         {
+            LayoutUpdated += OnLayoutUpdated;
         }
 
         /// <summary>
@@ -221,11 +225,9 @@ namespace Avalonia.Controls
 
             private set
             {
-                var old = _extent;
-
                 if (SetAndRaise(ExtentProperty, ref _extent, value))
                 {
-                    CalculatedPropertiesChanged(extentDelta: value - old);
+                    CalculatedPropertiesChanged();
                 }
             }
         }
@@ -242,13 +244,11 @@ namespace Avalonia.Controls
 
             set
             {
-                var old = _offset;
-
                 value = ValidateOffset(this, value);
 
                 if (SetAndRaise(OffsetProperty, ref _offset, value))
                 {
-                    CalculatedPropertiesChanged(offsetDelta: value - old);
+                    CalculatedPropertiesChanged();
                 }
             }
         }
@@ -265,11 +265,9 @@ namespace Avalonia.Controls
 
             private set
             {
-                var old = _viewport;
-
                 if (SetAndRaise(ViewportProperty, ref _viewport, value))
                 {
-                    CalculatedPropertiesChanged(viewportDelta: value - old);
+                    CalculatedPropertiesChanged();
                 }
             }
         }
@@ -386,6 +384,38 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         IControl IScrollAnchorProvider.CurrentAnchor => null; // TODO: Implement
+
+        /// <summary>
+        /// Scrolls the content up one line.
+        /// </summary>
+        public void LineUp()
+        {
+            Offset -= new Vector(0, _smallChange.Height);
+        }
+
+        /// <summary>
+        /// Scrolls the content down one line.
+        /// </summary>
+        public void LineDown()
+        {
+            Offset += new Vector(0, _smallChange.Height);
+        }
+
+        /// <summary>
+        /// Scrolls the content left one line.
+        /// </summary>
+        public void LineLeft()
+        {
+            Offset -= new Vector(_smallChange.Width, 0);
+        }
+
+        /// <summary>
+        /// Scrolls the content right one line.
+        /// </summary>
+        public void LineRight()
+        {
+            Offset += new Vector(_smallChange.Width, 0);
+        }
 
         /// <summary>
         /// Scrolls to the top-left corner of the content.
@@ -549,10 +579,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void CalculatedPropertiesChanged(
-            Size extentDelta = default,
-            Vector offsetDelta = default,
-            Size viewportDelta = default)
+        private void CalculatedPropertiesChanged()
         {
             // Pass old values of 0 here because we don't have the old values at this point,
             // and it shouldn't matter as only the template uses these properies.
@@ -573,20 +600,6 @@ namespace Avalonia.Controls
                 SetAndRaise(SmallChangeProperty, ref _smallChange, new Size(DefaultSmallChange, DefaultSmallChange));
                 SetAndRaise(LargeChangeProperty, ref _largeChange, Viewport);
             }
-
-            if (extentDelta != default || offsetDelta != default || viewportDelta != default)
-            {
-                using var route = BuildEventRoute(ScrollChangedEvent);
-
-                if (route.HasHandlers)
-                {
-                    var e = new ScrollChangedEventArgs(
-                        new Vector(extentDelta.Width, extentDelta.Height),
-                        offsetDelta,
-                        new Vector(viewportDelta.Width, viewportDelta.Height));
-                    route.RaiseEvent(this, e);
-                }
-            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -600,6 +613,39 @@ namespace Avalonia.Controls
             {
                 VerticalScrollBarValue = Math.Min(_offset.Y + _viewport.Height, VerticalScrollBarMaximum);
                 e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Called when a change in scrolling state is detected, such as a change in scroll
+        /// position, extent, or viewport size.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// If you override this method, call `base.OnScrollChanged(ScrollChangedEventArgs)` to
+        /// ensure that this event is raised.
+        /// </remarks>
+        protected virtual void OnScrollChanged(ScrollChangedEventArgs e)
+        {
+            RaiseEvent(e);
+        }
+
+        private void OnLayoutUpdated(object sender, EventArgs e) => RaiseScrollChanged();
+
+        private void RaiseScrollChanged()
+        {
+            var extentDelta = new Vector(Extent.Width - _oldExtent.Width, Extent.Height - _oldExtent.Height);
+            var offsetDelta = Offset - _oldOffset;
+            var viewportDelta = new Vector(Viewport.Width - _oldViewport.Width, Viewport.Height - _oldViewport.Height);
+
+            if (!extentDelta.NearlyEquals(default) || !offsetDelta.NearlyEquals(default) || !viewportDelta.NearlyEquals(default))
+            {
+                var e = new ScrollChangedEventArgs(extentDelta, offsetDelta, viewportDelta);
+                OnScrollChanged(e);
+
+                _oldExtent = Extent;
+                _oldOffset = Offset;
+                _oldViewport = Viewport;
             }
         }
     }

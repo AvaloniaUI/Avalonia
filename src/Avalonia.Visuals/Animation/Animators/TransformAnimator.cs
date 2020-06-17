@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Reactive.Disposables;
 using Avalonia.Logging;
 using Avalonia.Media;
+using Avalonia.Media.Transformation;
 
 namespace Avalonia.Animation.Animators
 {
@@ -19,6 +21,12 @@ namespace Avalonia.Animation.Animators
             // Check if the Target Property is Transform derived.
             if (typeof(Transform).IsAssignableFrom(Property.OwnerType))
             {
+                if (ctrl.RenderTransform is TransformOperations)
+                {
+                    // HACK: This animator cannot reasonably animate CSS transforms at the moment.
+                    return Disposable.Empty;
+                }
+
                 if (ctrl.RenderTransform == null)
                 {
                     var normalTransform = new TransformGroup();
@@ -51,7 +59,7 @@ namespace Avalonia.Animation.Animators
                 // It's a transform object so let's target that.
                 if (renderTransformType == Property.OwnerType)
                 {
-                    return _doubleAnimator.Apply(animation, ctrl.RenderTransform, clock ?? control.Clock, obsMatch, onComplete);
+                    return _doubleAnimator.Apply(animation, (Transform) ctrl.RenderTransform, clock ?? control.Clock, obsMatch, onComplete);
                 }
                 // It's a TransformGroup and try finding the target there.
                 else if (renderTransformType == typeof(TransformGroup))

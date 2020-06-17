@@ -3,6 +3,8 @@ using System.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Threading;
 
+#nullable enable
+
 namespace Avalonia.Layout
 {
     /// <summary>
@@ -21,10 +23,12 @@ namespace Avalonia.Layout
             _executeLayoutPass = ExecuteLayoutPass;
         }
 
+        public event EventHandler? LayoutUpdated;
+
         /// <inheritdoc/>
         public void InvalidateMeasure(ILayoutable control)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
 
             if (!control.IsAttachedToVisualTree)
@@ -45,7 +49,7 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         public void InvalidateArrange(ILayoutable control)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
 
             if (!control.IsAttachedToVisualTree)
@@ -73,7 +77,7 @@ namespace Avalonia.Layout
             {
                 _running = true;
 
-                Stopwatch stopwatch = null;
+                Stopwatch? stopwatch = null;
 
                 const LogEventLevel timingLogLevel = LogEventLevel.Information;
                 bool captureTiming = Logger.IsEnabled(timingLogLevel, LogArea.Layout);
@@ -116,13 +120,14 @@ namespace Avalonia.Layout
 
                 if (captureTiming)
                 {
-                    stopwatch.Stop();
+                    stopwatch!.Stop();
 
                     Logger.TryGet(timingLogLevel, LogArea.Layout)?.Log(this, "Layout pass finished in {Time}", stopwatch.Elapsed);
                 }
             }
 
             _queued = false;
+            LayoutUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         /// <inheritdoc/>

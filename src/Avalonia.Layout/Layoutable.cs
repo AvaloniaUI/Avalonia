@@ -1,7 +1,8 @@
 using System;
 using Avalonia.Logging;
-using Avalonia.Utilities;
 using Avalonia.VisualTree;
+
+#nullable enable
 
 namespace Avalonia.Layout
 {
@@ -131,6 +132,7 @@ namespace Avalonia.Layout
         private bool _measuring;
         private Size? _previousMeasure;
         private Rect? _previousArrange;
+        private EventHandler? _layoutUpdated;
 
         /// <summary>
         /// Initializes static members of the <see cref="Layoutable"/> class.
@@ -153,7 +155,28 @@ namespace Avalonia.Layout
         /// <summary>
         /// Occurs when a layout pass completes for the control.
         /// </summary>
-        public event EventHandler LayoutUpdated;
+        public event EventHandler? LayoutUpdated
+        {
+            add
+            {
+                if (_layoutUpdated is null && VisualRoot is ILayoutRoot r)
+                {
+                    r.LayoutManager.LayoutUpdated += LayoutManagedLayoutUpdated;
+                }
+
+                _layoutUpdated += value;
+            }
+
+            remove
+            {
+                _layoutUpdated -= value;
+
+                if (_layoutUpdated is null && VisualRoot is ILayoutRoot r)
+                {
+                    r.LayoutManager.LayoutUpdated -= LayoutManagedLayoutUpdated;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the width of the element.
@@ -358,11 +381,8 @@ namespace Avalonia.Layout
                 IsArrangeValid = true;
                 ArrangeCore(rect);
                 _previousArrange = rect;
-
-                LayoutUpdated?.Invoke(this, EventArgs.Empty);
             }
         }
-
 
         /// <summary>
         /// Called by InvalidateMeasure
@@ -693,6 +713,26 @@ namespace Avalonia.Layout
             InvalidateMeasure();
         }
 
+        protected override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTreeCore(e);
+
+            if (_layoutUpdated is object && e.Root is ILayoutRoot r)
+            {
+                r.LayoutManager.LayoutUpdated += LayoutManagedLayoutUpdated;
+            }
+        }
+
+        protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTreeCore(e);
+
+            if (_layoutUpdated is object && e.Root is ILayoutRoot r)
+            {
+                r.LayoutManager.LayoutUpdated -= LayoutManagedLayoutUpdated;
+            }
+        }
+
         /// <inheritdoc/>
         protected sealed override void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
@@ -700,6 +740,13 @@ namespace Avalonia.Layout
 
             base.OnVisualParentChanged(oldParent, newParent);
         }
+
+        /// <summary>
+        /// Called when the layout manager raises a LayoutUpdated event.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The event args.</param>
+        private void LayoutManagedLayoutUpdated(object sender, EventArgs e) => _layoutUpdated?.Invoke(this, e);
 
         /// <summary>
         /// Tests whether any of a <see cref="Rect"/>'s properties include negative values,
