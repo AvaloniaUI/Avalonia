@@ -108,6 +108,12 @@ namespace Avalonia.Platform
         void PushClip(Rect clip);
 
         /// <summary>
+        /// Pushes a clip rounded rectangle.
+        /// </summary>
+        /// <param name="clip">The clip rounded rectangle</param>
+        void PushClip(RoundedRect clip);
+
+        /// <summary>
         /// Pops the latest pushed clip rectangle.
         /// </summary>
         void PopClip();

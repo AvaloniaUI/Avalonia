@@ -289,7 +289,11 @@ namespace Avalonia.Rendering
 
                 using (context.PushPostTransform(m))
                 using (context.PushOpacity(opacity))
-                using (clipToBounds ? context.PushClip(bounds) : default(DrawingContext.PushedState))
+                using (clipToBounds 
+                    ? visual is IVisualWithRoundRectClip roundClipVisual 
+                        ? context.PushClip(new RoundedRect(bounds, roundClipVisual.ClipToBoundsRadius))
+                        : context.PushClip(bounds) 
+                    : default(DrawingContext.PushedState))
                 using (visual.Clip != null ? context.PushGeometryClip(visual.Clip) : default(DrawingContext.PushedState))
                 using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default(DrawingContext.PushedState))
                 using (context.PushTransformContainer())
