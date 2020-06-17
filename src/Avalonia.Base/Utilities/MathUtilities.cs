@@ -8,7 +8,7 @@ namespace Avalonia.Utilities
     public static class MathUtilities
     {
         // smallest such that 1.0+DoubleEpsilon != 1.0
-        private const double DoubleEpsilon = 2.2204460492503131e-016;
+        internal static readonly double DoubleEpsilon = 2.2204460492503131e-016;
 
         private const float FloatEpsilon = 1.192092896e-07F;
 
@@ -187,6 +187,11 @@ namespace Avalonia.Utilities
         /// <returns>The clamped value.</returns>
         public static double Clamp(double val, double min, double max)
         {
+            if (min > max)
+            {
+                ThrowCannotBeGreaterThanException(min, max);
+            }
+
             if (val < min)
             {
                 return min;
@@ -215,7 +220,7 @@ namespace Avalonia.Utilities
             double newValue;
 
             // If DPI == 1, don't use DPI-aware rounding.
-            if (!MathUtilities.AreClose(dpiScale, 1.0))
+            if (!MathUtilities.IsOne(dpiScale))
             {
                 newValue = Math.Round(value * dpiScale) / dpiScale;
                 // If rounding produces a value unacceptable to layout (NaN, Infinity or MaxValue), use the original value.
@@ -245,7 +250,7 @@ namespace Avalonia.Utilities
         {
             if (min > max)
             {
-                throw new ArgumentException($"{min} cannot be greater than {max}.");
+                ThrowCannotBeGreaterThanException(min, max);
             }
 
             if (val < min)
@@ -290,6 +295,11 @@ namespace Avalonia.Utilities
         public static double Turn2Rad(double angle)
         {
             return angle * 2 * Math.PI;
+        }
+        
+        private static void ThrowCannotBeGreaterThanException(double min, double max)
+        {
+            throw new ArgumentException($"{min} cannot be greater than {max}.");
         }
     }
 }

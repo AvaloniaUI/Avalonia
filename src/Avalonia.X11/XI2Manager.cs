@@ -97,7 +97,7 @@ namespace Avalonia.X11
         {
             _platform = platform;
             _x11 = platform.Info;
-            _multitouch = platform.Options?.EnableMultiTouch ?? false;
+            _multitouch = platform.Options?.EnableMultiTouch ?? true;
             var devices =(XIDeviceInfo*) XIQueryDevice(_x11.Display,
                 (int)XiPredefinedDeviceId.XIAllMasterDevices, out int num);
             for (var c = 0; c < num; c++)

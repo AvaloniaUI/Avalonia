@@ -73,15 +73,13 @@ namespace Avalonia.Animation.Animators
                     }
                 }
 
-                Logger.TryGet(LogEventLevel.Warning)?.Log(
-                    LogArea.Animations,
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Animations)?.Log(
                     control,
                     $"Cannot find the appropriate transform: \"{Property.OwnerType}\" in {control}.");
             }
             else
             {
-                Logger.TryGet(LogEventLevel.Error)?.Log(
-                    LogArea.Animations,
+                Logger.TryGet(LogEventLevel.Error, LogArea.Animations)?.Log(
                     control,
                     $"Cannot apply animation: Target property owner {Property.OwnerType} is not a Transform object.");
             }

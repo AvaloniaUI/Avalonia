@@ -8,10 +8,33 @@ namespace Avalonia.Win32
     class PopupImpl : WindowImpl, IPopupImpl
     {
         private bool _dropShadowHint = true;
+        private Size? _maxAutoSize;
 
         public override void Show()
         {
             UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
+        }
+
+        public override Size MaxAutoSizeHint
+        {
+            get
+            {
+                if (_maxAutoSize is null)
+                {
+                    var monitor = UnmanagedMethods.MonitorFromWindow(
+                        Hwnd,
+                        UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
+                    
+                    if (monitor != IntPtr.Zero)
+                    {
+                        var info = UnmanagedMethods.MONITORINFO.Create();
+                        UnmanagedMethods.GetMonitorInfo(monitor, ref info);
+                        _maxAutoSize = info.rcWork.ToPixelRect().ToRect(Scaling).Size;
+                    }
+                }
+
+                return _maxAutoSize ?? Size.Infinity;
+            }
         }
 
         protected override IntPtr CreateWindowOverride(ushort atom)
@@ -47,6 +70,9 @@ namespace Avalonia.Win32
         {
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
+                case UnmanagedMethods.WindowsMessage.WM_DISPLAYCHANGE:
+                    _maxAutoSize = null;
+                    goto default;
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEACTIVATE:
                     return (IntPtr)UnmanagedMethods.MouseActivate.MA_NOACTIVATE;
                 default:
