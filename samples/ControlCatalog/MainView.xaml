@@ -60,6 +60,7 @@
       <TabItem Header="TabStrip"><pages:TabStripPage/></TabItem>
       <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
       <TabItem Header="TextBlock"><pages:TextBlockPage/></TabItem>
+      <TabItem Header="ToggleSwitch"><pages:ToggleSwitchPage/></TabItem>
       <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
       <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
       <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
