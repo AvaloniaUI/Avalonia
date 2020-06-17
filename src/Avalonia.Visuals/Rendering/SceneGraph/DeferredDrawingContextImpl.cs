@@ -298,6 +298,21 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc />
+        public void PushClip(RoundedRect clip)
+        {
+            var next = NextDrawAs<ClipNode>();
+
+            if (next == null || !next.Item.Equals(clip))
+            {
+                Add(new ClipNode(clip));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+
         /// <inheritdoc/>
         public void PushGeometryClip(IGeometryImpl clip)
         {
@@ -383,7 +398,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             using (var refCounted = RefCountable.Create(node))
             {
-                Add(refCounted); 
+                Add(refCounted);
             }
         }
 
