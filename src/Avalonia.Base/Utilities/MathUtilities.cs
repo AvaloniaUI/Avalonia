@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
 
 namespace Avalonia.Utilities
 {
@@ -9,7 +8,7 @@ namespace Avalonia.Utilities
     public static class MathUtilities
     {
         // smallest such that 1.0+DoubleEpsilon != 1.0
-        private const double DoubleEpsilon = 2.2204460492503131e-016;
+        internal static readonly double DoubleEpsilon = 2.2204460492503131e-016;
 
         private const float FloatEpsilon = 1.192092896e-07F;
 
@@ -188,6 +187,11 @@ namespace Avalonia.Utilities
         /// <returns>The clamped value.</returns>
         public static double Clamp(double val, double min, double max)
         {
+            if (min > max)
+            {
+                ThrowCannotBeGreaterThanException(min, max);
+            }
+
             if (val < min)
             {
                 return min;
@@ -216,7 +220,7 @@ namespace Avalonia.Utilities
             double newValue;
 
             // If DPI == 1, don't use DPI-aware rounding.
-            if (!MathUtilities.AreClose(dpiScale, 1.0))
+            if (!MathUtilities.IsOne(dpiScale))
             {
                 newValue = Math.Round(value * dpiScale) / dpiScale;
                 // If rounding produces a value unacceptable to layout (NaN, Infinity or MaxValue), use the original value.
@@ -246,7 +250,7 @@ namespace Avalonia.Utilities
         {
             if (min > max)
             {
-                throw new ArgumentException($"{min} cannot be greater than {max}.");
+                ThrowCannotBeGreaterThanException(min, max);
             }
 
             if (val < min)
@@ -261,6 +265,41 @@ namespace Avalonia.Utilities
             {
                 return val;
             }
+        }
+
+        /// <summary>
+        /// Converts an angle in degrees to radians.
+        /// </summary>
+        /// <param name="angle">The angle in degrees.</param>
+        /// <returns>The angle in radians.</returns>
+        public static double Deg2Rad(double angle)
+        {
+            return angle * (Math.PI / 180d);
+        }
+
+        /// <summary>
+        /// Converts an angle in gradians to radians.
+        /// </summary>
+        /// <param name="angle">The angle in gradians.</param>
+        /// <returns>The angle in radians.</returns>
+        public static double Grad2Rad(double angle)
+        {
+            return angle * (Math.PI / 200d);
+        }
+
+        /// <summary>
+        /// Converts an angle in turns to radians.
+        /// </summary>
+        /// <param name="angle">The angle in turns.</param>
+        /// <returns>The angle in radians.</returns>
+        public static double Turn2Rad(double angle)
+        {
+            return angle * 2 * Math.PI;
+        }
+        
+        private static void ThrowCannotBeGreaterThanException(double min, double max)
+        {
+            throw new ArgumentException($"{min} cannot be greater than {max}.");
         }
     }
 }
