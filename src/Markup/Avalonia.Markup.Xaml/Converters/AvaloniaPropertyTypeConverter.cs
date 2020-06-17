@@ -39,8 +39,7 @@ namespace Avalonia.Markup.Xaml.Converters
                 !property.IsAttached &&
                 !registry.IsRegistered(targetType, property))
             {
-                Logger.TryGet(LogEventLevel.Warning)?.Log(
-                    LogArea.Property,
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Property)?.Log(
                     this,
                     "Property '{Owner}.{Name}' is not registered on '{Type}'.",
                     effectiveOwner,
