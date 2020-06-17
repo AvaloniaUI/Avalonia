@@ -2,7 +2,7 @@
         xmlns:pages="clr-namespace:ControlCatalog.Pages"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ControlCatalog.MainView"
-        Background="Transparent"
+        Background="Black"
         Foreground="{DynamicResource ThemeForegroundBrush}"
         FontSize="{DynamicResource FontSizeNormal}">
   <Grid>
@@ -14,6 +14,7 @@
         </Style>
     </Grid.Styles>  
     <TabControl Classes="sidebar" Name="Sidebar">
+      <TabItem Header="Acrylic"><pages:AcrylicPage/></TabItem>
       <TabItem Header="AutoCompleteBox"><pages:AutoCompleteBoxPage/></TabItem>
       <TabItem Header="Border"><pages:BorderPage/></TabItem>
       <TabItem Header="Button"><pages:ButtonPage/></TabItem>
