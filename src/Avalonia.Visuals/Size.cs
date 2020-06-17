@@ -208,7 +208,8 @@ namespace Avalonia
         /// <returns>True if this size is equal to other; False otherwise.</returns>
         public bool NearlyEquals(Size other)
         {
-            return MathUtilities.AreClose(_width, other._width) && MathUtilities.AreClose(_height, other._height);
+            return MathUtilities.AreClose(_width, other._width) && 
+                   MathUtilities.AreClose(_height, other._height);
         }
 
         /// <summary>
