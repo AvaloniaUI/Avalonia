@@ -1,0 +1,101 @@
+<UserControl 
+  xmlns="https://github.com/avaloniaui" 
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+  x:Class="RenderDemo.Pages.TransitionsPage">
+  <UserControl.Styles>
+    <Styles>
+      <Styles.Resources>
+        <Template x:Key="Acorn">
+          <Path Fill="White" Stretch="Uniform"
+                Data="F1 M 16.6309,18.6563C 17.1309,
+                8.15625 29.8809,14.1563 29.8809,
+                14.1563C 30.8809,11.1563 34.1308,
+                11.4063 34.1308,11.4063C 33.5,12 
+                34.6309,13.1563 34.6309,13.1563C 
+                32.1309,13.1562 31.1309,14.9062 
+                31.1309,14.9062C 41.1309,23.9062
+                32.6309,27.9063 32.6309,27.9062C 
+                24.6309,24.9063 21.1309,22.1562 
+                16.6309,18.6563 Z M 16.6309,19.9063C
+                21.6309,24.1563 25.1309,26.1562 
+                31.6309,28.6562C 31.6309,28.6562
+                26.3809,39.1562 18.3809,36.1563C
+                18.3809,36.1563 18,38 16.3809,36.9063C 
+                15,36 16.3809,34.9063 16.3809,34.9063C
+                16.3809,34.9063 10.1309,30.9062 16.6309,19.9063 Z"/>
+        </Template>
+        <Template x:Key="Heart">
+          <Path Fill="Red" Stretch="Uniform" Data="
+          M 272.70141,238.71731 
+          C 206.46141,238.71731 152.70146,292.4773 152.70146,358.71731 
+          C 152.70146,493.47282 288.63461,528.80461 381.26391,662.02535 
+          C 468.83815,529.62199 609.82641,489.17075 609.82641,358.71731 
+          C 609.82641,292.47731 556.06651,238.7173 489.82641,238.71731 
+          C 441.77851,238.71731 400.42481,267.08774 381.26391,307.90481 
+          C 362.10311,267.08773 320.74941,238.7173 272.70141,238.71731 z "/>
+        </Template>
+      </Styles.Resources>
+
+      <Style Selector="Border.Test">
+        <Setter Property="Margin" Value="15"/>
+        <Setter Property="Width" Value="100"/>
+        <Setter Property="Height" Value="100"/>
+        <Setter Property="Child" Value="{StaticResource Acorn}"/>
+        <Setter Property="Transitions">
+          <Transitions>
+            <TransformOperationsTransition Property="RenderTransform"  Duration="0:0:1" />
+          </Transitions>
+        </Setter>
+        <Setter Property="RenderTransform" Value="none" />
+      </Style>
+
+      <Style Selector="Border.Rect1:pointerover">
+        <Setter Property="RenderTransform" Value="rotate(120deg) scale(1.5)" />
+      </Style>
+
+      <Style Selector="Border.Rect2:pointerover">
+        <Setter Property="RenderTransform" Value="scale(0.8)" />
+      </Style>
+
+      <Style Selector="Border.Rect3">
+        <Setter Property="Child" Value="{StaticResource Heart}"/>
+      </Style>
+
+      <Style Selector="Border.Rect3:pointerover">
+        <Setter Property="RenderTransform" Value="rotate(1turn)" />
+      </Style>
+
+      <Style Selector="Border.Rect4:pointerover">
+        <Setter Property="RenderTransform" Value="translateY(-100px)" />
+      </Style>
+
+      <Style Selector="Border.Rect5:pointerover">
+        <Setter Property="RenderTransform" Value="skewX(-20deg)" />
+      </Style>
+
+      <Style Selector="Border.Rect5:pointerover">
+        <Setter Property="RenderTransform" Value="skewX(-20deg)" />
+      </Style>
+
+    </Styles>
+  </UserControl.Styles>
+
+  <Grid>
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="False">
+      <StackPanel.Clock>
+        <Clock />
+      </StackPanel.Clock>
+      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+        <TextBlock VerticalAlignment="Center">Hover to activate Transform Keyframe Animations.</TextBlock>
+        <Button Content="{Binding PlayStateText}" Command="{Binding TogglePlayState}" Click="ToggleClock" />
+      </StackPanel>
+      <WrapPanel ClipToBounds="False">
+        <Border Classes="Test Rect1" Background="DarkRed"/>
+        <Border Classes="Test Rect2" Background="Magenta"/>
+        <Border Classes="Test Rect3"/>
+        <Border Classes="Test Rect4" Background="Navy"/>
+        <Border Classes="Test Rect5" Background="SeaGreen"/>
+      </WrapPanel>
+    </StackPanel>
+  </Grid>
+</UserControl>

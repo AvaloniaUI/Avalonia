@@ -571,7 +571,7 @@ namespace Avalonia.Win32
 
             Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
 
-            _multitouch = Win32Platform.Options.EnableMultitouch ?? false;
+            _multitouch = Win32Platform.Options.EnableMultitouch ?? true;
 
             if (_multitouch)
             {
