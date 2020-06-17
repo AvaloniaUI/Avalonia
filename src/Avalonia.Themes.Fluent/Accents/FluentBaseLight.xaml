@@ -222,6 +222,12 @@
     <SolidColorBrush x:Key="ListBoxItemSelectedForegroundThemeBrush" Color="White" />
     <SolidColorBrush x:Key="ListBoxItemSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
     
+    <!-- BaseResources for ProgressBar.xaml -->
+    <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="#59FFFFFF" />
+    <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="#FF5B2EC5" />
+    <SolidColorBrush x:Key="ProgressBarIndeterminateForegroundThemeBrush" Color="#FF8A57FF" />
+
     <!-- BaseResources for TextBox.xaml -->
     <StaticResource x:Key="TextControlForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
