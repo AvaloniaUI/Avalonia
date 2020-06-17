@@ -19,7 +19,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
         public IPlatformHandle Handle { get; }
-        public Size MaxClientSize { get; }
+        public Size MaxAutoSizeHint { get; }
         public Size ClientSize { get; }
         public double Scaling { get; } = 1.0;
         public IEnumerable<object> Surfaces { get; }
@@ -160,6 +160,10 @@ namespace Avalonia.DesignerSupport.Remote
         public Task SetTextAsync(string text) => Task.CompletedTask;
 
         public Task ClearAsync() => Task.CompletedTask;
+        public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
+        public Task<string[]> GetFormatsAsync() => Task.FromResult(new string[0]);
+
+        public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
     }
 
     class CursorFactoryStub : IStandardCursorFactory
