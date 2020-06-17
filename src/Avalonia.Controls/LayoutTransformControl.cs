@@ -14,8 +14,8 @@ namespace Avalonia.Controls
     /// </summary>
     public class LayoutTransformControl : Decorator
     {
-        public static readonly StyledProperty<Transform> LayoutTransformProperty =
-            AvaloniaProperty.Register<LayoutTransformControl, Transform>(nameof(LayoutTransform));
+        public static readonly StyledProperty<ITransform> LayoutTransformProperty =
+            AvaloniaProperty.Register<LayoutTransformControl, ITransform>(nameof(LayoutTransform));
 
         public static readonly StyledProperty<bool> UseRenderTransformProperty =
             AvaloniaProperty.Register<LayoutTransformControl, bool>(nameof(LayoutTransform));
@@ -37,7 +37,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a graphics transformation that should apply to this element when layout is performed.
         /// </summary>
-        public Transform LayoutTransform
+        public ITransform LayoutTransform
         {
             get { return GetValue(LayoutTransformProperty); }
             set { SetValue(LayoutTransformProperty, value); }

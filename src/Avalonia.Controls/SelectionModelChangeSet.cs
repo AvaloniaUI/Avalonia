@@ -135,7 +135,7 @@ namespace Avalonia.Controls
                 if (index >= currentIndex && index < currentIndex + currentCount)
                 {
                     int targetIndex = GetIndexAt(getRanges(info), index - currentIndex);
-                    item = info.Items?.GetAt(targetIndex);
+                    item = info.Items?.Count > targetIndex ? info.Items?.GetAt(targetIndex) : null;
                     break;
                 }
 

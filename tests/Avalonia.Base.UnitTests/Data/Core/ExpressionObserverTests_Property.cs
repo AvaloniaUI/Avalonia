@@ -322,7 +322,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 {
                     "bar",
                     new BindingNotification(
-                        new MissingMemberException("Could not find CLR property 'Bar' on 'Avalonia.Base.UnitTests.Data.Core.ExpressionObserverTests_Property+WithoutBar'"),
+                        new MissingMemberException("Could not find a matching property accessor for 'Bar' on 'Avalonia.Base.UnitTests.Data.Core.ExpressionObserverTests_Property+WithoutBar'"),
                         BindingErrorType.Error),
                     "baz",
                 },

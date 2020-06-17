@@ -22,7 +22,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
 
             Assert.Equal(
                 new BindingNotification(
-                    new MissingMemberException("Could not find CLR property 'Baz' on '1'"), BindingErrorType.Error),
+                    new MissingMemberException("Could not find a matching property accessor for 'Baz' on '1'"), BindingErrorType.Error),
                 result);
 
             GC.KeepAlive(data);
