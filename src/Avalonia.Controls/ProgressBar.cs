@@ -8,14 +8,14 @@ namespace Avalonia.Controls
     /// A control used to indicate the progress of an operation.
     /// </summary>
     public class ProgressBar : RangeBase
-    {
-        private Geometry _clipRect;
+    {        
         private double _Container2Width;
         private double _ContainerWidth;
         private double _containerAnimationStartPosition;
         private double _containerAnimationEndPosition;
         private double _container2AnimationStartPosition;
         private double _container2AnimationEndPosition;
+        private Border _indicator;
 
         public static readonly StyledProperty<bool> IsIndeterminateProperty =
             AvaloniaProperty.Register<ProgressBar, bool>(nameof(IsIndeterminate));
@@ -61,14 +61,6 @@ namespace Avalonia.Controls
                 nameof(ContainerWidth),
                 p => p.ContainerWidth,
                 (p, o) => p.ContainerWidth = o);
-
-        public static readonly DirectProperty<ProgressBar, Geometry> ClipRectProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, Geometry>(
-                nameof(ClipRect),
-                p => p.ClipRect,
-                (p, o) => p.ClipRect = o);
-
-        private Border _indicator;
 
         static ProgressBar()
         {
@@ -133,13 +125,7 @@ namespace Avalonia.Controls
         {
             get => _container2AnimationEndPosition;
             set => SetAndRaise(Container2AnimationEndPositionProperty, ref _container2AnimationEndPosition, value);
-        }
-
-        public Geometry ClipRect
-        {
-            get => _clipRect;
-            set => SetAndRaise(ClipRectProperty, ref _clipRect, value);
-        }
+        }        
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
@@ -198,9 +184,7 @@ namespace Avalonia.Controls
                             padding.Top,
                             bounds.Width - (padding.Right + padding.Left),
                             bounds.Height - (padding.Bottom + padding.Top)
-                            ));
-
-                    ClipRect = rectangle;
+                            ));                    
                 }
                 else
                 {
