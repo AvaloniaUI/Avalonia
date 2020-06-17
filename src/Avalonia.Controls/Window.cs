@@ -69,7 +69,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
     {
-        private List<Window> _children = new List<Window>();
+        private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -373,7 +373,7 @@ namespace Avalonia.Controls
 
         private void CloseInternal()
         {
-            foreach (var child in _children.ToList())
+            foreach (var (child, _) in _children.ToList())
             {
                 // if we HandleClosing() before then there will be no children.
                 child.CloseInternal();
@@ -396,7 +396,7 @@ namespace Avalonia.Controls
         {
             bool canClose = true;
 
-            foreach (var child in _children.ToList())
+            foreach (var (child, _) in _children.ToList())
             {
                 if (!child.HandleClosing())
                 {
@@ -470,6 +470,28 @@ namespace Avalonia.Controls
         /// </exception>
         public override void Show()
         {
+            ShowCore(null);
+        }
+
+        /// <summary>
+        /// Shows the window as a child of <paramref name="parent"/>.
+        /// </summary>
+        /// <param name="parent">Window that will be a parent of the shown window.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The window has already been closed.
+        /// </exception>
+        public void Show(Window parent)
+        {
+            if (parent is null)
+            {
+                throw new ArgumentNullException(nameof(parent), "Showing a child window requires valid parent.");
+            }
+
+            ShowCore(parent);
+        }
+
+        private void ShowCore(Window parent)
+        {
             if (PlatformImpl == null)
             {
                 throw new InvalidOperationException("Cannot re-show a closed window.");
@@ -480,7 +502,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            this.RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+            RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
             EnsureInitialized();
             IsVisible = true;
@@ -501,6 +523,14 @@ namespace Avalonia.Controls
 
             using (BeginAutoSizing())
             {
+                if (parent != null)
+                {
+                    PlatformImpl?.SetParent(parent.PlatformImpl);
+                }
+                
+                Owner = parent;
+                parent?.AddChild(this, false);
+
                 PlatformImpl?.Show();
                 Renderer?.Start();
             }
@@ -568,9 +598,9 @@ namespace Avalonia.Controls
 
             using (BeginAutoSizing())
             {
-                PlatformImpl.SetParent(owner.PlatformImpl);
+                PlatformImpl?.SetParent(owner.PlatformImpl);
                 Owner = owner;
-                owner.AddChild(this);
+                owner.AddChild(this, true);
                 PlatformImpl?.Show();
 
                 Renderer?.Start();
@@ -595,28 +625,57 @@ namespace Avalonia.Controls
 
         private void UpdateEnabled()
         {
-            PlatformImpl.SetEnabled(_children.Count == 0);
+            bool isEnabled = true;
+
+            foreach (var (_, isDialog)  in _children)
+            {
+                if (isDialog)
+                {
+                    isEnabled = false;
+                    break;
+                }
+            }
+
+            PlatformImpl.SetEnabled(isEnabled);
         }
 
-        private void AddChild(Window window)
+        private void AddChild(Window window, bool isDialog)
         {
-            _children.Add(window);
+            _children.Add((window, isDialog));
             UpdateEnabled();
         }
 
         private void RemoveChild(Window window)
         {
-            _children.Remove(window);
+            for (int i = _children.Count - 1; i >= 0; i--)
+            {
+                var (child, _) = _children[i];
+
+                if (ReferenceEquals(child, window))
+                {
+                    _children.RemoveAt(i);
+                }
+            }
+
             UpdateEnabled();
         }
 
         private void OnGotInputWhenDisabled()
         {
-            var firstChild = _children.FirstOrDefault();
+            Window firstDialogChild = null;
 
-            if (firstChild != null)
+            foreach (var (child, isDialog)  in _children)
             {
-                firstChild.OnGotInputWhenDisabled();
+                if (isDialog)
+                {
+                    firstDialogChild = child;
+                    break;
+                }
+            }
+
+            if (firstDialogChild != null)
+            {
+                firstDialogChild.OnGotInputWhenDisabled();
             }
             else
             {
