@@ -19,6 +19,8 @@ namespace Avalonia.Animation
 
         public TransitionInstance(IClock clock, TimeSpan Duration)
         {
+            clock = clock ?? throw new ArgumentNullException(nameof(clock));
+
             _duration = Duration;
             _baseClock = clock;
         }

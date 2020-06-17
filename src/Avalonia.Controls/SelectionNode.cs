@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Controls.Utils;
 
 #nullable enable
 
@@ -100,10 +101,31 @@ namespace Avalonia.Controls
 
                     ItemsSourceView = newDataSource;
 
+                    TrimInvalidSelections();
                     PopulateSelectedItemsFromSelectedIndices();
                     HookupCollectionChangedHandler();
                     OnSelectionChanged();
                 }
+            }
+        }
+
+        private void TrimInvalidSelections()
+        {
+            if (_selected == null || ItemsSourceView == null)
+            {
+                return;
+            }
+
+            var validRange = ItemsSourceView.Count > 0 ? new IndexRange(0, ItemsSourceView.Count - 1) : new IndexRange(-1, -1);
+            var removed = new List<IndexRange>();
+            var removedCount = IndexRange.Intersect(_selected, validRange, removed);
+
+            if (removedCount > 0)
+            {
+                using var operation = _manager.Update();
+                SelectedCount -= removedCount;
+                OnSelectionChanged();
+                _operation!.Deselected(removed);
             }
         }
 
@@ -140,7 +162,7 @@ namespace Avalonia.Controls
         // create a bunch of leaf node instances - instead i use the same instance m_leafNode to avoid 
         // an explosion of node objects. However, I'm still creating the m_childrenNodes 
         // collection unfortunately.
-        public SelectionNode? GetAt(int index, bool realizeChild)
+        public SelectionNode? GetAt(int index, bool realizeChild, IndexPath finalIndexPath)
         {
             SelectionNode? child = null;
             
@@ -170,7 +192,7 @@ namespace Avalonia.Controls
                     if (childData != null)
                     {
                         var childDataIndexPath = IndexPath.CloneWithChildIndex(index);
-                        resolver = _manager.ResolvePath(childData, childDataIndexPath);
+                        resolver = _manager.ResolvePath(childData, childDataIndexPath, finalIndexPath);
                     }
 
                     if (resolver != null)
@@ -214,7 +236,21 @@ namespace Avalonia.Controls
 
         public void SetChildrenObservable(IObservable<object?> resolver)
         {
-            _childrenSubscription = resolver.Subscribe(x => Source = x);
+            _childrenSubscription = resolver.Subscribe(x =>
+            {
+                if (Source != null)
+                {
+                    using (_manager.Update())
+                    {
+                        SelectionTreeHelper.Traverse(
+                            this,
+                            realizeChildren: false,
+                            info => info.Node.Clear());
+                    }
+                }
+
+                Source = x;
+            });
         }
 
         public int SelectedCount { get; private set; }
@@ -544,11 +580,14 @@ namespace Avalonia.Controls
 
         private void ClearChildNodes()
         {
-            foreach (var child in _childrenNodes)
+            for (int i = 0; i < _childrenNodes.Count; i++)
             {
+                var child = _childrenNodes[i];
+
                 if (child != null && child != _manager.SharedLeafNode)
                 {
                     child.Dispose();
+                    _childrenNodes[i] = null;
                 }
             }
 
@@ -713,99 +752,65 @@ namespace Avalonia.Controls
             var selectionInvalidated = false;
             var removed = new List<object?>();
             var count = items.Count;
-            
-            // Remove the items from the selection for leaf
-            if (ItemsSourceView!.Count > 0)
+            var isSelected = false;
+
+            for (int i = 0; i <= count - 1; i++)
             {
-                bool isSelected = false;
-
-                for (int i = 0; i <= count - 1; i++)
+                if (IsSelected(index + i))
                 {
-                    if (IsSelected(index + i))
-                    {
-                        isSelected = true;
-                        removed.Add(items[i]);
-                    }
-                }
-
-                if (isSelected)
-                {
-                    var removeRange = new IndexRange(index, index + count - 1);
-                    SelectedCount -= IndexRange.Remove(_selected, removeRange);
-                    selectionInvalidated = true;
-
-                    if (_selectedItems != null)
-                    {
-                        foreach (var i in items)
-                        {
-                            _selectedItems.Remove(i);
-                        }
-                    }
-                }
-
-                for (int i = 0; i < _selected.Count; i++)
-                {
-                    var range = _selected[i];
-
-                    // The range is after the removed items, need to shift the range left
-                    if (range.End > index)
-                    {
-                        // Shift the range to the left
-                        _selected[i] = new IndexRange(range.Begin - count, range.End - count);
-                        selectionInvalidated = true;
-                    }
-                }
-
-                // Update for non-leaf if we are tracking non-leaf nodes
-                if (_childrenNodes.Count > 0)
-                {
-                    selectionInvalidated = true;
-                    for (int i = 0; i < count; i++)
-                    {
-                        if (_childrenNodes[index] != null)
-                        {
-                            removed.AddRange(_childrenNodes[index]!.SelectedItems);
-                            RealizedChildrenNodeCount--;
-                            _childrenNodes[index]!.Dispose();
-                        }
-                        _childrenNodes.RemoveAt(index);
-                    }
-                }
-
-                //Adjust the anchor
-                if (AnchorIndex >= index)
-                {
-                    AnchorIndex -= count;
+                    isSelected = true;
+                    removed.Add(items[i]);
                 }
             }
-            else
+
+            if (isSelected)
             {
-                // No more items in the list, clear
-                ClearSelection();
-                RealizedChildrenNodeCount = 0;
+                var removeRange = new IndexRange(index, index + count - 1);
+                SelectedCount -= IndexRange.Remove(_selected, removeRange);
                 selectionInvalidated = true;
+
+                if (_selectedItems != null)
+                {
+                    foreach (var i in items)
+                    {
+                        _selectedItems.Remove(i);
+                    }
+                }
             }
 
-            // Check if removing a node invalidated an ancestors
-            // selection state. For example if parent was partially selected before
-            // removing an item, it could be selected now.
-            if (!selectionInvalidated)
+            for (int i = 0; i < _selected.Count; i++)
             {
-                var parent = _parent;
-                
-                while (parent != null)
-                {
-                    var isSelected = parent.IsSelectedWithPartial();
-                    // If a parent is partially selected, then it will become selected.
-                    // If it is selected or not selected - there is no change.
-                    if (!isSelected.HasValue)
-                    {
-                        selectionInvalidated = true;
-                        break;
-                    }
+                var range = _selected[i];
 
-                    parent = parent._parent;
+                // The range is after the removed items, need to shift the range left
+                if (range.End > index)
+                {
+                    // Shift the range to the left
+                    _selected[i] = new IndexRange(range.Begin - count, range.End - count);
+                    selectionInvalidated = true;
                 }
+            }
+
+            // Update for non-leaf if we are tracking non-leaf nodes
+            if (_childrenNodes.Count > 0)
+            {
+                selectionInvalidated = true;
+                for (int i = 0; i < count; i++)
+                {
+                    if (_childrenNodes[index] != null)
+                    {
+                        removed.AddRange(_childrenNodes[index]!.SelectedItems);
+                        RealizedChildrenNodeCount--;
+                        _childrenNodes[index]!.Dispose();
+                    }
+                    _childrenNodes.RemoveAt(index);
+                }
+            }
+
+            //Adjust the anchor
+            if (AnchorIndex >= index)
+            {
+                AnchorIndex -= count;
             }
 
             return (selectionInvalidated, removed);
@@ -859,7 +864,7 @@ namespace Avalonia.Controls
                     int notSelectedCount = 0;
                     for (int i = 0; i < ChildrenNodeCount; i++)
                     {
-                        var child = GetAt(i, realizeChild: false);
+                        var child = GetAt(i, false, default);
 
                         if (child != null)
                         {

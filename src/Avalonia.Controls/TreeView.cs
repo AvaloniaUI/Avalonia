@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
@@ -118,9 +119,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the selected item.
         /// </summary>
-        /// <summary>
-        /// Gets or sets the selected item.
-        /// </summary>
+        /// <remarks>
+        /// Note that setting this property only currently works if the item is expanded to be visible.
+        /// To select non-expanded nodes use `Selection.SelectedIndex`.
+        /// </remarks>
         public object SelectedItem
         {
             get => Selection.SelectedItem;
@@ -345,7 +347,7 @@ namespace Avalonia.Controls
 
                 if (container != null)
                 {
-                    container.BringIntoView();
+                    DispatcherTimer.RunOnce(container.BringIntoView, TimeSpan.Zero);
                 }
             }
         }
@@ -394,8 +396,22 @@ namespace Avalonia.Controls
 
         private void OnSelectionModelChildrenRequested(object sender, SelectionModelChildrenRequestedEventArgs e)
         {
-            var container = ItemContainerGenerator.Index.ContainerFromItem(e.Source) as ItemsControl;
-            e.Children = container?.GetObservable(ItemsProperty);
+            var container = ItemContainerGenerator.Index.ContainerFromItem(e.Source) as TreeViewItem;
+
+            if (container is object)
+            {
+                if (e.SourceIndex.IsAncestorOf(e.FinalIndex))
+                {
+                    container.IsExpanded = true;
+                    container.ApplyTemplate();
+                    container.Presenter?.ApplyTemplate();
+                }
+
+                e.Children = Observable.CombineLatest(
+                    container.GetObservable(TreeViewItem.IsExpandedProperty),
+                    container.GetObservable(ItemsProperty),
+                    (expanded, items) => expanded ? items : null);
+            }
         }
 
         private TreeViewItem GetContainerInDirection(
@@ -478,13 +494,13 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == SelectionModeProperty)
+            if (change.Property == SelectionModeProperty)
             {
-                var mode = newValue.GetValueOrDefault<SelectionMode>();
+                var mode = change.NewValue.GetValueOrDefault<SelectionMode>();
                 Selection.SingleSelect = !mode.HasFlagCustom(SelectionMode.Multiple);
                 Selection.AutoSelect = mode.HasFlagCustom(SelectionMode.AlwaysSelected);
             }

@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
@@ -467,10 +468,11 @@ namespace Avalonia.Controls
         /// <see cref="P:Avalonia.Controls.AutoCompleteBox.Text" />
         /// dependency property.</value>
         public static readonly DirectProperty<AutoCompleteBox, string> TextProperty =
-            AvaloniaProperty.RegisterDirect<AutoCompleteBox, string>(
-                nameof(Text),
+            TextBlock.TextProperty.AddOwnerWithDataValidation<AutoCompleteBox>(
                 o => o.Text,
-                (o, v) => o.Text = v);
+                (o, v) => o.Text = v,
+                defaultBindingMode: BindingMode.TwoWay,
+                enableDataValidation: true);
 
         /// <summary>
         /// Identifies the
@@ -1100,6 +1102,7 @@ namespace Avalonia.Controls
                 {
                     _textBoxSubscriptions =
                         _textBox.GetObservable(TextBox.TextProperty)
+                                .Skip(1)
                                 .Subscribe(_ => OnTextBoxTextChanged());
 
                     if (Text != null)
@@ -1241,6 +1244,20 @@ namespace Avalonia.Controls
             }
 
             base.OnApplyTemplate(e);
+        }
+        
+        /// <summary>
+        /// Called to update the validation state for properties for which data validation is
+        /// enabled.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The new binding value for the property.</param>
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        {
+            if (property == TextProperty)
+            {
+                DataValidationErrors.SetError(this, value.Error);
+            }
         }
 
         /// <summary>

@@ -3,7 +3,10 @@
 
 class WindowBaseImpl;
 
-@interface AvnView : NSView<NSTextInputClient>
+@interface AutoFitContentVisualEffectView : NSVisualEffectView
+@end
+
+@interface AvnView : NSView<NSTextInputClient, NSDraggingDestination>
 -(AvnView* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
 -(NSEvent* _Nonnull) lastMouseDownEvent;
 -(AvnPoint) translateLocalPoint:(AvnPoint)pt;
@@ -19,8 +22,7 @@ class WindowBaseImpl;
 -(void) pollModalSession: (NSModalSession _Nonnull) session;
 -(void) restoreParentWindow;
 -(bool) shouldTryToHandleEvents;
--(bool) isModal;
--(void) setModal: (bool) isModal;
+-(void) setEnabled: (bool) enable;
 -(void) showAppMenuOnly;
 -(void) showWindowMenuWithAppMenu;
 -(void) applyMenu:(NSMenu* _Nullable)menu;

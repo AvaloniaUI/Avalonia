@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
@@ -68,6 +69,8 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
     {
+        private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
+
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
         /// </summary>
@@ -131,7 +134,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent WindowClosedEvent =
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowClosed", RoutingStrategies.Direct);
-        
+
         /// <summary>
         /// Routed event that can be used for global tracking of opening windows
         /// </summary>
@@ -183,8 +186,9 @@ namespace Avalonia.Controls
             : base(impl)
         {
             impl.Closing = HandleClosing;
+            impl.GotInputWhenDisabled = OnGotInputWhenDisabled;
             impl.WindowStateChanged = HandleWindowStateChanged;
-            _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
+            _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
 
             PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
@@ -302,7 +306,7 @@ namespace Avalonia.Controls
                 PlatformImpl?.Move(value);
             }
         }
-        
+
         /// <summary>
         /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
         /// </summary>
@@ -315,15 +319,12 @@ namespace Avalonia.Controls
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e) => PlatformImpl?.BeginResizeDrag(edge, e);
 
         /// <inheritdoc/>
-        Size ILayoutRoot.MaxClientSize => _maxPlatformClientSize;
-
-        /// <inheritdoc/>
         Type IStyleable.StyleKey => typeof(Window);
 
         /// <summary>
         /// Fired before a window is closed.
         /// </summary>
-        public event EventHandler<CancelEventArgs> Closing;      
+        public event EventHandler<CancelEventArgs> Closing;
 
         /// <summary>
         /// Closes the window.
@@ -365,9 +366,27 @@ namespace Avalonia.Controls
             {
                 if (close)
                 {
-                    PlatformImpl?.Dispose();
+                    CloseInternal();
                 }
             }
+        }
+
+        private void CloseInternal()
+        {
+            foreach (var (child, _) in _children.ToList())
+            {
+                // if we HandleClosing() before then there will be no children.
+                child.CloseInternal();
+            }
+
+            if (Owner is Window owner)
+            {
+                owner.RemoveChild(this);
+            }
+
+            Owner = null;
+
+            PlatformImpl?.Dispose();
         }
 
         /// <summary>
@@ -375,9 +394,31 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual bool HandleClosing()
         {
-            var args = new CancelEventArgs();
-            OnClosing(args);
-            return args.Cancel;
+            bool canClose = true;
+
+            foreach (var (child, _) in _children.ToList())
+            {
+                if (!child.HandleClosing())
+                {
+                    child.CloseInternal();
+                }
+                else
+                {
+                    canClose = false;
+                }
+            }
+
+            if (canClose)
+            {
+                var args = new CancelEventArgs();
+                OnClosing(args);
+
+                return args.Cancel;
+            }
+            else
+            {
+                return !canClose;
+            }
         }
 
         protected virtual void HandleWindowStateChanged(WindowState state)
@@ -407,6 +448,14 @@ namespace Avalonia.Controls
             using (BeginAutoSizing())
             {
                 Renderer?.Stop();
+
+                if (Owner is Window owner)
+                {
+                    owner.RemoveChild(this);
+                }
+
+                Owner = null;
+
                 PlatformImpl?.Hide();
             }
 
@@ -421,6 +470,28 @@ namespace Avalonia.Controls
         /// </exception>
         public override void Show()
         {
+            ShowCore(null);
+        }
+
+        /// <summary>
+        /// Shows the window as a child of <paramref name="parent"/>.
+        /// </summary>
+        /// <param name="parent">Window that will be a parent of the shown window.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The window has already been closed.
+        /// </exception>
+        public void Show(Window parent)
+        {
+            if (parent is null)
+            {
+                throw new ArgumentNullException(nameof(parent), "Showing a child window requires valid parent.");
+            }
+
+            ShowCore(parent);
+        }
+
+        private void ShowCore(Window parent)
+        {
             if (PlatformImpl == null)
             {
                 throw new InvalidOperationException("Cannot re-show a closed window.");
@@ -431,7 +502,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            this.RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+            RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
             EnsureInitialized();
             IsVisible = true;
@@ -452,6 +523,14 @@ namespace Avalonia.Controls
 
             using (BeginAutoSizing())
             {
+                if (parent != null)
+                {
+                    PlatformImpl?.SetParent(parent.PlatformImpl);
+                }
+                
+                Owner = parent;
+                parent?.AddChild(this, false);
+
                 PlatformImpl?.Show();
                 Renderer?.Start();
             }
@@ -519,7 +598,10 @@ namespace Avalonia.Controls
 
             using (BeginAutoSizing())
             {
-                PlatformImpl?.ShowDialog(owner.PlatformImpl);
+                PlatformImpl?.SetParent(owner.PlatformImpl);
+                Owner = owner;
+                owner.AddChild(this, true);
+                PlatformImpl?.Show();
 
                 Renderer?.Start();
 
@@ -539,6 +621,66 @@ namespace Avalonia.Controls
             SetWindowStartupLocation(owner.PlatformImpl);
 
             return result.Task;
+        }
+
+        private void UpdateEnabled()
+        {
+            bool isEnabled = true;
+
+            foreach (var (_, isDialog)  in _children)
+            {
+                if (isDialog)
+                {
+                    isEnabled = false;
+                    break;
+                }
+            }
+
+            PlatformImpl.SetEnabled(isEnabled);
+        }
+
+        private void AddChild(Window window, bool isDialog)
+        {
+            _children.Add((window, isDialog));
+            UpdateEnabled();
+        }
+
+        private void RemoveChild(Window window)
+        {
+            for (int i = _children.Count - 1; i >= 0; i--)
+            {
+                var (child, _) = _children[i];
+
+                if (ReferenceEquals(child, window))
+                {
+                    _children.RemoveAt(i);
+                }
+            }
+
+            UpdateEnabled();
+        }
+
+        private void OnGotInputWhenDisabled()
+        {
+            Window firstDialogChild = null;
+
+            foreach (var (child, isDialog)  in _children)
+            {
+                if (isDialog)
+                {
+                    firstDialogChild = child;
+                    break;
+                }
+            }
+
+            if (firstDialogChild != null)
+            {
+                firstDialogChild.OnGotInputWhenDisabled();
+            }
+            else
+            {
+                Activate();
+            }
         }
 
         private void SetWindowStartupLocation(IWindowBaseImpl owner = null)
@@ -577,15 +719,16 @@ namespace Avalonia.Controls
             var sizeToContent = SizeToContent;
             var clientSize = ClientSize;
             var constraint = clientSize;
+            var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
 
             if (sizeToContent.HasFlagCustom(SizeToContent.Width))
             {
-                constraint = constraint.WithWidth(double.PositiveInfinity);
+                constraint = constraint.WithWidth(maxAutoSize.Width);
             }
 
             if (sizeToContent.HasFlagCustom(SizeToContent.Height))
             {
-                constraint = constraint.WithHeight(double.PositiveInfinity);
+                constraint = constraint.WithHeight(maxAutoSize.Height);
             }
 
             var result = base.MeasureOverride(constraint);
@@ -631,6 +774,13 @@ namespace Avalonia.Controls
             RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
 
             base.HandleClosed();
+
+            if (Owner is Window owner)
+            {
+                owner.RemoveChild(this);
+            }
+
+            Owner = null;
         }
 
         /// <inheritdoc/>
@@ -658,19 +808,15 @@ namespace Avalonia.Controls
         /// </remarks>
         protected virtual void OnClosing(CancelEventArgs e) => Closing?.Invoke(this, e);
 
-        protected override void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (property == SystemDecorationsProperty)
+            if (change.Property == SystemDecorationsProperty)
             {
-                var typedNewValue = newValue.GetValueOrDefault<SystemDecorations>();
+                var typedNewValue = change.NewValue.GetValueOrDefault<SystemDecorations>();
 
                 PlatformImpl?.SetSystemDecorations(typedNewValue);
 
-                var o = oldValue.GetValueOrDefault<SystemDecorations>() == SystemDecorations.Full;
+                var o = change.OldValue.GetValueOrDefault<SystemDecorations>() == SystemDecorations.Full;
                 var n = typedNewValue == SystemDecorations.Full;
 
                 if (o != n)

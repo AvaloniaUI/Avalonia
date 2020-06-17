@@ -994,7 +994,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Presenter.ApplyTemplate();
             _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
-            Assert.Equal(new[] { ":selected" }, target.Presenter.Panel.Children[3].Classes);
+            Assert.Equal(new[] { ":pressed", ":selected" }, target.Presenter.Panel.Children[3].Classes);
         }
 
         [Fact]

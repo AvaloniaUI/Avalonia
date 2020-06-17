@@ -68,8 +68,8 @@ namespace Avalonia
         /// <summary>
         /// Defines the <see cref="RenderTransform"/> property.
         /// </summary>
-        public static readonly StyledProperty<Transform> RenderTransformProperty =
-            AvaloniaProperty.Register<Visual, Transform>(nameof(RenderTransform));
+        public static readonly StyledProperty<ITransform> RenderTransformProperty =
+            AvaloniaProperty.Register<Visual, ITransform>(nameof(RenderTransform));
 
         /// <summary>
         /// Defines the <see cref="RenderTransformOrigin"/> property.
@@ -114,6 +114,9 @@ namespace Avalonia
         /// </summary>
         public Visual()
         {
+            // Disable transitions until we're added to the visual tree.
+            DisableTransitions();
+
             var visualChildren = new AvaloniaList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
             visualChildren.Validate = visual => ValidateVisualChild(visual);
@@ -216,7 +219,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the render transform of the control.
         /// </summary>
-        public Transform RenderTransform
+        public ITransform RenderTransform
         {
             get { return GetValue(RenderTransformProperty); }
             set { SetValue(RenderTransformProperty, value); }
@@ -388,11 +391,12 @@ namespace Avalonia
 
             _visualRoot = e.Root;
 
-            if (RenderTransform != null)
+            if (RenderTransform is IMutableTransform mutableTransform)
             {
-                RenderTransform.Changed += RenderTransformChanged;
+                mutableTransform.Changed += RenderTransformChanged;
             }
 
+            EnableTransitions();
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
@@ -424,11 +428,12 @@ namespace Avalonia
 
             _visualRoot = null;
 
-            if (RenderTransform != null)
+            if (RenderTransform is IMutableTransform mutableTransform)
             {
-                RenderTransform.Changed -= RenderTransformChanged;
+                mutableTransform.Changed -= RenderTransformChanged;
             }
 
+            DisableTransitions();
             OnDetachedFromVisualTree(e);
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root?.Renderer?.AddDirty(this);
