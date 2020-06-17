@@ -9,12 +9,88 @@ namespace Avalonia.Controls
     /// </summary>
     public class ProgressBar : RangeBase
     {        
-        private double _Container2Width;
-        private double _ContainerWidth;
-        private double _containerAnimationStartPosition;
-        private double _containerAnimationEndPosition;
-        private double _container2AnimationStartPosition;
-        private double _container2AnimationEndPosition;
+        public class ProgressBarTemplateProperties : AvaloniaObject
+        {
+            private double _Container2Width;
+            private double _ContainerWidth;
+            private double _containerAnimationStartPosition;
+            private double _containerAnimationEndPosition;
+            private double _container2AnimationStartPosition;
+            private double _container2AnimationEndPosition;
+
+            public static readonly DirectProperty<ProgressBarTemplateProperties, double> ContainerAnimationStartPositionProperty =
+           AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
+               nameof(ContainerAnimationStartPosition),
+               p => p.ContainerAnimationStartPosition,
+               (p, o) => p.ContainerAnimationStartPosition = o, 0d);
+
+            public static readonly DirectProperty<ProgressBarTemplateProperties, double> ContainerAnimationEndPositionProperty =
+                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
+                    nameof(ContainerAnimationEndPosition),
+                    p => p.ContainerAnimationEndPosition,
+                    (p, o) => p.ContainerAnimationEndPosition = o, 0d);
+
+            public static readonly DirectProperty<ProgressBarTemplateProperties, double> Container2AnimationStartPositionProperty =
+                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
+                    nameof(Container2AnimationStartPosition),
+                    p => p.Container2AnimationStartPosition,
+                    (p, o) => p.Container2AnimationStartPosition = o, 0d);
+
+            public static readonly DirectProperty<ProgressBarTemplateProperties, double> Container2AnimationEndPositionProperty =
+                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
+                    nameof(Container2AnimationEndPosition),
+                    p => p.Container2AnimationEndPosition,
+                    (p, o) => p.Container2AnimationEndPosition = o);
+
+            public static readonly DirectProperty<ProgressBarTemplateProperties, double> Container2WidthProperty =
+                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
+                    nameof(Container2Width),
+                    p => p.Container2Width,
+                    (p, o) => p.Container2Width = o);
+
+            public static readonly DirectProperty<ProgressBarTemplateProperties, double> ContainerWidthProperty =
+                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
+                    nameof(ContainerWidth),
+                    p => p.ContainerWidth,
+                    (p, o) => p.ContainerWidth = o);
+
+            public double ContainerAnimationStartPosition
+            {
+                get => _containerAnimationStartPosition;
+                set => SetAndRaise(ContainerAnimationStartPositionProperty, ref _containerAnimationStartPosition, value);
+            }
+
+            public double ContainerAnimationEndPosition
+            {
+                get => _containerAnimationEndPosition;
+                set => SetAndRaise(ContainerAnimationEndPositionProperty, ref _containerAnimationEndPosition, value);
+            }
+
+            public double Container2AnimationStartPosition
+            {
+                get => _container2AnimationStartPosition;
+                set => SetAndRaise(Container2AnimationStartPositionProperty, ref _container2AnimationStartPosition, value);
+            }
+
+            public double Container2Width
+            {
+                get => _Container2Width;
+                set => SetAndRaise(Container2WidthProperty, ref _Container2Width, value);
+            }
+
+            public double ContainerWidth
+            {
+                get => _ContainerWidth;
+                set => SetAndRaise(ContainerWidthProperty, ref _ContainerWidth, value);
+            }
+
+            public double Container2AnimationEndPosition
+            {
+                get => _container2AnimationEndPosition;
+                set => SetAndRaise(Container2AnimationEndPositionProperty, ref _container2AnimationEndPosition, value);
+            }
+        }
+        
         private Border _indicator;
 
         public static readonly StyledProperty<bool> IsIndeterminateProperty =
@@ -24,43 +100,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ProgressBar, bool>(nameof(ShowProgressText));
 
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
-
-        public static readonly DirectProperty<ProgressBar, double> ContainerAnimationStartPositionProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(ContainerAnimationStartPosition),
-                p => p.ContainerAnimationStartPosition,
-                (p, o) => p.ContainerAnimationStartPosition = o, 0d);
-
-        public static readonly DirectProperty<ProgressBar, double> ContainerAnimationEndPositionProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(ContainerAnimationEndPosition),
-                p => p.ContainerAnimationEndPosition,
-                (p, o) => p.ContainerAnimationEndPosition = o, 0d);
-
-        public static readonly DirectProperty<ProgressBar, double> Container2AnimationStartPositionProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(Container2AnimationStartPosition),
-                p => p.Container2AnimationStartPosition,
-                (p, o) => p.Container2AnimationStartPosition = o, 0d);
-
-        public static readonly DirectProperty<ProgressBar, double> Container2AnimationEndPositionProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(Container2AnimationEndPosition),
-                p => p.Container2AnimationEndPosition,
-                (p, o) => p.Container2AnimationEndPosition = o);
-
-        public static readonly DirectProperty<ProgressBar, double> Container2WidthProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(Container2Width),
-                p => p.Container2Width,
-                (p, o) => p.Container2Width = o);
-
-        public static readonly DirectProperty<ProgressBar, double> ContainerWidthProperty =
-            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
-                nameof(ContainerWidth),
-                p => p.ContainerWidth,
-                (p, o) => p.ContainerWidth = o);
+            AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);       
 
         static ProgressBar()
         {
@@ -72,6 +112,8 @@ namespace Avalonia.Controls
         {
             UpdatePseudoClasses(IsIndeterminate, Orientation);
         }
+
+        public ProgressBarTemplateProperties TemplateProperties { get; } = new ProgressBarTemplateProperties();
 
         public bool IsIndeterminate
         {
@@ -89,43 +131,7 @@ namespace Avalonia.Controls
         {
             get => GetValue(OrientationProperty);
             set => SetValue(OrientationProperty, value);
-        }
-
-        public double ContainerAnimationStartPosition
-        {
-            get => _containerAnimationStartPosition;
-            set => SetAndRaise(ContainerAnimationStartPositionProperty, ref _containerAnimationStartPosition, value);
-        }
-
-        public double ContainerAnimationEndPosition
-        {
-            get => _containerAnimationEndPosition;
-            set => SetAndRaise(ContainerAnimationEndPositionProperty, ref _containerAnimationEndPosition, value);
-        }
-
-        public double Container2AnimationStartPosition
-        {
-            get => _container2AnimationStartPosition;
-            set => SetAndRaise(Container2AnimationStartPositionProperty, ref _container2AnimationStartPosition, value);
-        }
-
-        public double Container2Width
-        {
-            get => _Container2Width;
-            set => SetAndRaise(Container2WidthProperty, ref _Container2Width, value);
-        }
-
-        public double ContainerWidth
-        {
-            get => _ContainerWidth;
-            set => SetAndRaise(ContainerWidthProperty, ref _ContainerWidth, value);
-        }
-
-        public double Container2AnimationEndPosition
-        {
-            get => _container2AnimationEndPosition;
-            set => SetAndRaise(Container2AnimationEndPositionProperty, ref _container2AnimationEndPosition, value);
-        }        
+        }      
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
@@ -168,14 +174,14 @@ namespace Avalonia.Controls
                     var barIndicatorWidth = dim * 0.4; // Indicator width at 40% of ProgressBar
                     var barIndicatorWidth2 = dim * 0.6; // Indicator width at 60% of ProgressBar
 
-                    ContainerWidth = barIndicatorWidth;
-                    Container2Width = barIndicatorWidth2;
+                    TemplateProperties.ContainerWidth = barIndicatorWidth;
+                    TemplateProperties.Container2Width = barIndicatorWidth2;
 
-                    ContainerAnimationStartPosition = barIndicatorWidth * -1.8; // Position at -180%
-                    ContainerAnimationEndPosition = barIndicatorWidth * 3.0; // Position at 300%
+                    TemplateProperties.ContainerAnimationStartPosition = barIndicatorWidth * -1.8; // Position at -180%
+                    TemplateProperties.ContainerAnimationEndPosition = barIndicatorWidth * 3.0; // Position at 300%
 
-                    Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
-                    Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
+                    TemplateProperties.Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
+                    TemplateProperties.Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
 
                     var padding = Padding;
                     var rectangle = new RectangleGeometry(

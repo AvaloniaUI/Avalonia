@@ -87,13 +87,13 @@
     <Style.Animations>
       <Animation Duration="0:0:2" IterationCount="Infinite">
         <KeyFrame KeyTime="0:0:0" KeySpline="0.4,0,0.6,1">
-          <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].ContainerAnimationStartPosition}" />
+          <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].TemplateProperties.ContainerAnimationStartPosition}" />
         </KeyFrame>
         <KeyFrame KeyTime="0:0:1.5" KeySpline="0.4,0,0.6,1">
-          <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].ContainerAnimationEndPosition}" />
+          <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].TemplateProperties.ContainerAnimationEndPosition}" />
         </KeyFrame>
         <KeyFrame KeyTime="0:0:2" KeySpline="0.4,0,0.6,1">
-          <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].ContainerAnimationEndPosition}" />
+          <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].TemplateProperties.ContainerAnimationEndPosition}" />
         </KeyFrame>
       </Animation>
     </Style.Animations>
@@ -102,13 +102,13 @@
     <Style.Animations>
       <Animation Duration="0:0:2" IterationCount="Infinite">
         <KeyFrame KeyTime="0:0:0" KeySpline="0.4,0,0.6,1">
-          <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].Container2AnimationStartPosition}" />
+          <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].TemplateProperties.Container2AnimationStartPosition}" />
         </KeyFrame>
         <KeyFrame KeyTime="0:0:0.75" KeySpline="0.4,0,0.6,1">
-          <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].Container2AnimationStartPosition}" />
+          <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].TemplateProperties.Container2AnimationStartPosition}" />
         </KeyFrame>
         <KeyFrame KeyTime="0:0:2" KeySpline="0.4,0,0.6,1">
-          <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].Container2AnimationEndPosition}" />
+          <Setter Property="TranslateTransform.X" Value="{Binding $parent[ProgressBar].TemplateProperties.Container2AnimationEndPosition}" />
         </KeyFrame>
       </Animation>
     </Style.Animations>
@@ -117,13 +117,13 @@
     <Style.Animations>
       <Animation Duration="0:0:2" IterationCount="Infinite">
         <KeyFrame KeyTime="0:0:0" KeySpline="0.4,0,0.6,1">
-          <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].ContainerAnimationStartPosition}" />
+          <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].TemplateProperties.ContainerAnimationStartPosition}" />
         </KeyFrame>
         <KeyFrame KeyTime="0:0:1.5" KeySpline="0.4,0,0.6,1">
-          <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].ContainerAnimationEndPosition}" />
+          <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].TemplateProperties.ContainerAnimationEndPosition}" />
         </KeyFrame>
         <KeyFrame KeyTime="0:0:2" KeySpline="0.4,0,0.6,1">
-          <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].ContainerAnimationEndPosition}" />
+          <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].TemplateProperties.ContainerAnimationEndPosition}" />
         </KeyFrame>
       </Animation>
     </Style.Animations>
@@ -132,46 +132,46 @@
     <Style.Animations>
       <Animation Duration="0:0:2" IterationCount="Infinite">
         <KeyFrame KeyTime="0:0:0" KeySpline="0.4,0,0.6,1">
-          <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].Container2AnimationStartPosition}" />
+          <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].TemplateProperties.Container2AnimationStartPosition}" />
         </KeyFrame>
         <KeyFrame KeyTime="0:0:0.75" KeySpline="0.4,0,0.6,1">
-          <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].Container2AnimationStartPosition}" />
+          <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].TemplateProperties.Container2AnimationStartPosition}" />
         </KeyFrame>
         <KeyFrame KeyTime="0:0:2" KeySpline="0.4,0,0.6,1">
-          <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].Container2AnimationEndPosition}" />
+          <Setter Property="TranslateTransform.Y" Value="{Binding $parent[ProgressBar].TemplateProperties.Container2AnimationEndPosition}" />
         </KeyFrame>
       </Animation>
     </Style.Animations>
   </Style>
   <Style Selector="ProgressBar:horizontal /template/ Border#IndeterminateProgressBarIndicator">
-    <Setter Property="Width" Value="{Binding $parent[ProgressBar].ContainerWidth}" />
+    <Setter Property="Width" Value="{Binding $parent[ProgressBar].TemplateProperties.ContainerWidth}" />
     <Setter Property="RenderTransform">
       <Setter.Value>
-        <TranslateTransform X="{Binding $parent[ProgressBar].ContainerAnimationStartPosition}" />
+        <TranslateTransform X="{Binding $parent[ProgressBar].TemplateProperties.ContainerAnimationStartPosition}" />
       </Setter.Value>
     </Setter>
   </Style>
   <Style Selector="ProgressBar:horizontal /template/ Border#IndeterminateProgressBarIndicator2">
-    <Setter Property="Width" Value="{Binding $parent[ProgressBar].Container2Width}" />
+    <Setter Property="Width" Value="{Binding $parent[ProgressBar].TemplateProperties.Container2Width}" />
     <Setter Property="RenderTransform">
       <Setter.Value>
-        <TranslateTransform X="{Binding $parent[ProgressBar].Container2AnimationStartPosition}" />
+        <TranslateTransform X="{Binding $parent[ProgressBar].TemplateProperties.Container2AnimationStartPosition}" />
       </Setter.Value>
     </Setter>
   </Style>
   <Style Selector="ProgressBar:vertical /template/ Border#IndeterminateProgressBarIndicator">
-    <Setter Property="Height" Value="{Binding $parent[ProgressBar].ContainerWidth}" />
+    <Setter Property="Height" Value="{Binding $parent[ProgressBar].TemplateProperties.ContainerWidth}" />
     <Setter Property="RenderTransform">
       <Setter.Value>
-        <TranslateTransform Y="{Binding $parent[ProgressBar].ContainerAnimationStartPosition}" />
+        <TranslateTransform Y="{Binding $parent[ProgressBar].TemplateProperties.ContainerAnimationStartPosition}" />
       </Setter.Value>
     </Setter>
   </Style>
   <Style Selector="ProgressBar:vertical /template/ Border#IndeterminateProgressBarIndicator2">
-    <Setter Property="Height" Value="{Binding $parent[ProgressBar].Container2Width}" />
+    <Setter Property="Height" Value="{Binding $parent[ProgressBar].TemplateProperties.Container2Width}" />
     <Setter Property="RenderTransform">
       <Setter.Value>
-        <TranslateTransform Y="{Binding $parent[ProgressBar].Container2AnimationStartPosition}" />
+        <TranslateTransform Y="{Binding $parent[ProgressBar].TemplateProperties.Container2AnimationStartPosition}" />
       </Setter.Value>
     </Setter>
   </Style>
