@@ -31,7 +31,7 @@ namespace Avalonia.Logging.Serilog
             Logger.Sink = new SerilogLogger(output);
         }
 
-        public bool IsEnabled(LogEventLevel level)
+        public bool IsEnabled(LogEventLevel level, string area)
         {
             return _output.IsEnabled((SerilogLogEventLevel)level);
         }

@@ -421,8 +421,7 @@ namespace Avalonia
                 throw new ArgumentException($"The property {property.Name} is readonly.");
             }
 
-            Logger.TryGet(LogEventLevel.Verbose)?.Log(
-                LogArea.Property,
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.Property)?.Log(
                 this,
                 "Bound {Property} to {Binding} with priority LocalValue",
                 property,
@@ -501,8 +500,7 @@ namespace Avalonia
 
                 if (change.IsEffectiveValueChange)
                 {
-                    Logger.TryGet(LogEventLevel.Verbose)?.Log(
-                        LogArea.Property,
+                    Logger.TryGet(LogEventLevel.Verbose, LogArea.Property)?.Log(
                         this,
                         "{Property} changed from {$Old} to {$Value} with priority {Priority}",
                         property,
@@ -586,8 +584,7 @@ namespace Avalonia
         /// <param name="e">The binding error.</param>
         protected internal virtual void LogBindingError(AvaloniaProperty property, Exception e)
         {
-            Logger.TryGet(LogEventLevel.Warning)?.Log(
-                LogArea.Binding,
+            Logger.TryGet(LogEventLevel.Warning, LogArea.Property)?.Log(
                 this,
                 "Error in binding to {Target}.{Property}: {Message}",
                 this,
@@ -857,8 +854,7 @@ namespace Avalonia
         /// <param name="priority">The priority.</param>
         private void LogPropertySet<T>(AvaloniaProperty<T> property, T value, BindingPriority priority)
         {
-            Logger.TryGet(LogEventLevel.Verbose)?.Log(
-                LogArea.Property,
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.Property)?.Log(
                 this,
                 "Set {Property} to {$Value} with priority {Priority}",
                 property,

@@ -78,7 +78,7 @@ namespace Avalonia.Rendering
             }
             catch (RenderTargetCorruptedException ex)
             {
-                Logger.TryGet(LogEventLevel.Information)?.Log("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                Logger.TryGet(LogEventLevel.Information, LogArea.Animations)?.Log(this, "Render target was corrupted. Exception: {0}", ex);
                 _renderTarget.Dispose();
                 _renderTarget = null;
             }

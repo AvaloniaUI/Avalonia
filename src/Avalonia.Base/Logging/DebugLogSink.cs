@@ -19,7 +19,10 @@ namespace Avalonia.Logging
             _areas = areas?.Count > 0 ? areas : null;
         }
 
-        public bool IsEnabled(LogEventLevel level) => level >= _level;
+        public bool IsEnabled(LogEventLevel level, string area)
+        {
+            return level >= _level && (_areas?.Contains(area) ?? true);
+        }
 
         public void Log(LogEventLevel level, string area, object source, string messageTemplate)
         {
@@ -60,8 +63,6 @@ namespace Avalonia.Logging
                 Debug.WriteLine(Format(area, messageTemplate, source, propertyValues));
             }
         }
-
-        private bool IsEnabled(LogEventLevel level, string area) => IsEnabled(level) && (_areas?.Contains(area) ?? true);
 
         private static string Format<T0, T1, T2>(
             string area,

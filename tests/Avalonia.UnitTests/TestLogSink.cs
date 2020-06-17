@@ -27,7 +27,7 @@ namespace Avalonia.UnitTests
             return Disposable.Create(() => Logger.Sink = null);
         }
 
-        public bool IsEnabled(LogEventLevel level)
+        public bool IsEnabled(LogEventLevel level, string area)
         {
             return true;
         }
