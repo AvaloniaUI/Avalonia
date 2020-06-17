@@ -584,7 +584,7 @@ namespace Avalonia
         /// <param name="e">The binding error.</param>
         protected internal virtual void LogBindingError(AvaloniaProperty property, Exception e)
         {
-            Logger.TryGet(LogEventLevel.Warning, LogArea.Property)?.Log(
+            Logger.TryGet(LogEventLevel.Warning, LogArea.Binding)?.Log(
                 this,
                 "Error in binding to {Target}.{Property}: {Message}",
                 this,
