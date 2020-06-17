@@ -17,18 +17,16 @@
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border x:Name="ProgressBarRoot" ClipToBounds="True" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource ControlCornerRadius}">
-          <Border CornerRadius="{DynamicResource ControlCornerRadius}">
-            <Grid>
-              <Grid x:Name="DeterminateRoot">
+        <Border x:Name="ProgressBarRoot" ClipToBounds="True" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource ControlCornerRadius}">          
+            <Panel>
+              <Panel x:Name="DeterminateRoot">
                 <Border CornerRadius="{DynamicResource ControlCornerRadius}" x:Name="PART_Indicator" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Foreground}" />
-              </Grid>
-              <Grid x:Name="IndeterminateRoot">
+              </Panel>
+              <Panel x:Name="IndeterminateRoot">
                 <Border x:Name="IndeterminateProgressBarIndicator" CornerRadius="{DynamicResource ControlCornerRadius}" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Foreground}" />
                 <Border x:Name="IndeterminateProgressBarIndicator2" CornerRadius="{DynamicResource ControlCornerRadius}" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Foreground}" />
-              </Grid>
-            </Grid>
-          </Border>
+              </Panel>
+            </Panel>          
         </Border>
       </ControlTemplate>
     </Setter>
@@ -57,30 +55,30 @@
     </Setter>
   </Style>
   <!-- FadeInAnimation mockup-->
-  <Style Selector="ProgressBar /template/ Grid#DeterminateRoot">
+  <Style Selector="ProgressBar /template/ Panel#DeterminateRoot">
     <Setter Property="Transitions">
       <Transitions>
         <DoubleTransition Property="Opacity" Duration="0:0:0.197" />
       </Transitions>
     </Setter>
   </Style>
-  <Style Selector="ProgressBar /template/ Grid#IndeterminateRoot">
+  <Style Selector="ProgressBar /template/ Panel#IndeterminateRoot">
     <Setter Property="Transitions">
       <Transitions>
         <DoubleTransition Property="Opacity" Duration="0:0:0.197" />
       </Transitions>
     </Setter>
   </Style>
-  <Style Selector="ProgressBar /template/ Grid#DeterminateRoot">
+  <Style Selector="ProgressBar /template/ Panel#DeterminateRoot">
     <Setter Property="Opacity" Value="1" />
   </Style>
-  <Style Selector="ProgressBar /template/ Grid#IndeterminateRoot">
+  <Style Selector="ProgressBar /template/ Panel#IndeterminateRoot">
     <Setter Property="Opacity" Value="0" />
   </Style>
-  <Style Selector="ProgressBar:indeterminate /template/ Grid#DeterminateRoot">
+  <Style Selector="ProgressBar:indeterminate /template/ Panel#DeterminateRoot">
     <Setter Property="Opacity" Value="0" />
   </Style>
-  <Style Selector="ProgressBar:indeterminate /template/ Grid#IndeterminateRoot">
+  <Style Selector="ProgressBar:indeterminate /template/ Panel#IndeterminateRoot">
     <Setter Property="Opacity" Value="1" />
   </Style>
   <Style Selector="ProgressBar:horizontal:indeterminate /template/ Border#IndeterminateProgressBarIndicator">
