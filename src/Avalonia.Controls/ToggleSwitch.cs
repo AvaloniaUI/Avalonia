@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Primitives;
+﻿using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 
@@ -57,6 +58,18 @@ namespace Avalonia.Controls
             set { SetValue(OffContentProperty, value); }
         }
 
+        public IContentPresenter OffContentPresenter
+        {
+            get;
+            private set;
+        }
+
+        public IContentPresenter OnContentPresenter
+        {
+            get;
+            private set;
+        }
+
         /// <summary>
         /// Gets or Sets the <see cref="IDataTemplate"/> used to display the <see cref="OffContent"/>.
         /// </summary>
@@ -99,6 +112,24 @@ namespace Avalonia.Controls
             {
                 LogicalChildren.Add(newChild);
             }
+        }
+
+        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        {
+            var result = base.RegisterContentPresenter(presenter);
+
+            if (presenter.Name == "Part_OnContentPresenter")
+            {
+                OnContentPresenter = presenter;
+                result = true;
+            }
+            else if (presenter.Name == "PART_OffContentPresenter")
+            {
+                OffContentPresenter = presenter;
+                result = true;
+            }
+
+            return result;
         }
     }
 }
