@@ -13,14 +13,7 @@
     <AvaloniaResource Include="Assets\*" />
     <AvaloniaResource Include="Assets\Fonts\*" />
   </ItemGroup>
-  <ItemGroup>
-   
-    <AvaloniaResource Remove="Pages\UserControl1.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    
-    <None Remove="Pages\UserControl1.xaml" />
-  </ItemGroup>
+ 
   <ItemGroup>
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Bold.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-BoldItalic.ttf" />
@@ -29,9 +22,9 @@
     <EmbeddedResource Include="Pages\teapot.bin" />
   </ItemGroup>
   <ItemGroup>
-    <!--<Page Include="Pages\ToggleSwitchPage.xaml">
+    <Page Include="Pages\ToggleSwitchPage.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </Page>-->
+    </Page>
     <Page Include="Pages\UserControl1.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
