@@ -62,8 +62,13 @@ namespace Avalonia.Data.Core
 
             if (accessor == null)
             {
-                throw new NotSupportedException(
-                    $"Could not find a matching property accessor for {PropertyName}.");
+                reference.TryGetTarget(out object instance);
+
+                var message = $"Could not find a matching property accessor for '{PropertyName}' on '{instance}'";
+
+                var exception = new MissingMemberException(message);
+
+                accessor = new PropertyError(new BindingNotification(exception, BindingErrorType.Error));
             }
 
             _accessor = accessor;

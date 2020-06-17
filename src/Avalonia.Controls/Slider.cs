@@ -193,14 +193,15 @@ namespace Avalonia.Controls
             var orient = Orientation == Orientation.Horizontal;
 
             var pointDen = orient ? _track.Bounds.Width : _track.Bounds.Height;
-            pointDen += double.Epsilon; // Just add epsilon to avoid divide by zero exceptions.
+            // Just add epsilon to avoid NaN in case 0/0
+            pointDen += double.Epsilon;
 
             var pointNum = orient ? x.Position.X : x.Position.Y;
             var logicalPos = MathUtilities.Clamp(pointNum / pointDen, 0.0d, 1.0d);
             var invert = orient ? 0 : 1;
             var calcVal = Math.Abs(invert - logicalPos);
             var range = Maximum - Minimum;
-            var finalValue = calcVal * range;
+            var finalValue = calcVal * range + Minimum;
 
             Value = IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue;
         }
