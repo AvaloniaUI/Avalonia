@@ -638,7 +638,7 @@ namespace Avalonia.Controls
             var offsetDelta = Offset - _oldOffset;
             var viewportDelta = new Vector(Viewport.Width - _oldViewport.Width, Viewport.Height - _oldViewport.Height);
 
-            if (!extentDelta.NearlyEquals(default) && !offsetDelta.NearlyEquals(default) && !viewportDelta.NearlyEquals(default))
+            if (!extentDelta.NearlyEquals(default) || !offsetDelta.NearlyEquals(default) || !viewportDelta.NearlyEquals(default))
             {
                 var e = new ScrollChangedEventArgs(extentDelta, offsetDelta, viewportDelta);
                 OnScrollChanged(e);
