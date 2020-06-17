@@ -29,6 +29,9 @@
       <TabItem Header="Animations">
         <pages:AnimationsPage/>
       </TabItem>
+      <TabItem Header="Transitions">
+        <pages:TransitionsPage/>
+      </TabItem>
       <TabItem Header="Clipping">
         <pages:ClippingPage/>
       </TabItem>

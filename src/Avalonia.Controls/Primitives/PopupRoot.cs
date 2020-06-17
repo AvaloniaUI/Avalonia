@@ -121,7 +121,20 @@ namespace Avalonia.Controls.Primitives
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var measured = base.MeasureOverride(availableSize);
+            var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
+            var constraint = availableSize;
+
+            if (double.IsInfinity(constraint.Width))
+            {
+                constraint = constraint.WithWidth(maxAutoSize.Width);
+            }
+
+            if (double.IsInfinity(constraint.Height))
+            {
+                constraint = constraint.WithHeight(maxAutoSize.Height);
+            }
+
+            var measured = base.MeasureOverride(constraint);
             var width = measured.Width;
             var height = measured.Height;
             var widthCache = Width;
