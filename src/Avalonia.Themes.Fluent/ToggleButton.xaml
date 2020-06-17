@@ -40,7 +40,6 @@
     </Setter>
   </Style>
 
-  <!--  PointerOverState  -->
   <Style Selector="ToggleButton:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPointerOver}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushPointerOver}" />
