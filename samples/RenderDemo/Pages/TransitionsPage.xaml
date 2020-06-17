@@ -77,6 +77,19 @@
         <Setter Property="RenderTransform" Value="skewX(-20deg)" />
       </Style>
 
+      <Style Selector="Border.Rect6">
+        <Setter Property="Transitions">
+          <Transitions>
+            <TransformOperationsTransition Property="RenderTransform"  Duration="0:0:0.5" Delay="0:0:1"/>
+          </Transitions>
+        </Setter>
+        <Setter Property="RenderTransform" Value="scale(0.8)" />
+      </Style>
+
+      <Style Selector="Border.Rect6:pointerover">
+        <Setter Property="RenderTransform" Value="none" />
+      </Style>
+
     </Styles>
   </UserControl.Styles>
 
@@ -95,6 +108,7 @@
         <Border Classes="Test Rect3"/>
         <Border Classes="Test Rect4" Background="Navy"/>
         <Border Classes="Test Rect5" Background="SeaGreen"/>
+        <Border Classes="Test Rect6" Background="Orange"/>
       </WrapPanel>
     </StackPanel>
   </Grid>
