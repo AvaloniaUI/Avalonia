@@ -163,7 +163,7 @@ namespace Avalonia.Rendering.SceneGraph
                 ++_drawOperationindex;
             }
         }
-        
+
         public void Custom(ICustomDrawOperation custom)
         {
             var next = NextDrawAs<CustomDrawOperation>();
@@ -207,7 +207,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             throw new NotSupportedException("Creating layers on a deferred drawing context not supported");
         }
-        
+
         /// <inheritdoc/>
         public void PopClip()
         {
@@ -282,7 +282,7 @@ namespace Avalonia.Rendering.SceneGraph
                 ++_drawOperationindex;
             }
         }
-        
+
         /// <inheritdoc />
         public void PushClip(RoundedRect clip)
         {
@@ -383,7 +383,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             using (var refCounted = RefCountable.Create(node))
             {
-                Add(refCounted); 
+                Add(refCounted);
             }
         }
 
