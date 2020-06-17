@@ -546,8 +546,8 @@ namespace Avalonia.Layout
                 if (UseLayoutRounding)
                 {
                     var scale = GetLayoutScale();
-                    width = LayoutHelper.RoundLayoutValue(width, scale);
-                    height = LayoutHelper.RoundLayoutValue(height, scale);
+                    width = MathUtilities.RoundLayoutValue(width, scale);
+                    height = MathUtilities.RoundLayoutValue(height, scale);
                 }
 
                 return NonNegative(new Size(width, height).Inflate(margin));
@@ -654,8 +654,8 @@ namespace Avalonia.Layout
 
                 if (useLayoutRounding)
                 {
-                    originX = LayoutHelper.RoundLayoutValue(originX, scale);
-                    originY = LayoutHelper.RoundLayoutValue(originY, scale);
+                    originX = MathUtilities.RoundLayoutValue(originX, scale);
+                    originY = MathUtilities.RoundLayoutValue(originY, scale);
                 }
 
                 Bounds = new Rect(originX, originY, size.Width, size.Height);
