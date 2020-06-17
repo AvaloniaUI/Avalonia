@@ -1,45 +1,126 @@
-<Styles xmlns="https://github.com/avaloniaui">
-    <Style Selector="TabItem">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}"/>
-        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLightBrush}"/>
-        <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        <Setter Property="Padding" Value="8"/>
-        <Setter Property="Template">
-            <ControlTemplate>
-                <ContentPresenter
-                    Name="PART_ContentPresenter"
-                    Background="{TemplateBinding Background}"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    ContentTemplate="{TemplateBinding HeaderTemplate}"
-                    Content="{TemplateBinding Header}"
-                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                    Margin="{TemplateBinding Margin}"
-                    Padding="{TemplateBinding Padding}"/>
-            </ControlTemplate>
-        </Setter>
-    </Style>
-    <Style Selector="TabItem:disabled">
-        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
-    </Style>
-    <Style Selector="TabItem:pointerover">
-        <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
-    </Style>
-    <Style Selector="TabItem:selected">
-        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
-    </Style>
-    <Style Selector="TabItem:selected:focus">
-        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}"/>
-    </Style>
-    <Style Selector="TabItem:selected:pointerover">
-        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}"/>
-    </Style>
-    <Style Selector="TabItem:selected:focus:pointerover">
-        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}"/>
-    </Style>
-    <Style Selector="TabItem[TabStripPlacement=Right]">
-        <Setter Property="HorizontalContentAlignment" Value="Right"/>
-    </Style>
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="20">
+        <TabItem Header="Leaf" />
+        <TabItem Header="Arch" IsSelected="True" />
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+  <Styles.Resources>
+    <x:Double x:Key="TabItemHeight">48</x:Double>
+  </Styles.Resources>
+
+  <Style Selector="TabItem">
+    <Setter Property="FontSize" Value="{DynamicResource PivotHeaderItemFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource PivotHeaderItemThemeFontWeight}" />
+    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundUnselected}" />
+    <Setter Property="Foreground" Value="{DynamicResource PivotHeaderItemForegroundUnselected}" />
+    <Setter Property="Padding" Value="{DynamicResource PivotHeaderItemMargin}" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Height" Value="{DynamicResource TabItemHeight}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_LayoutRoot"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Padding="{TemplateBinding Padding}">
+          <Panel>
+            <ContentPresenter Name="PART_ContentPresenter"
+                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                              Content="{TemplateBinding Header}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              TextBlock.FontFamily="{TemplateBinding FontFamily}"
+                              TextBlock.FontSize="{TemplateBinding FontSize}"
+                              TextBlock.FontWeight="{TemplateBinding FontWeight}" />
+            <Border Name="PART_SelectedPipe"
+                    CornerRadius="{DynamicResource ControlCornerRadius}"
+                    Background="{DynamicResource PivotHeaderItemSelectedPipeFill}" />
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- Nornal state -->
+  <Style Selector="TabItem /template/ Border#PART_LayoutRoot">
+    <Setter Property="Background" Value="{Binding $parent[TabItem].Background}" />
+  </Style>
+  <Style Selector="TabItem /template/ Border#PART_SelectedPipe">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+
+  <!-- Selected state -->
+  <!--  We don't use selector to PART_LayoutRoot, so developer can override selected item background with TabStripItem.Background  -->
+  <Style Selector="TabItem:selected">
+    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundSelected}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource PivotHeaderItemForegroundSelected}" />
+  </Style>
+  <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+    <Setter Property="IsVisible" Value="True" />
+  </Style>
+
+  <!-- PointerOver state -->
+  <Style Selector="TabItem:pointerover /template/ Border#PART_LayoutRoot">
+    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundUnselectedPointerOver}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource PivotHeaderItemForegroundUnselectedPointerOver}" />
+  </Style>
+
+  <!-- Selected PointerOver state -->
+  <Style Selector="TabItem:selected:pointerover /template/ Border#PART_LayoutRoot">
+    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundSelectedPointerOver}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource PivotHeaderItemForegroundSelectedPointerOver}" />
+  </Style>
+
+  <!-- Pressed state -->
+  <Style Selector="TabItem:pressed /template/ Border#PART_LayoutRoot">
+    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundUnselectedPressed}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource PivotHeaderItemForegroundUnselectedPressed}" />
+  </Style>
+
+  <!-- Selected Pressed state -->
+  <Style Selector="TabItem:pressed /template/ Border#PART_LayoutRoot">
+    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundSelectedPressed}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource PivotHeaderItemForegroundSelectedPressed}" />
+  </Style>
+
+  <!-- Disabled state -->
+  <Style Selector="TabItem:disabled /template/ Border#PART_LayoutRoot">
+    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundDisabled}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource PivotHeaderItemForegroundDisabled}" />
+  </Style>
+
+  <!-- TabStripPlacement States Group -->
+  <Style Selector="TabItem[TabStripPlacement=Left] /template/ Border#PART_SelectedPipe">
+    <Setter Property="Width" Value="2" />
+    <Setter Property="Margin" Value="0,12,2,12" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="TabItem[TabStripPlacement=Left] /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Margin" Value="8,0,0,0" />
+  </Style>
+
+  <Style Selector="TabItem[TabStripPlacement=Top] /template/ Border#PART_SelectedPipe, TabItem[TabStripPlacement=Bottom] /template/ Border#PART_SelectedPipe">
+    <Setter Property="Height" Value="2" />
+    <Setter Property="Margin" Value="0,0,0,2" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Bottom" />
+  </Style>
+
+  <Style Selector="TabItem[TabStripPlacement=Right] /template/ Border#PART_SelectedPipe">
+    <Setter Property="Width" Value="2" />
+    <Setter Property="Margin" Value="2,12,0,12" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="TabItem[TabStripPlacement=Right] /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Margin" Value="0,0,8,0" />
+  </Style>
+  <Style Selector="TabItem[TabStripPlacement=Right]">
+    <Setter Property="HorizontalContentAlignment" Value="Right" />
+  </Style>
 </Styles>
