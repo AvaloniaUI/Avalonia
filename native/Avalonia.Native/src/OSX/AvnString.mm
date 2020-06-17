@@ -29,6 +29,13 @@ public:
         memcpy((void*)_cstring, (void*)cstring, _length);
     }
     
+    AvnStringImpl(void*ptr, int len)
+    {
+        _length = len;
+        _cstring = (const char*)malloc(_length);
+        memcpy((void*)_cstring, ptr, len);
+    }
+    
     virtual ~AvnStringImpl()
     {
         free((void*)_cstring);
@@ -113,4 +120,9 @@ IAvnStringArray* CreateAvnStringArray(NSArray<NSString*> * array)
 IAvnStringArray* CreateAvnStringArray(NSString* string)
 {
     return new AvnStringArrayImpl(string);
+}
+
+IAvnString* CreateByteArray(void* data, int len)
+{
+    return new AvnStringImpl(data, len);
 }

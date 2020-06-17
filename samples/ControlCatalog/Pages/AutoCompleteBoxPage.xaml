@@ -32,7 +32,6 @@
         <TextBlock Text="Disabled"/>
         <AutoCompleteBox Width="200"
                          IsEnabled="False"/>
-        <ToggleSwitch> Light</ToggleSwitch>
       </StackPanel>
       
 
