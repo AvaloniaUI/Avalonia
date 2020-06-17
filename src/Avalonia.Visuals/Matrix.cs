@@ -54,7 +54,7 @@ namespace Avalonia
         /// <summary>
         /// HasInverse Property - returns true if this matrix is invertible, false otherwise.
         /// </summary>
-        public bool HasInverse => GetDeterminant() != 0;
+        public bool HasInverse => !MathUtilities.IsZero(GetDeterminant());
 
         /// <summary>
         /// The first element of the first row
@@ -286,7 +286,7 @@ namespace Avalonia
         {
             double d = GetDeterminant();
 
-            if (d == 0)
+            if (MathUtilities.IsZero(d))
             {
                 throw new InvalidOperationException("Transform is not invertible.");
             }
@@ -318,6 +318,77 @@ namespace Avalonia
                     tokenizer.ReadDouble()
                 );
             }
+        }
+
+        /// <summary>
+        /// Decomposes given matrix into transform operations.
+        /// </summary>
+        /// <param name="matrix">Matrix to decompose.</param>
+        /// <param name="decomposed">Decomposed matrix.</param>
+        /// <returns>The status of the operation.</returns>
+        public static bool TryDecomposeTransform(Matrix matrix, out Decomposed decomposed)
+        {
+            decomposed = default;
+
+            var determinant = matrix.GetDeterminant();
+            
+            if (MathUtilities.IsZero(determinant))
+            {
+                return false;
+            }
+
+            var m11 = matrix.M11;
+            var m21 = matrix.M21;
+            var m12 = matrix.M12;
+            var m22 = matrix.M22;
+
+            // Translation.
+            decomposed.Translate = new Vector(matrix.M31, matrix.M32);
+
+            // Scale sign.
+            var scaleX = 1d;
+            var scaleY = 1d;
+
+            if (determinant < 0)
+            {
+                if (m11 < m22)
+                {
+                    scaleX *= -1d;
+                }
+                else
+                {
+                    scaleY *= -1d;
+                }
+            }
+
+            // X Scale.
+            scaleX *= Math.Sqrt(m11 * m11 + m12 * m12);
+
+            m11 /= scaleX;
+            m12 /= scaleX;
+
+            // XY Shear.
+            double scaledShear = m11 * m21 + m12 * m22;
+
+            m21 -= m11 * scaledShear;
+            m22 -= m12 * scaledShear;
+
+            // Y Scale.
+            scaleY *= Math.Sqrt(m21 * m21 + m22 * m22);
+
+            decomposed.Scale = new Vector(scaleX, scaleY);
+            decomposed.Skew = new Vector(scaledShear / scaleY, 0d);
+            decomposed.Angle = Math.Atan2(m12, m11);
+
+            return true;
+        }
+
+        public struct Decomposed
+        {
+            public Vector Translate;
+            public Vector Scale;
+            public Vector Skew;
+            public double Angle;
         }
     }
 }
