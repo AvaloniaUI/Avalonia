@@ -2,7 +2,7 @@
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel>
-        <ProgressBar VerticalAlignment="Center" IsIndeterminate="True" Value="50" />
+        <ProgressBar VerticalAlignment="Center" IsIndeterminate="True" />
         <ProgressBar HorizontalAlignment="Left" IsIndeterminate="True" Orientation="Vertical" />
       </StackPanel>
     </Border>
