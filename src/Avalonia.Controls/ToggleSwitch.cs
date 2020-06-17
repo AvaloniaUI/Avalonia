@@ -20,7 +20,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IDataTemplate> OffContentTemplateProperty =
             AvaloniaProperty.Register<ToggleSwitch, IDataTemplate>(nameof(OffContentTemplate));
 
-
         public static readonly StyledProperty<object> OnContentProperty =
       AvaloniaProperty.Register<ToggleSwitch, object>(nameof(OnContent), defaultValue: "On");
 

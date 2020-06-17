@@ -18,9 +18,13 @@
     <EmbeddedResource Include="**/*.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="ToggleSwitch -BackUp.xaml" />
     <None Remove="ToggleSwitch.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Update="ToggleSwitch -BackUp.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Update="ToggleSwitch.xaml">
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>

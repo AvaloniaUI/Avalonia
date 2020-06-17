@@ -4,9 +4,9 @@
         xmlns:sys="clr-namespace:System;assembly=netstandard"
        >
   <Design.PreviewWith>
-    <StackPanel Margin="20" Width="250" Spacing="24" >
+    <StackPanel Margin="20" Width="250" Spacing="24">
 
-      <StackPanel Spacing="12" >
+      <StackPanel Spacing="12"  >
         <TextBlock
           Text="Automatic updates"
           Classes="h1"/>
