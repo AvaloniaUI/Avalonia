@@ -7,14 +7,16 @@
       Text="Simple ToggleSwitch" 
       Classes="header"/>
     
-      <Border BorderBrush="Gray" BorderThickness="0.5" CornerRadius="1">
+      <Border Classes="Thin">
  
         <StackPanel>
           <ToggleSwitch 
             Margin="10"/>
+          
           <TextBox
             Text="&lt;ToggleSwitch/&gt;"
             Classes="CodeBox"/>
+        
         </StackPanel>
         
       </Border>
@@ -23,10 +25,13 @@
       Text="headered ToggleSwitch"  
       Classes="header"/>
     
-    <Border BorderBrush="Gray" BorderThickness="0.5" CornerRadius="1">
+    <Border Classes="Thin">
       
       <StackPanel>
-        <ToggleSwitch Content="headered" IsChecked="true" Margin="10"/>
+        <ToggleSwitch 
+          Content="headered" 
+          IsChecked="true" Margin="10"/>
+        
         <TextBox
           Text="&lt;ToggleSwitch&gt;headered&lt;/ToggleSwitch&gt;"
           Classes="CodeBox"/>
@@ -38,13 +43,20 @@
       Text="Custom content ToggleSwitch" 
       Classes="header"/>
     
-    <Border BorderBrush="Gray" BorderThickness="0.5" CornerRadius="1">
+    <Border Classes="Thin">
       
       <StackPanel>
-        <ToggleSwitch Content="Custom" OnContent="Aan" OffContent="Uit" Margin="10"/>
+        
+        <ToggleSwitch 
+          Content="Custom" 
+          OnContent="Aan" 
+          OffContent="Uit" 
+          Margin="10"/>
+        
         <TextBox
           Text="&lt;ToggleSwitch Content = &quot;Custom&quot; ContentOn = &quot;Aan&quot; ContentOff = &quot;Uit&quot; /&gt;"
           Classes="CodeBox"/>
+      
       </StackPanel>
     
     </Border>
@@ -53,9 +65,10 @@
       Text="Image content ToggleSwitch" 
       Classes="header"/>
     
-    <Border BorderBrush="gray" BorderThickness="0.5" CornerRadius="1">
+    <Border Classes="Thin">
       
       <StackPanel>
+        
         <ToggleSwitch Content="Just Click!" Margin="10">
       
           <ToggleSwitch.OnContent>
@@ -67,7 +80,9 @@
           </ToggleSwitch.OffContent>
       
         </ToggleSwitch>
+      
       </StackPanel>
+    
     </Border>    
    
   </StackPanel>
@@ -86,7 +101,14 @@
     <Setter Property="FontSize" Value="18"/>
     <Setter Property="Margin" Value="0 20 0 20"/>
    </Style>
+  
+  <Style Selector="Border.Thin">
+    <Setter Property="BorderBrush" Value="Gray"/>
+    <Setter Property="BorderThickness" Value="0.5"/>
+    <Setter Property="CornerRadius" Value="1"/>
+  </Style>
 
 </UserControl.Styles>
+
 </UserControl>
 
