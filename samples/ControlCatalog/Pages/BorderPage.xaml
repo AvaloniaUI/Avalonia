@@ -29,13 +29,13 @@
               Padding="16">
         <TextBlock>Rounded Corners</TextBlock>
       </Border>
-      <Border BorderBrush="{DynamicResource ThemeAccentBrush2}"
-              BorderThickness="4"
-              CornerRadius="8" ClipToBounds="True">
-        <Border Background="Red" Padding="16">
-          <TextBlock>Clipped Rounded Corners</TextBlock>
-        </Border>
+      <Border BorderBrush="{DynamicResource ThemeAccentBrush2}" Width="100" Height="100"
+              BorderThickness="0"
+              Background="White"
+              CornerRadius="100" ClipToBounds="True">
+        <Image Source="/Assets/maple-leaf-888807_640.jpg" Stretch="UniformToFill" />
       </Border>
+      <TextBlock Text="Border with Clipping" HorizontalAlignment="Center" />
     </StackPanel>    
   </StackPanel>
 </UserControl>
