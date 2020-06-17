@@ -689,8 +689,7 @@ namespace Avalonia
 #if DEBUG
                 if (((INotifyCollectionChangedDebug)Classes).GetCollectionChangedSubscribers()?.Length > 0)
                 {
-                    Logger.TryGet(LogEventLevel.Warning)?.Log(
-                        LogArea.Control,
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
                         this,
                         "{Type} detached from logical tree but still has class listeners",
                         GetType());
