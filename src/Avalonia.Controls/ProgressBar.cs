@@ -1,7 +1,4 @@
-
-using System;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 
@@ -12,6 +9,14 @@ namespace Avalonia.Controls
     /// </summary>
     public class ProgressBar : RangeBase
     {
+        private Geometry _clipRect;
+        private double _Container2Width;
+        private double _ContainerWidth;
+        private double _containerAnimationStartPosition;
+        private double _containerAnimationEndPosition;
+        private double _container2AnimationStartPosition;
+        private double _container2AnimationEndPosition;
+
         public static readonly StyledProperty<bool> IsIndeterminateProperty =
             AvaloniaProperty.Register<ProgressBar, bool>(nameof(IsIndeterminate));
 
@@ -50,7 +55,7 @@ namespace Avalonia.Controls
                 nameof(Container2Width),
                 p => p.Container2Width,
                 (p, o) => p.Container2Width = o);
-                
+
         public static readonly DirectProperty<ProgressBar, double> ContainerWidthProperty =
             AvaloniaProperty.RegisterDirect<ProgressBar, double>(
                 nameof(ContainerWidth),
@@ -94,52 +99,42 @@ namespace Avalonia.Controls
             set => SetValue(OrientationProperty, value);
         }
 
-        private double _containerAnimationStartPosition;
         public double ContainerAnimationStartPosition
         {
             get => _containerAnimationStartPosition;
             set => SetAndRaise(ContainerAnimationStartPositionProperty, ref _containerAnimationStartPosition, value);
         }
 
-        private double _containerAnimationEndPosition;
         public double ContainerAnimationEndPosition
         {
             get => _containerAnimationEndPosition;
             set => SetAndRaise(ContainerAnimationEndPositionProperty, ref _containerAnimationEndPosition, value);
         }
 
-        private double _container2AnimationStartPosition;
         public double Container2AnimationStartPosition
         {
             get => _container2AnimationStartPosition;
             set => SetAndRaise(Container2AnimationStartPositionProperty, ref _container2AnimationStartPosition, value);
         }
 
-
-       
-       
-        private double _Container2Width;
         public double Container2Width
         {
             get => _Container2Width;
             set => SetAndRaise(Container2WidthProperty, ref _Container2Width, value);
         }
 
-        private double _ContainerWidth;
         public double ContainerWidth
         {
             get => _ContainerWidth;
             set => SetAndRaise(ContainerWidthProperty, ref _ContainerWidth, value);
         }
 
-        private double _container2AnimationEndPosition;
         public double Container2AnimationEndPosition
         {
             get => _container2AnimationEndPosition;
             set => SetAndRaise(Container2AnimationEndPositionProperty, ref _container2AnimationEndPosition, value);
         }
- 
-        private Geometry _clipRect;
+
         public Geometry ClipRect
         {
             get => _clipRect;
@@ -192,7 +187,7 @@ namespace Avalonia.Controls
 
                     ContainerAnimationStartPosition = barIndicatorWidth * -1.8; // Position at -180%
                     ContainerAnimationEndPosition = barIndicatorWidth * 3.0; // Position at 300%
-                    
+
                     Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
                     Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
 
