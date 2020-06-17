@@ -2,7 +2,7 @@
 <br />
 [![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) [![downloads](https://img.shields.io/nuget/dt/avalonia)](https://www.nuget.org/packages/Avalonia) [![MyGet](https://img.shields.io/myget/avalonia-ci/vpre/Avalonia.svg?label=myget)](https://www.myget.org/gallery/avalonia-ci) ![Size](https://img.shields.io/github/repo-size/avaloniaui/avalonia.svg) 
 
-<img src="https://user-images.githubusercontent.com/6759207/84750966-ac74ad80-afc4-11ea-97a4-067d99c15a7d.png" width="500"/>
+<img alt="Avalonia" src="https://user-images.githubusercontent.com/6759207/84894772-03a07e00-b0aa-11ea-9fd8-2fcbbde65930.png" width="500"/>
 
 ## 📖 About AvaloniaUI 
 
