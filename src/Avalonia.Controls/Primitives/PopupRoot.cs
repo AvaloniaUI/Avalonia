@@ -17,14 +17,14 @@ namespace Avalonia.Controls.Primitives
     public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
     {
         private readonly TopLevel _parent;
-        private PopupPositionerParameters _positionerParameters;
+        private PopupPositionerParameters _positionerParameters;        
 
         /// <summary>
         /// Initializes static members of the <see cref="PopupRoot"/> class.
         /// </summary>
         static PopupRoot()
         {
-            BackgroundProperty.OverrideDefaultValue(typeof(PopupRoot), Brushes.White);
+            BackgroundProperty.OverrideDefaultValue(typeof(PopupRoot), Brushes.White);            
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Avalonia.Controls.Primitives
         /// Gets the platform-specific window implementation.
         /// </summary>
         [CanBeNull]
-        public new IPopupImpl PlatformImpl => (IPopupImpl)base.PlatformImpl;
+        public new IPopupImpl PlatformImpl => (IPopupImpl)base.PlatformImpl;               
 
         /// <summary>
         /// Gets the parent control in the event route.
@@ -82,11 +82,13 @@ namespace Avalonia.Controls.Primitives
         }
 
         public void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
-            PopupPositioningEdge anchor = PopupPositioningEdge.None,
-            PopupPositioningEdge gravity = PopupPositioningEdge.None)
+            PopupAnchor anchor = PopupAnchor.None,
+            PopupGravity gravity = PopupGravity.None,
+            PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
+            Rect? rect = null)
         {
             _positionerParameters.ConfigurePosition(_parent, target,
-                placement, offset, anchor, gravity);
+                placement, offset, anchor, gravity, constraintAdjustment, rect);
 
             if (_positionerParameters.Size != default)
                 UpdatePosition();

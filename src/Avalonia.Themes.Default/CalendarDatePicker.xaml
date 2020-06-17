@@ -8,7 +8,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=netstandard">
-  <Style Selector="DatePicker">
+  <Style Selector="CalendarDatePicker">
 
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
@@ -119,7 +119,7 @@
     </Setter>
   </Style>
 
-  <Style Selector="DatePicker:focus /template/ TextBox#PART_TextBox">
+  <Style Selector="CalendarDatePicker:focus /template/ TextBox#PART_TextBox">
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
   </Style>
   

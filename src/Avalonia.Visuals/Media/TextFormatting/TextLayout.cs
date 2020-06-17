@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Media.Immutable;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 using Avalonia.Utility;
 
 namespace Avalonia.Media.TextFormatting
@@ -32,6 +33,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textDecorations">The text decorations.</param>
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
+        /// <param name="maxLines">The maximum number of text lines.</param>
         /// <param name="textStyleOverrides">The text style overrides.</param>
         public TextLayout(
             string text,
@@ -44,6 +46,7 @@ namespace Avalonia.Media.TextFormatting
             TextDecorationCollection textDecorations = null,
             double maxWidth = double.PositiveInfinity,
             double maxHeight = double.PositiveInfinity,
+            int maxLines = 0,
             IReadOnlyList<TextStyleRun> textStyleOverrides = null)
         {
             _text = string.IsNullOrEmpty(text) ?
@@ -59,6 +62,8 @@ namespace Avalonia.Media.TextFormatting
 
             MaxHeight = maxHeight;
 
+            MaxLines = maxLines;
+
             UpdateLayout();
         }
 
@@ -72,6 +77,12 @@ namespace Avalonia.Media.TextFormatting
         /// Gets the maximum height.
         /// </summary>
         public double MaxHeight { get; }
+
+
+        /// <summary>
+        /// Gets the maximum number of text lines.
+        /// </summary>
+        public double MaxLines { get; }
 
         /// <summary>
         /// Gets the text lines.
@@ -174,7 +185,7 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         private void UpdateLayout()
         {
-            if (_text.IsEmpty || Math.Abs(MaxWidth) < double.Epsilon || Math.Abs(MaxHeight) < double.Epsilon)
+            if (_text.IsEmpty || MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
             {
                 var textLine = CreateEmptyTextLine(0);
 
@@ -192,7 +203,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var currentPosition = 0;
 
-                while (currentPosition < _text.Length)
+                while (currentPosition < _text.Length && (MaxLines == 0 || textLines.Count < MaxLines))
                 {
                     int length;
 
@@ -222,7 +233,7 @@ namespace Avalonia.Media.TextFormatting
 
                     var remainingLength = length;
 
-                    while (remainingLength > 0)
+                    while (remainingLength > 0 && (MaxLines == 0 || textLines.Count < MaxLines))
                     {
                         var textSlice = _text.AsSlice(currentPosition, remainingLength);
 

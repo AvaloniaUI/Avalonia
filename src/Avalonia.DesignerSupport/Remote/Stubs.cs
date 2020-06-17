@@ -146,6 +146,10 @@ namespace Avalonia.DesignerSupport.Remote
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
 
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+        }
+
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
     }
 
@@ -156,6 +160,10 @@ namespace Avalonia.DesignerSupport.Remote
         public Task SetTextAsync(string text) => Task.CompletedTask;
 
         public Task ClearAsync() => Task.CompletedTask;
+        public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
+        public Task<string[]> GetFormatsAsync() => Task.FromResult(new string[0]);
+
+        public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
     }
 
     class CursorFactoryStub : IStandardCursorFactory

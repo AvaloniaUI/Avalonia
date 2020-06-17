@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Data.Converters;
 using Avalonia.LogicalTree;
 using Avalonia.Reactive;
 
@@ -58,31 +59,39 @@ namespace Avalonia.Controls
             return false;
         }
 
-        public static IObservable<object?> GetResourceObservable(this IStyledElement control, object key)
+        public static IObservable<object?> GetResourceObservable(
+            this IStyledElement control,
+            object key,
+            Func<object?, object?>? converter = null)
         {
             control = control ?? throw new ArgumentNullException(nameof(control));
             key = key ?? throw new ArgumentNullException(nameof(key));
 
-            return new ResourceObservable(control, key);
+            return new ResourceObservable(control, key, converter);
         }
 
-        public static IObservable<object?> GetResourceObservable(this IResourceProvider resourceProvider, object key)
+        public static IObservable<object?> GetResourceObservable(
+            this IResourceProvider resourceProvider,
+            object key,
+            Func<object?, object?>? converter = null)
         {
             resourceProvider = resourceProvider ?? throw new ArgumentNullException(nameof(resourceProvider));
             key = key ?? throw new ArgumentNullException(nameof(key));
 
-            return new FloatingResourceObservable(resourceProvider, key);
+            return new FloatingResourceObservable(resourceProvider, key, converter);
         }
 
         private class ResourceObservable : LightweightObservableBase<object?>
         {
             private readonly IStyledElement _target;
             private readonly object _key;
+            private readonly Func<object?, object?>? _converter;
 
-            public ResourceObservable(IStyledElement target, object key)
+            public ResourceObservable(IStyledElement target, object key, Func<object?, object?>? converter)
             {
                 _target = target;
                 _key = key;
+                _converter = converter;
             }
 
             protected override void Initialize()
@@ -97,25 +106,29 @@ namespace Avalonia.Controls
 
             protected override void Subscribed(IObserver<object?> observer, bool first)
             {
-                observer.OnNext(_target.FindResource(_key));
+                observer.OnNext(Convert(_target.FindResource(_key)));
             }
 
             private void ResourcesChanged(object sender, ResourcesChangedEventArgs e)
             {
-                PublishNext(_target.FindResource(_key));
+                PublishNext(Convert(_target.FindResource(_key)));
             }
+
+            private object? Convert(object? value) => _converter?.Invoke(value) ?? value;
         }
 
         private class FloatingResourceObservable : LightweightObservableBase<object?>
         {
             private readonly IResourceProvider _target;
             private readonly object _key;
+            private readonly Func<object?, object?>? _converter;
             private IResourceHost? _owner;
 
-            public FloatingResourceObservable(IResourceProvider target, object key)
+            public FloatingResourceObservable(IResourceProvider target, object key, Func<object?, object?>? converter)
             {
                 _target = target;
                 _key = key;
+                _converter = converter;
             }
 
             protected override void Initialize()
@@ -134,13 +147,13 @@ namespace Avalonia.Controls
             {
                 if (_target.Owner is object)
                 {
-                    observer.OnNext(_target.Owner?.FindResource(_key));
+                    observer.OnNext(Convert(_target.Owner?.FindResource(_key)));
                 }
             }
 
             private void PublishNext()
             {
-                PublishNext(_target.Owner?.FindResource(_key));
+                PublishNext(Convert(_target.Owner?.FindResource(_key)));
             }
 
             private void OwnerChanged(object sender, EventArgs e)
@@ -164,6 +177,8 @@ namespace Avalonia.Controls
             {
                 PublishNext();
             }
+
+            private object? Convert(object? value) => _converter?.Invoke(value) ?? value;
         }
     }
 }

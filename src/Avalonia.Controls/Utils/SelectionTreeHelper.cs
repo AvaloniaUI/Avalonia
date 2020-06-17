@@ -28,7 +28,7 @@ namespace Avalonia.Controls.Utils
 
                 if (depth < path.GetSize() - 1)
                 {
-                    node = node.GetAt(childIndex, realizeChildren)!;
+                    node = node.GetAt(childIndex, realizeChildren, path)!;
                 }
             }
         }
@@ -50,7 +50,7 @@ namespace Avalonia.Controls.Utils
                 int count = realizeChildren ? nextNode.Node.DataCount : nextNode.Node.ChildrenNodeCount;
                 for (int i = count - 1; i >= 0; i--)
                 {
-                    var child = nextNode.Node.GetAt(i, realizeChildren);
+                    var child = nextNode.Node.GetAt(i, realizeChildren, nextNode.Path);
                     var childPath = nextNode.Path.CloneWithChildIndex(i);
                     if (child != null)
                     {
@@ -90,7 +90,7 @@ namespace Avalonia.Controls.Utils
 
                     for (int i = endIndex; i >= startIndex; i--)
                     {
-                        var child = node.GetAt(i, realizeChild: true);
+                        var child = node.GetAt(i, true, end);
                         if (child != null)
                         {
                             var childPath = currentPath.CloneWithChildIndex(i);
@@ -112,7 +112,7 @@ namespace Avalonia.Controls.Utils
                 int endIndex = depth < end.GetSize() && isEndPath ? end.GetAt(depth) : info.Node.DataCount - 1;
                 for (int i = endIndex; i >= startIndex; i--)
                 {
-                    var child = info.Node.GetAt(i, realizeChild: true);
+                    var child = info.Node.GetAt(i, true, end);
                     if (child != null)
                     {
                         var childPath = info.Path.CloneWithChildIndex(i);
