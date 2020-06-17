@@ -8,11 +8,12 @@ namespace Avalonia.Media
     /// <summary>
     /// Represents a transform on an <see cref="IVisual"/>.
     /// </summary>
-    public abstract class Transform : Animatable
+    public abstract class Transform : Animatable, IMutableTransform
     {
         static Transform()
         {
-            Animation.Animation.RegisterAnimator<TransformAnimator>(prop => typeof(Transform).IsAssignableFrom(prop.OwnerType));
+            Animation.Animation.RegisterAnimator<TransformAnimator>(prop =>
+                typeof(ITransform).IsAssignableFrom(prop.OwnerType));
         }
 
         /// <summary>
