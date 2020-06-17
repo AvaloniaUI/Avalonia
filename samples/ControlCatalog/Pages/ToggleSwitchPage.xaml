@@ -91,10 +91,10 @@
   
   <Style Selector="TextBox.CodeBox" >
      <Setter Property="Padding" Value="10"/>
-     <Setter Property="Background" Value="Lightgray"/>
+     <Setter Property="IsReadOnly" Value="True"/>
      <Setter Property="BorderBrush" Value="Transparent"/>
      <Setter Property="FontSize" Value="14"/>
-     <Setter Property="IsEnabled" Value="false"/>
+     <Setter Property="IsEnabled" Value="true"/>
   </Style>
 
   <Style Selector="TextBlock.header">
@@ -105,7 +105,7 @@
   <Style Selector="Border.Thin">
     <Setter Property="BorderBrush" Value="Gray"/>
     <Setter Property="BorderThickness" Value="0.5"/>
-    <Setter Property="CornerRadius" Value="1"/>
+    <Setter Property="CornerRadius" Value="2"/>
   </Style>
 
 </UserControl.Styles>
