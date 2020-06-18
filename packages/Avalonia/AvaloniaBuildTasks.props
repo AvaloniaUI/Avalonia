@@ -4,7 +4,7 @@
     <AvailableItemName Include="AvaloniaResource" />
     <PropertyPageSchema Include="$(MSBuildThisFileDirectory)AvaloniaItemSchema.xaml" />
   </ItemGroup>
-  <ItemGroup Condition="$(EnableDefaultItems)'=='True'">
+  <ItemGroup Condition="'$(EnableDefaultItems)'=='True'">
     <AvaloniaXaml Include="**\*.axaml" SubType="Designer" />
     <AvaloniaXaml Include="**\*.paml" SubType="Designer" />
     <None Remove="**\*.axaml" />
