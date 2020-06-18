@@ -13,7 +13,7 @@ namespace Avalonia.Controls.UnitTests
     public class TimePickerTests
     {
         [Fact]
-        public void SelectedDateChanged_Should_Fire_When_SelectedDate_Set()
+        public void SelectedTimeChanged_Should_Fire_When_SelectedTime_Set()
         {
             using (UnitTestApplication.Start(Services))
             {
