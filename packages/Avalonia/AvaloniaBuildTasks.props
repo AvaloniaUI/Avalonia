@@ -3,8 +3,12 @@
     <AvailableItemName Include="AvaloniaXaml" />
     <AvailableItemName Include="AvaloniaResource" />
     <PropertyPageSchema Include="$(MSBuildThisFileDirectory)AvaloniaItemSchema.xaml" />
-    <AvaloniaXaml Include="**\*.axaml" />
-    <AvaloniaXaml Include="**\*.paml" />
+  </ItemGroup>
+  <ItemGroup Condition="$(EnableDefaultItems)'=='True'">
+    <AvaloniaXaml Include="**\*.axaml" SubType="Designer" />
+    <AvaloniaXaml Include="**\*.paml" SubType="Designer" />
+    <None Remove="**\*.axaml" />
+    <None Remove="**\*.paml" />
     <Compile Update="**\*.paml.cs">
       <DependentUpon>%(Filename)</DependentUpon>
       <SubType>Code</SubType>
