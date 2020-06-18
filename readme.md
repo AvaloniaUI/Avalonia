@@ -31,7 +31,9 @@ Install-Package Avalonia.Desktop
 Examples of UIs built with Avalonia
 ![image](https://user-images.githubusercontent.com/4672627/84707589-5b69a880-af35-11ea-87a6-7ad57a31d314.png)
 
-![image](https://user-images.githubusercontent.com/4672627/84708576-28281900-af37-11ea-8c88-e29dfcfa0558.png)
+![image](https://user-images.githubusercontent.com/4672627/85069644-d8419000-b18a-11ea-8732-be9055bb61fd.PNG)
+
+![image](https://user-images.githubusercontent.com/4672627/85069659-dc6dad80-b18a-11ea-8375-39ef95315b5c.PNG)
 
 ![image](https://user-images.githubusercontent.com/4672627/84708947-c3b98980-af37-11ea-8c9d-503334615bbf.png)
 
