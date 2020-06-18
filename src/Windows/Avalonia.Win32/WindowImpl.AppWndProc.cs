@@ -399,6 +399,8 @@ namespace Avalonia.Win32
                     {
                         MINMAXINFO mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
 
+                        _maxTrackSize = mmi.ptMaxTrackSize;
+
                         if (_minSize.Width > 0)
                         {
                             mmi.ptMinTrackSize.X =
