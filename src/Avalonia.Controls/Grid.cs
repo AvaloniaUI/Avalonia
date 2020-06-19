@@ -8,10 +8,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
-using Avalonia;
-using Avalonia.Collections;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
@@ -2103,7 +2101,7 @@ namespace Avalonia.Controls
                 for (int i = 0; i < definitions.Count; ++i)
                 {
                     DefinitionBase def = definitions[i];
-                    double roundedSize = MathUtilities.RoundLayoutValue(def.SizeCache, dpi);
+                    double roundedSize = LayoutHelper.RoundLayoutValue(def.SizeCache, dpi);
                     roundingErrors[i] = (roundedSize - def.SizeCache);
                     def.SizeCache = roundedSize;
                     roundedTakenSize += roundedSize;
