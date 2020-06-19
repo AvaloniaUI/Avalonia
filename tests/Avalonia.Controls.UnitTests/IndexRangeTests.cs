@@ -128,6 +128,88 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Intersect_Should_Remove_Items_From_Beginning()
+        {
+            var ranges = new List<IndexRange> { new IndexRange(0, 10) };
+            var removed = new List<IndexRange>();
+            var result = IndexRange.Intersect(ranges, new IndexRange(2, 12), removed);
+
+            Assert.Equal(2, result);
+            Assert.Equal(new[] { new IndexRange(2, 10) }, ranges);
+            Assert.Equal(new[] { new IndexRange(0, 1) }, removed);
+        }
+
+        [Fact]
+        public void Intersect_Should_Remove_Items_From_End()
+        {
+            var ranges = new List<IndexRange> { new IndexRange(0, 10) };
+            var removed = new List<IndexRange>();
+            var result = IndexRange.Intersect(ranges, new IndexRange(0, 8), removed);
+
+            Assert.Equal(2, result);
+            Assert.Equal(new[] { new IndexRange(0, 8) }, ranges);
+            Assert.Equal(new[] { new IndexRange(9, 10) }, removed);
+        }
+
+        [Fact]
+        public void Intersect_Should_Remove_Entire_Range_Start()
+        {
+            var ranges = new List<IndexRange> { new IndexRange(0, 5), new IndexRange(6, 10) };
+            var removed = new List<IndexRange>();
+            var result = IndexRange.Intersect(ranges, new IndexRange(6, 10), removed);
+
+            Assert.Equal(6, result);
+            Assert.Equal(new[] { new IndexRange(6, 10) }, ranges);
+            Assert.Equal(new[] { new IndexRange(0, 5) }, removed);
+        }
+
+        [Fact]
+        public void Intersect_Should_Remove_Entire_Range_End()
+        {
+            var ranges = new List<IndexRange> { new IndexRange(0, 5), new IndexRange(6, 10) };
+            var removed = new List<IndexRange>();
+            var result = IndexRange.Intersect(ranges, new IndexRange(0, 4), removed);
+
+            Assert.Equal(6, result);
+            Assert.Equal(new[] { new IndexRange(0, 4) }, ranges);
+            Assert.Equal(new[] { new IndexRange(5, 10) }, removed);
+        }
+
+        [Fact]
+        public void Intersect_Should_Remove_Entire_Range_Start_End()
+        {
+            var ranges = new List<IndexRange> 
+            { 
+                new IndexRange(0, 2),
+                new IndexRange(3, 7), 
+                new IndexRange(8, 10) 
+            };
+            var removed = new List<IndexRange>();
+            var result = IndexRange.Intersect(ranges, new IndexRange(3, 7), removed);
+
+            Assert.Equal(6, result);
+            Assert.Equal(new[] { new IndexRange(3, 7) }, ranges);
+            Assert.Equal(new[] { new IndexRange(0, 2), new IndexRange(8, 10) }, removed);
+        }
+
+        [Fact]
+        public void Intersect_Should_Remove_Entire_And_Partial_Range_Start_End()
+        {
+            var ranges = new List<IndexRange>
+            {
+                new IndexRange(0, 2),
+                new IndexRange(3, 7),
+                new IndexRange(8, 10)
+            };
+            var removed = new List<IndexRange>();
+            var result = IndexRange.Intersect(ranges, new IndexRange(4, 6), removed);
+
+            Assert.Equal(8, result);
+            Assert.Equal(new[] { new IndexRange(4, 6) }, ranges);
+            Assert.Equal(new[] { new IndexRange(0, 3), new IndexRange(7, 10) }, removed);
+        }
+
+        [Fact]
         public void Remove_Should_Remove_Entire_Range()
         {
             var ranges = new List<IndexRange> { new IndexRange(8, 10) };

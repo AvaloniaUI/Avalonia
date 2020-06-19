@@ -385,6 +385,38 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Scrolls the content up one line.
+        /// </summary>
+        public void LineUp()
+        {
+            Offset -= new Vector(0, _smallChange.Height);
+        }
+
+        /// <summary>
+        /// Scrolls the content down one line.
+        /// </summary>
+        public void LineDown()
+        {
+            Offset += new Vector(0, _smallChange.Height);
+        }
+
+        /// <summary>
+        /// Scrolls the content left one line.
+        /// </summary>
+        public void LineLeft()
+        {
+            Offset -= new Vector(_smallChange.Width, 0);
+        }
+
+        /// <summary>
+        /// Scrolls the content right one line.
+        /// </summary>
+        public void LineRight()
+        {
+            Offset += new Vector(_smallChange.Width, 0);
+        }
+
+        /// <summary>
         /// Scrolls to the top-left corner of the content.
         /// </summary>
         public void ScrollToHome()
@@ -587,16 +619,19 @@ namespace Avalonia.Controls
 
         private void RaiseScrollChanged()
         {
-            var e = new ScrollChangedEventArgs(
-                new Vector(Extent.Width - _oldExtent.Width, Extent.Height - _oldExtent.Height),
-                Offset - _oldOffset,
-                new Vector(Viewport.Width - _oldViewport.Width, Viewport.Height - _oldViewport.Height));
+            var extentDelta = new Vector(Extent.Width - _oldExtent.Width, Extent.Height - _oldExtent.Height);
+            var offsetDelta = Offset - _oldOffset;
+            var viewportDelta = new Vector(Viewport.Width - _oldViewport.Width, Viewport.Height - _oldViewport.Height);
 
-            OnScrollChanged(e);
+            if (!extentDelta.NearlyEquals(default) || !offsetDelta.NearlyEquals(default) || !viewportDelta.NearlyEquals(default))
+            {
+                var e = new ScrollChangedEventArgs(extentDelta, offsetDelta, viewportDelta);
+                OnScrollChanged(e);
 
-            _oldExtent = Extent;
-            _oldOffset = Offset;
-            _oldViewport = Viewport;
+                _oldExtent = Extent;
+                _oldOffset = Offset;
+                _oldViewport = Viewport;
+            }
         }
     }
 }
