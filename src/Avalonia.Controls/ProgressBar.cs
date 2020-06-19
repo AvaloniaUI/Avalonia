@@ -11,12 +11,14 @@ namespace Avalonia.Controls
     {        
         public class ProgressBarTemplateProperties : AvaloniaObject
         {
-            private double _Container2Width;
-            private double _ContainerWidth;
+            private double _container2Width;
+            private double _containerWidth;
             private double _containerAnimationStartPosition;
             private double _containerAnimationEndPosition;
             private double _container2AnimationStartPosition;
             private double _container2AnimationEndPosition;
+            private double _indeterminateStartingOffset;
+            private double _indeterminateEndingOffset;
 
             public static readonly DirectProperty<ProgressBarTemplateProperties, double> ContainerAnimationStartPositionProperty =
            AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
@@ -54,6 +56,18 @@ namespace Avalonia.Controls
                     p => p.ContainerWidth,
                     (p, o) => p.ContainerWidth = o);
 
+            public static readonly DirectProperty<ProgressBarTemplateProperties, double> IndeterminateStartingOffsetProperty =
+                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
+                    nameof(IndeterminateStartingOffset),
+                    p => p.IndeterminateStartingOffset,
+                    (p, o) => p.IndeterminateStartingOffset = o);
+
+            public static readonly DirectProperty<ProgressBarTemplateProperties, double> IndeterminateEndingOffsetProperty =
+                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
+                    nameof(IndeterminateEndingOffset),
+                    p => p.IndeterminateEndingOffset,
+                    (p, o) => p.IndeterminateEndingOffset = o);
+
             public double ContainerAnimationStartPosition
             {
                 get => _containerAnimationStartPosition;
@@ -74,20 +88,32 @@ namespace Avalonia.Controls
 
             public double Container2Width
             {
-                get => _Container2Width;
-                set => SetAndRaise(Container2WidthProperty, ref _Container2Width, value);
+                get => _container2Width;
+                set => SetAndRaise(Container2WidthProperty, ref _container2Width, value);
             }
 
             public double ContainerWidth
             {
-                get => _ContainerWidth;
-                set => SetAndRaise(ContainerWidthProperty, ref _ContainerWidth, value);
+                get => _containerWidth;
+                set => SetAndRaise(ContainerWidthProperty, ref _containerWidth, value);
             }
 
             public double Container2AnimationEndPosition
             {
                 get => _container2AnimationEndPosition;
                 set => SetAndRaise(Container2AnimationEndPositionProperty, ref _container2AnimationEndPosition, value);
+            }
+
+            public double IndeterminateStartingOffset
+            {
+                get => _indeterminateStartingOffset;
+                set => SetAndRaise(IndeterminateStartingOffsetProperty, ref _indeterminateStartingOffset, value);
+            }
+
+            public double IndeterminateEndingOffset
+            {
+                get => _indeterminateEndingOffset;
+                set => SetAndRaise(IndeterminateEndingOffsetProperty, ref _indeterminateEndingOffset, value);
             }
         }
         
@@ -182,6 +208,10 @@ namespace Avalonia.Controls
 
                     TemplateProperties.Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
                     TemplateProperties.Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
+                    
+                    // Remove these properties when we switch to fluent as default and removed the old one.
+                    TemplateProperties.IndeterminateStartingOffset = -dim;
+                    TemplateProperties.IndeterminateEndingOffset = dim * 2;
 
                     var padding = Padding;
                     var rectangle = new RectangleGeometry(

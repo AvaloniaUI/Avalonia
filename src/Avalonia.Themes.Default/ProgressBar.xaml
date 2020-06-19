@@ -61,11 +61,11 @@
                  Easing="LinearEasing">
         <KeyFrame Cue="0%">
           <Setter Property="TranslateTransform.X"
-                  Value="{Binding ContainerAnimationStartPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+                  Value="{Binding TemplateProperties.IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
         </KeyFrame>
         <KeyFrame Cue="100%">
           <Setter Property="TranslateTransform.X"
-                  Value="{Binding ContainerAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+                  Value="{Binding TemplateProperties.IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
         </KeyFrame>
       </Animation>
     </Style.Animations>
@@ -77,11 +77,11 @@
                  Easing="LinearEasing">
         <KeyFrame Cue="0%">
           <Setter Property="TranslateTransform.Y"
-                  Value="{Binding ContainerAnimationStartPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+                  Value="{Binding TemplateProperties.IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
         </KeyFrame>
         <KeyFrame Cue="100%">
           <Setter Property="TranslateTransform.Y"
-                  Value="{Binding ContainerAnimationEndPosition, RelativeSource={RelativeSource TemplatedParent}}" />
+                  Value="{Binding TemplateProperties.IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
         </KeyFrame>
       </Animation>
     </Style.Animations>
