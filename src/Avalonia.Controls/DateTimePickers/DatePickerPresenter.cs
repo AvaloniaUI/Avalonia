@@ -640,324 +640,48 @@ namespace Avalonia.Controls
         /// </summary>
         private void SetGrid()
         {
-            Contract.Requires<NullReferenceException>(_pickerContainer != null);
-
-            //Just like on DatePicker, brute force method to set grid
-            //Display order of date is based on user's culture, we attempt
-            //to figure out the normal date pattern
-            //Not sure if better way exists, but it works...
             var fmt = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;
-            var monthfmt = Regex.Match(fmt, "(M|MM)");
-            var yearfmt = Regex.Match(fmt, "(Y|YY|YYY|YYYY|y|yy|yyy|yyyy)");
-            var dayfmt = Regex.Match(fmt, "(d|dd)");
-
-            //Default is M-D-Y (en-us), this gives us fallback if pattern matching fails
-            var monthIndex = 0;
-            var yearIndex = 2;
-            var dayIndex = 1;
-
-            if (monthfmt.Success && yearfmt.Success && dayfmt.Success)
+            var columns = new List<(LoopingSelector, int)>
             {
-                monthIndex = monthfmt.Index;
-                yearIndex = yearfmt.Index;
-                dayIndex = dayfmt.Index;
-            }
+                (_monthSelector, MonthVisible ? fmt.IndexOf("m", StringComparison.OrdinalIgnoreCase) : -1),
+                (_yearSelector, YearVisible ? fmt.IndexOf("y", StringComparison.OrdinalIgnoreCase) : -1),
+                (_daySelector, DayVisible ? fmt.IndexOf("d", StringComparison.OrdinalIgnoreCase) : -1),
+            };
 
-            bool showMonth = MonthVisible;
-            bool showDay = DayVisible;
-            bool showYear = YearVisible;
-
+            columns.Sort((x, y) => x.Item2 - y.Item2);
             _pickerContainer.ColumnDefinitions.Clear();
 
-            //Below we add the selectors to the container grid (if not already done)
-            //and set the respective columns for each control
-            //We also need to add the selectors in the order they should appear, so 
-            //navigation via Tab key works, since we don't have a TabIndex property
+            var columnIndex = 0;
 
-            if (showMonth && !showDay && !showYear) //Month Only
+            foreach (var column in columns)
             {
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(132, GridUnitType.Star));
+                if (column.Item1 is null)
+                    continue;
 
-                _monthSelector.IsVisible = true;
-                if (_daySelector != null)
-                    _daySelector.IsVisible = false;
-                if (_yearSelector != null)
-                    _yearSelector.IsVisible = false;
+                column.Item1.IsVisible = column.Item2 != -1;
 
-                _spacer1.IsVisible = false;
-                _spacer2.IsVisible = false;
-
-                if (_monthSelector.Parent == null)
-                    _pickerContainer.Children.Add(_monthSelector);
-
-                Grid.SetColumn(_monthSelector, 0);
-            }
-            else if (!showMonth && showDay && !showYear) //Day Only
-            {
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(132, GridUnitType.Star));
-
-                _daySelector.IsVisible = true;
-                if (_monthSelector != null)
-                    _monthSelector.IsVisible = false;
-                if (_yearSelector != null)
-                    _yearSelector.IsVisible = false;
-
-                _spacer1.IsVisible = false;
-                _spacer2.IsVisible = false;
-
-                if (_daySelector.Parent == null)
-                    _pickerContainer.Children.Add(_daySelector);
-
-                Grid.SetColumn(_daySelector, 0);
-            }
-            else if (!showMonth && !showDay && showYear) //Year Only
-            {
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(132, GridUnitType.Star));
-
-                _yearSelector.IsVisible = true;
-                if (_monthSelector != null)
-                    _monthSelector.IsVisible = false;
-                if (_daySelector != null)
-                    _daySelector.IsVisible = false;
-
-                _spacer1.IsVisible = false;
-                _spacer2.IsVisible = false;
-
-                if (_yearSelector.Parent == null)
-                    _pickerContainer.Children.Add(_yearSelector);
-
-                Grid.SetColumn(_yearSelector, 0);
-            }
-            else if (showMonth && showDay && !showYear) //Month and Day Only
-            {
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(monthIndex < dayIndex ? 132 : 78, GridUnitType.Star));
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(0, GridUnitType.Auto));
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(monthIndex < dayIndex ? 78 : 132, GridUnitType.Star));
-
-                _monthSelector.IsVisible = true;
-                _daySelector.IsVisible = true;
-                if (_yearSelector != null)
-                    _yearSelector.IsVisible = false;
-
-                _spacer1.IsVisible = true;
-                _spacer2.IsVisible = false;
-
-                if(monthIndex < dayIndex)
+                if (column.Item2 != -1)
                 {
-                    if (_monthSelector.Parent == null)
-                        _pickerContainer.Children.Add(_monthSelector);
-                    if (_daySelector.Parent == null)
-                        _pickerContainer.Children.Add(_daySelector);
-
-                    Grid.SetColumn(_monthSelector, 0);
-                    Grid.SetColumn(_daySelector, 2);
-                }
-                else
-                {
-                    if (_daySelector.Parent == null)
-                        _pickerContainer.Children.Add(_daySelector);
-                    if (_monthSelector.Parent == null)
-                        _pickerContainer.Children.Add(_monthSelector);
-
-                    Grid.SetColumn(_monthSelector, 2);
-                    Grid.SetColumn(_daySelector, 0);
-                }
-
-                Grid.SetColumn(_spacer1, 1);
-            }
-            else if (showMonth && !showDay && showYear) //Month and Year Only
-            {
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(monthIndex < yearIndex ? 132 : 78, GridUnitType.Star));
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(0, GridUnitType.Auto));
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(monthIndex < yearIndex ? 78 : 132, GridUnitType.Star));
-
-                _monthSelector.IsVisible = true;
-                _yearSelector.IsVisible = true;
-                if (_daySelector != null)
-                    _daySelector.IsVisible = false;
-
-                _spacer1.IsVisible = true;
-                _spacer2.IsVisible = false;
-
-                if (monthIndex < yearIndex)
-                {
-                    if (_monthSelector.Parent == null)
-                        _pickerContainer.Children.Add(_monthSelector);
-                    if (_yearSelector.Parent == null)
-                        _pickerContainer.Children.Add(_yearSelector);
-
-                    Grid.SetColumn(_monthSelector, 0);
-                    Grid.SetColumn(_yearSelector, 2);
-                }
-                else
-                {
-                    if (_yearSelector.Parent == null)
-                        _pickerContainer.Children.Add(_yearSelector);
-                    if (_monthSelector.Parent == null)
-                        _pickerContainer.Children.Add(_monthSelector);
-
-                    Grid.SetColumn(_monthSelector, 2);
-                    Grid.SetColumn(_yearSelector, 0);
-                }
-
-                Grid.SetColumn(_spacer1, 1);
-            }
-            else if (!showMonth && showDay && showYear) //Day and Year Only
-            {
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(78, GridUnitType.Star));
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(0, GridUnitType.Auto));
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(78, GridUnitType.Star));
-
-                _daySelector.IsVisible = true;
-                _yearSelector.IsVisible = true;
-                if (_monthSelector != null)
-                    _monthSelector.IsVisible = false;
-                _spacer1.IsVisible = true;
-                _spacer2.IsVisible = false;
-
-                if (dayIndex < yearIndex)
-                {
-                    if (_daySelector.Parent == null)
-                        _pickerContainer.Children.Add(_daySelector);
-                    if (_yearSelector.Parent == null)
-                        _pickerContainer.Children.Add(_yearSelector);
-
-                    Grid.SetColumn(_daySelector, 0);
-                    Grid.SetColumn(_yearSelector, 2);
-                }
-                else
-                {
-                    if (_yearSelector.Parent == null)
-                        _pickerContainer.Children.Add(_yearSelector);
-                    if (_daySelector.Parent == null)
-                        _pickerContainer.Children.Add(_daySelector);
-
-                    Grid.SetColumn(_daySelector, 2);
-                    Grid.SetColumn(_yearSelector, 0);
-                }
-
-                Grid.SetColumn(_spacer1, 1);
-            }
-            else if (showMonth && showDay && showYear) //All Visible
-            {
-                bool isMonthFirst = monthIndex < dayIndex && monthIndex < yearIndex;
-                bool isMonthSecond = (monthIndex > dayIndex && monthIndex < yearIndex) ||
-                    (monthIndex < dayIndex && monthIndex > yearIndex);
-
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(isMonthFirst ? 138 : 78, GridUnitType.Star));
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(0, GridUnitType.Auto));
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(isMonthSecond ? 138 : 78, GridUnitType.Star));
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(0, GridUnitType.Auto));
-                _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition((!isMonthFirst && !isMonthSecond) ? 138 : 78, GridUnitType.Star));
-
-                _monthSelector.IsVisible = true;
-                _daySelector.IsVisible = true;
-                _yearSelector.IsVisible = true;
-
-                _spacer1.IsVisible = true;
-                _spacer2.IsVisible = true;
-
-                bool isDayFirst = !isMonthFirst && dayIndex < yearIndex;
-                bool isDaySecond = (dayIndex > monthIndex && dayIndex < yearIndex) ||
-                    (dayIndex < monthIndex && dayIndex > yearIndex);
-
-                bool isYearFirst = !isDayFirst && !isMonthFirst;
-                bool isYearSecond = (yearIndex > monthIndex && yearIndex < dayIndex) ||
-                    (yearIndex < monthIndex && yearIndex > dayIndex);
-
-                
-                if(isMonthFirst)
-                {
-                    if(_monthSelector.Parent == null)
-                        _pickerContainer.Children.Add(_monthSelector);
-                    Grid.SetColumn(_monthSelector, 0);
-
-                    if (isDaySecond)
+                    if (columnIndex > 0)
                     {
-                        if(_daySelector.Parent == null)
-                            _pickerContainer.Children.Add(_daySelector);
-                        Grid.SetColumn(_daySelector, 2);
-                        if(_yearSelector.Parent == null)
-                            _pickerContainer.Children.Add(_yearSelector);
-                        Grid.SetColumn(_yearSelector, 4);
-                    }
-                    else
-                    {
-                        if(_yearSelector.Parent == null)
-                            _pickerContainer.Children.Add(_yearSelector);
-                        Grid.SetColumn(_yearSelector, 2);
-                        if(_daySelector.Parent == null)
-                            _pickerContainer.Children.Add(_daySelector);
-                        Grid.SetColumn(_daySelector, 4);
+                        _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(0, GridUnitType.Auto));
                     }
 
-                }
-                else if (isDayFirst)
-                {
-                    if(_daySelector.Parent == null)
-                        _pickerContainer.Children.Add(_daySelector);
-                    Grid.SetColumn(_daySelector, 0);
+                    _pickerContainer.ColumnDefinitions.Add(new ColumnDefinition(132, GridUnitType.Star));
 
-                    if (isMonthSecond)
+                    if (column.Item1.Parent is null)
                     {
-                        if (_monthSelector.Parent == null)
-                            _pickerContainer.Children.Add(_monthSelector);
-                        Grid.SetColumn(_monthSelector, 2);
-                        if (_yearSelector.Parent == null)
-                            _pickerContainer.Children.Add(_yearSelector);
-                        Grid.SetColumn(_yearSelector, 4);
+                        _pickerContainer.Children.Add(column.Item1);
                     }
-                    else
-                    {
-                        if (_yearSelector.Parent == null)
-                            _pickerContainer.Children.Add(_yearSelector);
-                        Grid.SetColumn(_yearSelector, 2);
-                        if (_monthSelector.Parent == null)
-                            _pickerContainer.Children.Add(_monthSelector);
-                        Grid.SetColumn(_monthSelector, 3);
-                    }
-                }
-                else //year first
-                {
-                    if(_yearSelector.Parent == null)
-                        _pickerContainer.Children.Add(_yearSelector);
-                    Grid.SetColumn(_yearSelector, 0);
 
-                    if (isMonthSecond)
-                    {
-                        if (_monthSelector.Parent == null)
-                            _pickerContainer.Children.Add(_monthSelector);
-                        Grid.SetColumn(_monthSelector, 2);
-                        if (_daySelector.Parent == null)
-                            _pickerContainer.Children.Add(_daySelector);
-                        Grid.SetColumn(_daySelector, 4);
-                    }
-                    else
-                    {
-                        if (_daySelector.Parent == null)
-                            _pickerContainer.Children.Add(_daySelector);
-                        Grid.SetColumn(_daySelector, 2);
-                        if (_monthSelector.Parent == null)
-                            _pickerContainer.Children.Add(_monthSelector);
-                        Grid.SetColumn(_monthSelector, 4);
-                    }
+                    Grid.SetColumn(column.Item1, (columnIndex++ * 2));
                 }
-
-                Grid.SetColumn(_spacer1, 1);
-                Grid.SetColumn(_spacer2, 3);
             }
-            else //This should probably never happen, but jic
-            {
-                if (_monthSelector != null)
-                    _monthSelector.IsVisible = false;
-                if (_daySelector != null)
-                    _daySelector.IsVisible = false;
-                if (_yearSelector != null)
-                    _yearSelector.IsVisible = false;
 
-                _spacer1.IsVisible = false;
-                _spacer2.IsVisible = false;
-            }            
+            Grid.SetColumn(_spacer1, 1);
+            Grid.SetColumn(_spacer2, 3);
+            _spacer1.IsVisible = columnIndex > 1;
+            _spacer2.IsVisible = columnIndex > 2;
         }
 
         private void OnPopupClosed(object sender, PopupClosedEventArgs e)
