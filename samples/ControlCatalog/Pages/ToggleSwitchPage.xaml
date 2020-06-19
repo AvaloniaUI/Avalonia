@@ -1,0 +1,79 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ToggleSwitchPage" Margin="5">
+  <StackPanel Width="500" HorizontalAlignment="Center">
+    <TextBlock Text="Simple ToggleSwitch" Classes="header"/>
+    <Border Classes="Thin">
+      <StackPanel>
+        <ToggleSwitch Margin="10"/>
+        <TextBox Text="&lt;ToggleSwitch/&gt;" Classes="CodeBox"/>
+      </StackPanel>
+    </Border>
+
+    <TextBlock Text="headered ToggleSwitch" Classes="header"/>
+
+    <Border Classes="Thin">
+      <StackPanel>
+        <ToggleSwitch Content="headered" IsChecked="true" Margin="10"/>
+        <TextBox Classes="CodeBox"
+          Text="&lt;ToggleSwitch&gt;headered&lt;/ToggleSwitch&gt;"/>
+      </StackPanel>
+    </Border>
+
+    <TextBlock Text="Custom content ToggleSwitch" Classes="header"/>
+
+    <Border Classes="Thin">
+      <StackPanel>
+        <ToggleSwitch Content="Custom"
+          OnContent="On"
+          OffContent="Off"
+          Margin="10"/>
+
+        <TextBox Text="&lt;ToggleSwitch Content=&quot;Custom&quot; 
+ContentOn=&quot;On&quot; 
+ContentOff=&quot;Off&quot; /&gt;"
+          Classes="CodeBox"/>
+      </StackPanel>
+    </Border>
+
+    <TextBlock Text="Image content ToggleSwitch" Classes="header"/>
+
+    <Border Classes="Thin">
+      <StackPanel>
+        <ToggleSwitch Content="Just Click!" Margin="10">
+          <ToggleSwitch.OnContent>
+            <Image Source="/Assets/hirsch-899118_640.jpg" Height="32"/>
+          </ToggleSwitch.OnContent>
+
+          <ToggleSwitch.OffContent>
+            <Image Source="/Assets/delicate-arch-896885_640.jpg" Height="32"/>
+          </ToggleSwitch.OffContent>
+
+        </ToggleSwitch>
+      </StackPanel>
+    </Border>
+  </StackPanel>
+
+  <UserControl.Styles >
+    <Style Selector="TextBox.CodeBox" >
+      <Setter Property="Padding" Value="10"/>
+      <Setter Property="IsReadOnly" Value="True"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="IsEnabled" Value="true"/>
+    </Style>
+
+    <Style Selector="TextBlock.header">
+      <Setter Property="FontSize" Value="18"/>
+      <Setter Property="Margin" Value="0 20 0 20"/>
+    </Style>
+
+    <Style Selector="Border.Thin">
+      <Setter Property="BorderBrush" Value="Gray"/>
+      <Setter Property="BorderThickness" Value="0.5"/>
+      <Setter Property="CornerRadius" Value="2"/>
+    </Style>
+
+  </UserControl.Styles>
+</UserControl>
+

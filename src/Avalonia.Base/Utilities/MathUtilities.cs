@@ -267,6 +267,36 @@ namespace Avalonia.Utilities
             }
         }
 
+        /// <summary>
+        /// Converts an angle in degrees to radians.
+        /// </summary>
+        /// <param name="angle">The angle in degrees.</param>
+        /// <returns>The angle in radians.</returns>
+        public static double Deg2Rad(double angle)
+        {
+            return angle * (Math.PI / 180d);
+        }
+
+        /// <summary>
+        /// Converts an angle in gradians to radians.
+        /// </summary>
+        /// <param name="angle">The angle in gradians.</param>
+        /// <returns>The angle in radians.</returns>
+        public static double Grad2Rad(double angle)
+        {
+            return angle * (Math.PI / 200d);
+        }
+
+        /// <summary>
+        /// Converts an angle in turns to radians.
+        /// </summary>
+        /// <param name="angle">The angle in turns.</param>
+        /// <returns>The angle in radians.</returns>
+        public static double Turn2Rad(double angle)
+        {
+            return angle * 2 * Math.PI;
+        }
+        
         private static void ThrowCannotBeGreaterThanException(double min, double max)
         {
             throw new ArgumentException($"{min} cannot be greater than {max}.");

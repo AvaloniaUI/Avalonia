@@ -2,7 +2,7 @@
 <br />
 [![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) [![downloads](https://img.shields.io/nuget/dt/avalonia)](https://www.nuget.org/packages/Avalonia) [![MyGet](https://img.shields.io/myget/avalonia-ci/vpre/Avalonia.svg?label=myget)](https://www.myget.org/gallery/avalonia-ci) ![Size](https://img.shields.io/github/repo-size/avaloniaui/avalonia.svg) 
 
-<img src="https://user-images.githubusercontent.com/6759207/84750966-ac74ad80-afc4-11ea-97a4-067d99c15a7d.png" width="500"/>
+<img alt="Avalonia" src="https://user-images.githubusercontent.com/6759207/84897744-cab6d800-b0ae-11ea-8214-e5174d71f5c8.png" width="400"/>
 
 ## 📖 About AvaloniaUI 
 
@@ -31,7 +31,9 @@ Install-Package Avalonia.Desktop
 Examples of UIs built with Avalonia
 ![image](https://user-images.githubusercontent.com/4672627/84707589-5b69a880-af35-11ea-87a6-7ad57a31d314.png)
 
-![image](https://user-images.githubusercontent.com/4672627/84708576-28281900-af37-11ea-8c88-e29dfcfa0558.png)
+![image](https://user-images.githubusercontent.com/4672627/85069644-d8419000-b18a-11ea-8732-be9055bb61fd.PNG)
+
+![image](https://user-images.githubusercontent.com/4672627/85069659-dc6dad80-b18a-11ea-8375-39ef95315b5c.PNG)
 
 ![image](https://user-images.githubusercontent.com/4672627/84708947-c3b98980-af37-11ea-8c9d-503334615bbf.png)
 

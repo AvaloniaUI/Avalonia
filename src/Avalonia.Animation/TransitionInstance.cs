@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using Avalonia.Animation.Easings;
 using Avalonia.Animation.Utils;
 using Avalonia.Reactive;
+using Avalonia.Utilities;
 
 namespace Avalonia.Animation
 {
@@ -13,31 +14,56 @@ namespace Avalonia.Animation
     internal class TransitionInstance : SingleSubscriberObservableBase<double>
     {
         private IDisposable _timerSubscription;
+        private TimeSpan _delay;
         private TimeSpan _duration;
         private readonly IClock _baseClock;
         private IClock _clock;
 
-        public TransitionInstance(IClock clock, TimeSpan Duration)
+        public TransitionInstance(IClock clock, TimeSpan delay, TimeSpan duration)
         {
             clock = clock ?? throw new ArgumentNullException(nameof(clock));
 
-            _duration = Duration;
+            _delay = delay;
+            _duration = duration;
             _baseClock = clock;
         }
 
         private void TimerTick(TimeSpan t)
         {
-            var interpVal = _duration.Ticks == 0 ? 1d : (double)t.Ticks / _duration.Ticks;
+
+            // [<------------- normalizedTotalDur ------------------>]
+            // [<---- Delay ---->][<---------- Duration ------------>]
+            //                   ^- normalizedDelayEnd
+            //                    [<----   normalizedInterpVal   --->]
+
+            var normalizedInterpVal = 1d;
+
+            if (!MathUtilities.AreClose(_duration.TotalSeconds, 0d))
+            {
+                var normalizedTotalDur = _delay + _duration;
+                var normalizedDelayEnd = _delay.TotalSeconds / normalizedTotalDur.TotalSeconds;
+                var normalizedPresentationTime = t.TotalSeconds / normalizedTotalDur.TotalSeconds;
+
+                if (normalizedPresentationTime < normalizedDelayEnd
+                    || MathUtilities.AreClose(normalizedPresentationTime, normalizedDelayEnd))
+                {
+                    normalizedInterpVal = 0d;
+                }
+                else
+                {
+                    normalizedInterpVal = (t.TotalSeconds - _delay.TotalSeconds) / _duration.TotalSeconds;
+                }
+            }
 
             // Clamp interpolation value.
-            if (interpVal >= 1d | interpVal < 0d)
+            if (normalizedInterpVal >= 1d || normalizedInterpVal < 0d)
             {
                 PublishNext(1d);
                 PublishCompleted();
             }
             else
             {
-                PublishNext(interpVal);
+                PublishNext(normalizedInterpVal);
             }
         }
 
