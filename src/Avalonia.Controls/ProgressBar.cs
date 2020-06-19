@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -8,7 +9,7 @@ namespace Avalonia.Controls
     /// A control used to indicate the progress of an operation.
     /// </summary>
     public class ProgressBar : RangeBase
-    {        
+    {
         public class ProgressBarTemplateProperties : AvaloniaObject
         {
             private double _container2Width;
@@ -17,8 +18,6 @@ namespace Avalonia.Controls
             private double _containerAnimationEndPosition;
             private double _container2AnimationStartPosition;
             private double _container2AnimationEndPosition;
-            private double _indeterminateStartingOffset;
-            private double _indeterminateEndingOffset;
 
             public static readonly DirectProperty<ProgressBarTemplateProperties, double> ContainerAnimationStartPositionProperty =
            AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
@@ -56,18 +55,6 @@ namespace Avalonia.Controls
                     p => p.ContainerWidth,
                     (p, o) => p.ContainerWidth = o);
 
-            public static readonly DirectProperty<ProgressBarTemplateProperties, double> IndeterminateStartingOffsetProperty =
-                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
-                    nameof(IndeterminateStartingOffset),
-                    p => p.IndeterminateStartingOffset,
-                    (p, o) => p.IndeterminateStartingOffset = o);
-
-            public static readonly DirectProperty<ProgressBarTemplateProperties, double> IndeterminateEndingOffsetProperty =
-                AvaloniaProperty.RegisterDirect<ProgressBarTemplateProperties, double>(
-                    nameof(IndeterminateEndingOffset),
-                    p => p.IndeterminateEndingOffset,
-                    (p, o) => p.IndeterminateEndingOffset = o);
-
             public double ContainerAnimationStartPosition
             {
                 get => _containerAnimationStartPosition;
@@ -103,20 +90,10 @@ namespace Avalonia.Controls
                 get => _container2AnimationEndPosition;
                 set => SetAndRaise(Container2AnimationEndPositionProperty, ref _container2AnimationEndPosition, value);
             }
-
-            public double IndeterminateStartingOffset
-            {
-                get => _indeterminateStartingOffset;
-                set => SetAndRaise(IndeterminateStartingOffsetProperty, ref _indeterminateStartingOffset, value);
-            }
-
-            public double IndeterminateEndingOffset
-            {
-                get => _indeterminateEndingOffset;
-                set => SetAndRaise(IndeterminateEndingOffsetProperty, ref _indeterminateEndingOffset, value);
-            }
         }
-        
+
+        private double _indeterminateStartingOffset;
+        private double _indeterminateEndingOffset;
         private Border _indicator;
 
         public static readonly StyledProperty<bool> IsIndeterminateProperty =
@@ -126,7 +103,35 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ProgressBar, bool>(nameof(ShowProgressText));
 
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);       
+            AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
+
+        [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
+        public static readonly DirectProperty<ProgressBar, double> IndeterminateStartingOffsetProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(IndeterminateStartingOffset),
+                p => p.IndeterminateStartingOffset,
+                (p, o) => p.IndeterminateStartingOffset = o);
+
+        [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
+        public static readonly DirectProperty<ProgressBar, double> IndeterminateEndingOffsetProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(IndeterminateEndingOffset),
+                p => p.IndeterminateEndingOffset,
+                (p, o) => p.IndeterminateEndingOffset = o);
+
+        [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
+        public double IndeterminateStartingOffset
+        {
+            get => _indeterminateStartingOffset;
+            set => SetAndRaise(IndeterminateStartingOffsetProperty, ref _indeterminateStartingOffset, value);
+        }
+
+        [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
+        public double IndeterminateEndingOffset
+        {
+            get => _indeterminateEndingOffset;
+            set => SetAndRaise(IndeterminateEndingOffsetProperty, ref _indeterminateEndingOffset, value);
+        }
 
         static ProgressBar()
         {
@@ -157,7 +162,7 @@ namespace Avalonia.Controls
         {
             get => GetValue(OrientationProperty);
             set => SetValue(OrientationProperty, value);
-        }      
+        }
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
@@ -208,10 +213,10 @@ namespace Avalonia.Controls
 
                     TemplateProperties.Container2AnimationStartPosition = barIndicatorWidth2 * -1.5; // Position at -150%
                     TemplateProperties.Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
-                    
+
                     // Remove these properties when we switch to fluent as default and removed the old one.
-                    TemplateProperties.IndeterminateStartingOffset = -dim;
-                    TemplateProperties.IndeterminateEndingOffset = dim * 2;
+                    IndeterminateStartingOffset = -(dim / 5d);
+                    IndeterminateEndingOffset = dim;
 
                     var padding = Padding;
                     var rectangle = new RectangleGeometry(
@@ -220,7 +225,7 @@ namespace Avalonia.Controls
                             padding.Top,
                             bounds.Width - (padding.Right + padding.Left),
                             bounds.Height - (padding.Bottom + padding.Top)
-                            ));                    
+                            ));
                 }
                 else
                 {
