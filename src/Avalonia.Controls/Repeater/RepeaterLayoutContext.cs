@@ -61,7 +61,7 @@ namespace Avalonia.Controls
 
         protected override void RecycleElementCore(ILayoutable element)
         {
-            Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "RepeaterLayout - RecycleElement: {Index}", _owner.GetElementIndex((IControl)element));
+            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "RepeaterLayout - RecycleElement: {Index}", _owner.GetElementIndex((IControl)element));
             _owner.ClearElementImpl((IControl)element);
         }
 

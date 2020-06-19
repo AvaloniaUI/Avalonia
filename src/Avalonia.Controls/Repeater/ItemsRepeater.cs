@@ -307,7 +307,7 @@ namespace Avalonia.Controls
                             virtInfo.AutoRecycleCandidate &&
                             !virtInfo.KeepAlive)
                         {
-                            Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "AutoClear - {Index}", virtInfo.Index);
+                            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "AutoClear - {Index}", virtInfo.Index);
                             ClearElementImpl(element);
                         }
                     }

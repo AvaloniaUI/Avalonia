@@ -110,12 +110,12 @@ namespace Avalonia.Layout
                 }
                 else
                 {
-                    Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "{LayoutId}: Estimating extent with no realized elements",
+                    Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Estimating extent with no realized elements",
                         LayoutId);
                 }
             }
 
-            Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "{LayoutId}: Extent is ({Size}). Based on average {Average}",
+            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Extent is ({Size}). Based on average {Average}",
                 LayoutId, extent.Size, averageElementSize);
             return extent;
         }

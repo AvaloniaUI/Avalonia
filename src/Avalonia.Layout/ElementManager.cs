@@ -79,7 +79,7 @@ namespace Avalonia.Layout
                 {
                     // Sentinel. Create the element now since we need it.
                     int dataIndex = GetDataIndexFromRealizedRangeIndex(realizedIndex);
-                    Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "Creating element for sentinal with data index {Index}", dataIndex);
+                    Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "Creating element for sentinal with data index {Index}", dataIndex);
                     element = _context.GetOrCreateElementAt(
                         dataIndex,
                         ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
@@ -235,7 +235,7 @@ namespace Avalonia.Layout
                     Insert(0, dataIndex, element);
                 }
 
-                Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "{LayoutId}: Created element for index {index}", layoutId, dataIndex);
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Created element for index {index}", layoutId, dataIndex);
             }
         }
 

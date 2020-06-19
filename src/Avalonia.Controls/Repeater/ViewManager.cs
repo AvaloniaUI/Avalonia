@@ -61,13 +61,13 @@ namespace Avalonia.Controls
             if (suppressAutoRecycle)
             {
                 virtInfo.AutoRecycleCandidate = false;
-                Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "GetElement: {Index} Not AutoRecycleCandidate:", virtInfo.Index);
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "GetElement: {Index} Not AutoRecycleCandidate:", virtInfo.Index);
             }
             else
             {
                 virtInfo.AutoRecycleCandidate = true;
                 virtInfo.KeepAlive = true;
-                Logger.TryGet(LogEventLevel.Verbose)?.Log("Repeater", this, "GetElement: {Index} AutoRecycleCandidate:", virtInfo.Index);
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "GetElement: {Index} AutoRecycleCandidate:", virtInfo.Index);
             }
 
             return element;
