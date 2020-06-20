@@ -1,6 +1,5 @@
 using System;
 using System.Reactive.Linq;
-using System.Security.Authentication.ExtendedProtection;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
