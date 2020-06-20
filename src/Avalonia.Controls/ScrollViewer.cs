@@ -160,9 +160,6 @@ namespace Avalonia.Controls
                 nameof(VerticalScrollBarViewportSize),
                 o => o.VerticalScrollBarViewportSize);
 
-        public static readonly DirectProperty<ScrollViewer, bool> IsExpandedProperty =
-            ScrollBar.IsExpandedProperty.AddOwner<ScrollViewer>(o => o.IsExpanded);
-
         /// <summary>
         /// Defines the <see cref="VerticalScrollBarVisibility"/> property.
         /// </summary>
@@ -171,6 +168,15 @@ namespace Avalonia.Controls
                 nameof(VerticalScrollBarVisibility),
                 ScrollBarVisibility.Auto);
 
+        /// <summary>
+        /// Defines the <see cref="IsExpandedProperty"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollViewer, bool> IsExpandedProperty =
+            ScrollBar.IsExpandedProperty.AddOwner<ScrollViewer>(o => o.IsExpanded);
+
+        /// <summary>
+        /// Defines the <see cref="AllowAutoHide"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> AllowAutoHideProperty =
             ScrollBar.AllowAutoHideProperty.AddOwner<ScrollViewer>();
 
@@ -221,18 +227,6 @@ namespace Avalonia.Controls
         {
             add => AddHandler(ScrollChangedEvent, value);
             remove => RemoveHandler(ScrollChangedEvent, value);
-        }
-
-        public bool IsExpanded
-        {
-            get => _isExpanded;
-            private set => SetAndRaise(ScrollBar.IsExpandedProperty, ref _isExpanded, value);
-        }
-
-        public bool AllowAutoHide
-        {
-            get { return GetValue(AllowAutoHideProperty); }
-            set { SetValue(AllowAutoHideProperty, value); }
         }
 
         /// <summary>
@@ -403,6 +397,24 @@ namespace Avalonia.Controls
         protected double VerticalScrollBarViewportSize
         {
             get { return _viewport.Height; }
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether any scrollbar is expanded.
+        /// </summary>
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            private set => SetAndRaise(ScrollBar.IsExpandedProperty, ref _isExpanded, value);
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether scrollbars can hide itself when user is not interacting with it.
+        /// </summary>
+        public bool AllowAutoHide
+        {
+            get => GetValue(AllowAutoHideProperty);
+            set => SetValue(AllowAutoHideProperty, value);
         }
 
         /// <summary>
@@ -642,45 +654,41 @@ namespace Avalonia.Controls
 
             _scrollBarExpandSubscription?.Dispose();
 
+            _scrollBarExpandSubscription = SubscribeToScrollBars(e);
+        }
+
+        private IDisposable SubscribeToScrollBars(TemplateAppliedEventArgs e)
+        {
+            static IObservable<bool> GetExpandedObservable(ScrollBar scrollBar)
+            {
+                return scrollBar?.GetObservable(ScrollBar.IsExpandedProperty);
+            }
+
             var horizontalScrollBar = e.NameScope.Find<ScrollBar>("PART_HorizontalScrollBar");
             var verticalScrollBar = e.NameScope.Find<ScrollBar>("PART_VerticalScrollBar");
 
-            IObservable<bool> horizontalExpanded = null, verticalExpanded = null;
+            var horizontalExpanded = GetExpandedObservable(horizontalScrollBar);
+            var verticalExpanded = GetExpandedObservable(verticalScrollBar);
 
-            if (horizontalScrollBar != null)
-            {
-                horizontalExpanded = horizontalScrollBar
-                    .GetObservable(ScrollBar.IsExpandedProperty);
-            }
-
-            if (verticalScrollBar != null)
-            {
-                verticalExpanded = verticalScrollBar
-                    .GetObservable(ScrollBar.IsExpandedProperty);
-            }
-
-            IObservable<bool> finalExpanded = null;
+            IObservable<bool> actualExpanded = null;
 
             if (horizontalExpanded != null && verticalExpanded != null)
             {
-                finalExpanded = horizontalExpanded.CombineLatest(verticalExpanded, (h, v) => h || v);
+                actualExpanded = horizontalExpanded.CombineLatest(verticalExpanded, (h, v) => h || v);
             }
             else
             {
                 if (horizontalExpanded != null)
                 {
-                    finalExpanded = horizontalExpanded;
-                } 
+                    actualExpanded = horizontalExpanded;
+                }
                 else if (verticalExpanded != null)
                 {
-                    finalExpanded = verticalExpanded;
+                    actualExpanded = verticalExpanded;
                 }
             }
 
-            if (finalExpanded != null)
-            {
-                _scrollBarExpandSubscription = finalExpanded.Subscribe(OnScrollBarExpandedChanged);
-            }
+            return actualExpanded?.Subscribe(OnScrollBarExpandedChanged);
         }
 
         private void OnScrollBarExpandedChanged(bool isExpanded)

@@ -41,13 +41,19 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ScrollBar, Orientation>(nameof(Orientation), Orientation.Vertical);
 
-        public static readonly StyledProperty<bool> AllowAutoHideProperty =
-            AvaloniaProperty.Register<ScrollBar, bool>(nameof(AllowAutoHide), true);
-
+        /// <summary>
+        /// Defines the <see cref="IsExpandedProperty"/> property.
+        /// </summary>
         public static readonly DirectProperty<ScrollBar, bool> IsExpandedProperty =
             AvaloniaProperty.RegisterDirect<ScrollBar, bool>(
                 nameof(IsExpanded),
                 o => o.IsExpanded);
+
+        /// <summary>
+        /// Defines the <see cref="AllowAutoHide"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> AllowAutoHideProperty =
+            AvaloniaProperty.Register<ScrollBar, bool>(nameof(AllowAutoHide), true);
 
         private Button _lineUpButton;
         private Button _lineDownButton;
@@ -71,18 +77,6 @@ namespace Avalonia.Controls.Primitives
         public ScrollBar()
         {
             UpdatePseudoClasses(Orientation);
-        }
-
-        public bool IsExpanded
-        {
-            get => _isExpanded;
-            private set => SetAndRaise(IsExpandedProperty, ref _isExpanded, value);
-        }
-
-        public bool AllowAutoHide
-        {
-            get { return GetValue(AllowAutoHideProperty); }
-            set { SetValue(AllowAutoHideProperty, value); }
         }
 
         /// <summary>
@@ -111,6 +105,24 @@ namespace Avalonia.Controls.Primitives
         {
             get { return GetValue(OrientationProperty); }
             set { SetValue(OrientationProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether the scrollbar is expanded.
+        /// </summary>
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            private set => SetAndRaise(IsExpandedProperty, ref _isExpanded, value);
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether the scrollbar can hide itself when user is not interacting with it.
+        /// </summary>
+        public bool AllowAutoHide
+        {
+            get => GetValue(AllowAutoHideProperty);
+            set => SetValue(AllowAutoHideProperty, value);
         }
 
         public event EventHandler<ScrollEventArgs> Scroll;
