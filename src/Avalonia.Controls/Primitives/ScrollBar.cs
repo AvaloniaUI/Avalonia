@@ -41,11 +41,20 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ScrollBar, Orientation>(nameof(Orientation), Orientation.Vertical);
 
+        public static readonly StyledProperty<bool> AllowAutoHideProperty =
+            AvaloniaProperty.Register<ScrollBar, bool>(nameof(AllowAutoHide), true);
+
+        public static readonly DirectProperty<ScrollBar, bool> IsExpandedProperty =
+            AvaloniaProperty.RegisterDirect<ScrollBar, bool>(
+                nameof(IsExpanded),
+                o => o.IsExpanded);
+
         private Button _lineUpButton;
         private Button _lineDownButton;
         private Button _pageUpButton;
         private Button _pageDownButton;
-        private DispatcherTimer _collapseTimer;
+        private DispatcherTimer _timer;
+        private bool _isExpanded;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollBar"/> class. 
@@ -62,6 +71,18 @@ namespace Avalonia.Controls.Primitives
         public ScrollBar()
         {
             UpdatePseudoClasses(Orientation);
+        }
+
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            private set => SetAndRaise(IsExpandedProperty, ref _isExpanded, value);
+        }
+
+        public bool AllowAutoHide
+        {
+            get { return GetValue(AllowAutoHideProperty); }
+            set { SetValue(AllowAutoHideProperty, value); }
         }
 
         /// <summary>
@@ -133,6 +154,10 @@ namespace Avalonia.Controls.Primitives
             {
                 UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Orientation>());
             }
+            else if (change.Property == AllowAutoHideProperty)
+            {
+                UpdateIsExpandedState();
+            }
             else
             {
                 if (change.Property == MinimumProperty ||
@@ -149,16 +174,20 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPointerEnter(e);
 
-            ResetCollapseTimer();
-
-            Expand();
+            if (AllowAutoHide)
+            {
+                ExpandAfterDelay();
+            }
         }
 
         protected override void OnPointerLeave(PointerEventArgs e)
         {
             base.OnPointerLeave(e);
 
-            CollapseAfterDelay();
+            if (AllowAutoHide)
+            {
+                CollapseAfterDelay();
+            }
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -188,8 +217,6 @@ namespace Avalonia.Controls.Primitives
             _pageUpButton = e.NameScope.Find<Button>("PART_PageUpButton");
             _pageDownButton = e.NameScope.Find<Button>("PART_PageDownButton");
 
-
-
             if (_lineUpButton != null)
             {
                 _lineUpButton.Click += LineUpClick;
@@ -211,48 +238,66 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void CollapseAfterDelay()
+        private void InvokeAfterDelay(Action handler, TimeSpan delay)
         {
-            if (_collapseTimer != null)
+            if (_timer != null)
             {
-                _collapseTimer.Stop();
+                _timer.Stop();
             }
             else
             {
-                _collapseTimer = new DispatcherTimer(TimeSpan.FromSeconds(2), DispatcherPriority.Normal, OnCollapseTimerTick);
-            }
-
-            _collapseTimer.Start();
-        }
-
-        private void ResetCollapseTimer(bool restart = false)
-        {
-            if (_collapseTimer != null && _collapseTimer.IsEnabled)
-            {
-                _collapseTimer.Stop();
-
-                if (restart)
+                _timer = new DispatcherTimer(DispatcherPriority.Normal);
+                _timer.Tick += (sender, args) =>
                 {
-                    _collapseTimer.Start();
-                }
+                    var senderTimer = (DispatcherTimer)sender;
+
+                    if (senderTimer.Tag is Action action)
+                    {
+                        action();
+                    }
+
+                    senderTimer.Stop();
+                };
+            }
+
+            _timer.Tag = handler;
+            _timer.Interval = delay;
+
+            _timer.Start();
+        }
+
+        private void UpdateIsExpandedState()
+        {
+            if (!AllowAutoHide)
+            {
+                _timer?.Stop();
+
+                IsExpanded = true;
+            }
+            else
+            {
+                IsExpanded = IsPointerOver;
             }
         }
 
-        private void OnCollapseTimerTick(object sender, EventArgs e)
+        private void CollapseAfterDelay()
         {
-            ResetCollapseTimer();
+            InvokeAfterDelay(Collapse, TimeSpan.FromSeconds(2));
+        }
 
-            Collapse();
+        private void ExpandAfterDelay()
+        {
+            InvokeAfterDelay(Expand, TimeSpan.FromMilliseconds(400));
         }
 
         private void Collapse()
         {
-            PseudoClasses.Set(":expanded", false);
+            IsExpanded = false;
         }
 
         private void Expand()
         {
-            PseudoClasses.Set(":expanded", true);
+            IsExpanded = true;
         }
 
         private void LineUpClick(object sender, RoutedEventArgs e)

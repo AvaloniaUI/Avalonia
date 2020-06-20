@@ -25,7 +25,8 @@
                 CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}" />
             </ScrollContentPresenter.GestureRecognizers>
           </ScrollContentPresenter>
-          <ScrollBar Name="horizontalScrollBar"
+          <ScrollBar Name="PART_HorizontalScrollBar"
+                     AllowAutoHide="{TemplateBinding AllowAutoHide}"
                      Orientation="Horizontal"
                      LargeChange="{Binding LargeChange.Width, RelativeSource={RelativeSource TemplatedParent}}"
                      SmallChange="{Binding SmallChange.Width, RelativeSource={RelativeSource TemplatedParent}}"
@@ -35,7 +36,8 @@
                      Visibility="{TemplateBinding HorizontalScrollBarVisibility}"
                      Grid.Row="1"
                      Focusable="False" />
-          <ScrollBar Name="verticalScrollBar"
+          <ScrollBar Name="PART_VerticalScrollBar"
+                     AllowAutoHide="{TemplateBinding AllowAutoHide}"
                      Orientation="Vertical"
                      LargeChange="{Binding LargeChange.Height, RelativeSource={RelativeSource TemplatedParent}}"
                      SmallChange="{Binding SmallChange.Height, RelativeSource={RelativeSource TemplatedParent}}"
@@ -45,11 +47,24 @@
                      Visibility="{TemplateBinding VerticalScrollBarVisibility}"
                      Grid.Column="1"
                      Focusable="False" />
-          <Panel x:Name="PART_ScrollBarsSeparator" Grid.Row="1" Grid.Column="1" Background="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}" Opacity="0" />
+          <Panel x:Name="PART_ScrollBarsSeparator" Grid.Row="1" Grid.Column="1" Background="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}" />
         </Grid>
       </ControlTemplate>
     </Setter>
+    <Setter Property="AllowAutoHide" Value="False" />
+  </Style>
 
+  <Style Selector="ScrollViewer /template/ Panel#PART_ScrollBarsSeparator">
+    <Setter Property="Opacity" Value="0" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="ScrollViewer[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator">
+    <Setter Property="Opacity" Value="1" />
   </Style>
 
 </Styles>

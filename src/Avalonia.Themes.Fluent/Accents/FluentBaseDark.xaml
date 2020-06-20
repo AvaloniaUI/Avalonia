@@ -437,7 +437,7 @@
     <StaticResource x:Key="ScrollBarPanningThumbBackgroundColor" ResourceKey="SystemChromeDisabledLowColor" />
     <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="{StaticResource ScrollBarThumbBackgroundColor}" />
     <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="{StaticResource ScrollBarPanningThumbBackgroundColor}" />
-    <x:String x:Key="ScrollBarExpandDuration">00:00:00.1</x:String>
+    <x:TimeSpan x:Key="ScrollBarExpandDuration">00:00:00.1</x:TimeSpan>
     <x:String x:Key="ScrollBarExpandBeginTime">00:00:00.40</x:String>
     <x:String x:Key="ScrollBarContractBeginTime">00:00:02.00</x:String>
     <x:String x:Key="ScrollBarContractDelay">00:00:02</x:String>

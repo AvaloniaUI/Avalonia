@@ -1,4 +1,5 @@
 using System;
+using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -158,6 +159,9 @@ namespace Avalonia.Controls
                 nameof(VerticalScrollBarViewportSize),
                 o => o.VerticalScrollBarViewportSize);
 
+        public static readonly DirectProperty<ScrollViewer, bool> IsExpandedProperty =
+            ScrollBar.IsExpandedProperty.AddOwner<ScrollViewer>(o => o.IsExpanded);
+
         /// <summary>
         /// Defines the <see cref="VerticalScrollBarVisibility"/> property.
         /// </summary>
@@ -165,6 +169,9 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<ScrollViewer, Control, ScrollBarVisibility>(
                 nameof(VerticalScrollBarVisibility),
                 ScrollBarVisibility.Auto);
+
+        public static readonly StyledProperty<bool> AllowAutoHideProperty =
+            ScrollBar.AllowAutoHideProperty.AddOwner<ScrollViewer>();
 
         /// <summary>
         /// Defines the <see cref="ScrollChanged"/> event.
@@ -186,6 +193,8 @@ namespace Avalonia.Controls
         private Size _oldViewport;
         private Size _largeChange;
         private Size _smallChange = new Size(DefaultSmallChange, DefaultSmallChange);
+        private bool _isExpanded;
+        private IDisposable _scrollBarExpandSubscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollViewer"/> class.
@@ -211,6 +220,18 @@ namespace Avalonia.Controls
         {
             add => AddHandler(ScrollChangedEvent, value);
             remove => RemoveHandler(ScrollChangedEvent, value);
+        }
+
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            private set => SetAndRaise(ScrollBar.IsExpandedProperty, ref _isExpanded, value);
+        }
+
+        public bool AllowAutoHide
+        {
+            get { return GetValue(AllowAutoHideProperty); }
+            set { SetValue(AllowAutoHideProperty, value); }
         }
 
         /// <summary>
@@ -628,6 +649,58 @@ namespace Avalonia.Controls
         protected virtual void OnScrollChanged(ScrollChangedEventArgs e)
         {
             RaiseEvent(e);
+        }
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+
+            _scrollBarExpandSubscription?.Dispose();
+
+            var horizontalScrollBar = e.NameScope.Find<ScrollBar>("PART_HorizontalScrollBar");
+            var verticalScrollBar = e.NameScope.Find<ScrollBar>("PART_VerticalScrollBar");
+
+            IObservable<bool> horizontalExpanded = null, verticalExpanded = null;
+
+            if (horizontalScrollBar != null)
+            {
+                horizontalExpanded = horizontalScrollBar
+                    .GetObservable(ScrollBar.IsExpandedProperty);
+            }
+
+            if (verticalScrollBar != null)
+            {
+                verticalExpanded = verticalScrollBar
+                    .GetObservable(ScrollBar.IsExpandedProperty);
+            }
+
+            IObservable<bool> finalExpanded = null;
+
+            if (horizontalExpanded != null && verticalExpanded != null)
+            {
+                finalExpanded = horizontalExpanded.CombineLatest(verticalExpanded, (h, v) => h || v);
+            }
+            else
+            {
+                if (horizontalExpanded != null)
+                {
+                    finalExpanded = horizontalExpanded;
+                } 
+                else if (verticalExpanded != null)
+                {
+                    finalExpanded = verticalExpanded;
+                }
+            }
+
+            if (finalExpanded != null)
+            {
+                _scrollBarExpandSubscription = finalExpanded.Subscribe(OnScrollBarExpandedChanged);
+            }
+        }
+
+        private void OnScrollBarExpandedChanged(bool isExpanded)
+        {
+            IsExpanded = isExpanded;
         }
 
         private void OnLayoutUpdated(object sender, EventArgs e) => RaiseScrollChanged();

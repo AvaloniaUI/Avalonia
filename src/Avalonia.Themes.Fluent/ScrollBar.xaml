@@ -127,7 +127,7 @@
     </Setter>
   </Style>
 
-  <Style Selector="ScrollBar:expanded /template/ Grid#Root">
+  <Style Selector="ScrollBar[IsExpanded=true] /template/ Grid#Root">
     <Setter Property="Background" Value="{DynamicResource ScrollBarBackgroundPointerOver}" />
   </Style>
 
@@ -155,7 +155,7 @@
     <Setter Property="RenderTransform" Value="{DynamicResource HorizontalSmallScrollThumbScaleTransform}" />
   </Style>
 
-  <Style Selector="ScrollBar:expanded /template/ Thumb.thumb">
+  <Style Selector="ScrollBar[IsExpanded=true] /template/ Thumb.thumb">
     <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Background" Value="{DynamicResource ScrollBarThumbBackgroundColor}" />
   </Style>
@@ -169,7 +169,7 @@
     </Setter>
   </Style>
 
-  <Style Selector="ScrollBar:expanded /template/ Thumb.thumb /template/ Border#ThumbVisual">
+  <Style Selector="ScrollBar[IsExpanded=true] /template/ Thumb.thumb /template/ Border#ThumbVisual">
     <Setter Property="CornerRadius" Value="0" />
   </Style>
 
@@ -243,7 +243,7 @@
     <Setter Property="Fill" Value="{DynamicResource ScrollBarButtonArrowForegroundDisabled}" />
   </Style>
 
-  <Style Selector="ScrollBar:expanded /template/ RepeatButton.line">
+  <Style Selector="ScrollBar[IsExpanded=true] /template/ RepeatButton.line">
     <Setter Property="Opacity" Value="1" />
   </Style>
 
@@ -277,7 +277,7 @@
     </Setter>
   </Style>
 
-  <Style Selector="ScrollBar:expanded /template/ Rectangle#TrackRect">
+  <Style Selector="ScrollBar[IsExpanded=true] /template/ Rectangle#TrackRect">
     <Setter Property="Fill" Value="{DynamicResource ScrollBarTrackFillPointerOver}" />
     <Setter Property="Stroke" Value="{DynamicResource ScrollBarTrackStrokePointerOver}" />
     <Setter Property="Opacity" Value="1" />
@@ -295,7 +295,7 @@
     <Setter Property="Opacity" Value="0" />
   </Style>
 
-  <Style Selector="ScrollBar:expanded /template/ RepeatButton.largeIncrease">
+  <Style Selector="ScrollBar[IsExpanded=true] /template/ RepeatButton.largeIncrease">
     <Setter Property="Opacity" Value="1" />
   </Style>
 
