@@ -1,4 +1,5 @@
 using System;
+using System.Security.Authentication.ExtendedProtection;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -244,9 +245,7 @@ namespace Avalonia.Controls
 
             set
             {
-                value = ValidateOffset(this, value);
-
-                if (SetAndRaise(OffsetProperty, ref _offset, value))
+                if (SetAndRaise(OffsetProperty, ref _offset, CoerceOffset(Extent, Viewport, value)))
                 {
                     CalculatedPropertiesChanged();
                 }
@@ -316,6 +315,9 @@ namespace Avalonia.Controls
             get { return VerticalScrollBarVisibility != ScrollBarVisibility.Disabled; }
         }
 
+        /// <inheritdoc/>
+        public IControl CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;
+
         /// <summary>
         /// Gets the maximum horizontal scrollbar value.
         /// </summary>
@@ -381,9 +383,6 @@ namespace Avalonia.Controls
         {
             get { return _viewport.Height; }
         }
-
-        /// <inheritdoc/>
-        IControl IScrollAnchorProvider.CurrentAnchor => null; // TODO: Implement
 
         /// <summary>
         /// Scrolls the content up one line.
@@ -473,14 +472,16 @@ namespace Avalonia.Controls
             control.SetValue(VerticalScrollBarVisibilityProperty, value);
         }
 
-        void IScrollAnchorProvider.RegisterAnchorCandidate(IControl element)
+        /// <inheritdoc/>
+        public void RegisterAnchorCandidate(IControl element)
         {
-            // TODO: Implement
+            (Presenter as IScrollAnchorProvider)?.RegisterAnchorCandidate(element);
         }
 
-        void IScrollAnchorProvider.UnregisterAnchorCandidate(IControl element)
+        /// <inheritdoc/>
+        public void UnregisterAnchorCandidate(IControl element)
         {
-            // TODO: Implement
+            (Presenter as IScrollAnchorProvider)?.UnregisterAnchorCandidate(element);
         }
 
         protected override bool RegisterContentPresenter(IContentPresenter presenter)
@@ -515,22 +516,6 @@ namespace Avalonia.Controls
         {
             var result = Math.Max(x, y);
             return double.IsNaN(result) ? 0 : result;
-        }
-
-        private static Vector ValidateOffset(AvaloniaObject o, Vector value)
-        {
-            ScrollViewer scrollViewer = o as ScrollViewer;
-
-            if (scrollViewer != null)
-            {
-                var extent = scrollViewer.Extent;
-                var viewport = scrollViewer.Viewport;
-                return CoerceOffset(extent, viewport, value);
-            }
-            else
-            {
-                return value;
-            }
         }
 
         private void ChildChanged(IControl child)

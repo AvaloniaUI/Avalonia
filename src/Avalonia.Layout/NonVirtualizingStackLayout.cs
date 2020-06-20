@@ -112,7 +112,9 @@ namespace Avalonia.Layout
                 u = (isVertical ? bounds.Bottom : bounds.Right) + spacing;
             }
 
-            return new Size(bounds.Right, bounds.Bottom);
+            return new Size(
+                Math.Max(finalSize.Width, bounds.Width),
+                Math.Max(finalSize.Height, bounds.Height));
         }
 
         private static Rect LayoutVertical(ILayoutable element, double y, Size constraint)

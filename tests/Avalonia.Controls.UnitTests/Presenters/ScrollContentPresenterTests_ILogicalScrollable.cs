@@ -59,10 +59,14 @@ namespace Avalonia.Controls.UnitTests
                 CanHorizontallyScroll = true,
                 CanVerticallyScroll = true,
                 Content = scrollable,
-                Offset = new Vector(25, 25),
             };
 
             target.UpdateChild();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            target.Offset = new Vector(25, 25);
+            
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
