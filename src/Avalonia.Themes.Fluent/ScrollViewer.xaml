@@ -51,7 +51,6 @@
         </Grid>
       </ControlTemplate>
     </Setter>
-    <Setter Property="AllowAutoHide" Value="False" />
   </Style>
 
   <Style Selector="ScrollViewer /template/ Panel#PART_ScrollBarsSeparator">
