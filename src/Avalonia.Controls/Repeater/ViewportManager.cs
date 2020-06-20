@@ -5,9 +5,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls.Presenters;
+using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Logging;
+using Avalonia.Media;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -35,8 +41,8 @@ namespace Avalonia.Controls
         // actually happened. This can happen in cases where no scrollviewer
         // in the parent chain can scroll in the shift direction.
         private Point _unshiftableShift;
-        private double _maximumHorizontalCacheLength = 0.0;
-        private double _maximumVerticalCacheLength = 0.0;
+        private double _maximumHorizontalCacheLength = 2.0;
+        private double _maximumVerticalCacheLength = 2.0;
         private double _horizontalCacheBufferPerSide;
         private double _verticalCacheBufferPerSide;
         private bool _isBringIntoViewInProgress;
@@ -184,6 +190,9 @@ namespace Avalonia.Controls
             // We tolerate viewport imprecisions up to 1 pixel to avoid invaliding layout too much.
             if (Math.Abs(_expectedViewportShift.X) > 1 || Math.Abs(_expectedViewportShift.Y) > 1)
             {
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Expecting viewport shift of ({Shift})",
+                    _owner.Layout.LayoutId, _expectedViewportShift);
+
                 // There are cases where we might be expecting a shift but not get it. We will
                 // be waiting for the effective viewport event but if the scroll viewer is not able
                 // to perform the shift (perhaps because it cannot scroll in negative offset),
@@ -229,14 +238,12 @@ namespace Avalonia.Controls
 
         public void OnElementPrepared(IControl element)
         {
-            // If we have an anchor element, we do not want the
-            // scroll anchor provider to start anchoring some other element.
-            ////element.CanBeScrollAnchor(true);
+            _scroller?.RegisterAnchorCandidate(element);
         }
 
-        public void OnElementCleared(ILayoutable element)
+        public void OnElementCleared(IControl element)
         {
-            ////element.CanBeScrollAnchor(false);
+            _scroller?.UnregisterAnchorCandidate(element);
         }
 
         public void OnOwnerMeasuring()
@@ -282,6 +289,7 @@ namespace Avalonia.Controls
         private void OnLayoutUpdated(object sender, EventArgs args)
         {
             _owner.LayoutUpdated -= OnLayoutUpdated;
+            _layoutUpdatedSubscribed = false;
             if (_managingViewportDisabled)
             {
                 return;
@@ -293,6 +301,10 @@ namespace Avalonia.Controls
             // that can scroll in the direction where the shift is expected.
             if (_pendingViewportShift.X != 0 || _pendingViewportShift.Y != 0)
             {
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Layout Updated with pending shift {Shift}- invalidating measure",
+                    _owner.Layout.LayoutId,
+                    _pendingViewportShift);
+
                 // Assume this is never going to come.
                 _unshiftableShift = new Point(
                     _unshiftableShift.X + _pendingViewportShift.X,
@@ -306,8 +318,11 @@ namespace Avalonia.Controls
 
         public void OnMakeAnchor(IControl anchor, bool isAnchorOutsideRealizedRange)
         {
-            _makeAnchorElement = anchor;
-            _isAnchorOutsideRealizedRange = isAnchorOutsideRealizedRange;
+            if (_makeAnchorElement != anchor)
+            {
+                _makeAnchorElement = anchor;
+                _isAnchorOutsideRealizedRange = isAnchorOutsideRealizedRange;
+            }
         }
 
         public void OnBringIntoViewRequested(RequestBringIntoViewEventArgs args)
@@ -328,26 +343,28 @@ namespace Avalonia.Controls
                 // Make sure that only the target child can be the anchor during the bring into view operation.
                 foreach (var child in _owner.Children)
                 {
-                    ////if (child.CanBeScrollAnchor && child != targetChild)
-                    ////{
-                    ////    child.CanBeScrollAnchor = false;
-                    ////}
+                    if (child != targetChild)
+                    {
+                        _scroller.UnregisterAnchorCandidate(child);
+                    }
                 }
 
-                // Register to rendering event to go back to how things were before where any child can be the anchor.
-                _isBringIntoViewInProgress = true;
-                ////if (!m_renderingToken)
-                ////{
-                ////    winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{ nullptr };
-                ////    m_renderingToken = compositionTarget.Rendering(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnCompositionTargetRendering });
-                ////}
+                // Register action to go back to how things were before where any child can be the anchor. Here,
+                // WinUI uses CompositionTarget.Rendering but we don't currently have that, so post an action to
+                // run *after* rendering has completed (priority needs to be lower than Render as Transformed
+                // bounds must have been set in order for OnEffectiveViewportChanged to trigger).
+                if (!_isBringIntoViewInProgress)
+                {
+                    _isBringIntoViewInProgress = true;
+                    Dispatcher.UIThread.Post(OnCompositionTargetRendering, DispatcherPriority.Loaded);
+                }
             }
         }
 
         private IControl GetImmediateChildOfRepeater(IControl descendant)
         {
             var targetChild = descendant;
-            var parent = descendant.Parent;
+            var parent = (IControl)descendant.VisualParent;
             while (parent != null && parent != _owner)
             {
                 targetChild = parent;
@@ -362,26 +379,50 @@ namespace Avalonia.Controls
             return targetChild;
         }
 
+        private void OnCompositionTargetRendering()
+        {
+            _isBringIntoViewInProgress = false;
+            _makeAnchorElement = null;
+
+            if (_scroller is object)
+            {
+                foreach (var child in _owner.Children)
+                {
+                    var info = ItemsRepeater.GetVirtualizationInfo(child);
+
+                    if (info.IsRealized && info.IsHeldByLayout)
+                    {
+                        _scroller.RegisterAnchorCandidate(child);
+                    }
+                }
+            }
+
+            // HACK: Invalidate measure now that the anchor has been removed so that a layout can be
+            // done with a proper realization rect. This is a hack not present upstream to try to fix
+            // https://github.com/microsoft/microsoft-ui-xaml/issues/1422
+            TryInvalidateMeasure();
+        }
+
         public void ResetScrollers()
         {
-            _scroller = null;
+            if (_scroller is object)
+            {
+                foreach (var child in _owner.Children)
+                {
+                    _scroller.UnregisterAnchorCandidate(child);
+                }
+
+                _scroller = null;
+            }
+
             _effectiveViewportChangedRevoker?.Dispose();
             _effectiveViewportChangedRevoker = null;
             _ensuredScroller = false;
         }
 
-        private void OnEffectiveViewportChanged(TransformedBounds? bounds)
+        private void OnEffectiveViewportChanged(Rect effectiveViewport)
         {
-            if (!bounds.HasValue)
-            {
-                return;
-            }
-
-            var globalClip = bounds.Value.Clip;
-            var transform = _owner.GetVisualRoot().TransformToVisual(_owner).Value;
-            var clip = globalClip.TransformToAABB(transform);
-            var effectiveViewport = clip.Intersect(bounds.Value.Bounds);
-
+            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: EffectiveViewportChanged event callback", _owner.Layout.LayoutId);
             UpdateViewport(effectiveViewport);
 
             _pendingViewportShift = default;
@@ -397,6 +438,7 @@ namespace Avalonia.Controls
             if (_layoutUpdatedSubscribed)
             {
                 _owner.LayoutUpdated -= OnLayoutUpdated;
+                _layoutUpdatedSubscribed = false;
             }
         }
 
@@ -437,10 +479,17 @@ namespace Avalonia.Controls
         private void UpdateViewport(Rect viewport)
         {
             var currentVisibleWindow = viewport;
+            var previousVisibleWindow = _visibleWindow;
+
+            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Effective Viewport: ({Before})->({After})",
+                _owner.Layout.LayoutId,
+                previousVisibleWindow,
+                viewport);
 
             if (-currentVisibleWindow.X <= ItemsRepeater.ClearedElementsArrangePosition.X &&
                 -currentVisibleWindow.Y <= ItemsRepeater.ClearedElementsArrangePosition.Y)
             {
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Viewport is invalid. visible window cleared", _owner.Layout.LayoutId);
                 // We got cleared.
                 _visibleWindow = default;
             }
@@ -449,7 +498,14 @@ namespace Avalonia.Controls
                 _visibleWindow = currentVisibleWindow;
             }
 
-            TryInvalidateMeasure();
+            if (_visibleWindow != previousVisibleWindow)
+            {
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Used Viewport: ({Before})->({After})",
+                    _owner.Layout.LayoutId,
+                    previousVisibleWindow,
+                    currentVisibleWindow);
+                TryInvalidateMeasure();
+            }
         }
 
         private static void ValidateCacheLength(double cacheLength)
@@ -468,6 +524,7 @@ namespace Avalonia.Controls
                 // We invalidate measure instead of just invalidating arrange because
                 // we don't invalidate measure in UpdateViewport if the view is changing to
                 // avoid layout cycles.
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Invalidating measure due to viewport change", _owner.Layout.LayoutId);
                 _owner.InvalidateMeasure();
             }
         }
@@ -476,16 +533,32 @@ namespace Avalonia.Controls
         {
             // HACK: This is a bit of a hack. We need the effective viewport of the ItemsRepeater -
             // we can get this from TransformedBounds, but this property is updated after layout has
-            // run, resulting in the UI being updated too late when scrolling quickly. We can
-            // partially remedey this by triggering also on Bounds changes, but this won't work so 
-            // well for nested ItemsRepeaters.
+            // run, which is too late. Instead, for now lets just hook into an internal event on
+            // ScrollContentPresenter to find out what the offset and viewport will be after arrange
+            // and use those values. Note that this doesn't handle nested ScrollViewers at all, but
+            // it's enough to get scrolling to non-uniformly sized items working for now.
             //
-            // UWP uses the EffectiveBoundsChanged event (which I think was implemented specially
-            // for this case): we need to implement that in Avalonia.
-            return control.GetObservable(Visual.TransformedBoundsProperty)
-                .Merge(control.GetObservable(Visual.BoundsProperty).Select(_ => control.TransformedBounds))
-                .Skip(1)
-                .Subscribe(OnEffectiveViewportChanged);
+            // UWP uses the EffectiveViewportChanged event (which I think was implemented specially
+            // for this case): we need to implement that in Avalonia, but the semantics of it aren't
+            // clear to me. Hopefully the source for this event will be released with WinUI 3.
+            if (control.VisualParent is ScrollContentPresenter scp)
+            {
+                scp.PreArrange += ScrollContentPresenterPreArrange;
+                return Disposable.Create(() => scp.PreArrange -= ScrollContentPresenterPreArrange);
+            }
+
+            return Disposable.Empty;
+        }
+
+        private void ScrollContentPresenterPreArrange(object sender, VectorEventArgs e)
+        {
+            var scp = (ScrollContentPresenter)sender;
+            var effectiveViewport = new Rect((Point)scp.Offset, new Size(e.Vector.X, e.Vector.Y));
+
+            if (effectiveViewport != _visibleWindow)
+            {
+                OnEffectiveViewportChanged(effectiveViewport);
+            }
         }
 
         private class ScrollerInfo

@@ -12,7 +12,7 @@ namespace Avalonia.Layout
     /// </summary>
     public abstract class AttachedLayout : AvaloniaObject
     {
-        internal string LayoutId { get; set; }
+        public string LayoutId { get; set; }
 
         /// <summary>
         /// Occurs when the measurement state (layout) has been invalidated.
