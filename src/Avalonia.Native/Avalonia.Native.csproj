@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <IsPackable Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'True'">true</IsPackable>
+    <IsPackable Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'True' Or '$([MSBuild]::IsOSPlatform(Linux))' == 'True'">true</IsPackable>
     <TargetFramework>netstandard2.0</TargetFramework>
     <CastXmlPath Condition="Exists('/usr/bin/castxml')">/usr/bin/castxml</CastXmlPath>
     <CastXmlPath Condition="Exists('/usr/local/bin/castxml')">/usr/local/bin/castxml</CastXmlPath>
