@@ -7,15 +7,5 @@
   <ItemGroup Condition="'$(EnableDefaultItems)'=='True'">
     <AvaloniaXaml Include="**\*.axaml" SubType="Designer" />
     <AvaloniaXaml Include="**\*.paml" SubType="Designer" />
-    <None Remove="**\*.axaml" />
-    <None Remove="**\*.paml" />
-    <Compile Update="**\*.paml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="**\*.axaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
 </Project>
