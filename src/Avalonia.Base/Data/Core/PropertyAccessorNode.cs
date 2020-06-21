@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core
@@ -49,6 +50,18 @@ namespace Avalonia.Data.Core
 
             var accessor = plugin?.Start(reference, PropertyName);
 
+            // We need to handle accessor fallback before handling validation. Validators do not support null accessors.
+            if (accessor == null)
+            {
+                reference.TryGetTarget(out object instance);
+
+                var message = $"Could not find a matching property accessor for '{PropertyName}' on '{instance}'";
+
+                var exception = new MissingMemberException(message);
+
+                accessor = new PropertyError(new BindingNotification(exception, BindingErrorType.Error));
+            }
+
             if (_enableValidation && Next == null)
             {
                 foreach (var validator in ExpressionObserver.DataValidators)
@@ -60,16 +73,7 @@ namespace Avalonia.Data.Core
                 }
             }
 
-            if (accessor == null)
-            {
-                reference.TryGetTarget(out object instance);
-
-                var message = $"Could not find a matching property accessor for '{PropertyName}' on '{instance}'";
-
-                var exception = new MissingMemberException(message);
-
-                accessor = new PropertyError(new BindingNotification(exception, BindingErrorType.Error));
-            }
+            Debug.Assert(accessor != null);
 
             _accessor = accessor;
             accessor.Subscribe(ValueChanged);
