@@ -104,6 +104,11 @@ namespace Avalonia.Headless
 
             public Rect GetRenderBounds(IPen pen)
             {
+                if(pen is null)
+                {
+                    return Bounds;
+                }
+
                 return Bounds.Inflate(pen.Thickness / 2);
             }
 
