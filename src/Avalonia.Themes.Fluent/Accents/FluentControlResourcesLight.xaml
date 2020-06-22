@@ -724,5 +724,36 @@
     <SolidColorBrush x:Key="PivotNavButtonPressedBackgroundThemeBrush" Color="#BD292929" />
     <SolidColorBrush x:Key="PivotNavButtonPressedBorderThemeBrush" Color="#BD292929" />
     <SolidColorBrush x:Key="PivotNavButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
+
+    <!-- Resources for TreeViewItem.xaml -->
+    <StaticResource x:Key="TreeViewItemBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealBackgroundBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundSelected" ResourceKey="SystemControlHighlightAccent3RevealBackgroundBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListMediumRevealBackgroundBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundSelectedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="TreeViewItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundSelectedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundSelectedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushPointerOver" ResourceKey="SystemControlHighlightAltTransparentRevealBorderBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushPressed" ResourceKey="SystemControlHighlightAltTransparentRevealBorderBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushSelected" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushSelectedPointerOver" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushSelectedPressed" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushSelectedDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="TreeViewItemCheckBoxBackgroundSelected" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="TreeViewItemCheckBoxBorderSelected" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+    <StaticResource x:Key="TreeViewItemCheckGlyphSelected" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+    <Thickness x:Key="TreeViewItemBorderThemeThickness">1</Thickness>
+    <x:Double x:Key="TreeViewItemMinHeight">32</x:Double>
   </Style.Resources>
 </Style>
