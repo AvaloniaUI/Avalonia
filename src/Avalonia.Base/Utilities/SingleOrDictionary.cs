@@ -38,7 +38,7 @@ namespace Avalonia.Utilities
         {
             if (dictionary == null)
             {
-                if (!_singleValue.HasValue || !_singleValue.Value.Key.Equals(key))
+                if (!_singleValue.HasValue || !EqualityComparer<TKey>.Default.Equals(_singleValue.Value.Key, key))
                 {
                     value = default(TValue);
                     return false;

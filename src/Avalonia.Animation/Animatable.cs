@@ -1,13 +1,10 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
-using Avalonia.Collections;
+using System.Collections.Specialized;
 using Avalonia.Data;
-using Avalonia.Animation.Animators;
+
+#nullable enable
 
 namespace Avalonia.Animation
 {
@@ -16,9 +13,24 @@ namespace Avalonia.Animation
     /// </summary>
     public class Animatable : AvaloniaObject
     {
+        /// <summary>
+        /// Defines the <see cref="Clock"/> property.
+        /// </summary>
         public static readonly StyledProperty<IClock> ClockProperty =
             AvaloniaProperty.Register<Animatable, IClock>(nameof(Clock), inherits: true);
 
+        /// <summary>
+        /// Defines the <see cref="Transitions"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Transitions?> TransitionsProperty =
+            AvaloniaProperty.Register<Animatable, Transitions?>(nameof(Transitions));
+
+        private bool _transitionsEnabled = true;
+        private Dictionary<ITransition, TransitionState>? _transitionState;
+
+        /// <summary>
+        /// Gets or sets the clock which controls the animations on the control.
+        /// </summary>
         public IClock Clock
         {
             get => GetValue(ClockProperty);
@@ -26,60 +38,196 @@ namespace Avalonia.Animation
         }
 
         /// <summary>
-        /// Defines the <see cref="Transitions"/> property.
-        /// </summary>
-        public static readonly DirectProperty<Animatable, Transitions> TransitionsProperty =
-            AvaloniaProperty.RegisterDirect<Animatable, Transitions>(
-                nameof(Transitions),
-                o => o.Transitions,
-                (o, v) => o.Transitions = v);
-
-        private Transitions _transitions;
-
-        private Dictionary<AvaloniaProperty, IDisposable> _previousTransitions;
-
-        /// <summary>
         /// Gets or sets the property transitions for the control.
         /// </summary>
-        public Transitions Transitions
+        public Transitions? Transitions
         {
-            get
-            {
-                if (_transitions == null)
-                    _transitions = new Transitions();
+            get => GetValue(TransitionsProperty);
+            set => SetValue(TransitionsProperty, value);
+        }
 
-                if (_previousTransitions == null)
-                    _previousTransitions = new Dictionary<AvaloniaProperty, IDisposable>();
-
-                return _transitions;
-            }
-            set
+        /// <summary>
+        /// Enables transitions for the control.
+        /// </summary>
+        /// <remarks>
+        /// This method should not be called from user code, it will be called automatically by the framework
+        /// when a control is added to the visual tree.
+        /// </remarks>
+        protected void EnableTransitions()
+        {
+            if (!_transitionsEnabled)
             {
-                SetAndRaise(TransitionsProperty, ref _transitions, value);
+                _transitionsEnabled = true;
+
+                if (Transitions is object)
+                {
+                    AddTransitions(Transitions);
+                }
             }
         }
 
         /// <summary>
-        /// Reacts to a change in a <see cref="AvaloniaProperty"/> value in 
-        /// order to animate the change if a <see cref="ITransition"/> is set for the property.
+        /// Disables transitions for the control.
         /// </summary>
-        /// <param name="e">The event args.</param>
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        /// <remarks>
+        /// This method should not be called from user code, it will be called automatically by the framework
+        /// when a control is added to the visual tree.
+        /// </remarks>
+        protected void DisableTransitions()
         {
-            if (e.Priority != BindingPriority.Animation && Transitions != null && _previousTransitions != null)
+            if (_transitionsEnabled)
             {
-                var match = Transitions.FirstOrDefault(x => x.Property == e.Property);
+                _transitionsEnabled = false;
 
-                if (match != null)
+                if (Transitions is object)
                 {
-                    if (_previousTransitions.TryGetValue(e.Property, out var dispose))
-                        dispose.Dispose();
-
-                    var instance = match.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
-
-                    _previousTransitions[e.Property] = instance;
+                    RemoveTransitions(Transitions);
                 }
             }
+        }
+
+        protected sealed override void OnPropertyChangedCore<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            if (change.Property == TransitionsProperty && change.IsEffectiveValueChange)
+            {
+                var oldTransitions = change.OldValue.GetValueOrDefault<Transitions>();
+                var newTransitions = change.NewValue.GetValueOrDefault<Transitions>();
+
+                if (newTransitions is object)
+                {
+                    newTransitions.CollectionChanged += TransitionsCollectionChanged;
+                    AddTransitions(newTransitions);
+                }
+
+                if (oldTransitions is object)
+                {
+                    oldTransitions.CollectionChanged -= TransitionsCollectionChanged;
+                    RemoveTransitions(oldTransitions);
+                }
+            }
+            else if (_transitionsEnabled &&
+                     Transitions is object &&
+                     _transitionState is object &&
+                     !change.Property.IsDirect &&
+                     change.Priority > BindingPriority.Animation)
+            {
+                for (var i = Transitions.Count -1; i >= 0; --i)
+                {
+                    var transition = Transitions[i];
+
+                    if (transition.Property == change.Property)
+                    {
+                        var state = _transitionState[transition];
+                        var oldValue = state.BaseValue;
+                        var newValue = GetAnimationBaseValue(transition.Property);
+
+                        if (!Equals(oldValue, newValue))
+                        {
+                            state.BaseValue = newValue;
+
+                            // We need to transition from the current animated value if present,
+                            // instead of the old base value.
+                            var animatedValue = GetValue(transition.Property);
+
+                            if (!Equals(newValue, animatedValue))
+                            {
+                                oldValue = animatedValue;
+                            }
+
+                            state.Instance?.Dispose();
+                            state.Instance = transition.Apply(
+                                this,
+                                Clock ?? AvaloniaLocator.Current.GetService<IGlobalClock>(),
+                                oldValue,
+                                newValue);
+                            return;
+                        }
+                    }
+                }
+            }
+
+            base.OnPropertyChangedCore(change);
+        }
+
+        private void TransitionsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (!_transitionsEnabled)
+            {
+                return;
+            }
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    AddTransitions(e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    RemoveTransitions(e.OldItems);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    RemoveTransitions(e.OldItems);
+                    AddTransitions(e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    throw new NotSupportedException("Transitions collection cannot be reset.");
+            }
+        }
+
+        private void AddTransitions(IList items)
+        {
+            if (!_transitionsEnabled)
+            {
+                return;
+            }
+
+            _transitionState ??= new Dictionary<ITransition, TransitionState>();
+
+            for (var i = 0; i < items.Count; ++i)
+            {
+                var t = (ITransition)items[i];
+
+                _transitionState.Add(t, new TransitionState
+                {
+                    BaseValue = GetAnimationBaseValue(t.Property),
+                });
+            }
+        }
+
+        private void RemoveTransitions(IList items)
+        {
+            if (_transitionState is null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < items.Count; ++i)
+            {
+                var t = (ITransition)items[i];
+
+                if (_transitionState.TryGetValue(t, out var state))
+                {
+                    state.Instance?.Dispose();
+                    _transitionState.Remove(t);
+                }
+            }
+        }
+
+        private object GetAnimationBaseValue(AvaloniaProperty property)
+        {
+            var value = this.GetBaseValue(property, BindingPriority.LocalValue);
+
+            if (value == AvaloniaProperty.UnsetValue)
+            {
+                value = GetValue(property);
+            }
+
+            return value;
+        }
+
+        private class TransitionState
+        {
+            public IDisposable? Instance { get; set; }
+            public object? BaseValue { get; set; }
         }
     }
 }

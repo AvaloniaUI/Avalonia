@@ -7,27 +7,33 @@ namespace Avalonia.Rendering
 {
     public class RendererBase
     {
-        private static readonly Typeface s_fpsTypeface = new Typeface("Arial", 18);
+        private readonly bool _useManualFpsCounting;
+        private static int s_fontSize = 18;
         private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
         private int _framesThisSecond;
         private int _fps;
         private FormattedText _fpsText;
         private TimeSpan _lastFpsUpdate;
 
-        public RendererBase()
+        public RendererBase(bool useManualFpsCounting = false)
         {
+            _useManualFpsCounting = useManualFpsCounting;
             _fpsText = new FormattedText
             {
-                Typeface = s_fpsTypeface
+                Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily.Default),
+                FontSize = s_fontSize
             };
         }
+
+        protected void FpsTick() => _framesThisSecond++;
 
         protected void RenderFps(IDrawingContextImpl context, Rect clientRect, int? layerCount)
         {
             var now = _stopwatch.Elapsed;
             var elapsed = now - _lastFpsUpdate;
 
-            ++_framesThisSecond;
+            if (!_useManualFpsCounting)
+                ++_framesThisSecond;
 
             if (elapsed.TotalSeconds > 1)
             {
@@ -49,7 +55,7 @@ namespace Avalonia.Rendering
             var rect = new Rect(clientRect.Right - size.Width, 0, size.Width, size.Height);
 
             context.Transform = Matrix.Identity;
-            context.FillRectangle(Brushes.Black, rect);
+            context.DrawRectangle(Brushes.Black,null, rect);
             context.DrawText(Brushes.White, rect.TopLeft, _fpsText.PlatformImpl);
         }
     }

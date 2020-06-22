@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
@@ -116,7 +113,7 @@ namespace Avalonia.Controls.Presenters
         {
             var scrollable = (ILogicalScrollable)Owner;
             var visualRoot = Owner.GetVisualRoot();
-            var maxAvailableSize = (visualRoot as WindowBase)?.PlatformImpl?.MaxClientSize
+            var maxAvailableSize = (visualRoot as WindowBase)?.PlatformImpl?.MaxAutoSizeHint
                  ?? (visualRoot as TopLevel)?.ClientSize;
 
             // If infinity is passed as the available size and we're virtualized then we need to
@@ -188,8 +185,8 @@ namespace Avalonia.Controls.Presenters
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
-                        if (e.OldStartingIndex >= FirstIndex &&
-                            e.OldStartingIndex < NextIndex)
+                        if ((e.OldStartingIndex >= FirstIndex && e.OldStartingIndex < NextIndex) ||
+                            panel.Children.Count > ItemCount)
                         {
                             RecycleContainersOnRemove();
                         }
@@ -289,17 +286,15 @@ namespace Avalonia.Controls.Presenters
                     break;
             }
 
-            return ScrollIntoView(newItemIndex);
+            return ScrollIntoViewCore(newItemIndex);
         }
 
         /// <inheritdoc/>
-        public override void ScrollIntoView(object item)
+        public override void ScrollIntoView(int index)
         {
-            var index = Items.IndexOf(item);
-
             if (index != -1)
             {
-                ScrollIntoView(index);
+                ScrollIntoViewCore(index);
             }
         }
 
@@ -511,7 +506,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         /// <param name="index">The item index.</param>
         /// <returns>The container that was brought into view.</returns>
-        private IControl ScrollIntoView(int index)
+        private IControl ScrollIntoViewCore(int index)
         {
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;

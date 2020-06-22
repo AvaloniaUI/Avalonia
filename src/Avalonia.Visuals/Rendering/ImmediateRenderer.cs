@@ -1,9 +1,7 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
@@ -80,7 +78,7 @@ namespace Avalonia.Rendering
             }
             catch (RenderTargetCorruptedException ex)
             {
-                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                Logger.TryGet(LogEventLevel.Information, LogArea.Animations)?.Log(this, "Render target was corrupted. Exception: {0}", ex);
                 _renderTarget.Dispose();
                 _renderTarget = null;
             }
@@ -161,6 +159,11 @@ namespace Avalonia.Rendering
         public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter)
         {
             return HitTest(root, p, filter);
+        }
+
+        public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter)
+        {
+            return HitTest(root, p, filter).FirstOrDefault();
         }
 
         /// <inheritdoc/>
@@ -286,7 +289,11 @@ namespace Avalonia.Rendering
 
                 using (context.PushPostTransform(m))
                 using (context.PushOpacity(opacity))
-                using (clipToBounds ? context.PushClip(bounds) : default(DrawingContext.PushedState))
+                using (clipToBounds 
+                    ? visual is IVisualWithRoundRectClip roundClipVisual 
+                        ? context.PushClip(new RoundedRect(bounds, roundClipVisual.ClipToBoundsRadius))
+                        : context.PushClip(bounds) 
+                    : default(DrawingContext.PushedState))
                 using (visual.Clip != null ? context.PushGeometryClip(visual.Clip) : default(DrawingContext.PushedState))
                 using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default(DrawingContext.PushedState))
                 using (context.PushTransformContainer())
@@ -306,7 +313,9 @@ namespace Avalonia.Rendering
 
                         if (!child.ClipToBounds || clipRect.Intersects(childBounds))
                         {
-                            var childClipRect = clipRect.Translate(-childBounds.Position);
+                            var childClipRect = child.RenderTransform == null
+                                ? clipRect.Translate(-childBounds.Position)
+                                : clipRect;
                             Render(context, child, childClipRect);
                         }
                         else

@@ -17,10 +17,9 @@ namespace ControlCatalog.NetCore
 {
     static class Program
     {
-
+        [STAThread]
         static int Main(string[] args)
         {
-            Thread.CurrentThread.TrySetApartmentState(ApartmentState.STA);
             if (args.Contains("--wait-for-attach"))
             {
                 Console.WriteLine("Attach debugger and use 'Set next statement'");
@@ -101,21 +100,27 @@ namespace ControlCatalog.NetCore
             else
                 return builder.StartWithClassicDesktopLifetime(args);
         }
-        
+
         /// <summary>
         /// This method is needed for IDE previewer infrastructure
         /// </summary>
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .With(new X11PlatformOptions {EnableMultiTouch = true})
+                .With(new X11PlatformOptions
+                {
+                    EnableMultiTouch = true,
+                    UseDBusMenu = true
+                })
                 .With(new Win32PlatformOptions
                 {
                     EnableMultitouch = true,
                     AllowEglInitialization = true
                 })
                 .UseSkia()
-                .UseReactiveUI();
+                .UseReactiveUI()
+                .UseManagedSystemDialogs()
+                .LogToDebug();
 
         static void SilenceConsole()
         {
@@ -124,7 +129,8 @@ namespace ControlCatalog.NetCore
                 Console.CursorVisible = false;
                 while (true)
                     Console.ReadKey(true);
-            }) {IsBackground = true}.Start();
+            })
+            { IsBackground = true }.Start();
         }
     }
 }

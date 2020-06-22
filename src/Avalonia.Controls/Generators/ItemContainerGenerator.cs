@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -128,6 +125,12 @@ namespace Avalonia.Controls.Generators
                 }
 
                 Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
+
+                if (toMove.Count > 0)
+                {
+                    var containers = toMove.Select(x => x.Value).ToList();
+                    Recycled?.Invoke(this, new ItemContainerEventArgs(containers[0].Index, containers));
+                }
             }
 
             return result;

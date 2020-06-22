@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -157,18 +154,15 @@ namespace Avalonia.Controls.UnitTests
             };
 
             var raisedOnTarget = false;
-            var raisedOnPresenter = false;
             var raisedOnChild = false;
 
             target.Measure(Size.Infinity);
             target.ResourcesChanged += (_, __) => raisedOnTarget = true;
-            target.Presenter.ResourcesChanged += (_, __) => raisedOnPresenter = true;
             child.ResourcesChanged += (_, __) => raisedOnChild = true;
 
             target.Resources.Add("foo", "bar");
 
             Assert.True(raisedOnTarget);
-            Assert.True(raisedOnPresenter);
             Assert.True(raisedOnChild);
         }
 
@@ -202,22 +196,6 @@ namespace Avalonia.Controls.UnitTests
             style.Resources.Add("foo", "bar");
 
             Assert.True(raised);
-        }
-
-        [Fact]
-        public void Setting_Logical_Parent_Subscribes_To_Parents_ResourceChanged_Event()
-        {
-            var parent = new ContentControl();
-            var child = new StyledElement();
-
-            ((ISetLogicalParent)child).SetParent(parent);
-            var raisedOnChild = false;
-
-            child.ResourcesChanged += (_, __) => raisedOnChild = true;
-
-            parent.Resources.Add("foo", "bar");
-
-            Assert.True(raisedOnChild);
         }
 
         private IControlTemplate ContentControlTemplate()

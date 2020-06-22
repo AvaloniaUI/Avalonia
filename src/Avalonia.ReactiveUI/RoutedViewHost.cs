@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -53,12 +50,12 @@ namespace Avalonia.ReactiveUI
     /// ReactiveUI routing documentation website</see> for more info.
     /// </para>
     /// </remarks>
-    public class RoutedViewHost : TransitioningContentControl, IActivatable, IEnableLogger
+    public class RoutedViewHost : TransitioningContentControl, IActivatableView, IEnableLogger
     {
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="Router"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<RoutingState> RouterProperty =
+        public static readonly StyledProperty<RoutingState> RouterProperty =
             AvaloniaProperty.Register<RoutedViewHost, RoutingState>(nameof(Router));
     
         /// <summary>

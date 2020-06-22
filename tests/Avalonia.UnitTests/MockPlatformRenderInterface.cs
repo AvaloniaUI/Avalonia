@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Visuals.Media.Imaging;
 using Moq;
 
 namespace Avalonia.UnitTests
 {
     public class MockPlatformRenderInterface : IPlatformRenderInterface
     {
-        public IEnumerable<string> InstalledFontNames => new string[0];
-
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -70,6 +70,21 @@ namespace Avalonia.UnitTests
             return Mock.Of<IBitmapImpl>();
         }
 
+        public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return Mock.Of<IBitmapImpl>();
+        }
+
+        public IBitmapImpl LoadBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return Mock.Of<IBitmapImpl>();
+        }
+
+        public IBitmapImpl ResizeBitmap(IBitmapImpl bitmapImpl, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return Mock.Of<IBitmapImpl>();
+        }
+
         public IBitmapImpl LoadBitmap(
             PixelFormat format,
             IntPtr data,
@@ -79,5 +94,13 @@ namespace Avalonia.UnitTests
         {
             throw new NotImplementedException();
         }
+
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        {
+            width = 0;
+            return Mock.Of<IGlyphRunImpl>();
+        }
+
+        public bool SupportsIndividualRoundRects { get; set; }
     }
 }

@@ -76,7 +76,7 @@ namespace Avalonia.iOS.Specific
 
         private void HandleKey(Key key, RawKeyEventType type)
         {
-            var rawKeyEvent = new RawKeyEventArgs(KeyboardDevice.Instance, (uint)DateTime.Now.Ticks, type, key, InputModifiers.None);
+            var rawKeyEvent = new RawKeyEventArgs(KeyboardDevice.Instance, (uint)DateTime.Now.Ticks, type, key, RawInputModifiers.None);
             _view.Input(rawKeyEvent);
         }
 

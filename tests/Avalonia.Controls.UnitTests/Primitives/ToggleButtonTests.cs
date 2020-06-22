@@ -1,5 +1,4 @@
 ﻿using Avalonia.Data;
-using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 
 using Xunit;
@@ -63,6 +62,54 @@ namespace Avalonia.Controls.Primitives.UnitTests
             Assert.Null(threeStateButton.IsChecked);
         }
 
+        [Fact]
+        public void ToggleButton_Events_Are_Raised_On_Is_Checked_Changes()
+        {
+            var threeStateButton = new ToggleButton();
+
+            bool checkedRaised = false;
+            threeStateButton.Checked += (_, __) => checkedRaised = true;
+
+            threeStateButton.IsChecked = true;
+            Assert.True(checkedRaised);
+
+            bool uncheckedRaised = false;
+            threeStateButton.Unchecked += (_, __) => uncheckedRaised = true;
+
+            threeStateButton.IsChecked = false;
+            Assert.True(uncheckedRaised);
+
+            bool indeterminateRaised = false;
+            threeStateButton.Indeterminate += (_, __) => indeterminateRaised = true;
+
+            threeStateButton.IsChecked = null;
+            Assert.True(indeterminateRaised);
+        }
+
+        [Fact]
+        public void ToggleButton_Events_Are_Raised_When_Toggling()
+        {
+            var threeStateButton = new TestToggleButton { IsThreeState = true };
+
+            bool checkedRaised = false;
+            threeStateButton.Checked += (_, __) => checkedRaised = true;
+
+            threeStateButton.Toggle();
+            Assert.True(checkedRaised);
+
+            bool indeterminateRaised = false;
+            threeStateButton.Indeterminate += (_, __) => indeterminateRaised = true;
+
+            threeStateButton.Toggle();
+            Assert.True(indeterminateRaised);
+
+            bool uncheckedRaised = false;
+            threeStateButton.Unchecked += (_, __) => uncheckedRaised = true;
+
+            threeStateButton.Toggle();
+            Assert.True(uncheckedRaised);
+        }
+
         private class Class1 : NotifyingBase
         {
             private bool _foo;
@@ -79,6 +126,11 @@ namespace Avalonia.Controls.Primitives.UnitTests
                 get { return nullableFoo; }
                 set { nullableFoo = value; RaisePropertyChanged(); }
             }
+        }
+
+        private class TestToggleButton : ToggleButton
+        {
+            public new void Toggle() => base.Toggle();
         }
     }
 }

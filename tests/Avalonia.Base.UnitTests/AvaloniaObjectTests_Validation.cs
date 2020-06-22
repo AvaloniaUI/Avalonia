@@ -1,8 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Subjects;
+using Avalonia.Controls;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -10,135 +8,87 @@ namespace Avalonia.Base.UnitTests
     public class AvaloniaObjectTests_Validation
     {
         [Fact]
-        public void SetValue_Causes_Validation()
+        public void Registration_Throws_If_DefaultValue_Fails_Validation()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                new StyledProperty<int>(
+                    "BadDefault",
+                    typeof(Class1),
+                    new StyledPropertyMetadata<int>(101),
+                    validate: Class1.ValidateFoo));
+        }
+
+        [Fact]
+        public void Metadata_Override_Throws_If_DefaultValue_Fails_Validation()
+        {
+            Assert.Throws<ArgumentException>(() => Class1.FooProperty.OverrideDefaultValue<Class2>(101));
+        }
+
+        [Fact]
+        public void SetValue_Throws_If_Fails_Validation()
         {
             var target = new Class1();
 
-            target.SetValue(Class1.QuxProperty, 5);
-            Assert.Throws<ArgumentOutOfRangeException>(() => target.SetValue(Class1.QuxProperty, 25));
-            Assert.Equal(5, target.GetValue(Class1.QuxProperty));
+            Assert.Throws<ArgumentException>(() => target.SetValue(Class1.FooProperty, 101));
         }
 
         [Fact]
-        public void SetValue_Causes_Coercion()
+        public void SetValue_Throws_If_Fails_Validation_Attached()
         {
             var target = new Class1();
 
-            target.SetValue(Class1.QuxProperty, 5);
-            Assert.Equal(5, target.GetValue(Class1.QuxProperty));
-            target.SetValue(Class1.QuxProperty, -5);
-            Assert.Equal(0, target.GetValue(Class1.QuxProperty));
-            target.SetValue(Class1.QuxProperty, 15);
-            Assert.Equal(10, target.GetValue(Class1.QuxProperty));
+            Assert.Throws<ArgumentException>(() => target.SetValue(Class1.AttachedProperty, 101));
         }
 
         [Fact]
-        public void Revalidate_Causes_Recoercion()
+        public void Reverts_To_DefaultValue_If_Binding_Fails_Validation()
         {
             var target = new Class1();
+            var source = new Subject<int>();
 
-            target.SetValue(Class1.QuxProperty, 7);
-            Assert.Equal(7, target.GetValue(Class1.QuxProperty));
-            target.MaxQux = 5;
-            target.Revalidate(Class1.QuxProperty);
+            target.Bind(Class1.FooProperty, source);
+            source.OnNext(150);
+
+            Assert.Equal(11, target.GetValue(Class1.FooProperty));
         }
 
         [Fact]
-        public void Validation_Can_Be_Overridden()
-        {
-            var target = new Class2();
-            Assert.Throws<ArgumentOutOfRangeException>(() => target.SetValue(Class1.QuxProperty, 5));
-        }
-
-        [Fact]
-        public void Validation_Can_Be_Overridden_With_Null()
-        {
-            var target = new Class3();
-            target.SetValue(Class1.QuxProperty, 50);
-            Assert.Equal(50, target.GetValue(Class1.QuxProperty));
-        }
-
-        [Fact]
-        public void Binding_To_UnsetValue_Doesnt_Throw()
+        public void Reverts_To_DefaultValue_Even_In_Presence_Of_Other_Bindings()
         {
             var target = new Class1();
-            var source = new Subject<object>();
+            var source1 = new Subject<int>();
+            var source2 = new Subject<int>();
 
-            target.Bind(Class1.QuxProperty, source);
+            target.Bind(Class1.FooProperty, source1);
+            target.Bind(Class1.FooProperty, source2);
+            source1.OnNext(42);
+            source2.OnNext(150);
 
-            source.OnNext(AvaloniaProperty.UnsetValue);
-        }
-
-        [Fact]
-        public void Attached_Property_Should_Be_Validated()
-        {
-            var target = new Class2();
-
-            target.SetValue(Class1.AttachedProperty, 15);
-            Assert.Equal(10, target.GetValue(Class1.AttachedProperty));
+            Assert.Equal(11, target.GetValue(Class1.FooProperty));
         }
 
         private class Class1 : AvaloniaObject
         {
-            public static readonly StyledProperty<int> QuxProperty =
-                AvaloniaProperty.Register<Class1, int>("Qux", validate: Validate);
+            public static readonly StyledProperty<int> FooProperty =
+                AvaloniaProperty.Register<Class1, int>(
+                    "Qux",
+                    defaultValue: 11,
+                    validate: ValidateFoo);
 
             public static readonly AttachedProperty<int> AttachedProperty =
-            AvaloniaProperty.RegisterAttached<Class1, Class2, int>("Attached", validate: Validate);
+                AvaloniaProperty.RegisterAttached<Class1, Class1, int>(
+                    "Attached",
+                    defaultValue: 11,
+                    validate: ValidateFoo);
 
-            public Class1()
+            public static bool ValidateFoo(int value)
             {
-                MaxQux = 10;
-                ErrorQux = 20;
-            }
-
-            public int MaxQux { get; set; }
-
-            public int ErrorQux { get; }
-
-            private static int Validate(Class1 instance, int value)
-            {
-                if (value > instance.ErrorQux)
-                {
-                    throw new ArgumentOutOfRangeException();
-                }
-
-                return Math.Min(Math.Max(value, 0), ((Class1)instance).MaxQux);
-            }
-
-            private static int Validate(Class2 instance, int value)
-            {
-                return Math.Min(value, 10);
+                return value < 100;
             }
         }
 
         private class Class2 : AvaloniaObject
         {
-            public static readonly StyledProperty<int> QuxProperty =
-                Class1.QuxProperty.AddOwner<Class2>();
-
-            static Class2()
-            {
-                QuxProperty.OverrideValidation<Class2>(Validate);
-            }
-
-            private static int Validate(Class2 instance, int value)
-            {
-                if (value < 100)
-                {
-                    throw new ArgumentOutOfRangeException();
-                }
-
-                return value;
-            }
-        }
-
-        private class Class3 : Class2
-        {
-            static Class3()
-            {
-                QuxProperty.OverrideValidation<Class3>(null);
-            }
         }
     }
 }

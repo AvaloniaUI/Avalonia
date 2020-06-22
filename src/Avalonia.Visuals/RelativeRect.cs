@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using Avalonia.Utilities;
@@ -116,10 +113,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="obj">The other object.</param>
         /// <returns>True if the objects are equal, otherwise false.</returns>
-        public override bool Equals(object obj)
-        {
-            return (obj is RelativeRect) && Equals((RelativeRect)obj);
-        }
+        public override bool Equals(object obj) => obj is RelativeRect other && Equals(other);
 
         /// <summary>
         /// Checks if the <see cref="RelativeRect"/> equals another rectangle.
@@ -139,10 +133,7 @@ namespace Avalonia
         {
             unchecked
             {
-                int hash = 17;
-                hash = (hash * 23) + Unit.GetHashCode();
-                hash = (hash * 23) + Rect.GetHashCode();
-                return hash;
+                return ((int)Unit * 397) ^ Rect.GetHashCode();
             }
         }
 
@@ -161,7 +152,7 @@ namespace Avalonia
                     Rect.Width * size.Width,
                     Rect.Height * size.Height);
         }
-        
+
         /// <summary>
         /// Parses a <see cref="RelativeRect"/> string.
         /// </summary>
@@ -169,7 +160,7 @@ namespace Avalonia
         /// <returns>The parsed <see cref="RelativeRect"/>.</returns>
         public static RelativeRect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, exceptionMessage: "Invalid RelativeRect"))
+            using (var tokenizer = new StringTokenizer(s, exceptionMessage: "Invalid RelativeRect."))
             {
                 var x = tokenizer.ReadString();
                 var y = tokenizer.ReadString();

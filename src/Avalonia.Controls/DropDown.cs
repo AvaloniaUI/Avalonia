@@ -9,7 +9,7 @@ namespace Avalonia.Controls
     {
         public DropDown()
         {
-            Logger.Warning(LogArea.Control, this, "DropDown is deprecated: Use ComboBox");
+            Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "DropDown is deprecated: Use ComboBox");
         }
 
         Type IStyleable.StyleKey => typeof(ComboBox);
@@ -20,7 +20,7 @@ namespace Avalonia.Controls
     {
         public DropDownItem()
         {
-            Logger.Warning(LogArea.Control, this, "DropDownItem is deprecated: Use ComboBoxItem");
+            Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, "DropDownItem is deprecated: Use ComboBoxItem");
         }
 
         Type IStyleable.StyleKey => typeof(ComboBoxItem);

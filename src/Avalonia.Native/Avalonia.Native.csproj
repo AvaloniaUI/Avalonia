@@ -19,8 +19,10 @@
   
   <ItemGroup>
     <SharpGenMapping Include="Mappings.xml" />
-    <PackageReference Include="SharpGenTools.Sdk" Version="1.1.2" PrivateAssets="all" />
-    <PackageReference Include="SharpGen.Runtime.COM" Version="1.1.0" />
+    <PackageReference Include="SharpGenTools.Sdk" Version="1.2.1" PrivateAssets="all" />
+    <PackageReference Include="SharpGen.Runtime" Version="1.2.1" />
+    <PackageReference Include="SharpGen.Runtime.COM" Version="1.2.0" />
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
+    <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
   </ItemGroup>
 </Project>

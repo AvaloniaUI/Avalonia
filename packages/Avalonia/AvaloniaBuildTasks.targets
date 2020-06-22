@@ -2,6 +2,7 @@
   <PropertyGroup>
     <_AvaloniaUseExternalMSBuild>$(AvaloniaUseExternalMSBuild)</_AvaloniaUseExternalMSBuild>
     <_AvaloniaUseExternalMSBuild Condition="'$(_AvaloniaForceInternalMSBuild)' == 'true'">false</_AvaloniaUseExternalMSBuild>
+    <AvaloniaXamlReportImportance Condition="'$(AvaloniaXamlReportImportance)' == ''">low</AvaloniaXamlReportImportance>
   </PropertyGroup>
   
   <UsingTask TaskName="GenerateAvaloniaResourcesTask"
@@ -38,7 +39,8 @@
       Output="$(AvaloniaResourcesTemporaryFilePath)"
       Root="$(MSBuildProjectDirectory)"
       Resources="@(AvaloniaResource)"
-      EmbeddedResources="@(EmbeddedResources)"/>
+      EmbeddedResources="@(EmbeddedResources)"
+      ReportImportance="$(AvaloniaXamlReportImportance)"/>
     <Exec 
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
       Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:GenerateAvaloniaResources /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:BuildProjectReferences=false"/>
@@ -53,6 +55,7 @@
     <PropertyGroup>
       <AvaloniaXamlReferencesTemporaryFilePath Condition="'$(AvaloniaXamlReferencesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/references</AvaloniaXamlReferencesTemporaryFilePath>
       <AvaloniaXamlOriginalCopyFilePath Condition="'$(AvaloniaXamlOriginalCopyFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/original.dll</AvaloniaXamlOriginalCopyFilePath>
+      <AvaloniaXamlIlVerifyIl Condition="'$(AvaloniaXamlIlVerifyIl)' == ''">false</AvaloniaXamlIlVerifyIl>
     </PropertyGroup>
     <WriteLinesToFile
       Condition="'$(_AvaloniaForceInternalMSBuild)' != 'true'"
@@ -65,6 +68,8 @@
       ReferencesFilePath="$(AvaloniaXamlReferencesTemporaryFilePath)"
       OriginalCopyPath="$(AvaloniaXamlOriginalCopyFilePath)"
       ProjectDirectory="$(MSBuildProjectDirectory)"
+      VerifyIl="$(AvaloniaXamlIlVerifyIl)"
+      ReportImportance="$(AvaloniaXamlReportImportance)"
     />
     <Exec
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"

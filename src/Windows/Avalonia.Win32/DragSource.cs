@@ -17,9 +17,8 @@ namespace Avalonia.Win32
             DataObject dataObject = new DataObject(data);
             int allowed = (int)OleDropTarget.ConvertDropEffect(allowedEffects);
 
-            int[] finalEffect = new int[1];
-            UnmanagedMethods.DoDragDrop(dataObject, src, allowed, finalEffect);
-
-            return Task.FromResult(OleDropTarget.ConvertDropEffect((DropEffect)finalEffect[0]));}
+            UnmanagedMethods.DoDragDrop(dataObject, src, allowed, out var finalEffect);
+            return Task.FromResult(OleDropTarget.ConvertDropEffect((DropEffect)finalEffect));
+        }
     }
 }

@@ -1,9 +1,8 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.LogicalTree;
+
+#nullable enable
 
 namespace Avalonia.Controls.Primitives
 {
@@ -15,39 +14,36 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Header"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> HeaderProperty =
-            AvaloniaProperty.Register<HeaderedContentControl, object>(nameof(Header));
+        public static readonly StyledProperty<object?> HeaderProperty =
+            AvaloniaProperty.Register<HeaderedContentControl, object?>(nameof(Header));
 
         /// <summary>
         /// Defines the <see cref="HeaderTemplate"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
-            AvaloniaProperty.Register<HeaderedContentControl, IDataTemplate>(nameof(HeaderTemplate));
+        public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty =
+            AvaloniaProperty.Register<HeaderedContentControl, IDataTemplate?>(nameof(HeaderTemplate));
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentControl"/> class.
         /// </summary>
         static HeaderedContentControl()
         {
-            ContentControlMixin.Attach<HeaderedContentControl>(
-                HeaderProperty,
-                x => x.LogicalChildren,
-                "PART_HeaderPresenter");
+            HeaderProperty.Changed.AddClassHandler<HeaderedContentControl>((x, e) => x.HeaderChanged(e));
         }
 
         /// <summary>
         /// Gets or sets the header content.
         /// </summary>
-        public object Header
+        public object? Header
         {
-            get { return GetValue(HeaderProperty); }
-            set { SetValue(HeaderProperty, value); }
+            get => GetValue(HeaderProperty);
+            set => SetValue(HeaderProperty, value);
         }
 
         /// <summary>
         /// Gets the header presenter from the control's template.
         /// </summary>
-        public IContentPresenter HeaderPresenter
+        public IContentPresenter? HeaderPresenter
         {
             get;
             private set;
@@ -56,20 +52,36 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the data template used to display the header content of the control.
         /// </summary>
-        public IDataTemplate HeaderTemplate
+        public IDataTemplate? HeaderTemplate
         {
-            get { return GetValue(HeaderTemplateProperty); }
-            set { SetValue(HeaderTemplateProperty, value); }
+            get => GetValue(HeaderTemplateProperty);
+            set => SetValue(HeaderTemplateProperty, value);
         }
 
         /// <inheritdoc/>
-        protected override void RegisterContentPresenter(IContentPresenter presenter)
+        protected override bool RegisterContentPresenter(IContentPresenter presenter)
         {
-            base.RegisterContentPresenter(presenter);
+            var result = base.RegisterContentPresenter(presenter);
 
             if (presenter.Name == "PART_HeaderPresenter")
             {
                 HeaderPresenter = presenter;
+                result = true;
+            }
+
+            return result;
+        }
+
+        private void HeaderChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is ILogical oldChild)
+            {
+                LogicalChildren.Remove(oldChild);
+            }
+
+            if (e.NewValue is ILogical newChild)
+            {
+                LogicalChildren.Add(newChild);
             }
         }
     }

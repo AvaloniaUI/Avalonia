@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -15,9 +12,11 @@ namespace Avalonia.Data.Core.Plugins
     public class DataAnnotationsValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
-        public bool Match(WeakReference reference, string memberName)
+        public bool Match(WeakReference<object> reference, string memberName)
         {
-            return reference.Target?
+            reference.TryGetTarget(out object target);
+
+            return target?
                 .GetType()
                 .GetRuntimeProperty(memberName)?
                 .GetCustomAttributes<ValidationAttribute>()
@@ -25,25 +24,22 @@ namespace Avalonia.Data.Core.Plugins
         }
 
         /// <inheritdoc/>
-        public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor inner)
+        public IPropertyAccessor Start(WeakReference<object> reference, string name, IPropertyAccessor inner)
         {
             return new Accessor(reference, name, inner);
         }
 
-        private class Accessor : DataValidationBase
+        private sealed class Accessor : DataValidationBase
         {
-            private ValidationContext _context;
+            private readonly ValidationContext _context;
 
-            public Accessor(WeakReference reference, string name, IPropertyAccessor inner)
+            public Accessor(WeakReference<object> reference, string name, IPropertyAccessor inner)
                 : base(inner)
             {
-                _context = new ValidationContext(reference.Target);
-                _context.MemberName = name;
-            }
+                reference.TryGetTarget(out object target);
 
-            public override bool SetValue(object value, BindingPriority priority)
-            {
-                return base.SetValue(value, priority);
+                _context = new ValidationContext(target);
+                _context.MemberName = name;
             }
 
             protected override void InnerValueChanged(object value)

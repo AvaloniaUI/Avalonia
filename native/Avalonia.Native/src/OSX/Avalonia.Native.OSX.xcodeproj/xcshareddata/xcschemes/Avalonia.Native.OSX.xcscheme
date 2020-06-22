@@ -29,8 +29,6 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -58,12 +56,10 @@
       </MacroExpansion>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "bin/Debug/netcoreapp2.0/ControlCatalog.NetCore.dll"
+            argument = "bin/Debug/netcoreapp3.1/ControlCatalog.NetCore.dll"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

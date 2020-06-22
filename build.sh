@@ -67,6 +67,8 @@ else
     fi
 fi
 
+export PATH=$DOTNET_DIRECTORY:$PATH
+
 echo "Microsoft (R) .NET Core SDK version $("$DOTNET_EXE" --version)"
 
 "$DOTNET_EXE" run --project "$BUILD_PROJECT_FILE" -- ${BUILD_ARGUMENTS[@]}

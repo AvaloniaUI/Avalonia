@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Moq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -24,8 +21,8 @@ namespace Avalonia.Controls.UnitTests.Utils
                     .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
                     .Bind<IStyler>().ToConstant(styler.Object);
 
-                var gesture1 = new KeyGesture {Key = Key.A, Modifiers = InputModifiers.Control};
-                var gesture2 = new KeyGesture {Key = Key.B, Modifiers = InputModifiers.Control};
+                var gesture1 = new KeyGesture(Key.A, KeyModifiers.Control);
+                var gesture2 = new KeyGesture(Key.B, KeyModifiers.Control);
 
                 var tl = new Window();
                 var button = new Button();

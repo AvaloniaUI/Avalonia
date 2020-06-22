@@ -1,18 +1,16 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 
 namespace Avalonia.UnitTests
 {
-    public class TestTemplatedRoot : ContentControl, ILayoutRoot, IRenderRoot, IStyleRoot
+    public class TestTemplatedRoot : ContentControl, ILayoutRoot, IRenderRoot, ILogicalRoot
     {
         private readonly NameScope _nameScope = new NameScope();
 

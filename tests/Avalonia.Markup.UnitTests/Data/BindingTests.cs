@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,6 +58,80 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public void TwoWay_Binding_Should_Be_Set_Up_GC_Collect()
+        {
+            var source = new WeakRefSource { Foo = null };
+            var target = new TestControl { DataContext = source };
+
+            var binding = new Binding
+            {
+                Path = "Foo",
+                Mode = BindingMode.TwoWay
+            };
+
+            target.Bind(TestControl.ValueProperty, binding);
+
+            var ref1 = AssignValue(target, "ref1");
+
+            Assert.Equal(ref1.Target, source.Foo);
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            var ref2 = AssignValue(target, "ref2");
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            target.Value = null;
+
+            Assert.Null(source.Foo);
+        }
+
+        private class DummyObject : ICloneable
+        {
+            private readonly string _val;
+
+            public DummyObject(string val)
+            {
+                _val = val;
+            }
+
+            public object Clone()
+            {
+                return new DummyObject(_val);
+            }
+
+            protected bool Equals(DummyObject other)
+            {
+                return string.Equals(_val, other._val);
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != this.GetType()) return false;
+                return Equals((DummyObject) obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return (_val != null ? _val.GetHashCode() : 0);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private WeakReference AssignValue(TestControl source, string val)
+        {
+            var obj = new DummyObject(val);
+
+            source.Value = obj;
+
+            return new WeakReference(obj);
+        }
+
+        [Fact]
         public void OneTime_Binding_Should_Be_Set_Up()
         {
             var source = new Source { Foo = "foo" };
@@ -78,6 +149,18 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal("foo", target.Text);
             target.Text = "baz";
             Assert.Equal("bar", source.Foo);
+        }
+
+        [Fact]
+        public void OneTime_Binding_Releases_Subscription_If_DataContext_Set_Later()
+        {
+            var target = new TextBlock();
+            var source = new Source { Foo = "foo" };
+
+            target.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneTime));
+            target.DataContext = source;
+
+            Assert.Equal(0, source.SubscriberCount);
         }
 
         [Fact]
@@ -120,6 +203,30 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal("baz", source.Foo);
             source.Foo = "quz";
             Assert.Equal("baz", target.Text);
+        }
+
+        [Fact]
+        public void OneWayToSource_Binding_Should_Not_StackOverflow_With_Null_Value()
+        {
+            // Issue #2912
+            var target = new TextBlock { Text = null };
+            var binding = new Binding
+            {
+                Path = "Foo",
+                Mode = BindingMode.OneWayToSource,
+            };
+
+            target.Bind(TextBox.TextProperty, binding);
+
+            var source = new Source { Foo = "foo" };
+            target.DataContext = source;
+
+            Assert.Null(source.Foo);
+
+            // When running tests under NCrunch, NCrunch replaces the standard StackOverflowException
+            // with its own, which will be caught by our code. Detect the stackoverflow anyway, by
+            // making sure the target property was only set once.
+            Assert.Equal(2, source.FooSetCount);
         }
 
         [Fact]
@@ -296,6 +403,24 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public void Should_Return_TargetNullValue_When_Value_Is_Null()
+        {
+            var target = new TextBlock();
+            var source = new Source { Foo = null };
+
+            var binding = new Binding
+            {
+                Source = source,
+                Path = "Foo",
+                TargetNullValue = "(null)",
+            };
+
+            target.Bind(TextBlock.TextProperty, binding);
+
+            Assert.Equal("(null)", target.Text);
+        }
+
+        [Fact]
         public void Null_Path_Should_Bind_To_DataContext()
         {
             var target = new TextBlock { DataContext = "foo" };
@@ -469,6 +594,23 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(expected, child.DoubleValue);
         }
 
+        [Fact]
+        public void Combined_OneTime_And_OneWayToSource_Bindings_Should_Release_Subscriptions()
+        {
+            var target1 = new TextBlock();
+            var target2 = new TextBlock();
+            var root = new Panel { Children = { target1, target2 } };
+            var source = new Source { Foo = "foo" };
+
+            using (target1.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneTime)))
+            using (target2.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneWayToSource)))
+            {
+                root.DataContext = source;
+            }
+
+            Assert.Equal(0, source.SubscriberCount);
+        }
+
         private class StyledPropertyClass : AvaloniaObject
         {
             public static readonly StyledProperty<double> DoubleValueProperty =
@@ -548,6 +690,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
         public class Source : INotifyPropertyChanged
         {
+            private PropertyChangedEventHandler _propertyChanged;
             private string _foo;
 
             public string Foo
@@ -556,6 +699,57 @@ namespace Avalonia.Markup.UnitTests.Data
                 set
                 {
                     _foo = value;
+                    ++FooSetCount;
+                    RaisePropertyChanged();
+                }
+            }
+
+            public int FooSetCount { get; private set; }
+
+
+            public int SubscriberCount { get; private set; }
+
+            public event PropertyChangedEventHandler PropertyChanged
+            {
+                add { _propertyChanged += value; ++SubscriberCount; }
+                remove { _propertyChanged += value; --SubscriberCount; }
+            }
+
+            private void RaisePropertyChanged([CallerMemberName] string prop = "")
+            {
+                _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+            }
+        }
+
+        public class WeakRefSource : INotifyPropertyChanged
+        {
+            private WeakReference<object> _foo;
+
+            public object Foo
+            {
+                get
+                {
+                    if (_foo == null)
+                    {
+                        return null;
+                    }
+
+                    if (_foo.TryGetTarget(out object target))
+                    {
+                        if (target is ICloneable cloneable)
+                        {
+                            return cloneable.Clone();
+                        }
+
+                        return target;
+                    }
+
+                    return null;
+                }
+                set
+                {
+                    _foo = new WeakReference<object>(value);
+
                     RaisePropertyChanged();
                 }
             }
@@ -574,6 +768,23 @@ namespace Avalonia.Markup.UnitTests.Data
             public int Bar { get; set; } = 2;
         }
 
+        private class TestControl : Control
+        {
+            public static readonly DirectProperty<TestControl, object> ValueProperty =
+                AvaloniaProperty.RegisterDirect<TestControl, object>(
+                    nameof(Value),
+                    o => o.Value,
+                    (o, v) => o.Value = v);
+
+            private object _value;
+
+            public object Value
+            {
+                get => _value;
+                set => SetAndRaise(ValueProperty, ref _value, value);
+            }
+        }
+
         private class OldDataContextTest : Control
         {
             public static readonly StyledProperty<int> FooProperty =
@@ -584,7 +795,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public OldDataContextTest()
             {
-                Bind(BarProperty, this.GetObservable(FooProperty));
+                this.Bind(BarProperty, this.GetObservable(FooProperty));
             }
         }
 

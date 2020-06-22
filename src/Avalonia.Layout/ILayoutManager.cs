@@ -1,6 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
+using System;
 
+#nullable enable
 
 namespace Avalonia.Layout
 {
@@ -9,6 +9,11 @@ namespace Avalonia.Layout
     /// </summary>
     public interface ILayoutManager
     {
+        /// <summary>
+        /// Raised when the layout manager completes a layout pass.
+        /// </summary>
+        event EventHandler LayoutUpdated;
+
         /// <summary>
         /// Notifies the layout manager that a control requires a measure.
         /// </summary>

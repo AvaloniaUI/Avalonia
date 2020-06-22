@@ -29,7 +29,7 @@ namespace Avalonia.Controls
         static DataGridCell()
         {
             PointerPressedEvent.AddClassHandler<DataGridCell>(
-                x => x.DataGridCell_PointerPressed, handledEventsToo: true);
+                (x,e) => x.DataGridCell_PointerPressed(e), handledEventsToo: true);
         }
         public DataGridCell()
         { }
@@ -121,10 +121,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Builds the visual tree for the cell control when a new template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             UpdatePseudoClasses();
             _rightGridLine = e.NameScope.Find<Rectangle>(DATAGRIDCELL_elementRightGridLine);
             if (_rightGridLine != null && OwningColumn == null)
@@ -164,7 +162,7 @@ namespace Avalonia.Controls
             if (OwningGrid != null)
             {
                 OwningGrid.OnCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
-                if (e.MouseButton == MouseButton.Left)
+                if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
                 {
                     if (!e.Handled)
                     //if (!e.Handled && OwningGrid.IsTabStop)

@@ -72,12 +72,12 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             return false;
         }
 
-        private static InputModifiers GetModifierKeys(KeyEvent e)
+        private static RawInputModifiers GetModifierKeys(KeyEvent e)
         {
-            var rv = InputModifiers.None;
+            var rv = RawInputModifiers.None;
 
-            if (e.IsCtrlPressed) rv |= InputModifiers.Control;
-            if (e.IsShiftPressed) rv |= InputModifiers.Shift;
+            if (e.IsCtrlPressed) rv |= RawInputModifiers.Control;
+            if (e.IsShiftPressed) rv |= RawInputModifiers.Shift;
 
             return rv;
         }

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Input;
 
@@ -35,22 +32,6 @@ namespace Avalonia.Controls.Primitives
         bool IsLogicalScrollEnabled { get; }
 
         /// <summary>
-        /// Gets or sets the scroll invalidation method.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// This method notifies the attached <see cref="ScrollViewer"/> of a change in 
-        /// the <see cref="IScrollable.Extent"/>, <see cref="IScrollable.Offset"/> or 
-        /// <see cref="IScrollable.Viewport"/> properties.
-        /// </para>
-        /// <para>
-        /// This property is set by the parent <see cref="ScrollViewer"/> when the 
-        /// <see cref="ILogicalScrollable"/> is placed inside it.
-        /// </para>
-        /// </remarks>
-        Action InvalidateScroll { get; set; }
-
-        /// <summary>
         /// Gets the size to scroll by, in logical units.
         /// </summary>
         Size ScrollSize { get; }
@@ -59,6 +40,15 @@ namespace Avalonia.Controls.Primitives
         /// Gets the size to page by, in logical units.
         /// </summary>
         Size PageScrollSize { get; }
+
+        /// <summary>
+        /// Raised when the scroll is invalidated.
+        /// </summary>
+        /// <remarks>
+        /// This event notifies an attached <see cref="ScrollViewer"/> of a change in 
+        /// one of the scroll properties.
+        /// </remarks>
+        event EventHandler ScrollInvalidated;
 
         /// <summary>
         /// Attempts to bring a portion of the target visual into view by scrolling the content.
@@ -75,5 +65,11 @@ namespace Avalonia.Controls.Primitives
         /// <param name="from">The control from which movement begins.</param>
         /// <returns>The control.</returns>
         IControl GetControlInDirection(NavigationDirection direction, IControl from);
+
+        /// <summary>
+        /// Raises the <see cref="ScrollInvalidated"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        void RaiseScrollInvalidated(EventArgs e);
     }
 }

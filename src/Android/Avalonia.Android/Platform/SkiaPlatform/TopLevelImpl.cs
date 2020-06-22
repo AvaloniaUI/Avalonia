@@ -15,10 +15,10 @@ using Avalonia.Rendering;
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
     class TopLevelImpl : IAndroidView, ITopLevelImpl,  IFramebufferPlatformSurface
-
     {
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidTouchEventsHelper<TopLevelImpl> _touchHelper;
+
         private ViewImpl _view;
 
         public TopLevelImpl(Context context, bool placeOnTop = false)
@@ -27,6 +27,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot,
                 p => GetAvaloniaPointFromEvent(p));
+
+            Surfaces = new object[] { this };
 
             MaxClientSize = new Size(_view.Resources.DisplayMetrics.WidthPixels,
                 _view.Resources.DisplayMetrics.HeightPixels);
@@ -82,7 +84,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IPlatformHandle Handle => _view;
 
-        public IEnumerable<object> Surfaces => new object[] {this};
+        public IEnumerable<object> Surfaces { get; }
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {

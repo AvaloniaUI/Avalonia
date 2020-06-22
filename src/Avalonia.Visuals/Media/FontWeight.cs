@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Media
 {
     /// <summary>
@@ -31,6 +28,11 @@ namespace Avalonia.Media
         /// Specifies a "light" font weight.
         /// </summary>
         Light = 300,
+
+        /// <summary>
+        /// Specifies a "semi light" font weight.
+        /// </summary>
+        SemiLight = 350,
 
         /// <summary>
         /// Specifies a "normal" font weight.

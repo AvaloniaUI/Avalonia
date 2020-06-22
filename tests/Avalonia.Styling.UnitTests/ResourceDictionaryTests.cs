@@ -1,14 +1,26 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using Avalonia.Controls;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Styling.UnitTests
 {
     public class ResourceDictionaryTests
     {
+        [Fact]
+        public void Cannot_Add_Null_Key()
+        {
+            var target = new ResourceDictionary();
+            Assert.Throws<ArgumentNullException>(() => target.Add(null, "null"));
+        }
+
+        [Fact]
+        public void Can_Add_Null_Value()
+        {
+            var target = new ResourceDictionary();
+            target.Add("null", null);
+        }
+
         [Fact]
         public void TryGetResource_Should_Find_Resource()
         {
@@ -79,84 +91,97 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void ResourcesChanged_Should_Be_Raised_On_Resource_Add()
+        public void NotifyHostedResourcesChanged_Should_Be_Called_On_AddOwner()
         {
-            var target = new ResourceDictionary();
-            var raised = false;
+            var host = new Mock<IResourceHost>();
+            var target = new ResourceDictionary { { "foo", "bar" } };
 
-            target.ResourcesChanged += (_, __) => raised = true;
-            target.Add("foo", "bar");
+            ((IResourceProvider)target).AddOwner(host.Object);
 
-            Assert.True(raised);
+            host.Verify(x => x.NotifyHostedResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()));
         }
 
         [Fact]
-        public void ResourcesChanged_Should_Be_Raised_On_MergedDictionary_Add()
+        public void NotifyHostedResourcesChanged_Should_Be_Called_On_RemoveOwner()
         {
-            var target = new ResourceDictionary();
-            var raised = false;
+            var host = new Mock<IResourceHost>();
+            var target = new ResourceDictionary { { "foo", "bar" } };
 
-            target.ResourcesChanged += (_, __) => raised = true;
+            ((IResourceProvider)target).AddOwner(host.Object);
+            host.ResetCalls();
+            ((IResourceProvider)target).RemoveOwner(host.Object);
+
+            host.Verify(x => x.NotifyHostedResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()));
+        }
+
+        [Fact]
+        public void NotifyHostedResourcesChanged_Should_Be_Called_On_Resource_Add()
+        {
+            var host = new Mock<IResourceHost>();
+            var target = new ResourceDictionary(host.Object);
+
+            host.ResetCalls();
+            target.Add("foo", "bar");
+
+            host.Verify(x => x.NotifyHostedResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()));
+        }
+
+        [Fact]
+        public void NotifyHostedResourcesChanged_Should_Be_Called_On_MergedDictionary_Add()
+        {
+            var host = new Mock<IResourceHost>();
+            var target = new ResourceDictionary(host.Object);
+
+            host.ResetCalls();
             target.MergedDictionaries.Add(new ResourceDictionary
             {
                 { "foo", "bar" },
             });
 
-            Assert.True(raised);
+            host.Verify(
+                x => x.NotifyHostedResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
         }
 
         [Fact]
-        public void ResourcesChanged_Should_Not_Be_Raised_On_Empty_MergedDictionary_Add()
+        public void NotifyHostedResourcesChanged_Should_Not_Be_Called_On_Empty_MergedDictionary_Add()
         {
-            var target = new ResourceDictionary();
-            var raised = false;
+            var host = new Mock<IResourceHost>();
+            var target = new ResourceDictionary(host.Object);
 
-            target.ResourcesChanged += (_, __) => raised = true;
+            host.ResetCalls();
             target.MergedDictionaries.Add(new ResourceDictionary());
 
-            Assert.False(raised);
+            host.Verify(
+                x => x.NotifyHostedResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Never);
         }
 
         [Fact]
-        public void ResourcesChanged_Should_Be_Raised_On_MergedDictionary_Remove()
+        public void NotifyHostedResourcesChanged_Should_Be_Called_On_MergedDictionary_Remove()
         {
-            var target = new ResourceDictionary
+            var host = new Mock<IResourceHost>();
+            var target = new ResourceDictionary(host.Object)
             {
                 MergedDictionaries =
                 {
                     new ResourceDictionary { { "foo", "bar" } },
                 }
             };
-            var raised = false;
 
-            target.ResourcesChanged += (_, __) => raised = true;
+            host.ResetCalls();
             target.MergedDictionaries.RemoveAt(0);
 
-            Assert.True(raised);
+            host.Verify(
+                x => x.NotifyHostedResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
         }
 
         [Fact]
-        public void ResourcesChanged_Should_Not_Be_Raised_On_Empty_MergedDictionary_Remove()
+        public void NotifyHostedResourcesChanged_Should_Be_Called_On_MergedDictionary_Resource_Add()
         {
-            var target = new ResourceDictionary
-            {
-                MergedDictionaries =
-                {
-                    new ResourceDictionary(),
-                }
-            };
-            var raised = false;
-
-            target.ResourcesChanged += (_, __) => raised = true;
-            target.MergedDictionaries.RemoveAt(0);
-
-            Assert.False(raised);
-        }
-
-        [Fact]
-        public void ResourcesChanged_Should_Be_Raised_On_MergedDictionary_Resource_Add()
-        {
-            var target = new ResourceDictionary
+            var host = new Mock<IResourceHost>();
+            var target = new ResourceDictionary(host.Object)
             {
                 MergedDictionaries =
                 {
@@ -164,12 +189,63 @@ namespace Avalonia.Styling.UnitTests
                 }
             };
 
-            var raised = false;
-
-            target.ResourcesChanged += (_, __) => raised = true;
+            host.ResetCalls();
             ((IResourceDictionary)target.MergedDictionaries[0]).Add("foo", "bar");
 
-            Assert.True(raised);
+            host.Verify(
+                x => x.NotifyHostedResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()),
+                Times.Once);
         }
+
+        [Fact]
+        public void Sets_Added_MergedDictionary_Owner()
+        {
+            var host = new Mock<IResourceHost>();
+
+            var target = new ResourceDictionary(host.Object);
+            target.MergedDictionaries.Add(new ResourceDictionary());
+
+            Assert.Same(host.Object, target.Owner);
+            Assert.Same(host.Object, ((ResourceDictionary)target.MergedDictionaries[0]).Owner);
+        }
+
+        [Fact]
+        public void AddOwner_Sets_MergedDictionary_Owner()
+        {
+            var host = new Mock<IResourceHost>();
+
+            var target = new ResourceDictionary
+            {
+                MergedDictionaries =
+                {
+                    new ResourceDictionary(),
+                }
+            };
+
+            ((IResourceProvider)target).AddOwner(host.Object);
+
+            Assert.Same(host.Object, target.Owner);
+            Assert.Same(host.Object, ((ResourceDictionary)target.MergedDictionaries[0]).Owner);
+        }
+
+        [Fact]
+        public void RemoveOwner_Clears_MergedDictionary_Owner()
+        {
+            var host = new Mock<IResourceHost>();
+
+            var target = new ResourceDictionary(host.Object)
+            {
+                MergedDictionaries =
+                {
+                    new ResourceDictionary(),
+                }
+            };
+
+            ((IResourceProvider)target).RemoveOwner(host.Object);
+
+            Assert.Null(target.Owner);
+            Assert.Null(((ResourceDictionary)target.MergedDictionaries[0]).Owner);
+        }
+
     }
 }

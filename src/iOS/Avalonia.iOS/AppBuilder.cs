@@ -6,7 +6,7 @@ namespace Avalonia
     public class AppBuilder : AppBuilderBase<AppBuilder>
     {
         public AppBuilder() : base(new StandardRuntimePlatform(),
-            builder => StandardRuntimePlatformServices.Register(builder.Instance?.GetType().Assembly))
+            builder => StandardRuntimePlatformServices.Register(builder.ApplicationType.Assembly))
         {
 
         }

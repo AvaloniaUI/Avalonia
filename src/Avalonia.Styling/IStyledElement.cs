@@ -9,13 +9,18 @@ namespace Avalonia
         IStyleable,
         IStyleHost,
         ILogical,
-        IResourceProvider,
-        IResourceNode
+        IResourceHost,
+        IDataContextProvider
     {
         /// <summary>
         /// Occurs when the control has finished initialization.
         /// </summary>
         event EventHandler Initialized;
+
+        /// <summary>
+        /// Raised when resources on the element are changed.
+        /// </summary>
+        event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
         /// <summary>
         /// Gets a value that indicates whether the element has finished initialization.
@@ -26,11 +31,6 @@ namespace Avalonia
         /// Gets or sets the control's styling classes.
         /// </summary>
         new Classes Classes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the control's data context.
-        /// </summary>
-        object DataContext { get; set; }
 
         /// <summary>
         /// Gets the control's logical parent.

@@ -19,7 +19,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
         public IPlatformHandle Handle { get; }
-        public Size MaxClientSize { get; }
+        public Size MaxAutoSizeHint { get; }
         public Size ClientSize { get; }
         public double Scaling { get; } = 1.0;
         public IEnumerable<object> Surfaces { get; }
@@ -37,6 +37,8 @@ namespace Avalonia.DesignerSupport.Remote
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
 
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
         public WindowStub(IWindowImpl parent = null)
         {
             if (parent != null)
@@ -46,7 +48,7 @@ namespace Avalonia.DesignerSupport.Remote
                         Resize(size);
                     }));
         }
-        
+
         public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
         public void Dispose()
         {
@@ -75,11 +77,11 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void BeginMoveDrag()
+        public void BeginMoveDrag(PointerPressedEventArgs e)
         {
         }
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
         }
 
@@ -93,7 +95,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public void Move(PixelPoint point)
         {
-            
+
         }
 
         public IScreenImpl Screen { get; } = new ScreenStub();
@@ -110,7 +112,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetSystemDecorations(bool enabled)
+        public void SetSystemDecorations(SystemDecorations enabled)
         {
         }
 
@@ -130,7 +132,25 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetParent(IWindowImpl parent)
+        {
+        }
+
+        public void SetEnabled(bool enable)
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
+
+        public Action GotInputWhenDisabled { get; set; }
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+        }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
     }
 
     class ClipboardStub : IClipboard
@@ -140,6 +160,10 @@ namespace Avalonia.DesignerSupport.Remote
         public Task SetTextAsync(string text) => Task.CompletedTask;
 
         public Task ClearAsync() => Task.CompletedTask;
+        public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
+        public Task<string[]> GetFormatsAsync() => Task.FromResult(new string[0]);
+
+        public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
     }
 
     class CursorFactoryStub : IStandardCursorFactory
@@ -153,7 +177,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
             public void Save(Stream outputStream)
             {
-                
+
             }
         }
 
@@ -166,11 +190,11 @@ namespace Avalonia.DesignerSupport.Remote
 
     class SystemDialogsStub : ISystemDialogImpl
     {
-        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent) =>
-            Task.FromResult((string[]) null);
+        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent) =>
+            Task.FromResult((string[])null);
 
-        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent) =>
-            Task.FromResult((string) null);
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent) =>
+            Task.FromResult((string)null);
     }
 
     class ScreenStub : IScreenImpl
@@ -178,6 +202,6 @@ namespace Avalonia.DesignerSupport.Remote
         public int ScreenCount => 1;
 
         public IReadOnlyList<Screen> AllScreens { get; } =
-            new Screen[] { new Screen(new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true) };
+            new Screen[] { new Screen(1, new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true) };
     }
 }

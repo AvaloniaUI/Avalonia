@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -79,7 +80,10 @@ namespace Avalonia.Controls
         {
             StopTimer();
 
-            ToolTip.SetIsOpen(control, true);
+            if ((control as IVisual).IsAttachedToVisualTree)
+            {
+                ToolTip.SetIsOpen(control, true);
+            }
         }
 
         private void Close(Control control)

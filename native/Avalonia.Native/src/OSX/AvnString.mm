@@ -7,6 +7,7 @@
 //
 
 #include "common.h"
+#include <vector>
 
 class AvnStringImpl : public virtual ComSingleObject<IAvnString, &IID_IAvnString>
 {
@@ -26,6 +27,13 @@ public:
         
         memset((void*)_cstring, 0, _length + 5);
         memcpy((void*)_cstring, (void*)cstring, _length);
+    }
+    
+    AvnStringImpl(void*ptr, int len)
+    {
+        _length = len;
+        _cstring = (const char*)malloc(_length);
+        memcpy((void*)_cstring, ptr, len);
     }
     
     virtual ~AvnStringImpl()
@@ -61,7 +69,60 @@ public:
     }
 };
 
+class AvnStringArrayImpl : public virtual ComSingleObject<IAvnStringArray, &IID_IAvnStringArray>
+{
+private:
+    std::vector<ComPtr<IAvnString>> _list;
+public:
+    FORWARD_IUNKNOWN()
+    AvnStringArrayImpl(NSArray<NSString*>* array)
+    {
+        for(int c = 0; c < [array count]; c++)
+        {
+            ComPtr<IAvnString> s;
+            *s.getPPV() = new AvnStringImpl([array objectAtIndex:c]);
+            _list.push_back(s);
+        }
+    }
+    
+    AvnStringArrayImpl(NSString* string)
+    {
+        ComPtr<IAvnString> s;
+        *s.getPPV() = new AvnStringImpl(string);
+        _list.push_back(s);
+    }
+    
+    virtual unsigned int GetCount() override
+    {
+        return (unsigned int)_list.size();
+    }
+    
+    virtual HRESULT Get(unsigned int index, IAvnString**ppv) override
+    {
+        if(_list.size() <= index)
+            return E_INVALIDARG;
+        *ppv = _list[index].getRetainedReference();
+        return S_OK;
+    }
+};
+
 IAvnString* CreateAvnString(NSString* string)
 {
     return new AvnStringImpl(string);
+}
+
+
+IAvnStringArray* CreateAvnStringArray(NSArray<NSString*> * array)
+{
+    return new AvnStringArrayImpl(array);
+}
+
+IAvnStringArray* CreateAvnStringArray(NSString* string)
+{
+    return new AvnStringArrayImpl(string);
+}
+
+IAvnString* CreateByteArray(void* data, int len)
+{
+    return new AvnStringImpl(data, len);
 }

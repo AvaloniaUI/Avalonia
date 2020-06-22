@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -115,7 +112,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
             var next = NextDrawAs<ImageNode>();
 
@@ -130,7 +127,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect sourceRect)
+        public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect sourceRect)
         {
             // This method is currently only used to composite layers so shouldn't be called here.
             throw new NotSupportedException();
@@ -152,20 +149,21 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0)
+        public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect,
+            BoxShadows boxShadows = default)
         {
             var next = NextDrawAs<RectangleNode>();
 
-            if (next == null || !next.Item.Equals(Transform, null, pen, rect, cornerRadius))
+            if (next == null || !next.Item.Equals(Transform, brush, pen, rect, boxShadows))
             {
-                Add(new RectangleNode(Transform, null, pen, rect, cornerRadius, CreateChildScene(pen.Brush)));
+                Add(new RectangleNode(Transform, brush, pen, rect, boxShadows, CreateChildScene(brush)));
             }
             else
             {
                 ++_drawOperationindex;
             }
         }
-        
+
         public void Custom(ICustomDrawOperation custom)
         {
             var next = NextDrawAs<CustomDrawOperation>();
@@ -191,20 +189,20 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0)
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
         {
-            var next = NextDrawAs<RectangleNode>();
+            var next = NextDrawAs<GlyphRunNode>();
 
-            if (next == null || !next.Item.Equals(Transform, brush, null, rect, cornerRadius))
+            if (next == null || !next.Item.Equals(Transform, foreground, glyphRun))
             {
-                Add(new RectangleNode(Transform, brush, null, rect, cornerRadius, CreateChildScene(brush)));
+                Add(new GlyphRunNode(Transform, foreground, glyphRun, baselineOrigin, CreateChildScene(foreground)));
             }
+
             else
             {
                 ++_drawOperationindex;
             }
         }
-
         public IRenderTargetBitmapImpl CreateLayer(Size size)
         {
             throw new NotSupportedException("Creating layers on a deferred drawing context not supported");
@@ -272,6 +270,21 @@ namespace Avalonia.Rendering.SceneGraph
 
         /// <inheritdoc/>
         public void PushClip(Rect clip)
+        {
+            var next = NextDrawAs<ClipNode>();
+
+            if (next == null || !next.Item.Equals(clip))
+            {
+                Add(new ClipNode(clip));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+
+        /// <inheritdoc />
+        public void PushClip(RoundedRect clip)
         {
             var next = NextDrawAs<ClipNode>();
 
@@ -366,11 +379,11 @@ namespace Avalonia.Rendering.SceneGraph
             public int DrawOperationIndex { get; }
         }
 
-        private void Add(IDrawOperation node)
+        private void Add<T>(T node) where T : class, IDrawOperation
         {
             using (var refCounted = RefCountable.Create(node))
             {
-                Add(refCounted); 
+                Add(refCounted);
             }
         }
 

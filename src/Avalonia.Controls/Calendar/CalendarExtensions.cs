@@ -9,10 +9,10 @@ namespace Avalonia.Controls.Primitives
 {
     internal static class CalendarExtensions
     {
-        public static void GetMetaKeyState(InputModifiers modifiers, out bool ctrl, out bool shift)
+        public static void GetMetaKeyState(KeyModifiers modifiers, out bool ctrl, out bool shift)
         {
-            ctrl = (modifiers & InputModifiers.Control) == InputModifiers.Control;
-            shift = (modifiers & InputModifiers.Shift) == InputModifiers.Shift;
+            ctrl = (modifiers & KeyModifiers.Control) == KeyModifiers.Control;
+            shift = (modifiers & KeyModifiers.Shift) == KeyModifiers.Shift;
         }
     }
 }

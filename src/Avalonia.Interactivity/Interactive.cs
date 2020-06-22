@@ -1,11 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
@@ -16,17 +10,12 @@ namespace Avalonia.Interactivity
     /// </summary>
     public class Interactive : Layoutable, IInteractive
     {
-        private Dictionary<RoutedEvent, List<EventSubscription>> _eventHandlers;
+        private Dictionary<RoutedEvent, List<EventSubscription>>? _eventHandlers;
 
         /// <summary>
         /// Gets the interactive parent of the object for bubbling and tunneling events.
         /// </summary>
-        IInteractive IInteractive.InteractiveParent => ((IVisual)this).VisualParent as IInteractive;
-
-        private Dictionary<RoutedEvent, List<EventSubscription>> EventHandlers
-        {
-            get { return _eventHandlers ?? (_eventHandlers = new Dictionary<RoutedEvent, List<EventSubscription>>()); }
-        }
+        IInteractive? IInteractive.InteractiveParent => ((IVisual)this).VisualParent as IInteractive;
 
         /// <summary>
         /// Adds a handler for the specified routed event.
@@ -35,34 +24,18 @@ namespace Avalonia.Interactivity
         /// <param name="handler">The handler.</param>
         /// <param name="routes">The routing strategies to listen to.</param>
         /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
-        /// <returns>A disposable that terminates the event subscription.</returns>
-        public IDisposable AddHandler(
+        public void AddHandler(
             RoutedEvent routedEvent,
             Delegate handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false)
         {
-            Contract.Requires<ArgumentNullException>(routedEvent != null);
-            Contract.Requires<ArgumentNullException>(handler != null);
+            routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
+            handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
-            List<EventSubscription> subscriptions;
+            var subscription = new EventSubscription(handler, routes, handledEventsToo);
 
-            if (!EventHandlers.TryGetValue(routedEvent, out subscriptions))
-            {
-                subscriptions = new List<EventSubscription>();
-                EventHandlers.Add(routedEvent, subscriptions);
-            }
-
-            var sub = new EventSubscription
-            {
-                Handler = handler,
-                Routes = routes,
-                AlsoIfHandled = handledEventsToo,
-            };
-
-            subscriptions.Add(sub);
-
-            return Disposable.Create(() => subscriptions.Remove(sub));
+            AddEventSubscription(routedEvent, subscription);
         }
 
         /// <summary>
@@ -73,14 +46,26 @@ namespace Avalonia.Interactivity
         /// <param name="handler">The handler.</param>
         /// <param name="routes">The routing strategies to listen to.</param>
         /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
-        /// <returns>A disposable that terminates the event subscription.</returns>
-        public IDisposable AddHandler<TEventArgs>(
+        public void AddHandler<TEventArgs>(
             RoutedEvent<TEventArgs> routedEvent,
             EventHandler<TEventArgs> handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false) where TEventArgs : RoutedEventArgs
         {
-            return AddHandler(routedEvent, (Delegate)handler, routes, handledEventsToo);
+            routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
+            handler = handler ?? throw new ArgumentNullException(nameof(handler));
+
+            static void InvokeAdapter(Delegate baseHandler, object sender, RoutedEventArgs args)
+            {
+                var typedHandler = (EventHandler<TEventArgs>)baseHandler;
+                var typedArgs = (TEventArgs)args;
+
+                typedHandler(sender, typedArgs);
+            }
+
+            var subscription = new EventSubscription(handler, routes, handledEventsToo, (baseHandler, sender, args) => InvokeAdapter(baseHandler, sender, args));
+
+            AddEventSubscription(routedEvent, subscription);
         }
 
         /// <summary>
@@ -90,14 +75,19 @@ namespace Avalonia.Interactivity
         /// <param name="handler">The handler.</param>
         public void RemoveHandler(RoutedEvent routedEvent, Delegate handler)
         {
-            Contract.Requires<ArgumentNullException>(routedEvent != null);
-            Contract.Requires<ArgumentNullException>(handler != null);
+            routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
+            handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
-            List<EventSubscription> subscriptions = null;
-
-            if (_eventHandlers?.TryGetValue(routedEvent, out subscriptions) == true)
+            if (_eventHandlers is object &&
+                _eventHandlers.TryGetValue(routedEvent, out var subscriptions))
             {
-                subscriptions.RemoveAll(x => x.Handler == handler);
+                for (var i = subscriptions.Count - 1; i >= 0; i--)
+                {
+                    if (subscriptions[i].Handler == handler)
+                    {
+                        subscriptions.RemoveAt(i);
+                    }
+                }
             }
         }
 
@@ -119,87 +109,115 @@ namespace Avalonia.Interactivity
         /// <param name="e">The event args.</param>
         public void RaiseEvent(RoutedEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            e = e ?? throw new ArgumentNullException(nameof(e));
 
-            e.Source = e.Source ?? this;
-
-            if (e.RoutedEvent.RoutingStrategies == RoutingStrategies.Direct)
+            if (e.RoutedEvent == null)
             {
-                e.Route = RoutingStrategies.Direct;
-                RaiseEventImpl(e);
-                e.RoutedEvent.InvokeRouteFinished(e);
+                throw new ArgumentException("Cannot raise an event whose RoutedEvent is null.");
             }
 
-            if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Tunnel) != 0)
-            {
-                TunnelEvent(e);
-                e.RoutedEvent.InvokeRouteFinished(e);
-            }
-
-            if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Bubble) != 0)
-            {
-                BubbleEvent(e);
-                e.RoutedEvent.InvokeRouteFinished(e);
-            }
+            using var route = BuildEventRoute(e.RoutedEvent);
+            route.RaiseEvent(this, e);
         }
 
-        /// <summary>
-        /// Bubbles an event.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private void BubbleEvent(RoutedEventArgs e)
+        void IInteractive.AddToEventRoute(RoutedEvent routedEvent, EventRoute route)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
+            route = route ?? throw new ArgumentNullException(nameof(route));
 
-            e.Route = RoutingStrategies.Bubble;
-
-            foreach (var target in this.GetBubbleEventRoute())
+            if (_eventHandlers != null &&
+                _eventHandlers.TryGetValue(routedEvent, out var subscriptions))
             {
-                ((Interactive)target).RaiseEventImpl(e);
-            }
-        }
-
-        /// <summary>
-        /// Tunnels an event.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private void TunnelEvent(RoutedEventArgs e)
-        {
-            Contract.Requires<ArgumentNullException>(e != null);
-
-            e.Route = RoutingStrategies.Tunnel;
-
-            foreach (var target in this.GetTunnelEventRoute())
-            {
-                ((Interactive)target).RaiseEventImpl(e);
-            }
-        }
-
-        /// <summary>
-        /// Carries out the actual invocation of an event on this object.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private void RaiseEventImpl(RoutedEventArgs e)
-        {
-            Contract.Requires<ArgumentNullException>(e != null);
-
-            e.RoutedEvent.InvokeRaised(this, e);
-
-            List<EventSubscription> subscriptions = null;
-
-            if (_eventHandlers?.TryGetValue(e.RoutedEvent, out subscriptions) == true)
-            {
-                foreach (var sub in subscriptions.ToList())
+                foreach (var sub in subscriptions)
                 {
-                    bool correctRoute = (e.Route & sub.Routes) != 0;
-                    bool notFinished = !e.Handled || sub.AlsoIfHandled;
-
-                    if (correctRoute && notFinished)
-                    {
-                        sub.Handler.DynamicInvoke(this, e);
-                    }
+                    route.Add(this, sub.Handler, sub.Routes, sub.HandledEventsToo, sub.InvokeAdapter);
                 }
             }
+        }
+
+        /// <summary>
+        /// Builds an event route for a routed event.
+        /// </summary>
+        /// <param name="e">The routed event.</param>
+        /// <returns>An <see cref="EventRoute"/> describing the route.</returns>
+        /// <remarks>
+        /// Usually, calling <see cref="RaiseEvent(RoutedEventArgs)"/> is sufficent to raise a routed
+        /// event, however there are situations in which the construction of the event args is expensive
+        /// and should be avoided if there are no handlers for an event. In these cases you can call
+        /// this method to build the event route and check the <see cref="EventRoute.HasHandlers"/>
+        /// property to see if there are any handlers registered on the route. If there are, call
+        /// <see cref="EventRoute.RaiseEvent(IInteractive, RoutedEventArgs)"/> to raise the event.
+        /// </remarks>
+        protected EventRoute BuildEventRoute(RoutedEvent e)
+        {
+            e = e ?? throw new ArgumentNullException(nameof(e));
+
+            var result = new EventRoute(e);
+            var hasClassHandlers = e.HasRaisedSubscriptions;
+
+            if (e.RoutingStrategies.HasFlagCustom(RoutingStrategies.Bubble) ||
+                e.RoutingStrategies.HasFlagCustom(RoutingStrategies.Tunnel))
+            {
+                IInteractive? element = this;
+
+                while (element != null)
+                {
+                    if (hasClassHandlers)
+                    {
+                        result.AddClassHandler(element);
+                    }
+
+                    element.AddToEventRoute(e, result);
+                    element = element.InteractiveParent;
+                }
+            }
+            else
+            {
+                if (hasClassHandlers)
+                {
+                    result.AddClassHandler(this);
+                }
+
+                ((IInteractive)this).AddToEventRoute(e, result);
+            }
+
+            return result;
+        }
+
+        private void AddEventSubscription(RoutedEvent routedEvent, EventSubscription subscription)
+        {
+            _eventHandlers ??= new Dictionary<RoutedEvent, List<EventSubscription>>();
+
+            if (!_eventHandlers.TryGetValue(routedEvent, out var subscriptions))
+            {
+                subscriptions = new List<EventSubscription>();
+                _eventHandlers.Add(routedEvent, subscriptions);
+            }
+
+            subscriptions.Add(subscription);
+        }
+
+        private readonly struct EventSubscription
+        {
+            public EventSubscription(
+                Delegate handler,
+                RoutingStrategies routes,
+                bool handledEventsToo,
+                Action<Delegate, object, RoutedEventArgs>? invokeAdapter = null)
+            {
+                Handler = handler;
+                Routes = routes;
+                HandledEventsToo = handledEventsToo;
+                InvokeAdapter = invokeAdapter;
+            }
+
+            public Action<Delegate, object, RoutedEventArgs>? InvokeAdapter { get; }
+
+            public Delegate Handler { get; }
+
+            public RoutingStrategies Routes { get; }
+
+            public bool HandledEventsToo { get; }
         }
     }
 }

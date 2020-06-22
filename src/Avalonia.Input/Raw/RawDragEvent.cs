@@ -1,24 +1,29 @@
-﻿namespace Avalonia.Input.Raw
+﻿using System;
+
+namespace Avalonia.Input.Raw
 {
     public class RawDragEvent : RawInputEventArgs
     {
-        public IInputElement InputRoot { get; }
         public Point Location { get; set; }
         public IDataObject Data { get; }
         public DragDropEffects Effects { get; set; }
         public RawDragEventType Type { get; }
+        [Obsolete("Use KeyModifiers")]
         public InputModifiers Modifiers { get; }
+        public KeyModifiers KeyModifiers { get; }
 
         public RawDragEvent(IDragDropDevice inputDevice, RawDragEventType type, 
-            IInputElement inputRoot, Point location, IDataObject data, DragDropEffects effects, InputModifiers modifiers)
-            :base(inputDevice, 0)
+            IInputRoot root, Point location, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
+            :base(inputDevice, 0, root)
         {
             Type = type;
-            InputRoot = inputRoot;
             Location = location;
             Data = data;
             Effects = effects;
-            Modifiers = modifiers;
+            KeyModifiers = KeyModifiersUtils.ConvertToKey(modifiers);
+#pragma warning disable CS0618 // Type or member is obsolete
+            Modifiers = (InputModifiers)modifiers;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 }

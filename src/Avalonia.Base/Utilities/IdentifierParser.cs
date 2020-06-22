@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Globalization;
 
 namespace Avalonia.Utilities
@@ -15,7 +12,7 @@ namespace Avalonia.Utilities
         {
             if (IsValidIdentifierStart(r.Peek))
             {
-                return r.TakeWhile(IsValidIdentifierChar);
+                return r.TakeWhile(c => IsValidIdentifierChar(c));
             }
             else
             {

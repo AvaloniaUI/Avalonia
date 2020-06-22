@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,6 +10,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -575,7 +573,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 target.Arrange(Rect.Empty);
 
                 // Check for issue #591: this should not throw.
-                target.ScrollIntoView(items[0]);
+                target.ScrollIntoView(0);
             }
         }
 
@@ -729,7 +727,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var last = (target.Items as IList)[10];
 
-            target.ScrollIntoView(last);
+            target.ScrollIntoView(10);
 
             Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
             Assert.Same(target.Panel.Children[9].DataContext, last);
@@ -746,12 +744,12 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var last = (target.Items as IList)[10];
 
-            target.ScrollIntoView(last);
+            target.ScrollIntoView(10);
 
             Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
             Assert.Same(target.Panel.Children[9].DataContext, last);
 
-            target.ScrollIntoView(last);
+            target.ScrollIntoView(10);
 
             Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
             Assert.Same(target.Panel.Children[9].DataContext, last);
@@ -1062,7 +1060,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             });
         }
 
-        private class TestScroller : ScrollContentPresenter, IRenderRoot, ILayoutRoot, IStyleRoot
+        private class TestScroller : ScrollContentPresenter, IRenderRoot, ILayoutRoot, ILogicalRoot
         {
             public IRenderer Renderer { get; }
             public Size ClientSize { get; }

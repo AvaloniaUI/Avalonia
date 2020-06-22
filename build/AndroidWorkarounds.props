@@ -5,4 +5,12 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.1" />
     <PackageReference Include="System.Buffers" Version="4.5.0" />
   </ItemGroup>
+  <Target Name="_RemoveNonExistingResgenFile" BeforeTargets="CoreCompile" Condition="'$(_SdkSetAndroidResgenFile)' == 'true' And '$(AndroidResgenFile)' != '' And !Exists('$(AndroidResgenFile)')">
+    <ItemGroup>
+      <Compile Remove="$(AndroidResgenFile)"/>
+    </ItemGroup>
+  </Target>
+  <PropertyGroup>
+    <DesignTimeBuild>false</DesignTimeBuild>
+  </PropertyGroup>
 </Project>

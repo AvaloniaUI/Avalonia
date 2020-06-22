@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -142,10 +139,12 @@ namespace Avalonia.Utilities
                     _data = ndata;
                 }
 
+                MethodInfo method = s.Method;
+
                 var subscriber = (TSubscriber)s.Target;
-                if (!s_Callers.TryGetValue(s.Method, out var caller))
-                    s_Callers[s.Method] = caller =
-                        (CallerDelegate)Delegate.CreateDelegate(typeof(CallerDelegate), null, s.Method);
+                if (!s_Callers.TryGetValue(method, out var caller))
+                    s_Callers[method] = caller =
+                        (CallerDelegate)Delegate.CreateDelegate(typeof(CallerDelegate), null, method);
                 _data[_count] = new Descriptor
                 {
                     Caller = caller,
@@ -161,9 +160,8 @@ namespace Avalonia.Utilities
                 for (int c = 0; c < _count; ++c)
                 {
                     var reference = _data[c].Subscriber;
-                    TSubscriber instance;
 
-                    if (reference != null && reference.TryGetTarget(out instance) && instance == s)
+                    if (reference != null && reference.TryGetTarget(out TSubscriber instance) && Equals(instance, s.Target))
                     {
                         _data[c] = default;
                         removed = true;
@@ -182,11 +180,16 @@ namespace Avalonia.Utilities
                 for (int c = 0; c < _count; c++)
                 {
                     var r = _data[c];
+
+                    TSubscriber target = null;
+
+                    r.Subscriber?.TryGetTarget(out target);
+
                     //Mark current index as first empty
-                    if (r.Subscriber == null && empty == -1)
+                    if (target == null && empty == -1)
                         empty = c;
                     //If current element isn't null and we have an empty one
-                    if (r.Subscriber != null && empty != -1)
+                    if (target != null && empty != -1)
                     {
                         _data[c] = default;
                         _data[empty] = r;

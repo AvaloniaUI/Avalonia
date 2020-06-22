@@ -6,15 +6,15 @@ using IDataObject = Avalonia.Input.IDataObject;
 
 namespace Avalonia.Win32
 {
-    class OleDropTarget : IDropTarget
+    internal class OleDropTarget : IDropTarget
     {
-        private readonly IInputElement _target;
+        private readonly IInputRoot _target;
         private readonly ITopLevelImpl _tl;
         private readonly IDragDropDevice _dragDevice;
         
         private IDataObject _currentDrag = null;
 
-        public OleDropTarget(ITopLevelImpl tl, IInputElement target)
+        public OleDropTarget(ITopLevelImpl tl, IInputRoot target)
         {
             _dragDevice = AvaloniaLocator.Current.GetService<IDragDropDevice>();
             _tl = tl;
@@ -45,23 +45,23 @@ namespace Avalonia.Win32
             return result;
         }
         
-        private static InputModifiers ConvertKeyState(int grfKeyState)
+        private static RawInputModifiers ConvertKeyState(int grfKeyState)
         {
-            InputModifiers modifiers = InputModifiers.None;
+            var modifiers = RawInputModifiers.None;
             var state = (UnmanagedMethods.ModifierKeys)grfKeyState;
 
             if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_LBUTTON))
-                modifiers |= InputModifiers.LeftMouseButton;
+                modifiers |= RawInputModifiers.LeftMouseButton;
             if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_MBUTTON))
-                modifiers |= InputModifiers.MiddleMouseButton;
+                modifiers |= RawInputModifiers.MiddleMouseButton;
             if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_RBUTTON))
-                modifiers |= InputModifiers.RightMouseButton;
+                modifiers |= RawInputModifiers.RightMouseButton;
             if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_SHIFT))
-                modifiers |= InputModifiers.Shift;
+                modifiers |= RawInputModifiers.Shift;
             if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_CONTROL))
-                modifiers |= InputModifiers.Control;
+                modifiers |= RawInputModifiers.Control;
             if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_ALT))
-                modifiers |= InputModifiers.Alt;
+                modifiers |= RawInputModifiers.Alt;
             return modifiers;
         }
 
@@ -127,7 +127,7 @@ namespace Avalonia.Win32
                     default(Point),
                     null,
                     DragDropEffects.None,
-                    InputModifiers.None
+                    RawInputModifiers.None
                 ));
                 return UnmanagedMethods.HRESULT.S_OK;
             }

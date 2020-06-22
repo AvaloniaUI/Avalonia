@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 
@@ -29,9 +26,9 @@ namespace Avalonia.Controls
         static TabItem()
         {
             SelectableMixin.Attach<TabItem>(IsSelectedProperty);
+            PressedMixin.Attach<TabItem>();
             FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
-            IsSelectedProperty.Changed.AddClassHandler<TabItem>(x => x.UpdateSelectedContent);
-            DataContextProperty.Changed.AddClassHandler<TabItem>(x => x.UpdateHeader);
+            DataContextProperty.Changed.AddClassHandler<TabItem>((x, e) => x.UpdateHeader(e));
         }
 
         /// <summary>
@@ -53,8 +50,6 @@ namespace Avalonia.Controls
             get { return GetValue(IsSelectedProperty); }
             set { SetValue(IsSelectedProperty, value); }
         }
-
-        internal TabControl ParentTabControl { get; set; }
 
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
         {
@@ -82,24 +77,6 @@ namespace Avalonia.Controls
                     Header = obj.NewValue;
                 }
             }          
-        }
-
-        private void UpdateSelectedContent(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (!IsSelected)
-            {
-                return;
-            }
-
-            if (ParentTabControl.SelectedContentTemplate != ContentTemplate)
-            {
-                ParentTabControl.SelectedContentTemplate = ContentTemplate;
-            }
-
-            if (ParentTabControl.SelectedContent != Content)
-            {
-                ParentTabControl.SelectedContent = Content;
-            }
         }
     }
 }

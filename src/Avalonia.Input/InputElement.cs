@@ -1,9 +1,8 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -169,22 +168,23 @@ namespace Avalonia.Input
         {
             IsEnabledProperty.Changed.Subscribe(IsEnabledChanged);
 
-            GotFocusEvent.AddClassHandler<InputElement>(x => x.OnGotFocus);
-            LostFocusEvent.AddClassHandler<InputElement>(x => x.OnLostFocus);
-            KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown);
-            KeyUpEvent.AddClassHandler<InputElement>(x => x.OnKeyUp);
-            TextInputEvent.AddClassHandler<InputElement>(x => x.OnTextInput);
-            PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnterCore);
-            PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeaveCore);
-            PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved);
-            PointerPressedEvent.AddClassHandler<InputElement>(x => x.OnPointerPressed);
-            PointerReleasedEvent.AddClassHandler<InputElement>(x => x.OnPointerReleased);
-            PointerCaptureLostEvent.AddClassHandler<InputElement>(x => x.OnPointerCaptureLost);
-            PointerWheelChangedEvent.AddClassHandler<InputElement>(x => x.OnPointerWheelChanged);
+            GotFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGotFocus(e));
+            LostFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLostFocus(e));
+            KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyDown(e));
+            KeyUpEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyUp(e));
+            TextInputEvent.AddClassHandler<InputElement>((x, e) => x.OnTextInput(e));
+            PointerEnterEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerEnterCore(e));
+            PointerLeaveEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerLeaveCore(e));
+            PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerMoved(e));
+            PointerPressedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerPressed(e));
+            PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
+            PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
+            PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
+        }
 
-            PseudoClass<InputElement, bool>(IsEffectivelyEnabledProperty, x => !x, ":disabled");
-            PseudoClass<InputElement>(IsFocusedProperty, ":focus");
-            PseudoClass<InputElement>(IsPointerOverProperty, ":pointerover");
+        public InputElement()
+        {
+            UpdatePseudoClasses(IsFocused, IsPointerOver);
         }
 
         /// <summary>
@@ -342,7 +342,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the control is focused.
+        /// Gets a value indicating whether the control is focused.
         /// </summary>
         public bool IsFocused
         {
@@ -360,7 +360,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the pointer is currently over the control.
+        /// Gets a value indicating whether the pointer is currently over the control.
         /// </summary>
         public bool IsPointerOver
         {
@@ -372,7 +372,11 @@ namespace Avalonia.Input
         public bool IsEffectivelyEnabled
         {
             get => _isEffectivelyEnabled;
-            private set => SetAndRaise(IsEffectivelyEnabledProperty, ref _isEffectivelyEnabled, value);
+            private set
+            {
+                SetAndRaise(IsEffectivelyEnabledProperty, ref _isEffectivelyEnabled, value);
+                PseudoClasses.Set(":disabled", !value);
+            }
         }
 
         public List<KeyBinding> KeyBindings { get; } = new List<KeyBinding>();
@@ -522,6 +526,20 @@ namespace Avalonia.Input
         {
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsFocusedProperty)
+            {
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>(), null);
+            }
+            else if (change.Property == IsPointerOverProperty)
+            {
+                UpdatePseudoClasses(null, change.NewValue.GetValueOrDefault<bool>());
+            }
+        }
+
         /// <summary>
         /// Updates the <see cref="IsEffectivelyEnabled"/> property value according to the parent
         /// control's enabled state and <see cref="IsEnabledCore"/>.
@@ -565,9 +583,30 @@ namespace Avalonia.Input
         {
             IsEffectivelyEnabled = IsEnabledCore && (parent?.IsEffectivelyEnabled ?? true);
 
-            foreach (var child in this.GetVisualChildren().OfType<InputElement>())
+            // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
+            // will cause extra allocations and overhead.
+            
+            var children = VisualChildren;
+
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (int i = 0; i < children.Count; ++i)
             {
-                child.UpdateIsEffectivelyEnabled(this);
+                var child = children[i] as InputElement;
+
+                child?.UpdateIsEffectivelyEnabled(this);
+            }
+        }
+
+        private void UpdatePseudoClasses(bool? isFocused, bool? isPointerOver)
+        {
+            if (isFocused.HasValue)
+            {
+                PseudoClasses.Set(":focus", isFocused.Value);
+            }
+            
+            if (isPointerOver.HasValue)
+            {
+                PseudoClasses.Set(":pointerover", isPointerOver.Value);
             }
         }
     }

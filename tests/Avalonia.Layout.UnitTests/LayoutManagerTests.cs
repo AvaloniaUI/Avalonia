@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
@@ -340,6 +337,72 @@ namespace Avalonia.Layout.UnitTests
             //altough nonArrageableTargets has rubbish logic and can't be measured/arranged properly
             //layoutmanager should process properly other visuals
             Assert.All(targets, c => Assert.True(c.Arranged));
+        }
+
+
+        [Fact]
+        public void LayoutManager_Should_Recover_From_Infinite_Loop_On_Measure()
+        {
+            // Test for issue #3041.
+            var control = new LayoutTestControl();
+            var root = new LayoutTestRoot { Child = control };
+
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
+            control.Measured = false;
+
+            control.DoMeasureOverride = (l, s) =>
+            {
+                control.InvalidateMeasure();
+                return new Size(100, 100);
+            };
+
+            control.InvalidateMeasure();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // This is the important part: running a second layout pass in which we exceed the maximum
+            // retries causes LayoutQueue<T>.Info.Count to exceed _maxEnqueueCountPerLoop.
+            root.LayoutManager.ExecuteLayoutPass();
+
+            control.Measured = false;
+            control.DoMeasureOverride = null;
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(control.Measured);
+            Assert.True(control.IsMeasureValid);
+        }
+
+        [Fact]
+        public void Calling_ExecuteLayoutPass_From_ExecuteInitialLayoutPass_Does_Not_Break_Measure()
+        {
+            // Test for issue #3550.
+            var control = new LayoutTestControl();
+            var root = new LayoutTestRoot { Child = control };
+            var count = 0;
+
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
+            control.Measured = false;
+
+            control.DoMeasureOverride = (l, s) =>
+            {
+                if (count++ == 0)
+                {
+                    control.InvalidateMeasure();
+                    root.LayoutManager.ExecuteLayoutPass();
+                    return new Size(100, 100);
+                }
+                else
+                {
+                    return new Size(200, 200);
+                }
+            };
+
+            root.InvalidateMeasure();
+            control.InvalidateMeasure();
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
+
+            Assert.Equal(new Size(200, 200), control.Bounds.Size);
+            Assert.Equal(new Size(200, 200), control.DesiredSize);
         }
     }
 }

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using Avalonia.Animation.Animators;
@@ -11,7 +8,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a rectangle.
     /// </summary>
-    public readonly struct Rect
+    public readonly struct Rect : IEquatable<Rect>
     {
         static Rect()
         {
@@ -135,6 +132,16 @@ namespace Avalonia
         /// Gets the bottom position of the rectangle.
         /// </summary>
         public double Bottom => _y + _height;
+        
+        /// <summary>
+        /// Gets the left position.
+        /// </summary>
+        public double Left => _x;
+
+        /// <summary>
+        /// Gets the top position.
+        /// </summary>
+        public double Top => _y;
 
         /// <summary>
         /// Gets the top left point of the rectangle.
@@ -164,7 +171,9 @@ namespace Avalonia
         /// <summary>
         /// Gets a value that indicates whether the rectangle is empty.
         /// </summary>
+        // ReSharper disable CompareOfFloatsByEqualityOperator
         public bool IsEmpty => _width == 0 && _height == 0;
+        // ReSharper restore CompareOfFloatsByEqualityOperator
 
         /// <summary>
         /// Checks for equality between two <see cref="Rect"/>s.
@@ -174,7 +183,7 @@ namespace Avalonia
         /// <returns>True if the rects are equal; otherwise false.</returns>
         public static bool operator ==(Rect left, Rect right)
         {
-            return left.Position == right.Position && left.Size == right.Size;
+            return left.Equals(right);
         }
 
         /// <summary>
@@ -298,20 +307,26 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Returns a boolean indicating whether the rect is equal to the other given rect.
+        /// </summary>
+        /// <param name="other">The other rect to test equality against.</param>
+        /// <returns>True if this rect is equal to other; False otherwise.</returns>
+        public bool Equals(Rect other)
+        {
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            return _x == other._x &&
+                   _y == other._y &&
+                   _width == other._width &&
+                   _height == other._height;
+            // ReSharper enable CompareOfFloatsByEqualityOperator
+        }
+
+        /// <summary>
         /// Returns a boolean indicating whether the given object is equal to this rectangle.
         /// </summary>
         /// <param name="obj">The object to compare against.</param>
         /// <returns>True if the object is equal to this rectangle; false otherwise.</returns>
-        public override bool Equals(object obj)
-        {
-            if (obj is Rect)
-            {
-                var other = (Rect)obj;
-                return Position == other.Position && Size == other.Size;
-            }
-
-            return false;
-        }
+        public override bool Equals(object obj) => obj is Rect other && Equals(other);
 
         /// <summary>
         /// Returns the hash code for this instance.
@@ -371,12 +386,12 @@ namespace Avalonia
         /// <returns>The bounding box</returns>
         public Rect TransformToAABB(Matrix matrix)
         {
-            var points = new[]
+            ReadOnlySpan<Point> points = stackalloc Point[4]
             {
                 TopLeft.Transform(matrix),
                 TopRight.Transform(matrix),
                 BottomRight.Transform(matrix),
-                BottomLeft.Transform(matrix),
+                BottomLeft.Transform(matrix)
             };
 
             var left = double.MaxValue;
@@ -406,11 +421,50 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the union of two rectangles.
-        /// </summary>
-        /// <param name="rect">The other rectangle.</param>
-        /// <returns>The union.</returns>
-        public Rect Union(Rect rect)
+		/// Normalizes the rectangle so both the <see cref="Width"/> and <see 
+        /// cref="Height"/> are positive, without changing the location of the rectangle
+		/// </summary>
+        /// <returns>Normalized Rect</returns>
+		/// <remarks>
+		/// Empty rect will be return when Rect contains invalid values. Like NaN.
+		/// </remarks>
+		public Rect Normalize()
+        {
+            Rect rect = this;            
+
+            if(double.IsNaN(rect.Right) || double.IsNaN(rect.Bottom) || 
+                double.IsNaN(rect.X) || double.IsNaN(rect.Y) || 
+                double.IsNaN(Height) || double.IsNaN(Width))
+            {
+                return Rect.Empty;
+            }
+
+            if (rect.Width < 0)
+            {
+                var x = X + Width;
+                var width = X - x;
+
+                rect = rect.WithX(x).WithWidth(width);
+            }
+
+            if (rect.Height < 0)
+            {
+                var y = Y + Height;
+                var height = Y - y;
+
+                rect = rect.WithY(y).WithHeight(height);
+            }
+
+            return rect;
+        }
+
+
+            /// <summary>
+            /// Gets the union of two rectangles.
+            /// </summary>
+            /// <param name="rect">The other rectangle.</param>
+            /// <returns>The union.</returns>
+            public Rect Union(Rect rect)
         {
             if (IsEmpty)
             {
@@ -422,10 +476,10 @@ namespace Avalonia
             }
             else
             {
-                var x1 = Math.Min(this.X, rect.X);
-                var x2 = Math.Max(this.Right, rect.Right);
-                var y1 = Math.Min(this.Y, rect.Y);
-                var y2 = Math.Max(this.Bottom, rect.Bottom);
+                var x1 = Math.Min(X, rect.X);
+                var x2 = Math.Max(Right, rect.Right);
+                var y1 = Math.Min(Y, rect.Y);
+                var y2 = Math.Max(Bottom, rect.Bottom);
 
                 return new Rect(new Point(x1, y1), new Point(x2, y2));
             }
@@ -493,7 +547,7 @@ namespace Avalonia
         /// <returns>The parsed <see cref="Rect"/>.</returns>
         public static Rect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Rect"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Rect."))
             {
                 return new Rect(
                     tokenizer.ReadDouble(),

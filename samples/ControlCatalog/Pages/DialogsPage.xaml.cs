@@ -1,5 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Avalonia.Controls;
+using Avalonia.Dialogs;
 using Avalonia.Markup.Xaml;
 #pragma warning disable 4014
 
@@ -34,7 +38,9 @@ namespace ControlCatalog.Pages
                 new OpenFileDialog()
                 {
                     Title = "Open file",
-                    Filters = GetFilters()
+                    Filters = GetFilters(),
+                    // Almost guaranteed to exist
+                    InitialFileName = Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName
                 }.ShowAsync(GetWindow());
             };
             this.FindControl<Button>("SaveFile").Click += delegate
@@ -42,15 +48,29 @@ namespace ControlCatalog.Pages
                 new SaveFileDialog()
                 {
                     Title = "Save file",
-                    Filters = GetFilters()
+                    Filters = GetFilters(),
+                    InitialFileName = "test.txt"
                 }.ShowAsync(GetWindow());
             };
             this.FindControl<Button>("SelectFolder").Click += delegate
             {
                 new OpenFolderDialog()
                 {
-                    Title = "Select folder"
+                    Title = "Select folder",
                 }.ShowAsync(GetWindow());
+            };
+            this.FindControl<Button>("OpenBoth").Click += async delegate
+            {
+                var res = await new OpenFileDialog()
+                {
+                    Title = "Select both",
+                    AllowMultiple = true
+                }.ShowManagedAsync(GetWindow(), new ManagedFileDialogOptions
+                {
+                    AllowDirectorySelection = true
+                });
+                if (res != null)
+                    Console.WriteLine("Selected: \n" + string.Join("\n", res));
             };
             this.FindControl<Button>("DecoratedWindow").Click += delegate
             {
@@ -61,14 +81,44 @@ namespace ControlCatalog.Pages
                 new DecoratedWindow().ShowDialog(GetWindow());
             };
             this.FindControl<Button>("Dialog").Click += delegate
-                {
-                    var window = new Window();
-                    window.Height = 200;
-                    window.Width = 200;
-                    window.Content = new TextBlock { Text = "Hello world!" };
-                    window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                    window.ShowDialog(GetWindow());
-                };
+            {
+                var window = CreateSampleWindow();
+                window.Height = 200;
+                window.ShowDialog(GetWindow());
+            };
+            this.FindControl<Button>("DialogNoTaskbar").Click += delegate
+            {
+                var window = CreateSampleWindow();
+                window.Height = 200;
+                window.ShowInTaskbar = false;
+                window.ShowDialog(GetWindow());
+            };
+            this.FindControl<Button>("OwnedWindow").Click += delegate
+            {
+                var window = CreateSampleWindow();
+
+                window.Show(GetWindow());
+            };
+
+            this.FindControl<Button>("OwnedWindowNoTaskbar").Click += delegate
+            {
+                var window = CreateSampleWindow();
+
+                window.ShowInTaskbar = false;
+
+                window.Show(GetWindow());
+            };
+        }
+
+        private Window CreateSampleWindow()
+        {
+            var window = new Window();
+            window.Height = 200;
+            window.Width = 200;
+            window.Content = new TextBlock { Text = "Hello world!" };
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+            return window;
         }
 
         Window GetWindow() => (Window)this.VisualRoot;

@@ -157,7 +157,7 @@ namespace Avalonia.X11
         public int ScreenCount => _impl.Screens.Length;
 
         public IReadOnlyList<Screen> AllScreens =>
-            _impl.Screens.Select(s => new Screen(s.Bounds, s.WorkingArea, s.Primary)).ToArray();
+            _impl.Screens.Select(s => new Screen(s.PixelDensity, s.Bounds, s.WorkingArea, s.Primary)).ToArray();
     }
 
     interface IX11Screens

@@ -1,11 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reactive.Subjects;
-using System.Reflection;
 using Avalonia.Data;
 using Avalonia.Utilities;
 
@@ -14,7 +9,7 @@ namespace Avalonia
     /// <summary>
     /// Base class for avalonia properties.
     /// </summary>
-    public class AvaloniaProperty : IEquatable<AvaloniaProperty>
+    public abstract class AvaloniaProperty : IEquatable<AvaloniaProperty>
     {
         /// <summary>
         /// Represents an unset property value.
@@ -22,11 +17,12 @@ namespace Avalonia
         public static readonly object UnsetValue = new UnsetValueType();
 
         private static int s_nextId;
-        private readonly Subject<AvaloniaPropertyChangedEventArgs> _initialized;
         private readonly Subject<AvaloniaPropertyChangedEventArgs> _changed;
         private readonly PropertyMetadata _defaultMetadata;
         private readonly Dictionary<Type, PropertyMetadata> _metadata;
         private readonly Dictionary<Type, PropertyMetadata> _metadataCache = new Dictionary<Type, PropertyMetadata>();
+
+        private bool _hasMetadataOverrides;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaProperty"/> class.
@@ -53,7 +49,6 @@ namespace Avalonia
                 throw new ArgumentException("'name' may not contain periods.");
             }
 
-            _initialized = new Subject<AvaloniaPropertyChangedEventArgs>();
             _changed = new Subject<AvaloniaPropertyChangedEventArgs>();
             _metadata = new Dictionary<Type, PropertyMetadata>();
 
@@ -81,7 +76,6 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(source != null);
             Contract.Requires<ArgumentNullException>(ownerType != null);
 
-            _initialized = source._initialized;
             _changed = source._changed;
             _metadata = new Dictionary<Type, PropertyMetadata>();
 
@@ -91,6 +85,9 @@ namespace Avalonia
             Notifying = source.Notifying;
             Id = source.Id;
             _defaultMetadata = source._defaultMetadata;
+
+            // Properties that have different owner can't use fast path for metadata.
+            _hasMetadataOverrides = true;
 
             if (metadata != null)
             {
@@ -134,22 +131,6 @@ namespace Avalonia
         public virtual bool IsReadOnly => false;
 
         /// <summary>
-        /// Gets an observable that is fired when this property is initialized on a
-        /// new <see cref="AvaloniaObject"/> instance.
-        /// </summary>
-        /// <remarks>
-        /// This observable is fired each time a new <see cref="AvaloniaObject"/> is constructed
-        /// for all properties registered on the object's type. The default value of the property
-        /// for the object is passed in the args' NewValue (OldValue will always be
-        /// <see cref="UnsetValue"/>.
-        /// </remarks>
-        /// <value>
-        /// An observable that is fired when this property is initialized on a new
-        /// <see cref="AvaloniaObject"/> instance.
-        /// </value>
-        public IObservable<AvaloniaPropertyChangedEventArgs> Initialized => _initialized;
-
-        /// <summary>
         /// Gets an observable that is fired when this property changes on any
         /// <see cref="AvaloniaObject"/> instance.
         /// </summary>
@@ -177,6 +158,8 @@ namespace Avalonia
         /// Gets the integer ID that represents this property.
         /// </summary>
         internal int Id { get; }
+
+        internal bool HasChangedSubscriptions => _changed?.HasObservers ?? false;
 
         /// <summary>
         /// Provides access to a property's binding via the <see cref="AvaloniaObject"/>
@@ -250,7 +233,8 @@ namespace Avalonia
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
-        /// <param name="validate">A validation function.</param>
+         /// <param name="validate">A value validation callback.</param>
+        /// <param name="coerce">A value coercion callback.</param>
         /// <param name="notifying">
         /// A method that gets called before and after the property starts being notified on an
         /// object; the bool argument will be true before and false afterwards. This callback is
@@ -262,7 +246,8 @@ namespace Avalonia
             TValue defaultValue = default(TValue),
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
-            Func<TOwner, TValue, TValue> validate = null,
+            Func<TValue, bool> validate = null,
+            Func<IAvaloniaObject, TValue, TValue> coerce = null,
             Action<IAvaloniaObject, bool> notifying = null)
                 where TOwner : IAvaloniaObject
         {
@@ -270,14 +255,15 @@ namespace Avalonia
 
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
-                validate: Cast(validate),
-                defaultBindingMode: defaultBindingMode);
+                defaultBindingMode: defaultBindingMode,
+                coerce: coerce);
 
             var result = new StyledProperty<TValue>(
                 name,
                 typeof(TOwner),
                 metadata,
                 inherits,
+                validate,
                 notifying);
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);
             return result;
@@ -293,24 +279,26 @@ namespace Avalonia
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
-        /// <param name="validate">A validation function.</param>
+        /// <param name="validate">A value validation callback.</param>
+        /// <param name="coerce">A value coercion callback.</param>
         /// <returns>A <see cref="AvaloniaProperty{TValue}"/></returns>
         public static AttachedProperty<TValue> RegisterAttached<TOwner, THost, TValue>(
             string name,
             TValue defaultValue = default(TValue),
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
-            Func<THost, TValue, TValue> validate = null)
+            Func<TValue, bool> validate = null,
+            Func<IAvaloniaObject, TValue, TValue> coerce = null)
                 where THost : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
-                validate: Cast(validate),
-                defaultBindingMode: defaultBindingMode);
+                defaultBindingMode: defaultBindingMode,
+                coerce: coerce);
 
-            var result = new AttachedProperty<TValue>(name, typeof(TOwner), metadata, inherits);
+            var result = new AttachedProperty<TValue>(name, typeof(TOwner), metadata, inherits, validate);
             var registry = AvaloniaPropertyRegistry.Instance;
             registry.Register(typeof(TOwner), result);
             registry.RegisterAttached(typeof(THost), result);
@@ -327,7 +315,8 @@ namespace Avalonia
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
-        /// <param name="validate">A validation function.</param>
+        /// <param name="validate">A value validation callback.</param>
+        /// <param name="coerce">A value coercion callback.</param>
         /// <returns>A <see cref="AvaloniaProperty{TValue}"/></returns>
         public static AttachedProperty<TValue> RegisterAttached<THost, TValue>(
             string name,
@@ -335,17 +324,18 @@ namespace Avalonia
             TValue defaultValue = default(TValue),
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
-            Func<THost, TValue, TValue> validate = null)
+            Func<TValue, bool> validate = null,
+            Func<IAvaloniaObject, TValue, TValue> coerce = null)
                 where THost : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
-                validate: Cast(validate),
-                defaultBindingMode: defaultBindingMode);
+                defaultBindingMode: defaultBindingMode,
+                coerce: coerce);
 
-            var result = new AttachedProperty<TValue>(name, ownerType, metadata, inherits);
+            var result = new AttachedProperty<TValue>(name, ownerType, metadata, inherits, validate);
             var registry = AvaloniaPropertyRegistry.Instance;
             registry.Register(ownerType, result);
             registry.RegisterAttached(typeof(THost), result);
@@ -360,9 +350,7 @@ namespace Avalonia
         /// <param name="name">The name of the property.</param>
         /// <param name="getter">Gets the current value of the property.</param>
         /// <param name="setter">Sets the value of the property.</param>
-        /// <param name="unsetValue">
-        /// The value to use when the property is set to <see cref="AvaloniaProperty.UnsetValue"/>
-        /// </param>
+        /// <param name="unsetValue">The value to use when the property is cleared.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="enableDataValidation">
         /// Whether the property is interested in data validation.
@@ -378,13 +366,18 @@ namespace Avalonia
                 where TOwner : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
+            Contract.Requires<ArgumentNullException>(getter != null);
 
             var metadata = new DirectPropertyMetadata<TValue>(
                 unsetValue: unsetValue,
-                defaultBindingMode: defaultBindingMode,
-                enableDataValidation: enableDataValidation);
+                defaultBindingMode: defaultBindingMode);
 
-            var result = new DirectProperty<TOwner, TValue>(name, getter, setter, metadata);
+            var result = new DirectProperty<TOwner, TValue>(
+                name,
+                getter,
+                setter,
+                metadata,
+                enableDataValidation);
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);
             return result;
         }
@@ -446,31 +439,12 @@ namespace Avalonia
         ///
         public PropertyMetadata GetMetadata(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-
-            PropertyMetadata result;
-            Type currentType = type;
-
-            if (_metadataCache.TryGetValue(type, out result))
+            if (!_hasMetadataOverrides)
             {
-                return result;
+                return _defaultMetadata;
             }
 
-            while (currentType != null)
-            {
-                if (_metadata.TryGetValue(currentType, out result))
-                {
-                    _metadataCache[type] = result;
-
-                    return result;
-                }
-
-                currentType = currentType.GetTypeInfo().BaseType;
-            }
-
-            _metadataCache[type] = _defaultMetadata;
-
-            return _defaultMetadata;
+            return GetMetadataWithOverrides(type);
         }
 
         /// <summary>
@@ -493,13 +467,13 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Notifies the <see cref="Initialized"/> observable.
+        /// Uses the visitor pattern to resolve an untyped property to a typed property.
         /// </summary>
-        /// <param name="e">The observable arguments.</param>
-        internal void NotifyInitialized(AvaloniaPropertyChangedEventArgs e)
-        {
-            _initialized.OnNext(e);
-        }
+        /// <typeparam name="TData">The type of user data passed.</typeparam>
+        /// <param name="vistor">The visitor which will accept the typed property.</param>
+        /// <param name="data">The user data to pass.</param>
+        public abstract void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
+            where TData : struct;
 
         /// <summary>
         /// Notifies the <see cref="Changed"/> observable.
@@ -509,6 +483,52 @@ namespace Avalonia
         {
             _changed.OnNext(e);
         }
+
+        /// <summary>
+        /// Routes an untyped ClearValue call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        internal abstract void RouteClearValue(IAvaloniaObject o);
+
+        /// <summary>
+        /// Routes an untyped GetValue call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        internal abstract object RouteGetValue(IAvaloniaObject o);
+
+        /// <summary>
+        /// Routes an untyped GetBaseValue call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        /// <param name="maxPriority">The maximum priority for the value.</param>
+        internal abstract object RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority);
+
+        /// <summary>
+        /// Routes an untyped SetValue call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="priority">The priority.</param>
+        /// <returns>
+        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
+        /// </returns>
+        internal abstract IDisposable? RouteSetValue(
+            IAvaloniaObject o,
+            object value,
+            BindingPriority priority);
+
+        /// <summary>
+        /// Routes an untyped Bind call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        /// <param name="source">The binding source.</param>
+        /// <param name="priority">The priority.</param>
+        internal abstract IDisposable RouteBind(
+            IAvaloniaObject o,
+            IObservable<BindingValue<object>> source,
+            BindingPriority priority);
+
+        internal abstract void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject oldParent);
 
         /// <summary>
         /// Overrides the metadata for the property on the specified type.
@@ -530,29 +550,49 @@ namespace Avalonia
             metadata.Merge(baseMetadata, this);
             _metadata.Add(type, metadata);
             _metadataCache.Clear();
+
+            _hasMetadataOverrides = true;
         }
 
-        [DebuggerHidden]
-        private static Func<IAvaloniaObject, TValue, TValue> Cast<TOwner, TValue>(Func<TOwner, TValue, TValue> f)
-            where TOwner : IAvaloniaObject
+        private PropertyMetadata GetMetadataWithOverrides(Type type)
         {
-            if (f != null)
+            if (type is null)
             {
-                return (o, v) => (o is TOwner) ? f((TOwner)o, v) : v;
+                throw new ArgumentNullException(nameof(type));
             }
-            else
-            {
-                return null;
-            }
-        }
 
-        
+            if (_metadataCache.TryGetValue(type, out PropertyMetadata result))
+            {
+                return result;
+            }
+
+            Type currentType = type;
+
+            while (currentType != null)
+            {
+                if (_metadata.TryGetValue(currentType, out result))
+                {
+                    _metadataCache[type] = result;
+
+                    return result;
+                }
+
+                currentType = currentType.BaseType;
+            }
+
+            _metadataCache[type] = _defaultMetadata;
+
+            return _defaultMetadata;
+        }
     }
+
     /// <summary>
     /// Class representing the <see cref="AvaloniaProperty.UnsetValue"/>.
     /// </summary>
-    public class UnsetValueType
+    public sealed class UnsetValueType
     {
+        internal UnsetValueType() { }
+
         /// <summary>
         /// Returns the string representation of the <see cref="AvaloniaProperty.UnsetValue"/>.
         /// </summary>

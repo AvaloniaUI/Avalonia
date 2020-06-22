@@ -7,13 +7,69 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:ControlCatalog.ViewModels"
         xmlns:v="clr-namespace:ControlCatalog.Views"
-        x:Class="ControlCatalog.MainWindow">
-    <Window.DataTemplates>
-        <DataTemplate DataType="vm:NotificationViewModel">
-            <v:CustomNotificationView />
-        </DataTemplate>
-    </Window.DataTemplates>
-    <Panel>
-        <local:MainView/>
-    </Panel>
+        x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}" Background="{DynamicResource SystemControlPageBackgroundAltHighBrush}">
+  <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="File">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Open" Clicked="OnOpenClicked" Gesture="Ctrl+O"/>
+            <NativeMenuItemSeperator/>
+            <NativeMenuItem Icon="/Assets/github_icon.png" Header="Recent">
+              <NativeMenuItem.Menu>
+                <NativeMenu/>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItemSeperator/>
+            <NativeMenuItem Header="{x:Static local:MainWindow.MenuQuitHeader}"
+                            Gesture="{x:Static local:MainWindow.MenuQuitGesture}"
+                            Clicked="OnCloseClicked" />
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Edit">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Copy"/>
+            <NativeMenuItem Header="Paste"/>
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Options">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+           <NativeMenuItem Header="Check Me (None)" 
+                            Command="{Binding ToggleMenuItemCheckedCommand}"
+                            ToggleType="None"
+                            IsChecked="{Binding IsMenuItemChecked}"  />
+            <NativeMenuItem Header="Check Me (CheckBox)" 
+                            Command="{Binding ToggleMenuItemCheckedCommand}"
+                            ToggleType="CheckBox"
+                            IsChecked="{Binding IsMenuItemChecked}"  />
+            <NativeMenuItem Header="Check Me (Radio)" 
+                            Command="{Binding ToggleMenuItemCheckedCommand}"
+                            ToggleType="Radio"
+                            IsChecked="{Binding IsMenuItemChecked}"  />
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+    </NativeMenu>
+  </NativeMenu.Menu>
+
+ <Window.DataTemplates>
+    <DataTemplate DataType="vm:NotificationViewModel">
+      <v:CustomNotificationView />
+    </DataTemplate>
+  </Window.DataTemplates>
+  <DockPanel LastChildFill="True">
+    <Menu Name="MainMenu" DockPanel.Dock="Top">
+      <MenuItem Header="File">
+        <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
+      </MenuItem>
+      <MenuItem Header="Help">
+        <MenuItem Header="About" Command="{Binding AboutCommand}" />
+      </MenuItem>
+    </Menu>
+    <local:MainView />
+  </DockPanel>
 </Window>

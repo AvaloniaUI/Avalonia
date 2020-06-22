@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using System.Reactive;
@@ -26,6 +23,7 @@ namespace Avalonia.Data
         public Binding()
         {
             FallbackValue = AvaloniaProperty.UnsetValue;
+            TargetNullValue = AvaloniaProperty.UnsetValue;
         }
 
         /// <summary>
@@ -59,6 +57,11 @@ namespace Avalonia.Data
         /// Gets or sets the value to use when the binding is unable to produce a value.
         /// </summary>
         public object FallbackValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value to use when the binding result is null.
+        /// </summary>
+        public object TargetNullValue { get; set; }
 
         /// <summary>
         /// Gets or sets the binding mode.
@@ -209,6 +212,7 @@ namespace Avalonia.Data
                 observer,
                 targetType,
                 fallback,
+                TargetNullValue,
                 converter ?? DefaultValueConverter.Instance,
                 ConverterParameter,
                 Priority);
@@ -224,9 +228,9 @@ namespace Avalonia.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
-            if (!(target is IStyledElement))
+            if (!(target is IDataContextProvider))
             {
-                target = anchor as IStyledElement;
+                target = anchor as IDataContextProvider;
 
                 if (target == null)
                 {

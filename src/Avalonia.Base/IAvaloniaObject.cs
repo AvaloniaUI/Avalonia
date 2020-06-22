@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Data;
 
@@ -17,16 +14,16 @@ namespace Avalonia
         event EventHandler<AvaloniaPropertyChangedEventArgs> PropertyChanged;
 
         /// <summary>
-        /// Raised when an inheritable <see cref="AvaloniaProperty"/> value changes on this object.
-        /// </summary>
-        event EventHandler<AvaloniaPropertyChangedEventArgs> InheritablePropertyChanged;
-
-        /// <summary>
-        /// Gets a <see cref="AvaloniaProperty"/> value.
+        /// Clears an <see cref="AvaloniaProperty"/>'s local value.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <returns>The value.</returns>
-        object GetValue(AvaloniaProperty property);
+        void ClearValue<T>(StyledPropertyBase<T> property);
+
+        /// <summary>
+        /// Clears an <see cref="AvaloniaProperty"/>'s local value.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        void ClearValue<T>(DirectPropertyBase<T> property);
 
         /// <summary>
         /// Gets a <see cref="AvaloniaProperty"/> value.
@@ -34,7 +31,28 @@ namespace Avalonia
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
-        T GetValue<T>(AvaloniaProperty<T> property);
+        T GetValue<T>(StyledPropertyBase<T> property);
+
+        /// <summary>
+        /// Gets a <see cref="AvaloniaProperty"/> value.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <returns>The value.</returns>
+        T GetValue<T>(DirectPropertyBase<T> property);
+
+        /// <summary>
+        /// Gets an <see cref="AvaloniaProperty"/> base value.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="maxPriority">The maximum priority for the value.</param>
+        /// <remarks>
+        /// Gets the value of the property, if set on this object with a priority equal or lower to
+        /// <paramref name="maxPriority"/>, otherwise <see cref="Optional{T}.Empty"/>. Note that
+        /// this method does not return property values that come from inherited or default values.
+        /// </remarks>
+        Optional<T> GetBaseValue<T>(StyledPropertyBase<T> property, BindingPriority maxPriority);
 
         /// <summary>
         /// Checks whether a <see cref="AvaloniaProperty"/> is animating.
@@ -53,12 +71,13 @@ namespace Avalonia
         /// <summary>
         /// Sets a <see cref="AvaloniaProperty"/> value.
         /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <param name="priority">The priority of the value.</param>
-        void SetValue(
-            AvaloniaProperty property, 
-            object value, 
+        IDisposable SetValue<T>(
+            StyledPropertyBase<T> property,
+            T value,
             BindingPriority priority = BindingPriority.LocalValue);
 
         /// <summary>
@@ -67,25 +86,7 @@ namespace Avalonia
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
-        /// <param name="priority">The priority of the value.</param>
-        void SetValue<T>(
-            AvaloniaProperty<T> property,
-            T value,
-            BindingPriority priority = BindingPriority.LocalValue);
-
-        /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="source">The observable.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        IDisposable Bind(
-            AvaloniaProperty property,
-            IObservable<object> source,
-            BindingPriority priority = BindingPriority.LocalValue);
+        void SetValue<T>(DirectPropertyBase<T> property, T value);
 
         /// <summary>
         /// Binds a <see cref="AvaloniaProperty"/> to an observable.
@@ -98,8 +99,62 @@ namespace Avalonia
         /// A disposable which can be used to terminate the binding.
         /// </returns>
         IDisposable Bind<T>(
-            AvaloniaProperty<T> property,
-            IObservable<T> source,
+            StyledPropertyBase<T> property,
+            IObservable<BindingValue<T>> source,
             BindingPriority priority = BindingPriority.LocalValue);
+
+        /// <summary>
+        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="source">The observable.</param>
+        /// <returns>
+        /// A disposable which can be used to terminate the binding.
+        /// </returns>
+        IDisposable Bind<T>(
+            DirectPropertyBase<T> property,
+            IObservable<BindingValue<T>> source);
+
+        /// <summary>
+        /// Coerces the specified <see cref="AvaloniaProperty"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        void CoerceValue<T>(StyledPropertyBase<T> property);
+
+        /// <summary>
+        /// Registers an object as an inheritance child.
+        /// </summary>
+        /// <param name="child">The inheritance child.</param>
+        /// <remarks>
+        /// Inheritance children will receive a call to
+        /// <see cref="InheritedPropertyChanged{T}(AvaloniaProperty{T}, Optional{T}, Optional{T})"/>
+        /// when an inheritable property value changes on the parent.
+        /// </remarks>
+        void AddInheritanceChild(IAvaloniaObject child);
+
+        /// <summary>
+        /// Unregisters an object as an inheritance child.
+        /// </summary>
+        /// <param name="child">The inheritance child.</param>
+        /// <remarks>
+        /// Removes an inheritance child that was added by a call to
+        /// <see cref="AddInheritanceChild(IAvaloniaObject)"/>.
+        /// </remarks>
+        void RemoveInheritanceChild(IAvaloniaObject child);
+
+        /// <summary>
+        /// Called when an inheritable property changes on an object registered as an inheritance
+        /// parent.
+        /// </summary>
+        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <param name="property">The property that has changed.</param>
+        /// <param name="oldValue"></param>
+        /// <param name="newValue"></param>
+        void InheritedPropertyChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            Optional<T> newValue);
     }
 }

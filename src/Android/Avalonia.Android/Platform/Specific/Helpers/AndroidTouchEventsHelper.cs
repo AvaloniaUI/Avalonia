@@ -78,12 +78,12 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                     if (mouseEventType == RawPointerEventType.LeftButtonDown)
                     {
                         var me = new RawPointerEventArgs(mouseDevice, (uint)eventTime.Ticks, inputRoot,
-                                    RawPointerEventType.Move, _point, InputModifiers.None);
+                                    RawPointerEventType.Move, _point, RawInputModifiers.None);
                         _view.Input(me);
                     }
 
                     var mouseEvent = new RawPointerEventArgs(mouseDevice, (uint)eventTime.Ticks, inputRoot,
-                        mouseEventType.Value, _point, InputModifiers.LeftMouseButton);
+                        mouseEventType.Value, _point, RawInputModifiers.LeftMouseButton);
                     _view.Input(mouseEvent);
 
                     if (e.Action == MotionEventActions.Move && mouseDevice.Captured == null)
@@ -102,7 +102,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                                         (uint)eventTime.Ticks,
                                         inputRoot,
                                         _point,
-                                        new Vector(vectorX * correction / ps, vectorY * correction / ps), InputModifiers.LeftMouseButton);
+                                        new Vector(vectorX * correction / ps, vectorY * correction / ps), RawInputModifiers.LeftMouseButton);
                             _view.Input(mouseWheelEvent);
                         }
                         _lastTouchMovePoint = _point;

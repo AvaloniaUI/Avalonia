@@ -48,8 +48,14 @@ namespace Avalonia.Layout
             UniformGridLayoutItemsStretch stretch,
             Orientation orientation,
             double minRowSpacing,
-            double minColumnSpacing)
+            double minColumnSpacing,
+            int maxItemsPerLine)
         {
+            if (maxItemsPerLine == 0)
+            {
+                maxItemsPerLine = 1;
+            }
+
             if (context.ItemCount > 0)
             {
                 // If the first element is realized we don't need to cache it or to get it from the context
@@ -57,7 +63,7 @@ namespace Avalonia.Layout
                 if (realizedElement != null)
                 {
                     realizedElement.Measure(availableSize);
-                    SetSize(realizedElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing);
+                    SetSize(realizedElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
                     _cachedFirstElement = null;
                 }
                 else
@@ -72,7 +78,7 @@ namespace Avalonia.Layout
 
                     _cachedFirstElement.Measure(availableSize);
 
-                    SetSize(_cachedFirstElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing);
+                    SetSize(_cachedFirstElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
 
                     // See if we can move ownership to the flow algorithm. If we can, we do not need a local cache.
                     bool added = FlowAlgorithm.TryAddElement0(_cachedFirstElement);
@@ -92,8 +98,14 @@ namespace Avalonia.Layout
             UniformGridLayoutItemsStretch stretch,
             Orientation orientation,
             double minRowSpacing,
-            double minColumnSpacing)
+            double minColumnSpacing,
+            int maxItemsPerLine)
         {
+            if (maxItemsPerLine == 0)
+            {
+                maxItemsPerLine = 1;
+            }
+
             EffectiveItemWidth = (double.IsNaN(layoutItemWidth) ? element.DesiredSize.Width : layoutItemWidth);
             EffectiveItemHeight = (double.IsNaN(LayoutItemHeight) ? element.DesiredSize.Height : LayoutItemHeight);
 
@@ -101,11 +113,17 @@ namespace Avalonia.Layout
             var minorItemSpacing = orientation == Orientation.Vertical ? minRowSpacing : minColumnSpacing;
 
             var itemSizeMinor = orientation == Orientation.Horizontal ? EffectiveItemWidth : EffectiveItemHeight;
-            itemSizeMinor += minorItemSpacing;
 
-            var numItemsPerColumn = (int)(Math.Max(1.0, availableSizeMinor / itemSizeMinor));
-            var remainingSpace = ((int)availableSizeMinor) % ((int)itemSizeMinor);
-            var extraMinorPixelsForEachItem = remainingSpace / numItemsPerColumn;
+            double extraMinorPixelsForEachItem = 0.0;
+            if (!double.IsInfinity(availableSizeMinor))
+            {
+                var numItemsPerColumn = Math.Min(
+                    maxItemsPerLine,
+                    Math.Max(1.0, availableSizeMinor / (itemSizeMinor + minorItemSpacing)));
+                var usedSpace = (numItemsPerColumn * (itemSizeMinor + minorItemSpacing)) - minorItemSpacing;
+                var remainingSpace = ((int)(availableSizeMinor - usedSpace));
+                extraMinorPixelsForEachItem = remainingSpace / ((int)numItemsPerColumn);
+            }
 
             if (stretch == UniformGridLayoutItemsStretch.Fill)
             {

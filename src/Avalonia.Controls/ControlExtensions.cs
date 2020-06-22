@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using Avalonia.Data;
@@ -34,14 +31,17 @@ namespace Avalonia.Controls
         {
             Contract.Requires<ArgumentNullException>(control != null);
 
-            var ev = new RequestBringIntoViewEventArgs
+            if (control.IsEffectivelyVisible)
             {
-                RoutedEvent = Control.RequestBringIntoViewEvent,
-                TargetObject = control,
-                TargetRect = rect,
-            };
+                var ev = new RequestBringIntoViewEventArgs
+                {
+                    RoutedEvent = Control.RequestBringIntoViewEvent,
+                    TargetObject = control,
+                    TargetRect = rect,
+                };
 
-            control.RaiseEvent(ev);
+                control.RaiseEvent(ev);
+            }
         }
 
         /// <summary>
@@ -64,26 +64,6 @@ namespace Avalonia.Controls
             }
 
             return nameScope.Find<T>(name);
-        }
-
-        /// <summary>
-        /// Adds or removes a pseudoclass depending on a boolean value.
-        /// </summary>
-        /// <param name="classes">The pseudoclasses collection.</param>
-        /// <param name="name">The name of the pseudoclass to set.</param>
-        /// <param name="value">True to add the pseudoclass or false to remove.</param>
-        public static void Set(this IPseudoClasses classes, string name, bool value)
-        {
-            Contract.Requires<ArgumentNullException>(classes != null);
-
-            if (value)
-            {
-                classes.Add(name);
-            }
-            else
-            {
-                classes.Remove(name);
-            }
         }
 
         /// <summary>

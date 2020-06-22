@@ -1,10 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using System.Reflection;
 using System.Reactive.Linq;
-using Avalonia;
 using Avalonia.VisualTree;
 using Avalonia.Controls;
 using ReactiveUI;
@@ -21,13 +16,13 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public int GetAffinityForView(Type view)
         {
-            return typeof(IVisual).GetTypeInfo().IsAssignableFrom(view.GetTypeInfo()) ? 10 : 0;
+            return typeof(IVisual).IsAssignableFrom(view) ? 10 : 0;
         }
 
         /// <summary>
         /// Returns activation observable for activatable Avalonia view.
         /// </summary>
-        public IObservable<bool> GetActivationForView(IActivatable view)
+        public IObservable<bool> GetActivationForView(IActivatableView view)
         {
             if (!(view is IVisual visual)) return Observable.Return(false);
             if (view is WindowBase window) return GetActivationForWindowBase(window);

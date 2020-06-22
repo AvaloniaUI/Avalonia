@@ -25,7 +25,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             
             if ((tt?.Values.FirstOrDefault() is XamlIlTypeExtensionNode tn))
             {
-                targetType = tn.Type;
+                targetType = tn.Value;
             }
             else
             {

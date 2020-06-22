@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.ObjectModel;
 using System.Linq;
 using Moq;
@@ -70,7 +67,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Removing_Selected_Should_Select_Next()
+        public void Removing_Selected_Should_Select_First()
         {
             var items = new ObservableCollection<TabItem>()
             {
@@ -99,10 +96,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Same(items[1], target.SelectedItem);
             items.RemoveAt(1);
 
-            // Assert for former element [2] now [1] == "3rd"
-            Assert.Equal(1, target.SelectedIndex);
-            Assert.Same(items[1], target.SelectedItem);
-            Assert.Same("3rd", ((TabItem)target.SelectedItem).Name);
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Same(items[0], target.SelectedItem);
+            Assert.Same("first", ((TabItem)target.SelectedItem).Name);
         }
 
         private Control CreateTabStripTemplate(TabStrip parent, INameScope scope)

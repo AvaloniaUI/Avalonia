@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
@@ -20,7 +17,7 @@ namespace Avalonia.Input
             IVisual rootVisual, Point rootVisualPosition,
             ulong timestamp,
             PointerPointProperties properties,
-            InputModifiers modifiers)
+            KeyModifiers modifiers)
            : base(routedEvent)
         {
             Source = source;
@@ -29,7 +26,7 @@ namespace Avalonia.Input
             _properties = properties;
             Pointer = pointer;
             Timestamp = timestamp;
-            InputModifiers = modifiers;
+            KeyModifiers = modifiers;
         }
 
         class EmulatedDevice : IPointerDevice
@@ -60,7 +57,24 @@ namespace Avalonia.Input
         [Obsolete("Use Pointer to get pointer-specific information")]
         public IPointerDevice Device => _device ?? (_device = new EmulatedDevice(this));
 
-        public InputModifiers InputModifiers { get; }
+        [Obsolete("Use KeyModifiers and PointerPointProperties")]
+        public InputModifiers InputModifiers 
+        {
+            get
+            {
+                var mods = (InputModifiers)KeyModifiers;
+                if (_properties.IsLeftButtonPressed)
+                    mods |= InputModifiers.LeftMouseButton;
+                if (_properties.IsMiddleButtonPressed)
+                    mods |= InputModifiers.MiddleMouseButton;
+                if (_properties.IsRightButtonPressed)
+                    mods |= InputModifiers.RightMouseButton;
+                
+                return mods;
+            }
+        }
+        
+        public KeyModifiers KeyModifiers { get; }
 
         public Point GetPosition(IVisual relativeTo)
         {
@@ -71,8 +85,21 @@ namespace Avalonia.Input
             return _rootVisualPosition * _rootVisual.TransformToVisual(relativeTo) ?? default;
         }
 
-        public PointerPoint GetPointerPoint(IVisual relativeTo)
+        [Obsolete("Use GetCurrentPoint")]
+        public PointerPoint GetPointerPoint(IVisual relativeTo) => GetCurrentPoint(relativeTo);
+        
+        /// <summary>
+        /// Returns the PointerPoint associated with the current event
+        /// </summary>
+        /// <param name="relativeTo">The visual which coordinate system to use. Pass null for toplevel coordinate system</param>
+        /// <returns></returns>
+        public PointerPoint GetCurrentPoint(IVisual relativeTo)
             => new PointerPoint(Pointer, GetPosition(relativeTo), _properties);
+
+        /// <summary>
+        /// Returns the current pointer point properties
+        /// </summary>
+        protected PointerPointProperties Properties => _properties;
     }
     
     public enum MouseButton
@@ -93,7 +120,7 @@ namespace Avalonia.Input
             IVisual rootVisual, Point rootVisualPosition,
             ulong timestamp,
             PointerPointProperties properties,
-            InputModifiers modifiers,
+            KeyModifiers modifiers,
             int obsoleteClickCount = 1)
             : base(InputElement.PointerPressedEvent, source, pointer, rootVisual, rootVisualPosition,
                 timestamp, properties, modifiers)
@@ -101,10 +128,11 @@ namespace Avalonia.Input
             _obsoleteClickCount = obsoleteClickCount;
         }
 
-        [Obsolete("Use DoubleTapped or DoubleRightTapped event instead")]
+        [Obsolete("Use DoubleTapped event or Gestures.DoubleRightTapped attached event")]
         public int ClickCount => _obsoleteClickCount;
 
-        [Obsolete] public MouseButton MouseButton => GetPointerPoint(null).Properties.GetObsoleteMouseButton();
+        [Obsolete("Use PointerPressedEventArgs.GetCurrentPoint(this).Properties")]
+        public MouseButton MouseButton => Properties.PointerUpdateKind.GetMouseButton();
     }
 
     public class PointerReleasedEventArgs : PointerEventArgs
@@ -112,15 +140,21 @@ namespace Avalonia.Input
         public PointerReleasedEventArgs(
             IInteractive source, IPointer pointer,
             IVisual rootVisual, Point rootVisualPosition, ulong timestamp,
-            PointerPointProperties properties, InputModifiers modifiers, MouseButton obsoleteMouseButton)
+            PointerPointProperties properties, KeyModifiers modifiers,
+            MouseButton initialPressMouseButton)
             : base(InputElement.PointerReleasedEvent, source, pointer, rootVisual, rootVisualPosition,
                 timestamp, properties, modifiers)
         {
-            MouseButton = obsoleteMouseButton;
+            InitialPressMouseButton = initialPressMouseButton;
         }
 
-        [Obsolete()]
-        public MouseButton MouseButton { get; private set; }
+        /// <summary>
+        /// Gets the mouse button that triggered the corresponding PointerPressed event
+        /// </summary>
+        public MouseButton InitialPressMouseButton { get; }
+
+        [Obsolete("Use InitialPressMouseButton")]
+        public MouseButton MouseButton => InitialPressMouseButton;
     }
 
     public class PointerCaptureLostEventArgs : RoutedEventArgs

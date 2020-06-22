@@ -162,6 +162,19 @@ public:
         return _obj;
     }
     
+    TInterface* getRetainedReference()
+    {
+        if(_obj == NULL)
+            return NULL;
+        _obj->AddRef();
+        return _obj;
+    }
+    
+    TInterface** getPPV()
+    {
+        return &_obj;
+    }
+    
     operator TInterface*() const
     {
         return _obj;

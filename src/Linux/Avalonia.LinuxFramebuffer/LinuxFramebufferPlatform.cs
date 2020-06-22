@@ -118,8 +118,7 @@ public static class LinuxFramebufferPlatformExtensions
         where T : AppBuilderBase<T>, new()
     {
         var lifetime = LinuxFramebufferPlatform.Initialize(builder, backend);
-        builder.Instance.ApplicationLifetime = lifetime;
-        builder.SetupWithoutStarting();
+        builder.SetupWithLifetime(lifetime);
         lifetime.Start(args);
         builder.Instance.Run(lifetime.Token);
         return lifetime.ExitCode;

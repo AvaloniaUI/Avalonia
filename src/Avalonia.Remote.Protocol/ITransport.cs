@@ -8,5 +8,6 @@ namespace Avalonia.Remote.Protocol
         Task Send(object data);
         event Action<IAvaloniaRemoteTransportConnection, object> OnMessage;
         event Action<IAvaloniaRemoteTransportConnection, Exception> OnException;
+        void Start();
     }
 }

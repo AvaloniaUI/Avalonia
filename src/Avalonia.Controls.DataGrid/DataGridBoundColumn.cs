@@ -55,7 +55,7 @@ namespace Avalonia.Controls
                                 binding.Mode = BindingMode.TwoWay;
                             } 
 
-                            if (binding.Converter == null)
+                            if (binding.Converter == null && string.IsNullOrEmpty(binding.StringFormat))
                             {
                                 binding.Converter = DataGridValueConverter.Instance;
                             }

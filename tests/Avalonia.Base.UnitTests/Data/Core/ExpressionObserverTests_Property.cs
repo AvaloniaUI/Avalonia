@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Reactive;
@@ -325,7 +322,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 {
                     "bar",
                     new BindingNotification(
-                        new MissingMemberException("Could not find CLR property 'Bar' on 'Avalonia.Base.UnitTests.Data.Core.ExpressionObserverTests_Property+WithoutBar'"),
+                        new MissingMemberException("Could not find a matching property accessor for 'Bar' on 'Avalonia.Base.UnitTests.Data.Core.ExpressionObserverTests_Property+WithoutBar'"),
                         BindingErrorType.Error),
                     "baz",
                 },
@@ -574,7 +571,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var source = new Class1 { Foo = "foo" };
             var target = new PropertyAccessorNode("Foo", false);
             Assert.NotNull(target);
-            target.Target = new WeakReference(source);
+            target.Target = new WeakReference<object>(source);
             target.Subscribe(_ => { });
             target.Unsubscribe();
             target.Unsubscribe();

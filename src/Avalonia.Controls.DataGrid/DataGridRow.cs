@@ -116,10 +116,10 @@ namespace Avalonia.Controls
 
         static DataGridRow()
         {
-            HeaderProperty.Changed.AddClassHandler<DataGridRow>(x => x.OnHeaderChanged);
-            DetailsTemplateProperty.Changed.AddClassHandler<DataGridRow>(x => x.OnDetailsTemplateChanged);
-            AreDetailsVisibleProperty.Changed.AddClassHandler<DataGridRow>(x => x.OnAreDetailsVisibleChanged);
-            PointerPressedEvent.AddClassHandler<DataGridRow>(x => x.DataGridRow_PointerPressed, handledEventsToo: true);
+            HeaderProperty.Changed.AddClassHandler<DataGridRow>((x, e) => x.OnHeaderChanged(e));
+            DetailsTemplateProperty.Changed.AddClassHandler<DataGridRow>((x, e) => x.OnDetailsTemplateChanged(e));
+            AreDetailsVisibleProperty.Changed.AddClassHandler<DataGridRow>((x, e) => x.OnAreDetailsVisibleChanged(e));
+            PointerPressedEvent.AddClassHandler<DataGridRow>((x, e) => x.DataGridRow_PointerPressed(e), handledEventsToo: true);
         }
 
         /// <summary>
@@ -536,10 +536,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Builds the visual tree for the column header when a new template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             RootElement = e.NameScope.Find<Panel>(DATAGRIDROW_elementRoot);
             if (RootElement != null)
             {
@@ -786,7 +784,7 @@ namespace Avalonia.Controls
 
         private void DataGridRow_PointerPressed(PointerPressedEventArgs e)
         {
-            if(e.MouseButton != MouseButton.Left)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 return;
             }
@@ -881,7 +879,7 @@ namespace Avalonia.Controls
                 && (double.IsNaN(_detailsContent.Height))
                 && (AreDetailsVisible)
                 && (!double.IsNaN(_detailsDesiredHeight))
-                && !DoubleUtil.AreClose(_detailsContent.Bounds.Inflate(_detailsContent.Margin).Height, _detailsDesiredHeight)
+                && !MathUtilities.AreClose(_detailsContent.Bounds.Inflate(_detailsContent.Margin).Height, _detailsDesiredHeight)
                 && Slot != -1)
             {
                 _detailsDesiredHeight = _detailsContent.Bounds.Inflate(_detailsContent.Margin).Height;

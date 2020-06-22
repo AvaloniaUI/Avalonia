@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls;
 using Avalonia.UnitTests;
 using System;
@@ -73,6 +70,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var button = window.FindControl<Button>("button");
 
                 window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 Assert.Equal("border2", button.Content);
             }
@@ -169,6 +167,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var button = window.FindControl<Button>("button");
 
                 window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 Assert.Equal("border1", button.Content);
             }
@@ -293,6 +292,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var button = window.FindControl<Button>("button");
 
                 window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
 
                 Assert.Equal("title", button.Content);
             }

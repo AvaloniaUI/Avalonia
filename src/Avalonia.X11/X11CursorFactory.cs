@@ -8,6 +8,8 @@ namespace Avalonia.X11
 {
     class X11CursorFactory : IStandardCursorFactory
     {
+        private static readonly byte[] NullCursorData = new byte[] { 0 };
+
         private static IntPtr _nullCursor;
 
         private readonly IntPtr _display;
@@ -68,9 +70,8 @@ namespace Avalonia.X11
         private static IntPtr GetNullCursor(IntPtr display)
         {
             XColor color = new XColor();
-            byte[] data = new byte[] { 0 };
             IntPtr window = XLib.XRootWindow(display, 0);
-            IntPtr pixmap = XLib.XCreateBitmapFromData(display, window, data, 1, 1);
+            IntPtr pixmap = XLib.XCreateBitmapFromData(display, window, NullCursorData, 1, 1);
             return XLib.XCreatePixmapCursor(display, pixmap, pixmap, ref color, ref color, 0, 0);
         }
     }

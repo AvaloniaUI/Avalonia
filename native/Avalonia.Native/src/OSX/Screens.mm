@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 #include "common.h"
 
 class Screens : public ComSingleObject<IAvnScreens, &IID_IAvnScreens>
@@ -37,6 +34,8 @@ class Screens : public ComSingleObject<IAvnScreens, &IID_IAvnScreens>
             ret->WorkingArea.Y = [screen visibleFrame].origin.y;
             ret->WorkingArea.Height = [screen visibleFrame].size.height;
             ret->WorkingArea.Width = [screen visibleFrame].size.width;
+            
+            ret->PixelDensity = [screen backingScaleFactor];
             
             ret->Primary = index == 0;
             

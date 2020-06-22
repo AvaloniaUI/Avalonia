@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Disposables;
 using Avalonia.Logging;
@@ -16,7 +13,7 @@ namespace Avalonia.UnitTests
 
     public class TestLogSink : ILogSink
     {
-        private LogCallback _callback;
+        private readonly LogCallback _callback;
 
         public TestLogSink(LogCallback callback)
         {
@@ -30,7 +27,35 @@ namespace Avalonia.UnitTests
             return Disposable.Create(() => Logger.Sink = null);
         }
 
-        public void Log(LogEventLevel level, string area, object source, string messageTemplate, params object[] propertyValues)
+        public bool IsEnabled(LogEventLevel level, string area)
+        {
+            return true;
+        }
+
+        public void Log(LogEventLevel level, string area, object source, string messageTemplate)
+        {
+            _callback(level, area, source, messageTemplate);
+        }
+
+        public void Log<T0>(LogEventLevel level, string area, object source, string messageTemplate, T0 propertyValue0)
+        {
+            _callback(level, area, source, messageTemplate, propertyValue0);
+        }
+
+        public void Log<T0, T1>(LogEventLevel level, string area, object source, string messageTemplate,
+            T0 propertyValue0, T1 propertyValue1)
+        {
+            _callback(level, area, source, messageTemplate, propertyValue0, propertyValue1);
+        }
+
+        public void Log<T0, T1, T2>(LogEventLevel level, string area, object source, string messageTemplate,
+            T0 propertyValue0, T1 propertyValue1, T2 propertyValue2)
+        {
+            _callback(level, area, source, messageTemplate, propertyValue0, propertyValue1, propertyValue2);
+        }
+
+        public void Log(LogEventLevel level, string area, object source, string messageTemplate,
+            params object[] propertyValues)
         {
             _callback(level, area, source, messageTemplate, propertyValues);
         }

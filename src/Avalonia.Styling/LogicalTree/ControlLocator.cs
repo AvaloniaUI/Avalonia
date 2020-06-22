@@ -1,11 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
-using System.Reactive.Linq;
-using System.Reflection;
-using Avalonia.Controls;
 using Avalonia.Reactive;
 
 namespace Avalonia.LogicalTree
@@ -25,7 +19,7 @@ namespace Avalonia.LogicalTree
             private readonly ILogical _relativeTo;
             private readonly int _ancestorLevel;
             private readonly Type _ancestorType;
-            ILogical _value;
+            private ILogical _value;
 
             public ControlTracker(ILogical relativeTo, int ancestorLevel, Type ancestorType)
             {
@@ -69,7 +63,7 @@ namespace Avalonia.LogicalTree
             private void Update()
             {
                 _value = _relativeTo.GetLogicalAncestors()
-                    .Where(x => _ancestorType?.GetTypeInfo().IsAssignableFrom(x.GetType().GetTypeInfo()) ?? true)
+                    .Where(x => _ancestorType?.IsAssignableFrom(x.GetType()) ?? true)
                     .ElementAtOrDefault(_ancestorLevel);
             }
         }

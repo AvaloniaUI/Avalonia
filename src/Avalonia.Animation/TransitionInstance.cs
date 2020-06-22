@@ -1,12 +1,10 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Metadata;
 using System;
 using System.Reactive.Linq;
 using Avalonia.Animation.Easings;
 using Avalonia.Animation.Utils;
 using Avalonia.Reactive;
+using Avalonia.Utilities;
 
 namespace Avalonia.Animation
 {
@@ -16,29 +14,56 @@ namespace Avalonia.Animation
     internal class TransitionInstance : SingleSubscriberObservableBase<double>
     {
         private IDisposable _timerSubscription;
+        private TimeSpan _delay;
         private TimeSpan _duration;
         private readonly IClock _baseClock;
         private IClock _clock;
 
-        public TransitionInstance(IClock clock, TimeSpan Duration)
+        public TransitionInstance(IClock clock, TimeSpan delay, TimeSpan duration)
         {
-            _duration = Duration;
+            clock = clock ?? throw new ArgumentNullException(nameof(clock));
+
+            _delay = delay;
+            _duration = duration;
             _baseClock = clock;
         }
 
         private void TimerTick(TimeSpan t)
         {
-            var interpVal = (double)t.Ticks / _duration.Ticks;
+
+            // [<------------- normalizedTotalDur ------------------>]
+            // [<---- Delay ---->][<---------- Duration ------------>]
+            //                   ^- normalizedDelayEnd
+            //                    [<----   normalizedInterpVal   --->]
+
+            var normalizedInterpVal = 1d;
+
+            if (!MathUtilities.AreClose(_duration.TotalSeconds, 0d))
+            {
+                var normalizedTotalDur = _delay + _duration;
+                var normalizedDelayEnd = _delay.TotalSeconds / normalizedTotalDur.TotalSeconds;
+                var normalizedPresentationTime = t.TotalSeconds / normalizedTotalDur.TotalSeconds;
+
+                if (normalizedPresentationTime < normalizedDelayEnd
+                    || MathUtilities.AreClose(normalizedPresentationTime, normalizedDelayEnd))
+                {
+                    normalizedInterpVal = 0d;
+                }
+                else
+                {
+                    normalizedInterpVal = (t.TotalSeconds - _delay.TotalSeconds) / _duration.TotalSeconds;
+                }
+            }
 
             // Clamp interpolation value.
-            if (interpVal >= 1d | interpVal < 0d)
+            if (normalizedInterpVal >= 1d || normalizedInterpVal < 0d)
             {
                 PublishNext(1d);
                 PublishCompleted();
             }
             else
             {
-                PublishNext(interpVal);
+                PublishNext(normalizedInterpVal);
             }
         }
 

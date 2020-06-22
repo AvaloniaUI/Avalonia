@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -42,8 +39,7 @@ namespace Avalonia.Markup.Xaml.Converters
                 !property.IsAttached &&
                 !registry.IsRegistered(targetType, property))
             {
-                Logger.Warning(
-                    LogArea.Property,
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Property)?.Log(
                     this,
                     "Property '{Owner}.{Name}' is not registered on '{Type}'.",
                     effectiveOwner,

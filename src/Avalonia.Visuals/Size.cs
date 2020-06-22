@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using Avalonia.Animation.Animators;
@@ -11,7 +8,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a size.
     /// </summary>
-    public readonly struct Size
+    public readonly struct Size : IEquatable<Size>
     {
         static Size()
         {
@@ -72,7 +69,7 @@ namespace Avalonia
         /// <returns>True if the sizes are equal; otherwise false.</returns>
         public static bool operator ==(Size left, Size right)
         {
-            return left._width == right._width && left._height == right._height;
+            return left.Equals(right);
         }
 
         /// <summary>
@@ -158,7 +155,7 @@ namespace Avalonia
         /// <returns>The <see cref="Size"/>.</returns>
         public static Size Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Size"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Size."))
             {
                 return new Size(
                     tokenizer.ReadDouble(),
@@ -192,22 +189,37 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Returns a boolean indicating whether the size is equal to the other given size (bitwise).
+        /// </summary>
+        /// <param name="other">The other size to test equality against.</param>
+        /// <returns>True if this size is equal to other; False otherwise.</returns>
+        public bool Equals(Size other)
+        {
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            return _width == other._width &&
+                   _height == other._height;
+            // ReSharper enable CompareOfFloatsByEqualityOperator
+        }
+
+        /// <summary>
+        /// Returns a boolean indicating whether the size is equal to the other given size (numerically).
+        /// </summary>
+        /// <param name="other">The other size to test equality against.</param>
+        /// <returns>True if this size is equal to other; False otherwise.</returns>
+        public bool NearlyEquals(Size other)
+        {
+            return MathUtilities.AreClose(_width, other._width) && 
+                   MathUtilities.AreClose(_height, other._height);
+        }
+
+        /// <summary>
         /// Checks for equality between a size and an object.
         /// </summary>
         /// <param name="obj">The object.</param>
         /// <returns>
         /// True if <paramref name="obj"/> is a size that equals the current size.
         /// </returns>
-        public override bool Equals(object obj)
-        {
-            if (obj is Size)
-            {
-                var other = (Size)obj;
-                return Width == other.Width && Height == other.Height;
-            }
-
-            return false;
-        }
+        public override bool Equals(object obj) => obj is Size other && Equals(other);
 
         /// <summary>
         /// Returns a hash code for a <see cref="Size"/>.

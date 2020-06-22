@@ -69,7 +69,17 @@ namespace Avalonia.DesignerSupport
                 }
 
                 if (!window.IsSet(Window.SizeToContentProperty))
-                    window.SizeToContent = SizeToContent.WidthAndHeight;
+                {
+                    if (double.IsNaN(window.Width))
+                    {
+                        window.SizeToContent |= SizeToContent.Width;
+                    }
+
+                    if (double.IsNaN(window.Height))
+                    {
+                        window.SizeToContent |= SizeToContent.Height;
+                    }
+                }
             }
             window.Show();
             Design.ApplyDesignModeProperties(window, control);

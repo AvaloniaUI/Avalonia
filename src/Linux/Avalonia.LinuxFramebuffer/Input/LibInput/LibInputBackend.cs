@@ -125,7 +125,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                     : type == LibInputEventType.LIBINPUT_EVENT_TOUCH_UP ? RawPointerEventType.TouchEnd
                     : type == LibInputEventType.LIBINPUT_EVENT_TOUCH_MOTION ? RawPointerEventType.TouchUpdate
                     : RawPointerEventType.TouchCancel,
-                    pt, InputModifiers.None, slot));
+                    pt, RawInputModifiers.None, slot));
             }
         }
 
@@ -140,7 +140,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                 _mousePosition = new Point(libinput_event_pointer_get_absolute_x_transformed(pev, (int)info.Width),
                     libinput_event_pointer_get_absolute_y_transformed(pev, (int)info.Height));
                 ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move, _mousePosition,
-                    InputModifiers.None));
+                    RawInputModifiers.None));
             }
             else if (type == LibInputEventType.LIBINPUT_EVENT_POINTER_BUTTON)
             {
@@ -162,7 +162,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                         
 
                 ScheduleInput(
-                    new RawPointerEventArgs(_mouse, ts, _inputRoot, evnt, _mousePosition, InputModifiers.None));
+                    new RawPointerEventArgs(_mouse, ts, _inputRoot, evnt, _mousePosition, RawInputModifiers.None));
             }
             
         }

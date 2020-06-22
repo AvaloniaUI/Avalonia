@@ -1,0 +1,69 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Style Selector="ScrollViewer">
+    <Setter Property="Background"
+            Value="Transparent" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
+          <ScrollContentPresenter Name="PART_ContentPresenter"
+                                  Grid.Row="0"
+                                  Grid.Column="0"
+                                  Grid.RowSpan="2"
+                                  Grid.ColumnSpan="2"
+                                  Background="{TemplateBinding Background}"
+                                  CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
+                                  CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
+                                  Content="{TemplateBinding Content}"
+                                  Extent="{TemplateBinding Extent, Mode=TwoWay}"
+                                  Margin="{TemplateBinding Padding}"
+                                  Offset="{TemplateBinding Offset, Mode=TwoWay}"
+                                  Viewport="{TemplateBinding Viewport, Mode=TwoWay}">
+            <ScrollContentPresenter.GestureRecognizers>
+              <ScrollGestureRecognizer
+                CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
+                CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}" />
+            </ScrollContentPresenter.GestureRecognizers>
+          </ScrollContentPresenter>
+          <ScrollBar Name="PART_HorizontalScrollBar"
+                     AllowAutoHide="{TemplateBinding AllowAutoHide}"
+                     Orientation="Horizontal"
+                     LargeChange="{Binding LargeChange.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                     SmallChange="{Binding SmallChange.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                     Maximum="{TemplateBinding HorizontalScrollBarMaximum}"
+                     Value="{TemplateBinding HorizontalScrollBarValue, Mode=TwoWay}"
+                     ViewportSize="{TemplateBinding HorizontalScrollBarViewportSize}"
+                     Visibility="{TemplateBinding HorizontalScrollBarVisibility}"
+                     Grid.Row="1"
+                     Focusable="False" />
+          <ScrollBar Name="PART_VerticalScrollBar"
+                     AllowAutoHide="{TemplateBinding AllowAutoHide}"
+                     Orientation="Vertical"
+                     LargeChange="{Binding LargeChange.Height, RelativeSource={RelativeSource TemplatedParent}}"
+                     SmallChange="{Binding SmallChange.Height, RelativeSource={RelativeSource TemplatedParent}}"
+                     Maximum="{TemplateBinding VerticalScrollBarMaximum}"
+                     Value="{TemplateBinding VerticalScrollBarValue, Mode=TwoWay}"
+                     ViewportSize="{TemplateBinding VerticalScrollBarViewportSize}"
+                     Visibility="{TemplateBinding VerticalScrollBarVisibility}"
+                     Grid.Column="1"
+                     Focusable="False" />
+          <Panel x:Name="PART_ScrollBarsSeparator" Grid.Row="1" Grid.Column="1" Background="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="ScrollViewer /template/ Panel#PART_ScrollBarsSeparator">
+    <Setter Property="Opacity" Value="0" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="ScrollViewer[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator">
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+
+</Styles>

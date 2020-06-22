@@ -529,7 +529,7 @@ namespace Avalonia.Controls
                     //  in this case drop value part and print only "Star"
                     case DataGridLengthUnitType.Star:
                         return (
-                            DoubleUtil.AreClose(1.0, dataGridLength.Value.Value)
+                            MathUtilities.AreClose(1.0, dataGridLength.Value.Value)
                             ? _starSuffix
                             : Convert.ToString(dataGridLength.Value.Value, culture ?? CultureInfo.CurrentCulture) + DataGridLengthConverter._starSuffix);
 

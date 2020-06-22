@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Media;
 using Avalonia.Visuals.Platform;
 using Xunit;
@@ -100,9 +97,7 @@ namespace Avalonia.Visuals.UnitTests.Media
 
                 Assert.Equal(new Point(10, 10), lineSegment.Point);
 
-                figure = pathGeometry.Figures[1];
-
-                segment = figure.Segments[0];
+                segment = figure.Segments[1];
 
                 Assert.IsType<LineSegment>(segment);
 
@@ -224,6 +219,48 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [Theory]
+        [InlineData("M 5.5, 5 L 5.5, 5 L 5.5, 5")]
+        [InlineData("F1 M 9.0771, 11 C 9.1161, 10.701 9.1801, 10.352 9.3031, 10 L 9.0001, 10 L 9.0001, 6.166 L 3.0001, 9.767 L 3.0001, 10 "
+            + "L 9.99999999997669E-05, 10 L 9.99999999997669E-05, 0 L 3.0001, 0 L 3.0001, 0.234 L 9.0001, 3.834 L 9.0001, 0 "
+            + "L 12.0001, 0 L 12.0001, 8.062 C 12.1861, 8.043 12.3821, 8.031 12.5941, 8.031 C 15.3481, 8.031 15.7961, 9.826 "
+            + "15.9201, 11 L 16.0001, 16 L 9.0001, 16 L 9.0001, 12.562 L 9.0001, 11Z")]
+        [InlineData("F1 M 24, 14 A 2, 2 0 1 1 20, 14 A 2, 2 0 1 1 24, 14Z")]
+        [InlineData("M 0, 0 L 10, 10Z")]
+        [InlineData("M 50, 50 L 100, 100 L 150, 50")]
+        [InlineData("M 50, 50 L -10, -10 L 10, 50")]
+        [InlineData("M 50, 50 L 100, 100 L 150, 50Z M 50, 50 L 70, 70 L 120, 50Z")]
+        [InlineData("M 80, 200 A 100, 50 45 1 0 100, 50")]
+        [InlineData("F1 M 16, 12 C 16, 14.209 14.209, 16 12, 16 C 9.791, 16 8, 14.209 8, 12 C 8, 11.817 8.03, 11.644 8.054, 11.467 L 6.585, 10 "
+            + "L 4, 10 L 4, 6.414 L 2.5, 7.914 L 0, 5.414 L 0, 3.586 L 3.586, 0 L 4.414, 0 L 7.414, 3 L 7.586, 3 L 9, 1.586 L "
+            + "11.914, 4.5 L 10.414, 6 L 12.461, 8.046 C 14.45, 8.278 16, 9.949 16, 12")]
+        public void Parsed_Geometry_ToString_Should_Produce_Valid_Value(string pathData)
+        {
+            var target = PathGeometry.Parse(pathData);
+
+            string output = target.ToString();
+
+            Assert.Equal(pathData, output);
+        }
+
+        [Theory]
+        [InlineData("M5.5.5 5.5.5 5.5.5", "M 5.5, 0.5 L 5.5, 0.5 L 5.5, 0.5")]
+        [InlineData("F1 M24,14 A2,2,0,1,1,20,14 A2,2,0,1,1,24,14 z", "F1 M 24, 14 A 2, 2 0 1 1 20, 14 A 2, 2 0 1 1 24, 14Z")]
+        [InlineData("F1M16,12C16,14.209 14.209,16 12,16 9.791,16 8,14.209 8,12 8,11.817 8.03,11.644 8.054,11.467L6.585,10 4,10 "
+                    + "4,6.414 2.5,7.914 0,5.414 0,3.586 3.586,0 4.414,0 7.414,3 7.586,3 9,1.586 11.914,4.5 10.414,6 "
+                    + "12.461,8.046C14.45,8.278,16,9.949,16,12",
+                    "F1 M 16, 12 C 16, 14.209 14.209, 16 12, 16 C 9.791, 16 8, 14.209 8, 12 C 8, 11.817 8.03, 11.644 8.054, 11.467 L 6.585, 10 "
+                    + "L 4, 10 L 4, 6.414 L 2.5, 7.914 L 0, 5.414 L 0, 3.586 L 3.586, 0 L 4.414, 0 L 7.414, 3 L 7.586, 3 L 9, 1.586 L "
+                    + "11.914, 4.5 L 10.414, 6 L 12.461, 8.046 C 14.45, 8.278 16, 9.949 16, 12")]
+        public void Parsed_Geometry_ToString_Should_Format_Value(string pathData, string formattedPathData)
+        {
+            var target = PathGeometry.Parse(pathData);
+
+            string output = target.ToString();
+
+            Assert.Equal(formattedPathData, output);
+        }
+
+        [Theory]
         [InlineData("0 0")]
         [InlineData("j")]
         public void Throws_InvalidDataException_On_None_Defined_Command(string pathData)
@@ -233,6 +270,31 @@ namespace Avalonia.Visuals.UnitTests.Media
             using (var parser = new PathMarkupParser(context))
             {
                 Assert.Throws<InvalidDataException>(() => parser.Parse(pathData));
+            }
+        }
+
+        [Fact]
+        public void CloseFigure_Should_Move_CurrentPoint_To_CreateFigurePoint()
+        {
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
+            {
+                parser.Parse("M10,10L100,100Z m10,10");
+
+                Assert.Equal(2, pathGeometry.Figures.Count);
+
+                var figure = pathGeometry.Figures[0];
+
+                Assert.Equal(new Point(10, 10), figure.StartPoint);
+
+                Assert.Equal(true, figure.IsClosed);
+
+                Assert.Equal(new Point(100, 100), ((LineSegment)figure.Segments[0]).Point);
+
+                figure = pathGeometry.Figures[1];
+
+                Assert.Equal(new Point(20, 20), figure.StartPoint);
             }
         }
     }

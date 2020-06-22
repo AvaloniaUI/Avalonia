@@ -33,10 +33,6 @@
         <Setter Property="BorderBrush"
                 Value="{DynamicResource ThemeBorderMidBrush}" />
     </Style>
-    <Style Selector="RepeatButton:pressed  /template/ ContentPresenter">
-        <Setter Property="Background"
-                Value="{DynamicResource ThemeControlHighBrush}" />
-    </Style>
     <Style Selector="RepeatButton:disabled">
         <Setter Property="Opacity"
                 Value="{DynamicResource ThemeDisabledOpacity}" />

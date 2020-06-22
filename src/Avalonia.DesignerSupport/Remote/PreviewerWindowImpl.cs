@@ -2,6 +2,7 @@
 using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Controls.Remote.Server;
+using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Viewport;
@@ -27,11 +28,11 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void BeginMoveDrag()
+        public void BeginMoveDrag(PointerPressedEventArgs e)
         {
         }
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
         }
 
@@ -43,7 +44,7 @@ namespace Avalonia.DesignerSupport.Remote
         public IPlatformHandle Handle { get; }
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
-        public Size MaxClientSize { get; } = new Size(4096, 4096);
+        public Size MaxAutoSizeHint { get; } = new Size(4096, 4096);
         public event Action LostFocus
         {
             add {}
@@ -82,6 +83,7 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public IScreenImpl Screen { get; } = new ScreenStub();
+        public Action GotInputWhenDisabled { get; set; }
 
         public void Activate()
         {
@@ -95,7 +97,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetSystemDecorations(bool enabled)
+        public void SetSystemDecorations(SystemDecorations enabled)
         {
         }
 
@@ -112,6 +114,14 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public void SetTopmost(bool value)
+        {
+        }
+
+        public void SetParent(IWindowImpl parent)
+        {
+        }
+
+        public void SetEnabled(bool enable)
         {
         }
     }

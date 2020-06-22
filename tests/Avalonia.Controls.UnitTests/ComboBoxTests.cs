@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
@@ -107,6 +104,37 @@ namespace Avalonia.Controls.UnitTests
                     }
                 };
             });
+        }
+
+        [Fact]
+        public void Detaching_Closed_ComboBox_Keeps_Current_Focus()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new ComboBox
+                {
+                    Items = new[] { new Canvas() },
+                    SelectedIndex = 0,
+                    Template = GetTemplate(),
+                };
+
+                var other = new Control { Focusable = true };
+
+                StackPanel panel;
+
+                var root = new TestRoot { Child = panel = new StackPanel { Children = { target, other } } };
+
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+
+                other.Focus();
+
+                Assert.True(other.IsFocused);
+
+                panel.Children.Remove(target);
+
+                Assert.True(other.IsFocused);
+            }
         }
     }
 }

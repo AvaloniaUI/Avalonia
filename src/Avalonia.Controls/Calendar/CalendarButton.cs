@@ -98,9 +98,8 @@ namespace Avalonia.Controls.Primitives
         /// <see cref="T:System.Windows.Controls.Primitives.CalendarButton" />
         /// when a new template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
             SetPseudoClasses();
         }
         
@@ -149,7 +148,8 @@ namespace Avalonia.Controls.Primitives
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
-            if (e.MouseButton == MouseButton.Left)
+
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
                 CalendarLeftMouseButtonDown?.Invoke(this, e);
         }
 
@@ -173,7 +173,7 @@ namespace Avalonia.Controls.Primitives
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
-            if (e.MouseButton == MouseButton.Left)
+            if (e.InitialPressMouseButton == MouseButton.Left)
                 CalendarLeftMouseButtonUp?.Invoke(this, e);
         }
     }

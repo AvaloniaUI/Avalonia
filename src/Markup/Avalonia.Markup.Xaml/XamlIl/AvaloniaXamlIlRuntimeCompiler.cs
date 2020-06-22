@@ -114,10 +114,10 @@ namespace Avalonia.Markup.Xaml.XamlIl
 
             InitializeSre();
             var asm = localAssembly == null ? null : _sreTypeSystem.GetAssembly(localAssembly);
-            
+
             var compiler = new AvaloniaXamlIlCompiler(new XamlIlTransformerConfiguration(_sreTypeSystem, asm,
-                _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter),
-                _sreContextType);
+                    _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter),
+                _sreContextType) { EnableIlVerification = true };
             var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + uri);
 
             IXamlIlType overrideType = null;

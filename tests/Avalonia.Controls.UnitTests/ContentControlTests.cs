@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Specialized;
 using System.Linq;
@@ -50,6 +47,7 @@ namespace Avalonia.Controls.UnitTests
             root.Child = target;
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
             styler.Verify(x => x.ApplyStyles(It.IsAny<ContentControl>()), Times.Once());
             styler.Verify(x => x.ApplyStyles(It.IsAny<Border>()), Times.Once());
@@ -329,6 +327,45 @@ namespace Avalonia.Controls.UnitTests
             // The leak in #1271 was caused by the TextBlock's logical parent not being cleared when
             // it is replaced by the Canvas.
             Assert.Null(textBlock.GetLogicalParent());
+        }
+
+        [Fact]
+        public void Should_Set_Child_LogicalParent_After_Removing_And_Adding_Back_To_Logical_Tree()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                var target = new ContentControl();
+                var root = new TestRoot
+                {
+                    Styles =
+                    {
+                        new Style(x => x.OfType<ContentControl>())
+                        {
+                            Setters =
+                            {
+                                new Setter(ContentControl.TemplateProperty, GetTemplate()),
+                            }
+                        }
+                    },
+                    Child = target
+                };
+
+                target.Content = "Foo";
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+
+                Assert.Equal(target, target.Presenter.Child.LogicalParent);
+
+                root.Child = null;
+
+                Assert.Null(target.Template);
+
+                target.Content = null;
+                root.Child = target;
+                target.Content = "Bar";
+
+                Assert.Equal(target, target.Presenter.Child.LogicalParent);
+            }
         }
 
         private FuncControlTemplate GetTemplate()

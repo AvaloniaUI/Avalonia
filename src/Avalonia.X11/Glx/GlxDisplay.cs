@@ -1,28 +1,28 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.OpenGL;
 using static Avalonia.X11.Glx.GlxConsts;
 
 namespace Avalonia.X11.Glx
 {
-    unsafe class GlxDisplay : IGlDisplay
+    unsafe class GlxDisplay
     {
         private readonly X11Info _x11;
+        private readonly List<GlVersion> _probeProfiles;
         private readonly IntPtr _fbconfig;
         private readonly XVisualInfo* _visual;
-        public GlDisplayType Type => GlDisplayType.OpenGL2;
-        public GlInterface GlInterface { get; }
+        private string[] _displayExtensions;
+        private GlVersion? _version;
         
         public XVisualInfo* VisualInfo => _visual;
-        public int SampleCount { get; }
-        public int StencilSize { get; }
-        
-        public GlxContext ImmediateContext { get; }
         public GlxContext DeferredContext { get; }
         public GlxInterface Glx { get; } = new GlxInterface();
-        public GlxDisplay(X11Info x11) 
+        public GlxDisplay(X11Info x11, List<GlVersion> probeProfiles) 
         {
             _x11 = x11;
+            _probeProfiles = probeProfiles.ToList();
+            _displayExtensions = Glx.GetExtensions(_x11.Display);
 
             var baseAttribs = new[]
             {
@@ -38,7 +38,8 @@ namespace Avalonia.X11.Glx
                 GLX_STENCIL_SIZE, 8,
 
             };
-
+            int sampleCount = 0;
+            int stencilSize = 0;
             foreach (var attribs in new[]
             {
                 //baseAttribs.Concat(multiattribs),
@@ -71,9 +72,9 @@ namespace Avalonia.X11.Glx
             if (_visual == null)
                 throw new OpenGlException("Unable to get visual info from FBConfig");
             if (Glx.GetFBConfigAttrib(_x11.Display, _fbconfig, GLX_SAMPLES, out var samples) == 0)
-                SampleCount = samples;
+                sampleCount = samples;
             if (Glx.GetFBConfigAttrib(_x11.Display, _fbconfig, GLX_STENCIL_SIZE, out var stencil) == 0)
-                StencilSize = stencil;
+                stencilSize = stencil;
 
             var pbuffers = Enumerable.Range(0, 2).Select(_ => Glx.CreatePbuffer(_x11.Display, _fbconfig, new[]
             {
@@ -81,67 +82,104 @@ namespace Avalonia.X11.Glx
             })).ToList();
             
             XLib.XFlush(_x11.Display);
-            
-            ImmediateContext = CreateContext(pbuffers[0],null);
-            DeferredContext = CreateContext(pbuffers[1], ImmediateContext);
-            ImmediateContext.MakeCurrent();
-            var err = Glx.GetError();
-            
-            GlInterface = new GlInterface(GlxInterface.GlxGetProcAddress);
-            if (GlInterface.Version == null)
-                throw new OpenGlException("GL version string is null, aborting");
-            if (GlInterface.Renderer == null)
-                throw new OpenGlException("GL renderer string is null, aborting");
 
-            if (Environment.GetEnvironmentVariable("AVALONIA_GLX_IGNORE_RENDERER_BLACKLIST") != "1")
+            DeferredContext = CreateContext(CreatePBuffer(), null,
+                sampleCount, stencilSize, true);
+            using (DeferredContext.MakeCurrent())
             {
-                var blacklist = AvaloniaLocator.Current.GetService<X11PlatformOptions>()
-                    ?.GlxRendererBlacklist;
-                if (blacklist != null)
-                    foreach(var item in blacklist)
-                        if (GlInterface.Renderer.Contains(item))
-                            throw new OpenGlException($"Renderer '{GlInterface.Renderer}' is blacklisted by '{item}'");
+                var glInterface = DeferredContext.GlInterface;
+                if (glInterface.Version == null)
+                    throw new OpenGlException("GL version string is null, aborting");
+                if (glInterface.Renderer == null)
+                    throw new OpenGlException("GL renderer string is null, aborting");
+
+                if (Environment.GetEnvironmentVariable("AVALONIA_GLX_IGNORE_RENDERER_BLACKLIST") != "1")
+                {
+                    var blacklist = AvaloniaLocator.Current.GetService<X11PlatformOptions>()
+                        ?.GlxRendererBlacklist;
+                    if (blacklist != null)
+                        foreach (var item in blacklist)
+                            if (glInterface.Renderer.Contains(item))
+                                throw new OpenGlException(
+                                    $"Renderer '{glInterface.Renderer}' is blacklisted by '{item}'");
+                }
             }
-            
+
         }
 
-        public void ClearContext() => Glx.MakeContextCurrent(_x11.Display,
-            IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+        IntPtr CreatePBuffer()
+        {
+            return Glx.CreatePbuffer(_x11.Display, _fbconfig, new[] { GLX_PBUFFER_WIDTH, 1, GLX_PBUFFER_HEIGHT, 1, 0 });
+        }
 
-        public GlxContext CreateContext(IGlContext share) => CreateContext(IntPtr.Zero, share);
-        public GlxContext CreateContext(IntPtr defaultXid, IGlContext share)
+
+        public GlxContext CreateContext() => CreateContext(DeferredContext);
+
+        GlxContext CreateContext(IGlContext share) => CreateContext(CreatePBuffer(), share,
+            share.SampleCount, share.StencilSize, true);
+        
+        GlxContext CreateContext(IntPtr defaultXid, IGlContext share,
+            int sampleCount, int stencilSize, bool ownsPBuffer)
         {
             var sharelist = ((GlxContext)share)?.Handle ?? IntPtr.Zero;
             IntPtr handle = default;
-            foreach (var ver in new[]
+            
+            GlxContext Create(GlVersion profile)
             {
-                new Version(4, 0), new Version(3, 2),
-                new Version(3, 0), new Version(2, 0)
-            })
-            {
+                var profileMask = GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
+                if (profile.Type == GlProfileType.OpenGLES) 
+                    profileMask = GLX_CONTEXT_ES2_PROFILE_BIT_EXT;
 
-                var attrs = new[]
+                var attrs = new int[]
                 {
-                    GLX_CONTEXT_MAJOR_VERSION_ARB, ver.Major,
-                    GLX_CONTEXT_MINOR_VERSION_ARB, ver.Minor,
-                    GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+                    GLX_CONTEXT_MAJOR_VERSION_ARB, profile.Major,
+                    GLX_CONTEXT_MINOR_VERSION_ARB, profile.Minor,
+                    GLX_CONTEXT_PROFILE_MASK_ARB, profileMask,
                     0
                 };
+                
                 try
                 {
                     handle = Glx.CreateContextAttribsARB(_x11.Display, _fbconfig, sharelist, true, attrs);
                     if (handle != IntPtr.Zero)
-                        break;
+                    {
+                        _version = profile;
+                        return new GlxContext(new GlxInterface(), handle, this, profile,
+                            sampleCount, stencilSize, _x11, defaultXid, ownsPBuffer);
+                        
+                    }
                 }
                 catch
                 {
+                    return null;
+                }
+
+                return null;
+            }
+
+            GlxContext rv = null;
+            if (_version.HasValue)
+            {
+                rv = Create(_version.Value);
+            }
+            
+            foreach (var v in _probeProfiles)
+            {
+                if (v.Type == GlProfileType.OpenGLES
+                    && !_displayExtensions.Contains("GLX_EXT_create_context_es2_profile"))
+                    continue;
+                rv = Create(v);
+                if (rv != null)
+                {
+                    _version = v;
                     break;
                 }
             }
-            
-            if (handle == IntPtr.Zero)
-                throw new OpenGlException("Unable to create direct GLX context");
-            return new GlxContext(new GlxInterface(), handle, this, _x11, defaultXid);
+
+            if (rv != null)
+                return rv;
+
+            throw new OpenGlException("Unable to create direct GLX context");
         }
 
         public void SwapBuffers(IntPtr xid) => Glx.SwapBuffers(_x11.Display, xid);

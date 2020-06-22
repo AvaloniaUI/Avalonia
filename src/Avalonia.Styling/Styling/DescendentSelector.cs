@@ -1,25 +1,19 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using System.Collections.Generic;
 using Avalonia.LogicalTree;
+using Avalonia.Styling.Activators;
+
+#nullable enable
 
 namespace Avalonia.Styling
 {
     internal class DescendantSelector : Selector
     {
         private readonly Selector _parent;
-        private string _selectorString;
+        private string? _selectorString;
 
-        public DescendantSelector(Selector parent)
+        public DescendantSelector(Selector? parent)
         {
-            if (parent == null)
-            {
-                throw new InvalidOperationException("Descendant selector must be preceeded by a selector.");
-            }
-
-            _parent = parent;
+            _parent = parent ?? throw new InvalidOperationException("Descendant selector must be preceeded by a selector.");
         }
 
         /// <inheritdoc/>
@@ -29,7 +23,7 @@ namespace Avalonia.Styling
         public override bool InTemplate => _parent.InTemplate;
 
         /// <inheritdoc/>
-        public override Type TargetType => null;
+        public override Type? TargetType => null;
 
         public override string ToString()
         {
@@ -43,8 +37,8 @@ namespace Avalonia.Styling
 
         protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
         {
-            ILogical c = (ILogical)control;
-            List<IObservable<bool>> descendantMatches = new List<IObservable<bool>>();
+            var c = (ILogical)control;
+            var descendantMatches = new OrActivatorBuilder();
 
             while (c != null)
             {
@@ -67,7 +61,7 @@ namespace Avalonia.Styling
 
             if (descendantMatches.Count > 0)
             {
-                return new SelectorMatch(StyleActivator.Or(descendantMatches));
+                return new SelectorMatch(descendantMatches.Get());
             }
             else
             {
@@ -75,6 +69,6 @@ namespace Avalonia.Styling
             }
         }
 
-        protected override Selector MovePrevious() => null;
+        protected override Selector? MovePrevious() => null;
     }
 }

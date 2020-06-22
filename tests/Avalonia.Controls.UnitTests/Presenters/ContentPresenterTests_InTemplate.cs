@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -341,6 +338,19 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             // InheritanceParent is exposed via StylingParent.
             Assert.Same(logicalParent, ((IStyledElement)child).StylingParent);
+        }
+
+        [Fact]
+        public void Should_Clear_Host_When_Host_Template_Cleared()
+        {
+            var (target, host) = CreateTarget();
+
+            Assert.Same(host, target.Host);
+
+            host.Template = null;
+            host.ApplyTemplate();
+
+            Assert.Null(target.Host);
         }
 
         (ContentPresenter presenter, ContentControl templatedParent) CreateTarget()

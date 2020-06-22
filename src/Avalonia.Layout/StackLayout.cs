@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Specialized;
+using Avalonia.Data;
+using Avalonia.Logging;
 
 namespace Avalonia.Layout
 {
@@ -13,6 +15,12 @@ namespace Avalonia.Layout
     /// </summary>
     public class StackLayout : VirtualizingLayout, IFlowLayoutAlgorithmDelegates
     {
+        /// <summary>
+        /// Defines the <see cref="DisableVirtualization"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> DisableVirtualizationProperty =
+            AvaloniaProperty.Register<StackLayout, bool>(nameof(DisableVirtualization));
+
         /// <summary>
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
@@ -33,6 +41,15 @@ namespace Avalonia.Layout
         public StackLayout()
         {
             LayoutId = "StackLayout";
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether virtualization is disabled on the layout.
+        /// </summary>
+        public bool DisableVirtualization
+        {
+            get => GetValue(DisableVirtualizationProperty);
+            set => SetValue(DisableVirtualizationProperty, value);
         }
 
         /// <summary>
@@ -91,8 +108,15 @@ namespace Avalonia.Layout
                             _orientation.MajorStart(extent) + 
                             (remainingItems * averageElementSize));
                 }
+                else
+                {
+                    Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Estimating extent with no realized elements",
+                        LayoutId);
+                }
             }
 
+            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Extent is ({Size}). Based on average {Average}",
+                LayoutId, extent.Size, averageElementSize);
             return extent;
         }
 
@@ -233,7 +257,7 @@ namespace Avalonia.Layout
             return new FlowLayoutAnchorInfo { Index = anchorIndex, Offset = offset, };
         }
 
-        protected override void InitializeForContextCore(VirtualizingLayoutContext context)
+        protected internal override void InitializeForContextCore(VirtualizingLayoutContext context)
         {
             var state = context.LayoutState;
             var stackState = state as StackLayoutState;
@@ -253,35 +277,38 @@ namespace Avalonia.Layout
             stackState.InitializeForContext(context, this);
         }
 
-        protected override void UninitializeForContextCore(VirtualizingLayoutContext context)
+        protected internal override void UninitializeForContextCore(VirtualizingLayoutContext context)
         {
             var stackState = (StackLayoutState)context.LayoutState;
             stackState.UninitializeForContext(context);
         }
 
-        protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
+        protected internal override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
         {
+            ((StackLayoutState)context.LayoutState).OnMeasureStart();
+
             var desiredSize = GetFlowAlgorithm(context).Measure(
                 availableSize,
                 context,
                 false,
                 0,
                 Spacing,
+                int.MaxValue,
                 _orientation.ScrollOrientation,
+                DisableVirtualization,
                 LayoutId);
 
             return new Size(desiredSize.Width, desiredSize.Height);
         }
 
-        protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
+        protected internal override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
         {
             var value = GetFlowAlgorithm(context).Arrange(
                finalSize,
                context,
+               false,
                FlowLayoutAlgorithm.LineAlignment.Start,
                LayoutId);
-
-            ((StackLayoutState)context.LayoutState).OnArrangeLayoutEnd();
 
             return new Size(value.Width, value.Height);
         }
@@ -293,11 +320,11 @@ namespace Avalonia.Layout
             InvalidateLayout();
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (e.Property == OrientationProperty)
+            if (change.Property == OrientationProperty)
             {
-                var orientation = (Orientation)e.NewValue;
+                var orientation = change.NewValue.GetValueOrDefault<Orientation>();
 
                 //Note: For StackLayout Vertical Orientation means we have a Vertical ScrollOrientation.
                 //Horizontal Orientation means we have a Horizontal ScrollOrientation.

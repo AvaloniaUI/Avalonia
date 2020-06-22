@@ -1,10 +1,8 @@
 using System;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Reflection;
 
 namespace Avalonia.Controls.Utils
 {
@@ -13,14 +11,14 @@ namespace Avalonia.Controls.Utils
         class FinderNode : IDisposable
         {
             private readonly IStyledElement _control;
-            private readonly TypeInfo _ancestorType;
+            private readonly Type _ancestorType;
             public IObservable<IStyledElement> Observable => _subject;
             private readonly Subject<IStyledElement> _subject = new Subject<IStyledElement>();
 
             private FinderNode _child;
             private IDisposable _disposable;
 
-            public FinderNode(IStyledElement control, TypeInfo ancestorType)
+            public FinderNode(IStyledElement control, Type ancestorType)
             {
                 _control = control;
                 _ancestorType = ancestorType;
@@ -33,7 +31,7 @@ namespace Avalonia.Controls.Utils
 
             private void OnValueChanged(IStyledElement next)
             {
-                if (next == null || _ancestorType.IsAssignableFrom(next.GetType().GetTypeInfo()))
+                if (next == null || _ancestorType.IsAssignableFrom(next.GetType()))
                     _subject.OnNext(next);
                 else
                 {
@@ -63,7 +61,7 @@ namespace Avalonia.Controls.Utils
         {
             return new AnonymousObservable<IStyledElement>(observer =>
             {
-                var finder = new FinderNode(control, ancestorType.GetTypeInfo());
+                var finder = new FinderNode(control, ancestorType);
                 var subscription = finder.Observable.Subscribe(observer);
                 finder.Init();
 

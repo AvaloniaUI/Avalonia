@@ -36,7 +36,7 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void EventShoudBePassedToSubscriber()
+        public void EventShouldBePassedToSubscriber()
         {
             bool handled = false;
             var subscriber = new Subscriber(() => handled = true);
@@ -47,7 +47,23 @@ namespace Avalonia.Base.UnitTests
             Assert.True(handled);
         }
 
- 
+        [Fact]
+        public void EventShouldNotBeRaisedAfterUnsubscribe()
+        {
+            bool handled = false;
+            var subscriber = new Subscriber(() => handled = true);
+            var source = new EventSource();
+            WeakEventHandlerManager.Subscribe<EventSource, EventArgs, Subscriber>(source, "Event",
+                subscriber.OnEvent);
+
+            WeakEventHandlerManager.Unsubscribe<EventArgs, Subscriber>(source, "Event",
+                subscriber.OnEvent);
+
+            source.Fire();
+
+            Assert.False(handled);
+        }
+
         [Fact]
         public void EventHandlerShouldNotBeKeptAlive()
         {

@@ -1,31 +1,39 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Avalonia.Data.Core.Plugins
 {
-    class MethodAccessorPlugin : IPropertyAccessorPlugin
+    public class MethodAccessorPlugin : IPropertyAccessorPlugin
     {
-        public bool Match(object obj, string methodName)
-            => obj.GetType().GetRuntimeMethods().Any(x => x.Name == methodName);
+        private readonly Dictionary<(Type, string), MethodInfo> _methodLookup =
+            new Dictionary<(Type, string), MethodInfo>();
 
-        public IPropertyAccessor Start(WeakReference reference, string methodName)
+        public bool Match(object obj, string methodName) => GetFirstMethodWithName(obj.GetType(), methodName) != null;
+
+        public IPropertyAccessor Start(WeakReference<object> reference, string methodName)
         {
             Contract.Requires<ArgumentNullException>(reference != null);
             Contract.Requires<ArgumentNullException>(methodName != null);
 
-            var instance = reference.Target;
-            var method = instance.GetType().GetRuntimeMethods().FirstOrDefault(x => x.Name == methodName);
+            reference.TryGetTarget(out object instance);
+
+            var method = GetFirstMethodWithName(instance.GetType(), methodName);
 
             if (method != null)
             {
-                if (method.GetParameters().Length + (method.ReturnType == typeof(void) ? 0 : 1) > 8)
+                var parameters = method.GetParameters();
+
+                if (parameters.Length + (method.ReturnType == typeof(void) ? 0 : 1) > 8)
                 {
-                    var exception = new ArgumentException("Cannot create a binding accessor for a method with more than 8 parameters or more than 7 parameters if it has a non-void return type.", nameof(methodName));
+                    var exception = new ArgumentException(
+                        "Cannot create a binding accessor for a method with more than 8 parameters or more than 7 parameters if it has a non-void return type.",
+                        nameof(methodName));
                     return new PropertyError(new BindingNotification(exception, BindingErrorType.Error));
                 }
 
-                return new Accessor(reference, method);
+                return new Accessor(reference, method, parameters);
             }
             else
             {
@@ -35,34 +43,84 @@ namespace Avalonia.Data.Core.Plugins
             }
         }
 
-        private class Accessor : PropertyAccessorBase
+        private MethodInfo GetFirstMethodWithName(Type type, string methodName)
         {
-            public Accessor(WeakReference reference, MethodInfo method)
+            var key = (type, methodName);
+
+            if (!_methodLookup.TryGetValue(key, out MethodInfo methodInfo))
+            {
+                methodInfo = TryFindAndCacheMethod(type, methodName);
+            }
+
+            return methodInfo;
+        }
+
+        private MethodInfo TryFindAndCacheMethod(Type type, string methodName)
+        {
+            MethodInfo found = null;
+
+            const BindingFlags bindingFlags =
+                BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
+
+            var methods = type.GetMethods(bindingFlags);
+
+            foreach (MethodInfo methodInfo in methods)
+            {
+                if (methodInfo.Name == methodName)
+                {
+                    found = methodInfo;
+
+                    break;
+                }
+            }
+
+            _methodLookup.Add((type, methodName), found);
+
+            return found;
+        }
+
+        private sealed class Accessor : PropertyAccessorBase
+        {
+            public Accessor(WeakReference<object> reference, MethodInfo method, ParameterInfo[] parameters)
             {
                 Contract.Requires<ArgumentNullException>(reference != null);
                 Contract.Requires<ArgumentNullException>(method != null);
 
-                var paramTypes = method.GetParameters().Select(param => param.ParameterType).ToArray();
                 var returnType = method.ReturnType;
-                
-                if (returnType == typeof(void))
+                bool hasReturn = returnType != typeof(void);
+
+                var signatureTypeCount = (hasReturn ? 1 : 0) + parameters.Length;
+
+                var paramTypes = new Type[signatureTypeCount];
+
+                for (var i = 0; i < parameters.Length; i++)
                 {
-                    if (paramTypes.Length == 0)
-                    {
-                        PropertyType = typeof(Action);
-                    }
-                    else
-                    {
-                        PropertyType = Type.GetType($"System.Action`{paramTypes.Length}").MakeGenericType(paramTypes); 
-                    }
+                    ParameterInfo parameter = parameters[i];
+
+                    paramTypes[i] = parameter.ParameterType;
+                }
+
+                if (hasReturn)
+                {
+                    paramTypes[paramTypes.Length - 1] = returnType;
+
+                    PropertyType = Expression.GetFuncType(paramTypes);
                 }
                 else
                 {
-                    var genericTypeParameters = paramTypes.Concat(new[] { returnType }).ToArray();
-                    PropertyType = Type.GetType($"System.Func`{genericTypeParameters.Length}").MakeGenericType(genericTypeParameters);
+                    PropertyType = Expression.GetActionType(paramTypes);
                 }
-                
-                Value = method.IsStatic ? method.CreateDelegate(PropertyType) : method.CreateDelegate(PropertyType, reference.Target);
+
+                if (method.IsStatic)
+                {
+                    Value = method.CreateDelegate(PropertyType);
+                }
+                else
+                {
+                    reference.TryGetTarget(out object target);
+
+                    Value = method.CreateDelegate(PropertyType, target);
+                }
             }
 
             public override Type PropertyType { get; }

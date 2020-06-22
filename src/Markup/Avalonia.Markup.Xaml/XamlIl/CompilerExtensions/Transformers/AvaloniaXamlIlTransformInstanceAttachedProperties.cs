@@ -164,6 +164,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 public bool IsStatic => true;
                 public string Name { get; protected set; }
                 public IXamlIlType DeclaringType { get; }
+                public IXamlIlMethod MakeGenericMethod(IReadOnlyList<IXamlIlType> typeArguments) 
+                    => throw new System.NotSupportedException();
 
 
                 public bool Equals(IXamlIlMethod other) =>

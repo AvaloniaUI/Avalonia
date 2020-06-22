@@ -19,9 +19,9 @@ public partial class Build
         Logger.Info(info, args);
     }
 
-    private void Zip(PathConstruction.AbsolutePath target, params string[] paths) => Zip(target, paths.AsEnumerable());
+    private void Zip(AbsolutePath target, params string[] paths) => Zip(target, paths.AsEnumerable());
 
-    private void Zip(PathConstruction.AbsolutePath target, IEnumerable<string> paths)
+    private void Zip(AbsolutePath target, IEnumerable<string> paths)
     {
         var targetPath = target.ToString();
         bool finished = false, atLeastOneFileAdded = false;
@@ -38,7 +38,7 @@ public partial class Build
                         fileStream.CopyTo(entryStream);
                     atLeastOneFileAdded = true;
                 }
-                
+
                 foreach (var path in paths)
                 {
                     if (Directory.Exists(path))
@@ -64,7 +64,7 @@ public partial class Build
 
             finished = true;
         }
-        finally 
+        finally
         {
             try
             {

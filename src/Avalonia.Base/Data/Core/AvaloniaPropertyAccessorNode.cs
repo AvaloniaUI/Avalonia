@@ -24,7 +24,7 @@ namespace Avalonia.Data.Core
         {
             try
             {
-                if (Target.IsAlive && Target.Target is IAvaloniaObject obj)
+                if (Target.TryGetTarget(out object target) && target is IAvaloniaObject obj)
                 {
                     obj.SetValue(_property, value, priority);
                     return true;
@@ -37,9 +37,9 @@ namespace Avalonia.Data.Core
             }
         }
 
-        protected override void StartListeningCore(WeakReference reference)
+        protected override void StartListeningCore(WeakReference<object> reference)
         {
-            if (reference.Target is IAvaloniaObject obj)
+            if (reference.TryGetTarget(out object target) && target is IAvaloniaObject obj)
             {
                 _subscription = new AvaloniaPropertyObservable<object>(obj, _property).Subscribe(ValueChanged);
             }

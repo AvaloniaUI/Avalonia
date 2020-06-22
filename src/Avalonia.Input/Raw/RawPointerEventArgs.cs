@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia.Input.Raw
@@ -14,6 +11,10 @@ namespace Avalonia.Input.Raw
         RightButtonUp,
         MiddleButtonDown,
         MiddleButtonUp,
+        XButton1Down,
+        XButton1Up,
+        XButton2Down,
+        XButton2Up,
         Move,
         Wheel,
         NonClientLeftButtonDown,
@@ -43,22 +44,16 @@ namespace Avalonia.Input.Raw
             IInputRoot root,
             RawPointerEventType type,
             Point position, 
-            InputModifiers inputModifiers)
-            : base(device, timestamp)
+            RawInputModifiers inputModifiers)
+            : base(device, timestamp, root)
         {
             Contract.Requires<ArgumentNullException>(device != null);
             Contract.Requires<ArgumentNullException>(root != null);
 
-            Root = root;
             Position = position;
             Type = type;
             InputModifiers = inputModifiers;
         }
-
-        /// <summary>
-        /// Gets the root from which the event originates.
-        /// </summary>
-        public IInputRoot Root { get; }
 
         /// <summary>
         /// Gets the mouse position, in client DIPs.
@@ -68,11 +63,11 @@ namespace Avalonia.Input.Raw
         /// <summary>
         /// Gets the type of the event.
         /// </summary>
-        public RawPointerEventType Type { get; private set; }
+        public RawPointerEventType Type { get; set; }
 
         /// <summary>
         /// Gets the input modifiers.
         /// </summary>
-        public InputModifiers InputModifiers { get; private set; }
+        public RawInputModifiers InputModifiers { get; private set; }
     }
 }

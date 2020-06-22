@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -9,6 +6,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Platform;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -167,6 +165,31 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Impl_Close_Should_Raise_DetachedFromLogicalTree_Event()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                impl.SetupAllProperties();
+
+                var target = new TestTopLevel(impl.Object);
+                var raised = 0;
+
+                target.DetachedFromLogicalTree += (s, e) =>
+                {
+                    Assert.Same(target, e.Root);
+                    Assert.Same(target, e.Source);
+                    Assert.Null(e.Parent);
+                    ++raised;
+                };
+
+                impl.Object.Closed();
+
+                Assert.Equal(1, raised);
+            }
+        }
+
+        [Fact]
         public void Impl_Input_Should_Pass_Input_To_InputManager()
         {
             var inputManagerMock = new Mock<IInputManager>();
@@ -182,8 +205,9 @@ namespace Avalonia.Controls.UnitTests
                 var input = new RawKeyEventArgs(
                     new Mock<IKeyboardDevice>().Object,
                     0,
+                    target,
                     RawKeyEventType.KeyDown,
-                    Key.A, InputModifiers.None);
+                    Key.A, RawInputModifiers.None);
                 impl.Object.Input(input);
 
                 inputManagerMock.Verify(x => x.ProcessInput(input));
@@ -202,8 +226,9 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Template = CreateTemplate();
                 target.Content = child;
+                target.ApplyTemplate();
 
-                Assert.Throws<InvalidOperationException>(() => target.ApplyTemplate());
+                Assert.Throws<InvalidOperationException>(() => target.Presenter.ApplyTemplate());
             }
         }
 
@@ -221,6 +246,62 @@ namespace Avalonia.Controls.UnitTests
                 Application.Current.Resources.Add("foo", "bar");
 
                 Assert.True(raised);
+            }
+        }
+
+        [Fact]
+        public void Close_Should_Notify_MouseDevice()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                var mouseDevice = new Mock<IMouseDevice>();
+                impl.SetupAllProperties();
+                impl.Setup(x => x.MouseDevice).Returns(mouseDevice.Object);
+
+                var target = new TestTopLevel(impl.Object);
+
+                impl.Object.Closed();
+
+                mouseDevice.Verify(x => x.TopLevelClosed(target));
+            }
+        }
+
+        [Fact]
+        public void Reacts_To_Changes_In_Global_Styles()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                impl.SetupGet(x => x.Scaling).Returns(1);
+
+                var child = new Border { Classes = { "foo" } };
+                var target = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTemplate(),
+                    Content = child,
+                };
+
+                target.LayoutManager.ExecuteInitialLayoutPass(target);
+
+                Assert.Equal(new Thickness(0), child.BorderThickness);
+
+                var style = new Style(x => x.OfType<Border>().Class("foo"))
+                {
+                    Setters =
+                    {
+                        new Setter(Border.BorderThicknessProperty, new Thickness(2))
+                    }
+                };
+
+                Application.Current.Styles.Add(style);
+                target.LayoutManager.ExecuteInitialLayoutPass(target);
+
+                Assert.Equal(new Thickness(2), child.BorderThickness);
+
+                Application.Current.Styles.Remove(style);
+
+                Assert.Equal(new Thickness(0), child.BorderThickness);
             }
         }
 

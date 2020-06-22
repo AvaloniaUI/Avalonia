@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using Avalonia.Utilities;
@@ -10,7 +7,7 @@ namespace Avalonia
     /// <summary>
     /// A 2x3 matrix.
     /// </summary>
-    public readonly struct Matrix
+    public readonly struct Matrix : IEquatable<Matrix>
     {
         private readonly double _m11;
         private readonly double _m12;
@@ -57,7 +54,7 @@ namespace Avalonia
         /// <summary>
         /// HasInverse Property - returns true if this matrix is invertible, false otherwise.
         /// </summary>
-        public bool HasInverse => GetDeterminant() != 0;
+        public bool HasInverse => !MathUtilities.IsZero(GetDeterminant());
 
         /// <summary>
         /// The first element of the first row
@@ -235,12 +232,14 @@ namespace Avalonia
         /// <returns>True if this matrix is equal to other; False otherwise.</returns>
         public bool Equals(Matrix other)
         {
+            // ReSharper disable CompareOfFloatsByEqualityOperator
             return _m11 == other.M11 &&
                    _m12 == other.M12 &&
                    _m21 == other.M21 &&
                    _m22 == other.M22 &&
                    _m31 == other.M31 &&
                    _m32 == other.M32;
+            // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
         /// <summary>
@@ -248,15 +247,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="obj">The Object to compare against.</param>
         /// <returns>True if the Object is equal to this matrix; False otherwise.</returns>
-        public override bool Equals(object obj)
-        {
-            if (!(obj is Matrix))
-            {
-                return false;
-            }
-
-            return Equals((Matrix)obj);
-        }
+        public override bool Equals(object obj) => obj is Matrix other && Equals(other);
 
         /// <summary>
         /// Returns the hash code for this instance.
@@ -295,7 +286,7 @@ namespace Avalonia
         {
             double d = GetDeterminant();
 
-            if (d == 0)
+            if (MathUtilities.IsZero(d))
             {
                 throw new InvalidOperationException("Transform is not invertible.");
             }
@@ -312,11 +303,11 @@ namespace Avalonia
         /// <summary>
         /// Parses a <see cref="Matrix"/> string.
         /// </summary>
-        /// <param name="s">The string.</param>
+        /// <param name="s">Six comma-delimited double values (m11, m12, m21, m22, offsetX, offsetY) that describe the new <see cref="Matrix"/></param>
         /// <returns>The <see cref="Matrix"/>.</returns>
         public static Matrix Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix."))
             {
                 return new Matrix(
                     tokenizer.ReadDouble(),
@@ -327,6 +318,77 @@ namespace Avalonia
                     tokenizer.ReadDouble()
                 );
             }
+        }
+
+        /// <summary>
+        /// Decomposes given matrix into transform operations.
+        /// </summary>
+        /// <param name="matrix">Matrix to decompose.</param>
+        /// <param name="decomposed">Decomposed matrix.</param>
+        /// <returns>The status of the operation.</returns>
+        public static bool TryDecomposeTransform(Matrix matrix, out Decomposed decomposed)
+        {
+            decomposed = default;
+
+            var determinant = matrix.GetDeterminant();
+            
+            if (MathUtilities.IsZero(determinant))
+            {
+                return false;
+            }
+
+            var m11 = matrix.M11;
+            var m21 = matrix.M21;
+            var m12 = matrix.M12;
+            var m22 = matrix.M22;
+
+            // Translation.
+            decomposed.Translate = new Vector(matrix.M31, matrix.M32);
+
+            // Scale sign.
+            var scaleX = 1d;
+            var scaleY = 1d;
+
+            if (determinant < 0)
+            {
+                if (m11 < m22)
+                {
+                    scaleX *= -1d;
+                }
+                else
+                {
+                    scaleY *= -1d;
+                }
+            }
+
+            // X Scale.
+            scaleX *= Math.Sqrt(m11 * m11 + m12 * m12);
+
+            m11 /= scaleX;
+            m12 /= scaleX;
+
+            // XY Shear.
+            double scaledShear = m11 * m21 + m12 * m22;
+
+            m21 -= m11 * scaledShear;
+            m22 -= m12 * scaledShear;
+
+            // Y Scale.
+            scaleY *= Math.Sqrt(m21 * m21 + m22 * m22);
+
+            decomposed.Scale = new Vector(scaleX, scaleY);
+            decomposed.Skew = new Vector(scaledShear / scaleY, 0d);
+            decomposed.Angle = Math.Atan2(m12, m11);
+
+            return true;
+        }
+
+        public struct Decomposed
+        {
+            public Vector Translate;
+            public Vector Scale;
+            public Vector Skew;
+            public double Angle;
         }
     }
 }

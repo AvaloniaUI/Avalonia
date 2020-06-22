@@ -1,12 +1,11 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
+using System;
 
 namespace Avalonia.Media.Immutable
 {
     /// <summary>
     /// Fills an area with a solid color.
     /// </summary>
-    public readonly struct ImmutableSolidColorBrush : ISolidColorBrush
+    public readonly struct ImmutableSolidColorBrush : ISolidColorBrush, IEquatable<ImmutableSolidColorBrush>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ImmutableSolidColorBrush"/> class.
@@ -46,6 +45,35 @@ namespace Avalonia.Media.Immutable
         /// Gets the opacity of the brush.
         /// </summary>
         public double Opacity { get; }
+
+        public bool Equals(ImmutableSolidColorBrush other)
+        {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            return Color == other.Color && Opacity == other.Opacity;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ImmutableSolidColorBrush other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (Color.GetHashCode() * 397) ^ Opacity.GetHashCode();
+            }
+        }
+
+        public static bool operator ==(ImmutableSolidColorBrush left, ImmutableSolidColorBrush right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ImmutableSolidColorBrush left, ImmutableSolidColorBrush right)
+        {
+            return !left.Equals(right);
+        }
 
         /// <summary>
         /// Returns a string representation of the brush.

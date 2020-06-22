@@ -352,7 +352,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<CalendarMode> DisplayModeProperty =
             AvaloniaProperty.Register<Calendar, CalendarMode>(
                 nameof(DisplayMode),
-                validate: ValidateDisplayMode);
+                validate: IsValidDisplayMode);
+
         /// <summary>
         /// Gets or sets a value indicating whether the calendar is displayed in
         /// months, years, or decades.
@@ -416,17 +417,6 @@ namespace Avalonia.Controls
                 }
             }
             OnDisplayModeChanged(new CalendarModeChangedEventArgs((CalendarMode)e.OldValue, mode));
-        }
-        private static CalendarMode ValidateDisplayMode(Calendar o, CalendarMode mode)
-        {
-            if(IsValidDisplayMode(mode))
-            {
-                return mode;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(mode), "Invalid DisplayMode");
-            }
         }
         private static bool IsValidDisplayMode(CalendarMode mode)
         {
@@ -1008,10 +998,10 @@ namespace Avalonia.Controls
 
 
         /// <summary>
-        /// Gets or sets a value indicating whether DatePicker should change its 
+        /// Gets or sets a value indicating whether CalendarDatePicker should change its 
         /// DisplayDate because of a SelectedDate change on its Calendar.
         /// </summary>
-        internal bool DatePickerDisplayDateFlag { get; set; }
+        internal bool CalendarDatePickerDisplayDateFlag { get; set; }
 
         internal CalendarDayButton FindDayButtonFromDay(DateTime day)
         {
@@ -1565,7 +1555,7 @@ namespace Avalonia.Controls
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
-            if (!HasFocusInternal && e.MouseButton == MouseButton.Left)
+            if (!HasFocusInternal && e.InitialPressMouseButton == MouseButton.Left)
             {
                 FocusManager.Instance.Focus(this);
             }
@@ -1585,7 +1575,7 @@ namespace Avalonia.Controls
             base.OnPointerWheelChanged(e);
             if (!e.Handled)
             {
-                CalendarExtensions.GetMetaKeyState(e.InputModifiers, out bool ctrl, out bool shift);
+                CalendarExtensions.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
 
                 if (!ctrl)
                 {
@@ -1641,7 +1631,7 @@ namespace Avalonia.Controls
             // Some keys (e.g. Left/Right) need to be translated in RightToLeft mode
             Key invariantKey = e.Key;  //InteractionHelper.GetLogicalKey(FlowDirection, e.Key);
 
-            CalendarExtensions.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            CalendarExtensions.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
 
             switch (invariantKey)
             {
@@ -2057,18 +2047,17 @@ namespace Avalonia.Controls
 
         static Calendar()
         {
-            IsEnabledProperty.Changed.AddClassHandler<Calendar>(x => x.OnIsEnabledChanged);
-            FirstDayOfWeekProperty.Changed.AddClassHandler<Calendar>(x => x.OnFirstDayOfWeekChanged);
-            IsTodayHighlightedProperty.Changed.AddClassHandler<Calendar>(x => x.OnIsTodayHighlightedChanged);
-            DisplayModeProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayModePropertyChanged);
-            SelectionModeProperty.Changed.AddClassHandler<Calendar>(x => x.OnSelectionModeChanged);
-            SelectedDateProperty.Changed.AddClassHandler<Calendar>(x => x.OnSelectedDateChanged);
-            DisplayDateProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayDateChanged);
-            DisplayDateStartProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayDateStartChanged);
-            DisplayDateEndProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayDateEndChanged);
-            KeyDownEvent.AddClassHandler<Calendar>(x => x.Calendar_KeyDown);
-            KeyUpEvent.AddClassHandler<Calendar>(x => x.Calendar_KeyUp);
-            
+            IsEnabledProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnIsEnabledChanged(e));
+            FirstDayOfWeekProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnFirstDayOfWeekChanged(e));
+            IsTodayHighlightedProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnIsTodayHighlightedChanged(e));
+            DisplayModeProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayModePropertyChanged(e));
+            SelectionModeProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnSelectionModeChanged(e));
+            SelectedDateProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnSelectedDateChanged(e));
+            DisplayDateProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayDateChanged(e));
+            DisplayDateStartProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayDateStartChanged(e));
+            DisplayDateEndProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayDateEndChanged(e));
+            KeyDownEvent.AddClassHandler<Calendar>((x,e) => x.Calendar_KeyDown(e));
+            KeyUpEvent.AddClassHandler<Calendar>((x,e) => x.Calendar_KeyUp(e));
         }
 
         /// <summary>
@@ -2090,10 +2079,8 @@ namespace Avalonia.Controls
         /// <see cref="T:System.Windows.Controls.Calendar" /> when a new
         /// template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             Root = e.NameScope.Find<Panel>(PART_ElementRoot);
 
             SelectedMonth = DisplayDate;

@@ -1,8 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.IO;
+using System.Security.Cryptography;
 using Avalonia.Win32.Interop;
 using SharpDX.WIC;
 using APixelFormat = Avalonia.Platform.PixelFormat;
@@ -17,6 +15,26 @@ namespace Avalonia.Direct2D1.Media
     {
         private BitmapDecoder _decoder;
 
+        private static BitmapInterpolationMode ConvertInterpolationMode(Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode interpolationMode)
+        {
+            switch (interpolationMode)
+            {
+                case Visuals.Media.Imaging.BitmapInterpolationMode.Default:
+                    return BitmapInterpolationMode.Fant;
+
+                case Visuals.Media.Imaging.BitmapInterpolationMode.LowQuality:
+                    return BitmapInterpolationMode.NearestNeighbor;
+
+                case Visuals.Media.Imaging.BitmapInterpolationMode.MediumQuality:
+                    return BitmapInterpolationMode.Fant;
+
+                default:
+                case Visuals.Media.Imaging.BitmapInterpolationMode.HighQuality:
+                    return BitmapInterpolationMode.HighQualityCubic;
+
+            }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WicBitmapImpl"/> class.
         /// </summary>
@@ -26,7 +44,14 @@ namespace Avalonia.Direct2D1.Media
             using (BitmapDecoder decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, fileName, DecodeOptions.CacheOnDemand))
             {
                 WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnDemand);
+                Dpi = new Vector(96, 96);
             }
+        }
+
+        private WicBitmapImpl(Bitmap bmp)
+        {
+            WicImpl = bmp;
+            Dpi = new Vector(96, 96);
         }
 
         /// <summary>
@@ -39,6 +64,7 @@ namespace Avalonia.Direct2D1.Media
             _decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, stream, DecodeOptions.CacheOnLoad);
 
             WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, _decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnLoad);
+            Dpi = new Vector(96, 96);
         }
 
         /// <summary>
@@ -61,7 +87,8 @@ namespace Avalonia.Direct2D1.Media
                 size.Height,
                 pixelFormat.Value.ToWic(),
                 BitmapCreateCacheOption.CacheOnLoad);
-            WicImpl.SetResolution(dpi.X, dpi.Y);
+
+            Dpi = dpi;
         }
 
         public WicBitmapImpl(APixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
@@ -70,6 +97,8 @@ namespace Avalonia.Direct2D1.Media
             WicImpl.SetResolution(dpi.X, dpi.Y);
 
             PixelFormat = format;
+            Dpi = dpi;
+
             using (var l = WicImpl.Lock(BitmapLockFlags.Write))
             {
                 for (var row = 0; row < size.Height; row++)
@@ -82,14 +111,44 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-        public override Vector Dpi
+        public WicBitmapImpl(Stream stream, int decodeSize, bool horizontal, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode interpolationMode)
         {
-            get
+            _decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, stream, DecodeOptions.CacheOnLoad);
+
+            var frame = _decoder.GetFrame(0);
+
+            // now scale that to the size that we want
+            var realScale = horizontal ? ((double)frame.Size.Height / frame.Size.Width) : ((double)frame.Size.Width / frame.Size.Height);
+
+            PixelSize desired;
+
+            if (horizontal)
             {
-                WicImpl.GetResolution(out double x, out double y);
-                return new Vector(x, y);
+                desired = new PixelSize(decodeSize, (int)(realScale * decodeSize));
             }
+            else
+            {
+                desired = new PixelSize((int)(realScale * decodeSize), decodeSize);
+            }
+
+            if (frame.Size.Width != desired.Width || frame.Size.Height != desired.Height)
+            {
+                using (var scaler = new BitmapScaler(Direct2D1Platform.ImagingFactory))
+                {
+                    scaler.Initialize(frame, desired.Width, desired.Height, ConvertInterpolationMode(interpolationMode));
+
+                    WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, scaler, BitmapCreateCacheOption.CacheOnLoad);                    
+                }
+            }
+            else
+            {
+                WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, frame, BitmapCreateCacheOption.CacheOnLoad);
+            }
+
+            Dpi = new Vector(96, 96);
         }
+
+        public override Vector Dpi { get; }
 
         public override PixelSize PixelSize => WicImpl.Size.ToAvalonia();
 

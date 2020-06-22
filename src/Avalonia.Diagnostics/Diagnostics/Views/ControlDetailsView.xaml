@@ -1,0 +1,25 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:Avalonia.Diagnostics.Converters"
+             x:Class="Avalonia.Diagnostics.Views.ControlDetailsView">
+  <Grid ColumnDefinitions="*">
+    <DockPanel Grid.Column="0">
+      <TextBox DockPanel.Dock="Top"
+               BorderThickness="0"
+               Text="{Binding PropertyFilter}"
+               Watermark="Filter properties"/>
+      <DataGrid Items="{Binding PropertiesView}"
+                BorderThickness="0"
+                RowBackground="Transparent"
+                SelectedItem="{Binding SelectedProperty, Mode=TwoWay}"
+                CanUserResizeColumns="true">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True"/>
+          <DataGridTextColumn Header="Value" Binding="{Binding Value}"/>
+          <DataGridTextColumn Header="Type" Binding="{Binding Type}"/>
+          <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" IsReadOnly="True"/>
+        </DataGrid.Columns>
+      </DataGrid>
+    </DockPanel>
+  </Grid>
+</UserControl>

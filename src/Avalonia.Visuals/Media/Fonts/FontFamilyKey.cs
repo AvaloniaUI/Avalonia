@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 
 namespace Avalonia.Media.Fonts
 {
@@ -56,6 +53,21 @@ namespace Avalonia.Media.Fonts
 
                 return hash;
             }
+        }
+
+        public static bool operator !=(FontFamilyKey a, FontFamilyKey b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator ==(FontFamilyKey a, FontFamilyKey b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+
+            return !(a is null) && a.Equals(b);
         }
 
         /// <summary>

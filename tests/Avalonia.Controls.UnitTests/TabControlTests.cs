@@ -1,12 +1,12 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -45,6 +45,29 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Pre_Selecting_TabItem_Should_Set_SelectedContent_After_It_Was_Added()
+        {
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+            };
+
+            const string secondContent = "Second";
+
+            var items = new AvaloniaList<object>
+            {
+                new TabItem { Header = "First"},
+                new TabItem { Header = "Second", Content = secondContent, IsSelected = true }
+            };
+
+            target.Items = items;
+
+            ApplyTemplate(target);
+
+            Assert.Equal(secondContent, target.SelectedContent);
+        }
+
+        [Fact]
         public void Logical_Children_Should_Be_TabItems()
         {
             var items = new[]
@@ -71,7 +94,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Removal_Should_Set_Next_Tab()
+        public void Removal_Should_Set_First_Tab()
         {
             var collection = new ObservableCollection<TabItem>()
             {
@@ -102,10 +125,8 @@ namespace Avalonia.Controls.UnitTests
             target.SelectedItem = collection[1];
             collection.RemoveAt(1);
 
-            // compare with former [2] now [1] == "3rd"
-            Assert.Same(collection[1], target.SelectedItem);
+            Assert.Same(collection[0], target.SelectedItem);
         }
-
 
         [Fact]
         public void TabItem_Templates_Should_Be_Set_Before_TabItem_ApplyTemplate()
@@ -139,7 +160,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         new Style(x => x.OfType<TabItem>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(TemplatedControl.TemplateProperty, template)
                             }
@@ -183,27 +204,27 @@ namespace Avalonia.Controls.UnitTests
 
             ApplyTemplate(target);
 
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             var dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = ((Button)target.ContentPart.Child).DataContext;
             Assert.Equal(items[1], dataContext);
 
             target.SelectedIndex = 2;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Base", dataContext);
 
             target.SelectedIndex = 3;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Qux", dataContext);
 
             target.SelectedIndex = 4;
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = target.ContentPart.DataContext;
             Assert.Equal("Base", dataContext);
         }
@@ -279,12 +300,53 @@ namespace Avalonia.Controls.UnitTests
             };
 
             ApplyTemplate(target);
-            target.ContentPart.UpdateChild();
+            ((ContentPresenter)target.ContentPart).UpdateChild();
 
             var content = Assert.IsType<TextBlock>(target.ContentPart.Child);
             Assert.Equal("bar", content.Tag);
             Assert.Same(target, content.GetLogicalParent());
             Assert.Single(target.GetLogicalChildren(), content);
+        }
+
+        [Fact]
+        public void Should_Not_Propagate_DataContext_To_TabItem_Content()
+        {
+            var dataContext = "DataContext";
+
+            var tabItem = new TabItem();
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = dataContext,
+                Items = new AvaloniaList<object> { tabItem }
+            };
+
+            ApplyTemplate(target);
+
+            Assert.NotEqual(dataContext, tabItem.Content);
+        }
+
+        [Fact]
+        public void Can_Have_Empty_Tab_Control()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TabControl Name='tabs' Items='{Binding Tabs}'/>
+</Window>";
+                var loader = new Markup.Xaml.AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var tabControl = window.FindControl<TabControl>("tabs");
+
+                tabControl.DataContext = new { Tabs = new List<string>() };
+                window.ApplyTemplate();
+
+                Assert.Equal(0, tabControl.Items.Count());
+            }
         }
 
         private IControlTemplate TabControlTemplate()

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -38,6 +35,11 @@ namespace Avalonia.Data
         public object FallbackValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the value to use when the binding result is null.
+        /// </summary>
+        public object TargetNullValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the binding mode.
         /// </summary>
         public BindingMode Mode { get; set; } = BindingMode.OneWay;
@@ -56,6 +58,12 @@ namespace Avalonia.Data
         /// Gets or sets the string format.
         /// </summary>
         public string StringFormat { get; set; }
+
+        public MultiBinding()
+        {
+            FallbackValue = AvaloniaProperty.UnsetValue;
+            TargetNullValue = AvaloniaProperty.UnsetValue;
+        }
 
         /// <inheritdoc/>
         public InstancedBinding Initiate(
@@ -76,7 +84,12 @@ namespace Avalonia.Data
             }
             
             var children = Bindings.Select(x => x.Initiate(target, null));
-            var input = children.Select(x => x.Observable).CombineLatest().Select(x => ConvertValue(x, targetType, converter));
+
+            var input = children.Select(x => x.Observable)
+                                .CombineLatest()
+                                .Select(x => ConvertValue(x, targetType, converter))
+                                .Where(x => x != BindingOperations.DoNothing);
+
             var mode = Mode == BindingMode.Default ?
                 targetProperty?.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
 
@@ -94,12 +107,20 @@ namespace Avalonia.Data
 
         private object ConvertValue(IList<object> values, Type targetType, IMultiValueConverter converter)
         {
+            for (var i = 0; i < values.Count; ++i)
+            {
+                if (values[i] is BindingNotification notification)
+                {
+                    values[i] = notification.Value;
+                }
+            }
+
             var culture = CultureInfo.CurrentCulture;
             var converted = converter.Convert(values, targetType, ConverterParameter, culture);
 
-            if (converted == BindingOperations.DoNothing)
+            if (converted == null)
             {
-                return converted;
+                converted = TargetNullValue;
             }
 
             if (converted == AvaloniaProperty.UnsetValue)

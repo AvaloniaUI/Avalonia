@@ -1,21 +1,16 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using System.Linq;
 using System.Reactive.Linq;
-using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
-using Avalonia.VisualTree;
 using JetBrains.Annotations;
 
 namespace Avalonia.Controls
@@ -33,7 +28,8 @@ namespace Avalonia.Controls
         ILayoutRoot,
         IRenderRoot,
         ICloseable,
-        IStyleRoot,
+        IStyleHost,
+        ILogicalRoot,
         IWeakSubscriber<ResourcesChangedEventArgs>
     {
         /// <summary>
@@ -48,12 +44,35 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IInputElement> PointerOverElementProperty =
             AvaloniaProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
 
+        /// <summary>
+        /// Defines the <see cref="TransparencyLevelHint"/> property.
+        /// </summary>
+        public static readonly StyledProperty<WindowTransparencyLevel> TransparencyLevelHintProperty =
+            AvaloniaProperty.Register<TopLevel, WindowTransparencyLevel>(nameof(TransparencyLevelHint), WindowTransparencyLevel.None);
+
+        /// <summary>
+        /// Defines the <see cref="ActualTransparencyLevel"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TopLevel, WindowTransparencyLevel> ActualTransparencyLevelProperty =
+            AvaloniaProperty.RegisterDirect<TopLevel, WindowTransparencyLevel>(nameof(ActualTransparencyLevel), 
+                o => o.ActualTransparencyLevel, 
+                unsetValue: WindowTransparencyLevel.None);        
+
+        /// <summary>
+        /// Defines the <see cref="TransparencyBackgroundFallbackProperty"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush> TransparencyBackgroundFallbackProperty =
+            AvaloniaProperty.Register<TopLevel, IBrush>(nameof(TransparencyBackgroundFallback), Brushes.White);
+
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
         private readonly IPlatformRenderInterface _renderInterface;
+        private readonly IGlobalStyles _globalStyles;
         private Size _clientSize;
+        private WindowTransparencyLevel _actualTransparencyLevel;
         private ILayoutManager _layoutManager;
+        private Border _transparencyFallbackBorder;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -61,6 +80,16 @@ namespace Avalonia.Controls
         static TopLevel()
         {
             AffectsMeasure<TopLevel>(ClientSizeProperty);
+
+            TransparencyLevelHintProperty.Changed.AddClassHandler<TopLevel>(
+                (tl, e) => 
+                {
+                    if (tl.PlatformImpl != null)
+                    {
+                        tl.PlatformImpl.SetTransparencyLevelHint((WindowTransparencyLevel)e.NewValue);
+                        tl.HandleTransparencyLevelChanged(tl.PlatformImpl.TransparencyLevel);
+                    }
+                });
         }
 
         /// <summary>
@@ -89,6 +118,8 @@ namespace Avalonia.Controls
 
             PlatformImpl = impl;
 
+            _actualTransparencyLevel = PlatformImpl.TransparencyLevel;            
+
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
             var styler = TryGetService<IStyler>(dependencyResolver);
 
@@ -96,6 +127,7 @@ namespace Avalonia.Controls
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
+            _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
 
             Renderer = impl.CreateRenderer(this);
 
@@ -111,9 +143,17 @@ namespace Avalonia.Controls
             impl.Paint = HandlePaint;
             impl.Resized = HandleResized;
             impl.ScalingChanged = HandleScalingChanged;
+            impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
+
+            if (_globalStyles is object)
+            {
+                _globalStyles.GlobalStylesAdded += ((IStyleHost)this).StylesAdded;
+                _globalStyles.GlobalStylesRemoved += ((IStyleHost)this).StylesRemoved;
+            }
+
             styler?.ApplyStyles(this);
 
             ClientSize = impl.ClientSize;
@@ -123,11 +163,11 @@ namespace Avalonia.Controls
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
                 .Switch().Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformCursor));
 
-            if (((IStyleHost)this).StylingParent is IResourceProvider applicationResources)
+            if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
             {
                 WeakSubscriptionManager.Subscribe(
                     applicationResources,
-                    nameof(IResourceProvider.ResourcesChanged),
+                    nameof(IResourceHost.ResourcesChanged),
                     this);
             }
         }
@@ -149,6 +189,34 @@ namespace Avalonia.Controls
         {
             get { return _clientSize; }
             protected set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="WindowTransparencyLevel"/> that the TopLevel should use when possible.
+        /// </summary>
+        public WindowTransparencyLevel TransparencyLevelHint
+        {
+            get { return GetValue(TransparencyLevelHintProperty); }
+            set { SetValue(TransparencyLevelHintProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets the acheived <see cref="WindowTransparencyLevel"/> that the platform was able to provide.
+        /// </summary>
+        public WindowTransparencyLevel ActualTransparencyLevel
+        {
+            get => _actualTransparencyLevel;
+            private set => SetAndRaise(ActualTransparencyLevelProperty, ref _actualTransparencyLevel, value);
+        }        
+
+        /// <summary>
+        /// Gets or sets the <see cref="IBrush"/> that transparency will blend with when transparency is not supported.
+        /// By default this is a solid white brush.
+        /// </summary>
+        public IBrush TransparencyBackgroundFallback
+        {
+            get => GetValue(TransparencyBackgroundFallbackProperty);
+            set => SetValue(TransparencyBackgroundFallbackProperty, value);
         }
 
         public ILayoutManager LayoutManager
@@ -209,18 +277,12 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        Size ILayoutRoot.MaxClientSize => Size.Infinity;
-
-        /// <inheritdoc/>
         double ILayoutRoot.LayoutScaling => PlatformImpl?.Scaling ?? 1;
 
         /// <inheritdoc/>
         double IRenderRoot.RenderScaling => PlatformImpl?.Scaling ?? 1;
 
-        IStyleHost IStyleHost.StylingParent
-        {
-            get { return AvaloniaLocator.Current.GetService<IGlobalStyles>(); }
-        }
+        IStyleHost IStyleHost.StylingParent => _globalStyles;
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
 
@@ -269,9 +331,21 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
-            PlatformImpl = null;
+            if (_globalStyles is object)
+            {
+                _globalStyles.GlobalStylesAdded -= ((IStyleHost)this).StylesAdded;
+                _globalStyles.GlobalStylesRemoved -= ((IStyleHost)this).StylesRemoved;
+            }
 
-            Closed?.Invoke(this, EventArgs.Empty);
+            var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
+            ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
+
+            var visualArgs = new VisualTreeAttachmentEventArgs(this, this);
+            OnDetachedFromVisualTreeCore(visualArgs);
+
+            (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
+            PlatformImpl = null;
+            OnClosed(EventArgs.Empty);
             Renderer?.Dispose();
             Renderer = null;
         }
@@ -296,10 +370,40 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         protected virtual void HandleScalingChanged(double scaling)
         {
-            foreach (ILayoutable control in this.GetSelfAndVisualDescendants())
+            LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
+        }
+
+        private bool TransparencyLevelsMatch (WindowTransparencyLevel requested, WindowTransparencyLevel received)
+        {
+            if(requested == received)
             {
-                control.InvalidateMeasure();
+                return true;
             }
+            else if(requested >= WindowTransparencyLevel.Blur && received >= WindowTransparencyLevel.Blur)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        protected virtual void HandleTransparencyLevelChanged(WindowTransparencyLevel transparencyLevel)
+        {
+            if(_transparencyFallbackBorder != null)
+            {
+                if(transparencyLevel == WindowTransparencyLevel.None || 
+                    TransparencyLevelHint == WindowTransparencyLevel.None || 
+                    !TransparencyLevelsMatch(TransparencyLevelHint, transparencyLevel))
+                {
+                    _transparencyFallbackBorder.Background = TransparencyBackgroundFallback;
+                }
+                else
+                {
+                    _transparencyFallbackBorder.Background = Brushes.Transparent;
+                }
+            }
+
+            ActualTransparencyLevel = transparencyLevel;
         }
 
         /// <inheritdoc/>
@@ -311,11 +415,26 @@ namespace Avalonia.Controls
                 $"Control '{GetType().Name}' is a top level control and cannot be added as a child.");
         }
 
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+
+            _transparencyFallbackBorder = e.NameScope.Find<Border>("PART_TransparencyFallback");
+
+            HandleTransparencyLevelChanged(PlatformImpl.TransparencyLevel);
+        }
+
         /// <summary>
         /// Raises the <see cref="Opened"/> event.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnOpened(EventArgs e) => Opened?.Invoke(this, e);
+
+        /// <summary>
+        /// Raises the <see cref="Closed"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnClosed(EventArgs e) => Closed?.Invoke(this, e);
 
         /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a
@@ -330,8 +449,7 @@ namespace Avalonia.Controls
 
             if (result == null)
             {
-                Logger.Warning(
-                    LogArea.Control,
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
                     this,
                     "Could not create {Service} : maybe Application.RegisterServices() wasn't called?",
                     typeof(T));

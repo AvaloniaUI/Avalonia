@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using System.Windows.Input;
@@ -65,6 +62,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Button, bool>(nameof(IsDefault));
 
         /// <summary>
+        /// Defines the <see cref="IsCancelProperty"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsCancelProperty =
+            AvaloniaProperty.Register<Button, bool>(nameof(IsCancel));
+
+        /// <summary>
         /// Defines the <see cref="Click"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
@@ -84,7 +87,12 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
             CommandProperty.Changed.Subscribe(CommandChanged);
             IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
-            PseudoClass<Button>(IsPressedProperty, ":pressed");
+            IsCancelProperty.Changed.Subscribe(IsCancelChanged);
+        }
+
+        public Button()
+        {
+            UpdatePseudoClasses(IsPressed);
         }
 
         /// <summary>
@@ -142,6 +150,16 @@ namespace Avalonia.Controls
             set { SetValue(IsDefaultProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the button is the Cancel button for the
+        /// window.
+        /// </summary>
+        public bool IsCancel
+        {
+            get { return GetValue(IsCancelProperty); }
+            set { SetValue(IsCancelProperty, value); }
+        }
+
         public bool IsPressed
         {
             get { return GetValue(IsPressedProperty); }
@@ -160,6 +178,13 @@ namespace Avalonia.Controls
                 if (e.Root is IInputElement inputElement)
                 {
                     ListenForDefault(inputElement);
+                }
+            }
+            if (IsCancel)
+            {
+                if (e.Root is IInputElement inputElement)
+                {
+                    ListenForCancel(inputElement);
                 }
             }
         }
@@ -253,7 +278,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.MouseButton == MouseButton.Left)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 IsPressed = true;
                 e.Handled = true;
@@ -270,7 +295,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerReleased(e);
 
-            if (IsPressed && e.MouseButton == MouseButton.Left)
+            if (IsPressed && e.InitialPressMouseButton == MouseButton.Left)
             {
                 IsPressed = false;
                 e.Handled = true;
@@ -282,18 +307,28 @@ namespace Avalonia.Controls
                 }
             }
         }
-
+        
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
             IsPressed = false;
         }
 
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.UpdateDataValidation(property, status);
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsPressedProperty)
+            {
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>());
+            }
+        }
+
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        {
+            base.UpdateDataValidation(property, value);
             if (property == CommandProperty)
             {
-                if (status?.ErrorType == BindingErrorType.Error)
+                if (value.Type == BindingValueType.BindingError)
                 {
                     if (_commandCanExecute)
                     {
@@ -352,6 +387,28 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Called when the <see cref="IsCancel"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void IsCancelChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var button = e.Sender as Button;
+            var isCancel = (bool)e.NewValue;
+
+            if (button?.VisualRoot is IInputElement inputRoot)
+            {
+                if (isCancel)
+                {
+                    button.ListenForCancel(inputRoot);
+                }
+                else
+                {
+                    button.StopListeningForCancel(inputRoot);
+                }
+            }
+        }
+
+        /// <summary>
         /// Called when the <see cref="ICommand.CanExecuteChanged"/> event fires.
         /// </summary>
         /// <param name="sender">The event sender.</param>
@@ -373,7 +430,16 @@ namespace Avalonia.Controls
         /// <param name="root">The input root.</param>
         private void ListenForDefault(IInputElement root)
         {
-            root.AddHandler(KeyDownEvent, RootKeyDown);
+            root.AddHandler(KeyDownEvent, RootDefaultKeyDown);
+        }
+
+        /// <summary>
+        /// Starts listening for the Escape key when the button <see cref="IsCancel"/>.
+        /// </summary>
+        /// <param name="root">The input root.</param>
+        private void ListenForCancel(IInputElement root)
+        {
+            root.AddHandler(KeyDownEvent, RootCancelKeyDown);
         }
 
         /// <summary>
@@ -382,7 +448,16 @@ namespace Avalonia.Controls
         /// <param name="root">The input root.</param>
         private void StopListeningForDefault(IInputElement root)
         {
-            root.RemoveHandler(KeyDownEvent, RootKeyDown);
+            root.RemoveHandler(KeyDownEvent, RootDefaultKeyDown);
+        }
+
+        /// <summary>
+        /// Stops listening for the Escape key when the button is no longer <see cref="IsCancel"/>.
+        /// </summary>
+        /// <param name="root">The input root.</param>
+        private void StopListeningForCancel(IInputElement root)
+        {
+            root.RemoveHandler(KeyDownEvent, RootCancelKeyDown);
         }
 
         /// <summary>
@@ -390,12 +465,30 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void RootKeyDown(object sender, KeyEventArgs e)
+        private void RootDefaultKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter && IsVisible && IsEnabled)
             {
                 OnClick();
             }
+        }
+
+        /// <summary>
+        /// Called when a key is pressed on the input root and the button <see cref="IsCancel"/>.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
+        private void RootCancelKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape && IsVisible && IsEnabled)
+            {
+                OnClick();
+            }
+        }
+
+        private void UpdatePseudoClasses(bool isPressed)
+        {
+            PseudoClasses.Set(":pressed", isPressed);
         }
     }
 }

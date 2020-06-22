@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -223,7 +220,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
-        
+        [Fact]
+        public void Popup_Close_On_Closed_Popup_Should_Not_Raise_Closed_Event()
+        {
+            using (CreateServices())
+            {
+                var window = PreparedWindow();
+                var target = new Popup() { PlacementMode = PlacementMode.Pointer };
+
+                window.Content = target;
+                window.ApplyTemplate();
+                
+                int closedCount = 0;
+
+                target.Closed += (sender, args) =>
+                {
+                    closedCount++;
+                };
+
+                target.Close();
+                target.Close();
+                target.Close();
+                target.Close();
+
+                Assert.Equal(0, closedCount);
+            }
+        }
+
         [Fact]
         public void Templated_Control_With_Popup_In_Template_Should_Set_TemplatedParent()
         {
@@ -252,6 +275,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.Equal(
                     new[]
                     {
+                        "Panel",
+                        "Border",
                         "VisualLayerManager",
                         "ContentPresenter",
                         "ContentPresenter",
@@ -268,18 +293,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         popupRoot,
                         popupRoot,
+                        popupRoot,
+                        popupRoot,
                         target,
                         null,
                     },
                     templatedParents);
             }
-        }
-
-        Window PreparedWindow(object content = null)
-        {
-            var w = new Window {Content = content};
-            w.ApplyTemplate();
-            return w;
         }
 
         [Fact]
@@ -328,16 +348,86 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void StaysOpen_False_Should_Not_Handle_Closing_Click()
+        {
+            using (CreateServices())
+            {
+                var window = PreparedWindow();
+                var target = new Popup() 
+                { 
+                    PlacementTarget = window ,
+                    StaysOpen = false,
+                };
+
+                target.Open();
+
+                var e = CreatePointerPressedEventArgs(window);
+                window.RaiseEvent(e);
+
+                Assert.False(e.Handled);
+            }
+        }
+
+        [Fact]
+        public void Should_Pass_Closing_Click_To_Closed_Event()
+        {
+            using (CreateServices())
+            {
+                var window = PreparedWindow();
+                var target = new Popup()
+                {
+                    PlacementTarget = window,
+                    StaysOpen = false,
+                };
+
+                target.Open();
+
+                var press = CreatePointerPressedEventArgs(window);
+                var raised = 0;
+
+                target.Closed += (s, e) =>
+                {
+                    Assert.Same(press, e.CloseEvent);
+                    ++raised;
+                };
+
+                window.RaiseEvent(press);
+
+                Assert.Equal(1, raised);
+            }
+        }
+
         private IDisposable CreateServices()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
                 new MockWindowingPlatform(null,
-                    () =>
+                    x =>
                     {
                         if(UsePopupHost)
                             return null;
-                        return MockWindowingPlatform.CreatePopupMock().Object;
+                        return MockWindowingPlatform.CreatePopupMock(x).Object;
                     })));
+        }
+
+        private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source)
+        {
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            return new PointerPressedEventArgs(
+                source,
+                pointer,
+                source,
+                default,
+                0,
+                new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
+                KeyModifiers.None);
+        }
+
+        private Window PreparedWindow(object content = null)
+        {
+            var w = new Window { Content = content };
+            w.ApplyTemplate();
+            return w;
         }
 
         private static IControl PopupContentControlTemplate(PopupContentControl control, INameScope scope)
