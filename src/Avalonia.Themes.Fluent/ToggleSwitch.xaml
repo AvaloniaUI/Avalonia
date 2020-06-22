@@ -3,8 +3,8 @@
         xmlns:sys="clr-namespace:System;assembly=netstandard">
   <Styles.Resources>
     <Thickness x:Key="ToggleSwitchTopHeaderMargin">0,0,0,6</Thickness>
-    <x:Double x:Key="ToggleSwitchPreContentMargin">6</x:Double>
-    <x:Double x:Key="ToggleSwitchPostContentMargin">6</x:Double>
+    <GridLength x:Key="ToggleSwitchPreContentMargin">6</GridLength>
+    <GridLength x:Key="ToggleSwitchPostContentMargin">6</GridLength>
     <x:Double x:Key="ToggleSwitchThemeMinWidth">154</x:Double>
     <x:Double x:Key="KnobOnPosition">20</x:Double>
     <x:Double x:Key="KnobOffPosition">0</x:Double>
