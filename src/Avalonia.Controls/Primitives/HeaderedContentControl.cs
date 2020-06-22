@@ -27,7 +27,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static HeaderedContentControl()
         {
-            ContentProperty.Changed.AddClassHandler<HeaderedContentControl>((x, e) => x.HeaderChanged(e));
+            HeaderProperty.Changed.AddClassHandler<HeaderedContentControl>((x, e) => x.HeaderChanged(e));
         }
 
         /// <summary>
