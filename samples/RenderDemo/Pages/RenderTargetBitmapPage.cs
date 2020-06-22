@@ -31,9 +31,7 @@ namespace RenderDemo.Pages
         {
             using (var ctxi = _bitmap.CreateDrawingContext(null))
             using(var ctx = new DrawingContext(ctxi, false))
-            using (ctx.PushPostTransform(Matrix.CreateTranslation(-100, -100)
-                                         * Matrix.CreateRotation(_st.Elapsed.TotalSeconds)
-                                         * Matrix.CreateTranslation(100, 100)))
+            using (ctx.PushPostTransform(Matrix.CreateRotation(_st.Elapsed.TotalSeconds, 100, 100)))
             {
                 ctxi.Clear(default);
                 ctx.FillRectangle(Brushes.Fuchsia, new Rect(50, 50, 100, 100));
