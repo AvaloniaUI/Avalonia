@@ -148,6 +148,24 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Creates a rotation matrix using the given rotation in radians.
+        /// </summary>
+        /// <param name="radians">The amount of rotation, in radians.</param>
+        /// <param name="centerX">The x-coordinate of the rotation center point.</param>
+        /// <param name="centerY">The y-coordinate of the rotation center point.</param>
+        /// <returns>A rotation matrix.</returns>
+        public static Matrix CreateRotation(double radians, double centerX, double centerY)
+        {
+            double cos = Math.Cos(radians);
+            double sin = Math.Sin(radians);
+
+            double dx = (centerX * (1.0 - cos)) + (centerY * sin);
+            double dy = (centerY * (1.0 - cos)) - (centerX * sin);
+
+            return new Matrix(cos, sin, -sin, cos, dx, dy);
+        }
+
+        /// <summary>
         /// Creates a skew matrix from the given axis skew angles in radians.
         /// </summary>
         /// <param name="xAngle">The amount of skew along the X-axis, in radians.</param>

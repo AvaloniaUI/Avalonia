@@ -1,0 +1,27 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.RenderTransformPage">
+  <DockPanel>
+    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" Margin="12" DockPanel.Dock="Top">
+      <TextBlock Text="Angle" Margin="2" Grid.Column="0" Grid.Row="0" />
+      <TextBlock Text="Center X" Margin="2" Grid.Column="0" Grid.Row="1" />
+      <TextBlock Text="Center Y" Margin="2" Grid.Column="0" Grid.Row="2" />
+      <Slider Name="angle" Maximum="360" Margin="2" Grid.Column="1" Grid.Row="0 "/>
+      <Slider Name="centerX" Maximum="100" Margin="2" Grid.Column="1" Grid.Row="1 "/>
+      <Slider Name="centerY" Maximum="100" Margin="2" Grid.Column="1" Grid.Row="2 "/>
+      <TextBox Text="{Binding #angle.Value}" Margin="2" Grid.Column="2" Grid.Row="0" />
+      <TextBox Text="{Binding #centerX.Value}" Margin="2" Grid.Column="2" Grid.Row="1" />
+      <TextBox Text="{Binding #centerY.Value}" Margin="2" Grid.Column="2" Grid.Row="2" />
+    </Grid>
+    <Canvas>
+      <Polyline Points="25,25 0,50 25,75 50,50 25,25 25,0" 
+        Stroke="Blue" StrokeThickness="10">
+        <Polyline.RenderTransform>
+          <RotateTransform CenterX="{Binding #centerX.Value}"
+                           CenterY="{Binding #centerY.Value}"
+                           Angle="{Binding #angle.Value}" />
+        </Polyline.RenderTransform>
+      </Polyline>
+    </Canvas>
+  </DockPanel>
+</UserControl>
