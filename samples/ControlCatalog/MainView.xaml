@@ -52,7 +52,6 @@
       <TabItem Header="Pointers (Touch)"><pages:PointersPage/></TabItem>
       <TabItem Header="ProgressBar"><pages:ProgressBarPage/></TabItem>
       <TabItem Header="RadioButton"><pages:RadioButtonPage/></TabItem>
-      <TabItem Header="RenderTransform"><pages:RenderTransformPage/></TabItem>
       <TabItem Header="Slider"><pages:SliderPage/></TabItem>
       <TabItem Header="TabControl"><pages:TabControlPage/></TabItem>
       <TabItem Header="TabStrip"><pages:TabStripPage/></TabItem>
@@ -60,6 +59,7 @@
       <TabItem Header="TextBlock"><pages:TextBlockPage/></TabItem>
       <TabItem Header="ToggleSwitch"><pages:ToggleSwitchPage/></TabItem>
       <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
+      <TabItem Header="Transform"><pages:TransformPage/></TabItem>
       <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
       <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
       <TabControl.Tag>

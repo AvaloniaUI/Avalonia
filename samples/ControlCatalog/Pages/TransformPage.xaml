@@ -1,12 +1,13 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:ControlCatalog.Models;assembly=ControlCatalog"
-             x:Class="ControlCatalog.Pages.RenderTransformPage">
+             x:Class="ControlCatalog.Pages.TransformPage">
   <UserControl.Resources>
-    <local:MathConverter x:Key="MathConverter" />
+    <local:MathSumConverter x:Key="MathSumConverter" />
   </UserControl.Resources>
-  <DockPanel>
-    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" Margin="12" DockPanel.Dock="Top">
+  <StackPanel>
+    <TextBlock Text="RenderTransform" Margin="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" Margin="12">
       <TextBlock Grid.Column="0" Grid.Row="0"
                  Text="Angle" Margin="2" />
       <TextBlock Grid.Column="0" Grid.Row="1"
@@ -14,22 +15,22 @@
       <TextBlock Grid.Column="0" Grid.Row="2"
                  Text="Center Y" Margin="2" />
       <Slider Grid.Column="1" Grid.Row="0"
-              Name="angle" Maximum="360" Margin="2"
+              Name="angle" Minimum="0" Maximum="360" Margin="2"
               IsSnapToTickEnabled="True" TickFrequency="0.1" />
       <Slider Grid.Column="1" Grid.Row="1"
-              Name="centerX" Maximum="100" Margin="2"
+              Name="centerX" Minimum="-100" Maximum="100" Margin="2"
               IsSnapToTickEnabled="True" TickFrequency="1" />
       <Slider Grid.Column="1" Grid.Row="2"
-              Name="centerY" Maximum="100" Margin="2"
+              Name="centerY" Minimum="-100" Maximum="100" Margin="2"
               IsSnapToTickEnabled="True" TickFrequency="1" />
       <NumericUpDown Grid.Column="2" Grid.Row="0"
-               Value="{Binding #angle.Value}" FormatString="\{0:N1\}" Increment="0.1" Margin="2" />
+                     Value="{Binding #angle.Value}" FormatString="\{0:N1\}" Increment="0.1" Margin="2" />
       <NumericUpDown Grid.Column="2" Grid.Row="1"
-               Value="{Binding #centerX.Value}" Margin="2" />
+                     Value="{Binding #centerX.Value}" Margin="2" />
       <NumericUpDown Grid.Column="2" Grid.Row="2"
-               Value="{Binding #centerY.Value}" Margin="2" />
+                     Value="{Binding #centerY.Value}" Margin="2" />
     </Grid>
-    <Canvas Margin="12" >
+    <Canvas Margin="12" HorizontalAlignment="Center" VerticalAlignment="Center">
       <Polyline Points="48,48 0,96 48,144 96,96 48,48 48,0" 
         Stroke="Blue" StrokeThickness="10">
         <Polyline.RenderTransform>
@@ -38,16 +39,16 @@
                            Angle="{Binding #angle.Value}" />
         </Polyline.RenderTransform>
       </Polyline>
-      <Ellipse Fill="Red" Width="20" Height="20">
+      <Ellipse Fill="Red" Width="16" Height="16">
         <Ellipse.RenderTransform>
           <TranslateTransform X="{Binding #centerX.Value,
-                                          Converter={StaticResource MathConverter},
-                                          ConverterParameter=@VALUE+48-10}"
+                                          Converter={StaticResource MathSumConverter},
+                                          ConverterParameter=sum(@VALUE \, -8 \, 49)}"
                               Y="{Binding #centerY.Value,
-                                          Converter={StaticResource MathConverter},
-                                          ConverterParameter=@VALUE+72-10}" />
+                                          Converter={StaticResource MathSumConverter},
+                                          ConverterParameter=sum(@VALUE \, -8 \, 79)}" />
         </Ellipse.RenderTransform>
       </Ellipse>
     </Canvas>
-  </DockPanel>
+  </StackPanel>
 </UserControl>
