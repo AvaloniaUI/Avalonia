@@ -12,6 +12,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Skia;
 using Avalonia.ReactiveUI;
 using Avalonia.Threading;
+using Avalonia.Dialogs;
 
 namespace ControlCatalog.NetCore
 {

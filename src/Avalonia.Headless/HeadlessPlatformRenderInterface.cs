@@ -21,8 +21,9 @@ namespace Avalonia.Headless
 
         public IEnumerable<string> InstalledFontNames { get; } = new[] { "Tahoma" };
 
-        public IFormattedTextImpl CreateFormattedText(string text, Typeface typeface, TextAlignment textAlignment,
-            TextWrapping wrapping, Size constraint, IReadOnlyList<FormattedTextStyleSpan> spans)
+        public bool SupportsIndividualRoundRects => throw new NotImplementedException();
+
+        public IFormattedTextImpl CreateFormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment, TextWrapping wrapping, Size constraint, IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             return new HeadlessFormattedTextStub(text, constraint);
         }
@@ -68,6 +69,27 @@ namespace Avalonia.Headless
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
+        }        
+
+        public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new HeadlessBitmapStub(new Size(width, width), new Vector(96, 96));
+        }
+
+        public IBitmapImpl LoadBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new HeadlessBitmapStub(new Size(height, height), new Vector(96, 96));
+        }
+
+        public IBitmapImpl ResizeBitmap(IBitmapImpl bitmapImpl, PixelSize destinationSize, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new HeadlessBitmapStub(destinationSize, new Vector(96, 96));
+        }
+
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        {
+            width = 100;
+            return new HeadlessGlyphRunStub();
         }
 
         class HeadlessGeometryStub : IGeometryImpl
@@ -124,6 +146,13 @@ namespace Avalonia.Headless
 
             public IGeometryImpl SourceGeometry { get; }
             public Matrix Transform { get; }
+        }
+
+        class HeadlessGlyphRunStub : IGlyphRunImpl
+        {
+            public void Dispose()
+            {
+            }
         }
 
         class HeadlessStreamingGeometryStub : HeadlessGeometryStub, IStreamGeometryImpl
@@ -264,38 +293,7 @@ namespace Avalonia.Headless
 
             }
 
-            public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-                BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
-            {
-
-            }
-
-            public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
-            {
-
-            }
-
-            public void DrawLine(Pen pen, Point p1, Point p2)
-            {
-
-            }
-
-            public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
-            {
-
-            }
-
-            public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
-            {
-
-            }
-
             public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
-            {
-
-            }
-
-            public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0)
             {
 
             }
@@ -361,6 +359,31 @@ namespace Avalonia.Headless
 
             public void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0)
             {
+            }
+
+            public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
+            {
+                
+            }
+
+            public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+            {
+                
+            }
+
+            public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect, BoxShadows boxShadow = default)
+            {
+                
+            }
+
+            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+            {
+                
+            }
+
+            public void PushClip(RoundedRect clip)
+            {
+                
             }
         }
 

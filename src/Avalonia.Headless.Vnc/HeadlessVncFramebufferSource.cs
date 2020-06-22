@@ -27,7 +27,7 @@ namespace Avalonia.Headless.Vnc
                 int TranslateButton(VncButton vncButton) =>
                     vncButton == VncButton.Left ? 0 : vncButton == VncButton.Right ? 1 : 2;
 
-                var modifiers = (InputModifiers)(((int)buttons & 7) << 4);
+                var modifiers = (RawInputModifiers)(((int)buttons & 7) << 4);
                 
                 Dispatcher.UIThread.Post(() =>
                 {

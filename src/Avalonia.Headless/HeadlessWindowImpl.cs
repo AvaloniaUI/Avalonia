@@ -224,17 +224,25 @@ namespace Avalonia.Headless
         // TODO: Hook recent Popup changes. 
         IPopupPositioner IPopupImpl.PopupPositioner => null;
 
-        void IHeadlessWindow.KeyPress(Key key, InputModifiers modifiers)
+        public Size MaxAutoSizeHint => new Size(1920, 1080);
+
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+
+        public Action GotInputWhenDisabled { get; set; }
+
+        void IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers)
         {
-            Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, RawKeyEventType.KeyDown, key, modifiers));
+            Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot, RawKeyEventType.KeyDown, key, modifiers));
         }
 
-        void IHeadlessWindow.KeyRelease(Key key, InputModifiers modifiers)
+        void IHeadlessWindow.KeyRelease(Key key, RawInputModifiers modifiers)
         {
-            Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, RawKeyEventType.KeyUp, key, modifiers));
+            Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot, RawKeyEventType.KeyUp, key, modifiers));
         }
 
-        void IHeadlessWindow.MouseDown(Point point, int button, InputModifiers modifiers)
+        void IHeadlessWindow.MouseDown(Point point, int button, RawInputModifiers modifiers)
         {
             Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, InputRoot,
                 button == 0 ? RawPointerEventType.LeftButtonDown :
@@ -242,13 +250,13 @@ namespace Avalonia.Headless
                 point, modifiers));
         }
 
-        void IHeadlessWindow.MouseMove(Point point, InputModifiers modifiers)
+        void IHeadlessWindow.MouseMove(Point point, RawInputModifiers modifiers)
         {
             Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, InputRoot,
                 RawPointerEventType.Move, point, modifiers));
         }
 
-        void IHeadlessWindow.MouseUp(Point point, int button, InputModifiers modifiers)
+        void IHeadlessWindow.MouseUp(Point point, int button, RawInputModifiers modifiers)
         {
             Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, InputRoot,
                 button == 0 ? RawPointerEventType.LeftButtonUp :
@@ -265,6 +273,41 @@ namespace Avalonia.Headless
         {
             // TODO: Hook recent Popup changes. 
             return null;
+        }
+
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+            
+        }
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        {
+            
+        }
+
+        public void SetParent(IWindowImpl parent)
+        {
+            
+        }
+
+        public void SetEnabled(bool enable)
+        {
+            
+        }
+
+        public void SetSystemDecorations(SystemDecorations enabled)
+        {
+            
+        }
+
+        public void BeginMoveDrag(PointerPressedEventArgs e)
+        {
+            
+        }
+
+        public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
+        {
+            
         }
     }
 }
