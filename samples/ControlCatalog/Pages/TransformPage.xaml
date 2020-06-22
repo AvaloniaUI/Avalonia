@@ -43,10 +43,10 @@
         <Ellipse.RenderTransform>
           <TranslateTransform X="{Binding #centerX.Value,
                                           Converter={StaticResource MathSumConverter},
-                                          ConverterParameter=sum(@VALUE \, -8 \, 49)}"
+                                          ConverterParameter=sum(@VALUE \; -8 \; 49)}"
                               Y="{Binding #centerY.Value,
                                           Converter={StaticResource MathSumConverter},
-                                          ConverterParameter=sum(@VALUE \, -8 \, 79)}" />
+                                          ConverterParameter=sum(@VALUE \; -8 \; 79)}" />
         </Ellipse.RenderTransform>
       </Ellipse>
     </Canvas>

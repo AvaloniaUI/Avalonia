@@ -79,6 +79,29 @@ namespace Avalonia.Visuals.UnitTests.Media
             Assert.Equal(y, decomposed.Scale.Y);
         }
 
+        [Theory]
+        [InlineData(10d, 10d)]
+        [InlineData(-10d, 10d)]
+        [InlineData(10d, -10d)]
+        [InlineData(50d, 100d)]
+        public void CreateRotation_With_Center_Point_Equals_TransformGroup(double x, double y)
+        {
+            var angle = Matrix.ToRadians(42);
+
+            var expectedMatrix = Matrix.CreateTranslation(-x, -y)
+                               * Matrix.CreateRotation(angle)
+                               * Matrix.CreateTranslation(x, y);
+
+            var actualMatrix = Matrix.CreateRotation(angle, x, y);
+
+            Assert.True(MathUtilities.AreClose(expectedMatrix.M11, actualMatrix.M11));
+            Assert.True(MathUtilities.AreClose(expectedMatrix.M21, actualMatrix.M21));
+            Assert.True(MathUtilities.AreClose(expectedMatrix.M31, actualMatrix.M31));
+            Assert.True(MathUtilities.AreClose(expectedMatrix.M12, actualMatrix.M12));
+            Assert.True(MathUtilities.AreClose(expectedMatrix.M22, actualMatrix.M22));
+            Assert.True(MathUtilities.AreClose(expectedMatrix.M32, actualMatrix.M32));
+        }
+
         private static double NormalizeAngle(double rad)
         {
             double twoPi = 2 * Math.PI;

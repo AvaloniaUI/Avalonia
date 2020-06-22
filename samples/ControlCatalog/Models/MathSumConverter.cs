@@ -10,7 +10,7 @@ namespace ControlCatalog.Models
         
         private const string SumOperationsClose = ")";
 
-        private const char SeparateSymbol = ',';
+        private const char SeparateSymbol = ';';
 
         private static bool TryParseDouble(string s, out double number) =>
             double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out number);
