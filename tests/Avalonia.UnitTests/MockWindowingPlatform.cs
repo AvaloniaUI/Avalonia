@@ -118,7 +118,7 @@ namespace Avalonia.UnitTests
             }
         }
 
-        public IEmbeddableWindowImpl CreateEmbeddableWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
         }
