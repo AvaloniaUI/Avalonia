@@ -49,6 +49,7 @@ namespace Avalonia.Controls
         static TreeViewItem()
         {
             SelectableMixin.Attach<TreeViewItem>(IsSelectedProperty);
+            PressedMixin.Attach<TreeViewItem>();
             FocusableProperty.OverrideDefaultValue<TreeViewItem>(true);
             ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);
             ParentProperty.Changed.AddClassHandler<TreeViewItem>((o, e) => o.OnParentChanged(e));
