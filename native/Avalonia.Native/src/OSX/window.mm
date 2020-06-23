@@ -488,7 +488,7 @@ private:
     WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl) : WindowBaseImpl(events, gl)
     {
         _isClientAreaExtended = false;
-        _extendClientHints = AvnChromeHintsDefault;
+        _extendClientHints = AvnDefaultChrome;
         _fullScreenActive = false;
         _canResize = true;
         _decorations = SystemDecorationsFull;
@@ -511,7 +511,7 @@ private:
                     {
                         if(_isClientAreaExtended)
                         {
-                            [button setHidden: !(_extendClientHints & AvnChromeHintsSystemChromeButtons)];
+                            [button setHidden: !((_extendClientHints & AvnSystemChrome)) || (_extendClientHints & AvnPreferSystemChrome)];
                         }
                         else
                         {
@@ -599,7 +599,7 @@ private:
                     if(_lastWindowState == FullScreen)
                     {
                         // we exited fs.
-                       if(_extendClientHints & AvnChromeHintsOSXThickTitleBar)
+                       if(_extendClientHints & AvnOSXThickTitleBar)
                        {
                           Window.toolbar = [NSToolbar new];
                           Window.toolbar.showsBaselineSeparator = false;
@@ -612,7 +612,7 @@ private:
                     else if(state == FullScreen)
                     {
                         // we entered fs.
-                        if(_extendClientHints & AvnChromeHintsOSXThickTitleBar)
+                        if(_extendClientHints & AvnOSXThickTitleBar)
                         {
                             Window.toolbar = nullptr;
                         }
@@ -815,7 +815,9 @@ private:
             
             [Window setTitlebarAppearsTransparent:true];
             
-            if(_extendClientHints & AvnChromeHintsSystemTitleBar)
+            auto wantsTitleBar = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
+            
+            if (wantsTitleBar)
             {
                 [StandardContainer ShowTitleBar:true];
             }
@@ -824,7 +826,7 @@ private:
                 [StandardContainer ShowTitleBar:false];
             }
             
-            if(_extendClientHints & AvnChromeHintsOSXThickTitleBar)
+            if(_extendClientHints & AvnOSXThickTitleBar)
             {
                 Window.toolbar = [NSToolbar new];
                 Window.toolbar.showsBaselineSeparator = false;

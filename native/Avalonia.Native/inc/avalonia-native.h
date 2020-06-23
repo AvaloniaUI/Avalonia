@@ -207,12 +207,11 @@ enum AvnMenuItemToggleType
 
 enum AvnExtendClientAreaChromeHints
 {
-    AvnChromeHintsNoChrome,
-    AvnChromeHintsSystemTitleBar = 0x01,
-    AvnChromeHintsManagedChromeButtons = 0x02,
-    AvnChromeHintsSystemChromeButtons = 0x04,
-    AvnChromeHintsOSXThickTitleBar = 0x08,
-    AvnChromeHintsDefault = AvnChromeHintsSystemTitleBar | AvnChromeHintsSystemChromeButtons,
+    AvnNoChrome = 0,
+    AvnSystemChrome = 0x01,
+    AvnPreferSystemChrome = 0x02,
+    AvnOSXThickTitleBar = 0x08,
+    AvnDefaultChrome = AvnSystemChrome,
 };
 
 AVNCOM(IAvaloniaNativeFactory, 01) : IUnknown
