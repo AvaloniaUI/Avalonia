@@ -232,7 +232,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 var scroll = (TestScroller)target.Parent;
 
                 scroll.Width = scroll.Height = 100;
-                scroll.LayoutManager.ExecuteInitialLayoutPass(scroll);
+                scroll.LayoutManager.ExecuteInitialLayoutPass();
 
                 // Ensure than an intermediate measure pass doesn't add more controls than it
                 // should. This can happen if target gets measured with Size.Infinity which

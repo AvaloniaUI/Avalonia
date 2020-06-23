@@ -723,7 +723,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var scroller = (TestScroller)target.Parent;
 
             scroller.Width = scroller.Height = 100;
-            scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+            scroller.LayoutManager.ExecuteInitialLayoutPass();
 
             var last = (target.Items as IList)[10];
 
@@ -740,7 +740,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var scroller = (TestScroller)target.Parent;
 
             scroller.Width = scroller.Height = 100;
-            scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+            scroller.LayoutManager.ExecuteInitialLayoutPass();
 
             var last = (target.Items as IList)[10];
 
@@ -838,7 +838,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 var scroller = (TestScroller)target.Parent;
 
                 scroller.Width = scroller.Height = 100;
-                scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+                scroller.LayoutManager.ExecuteInitialLayoutPass();
 
                 var from = target.Panel.Children[5];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
@@ -855,7 +855,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 var scroller = (TestScroller)target.Parent;
 
                 scroller.Width = scroller.Height = 100;
-                scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+                scroller.LayoutManager.ExecuteInitialLayoutPass();
 
                 var from = target.Panel.Children[9];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
@@ -874,7 +874,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 scroller.Width = 100;
                 scroller.Height = 95;
-                scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+                scroller.LayoutManager.ExecuteInitialLayoutPass();
 
                 var from = target.Panel.Children[8];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
@@ -893,7 +893,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 scroller.Width = 100;
                 scroller.Height = 95;
-                scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+                scroller.LayoutManager.ExecuteInitialLayoutPass();
                 ((ILogicalScrollable)target).Offset = new Vector(0, 11);
 
                 var from = target.Panel.Children[1];
@@ -946,7 +946,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 var scroller = (TestScroller)target.Parent;
 
                 scroller.Width = scroller.Height = 100;
-                scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+                scroller.LayoutManager.ExecuteInitialLayoutPass();
 
                 var from = target.Panel.Children[5];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
@@ -963,7 +963,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 var scroller = (TestScroller)target.Parent;
 
                 scroller.Width = scroller.Height = 100;
-                scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+                scroller.LayoutManager.ExecuteInitialLayoutPass();
 
                 var from = target.Panel.Children[9];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
@@ -982,7 +982,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 scroller.Width = 95;
                 scroller.Height = 100;
-                scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+                scroller.LayoutManager.ExecuteInitialLayoutPass();
 
                 var from = target.Panel.Children[8];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
@@ -1001,7 +1001,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 scroller.Width = 95;
                 scroller.Height = 100;
-                scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+                scroller.LayoutManager.ExecuteInitialLayoutPass();
                 ((ILogicalScrollable)target).Offset = new Vector(11, 0);
 
                 var from = target.Panel.Children[1];

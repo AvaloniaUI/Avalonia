@@ -40,7 +40,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var animation = new BehaviorSubject<double>(0.5);
                 border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
@@ -105,7 +105,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var animation = new BehaviorSubject<double>(0.5);
                 border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
@@ -147,7 +147,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var animation = new BehaviorSubject<double>(0.5);
                 border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
@@ -197,7 +197,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var animation = new BehaviorSubject<double>(0.5);
                 border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
@@ -241,7 +241,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var animation = new BehaviorSubject<double>(0.5);
                 border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);

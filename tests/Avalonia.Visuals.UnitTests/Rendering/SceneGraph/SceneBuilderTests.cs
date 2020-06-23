@@ -653,7 +653,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
@@ -696,7 +696,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
@@ -744,7 +744,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();

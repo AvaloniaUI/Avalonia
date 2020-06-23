@@ -106,7 +106,7 @@ namespace Avalonia.Controls.UnitTests
                     }
                 };
 
-                target.LayoutManager.ExecuteInitialLayoutPass(target);
+                target.LayoutManager.ExecuteInitialLayoutPass();
 
                 Assert.Equal(new Rect(0, 0, 321, 432), target.Bounds);
             }
@@ -282,7 +282,7 @@ namespace Avalonia.Controls.UnitTests
                     Content = child,
                 };
 
-                target.LayoutManager.ExecuteInitialLayoutPass(target);
+                target.LayoutManager.ExecuteInitialLayoutPass();
 
                 Assert.Equal(new Thickness(0), child.BorderThickness);
 
@@ -295,7 +295,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 Application.Current.Styles.Add(style);
-                target.LayoutManager.ExecuteInitialLayoutPass(target);
+                target.LayoutManager.ExecuteInitialLayoutPass();
 
                 Assert.Equal(new Thickness(2), child.BorderThickness);
 

@@ -28,7 +28,7 @@ namespace Avalonia.Controls.Embedding
         {
             EnsureInitialized();
             ApplyTemplate();
-            LayoutManager.ExecuteInitialLayoutPass(this);
+            LayoutManager.ExecuteInitialLayoutPass();
         }
 
         private void EnsureInitialized()
