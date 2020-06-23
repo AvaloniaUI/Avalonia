@@ -35,6 +35,7 @@
         <Button BorderBrush="{DynamicResource ThemeAccentBrush}">Border Color</Button>
         <Button BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="4">Thick Border</Button>
         <Button BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="4" IsEnabled="False">Disabled</Button>
+        <Button BorderBrush="{DynamicResource ThemeAccentBrush}" KeyboardNavigation.IsTabStop="False">IsTabStop=False</Button>
       </StackPanel>
     </StackPanel>    
   </StackPanel>
