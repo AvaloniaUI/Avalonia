@@ -10,7 +10,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.DesignerSupport.Remote
 {
-    class PreviewerWindowImpl : RemoteServerTopLevelImpl, IWindowImpl, IEmbeddableWindowImpl
+    class PreviewerWindowImpl : RemoteServerTopLevelImpl, IWindowImpl
     {
         private readonly IAvaloniaRemoteTransportConnection _transport;
 
@@ -45,11 +45,6 @@ namespace Avalonia.DesignerSupport.Remote
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
         public Size MaxAutoSizeHint { get; } = new Size(4096, 4096);
-        public event Action LostFocus
-        {
-            add {}
-            remove {}
-        }
 
         protected override void OnMessage(IAvaloniaRemoteTransportConnection transport, object obj)
         {

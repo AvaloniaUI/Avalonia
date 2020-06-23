@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Win32.Input;
@@ -31,5 +32,9 @@ namespace Avalonia.Win32
 
             return lRet;
         }
+        
+        public INativeControlHostImpl NativeControlHost => _nativeControlHost;
+
+        protected virtual bool ShouldTakeFocusOnClick => true;
     }
 }

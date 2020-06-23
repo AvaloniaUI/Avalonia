@@ -186,6 +186,35 @@ namespace Avalonia.Input.UnitTests
         }
 
         [Fact]
+        public void Next_Skips_Non_TabStop_Siblings()
+        {
+            Button current;
+            Button next;
+
+            var top = new StackPanel
+            {
+                Children =
+                {
+                    new StackPanel
+                    {
+                        Children =
+                        {
+                            new Button { Name = "Button1" },
+                            new Button { Name = "Button2" },
+                            (current = new Button { Name = "Button3" }),
+                            new Button { Name="Button4", [KeyboardNavigation.IsTabStopProperty] = false }
+                        }
+                    },
+                    (next = new Button { Name = "Button5" }),
+                }
+            };
+
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
+
+            Assert.Equal(next, result);
+        }
+
+        [Fact]
         public void Next_Continue_Returns_First_Control_In_Next_Uncle_Container()
         {
             Button current;

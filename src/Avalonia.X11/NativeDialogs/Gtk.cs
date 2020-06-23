@@ -207,6 +207,9 @@ namespace Avalonia.X11.NativeDialogs
         
         [DllImport(GtkName)]
         public static extern void gtk_widget_realize(IntPtr gtkWidget);
+        
+        [DllImport(GtkName)]
+        public static extern void gtk_widget_destroy(IntPtr gtkWidget);
 
         [DllImport(GtkName)]
         public static extern IntPtr gtk_widget_get_window(IntPtr gtkWidget);
@@ -219,6 +222,13 @@ namespace Avalonia.X11.NativeDialogs
 
         [DllImport(GdkName)]
         static extern IntPtr gdk_x11_window_foreign_new_for_display(IntPtr display, IntPtr xid);
+        
+        [DllImport(GdkName)]
+        public static extern IntPtr gdk_x11_window_get_xid(IntPtr window);
+
+
+        [DllImport(GtkName)]
+        public static extern IntPtr gtk_container_add(IntPtr container, IntPtr widget);
 
         [DllImport(GdkName)]
         static extern IntPtr gdk_set_allowed_backends(Utf8Buffer backends);

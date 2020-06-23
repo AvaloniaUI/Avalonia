@@ -578,6 +578,28 @@ namespace Avalonia.Base.UnitTests.Data.Core
             Assert.True(true);
         }
 
+        [Fact]
+        public void Should_Not_Throw_Exception_When_Enabling_Data_Validation_On_Missing_Member()
+        {
+            var source = new Class1();
+            var target = new PropertyAccessorNode("NotFound", true);
+
+            target.Target = new WeakReference<object>(source);
+
+            var result = new List<object>();
+
+            target.Subscribe(x => result.Add(x));
+
+            Assert.Equal(
+                new object[]
+                {
+                    new BindingNotification(
+                        new MissingMemberException("Could not find a matching property accessor for 'NotFound' on 'Avalonia.Base.UnitTests.Data.Core.ExpressionObserverTests_Property+Class1'"),
+                        BindingErrorType.Error),
+                },
+                result);
+        }
+
         private interface INext
         {
             int PropertyChangedSubscriptionCount { get; }

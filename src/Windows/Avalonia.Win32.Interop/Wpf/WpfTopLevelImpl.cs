@@ -18,11 +18,11 @@ using MouseButton = System.Windows.Input.MouseButton;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    class WpfTopLevelImpl : FrameworkElement, IEmbeddableWindowImpl
+    class WpfTopLevelImpl : FrameworkElement, ITopLevelImpl
     {
         private HwndSource _currentHwndSource;
         private readonly HwndSourceHook _hook;
-        private readonly IEmbeddableWindowImpl _ttl;
+        private readonly ITopLevelImpl _ttl;
         private IInputRoot _inputRoot;
         private readonly IEnumerable<object> _surfaces;
         private readonly IMouseDevice _mouse;
@@ -241,7 +241,7 @@ namespace Avalonia.Win32.Interop.Wpf
         Action<WindowTransparencyLevel> ITopLevelImpl.TransparencyLevelChanged { get; set; }
 
         Action ITopLevelImpl.Closed { get; set; }
-        public new event Action LostFocus;
+        public new Action LostFocus { get; set; }
 
         internal Vector GetScaling()
         {

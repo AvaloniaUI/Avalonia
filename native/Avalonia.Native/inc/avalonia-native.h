@@ -26,7 +26,8 @@ struct IAvnStringArray;
 struct IAvnDndResultCallback;
 struct IAvnGCHandleDeallocatorCallback;
 struct IAvnMenuEvents;
-
+struct IAvnNativeControlHost;
+struct IAvnNativeControlHostTopLevelAttachment;
 enum SystemDecorations {
     SystemDecorationsNone = 0,
     SystemDecorationsBorderOnly = 1,
@@ -266,6 +267,7 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT ObtainNSWindowHandleRetained(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandle(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandleRetained(void** retOut) = 0;
+    virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut) = 0;
     virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
                                               IAvnClipboard* clipboard, IAvnDndResultCallback* cb, void* sourceHandle) = 0;
     virtual HRESULT SetBlurEnabled (bool enable) = 0;
@@ -309,6 +311,7 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
     virtual bool RawTextInputEvent (unsigned int timeStamp, const char* text) = 0;
     virtual void ScalingChanged(double scaling) = 0;
     virtual void RunRenderPriorityJobs() = 0;
+    virtual void LostFocus() = 0;
     virtual AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
                                          AvnInputModifiers modifiers, AvnDragDropEffects effects,
                                          IAvnClipboard* clipboard, void* dataObjectHandle) = 0;
@@ -491,5 +494,23 @@ AVNCOM(IAvnGCHandleDeallocatorCallback, 22) : IUnknown
 {
     virtual void FreeGCHandle(void* handle) = 0;
 };
+
+AVNCOM(IAvnNativeControlHost, 20) : IUnknown
+{
+    virtual HRESULT CreateDefaultChild(void* parent, void** retOut) = 0;
+    virtual IAvnNativeControlHostTopLevelAttachment* CreateAttachment() = 0;
+    virtual void DestroyDefaultChild(void* child) = 0;
+};
+
+AVNCOM(IAvnNativeControlHostTopLevelAttachment, 21) : IUnknown
+{
+    virtual void* GetParentHandle() = 0;
+    virtual HRESULT InitializeWithChildHandle(void* child) = 0;
+    virtual HRESULT AttachTo(IAvnNativeControlHost* host) = 0;
+    virtual void MoveTo(float x, float y, float width, float height) = 0;
+    virtual void Hide() = 0;
+    virtual void ReleaseChild() = 0;
+};
+
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();
