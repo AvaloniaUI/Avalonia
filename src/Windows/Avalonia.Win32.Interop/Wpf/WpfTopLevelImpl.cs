@@ -22,7 +22,7 @@ namespace Avalonia.Win32.Interop.Wpf
     {
         private HwndSource _currentHwndSource;
         private readonly HwndSourceHook _hook;
-        private readonly IEmbeddableWindowImpl _ttl;
+        private readonly ITopLevelImpl _ttl;
         private IInputRoot _inputRoot;
         private readonly IEnumerable<object> _surfaces;
         private readonly IMouseDevice _mouse;
