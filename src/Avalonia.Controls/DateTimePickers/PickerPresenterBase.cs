@@ -5,11 +5,21 @@ using System.Text;
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
-    /// Defines the base class for presenters used for choosing objects, like Date, Time, etc.
-    /// Sort of combines FlyoutBase and PickerFlyoutBase
+    /// Defines the base class for Date and Time PickerPresenters
     /// </summary>
     public abstract class PickerPresenterBase : TemplatedControl
     {
-        
+        protected virtual void OnConfirmed()
+        {
+            Confirmed?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected virtual void OnDismiss()
+        {
+            Dismissed.Invoke(this, EventArgs.Empty);
+        }
+
+        public event EventHandler Confirmed;
+        public event EventHandler Dismissed;
     }
 }
