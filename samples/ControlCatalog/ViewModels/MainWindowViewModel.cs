@@ -16,6 +16,12 @@ namespace ControlCatalog.ViewModels
         private bool _isMenuItemChecked = true;
         private WindowState _windowState;
         private WindowState[] _windowStates;
+        private int _transparencyLevel;
+        private ExtendClientAreaChromeHints _chromeHints;
+        private bool _extendClientAreaEnabled;
+        private bool _systemTitleBarEnabled;        
+        private bool _preferSystemChromeEnabled;
+        private double _titleBarHeight;
 
         public MainWindowViewModel(IManagedNotificationManager notificationManager)
         {
@@ -65,27 +71,17 @@ namespace ControlCatalog.ViewModels
                 WindowState.FullScreen,
             };
 
-            this.WhenAnyValue(x => x.SystemChromeButtonsEnabled, x=>x.ManagedChromeButtonsEnabled, x => x.SystemTitleBarEnabled, x=>x.PreferSystemChromeButtonsEnabled)
+            this.WhenAnyValue(x => x.SystemTitleBarEnabled, x=>x.PreferSystemChromeEnabled)
                 .Subscribe(x =>
                 {
                     var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
 
                     if(x.Item1)
                     {
-                        hints |= ExtendClientAreaChromeHints.SystemChromeButtons;
-                    }
-
-                    if(x.Item2)
-                    {
-                        hints |= ExtendClientAreaChromeHints.ManagedChromeButtons;
-                    }
-
-                    if(x.Item3)
-                    {
                         hints |= ExtendClientAreaChromeHints.SystemTitleBar;
                     }
 
-                    if(x.Item4)
+                    if(x.Item2)
                     {
                         hints |= ExtendClientAreaChromeHints.PreferSystemChromeButtons;
                     }
@@ -93,76 +89,45 @@ namespace ControlCatalog.ViewModels
                     ChromeHints = hints;
                 });
 
-            SystemTitleBarEnabled = true;
-            SystemChromeButtonsEnabled = true;
+            SystemTitleBarEnabled = true;            
             TitleBarHeight = -1;
-        }
-
-        private int _transparencyLevel;
+        }        
 
         public int TransparencyLevel
         {
             get { return _transparencyLevel; }
             set { this.RaiseAndSetIfChanged(ref _transparencyLevel, value); }
-        }
-
-        private ExtendClientAreaChromeHints _chromeHints;
+        }        
 
         public ExtendClientAreaChromeHints ChromeHints
         {
             get { return _chromeHints; }
             set { this.RaiseAndSetIfChanged(ref _chromeHints, value); }
-        }
-
-
-        private bool _extendClientAreaEnabled;
+        }        
 
         public bool ExtendClientAreaEnabled
         {
             get { return _extendClientAreaEnabled; }
             set { this.RaiseAndSetIfChanged(ref _extendClientAreaEnabled, value); }
-        }
-
-        private bool _systemTitleBarEnabled;
+        }        
 
         public bool SystemTitleBarEnabled
         {
             get { return _systemTitleBarEnabled; }
             set { this.RaiseAndSetIfChanged(ref _systemTitleBarEnabled, value); }
-        }
+        }        
 
-        private bool _systemChromeButtonsEnabled;
-
-        public bool SystemChromeButtonsEnabled
+        public bool PreferSystemChromeEnabled
         {
-            get { return _systemChromeButtonsEnabled; }
-            set { this.RaiseAndSetIfChanged(ref _systemChromeButtonsEnabled, value); }
-        }
-
-        private bool _managedChromeButtonsEnabled;
-
-        public bool ManagedChromeButtonsEnabled
-        {
-            get { return _managedChromeButtonsEnabled; }
-            set { this.RaiseAndSetIfChanged(ref _managedChromeButtonsEnabled, value); }
-        }
-
-        private bool _preferSystemChromeButtonsEnabled;
-
-        public bool PreferSystemChromeButtonsEnabled
-        {
-            get { return _preferSystemChromeButtonsEnabled; }
-            set { this.RaiseAndSetIfChanged(ref _preferSystemChromeButtonsEnabled, value); }
-        }
-
-        private double _titleBarHeight;
+            get { return _preferSystemChromeEnabled; }
+            set { this.RaiseAndSetIfChanged(ref _preferSystemChromeEnabled, value); }
+        }        
 
         public double TitleBarHeight
         {
             get { return _titleBarHeight; }
             set { this.RaiseAndSetIfChanged(ref _titleBarHeight, value); }
         }
-
 
         public WindowState WindowState
         {

@@ -6,10 +6,8 @@
              x:Class="ControlCatalog.Pages.WindowCustomizationsPage">
   <StackPanel Spacing="10"  Margin="25">
     <CheckBox Content="Extend Client Area to Decorations" IsChecked="{Binding ExtendClientAreaEnabled}" />
-    <CheckBox Content="Titlebar" IsChecked="{Binding SystemTitleBarEnabled}" />
-    <CheckBox Content="System Chrome Buttons" IsChecked="{Binding SystemChromeButtonsEnabled}" />
-    <CheckBox Content="Managed Chrome Buttons" IsChecked="{Binding ManagedChromeButtonsEnabled}" />
-    <CheckBox Content="Prefer System Chrome Buttons" IsChecked="{Binding PreferSystemChromeButtonsEnabled}" />
+    <CheckBox Content="Titlebar" IsChecked="{Binding SystemTitleBarEnabled}" />    
+    <CheckBox Content="Prefer System Chrome" IsChecked="{Binding PreferSystemChromeEnabled}" />
     <Slider Minimum="-1" Maximum="200" Value="{Binding TitleBarHeight}" />
     <ComboBox x:Name="TransparencyLevels" SelectedIndex="{Binding TransparencyLevel}">
       <ComboBoxItem>None</ComboBoxItem>
