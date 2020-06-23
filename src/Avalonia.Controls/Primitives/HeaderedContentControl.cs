@@ -1,7 +1,8 @@
-using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
+
+#nullable enable
 
 namespace Avalonia.Controls.Primitives
 {
@@ -13,36 +14,36 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Header"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> HeaderProperty =
-            AvaloniaProperty.Register<HeaderedContentControl, object>(nameof(Header));
+        public static readonly StyledProperty<object?> HeaderProperty =
+            AvaloniaProperty.Register<HeaderedContentControl, object?>(nameof(Header));
 
         /// <summary>
         /// Defines the <see cref="HeaderTemplate"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
-            AvaloniaProperty.Register<HeaderedContentControl, IDataTemplate>(nameof(HeaderTemplate));
+        public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty =
+            AvaloniaProperty.Register<HeaderedContentControl, IDataTemplate?>(nameof(HeaderTemplate));
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentControl"/> class.
         /// </summary>
         static HeaderedContentControl()
         {
-            ContentProperty.Changed.AddClassHandler<HeaderedContentControl>((x, e) => x.HeaderChanged(e));
+            HeaderProperty.Changed.AddClassHandler<HeaderedContentControl>((x, e) => x.HeaderChanged(e));
         }
 
         /// <summary>
         /// Gets or sets the header content.
         /// </summary>
-        public object Header
+        public object? Header
         {
-            get { return GetValue(HeaderProperty); }
-            set { SetValue(HeaderProperty, value); }
+            get => GetValue(HeaderProperty);
+            set => SetValue(HeaderProperty, value);
         }
 
         /// <summary>
         /// Gets the header presenter from the control's template.
         /// </summary>
-        public IContentPresenter HeaderPresenter
+        public IContentPresenter? HeaderPresenter
         {
             get;
             private set;
@@ -51,10 +52,10 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the data template used to display the header content of the control.
         /// </summary>
-        public IDataTemplate HeaderTemplate
+        public IDataTemplate? HeaderTemplate
         {
-            get { return GetValue(HeaderTemplateProperty); }
-            set { SetValue(HeaderTemplateProperty, value); }
+            get => GetValue(HeaderTemplateProperty);
+            set => SetValue(HeaderTemplateProperty, value);
         }
 
         /// <inheritdoc/>

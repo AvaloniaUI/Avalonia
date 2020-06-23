@@ -451,6 +451,7 @@ namespace Avalonia.LeakTests
 
                 AttachShowAndDetachContextMenu(window);
 
+                Mock.Get(window.PlatformImpl).ResetCalls();
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -486,6 +487,7 @@ namespace Avalonia.LeakTests
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
 
+                Mock.Get(window.PlatformImpl).ResetCalls();
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
