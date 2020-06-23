@@ -211,8 +211,6 @@ namespace Avalonia.Controls
                     {
                         w.PlatformImpl.SetExtendClientAreaChromeHints((ExtendClientAreaChromeHints)e.NewValue);
                     }
-
-                    w.HandleChromeHintsChanged((ExtendClientAreaChromeHints)e.NewValue);
                 });
 
             ExtendClientAreaTitleBarHeightHintProperty.Changed.AddClassHandler<Window>(
@@ -543,6 +541,20 @@ namespace Avalonia.Controls
             WindowDecorationMargins = PlatformImpl.ExtendedMargins;
 
             OffScreenMargin = PlatformImpl.OffScreenMargin;
+
+            if(PlatformImpl.NeedsManagedDecorations)
+            {
+                if (_managedTitleBar == null)
+                {
+                    _managedTitleBar = new TitleBar(this);
+                    _managedTitleBar.Attach();
+                }                
+            }
+            else
+            {
+                _managedTitleBar?.Detach();
+                _managedTitleBar = null;
+            }
         }
 
         /// <summary>
@@ -905,26 +917,6 @@ namespace Avalonia.Controls
             Height = clientSize.Height;
 
             base.HandleResized(clientSize);
-        }
-
-        private void HandleChromeHintsChanged (ExtendClientAreaChromeHints hints)
-        {
-            if(hints.HasFlag(ExtendClientAreaChromeHints.ManagedChromeButtons))
-            {
-                if(_managedTitleBar == null)
-                {
-                    _managedTitleBar = new TitleBar(this);
-                }
-
-                _managedTitleBar.Attach();
-            }
-            else
-            {
-                if(_managedTitleBar != null)
-                {
-                    _managedTitleBar.Detach();
-                }
-            }
         }
 
         /// <summary>

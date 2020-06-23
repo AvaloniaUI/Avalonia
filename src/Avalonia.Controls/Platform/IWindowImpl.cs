@@ -104,6 +104,8 @@ namespace Avalonia.Platform
         void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight);
 
         Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        bool NeedsManagedDecorations { get; }
         
         Thickness ExtendedMargins { get; }
 

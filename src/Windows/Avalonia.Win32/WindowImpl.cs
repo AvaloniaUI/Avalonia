@@ -1057,7 +1057,9 @@ namespace Avalonia.Win32
 
         public bool IsClientAreaExtendedToDecorations => _isClientAreaExtended;
 
-        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }        
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChromeButtons);
 
         public Thickness ExtendedMargins => _extendedMargins;
 
