@@ -12,14 +12,16 @@ namespace Avalonia.Layout
     /// </summary>
     public class LayoutManager : ILayoutManager
     {
+        private readonly ILayoutRoot _owner;
         private readonly LayoutQueue<ILayoutable> _toMeasure = new LayoutQueue<ILayoutable>(v => !v.IsMeasureValid);
         private readonly LayoutQueue<ILayoutable> _toArrange = new LayoutQueue<ILayoutable>(v => !v.IsArrangeValid);
         private readonly Action _executeLayoutPass;
         private bool _queued;
         private bool _running;
 
-        public LayoutManager()
+        public LayoutManager(ILayoutRoot owner)
         {
+            _owner = owner ?? throw new ArgumentNullException(nameof(owner));
             _executeLayoutPass = ExecuteLayoutPass;
         }
 
@@ -72,6 +74,11 @@ namespace Avalonia.Layout
             const int MaxPasses = 3;
 
             Dispatcher.UIThread.VerifyAccess();
+
+            if (!_owner.IsVisible)
+            {
+                return;
+            }
 
             if (!_running)
             {
@@ -131,13 +138,13 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc/>
-        public virtual void ExecuteInitialLayoutPass(ILayoutRoot root)
+        public virtual void ExecuteInitialLayoutPass()
         {
             try
             {
                 _running = true;
-                Measure(root);
-                Arrange(root);
+                Measure(_owner);
+                Arrange(_owner);
             }
             finally
             {
@@ -149,6 +156,17 @@ namespace Avalonia.Layout
             // whether they will need to be shown until the layout pass has run and if the
             // first guess was incorrect the layout will need to be updated).
             ExecuteLayoutPass();
+        }
+
+        [Obsolete("Call ExecuteInitialLayoutPass without parameter")]
+        public void ExecuteInitialLayoutPass(ILayoutRoot root)
+        {
+            if (root != _owner)
+            {
+                throw new ArgumentException("ExecuteInitialLayoutPass called with incorrect root.");
+            }
+
+            ExecuteInitialLayoutPass();
         }
 
         private void ExecuteMeasurePass()
@@ -228,7 +246,7 @@ namespace Avalonia.Layout
 
         private void QueueLayoutPass()
         {
-            if (!_queued && !_running)
+            if (!_queued && !_running && _owner.IsVisible)
             {
                 Dispatcher.UIThread.Post(_executeLayoutPass, DispatcherPriority.Layout);
                 _queued = true;

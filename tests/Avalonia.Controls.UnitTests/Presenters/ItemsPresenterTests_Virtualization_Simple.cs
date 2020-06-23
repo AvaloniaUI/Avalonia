@@ -1062,6 +1062,11 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
         private class TestScroller : ScrollContentPresenter, IRenderRoot, ILayoutRoot, ILogicalRoot
         {
+            public TestScroller()
+            {
+                LayoutManager = new LayoutManager(this);
+            }
+
             public IRenderer Renderer { get; }
             public Size ClientSize { get; }
             public double RenderScaling => 1;
@@ -1070,7 +1075,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             public double LayoutScaling => 1;
 
-            public ILayoutManager LayoutManager { get; } = new LayoutManager();
+            public ILayoutManager LayoutManager { get; }
 
             public IRenderTarget CreateRenderTarget() => throw new NotImplementedException();
             public void Invalidate(Rect rect) => throw new NotImplementedException();

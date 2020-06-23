@@ -323,7 +323,7 @@ namespace Avalonia.Controls.UnitTests
             public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
                 : base(impl)
             {
-                _layoutManager = layoutManager ?? new LayoutManager();
+                _layoutManager = layoutManager ?? new LayoutManager(this);
             }
 
             protected override ILayoutManager CreateLayoutManager() => _layoutManager;
