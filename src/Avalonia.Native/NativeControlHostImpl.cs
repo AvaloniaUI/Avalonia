@@ -114,16 +114,16 @@ namespace Avalonia.Native
 
             public bool IsCompatibleWith(INativeControlHostImpl host) => host is NativeControlHostImpl;
 
-            public void Hide()
+            public void HideWithSize(Size size)
             {
+                //TODO
                 _native?.Hide();
             }
             
-            public void ShowInBounds(TransformedBounds transformedBounds)
+            public void ShowInBounds(Rect bounds)
             {
                 if (_attachedTo == null)
                     throw new InvalidOperationException("Native control isn't attached to a toplevel");
-                var bounds = transformedBounds.Bounds.TransformToAABB(transformedBounds.Transform);
                 bounds = new Rect(bounds.X, bounds.Y, Math.Max(1, bounds.Width),
                     Math.Max(1, bounds.Height));
                 _native.MoveTo((float) bounds.X, (float) bounds.Y, (float) bounds.Width, (float) bounds.Height);
