@@ -337,6 +337,10 @@ namespace Avalonia.Controls.Platform
                 {
                     item.Parent.SelectedItem = null;
                 }
+                else if (!item.IsPointerOverSubMenu)
+                {
+                    item.IsSubMenuOpen = false;
+                }
             }
         }
 
