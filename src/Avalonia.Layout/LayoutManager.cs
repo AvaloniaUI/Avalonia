@@ -43,6 +43,11 @@ namespace Avalonia.Layout
 #endif
             }
 
+            if (control.VisualRoot != _owner)
+            {
+                throw new ArgumentException("Attempt to call InvalidateMeasure on wrong LayoutManager.");
+            }
+
             _toMeasure.Enqueue(control);
             _toArrange.Enqueue(control);
             QueueLayoutPass();
@@ -62,6 +67,11 @@ namespace Avalonia.Layout
 #else
                 return;
 #endif
+            }
+
+            if (control.VisualRoot != _owner)
+            {
+                throw new ArgumentException("Attempt to call InvalidateArrange on wrong LayoutManager.");
             }
 
             _toArrange.Enqueue(control);
