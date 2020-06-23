@@ -21,7 +21,7 @@
   </Style>
 
   <!--  DottedLine FocusAdorner  -->
-  <Style Selector=":is(Control).DottedLineFocusAdorner">
+  <Style Selector="Window.DottedLineFocusAdorner :is(Control)">
     <Setter Property="FocusAdorner">
       <FocusAdornerTemplate>
         <Rectangle Stroke="{StaticResource SystemControlFocusVisualPrimaryBrush}"
