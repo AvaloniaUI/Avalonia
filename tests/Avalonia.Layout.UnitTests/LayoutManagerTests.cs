@@ -24,6 +24,22 @@ namespace Avalonia.Layout.UnitTests
         }
 
         [Fact]
+        public void Doesnt_Measure_And_Arrange_InvalidateMeasured_Control_When_TopLevel_Is_Not_Visible()
+        {
+            var control = new LayoutTestControl();
+            var root = new LayoutTestRoot { Child = control, IsVisible = false };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            control.Measured = control.Arranged = false;
+
+            control.InvalidateMeasure();
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.False(control.Measured);
+            Assert.False(control.Arranged);
+        }
+
+        [Fact]
         public void Arranges_InvalidateArranged_Control()
         {
             var control = new LayoutTestControl();
