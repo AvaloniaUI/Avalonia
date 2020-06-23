@@ -76,6 +76,17 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the transform's <see cref="Matrix"/>.
         /// </summary>
-        public override Matrix Value => Matrix.CreateRotation(Matrix.ToRadians(Angle), CenterX, CenterY);
+        public override Matrix Value
+        {
+            get
+            {
+                var angle = Matrix.ToRadians(Angle);
+                var centerX = CenterX;
+                var centerY = CenterY;
+                return centerX == default && centerY == default
+                    ? Matrix.CreateRotation(angle)
+                    : Matrix.CreateRotation(angle, centerX, centerY);
+            }
+        }
     }
 }

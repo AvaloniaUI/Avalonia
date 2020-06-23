@@ -49,6 +49,9 @@
                                           ConverterParameter=sum(@VALUE \; -8 \; 79)}" />
         </Ellipse.RenderTransform>
       </Ellipse>
+      <Canvas.RenderTransform>
+        <TranslateTransform X="-48" Y="100" />
+      </Canvas.RenderTransform> 
     </Canvas>
   </StackPanel>
 </UserControl>
