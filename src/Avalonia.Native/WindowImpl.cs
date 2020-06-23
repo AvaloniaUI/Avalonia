@@ -181,6 +181,8 @@ namespace Avalonia.Native
             ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
         }
 
+        public bool NeedsManagedDecorations => false;
+
         public void ShowTaskbarIcon(bool value)
         {
             // NO OP On OSX

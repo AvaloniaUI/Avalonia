@@ -88,6 +88,8 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Thickness OffScreenMargin { get; } = new Thickness();
 
+        public bool NeedsManagedDecorations => false;
+
         public void Activate()
         {
         }

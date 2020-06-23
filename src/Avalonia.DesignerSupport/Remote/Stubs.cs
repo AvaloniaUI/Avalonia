@@ -172,6 +172,8 @@ namespace Avalonia.DesignerSupport.Remote
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
 
         public bool IsClientAreaExtendedToDecorations { get; }
+
+        public bool NeedsManagedDecorations => false;
     }
 
     class ClipboardStub : IClipboard

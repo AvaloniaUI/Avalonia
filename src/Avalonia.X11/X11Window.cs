@@ -1127,5 +1127,7 @@ namespace Avalonia.X11
         }
 
         public WindowTransparencyLevel TransparencyLevel => _transparencyHelper.CurrentLevel;
+
+        public bool NeedsManagedDecorations => false;
     }
 }
