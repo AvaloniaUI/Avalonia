@@ -23,10 +23,10 @@ namespace Avalonia.Layout
             _executeLayoutPass = ExecuteLayoutPass;
         }
 
-        public event EventHandler? LayoutUpdated;
+        public virtual event EventHandler? LayoutUpdated;
 
         /// <inheritdoc/>
-        public void InvalidateMeasure(ILayoutable control)
+        public virtual void InvalidateMeasure(ILayoutable control)
         {
             control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
@@ -47,7 +47,7 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc/>
-        public void InvalidateArrange(ILayoutable control)
+        public virtual void InvalidateArrange(ILayoutable control)
         {
             control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
@@ -67,7 +67,7 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc/>
-        public void ExecuteLayoutPass()
+        public virtual void ExecuteLayoutPass()
         {
             const int MaxPasses = 3;
 
@@ -131,7 +131,7 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc/>
-        public void ExecuteInitialLayoutPass(ILayoutRoot root)
+        public virtual void ExecuteInitialLayoutPass(ILayoutRoot root)
         {
             try
             {
