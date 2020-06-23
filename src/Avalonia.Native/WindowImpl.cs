@@ -137,7 +137,7 @@ namespace Avalonia.Native
 
             return false;
         }
-
+        
         private void InvalidateExtendedMargins ()
         {
             if(WindowState ==  WindowState.FullScreen)
@@ -152,6 +152,7 @@ namespace Avalonia.Native
             ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
         }
 
+        /// <inheritdoc/>
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
         {
             _isExtended = extendIntoClientAreaHint;
@@ -161,16 +162,13 @@ namespace Avalonia.Native
             InvalidateExtendedMargins();
         }
 
+        /// <inheritdoc/>
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {
-            if(hints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChromeButtons))
-            {
-                hints |= ExtendClientAreaChromeHints.SystemChromeButtons;
-            }
-            
+        {   
             _native.SetExtendClientAreaHints ((AvnExtendClientAreaChromeHints)hints);
         }
 
+        /// <inheritdoc/>
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
             _extendTitleBarHeight = titleBarHeight;
@@ -181,6 +179,7 @@ namespace Avalonia.Native
             ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
         }
 
+        /// <inheritdoc/>
         public bool NeedsManagedDecorations => false;
 
         public void ShowTaskbarIcon(bool value)

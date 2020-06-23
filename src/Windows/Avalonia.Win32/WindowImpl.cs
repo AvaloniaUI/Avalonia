@@ -45,7 +45,8 @@ namespace Avalonia.Win32
         private bool _isClientAreaExtended;
         private Thickness _extendedMargins;
         private Thickness _offScreenMargin;
- 
+        private double _extendTitleBarHint = -1;
+
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
 #endif
@@ -73,8 +74,8 @@ namespace Avalonia.Win32
         private Size _minSize;
         private Size _maxSize;
         private POINT _maxTrackSize;
-        private WindowImpl _parent;
-        private bool _extendClientAreaToDecorationsHint;
+        private WindowImpl _parent;        
+        private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
 
         public WindowImpl()
         {
@@ -1036,9 +1037,7 @@ namespace Avalonia.Win32
             _isClientAreaExtended = hint;
             
             ExtendClientArea();            
-        }
-
-        private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
+        }        
 
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
         {
@@ -1046,8 +1045,8 @@ namespace Avalonia.Win32
 
             ExtendClientArea();
         }
-
-        private double _extendTitleBarHint = -1;
+        
+        /// <inheritdoc/>
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
             _extendTitleBarHint = titleBarHeight;
@@ -1055,14 +1054,19 @@ namespace Avalonia.Win32
             ExtendClientArea();
         }
 
+        /// <inheritdoc/>
         public bool IsClientAreaExtendedToDecorations => _isClientAreaExtended;
 
+        /// <inheritdoc/>
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
-
+        
+        /// <inheritdoc/>
         public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChromeButtons);
 
+        /// <inheritdoc/>
         public Thickness ExtendedMargins => _extendedMargins;
 
+        /// <inheritdoc/>
         public Thickness OffScreenMargin => _offScreenMargin;
 
         private struct SavedWindowInfo
