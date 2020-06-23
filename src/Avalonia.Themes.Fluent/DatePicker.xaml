@@ -191,7 +191,7 @@
           </Button>
 
           <Popup Name="Popup" WindowManagerAddShadowHint="False"
-                 StaysOpen="True" PlacementTarget="{TemplateBinding}"
+                 StaysOpen="False" PlacementTarget="{TemplateBinding}"
                  PlacementMode="Bottom">
             <DatePickerPresenter Name="PickerPresenter" />
           </Popup>
