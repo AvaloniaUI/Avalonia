@@ -511,7 +511,9 @@ private:
                     {
                         if(_isClientAreaExtended)
                         {
-                            [button setHidden: !((_extendClientHints & AvnSystemChrome)) || (_extendClientHints & AvnPreferSystemChrome)];
+                            auto wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
+                            
+                            [button setHidden: !wantsChrome];
                         }
                         else
                         {
