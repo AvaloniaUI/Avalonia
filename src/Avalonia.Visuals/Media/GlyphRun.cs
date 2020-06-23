@@ -44,7 +44,6 @@ namespace Avalonia.Media
         /// <param name="characters">The characters.</param>
         /// <param name="glyphClusters">The glyph clusters.</param>
         /// <param name="biDiLevel">The bidi level.</param>
-        /// <param name="bounds">The bound.</param>
         public GlyphRun(
             GlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
@@ -53,8 +52,7 @@ namespace Avalonia.Media
             ReadOnlySlice<Vector> glyphOffsets = default,
             ReadOnlySlice<char> characters = default,
             ReadOnlySlice<ushort> glyphClusters = default,
-            int biDiLevel = 0,
-            Rect? bounds = null)
+            int biDiLevel = 0)
         {
             GlyphTypeface = glyphTypeface;
 
@@ -71,8 +69,6 @@ namespace Avalonia.Media
             GlyphClusters = glyphClusters;
 
             BiDiLevel = biDiLevel;
-
-            Initialize(bounds);
         }
 
         /// <summary>
@@ -182,7 +178,7 @@ namespace Avalonia.Media
             {
                 if (_glyphRunImpl == null)
                 {
-                    Initialize(null);
+                    Initialize();
                 }
 
                 return _glyphRunImpl;
@@ -517,8 +513,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Initializes the <see cref="GlyphRun"/>.
         /// </summary>
-        /// <param name="bounds">Optional pre computed bounds.</param>
-        private void Initialize(Rect? bounds)
+        private void Initialize()
         {
             if (GlyphIndices.Length == 0)
             {
@@ -541,16 +536,9 @@ namespace Avalonia.Media
 
             _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this, out var width);
 
-            if (bounds.HasValue)
-            {
-                _bounds = bounds;
-            }
-            else
-            {
-                var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * Scale;
+            var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * Scale;
 
-                _bounds = new Rect(0, 0, width, height);
-            }
+            _bounds = new Rect(0, 0, width, height);
         }
 
         void IDisposable.Dispose()

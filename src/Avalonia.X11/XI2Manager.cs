@@ -97,7 +97,7 @@ namespace Avalonia.X11
         {
             _platform = platform;
             _x11 = platform.Info;
-            _multitouch = platform.Options?.EnableMultiTouch ?? false;
+            _multitouch = platform.Options?.EnableMultiTouch ?? true;
             var devices =(XIDeviceInfo*) XIQueryDevice(_x11.Display,
                 (int)XiPredefinedDeviceId.XIAllMasterDevices, out int num);
             for (var c = 0; c < num; c++)
@@ -235,6 +235,22 @@ namespace Avalonia.X11
                 if (_pointerDevice.HasMotion(ev))
                     client.ScheduleXI2Input(new RawPointerEventArgs(client.MouseDevice, ev.Timestamp, client.InputRoot,
                         RawPointerEventType.Move, ev.Position, ev.Modifiers));
+            }
+
+            if (ev.Type == XiEventType.XI_ButtonPress && ev.Button >= 4 && ev.Button <= 7 && !ev.Emulated)
+            {
+                Vector? scrollDelta = ev.Button switch
+                {
+                    4 => new Vector(0, 1),
+                    5 => new Vector(0, -1),
+                    6 => new Vector(1, 0),
+                    7 => new Vector(-1, 0),
+                    _ => null
+                };
+
+                if (scrollDelta.HasValue)
+                    client.ScheduleXI2Input(new RawMouseWheelEventArgs(client.MouseDevice, ev.Timestamp,
+                        client.InputRoot, ev.Position, scrollDelta.Value, ev.Modifiers));
             }
 
             if (ev.Type == XiEventType.XI_ButtonPress || ev.Type == XiEventType.XI_ButtonRelease)

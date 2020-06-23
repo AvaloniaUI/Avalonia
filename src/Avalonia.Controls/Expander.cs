@@ -78,17 +78,13 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == ExpandDirectionProperty)
+            if (change.Property == ExpandDirectionProperty)
             {
-                UpdatePseudoClasses(newValue.GetValueOrDefault<ExpandDirection>());
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<ExpandDirection>());
             }
         }
 

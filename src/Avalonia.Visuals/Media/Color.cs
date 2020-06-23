@@ -89,33 +89,147 @@ namespace Avalonia.Media
         /// <returns>The <see cref="Color"/>.</returns>
         public static Color Parse(string s)
         {
-            if (s == null) throw new ArgumentNullException(nameof(s));
-            if (s.Length == 0) throw new FormatException();
-
-            if (s[0] == '#')
+            if (TryParse(s, out Color color))
             {
-                var or = 0u;
+                return color;
+            }
 
-                if (s.Length == 7)
-                {
-                    or = 0xff000000;
-                }
-                else if (s.Length != 9)
-                {
-                    throw new FormatException($"Invalid color string: '{s}'.");
-                }
+            throw new FormatException($"Invalid color string: '{s}'.");
+        }
 
-                return FromUInt32(uint.Parse(s.Substring(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture) | or);
+        /// <summary>
+        /// Parses a color string.
+        /// </summary>
+        /// <param name="s">The color string.</param>
+        /// <returns>The <see cref="Color"/>.</returns>
+        public static Color Parse(ReadOnlySpan<char> s)
+        {
+            if (TryParse(s, out Color color))
+            {
+                return color;
+            }
+
+            throw new FormatException($"Invalid color string: '{s.ToString()}'.");
+        }
+
+        /// <summary>
+        /// Parses a color string.
+        /// </summary>
+        /// <param name="s">The color string.</param>
+        /// <param name="color">The parsed color</param>
+        /// <returns>The status of the operation.</returns>
+        public static bool TryParse(string s, out Color color)
+        {
+            if (s == null)
+            {
+                throw new ArgumentNullException(nameof(s));
+            }
+
+            if (s.Length == 0)
+            {
+                throw new FormatException();
+            }
+
+            if (s[0] == '#' && TryParseInternal(s.AsSpan(), out color))
+            {
+                return true;
             }
 
             var knownColor = KnownColors.GetKnownColor(s);
 
             if (knownColor != KnownColor.None)
             {
-                return knownColor.ToColor();
+                color = knownColor.ToColor();
+
+                return true;
             }
 
-            throw new FormatException($"Invalid color string: '{s}'.");
+            color = default;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Parses a color string.
+        /// </summary>
+        /// <param name="s">The color string.</param>
+        /// <param name="color">The parsed color</param>
+        /// <returns>The status of the operation.</returns>
+        public static bool TryParse(ReadOnlySpan<char> s, out Color color)
+        {
+            if (s.Length == 0)
+            {
+                color = default;
+
+                return false;
+            }
+
+            if (s[0] == '#')
+            {
+                return TryParseInternal(s, out color);
+            }
+
+            var knownColor = KnownColors.GetKnownColor(s.ToString());
+
+            if (knownColor != KnownColor.None)
+            {
+                color = knownColor.ToColor();
+
+                return true;
+            }
+
+            color = default;
+
+            return false;
+        }
+
+        private static bool TryParseInternal(ReadOnlySpan<char> s, out Color color)
+        {
+            static bool TryParseCore(ReadOnlySpan<char> input, ref Color color)
+            {
+                var alphaComponent = 0u;
+
+                if (input.Length == 6)
+                {
+                    alphaComponent = 0xff000000;
+                }
+                else if (input.Length != 8)
+                {
+                    return false;
+                }
+
+                // TODO: (netstandard 2.1) Can use allocation free parsing.
+                if (!uint.TryParse(input.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture,
+                    out var parsed))
+                {
+                    return false;
+                }
+
+                color = FromUInt32(parsed | alphaComponent);
+
+                return true;
+            }
+
+            color = default;
+
+            ReadOnlySpan<char> input = s.Slice(1);
+
+            // Handle shorthand cases like #FFF (RGB) or #FFFF (ARGB).
+            if (input.Length == 3 || input.Length == 4)
+            {
+                var extendedLength = 2 * input.Length;
+                Span<char> extended = stackalloc char[extendedLength];
+
+                for (int i = 0; i < input.Length; i++)
+                {
+                    extended[2 * i + 0] = input[i];
+                    extended[2 * i + 1] = input[i];
+                }
+
+                return TryParseCore(extended, ref color);
+            }
+
+            return TryParseCore(input, ref color);
         }
 
         /// <summary>

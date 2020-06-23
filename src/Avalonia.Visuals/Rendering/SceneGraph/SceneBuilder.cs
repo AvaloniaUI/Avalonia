@@ -163,6 +163,10 @@ namespace Avalonia.Rendering.SceneGraph
             var visual = node.Visual;
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
+            var clipToBoundsRadius = visual is IVisualWithRoundRectClip roundRectClip ?
+                roundRectClip.ClipToBoundsRadius :
+                default;
+            
             var bounds = new Rect(visual.Bounds.Size);
             var contextImpl = (DeferredDrawingContextImpl)context.PlatformImpl;
 
@@ -201,6 +205,7 @@ namespace Avalonia.Rendering.SceneGraph
                     node.ClipBounds = clipBounds;
                     node.ClipToBounds = clipToBounds;
                     node.LayoutBounds = globalBounds;
+                    node.ClipToBoundsRadius = clipToBoundsRadius;
                     node.GeometryClip = visual.Clip?.PlatformImpl;
                     node.Opacity = opacity;
 

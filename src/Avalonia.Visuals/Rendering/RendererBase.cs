@@ -7,6 +7,7 @@ namespace Avalonia.Rendering
 {
     public class RendererBase
     {
+        private readonly bool _useManualFpsCounting;
         private static int s_fontSize = 18;
         private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
         private int _framesThisSecond;
@@ -14,8 +15,9 @@ namespace Avalonia.Rendering
         private FormattedText _fpsText;
         private TimeSpan _lastFpsUpdate;
 
-        public RendererBase()
+        public RendererBase(bool useManualFpsCounting = false)
         {
+            _useManualFpsCounting = useManualFpsCounting;
             _fpsText = new FormattedText
             {
                 Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily.Default),
@@ -23,12 +25,15 @@ namespace Avalonia.Rendering
             };
         }
 
+        protected void FpsTick() => _framesThisSecond++;
+
         protected void RenderFps(IDrawingContextImpl context, Rect clientRect, int? layerCount)
         {
             var now = _stopwatch.Elapsed;
             var elapsed = now - _lastFpsUpdate;
 
-            ++_framesThisSecond;
+            if (!_useManualFpsCounting)
+                ++_framesThisSecond;
 
             if (elapsed.TotalSeconds > 1)
             {

@@ -2,7 +2,7 @@
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
-    internal ref struct CodepointEnumerator
+    public ref struct CodepointEnumerator
     {
         private ReadOnlySlice<char> _text;
 

@@ -4,7 +4,7 @@ namespace Avalonia.OpenGL
 {
     public interface IGlPlatformSurfaceRenderingSession : IDisposable
     {
-        IGlDisplay Display { get; }
+        IGlContext Context { get; }
         PixelSize Size { get; }
         double Scaling { get; }
         bool IsYFlipped { get; }

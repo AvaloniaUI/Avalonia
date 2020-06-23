@@ -36,7 +36,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/moq/moq4/issues/988")]
         public void AddDirty_With_RenderTransform_Call_RenderRoot_Invalidate()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -59,7 +59,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/moq/moq4/issues/988")]
         public void AddDirty_For_Child_Moved_Should_Invalidate_Previous_Bounds()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -111,7 +111,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/moq/moq4/issues/988")]
         public void Should_Render_Child_In_Parent_With_RenderTransform()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -145,7 +145,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/moq/moq4/issues/988")]
         public void Should_Render_Child_In_Parent_With_RenderTransform2()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

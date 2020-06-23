@@ -45,7 +45,7 @@
 
         <ListBox Name="listBox" 
                  Items="{Binding Items}" 
-                 SelectedItems="{Binding SelectedItems}"
+                 Selection="{Binding Selection}"
                  SelectionMode="Multiple"
                  VirtualizationMode="{Binding VirtualizationMode}"
                  ScrollViewer.HorizontalScrollBarVisibility="{Binding HorizontalScrollBarVisibility, Mode=TwoWay}"

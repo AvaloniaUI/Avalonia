@@ -128,9 +128,9 @@ namespace Avalonia.Controls.Presenters
             _scrollInvalidated?.Invoke(this, e);
         }
 
-        public override void ScrollIntoView(object item)
+        public override void ScrollIntoView(int index)
         {
-            Virtualizer?.ScrollIntoView(item);
+            Virtualizer?.ScrollIntoView(index);
         }
 
         /// <inheritdoc/>

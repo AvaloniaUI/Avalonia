@@ -12,9 +12,8 @@ namespace Avalonia.Controls.UnitTests
             VisualChildren.Add(visual);
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
             OnTemplateAppliedCalled = true;
         }
     }

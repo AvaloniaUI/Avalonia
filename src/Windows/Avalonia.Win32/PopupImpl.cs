@@ -7,6 +7,9 @@ namespace Avalonia.Win32
 {
     class PopupImpl : WindowImpl, IPopupImpl
     {
+        private bool _dropShadowHint = true;
+        private Size? _maxAutoSize;
+
 
         // This is needed because we are calling virtual methods from constructors
         // One fabulous design decision leads to another, I guess
@@ -31,6 +34,28 @@ namespace Avalonia.Win32
         }
 
         protected override bool ShouldTakeFocusOnClick => false;
+
+        public override Size MaxAutoSizeHint
+        {
+            get
+            {
+                if (_maxAutoSize is null)
+                {
+                    var monitor = UnmanagedMethods.MonitorFromWindow(
+                        Hwnd,
+                        UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
+                    
+                    if (monitor != IntPtr.Zero)
+                    {
+                        var info = UnmanagedMethods.MONITORINFO.Create();
+                        UnmanagedMethods.GetMonitorInfo(monitor, ref info);
+                        _maxAutoSize = info.rcWork.ToPixelRect().ToRect(Scaling).Size;
+                    }
+                }
+
+                return _maxAutoSize ?? Size.Infinity;
+            }
+        }
 
         protected override IntPtr CreateWindowOverride(ushort atom)
         {
@@ -57,11 +82,7 @@ namespace Avalonia.Win32
                 IntPtr.Zero);
             s_parentHandle = IntPtr.Zero;
 
-            var classes = (int)UnmanagedMethods.GetClassLongPtr(result, (int)UnmanagedMethods.ClassLongIndex.GCL_STYLE);
-
-            classes |= (int)UnmanagedMethods.ClassStyles.CS_DROPSHADOW;
-
-            UnmanagedMethods.SetClassLong(result, UnmanagedMethods.ClassLongIndex.GCL_STYLE, new IntPtr(classes));
+            EnableBoxShadow(result, _dropShadowHint);
 
             return result;
         }
@@ -70,6 +91,9 @@ namespace Avalonia.Win32
         {
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
+                case UnmanagedMethods.WindowsMessage.WM_DISPLAYCHANGE:
+                    _maxAutoSize = null;
+                    goto default;
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEACTIVATE:
                     return (IntPtr)UnmanagedMethods.MouseActivate.MA_NOACTIVATE;
                 default:
@@ -102,6 +126,32 @@ namespace Avalonia.Win32
             Move(position);
             Resize(size);
             //TODO: We ignore the scaling override for now
+        }
+
+        private void EnableBoxShadow (IntPtr hwnd, bool enabled)
+        {
+            var classes = (int)UnmanagedMethods.GetClassLongPtr(hwnd, (int)UnmanagedMethods.ClassLongIndex.GCL_STYLE);
+
+            if (enabled)
+            {
+                classes |= (int)UnmanagedMethods.ClassStyles.CS_DROPSHADOW;
+            }
+            else
+            {
+                classes &= ~(int)UnmanagedMethods.ClassStyles.CS_DROPSHADOW;
+            }
+
+            UnmanagedMethods.SetClassLong(hwnd, UnmanagedMethods.ClassLongIndex.GCL_STYLE, new IntPtr(classes));
+        }
+
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+            _dropShadowHint = enabled;
+
+            if (Handle != null)
+            {
+                EnableBoxShadow(Handle.Handle, enabled);
+            }
         }
 
         public IPopupPositioner PopupPositioner { get; }

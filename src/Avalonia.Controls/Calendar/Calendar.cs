@@ -998,10 +998,10 @@ namespace Avalonia.Controls
 
 
         /// <summary>
-        /// Gets or sets a value indicating whether DatePicker should change its 
+        /// Gets or sets a value indicating whether CalendarDatePicker should change its 
         /// DisplayDate because of a SelectedDate change on its Calendar.
         /// </summary>
-        internal bool DatePickerDisplayDateFlag { get; set; }
+        internal bool CalendarDatePickerDisplayDateFlag { get; set; }
 
         internal CalendarDayButton FindDayButtonFromDay(DateTime day)
         {
@@ -2079,10 +2079,8 @@ namespace Avalonia.Controls
         /// <see cref="T:System.Windows.Controls.Calendar" /> when a new
         /// template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             Root = e.NameScope.Find<Panel>(PART_ElementRoot);
 
             SelectedMonth = DisplayDate;

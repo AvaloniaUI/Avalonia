@@ -94,10 +94,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Builds the visual tree for the row header when a new template is applied. 
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             _rootElement = e.NameScope.Find<Control>(DATAGRIDROWHEADER_elementRootName);
             if (_rootElement != null)
             {
@@ -164,7 +162,7 @@ namespace Avalonia.Controls.Primitives
         //TODO TabStop
         private void DataGridRowHeader_PointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if(e.MouseButton != MouseButton.Left)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 return;
             }

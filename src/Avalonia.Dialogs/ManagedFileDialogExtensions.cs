@@ -9,13 +9,15 @@ namespace Avalonia.Dialogs
     {
         private class ManagedSystemDialogImpl<T> : ISystemDialogImpl where T : Window, new()
         {
-            async Task<string[]> Show(SystemDialog d, Window parent)
+            async Task<string[]> Show(SystemDialog d, Window parent, ManagedFileDialogOptions options = null)
             {
-                var model = new ManagedFileChooserViewModel((FileSystemDialog)d);
+                var model = new ManagedFileChooserViewModel((FileSystemDialog)d,
+                    options ?? new ManagedFileDialogOptions());
 
                 var dialog = new T
                 {
                     Content = new ManagedFileChooser(),
+                    Title = d.Title,
                     DataContext = model
                 };
 
@@ -44,6 +46,11 @@ namespace Avalonia.Dialogs
             {
                 return (await Show(dialog, parent))?.FirstOrDefault();
             }
+            
+            public async Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent, ManagedFileDialogOptions options)
+            {
+                return await Show(dialog, parent, options);
+            }
         }
 
         public static TAppBuilder UseManagedSystemDialogs<TAppBuilder>(this TAppBuilder builder)
@@ -60,6 +67,15 @@ namespace Avalonia.Dialogs
             builder.AfterSetup(_ =>
                 AvaloniaLocator.CurrentMutable.Bind<ISystemDialogImpl>().ToSingleton<ManagedSystemDialogImpl<TWindow>>());
             return builder;
+        }
+
+        public static Task<string[]> ShowManagedAsync(this OpenFileDialog dialog, Window parent,
+            ManagedFileDialogOptions options = null) => ShowManagedAsync<Window>(dialog, parent, options);
+        
+        public static Task<string[]> ShowManagedAsync<TWindow>(this OpenFileDialog dialog, Window parent,
+            ManagedFileDialogOptions options = null) where TWindow : Window, new()
+        {
+            return new ManagedSystemDialogImpl<TWindow>().ShowFileDialogAsync(dialog, parent, options);
         }
     }
 }

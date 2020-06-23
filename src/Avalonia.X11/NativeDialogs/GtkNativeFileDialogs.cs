@@ -112,7 +112,7 @@ namespace Avalonia.X11.NativeDialogs
                 () => ShowDialog(dialog.Title, platformImpl,
                     dialog is OpenFileDialog ? GtkFileChooserAction.Open : GtkFileChooserAction.Save,
                     (dialog as OpenFileDialog)?.AllowMultiple ?? false,
-                    Path.Combine(string.IsNullOrEmpty(dialog.InitialDirectory) ? "" : dialog.InitialDirectory,
+                    Path.Combine(string.IsNullOrEmpty(dialog.Directory) ? "" : dialog.Directory,
                         string.IsNullOrEmpty(dialog.InitialFileName) ? "" : dialog.InitialFileName), dialog.Filters));
         }
 
@@ -125,7 +125,7 @@ namespace Avalonia.X11.NativeDialogs
             return await await RunOnGlibThread(async () =>
             {
                 var res = await ShowDialog(dialog.Title, platformImpl,
-                    GtkFileChooserAction.SelectFolder, false, dialog.InitialDirectory, null);
+                    GtkFileChooserAction.SelectFolder, false, dialog.Directory, null);
                 return res?.FirstOrDefault();
             });
         }

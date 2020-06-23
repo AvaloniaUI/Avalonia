@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Disposables;
+using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -45,6 +45,9 @@ namespace Avalonia.Rendering.SceneGraph
 
         /// <inheritdoc/>
         public IVisualNode Parent { get; }
+
+        /// <inheritdoc/>
+        public CornerRadius ClipToBoundsRadius { get; set; }
 
         /// <inheritdoc/>
         public Matrix Transform { get; set; }
@@ -262,6 +265,7 @@ namespace Avalonia.Rendering.SceneGraph
             {
                 Transform = Transform,
                 ClipBounds = ClipBounds,
+                ClipToBoundsRadius =  ClipToBoundsRadius,
                 ClipToBounds = ClipToBounds,
                 LayoutBounds = LayoutBounds,
                 GeometryClip = GeometryClip,
@@ -301,7 +305,10 @@ namespace Avalonia.Rendering.SceneGraph
             if (ClipToBounds)
             {
                 context.Transform = Matrix.Identity;
-                context.PushClip(ClipBounds);
+                if (ClipToBoundsRadius.IsEmpty)
+                    context.PushClip(ClipBounds);
+                else
+                    context.PushClip(new RoundedRect(ClipBounds, ClipToBoundsRadius));
             }
 
             context.Transform = Transform;
@@ -349,6 +356,11 @@ namespace Avalonia.Rendering.SceneGraph
             context.Transform = transformRestore;
         }
 
+        internal void TryPreallocateChildren(int count)
+        {
+            EnsureChildrenCreated(count);
+        }
+
         private Rect CalculateBounds()
         {
             var result = new Rect();
@@ -362,11 +374,11 @@ namespace Avalonia.Rendering.SceneGraph
             return result;
         }
 
-        private void EnsureChildrenCreated()
+        private void EnsureChildrenCreated(int capacity = 0)
         {
             if (_children == null)
             {
-                _children = new List<IVisualNode>();
+                _children = new List<IVisualNode>(capacity);
             }
         }
 
@@ -383,7 +395,15 @@ namespace Avalonia.Rendering.SceneGraph
             }
             else if (_drawOperationsCloned)
             {
-                _drawOperations = new List<IRef<IDrawOperation>>(_drawOperations.Select(op => op.Clone()));
+                var oldDrawOperations = _drawOperations;
+
+                _drawOperations = new List<IRef<IDrawOperation>>(oldDrawOperations.Count);
+
+                foreach (var drawOperation in oldDrawOperations)
+                {
+                    _drawOperations.Add(drawOperation.Clone());
+                }
+
                 _drawOperationsRefCounter.Dispose();
                 _drawOperationsRefCounter = RefCountable.Create(CreateDisposeDrawOperations(_drawOperations));
                 _drawOperationsCloned = false;
@@ -399,9 +419,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>Disposable for given draw operations.</returns>
         private static IDisposable CreateDisposeDrawOperations(List<IRef<IDrawOperation>> drawOperations)
         {
-            return Disposable.Create(() =>
+            return Disposable.Create(drawOperations, operations =>
             {
-                foreach (var operation in drawOperations)
+                foreach (var operation in operations)
                 {
                     operation.Dispose();
                 }

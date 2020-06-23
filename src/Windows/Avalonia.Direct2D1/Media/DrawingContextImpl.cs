@@ -228,10 +228,15 @@ namespace Avalonia.Direct2D1.Media
         }
 
         /// <inheritdoc />
-        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX, double radiusY)
+        public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rrect, BoxShadows boxShadow = default)
         {
-            var rc = rect.ToDirect2D();
-            var isRounded = Math.Abs(radiusX) > double.Epsilon || Math.Abs(radiusY) > double.Epsilon;
+            var rc = rrect.Rect.ToDirect2D();
+            var rect = rrect.Rect;
+            var radiusX = Math.Max(rrect.RadiiTopLeft.X,
+                Math.Max(rrect.RadiiTopRight.X, Math.Max(rrect.RadiiBottomRight.X, rrect.RadiiBottomLeft.X)));
+            var radiusY = Math.Max(rrect.RadiiTopLeft.Y,
+                Math.Max(rrect.RadiiTopRight.Y, Math.Max(rrect.RadiiBottomRight.Y, rrect.RadiiBottomLeft.Y)));
+            var isRounded = !MathUtilities.IsZero(radiusX) || !MathUtilities.IsZero(radiusY);
 
             if (brush != null)
             {
@@ -352,6 +357,12 @@ namespace Avalonia.Direct2D1.Media
         public void PushClip(Rect clip)
         {
             _deviceContext.PushAxisAlignedClip(clip.ToSharpDX(), AntialiasMode.PerPrimitive);
+        }
+
+        public void PushClip(RoundedRect clip)
+        {
+            //TODO: radius
+            _deviceContext.PushAxisAlignedClip(clip.Rect.ToDirect2D(), AntialiasMode.PerPrimitive);
         }
 
         public void PopClip()

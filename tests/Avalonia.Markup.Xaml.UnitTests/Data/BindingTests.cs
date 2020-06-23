@@ -1,6 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Data
@@ -53,6 +60,52 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
                 window.DataContext = "bar";
                 Assert.Equal("bar", textBlock.Text);
             }
+        }
+
+        [Fact]
+        public void MultiBinding_TemplatedParent_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Data;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TextBox Name='textBox' Text='Foo' Watermark='Bar'>
+        <TextBox.Template>
+            <ControlTemplate>
+                <TextPresenter Name='PART_TextPresenter'>
+                    <TextPresenter.Text>
+                        <MultiBinding Converter='{x:Static local:ConcatConverter.Instance}'>
+                            <Binding RelativeSource='{RelativeSource TemplatedParent}' Path='Text'/>
+                            <Binding RelativeSource='{RelativeSource TemplatedParent}' Path='Watermark'/>
+                        </MultiBinding>
+                    </TextPresenter.Text>
+                </TextPresenter>
+            </ControlTemplate>
+        </TextBox.Template>
+    </TextBox>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBox = window.FindControl<TextBox>("textBox");
+
+                window.ApplyTemplate();
+                textBox.ApplyTemplate();
+
+                var target = (TextPresenter)textBox.GetVisualChildren().Single();
+                Assert.Equal("Foo,Bar", target.Text);
+            }
+        }
+    }
+
+    public class ConcatConverter : IMultiValueConverter
+    {
+        public static ConcatConverter Instance { get; } = new ConcatConverter();
+
+        public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+        {
+            return string.Join(",", values);
         }
     }
 }

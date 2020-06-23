@@ -139,7 +139,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public virtual void ScrollIntoView(object item)
+        public virtual void ScrollIntoView(int index)
         {
         }
 

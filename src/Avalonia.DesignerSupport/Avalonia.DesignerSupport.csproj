@@ -8,8 +8,11 @@
     -->
     <Version>0.7.0</Version>
     <NoWarn>CS1591</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Remote\HtmlTransport\webapp\build\**\*.gz" />
+    <EmbeddedResource Condition="'$(Configuration)' == 'Debug'" Remove="Remote\HtmlTransport\webapp\build\**\*.map.gz"/>
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />

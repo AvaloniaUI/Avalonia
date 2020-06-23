@@ -19,5 +19,10 @@ namespace Avalonia.Controls
         /// The window is maximized.
         /// </summary>
         Maximized,
+
+        /// <summary>
+        /// The window is fullscreen.
+        /// </summary>
+        FullScreen,
     }
 }

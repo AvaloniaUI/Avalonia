@@ -40,7 +40,7 @@ namespace Avalonia.Build.Tasks
         }
         
         public static CompileResult Compile(IBuildEngine engine, string input, string[] references, string projectDirectory,
-            string output, bool verifyIl)
+            string output, bool verifyIl, MessageImportance logImportance)
         {
             var typeSystem = new CecilTypeSystem(references.Concat(new[] {input}), input);
             var asm = typeSystem.TargetAssemblyDefinition;
@@ -121,6 +121,8 @@ namespace Avalonia.Build.Tasks
                 {
                     try
                     {
+                        engine.LogMessage($"XAMLIL: {res.Name} -> {res.Uri}", logImportance);
+
                         // StreamReader is needed here to handle BOM
                         var xaml = new StreamReader(new MemoryStream(res.FileContents)).ReadToEnd();
                         var parsed = XDocumentXamlIlParser.Parse(xaml);

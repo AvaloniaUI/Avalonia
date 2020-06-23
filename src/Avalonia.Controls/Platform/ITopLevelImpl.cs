@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Rendering;
@@ -59,6 +60,11 @@ namespace Avalonia.Platform
         Action<double> ScalingChanged { get; set; }
 
         /// <summary>
+        /// Gets or sets a method called when the toplevel's TransparencyLevel changes.
+        /// </summary>
+        Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
+        /// <summary>
         /// Creates a new renderer for the toplevel.
         /// </summary>
         /// <param name="root">The toplevel.</param>
@@ -111,5 +117,15 @@ namespace Avalonia.Platform
         IMouseDevice MouseDevice { get; }
 
         IPopupImpl CreatePopup();
+
+        /// <summary>
+        /// Sets the <see cref="WindowTransparencyLevel"/> hint of the TopLevel.
+        /// </summary>
+        void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel);
+
+        /// <summary>
+        /// Gets the current <see cref="WindowTransparencyLevel"/> of the TopLevel.
+        /// </summary>
+        WindowTransparencyLevel TransparencyLevel { get; }
     }
 }

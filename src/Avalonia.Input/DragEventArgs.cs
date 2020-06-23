@@ -52,8 +52,10 @@ namespace Avalonia.Input
             Data = data;
             _target = target;
             _targetLocation = targetLocation;
-            Modifiers = (InputModifiers)keyModifiers;
             KeyModifiers = keyModifiers;
+#pragma warning disable CS0618 // Type or member is obsolete
+            Modifiers = (InputModifiers)keyModifiers;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
     }

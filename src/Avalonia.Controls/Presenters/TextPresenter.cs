@@ -74,16 +74,18 @@ namespace Avalonia.Controls.Presenters
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(PasswordCharProperty,
-                SelectionBrushProperty, SelectionForegroundBrushProperty,
-                SelectionStartProperty, SelectionEndProperty);
+            AffectsRender<TextPresenter>(SelectionBrushProperty);
+            AffectsMeasure<TextPresenter>(TextProperty, PasswordCharProperty, 
+                TextAlignmentProperty, TextWrappingProperty, TextBlock.FontSizeProperty,
+                TextBlock.FontStyleProperty, TextBlock.FontWeightProperty, TextBlock.FontFamilyProperty);
 
-            Observable.Merge(
-                TextProperty.Changed,
-                SelectionStartProperty.Changed,
-                SelectionEndProperty.Changed,
-                PasswordCharProperty.Changed
-            ).AddClassHandler<TextPresenter>((x,_) => x.InvalidateFormattedText());
+            Observable.Merge(TextProperty.Changed, TextBlock.ForegroundProperty.Changed,
+                TextAlignmentProperty.Changed, TextWrappingProperty.Changed,
+                TextBlock.FontSizeProperty.Changed, TextBlock.FontStyleProperty.Changed, 
+                TextBlock.FontWeightProperty.Changed, TextBlock.FontFamilyProperty.Changed,
+                SelectionStartProperty.Changed, SelectionEndProperty.Changed,
+                SelectionForegroundBrushProperty.Changed, PasswordCharProperty.Changed
+            ).AddClassHandler<TextPresenter>((x, _) => x.InvalidateFormattedText());
 
             CaretIndexProperty.Changed.AddClassHandler<TextPresenter>((x, e) => x.CaretIndexChanged((int)e.NewValue));
         }
@@ -184,7 +186,7 @@ namespace Avalonia.Controls.Presenters
         {
             get
             {
-                return _formattedText ?? (_formattedText = CreateFormattedText(Bounds.Size, Text));
+                return _formattedText ?? (_formattedText = CreateFormattedText());
             }
         }
 
@@ -219,7 +221,7 @@ namespace Avalonia.Controls.Presenters
             get => GetValue(SelectionForegroundBrushProperty);
             set => SetValue(SelectionForegroundBrushProperty, value);
         }
-        
+
         public IBrush CaretBrush
         {
             get => GetValue(CaretBrushProperty);
@@ -284,13 +286,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         protected void InvalidateFormattedText()
         {
-            if (_formattedText != null)
-            {
-                _constraint = _formattedText.Constraint;
-                _formattedText = null;
-            }
-
-            InvalidateVisual();
+            _formattedText = null;
         }
 
         /// <summary>
@@ -306,12 +302,15 @@ namespace Avalonia.Controls.Presenters
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            FormattedText.Constraint = Bounds.Size;
             context.DrawText(Foreground, new Point(), FormattedText);
         }
 
         public override void Render(DrawingContext context)
         {
+            FormattedText.Constraint = Bounds.Size;
+
+            _constraint = Bounds.Size;
+
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
 
@@ -319,10 +318,6 @@ namespace Avalonia.Controls.Presenters
             {
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
-
-                // issue #600: set constraint before any FormattedText manipulation
-                //             see base.Render(...) implementation
-                FormattedText.Constraint = _constraint;
 
                 var rects = FormattedText.HitTestTextRange(start, length);
 
@@ -424,20 +419,20 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Creates the <see cref="FormattedText"/> used to render the text.
         /// </summary>
-        /// <param name="constraint">The constraint of the text.</param>
-        /// <param name="text">The text to generated the <see cref="FormattedText"/> for.</param>
         /// <returns>A <see cref="FormattedText"/> object.</returns>
-        protected virtual FormattedText CreateFormattedText(Size constraint, string text)
+        protected virtual FormattedText CreateFormattedText()
         {
             FormattedText result = null;
 
+            var text = Text;
+
             if (PasswordChar != default(char))
             {
-                result = CreateFormattedTextInternal(constraint, new string(PasswordChar, text?.Length ?? 0));
+                result = CreateFormattedTextInternal(_constraint, new string(PasswordChar, text?.Length ?? 0));
             }
             else
             {
-                result = CreateFormattedTextInternal(constraint, text);
+                result = CreateFormattedTextInternal(_constraint, text);
             }
 
             var selectionStart = SelectionStart;
@@ -467,12 +462,14 @@ namespace Avalonia.Controls.Presenters
             {
                 if (TextWrapping == TextWrapping.Wrap)
                 {
-                    FormattedText.Constraint = new Size(availableSize.Width, double.PositiveInfinity);
+                    _constraint = new Size(availableSize.Width, double.PositiveInfinity);
                 }
                 else
                 {
-                    FormattedText.Constraint = Size.Infinity;
+                    _constraint = Size.Infinity;
                 }
+
+                _formattedText = null;
 
                 return FormattedText.Bounds.Size;
             }

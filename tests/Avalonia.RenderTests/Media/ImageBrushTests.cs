@@ -192,11 +192,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             await RenderToFile(target);
             CompareImages();
         }
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
+
         [Fact]
-#endif
         public async Task ImageBrush_Fill_NoTile()
         {
             Decorator target = new Decorator
@@ -219,11 +216,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public async Task ImageBrush_Uniform_NoTile()
         {
             Decorator target = new Decorator
@@ -246,11 +239,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public async Task ImageBrush_UniformToFill_NoTile()
         {
             Decorator target = new Decorator

@@ -184,7 +184,7 @@ namespace Avalonia.Direct2D1.RenderTests
 
             public void Signal(DispatcherPriority prio)
             {
-                throw new NotImplementedException();
+                // No-op
             }
 
             public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)

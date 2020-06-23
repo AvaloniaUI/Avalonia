@@ -28,7 +28,7 @@ namespace Avalonia.Native
                 _native.OpenFileDialog(nativeParent,
                                         events, ofd.AllowMultiple,
                                         ofd.Title ?? "",
-                                        ofd.InitialDirectory ?? "",
+                                        ofd.Directory ?? "",
                                         ofd.InitialFileName ?? "",
                                         string.Join(";", dialog.Filters.SelectMany(f => f.Extensions)));
             }
@@ -37,7 +37,7 @@ namespace Avalonia.Native
                 _native.SaveFileDialog(nativeParent,
                                         events,
                                         dialog.Title ?? "",
-                                        dialog.InitialDirectory ?? "",
+                                        dialog.Directory ?? "",
                                         dialog.InitialFileName ?? "",
                                         string.Join(";", dialog.Filters.SelectMany(f => f.Extensions)));
             }
@@ -51,7 +51,7 @@ namespace Avalonia.Native
 
             var nativeParent = GetNativeWindow(parent);
 
-            _native.SelectFolderDialog(nativeParent, events, dialog.Title ?? "", dialog.InitialDirectory ?? "");
+            _native.SelectFolderDialog(nativeParent, events, dialog.Title ?? "", dialog.Directory ?? "");
 
             return events.Task.ContinueWith(t => { events.Dispose(); return t.Result.FirstOrDefault(); });
         }

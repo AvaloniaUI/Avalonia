@@ -2,6 +2,8 @@ using System;
 using Avalonia.Logging;
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Layout
 {
     /// <summary>
@@ -130,6 +132,7 @@ namespace Avalonia.Layout
         private bool _measuring;
         private Size? _previousMeasure;
         private Rect? _previousArrange;
+        private EventHandler? _layoutUpdated;
 
         /// <summary>
         /// Initializes static members of the <see cref="Layoutable"/> class.
@@ -152,7 +155,28 @@ namespace Avalonia.Layout
         /// <summary>
         /// Occurs when a layout pass completes for the control.
         /// </summary>
-        public event EventHandler LayoutUpdated;
+        public event EventHandler? LayoutUpdated
+        {
+            add
+            {
+                if (_layoutUpdated is null && VisualRoot is ILayoutRoot r)
+                {
+                    r.LayoutManager.LayoutUpdated += LayoutManagedLayoutUpdated;
+                }
+
+                _layoutUpdated += value;
+            }
+
+            remove
+            {
+                _layoutUpdated -= value;
+
+                if (_layoutUpdated is null && VisualRoot is ILayoutRoot r)
+                {
+                    r.LayoutManager.LayoutUpdated -= LayoutManagedLayoutUpdated;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the width of the element.
@@ -325,7 +349,7 @@ namespace Avalonia.Layout
                 DesiredSize = desiredSize;
                 _previousMeasure = availableSize;
 
-                Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Layout, this, "Measure requested {DesiredSize}", DesiredSize);
+                Logger.TryGet(LogEventLevel.Verbose, LogArea.Layout)?.Log(this, "Measure requested {DesiredSize}", DesiredSize);
 
                 if (DesiredSize != previousDesiredSize)
                 {
@@ -352,16 +376,13 @@ namespace Avalonia.Layout
 
             if (!IsArrangeValid || _previousArrange != rect)
             {
-                Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Layout, this, "Arrange to {Rect} ", rect);
+                Logger.TryGet(LogEventLevel.Verbose, LogArea.Layout)?.Log(this, "Arrange to {Rect} ", rect);
 
                 IsArrangeValid = true;
                 ArrangeCore(rect);
                 _previousArrange = rect;
-
-                LayoutUpdated?.Invoke(this, EventArgs.Empty);
             }
         }
-
 
         /// <summary>
         /// Called by InvalidateMeasure
@@ -377,7 +398,7 @@ namespace Avalonia.Layout
         {
             if (IsMeasureValid)
             {
-                Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Layout, this, "Invalidated measure");
+                Logger.TryGet(LogEventLevel.Verbose, LogArea.Layout)?.Log(this, "Invalidated measure");
 
                 IsMeasureValid = false;
                 IsArrangeValid = false;
@@ -398,7 +419,7 @@ namespace Avalonia.Layout
         {
             if (IsArrangeValid)
             {
-                Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Layout, this, "Invalidated arrange");
+                Logger.TryGet(LogEventLevel.Verbose, LogArea.Layout)?.Log(this, "Invalidated arrange");
 
                 IsArrangeValid = false;
                 (VisualRoot as ILayoutRoot)?.LayoutManager?.InvalidateArrange(this);
@@ -545,8 +566,8 @@ namespace Avalonia.Layout
                 if (UseLayoutRounding)
                 {
                     var scale = GetLayoutScale();
-                    width = Math.Ceiling(width * scale) / scale;
-                    height = Math.Ceiling(height * scale) / scale;
+                    width = LayoutHelper.RoundLayoutValue(width, scale);
+                    height = LayoutHelper.RoundLayoutValue(height, scale);
                 }
 
                 return NonNegative(new Size(width, height).Inflate(margin));
@@ -623,12 +644,8 @@ namespace Avalonia.Layout
 
                 if (useLayoutRounding)
                 {
-                    size = new Size(
-                        Math.Ceiling(size.Width * scale) / scale, 
-                        Math.Ceiling(size.Height * scale) / scale);
-                    availableSizeMinusMargins = new Size(
-                        Math.Ceiling(availableSizeMinusMargins.Width * scale) / scale, 
-                        Math.Ceiling(availableSizeMinusMargins.Height * scale) / scale);
+                    size = LayoutHelper.RoundLayoutSize(size, scale, scale);
+                    availableSizeMinusMargins = LayoutHelper.RoundLayoutSize(availableSizeMinusMargins, scale, scale);
                 }
 
                 size = ArrangeOverride(size).Constrain(size);
@@ -657,8 +674,8 @@ namespace Avalonia.Layout
 
                 if (useLayoutRounding)
                 {
-                    originX = Math.Floor(originX * scale) / scale;
-                    originY = Math.Floor(originY * scale) / scale;
+                    originX = LayoutHelper.RoundLayoutValue(originX, scale);
+                    originY = LayoutHelper.RoundLayoutValue(originY, scale);
                 }
 
                 Bounds = new Rect(originX, originY, size.Width, size.Height);
@@ -696,6 +713,26 @@ namespace Avalonia.Layout
             InvalidateMeasure();
         }
 
+        protected override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTreeCore(e);
+
+            if (_layoutUpdated is object && e.Root is ILayoutRoot r)
+            {
+                r.LayoutManager.LayoutUpdated += LayoutManagedLayoutUpdated;
+            }
+        }
+
+        protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTreeCore(e);
+
+            if (_layoutUpdated is object && e.Root is ILayoutRoot r)
+            {
+                r.LayoutManager.LayoutUpdated -= LayoutManagedLayoutUpdated;
+            }
+        }
+
         /// <inheritdoc/>
         protected sealed override void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
@@ -703,6 +740,13 @@ namespace Avalonia.Layout
 
             base.OnVisualParentChanged(oldParent, newParent);
         }
+
+        /// <summary>
+        /// Called when the layout manager raises a LayoutUpdated event.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The event args.</param>
+        private void LayoutManagedLayoutUpdated(object sender, EventArgs e) => _layoutUpdated?.Invoke(this, e);
 
         /// <summary>
         /// Tests whether any of a <see cref="Rect"/>'s properties include negative values,

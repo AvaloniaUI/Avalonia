@@ -78,7 +78,7 @@ namespace Avalonia.Rendering
             }
             catch (RenderTargetCorruptedException ex)
             {
-                Logger.TryGet(LogEventLevel.Information)?.Log("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                Logger.TryGet(LogEventLevel.Information, LogArea.Animations)?.Log(this, "Render target was corrupted. Exception: {0}", ex);
                 _renderTarget.Dispose();
                 _renderTarget = null;
             }
@@ -289,7 +289,11 @@ namespace Avalonia.Rendering
 
                 using (context.PushPostTransform(m))
                 using (context.PushOpacity(opacity))
-                using (clipToBounds ? context.PushClip(bounds) : default(DrawingContext.PushedState))
+                using (clipToBounds 
+                    ? visual is IVisualWithRoundRectClip roundClipVisual 
+                        ? context.PushClip(new RoundedRect(bounds, roundClipVisual.ClipToBoundsRadius))
+                        : context.PushClip(bounds) 
+                    : default(DrawingContext.PushedState))
                 using (visual.Clip != null ? context.PushGeometryClip(visual.Clip) : default(DrawingContext.PushedState))
                 using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default(DrawingContext.PushedState))
                 using (context.PushTransformContainer())

@@ -121,7 +121,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc />
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             IncreaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
             DecreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
@@ -205,17 +205,13 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == ButtonSpinnerLocationProperty)
+            if (change.Property == ButtonSpinnerLocationProperty)
             {
-                UpdatePseudoClasses(newValue.GetValueOrDefault<Location>());
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Location>());
             }
         }
 

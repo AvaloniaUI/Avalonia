@@ -8,5 +8,7 @@ namespace Avalonia.Platform
     public interface IPopupImpl : IWindowBaseImpl
     {
         IPopupPositioner PopupPositioner { get; }
+
+        void SetWindowManagerAddShadowHint(bool enabled);
     }
 }

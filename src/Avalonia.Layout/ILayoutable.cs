@@ -1,5 +1,7 @@
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Layout
 {
     /// <summary>

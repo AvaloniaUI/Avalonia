@@ -49,6 +49,7 @@ namespace Avalonia.Controls
         static TreeViewItem()
         {
             SelectableMixin.Attach<TreeViewItem>(IsSelectedProperty);
+            PressedMixin.Attach<TreeViewItem>();
             FocusableProperty.OverrideDefaultValue<TreeViewItem>(true);
             ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);
             ParentProperty.Changed.AddClassHandler<TreeViewItem>((o, e) => o.OnParentChanged(e));
@@ -162,9 +163,8 @@ namespace Avalonia.Controls
             // Don't call base.OnKeyDown - let events bubble up to containing TreeView.
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
             _header = e.NameScope.Find<IControl>("PART_Header");
         }
 

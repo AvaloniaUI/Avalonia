@@ -205,52 +205,20 @@ namespace Avalonia
         /// each styled element may in addition define its own styles which are applied to the styled element
         /// itself and its children.
         /// </remarks>
-        public Styles Styles
-        {
-            get
-            {
-                if (_styles is null)
-                {
-                    _styles = new Styles(this);
-                    _styles.ResourcesChanged += ThisResourcesChanged;
-                    NotifyResourcesChanged(new ResourcesChangedEventArgs());
-                }
-
-                return _styles;
-            }
-        }
+        public Styles Styles => _styles ??= new Styles(this);
 
         /// <summary>
         /// Gets or sets the styled element's resource dictionary.
         /// </summary>
         public IResourceDictionary Resources
         {
-            get => _resources ?? (Resources = new ResourceDictionary());
+            get => _resources ??= new ResourceDictionary(this);
             set
             {
                 value = value ?? throw new ArgumentNullException(nameof(value));
-
-                var hadResources = false;
-
-                if (_resources != null)
-                {
-                    (_resources as ISetResourceParent)?.SetParent(null);
-                    hadResources = _resources.Count > 0;
-                    _resources.ResourcesChanged -= ThisResourcesChanged;
-                }
-
+                _resources?.RemoveOwner(this);
                 _resources = value;
-                _resources.ResourcesChanged += ThisResourcesChanged;
-
-                if (value is ISetResourceParent setParent && setParent.ResourceParent == null)
-                {
-                    setParent.SetParent(this);
-                }
-
-                if (hadResources || _resources.Count > 0)
-                {
-                    NotifyResourcesChanged(new ResourcesChangedEventArgs());
-                }
+                _resources.AddOwner(this);
             }
         }
 
@@ -312,10 +280,8 @@ namespace Avalonia
         IAvaloniaReadOnlyList<ILogical> ILogical.LogicalChildren => LogicalChildren;
 
         /// <inheritdoc/>
-        bool IResourceProvider.HasResources => _resources?.Count > 0 || Styles.HasResources;
-
-        /// <inheritdoc/>
-        IResourceNode? IResourceNode.ResourceParent => ((IStyleHost)this).StylingParent as IResourceNode;
+        bool IResourceNode.HasResources => (_resources?.HasResources ?? false) ||
+            (((IResourceNode?)_styles)?.HasResources ?? false);
 
         /// <inheritdoc/>
         IAvaloniaReadOnlyList<string> IStyleable.Classes => Classes;
@@ -407,7 +373,10 @@ namespace Avalonia
         void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
 
         /// <inheritdoc/>
-        bool IResourceProvider.TryGetResource(object key, out object? value)
+        void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
+
+        /// <inheritdoc/>
+        bool IResourceNode.TryGetResource(object key, out object? value)
         {
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||
@@ -442,23 +411,24 @@ namespace Avalonia
                     OnDetachedFromLogicalTreeCore(e);
                 }
 
-                if (old != null)
-                {
-                    old.ResourcesChanged -= ThisResourcesChanged;
-                }
-                if (Parent != null)
-                {
-                    Parent.ResourcesChanged += ThisResourcesChanged;
-                }
-                
-                NotifyResourcesChanged(new ResourcesChangedEventArgs());
-
                 var newRoot = FindLogicalRoot(this);
 
                 if (newRoot is object)
                 {
                     var e = new LogicalTreeAttachmentEventArgs(newRoot, this, parent);
                     OnAttachedToLogicalTreeCore(e);
+                }
+                else if (parent is null)
+                {
+                    // If we were attached to the logical tree, we piggyback on the tree traversal
+                    // there to raise resources changed notifications. If we're being removed from
+                    // the logical tree, then traverse the tree raising notifications now.
+                    //
+                    // We don't raise resources changed notifications if we're being attached to a 
+                    // non-rooted control beacuse it's unlikely that dynamic resources need to be 
+                    // correct until the control is added to the tree, and it causes a *lot* of
+                    // notifications.
+                    NotifyResourcesChanged();
                 }
 
 #nullable disable
@@ -524,6 +494,28 @@ namespace Avalonia
 
                 case NotifyCollectionChangedAction.Reset:
                     throw new NotSupportedException("Reset should not be signaled on LogicalChildren collection");
+            }
+        }
+
+        /// <summary>
+        /// Notifies child controls that a change has been made to resources that apply to them.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            if (_logicalChildren is object)
+            {
+                var count = _logicalChildren.Count;
+
+                if (count > 0)
+                {
+                    e ??= ResourcesChangedEventArgs.Empty;
+
+                    for (var i = 0; i < count; ++i)
+                    {
+                        _logicalChildren[i].NotifyResourcesChanged(e);
+                    }
+                }
             }
         }
 
@@ -656,6 +648,7 @@ namespace Avalonia
                 _logicalRoot = e.Root;
 
                 ApplyStyling();
+                NotifyResourcesChanged(propagate: false);
 
                 OnAttachedToLogicalTree(e);
                 AttachedToLogicalTree?.Invoke(this, e);
@@ -696,8 +689,7 @@ namespace Avalonia
 #if DEBUG
                 if (((INotifyCollectionChangedDebug)Classes).GetCollectionChangedSubscribers()?.Length > 0)
                 {
-                    Logger.TryGet(LogEventLevel.Warning)?.Log(
-                        LogArea.Control,
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
                         this,
                         "{Type} detached from logical tree but still has class listeners",
                         GetType());
@@ -804,29 +796,21 @@ namespace Avalonia
             }
         }
 
-        private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        private void NotifyResourcesChanged(
+            ResourcesChangedEventArgs? e = null,
+            bool propagate = true)
         {
-            if (_notifyingResourcesChanged)
+            if (ResourcesChanged is object)
             {
-                return;
+                e ??= ResourcesChangedEventArgs.Empty;
+                ResourcesChanged(this, e);
             }
 
-            try
+            if (propagate)
             {
-                _notifyingResourcesChanged = true;
-                (_resources as ISetResourceParent)?.ParentResourcesChanged(e);
-                (_styles as ISetResourceParent)?.ParentResourcesChanged(e);
-                ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+                e ??= ResourcesChangedEventArgs.Empty;
+                NotifyChildResourcesChanged(e);
             }
-            finally
-            {
-                _notifyingResourcesChanged = false;
-            }
-        }
-
-        private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
-        {
-            NotifyResourcesChanged(e);
         }
 
         private static IReadOnlyList<IStyle> RecurseStyles(IReadOnlyList<IStyle> styles)

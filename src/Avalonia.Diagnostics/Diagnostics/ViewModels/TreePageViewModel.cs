@@ -6,28 +6,40 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class TreePageViewModel : ViewModelBase, IDisposable
     {
-        private TreeNode _selected;
+        private TreeNode _selectedNode;
         private ControlDetailsViewModel _details;
         private string _propertyFilter;
 
         public TreePageViewModel(TreeNode[] nodes)
         {
             Nodes = nodes;
-        }
+            Selection = new SelectionModel
+            { 
+                SingleSelect = true,
+                Source = Nodes 
+            };
+
+            Selection.SelectionChanged += (s, e) =>
+            {
+                SelectedNode = (TreeNode)Selection.SelectedItem;
+            };
+       }
 
         public TreeNode[] Nodes { get; protected set; }
 
+        public SelectionModel Selection { get; }
+
         public TreeNode SelectedNode
         {
-            get => _selected;
-            set
+            get => _selectedNode;
+            private set
             {
                 if (Details != null)
                 {
                     _propertyFilter = Details.PropertyFilter;
                 }
 
-                if (RaiseAndSetIfChanged(ref _selected, value))
+                if (RaiseAndSetIfChanged(ref _selectedNode, value))
                 {
                     Details = value != null ?
                         new ControlDetailsViewModel(value.Visual, _propertyFilter) :
@@ -83,8 +95,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (node != null)
             {
-                SelectedNode = node;
                 ExpandNode(node.Parent);
+                Selection.SelectedIndex = node.Index;
             }
         }
 

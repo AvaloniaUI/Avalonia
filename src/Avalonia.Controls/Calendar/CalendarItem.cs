@@ -268,10 +268,8 @@ namespace Avalonia.Controls.Primitives
         /// <see cref="T:System.Windows.Controls.Primitives.CalendarItem" />
         /// when a new template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-            
             HeaderButton = e.NameScope.Find<Button>(PART_ElementHeaderButton);
             PreviousButton = e.NameScope.Find<Button>(PART_ElementPreviousButton);
             NextButton = e.NameScope.Find<Button>(PART_ElementNextButton);
@@ -911,7 +909,7 @@ namespace Avalonia.Controls.Primitives
                         case CalendarSelectionMode.SingleDate:
                             {
                                 DateTime selectedDate = (DateTime)b.DataContext;
-                                Owner.DatePickerDisplayDateFlag = true;
+                                Owner.CalendarDatePickerDisplayDateFlag = true;
                                 if (Owner.SelectedDates.Count == 0)
                                 {
                                     Owner.SelectedDates.Add(selectedDate);
@@ -983,7 +981,7 @@ namespace Avalonia.Controls.Primitives
                                 }
                             case CalendarSelectionMode.SingleDate:
                                 {
-                                    Owner.DatePickerDisplayDateFlag = true;
+                                    Owner.CalendarDatePickerDisplayDateFlag = true;
                                     if (Owner.SelectedDates.Count == 0)
                                     {
                                         Owner.SelectedDates.Add(selectedDate);

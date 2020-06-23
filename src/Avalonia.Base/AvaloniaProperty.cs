@@ -497,6 +497,13 @@ namespace Avalonia
         internal abstract object RouteGetValue(IAvaloniaObject o);
 
         /// <summary>
+        /// Routes an untyped GetBaseValue call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        /// <param name="maxPriority">The maximum priority for the value.</param>
+        internal abstract object RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority);
+
+        /// <summary>
         /// Routes an untyped SetValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>

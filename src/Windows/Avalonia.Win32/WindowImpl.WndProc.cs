@@ -79,12 +79,6 @@ namespace Avalonia.Win32
                     s_instances.Remove(this);
                     Closed?.Invoke();
 
-                    if (_parent != null)
-                    {
-                        _parent._disabledBy.Remove(this);
-                        _parent.UpdateEnabled();
-                    }
-
                     _mouseDevice.Dispose();
                     _touchDevice?.Dispose();
                     //Free other resources
@@ -403,6 +397,8 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_GETMINMAXINFO:
                 {
                     MINMAXINFO mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
+                    
+                    _maxTrackSize = mmi.ptMaxTrackSize;
 
                     if (_minSize.Width > 0)
                     {

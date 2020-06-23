@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -236,6 +237,9 @@ namespace Avalonia.Win32.Interop.Wpf
         Action<Rect> ITopLevelImpl.Paint { get; set; }
         Action<Size> ITopLevelImpl.Resized { get; set; }
         Action<double> ITopLevelImpl.ScalingChanged { get; set; }
+
+        Action<WindowTransparencyLevel> ITopLevelImpl.TransparencyLevelChanged { get; set; }
+
         Action ITopLevelImpl.Closed { get; set; }
         public new event Action LostFocus;
 
@@ -248,5 +252,9 @@ namespace Avalonia.Win32.Interop.Wpf
         }
 
         public IPopupImpl CreatePopup() => null;
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
     }
 }

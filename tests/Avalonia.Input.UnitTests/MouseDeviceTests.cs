@@ -14,6 +14,7 @@ namespace Avalonia.Input.UnitTests
 {
     public class MouseDeviceTests
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         [Fact]
         public void Capture_Is_Transferred_To_Parent_When_Control_Removed()
         {
@@ -31,6 +32,7 @@ namespace Avalonia.Input.UnitTests
 
             Assert.Same(root, target.Captured);
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         [Fact]
         public void MouseMove_Should_Update_IsPointerOver()
@@ -207,7 +209,9 @@ namespace Avalonia.Input.UnitTests
 
                 SendMouseMove(inputManager, root, new Point(11, 11));
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 var result = root.MouseDevice.GetPosition(root.Child);
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal(new Point(1, 11), result);
             }
         }

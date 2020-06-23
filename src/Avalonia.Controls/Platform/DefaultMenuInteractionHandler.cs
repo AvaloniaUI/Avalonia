@@ -6,6 +6,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 #nullable enable
 
@@ -339,14 +340,19 @@ namespace Avalonia.Controls.Platform
                 {
                     item.Parent.SelectedItem = null;
                 }
+                else if (!item.IsPointerOverSubMenu)
+                {
+                    item.IsSubMenuOpen = false;
+                }
             }
         }
 
         protected internal virtual void PointerPressed(object sender, PointerPressedEventArgs e)
         {
             var item = GetMenuItem(e.Source as IControl);
+            var visual = (IVisual)sender;
 
-            if (e.MouseButton == MouseButton.Left && item?.HasSubMenu == true)
+            if (e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed && item?.HasSubMenu == true)
             {
                 if (item.IsSubMenuOpen)
                 {
@@ -399,7 +405,7 @@ namespace Avalonia.Controls.Platform
             {
                 var control = e.Source as ILogical;
 
-                if (!Menu.IsLogicalParentOf(control))
+                if (!Menu.IsLogicalAncestorOf(control))
                 {
                     Menu.Close();
                 }

@@ -76,7 +76,7 @@ namespace Avalonia.VisualTree
         /// <summary>
         /// Gets or sets the render transform of the control.
         /// </summary>
-        Transform RenderTransform { get; set; }
+        ITransform RenderTransform { get; set; }
 
         /// <summary>
         /// Gets or sets the render transform origin of the control.

@@ -24,13 +24,18 @@
             </Style>
           </Button.Styles>          
         </Button>
-      </StackPanel>
+        <RepeatButton Name="RepeatButton">
+          <TextBlock Name="RepeatButtonTextBlock" Text="Repeat Button: 0" />
+        </RepeatButton>
+        <ToggleButton Content="Toggle Button"/>
+    </StackPanel>
 
       <StackPanel Orientation="Vertical" Spacing="8" Width="150">
         <Button BorderThickness="0">No Border</Button>
         <Button BorderBrush="{DynamicResource ThemeAccentBrush}">Border Color</Button>
         <Button BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="4">Thick Border</Button>
         <Button BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="4" IsEnabled="False">Disabled</Button>
+        <Button BorderBrush="{DynamicResource ThemeAccentBrush}" KeyboardNavigation.IsTabStop="False">IsTabStop=False</Button>
       </StackPanel>
     </StackPanel>    
   </StackPanel>

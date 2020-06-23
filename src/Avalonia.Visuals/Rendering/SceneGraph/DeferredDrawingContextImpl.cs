@@ -149,20 +149,21 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0, double radiusY = 0)
+        public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect,
+            BoxShadows boxShadows = default)
         {
             var next = NextDrawAs<RectangleNode>();
 
-            if (next == null || !next.Item.Equals(Transform, brush, pen, rect, radiusX, radiusY))
+            if (next == null || !next.Item.Equals(Transform, brush, pen, rect, boxShadows))
             {
-                Add(new RectangleNode(Transform, brush, pen, rect, radiusX, radiusY, CreateChildScene(brush)));
+                Add(new RectangleNode(Transform, brush, pen, rect, boxShadows, CreateChildScene(brush)));
             }
             else
             {
                 ++_drawOperationindex;
             }
         }
-        
+
         public void Custom(ICustomDrawOperation custom)
         {
             var next = NextDrawAs<CustomDrawOperation>();
@@ -282,6 +283,21 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc />
+        public void PushClip(RoundedRect clip)
+        {
+            var next = NextDrawAs<ClipNode>();
+
+            if (next == null || !next.Item.Equals(clip))
+            {
+                Add(new ClipNode(clip));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+
         /// <inheritdoc/>
         public void PushGeometryClip(IGeometryImpl clip)
         {
@@ -363,11 +379,11 @@ namespace Avalonia.Rendering.SceneGraph
             public int DrawOperationIndex { get; }
         }
 
-        private void Add(IDrawOperation node)
+        private void Add<T>(T node) where T : class, IDrawOperation
         {
             using (var refCounted = RefCountable.Create(node))
             {
-                Add(refCounted); 
+                Add(refCounted);
             }
         }
 

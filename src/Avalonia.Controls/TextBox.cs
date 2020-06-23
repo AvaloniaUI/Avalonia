@@ -341,13 +341,13 @@ namespace Avalonia.Controls
             set { SetAndRaise(NewLineProperty, ref _newLine, value); }
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
 
             if (IsFocused)
             {
-                DecideCaretVisibility();
+                _presenter?.ShowCaret();
             }
         }
 
@@ -364,14 +364,7 @@ namespace Avalonia.Controls
             {
                 SelectAll();
             }
-            else
-            {
-                DecideCaretVisibility();
-            }
-        }
 
-        private void DecideCaretVisibility()
-        {
             _presenter?.ShowCaret();
         }
 
@@ -580,15 +573,15 @@ namespace Avalonia.Controls
                 switch (e.Key)
                 {
                     case Key.Left:
-                        MoveHorizontal(-1, hasWholeWordModifiers);
-                        movement = true;
                         selection = DetectSelection();
+                        MoveHorizontal(-1, hasWholeWordModifiers, selection);
+                        movement = true;
                         break;
 
                     case Key.Right:
-                        MoveHorizontal(1, hasWholeWordModifiers);
-                        movement = true;
                         selection = DetectSelection();
+                        MoveHorizontal(1, hasWholeWordModifiers, selection);
+                        movement = true;
                         break;
 
                     case Key.Up:
@@ -833,13 +826,21 @@ namespace Avalonia.Controls
             return result;
         }
 
-        private void MoveHorizontal(int direction, bool wholeWord)
+        private void MoveHorizontal(int direction, bool wholeWord, bool isSelecting)
         {
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
 
             if (!wholeWord)
             {
+                if (SelectionStart != SelectionEnd && !isSelecting)
+                {
+                    var start = Math.Min(SelectionStart, SelectionEnd);
+                    var end = Math.Max(SelectionStart, SelectionEnd);
+                    CaretIndex = direction < 0 ? start : end;
+                    return;
+                }
+
                 var index = caretIndex + direction;
 
                 if (index < 0 || index > text.Length)
@@ -975,6 +976,7 @@ namespace Avalonia.Controls
         {
             SelectionStart = 0;
             SelectionEnd = Text?.Length ?? 0;
+            CaretIndex = SelectionEnd;
         }
 
         private bool DeleteSelection()
@@ -1055,14 +1057,14 @@ namespace Avalonia.Controls
         private void SetSelectionForControlBackspace()
         {
             SelectionStart = CaretIndex;
-            MoveHorizontal(-1, true);
+            MoveHorizontal(-1, true, false);
             SelectionEnd = CaretIndex;
         }
 
         private void SetSelectionForControlDelete()
         {
             SelectionStart = CaretIndex;
-            MoveHorizontal(1, true);
+            MoveHorizontal(1, true, false);
             SelectionEnd = CaretIndex;
         }
 

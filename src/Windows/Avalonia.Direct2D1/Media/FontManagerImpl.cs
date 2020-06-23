@@ -50,7 +50,7 @@ namespace Avalonia.Direct2D1.Media
 
                 var fontFamilyName = font.FontFamily.FamilyNames.GetString(0);
 
-                fontKey = new FontKey(new FontFamily(fontFamilyName), fontWeight, fontStyle);
+                fontKey = new FontKey(fontFamilyName, fontWeight, fontStyle);
 
                 return true;
             }

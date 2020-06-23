@@ -107,6 +107,14 @@ namespace Avalonia.Data
 
         private object ConvertValue(IList<object> values, Type targetType, IMultiValueConverter converter)
         {
+            for (var i = 0; i < values.Count; ++i)
+            {
+                if (values[i] is BindingNotification notification)
+                {
+                    values[i] = notification.Value;
+                }
+            }
+
             var culture = CultureInfo.CurrentCulture;
             var converted = converter.Convert(values, targetType, ConverterParameter, culture);
 

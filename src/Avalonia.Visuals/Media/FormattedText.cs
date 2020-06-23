@@ -200,7 +200,13 @@ namespace Avalonia.Media
 
         private void Set<T>(ref T field, T value)
         {
+            if (field != null && field.Equals(value))
+            {
+                return;
+            }
+
             field = value;
+
             _platformImpl = null;
         }
     }

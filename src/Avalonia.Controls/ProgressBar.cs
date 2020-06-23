@@ -83,26 +83,22 @@ namespace Avalonia.Controls
             return base.ArrangeOverride(finalSize);
         }
 
-        protected override void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == IsIndeterminateProperty)
+            if (change.Property == IsIndeterminateProperty)
             {
-                UpdatePseudoClasses(newValue.GetValueOrDefault<bool>(), null);
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>(), null);
             }
-            else if (property == OrientationProperty)
+            else if (change.Property == OrientationProperty)
             {
-                UpdatePseudoClasses(null, newValue.GetValueOrDefault<Orientation>());
+                UpdatePseudoClasses(null, change.NewValue.GetValueOrDefault<Orientation>());
             }
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _indicator = e.NameScope.Get<Border>("PART_Indicator");
 

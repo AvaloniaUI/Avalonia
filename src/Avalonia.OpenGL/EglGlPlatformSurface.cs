@@ -16,9 +16,9 @@ namespace Avalonia.OpenGL
         private readonly EglContext _context;
         private readonly IEglWindowGlPlatformSurfaceInfo _info;
         
-        public EglGlPlatformSurface(EglDisplay display, EglContext context, IEglWindowGlPlatformSurfaceInfo info)
+        public EglGlPlatformSurface(EglContext context, IEglWindowGlPlatformSurfaceInfo info)
         {
-            _display = display;
+            _display = context.Display;
             _context = context;
             _info = info;
         }
@@ -58,12 +58,12 @@ namespace Avalonia.OpenGL
                 {
                     if (IsCorrupted)
                         throw new RenderTargetCorruptedException();
-                    _context.MakeCurrent(_glSurface);
+                    var restoreContext = _context.MakeCurrent(_glSurface);
                     _display.EglInterface.WaitClient();
                     _display.EglInterface.WaitGL();
-                    _display.EglInterface.WaitNative();
+                    _display.EglInterface.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
                     
-                    return new Session(_display, _context, _glSurface, _info, l);
+                    return new Session(_display, _context, _glSurface, _info, l, restoreContext);
                 }
                 catch
                 {
@@ -79,32 +79,34 @@ namespace Avalonia.OpenGL
                 private readonly IEglWindowGlPlatformSurfaceInfo _info;
                 private readonly EglDisplay _display;
                 private IDisposable _lock;
-                
+                private readonly IDisposable _restoreContext;
+
 
                 public Session(EglDisplay display, EglContext context,
                     EglSurface glSurface, IEglWindowGlPlatformSurfaceInfo info,
-                    IDisposable @lock)
+                    IDisposable @lock, IDisposable restoreContext)
                 {
                     _context = context;
                     _display = display;
                     _glSurface = glSurface;
                     _info = info;
                     _lock = @lock;
+                    _restoreContext = restoreContext;
                 }
 
                 public void Dispose()
                 {
-                    _context.Display.GlInterface.Flush();
+                    _context.GlInterface.Flush();
                     _display.EglInterface.WaitGL();
                     _glSurface.SwapBuffers();
                     _display.EglInterface.WaitClient();
                     _display.EglInterface.WaitGL();
-                    _display.EglInterface.WaitNative();
-                    _context.Display.ClearContext();
+                    _display.EglInterface.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
+                    _restoreContext.Dispose();
                     _lock.Dispose();
                 }
 
-                public IGlDisplay Display => _context.Display;
+                public IGlContext Context => _context;
                 public PixelSize Size => _info.Size;
                 public double Scaling => _info.Scaling;
                 public bool IsYFlipped { get; }

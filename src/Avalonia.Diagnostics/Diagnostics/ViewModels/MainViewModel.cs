@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
+using Avalonia.Threading;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -49,7 +50,21 @@ namespace Avalonia.Diagnostics.ViewModels
                     value is TreePageViewModel newTree &&
                     oldTree?.SelectedNode?.Visual is IControl control)
                 {
-                    newTree.SelectControl(control);
+                    // HACK: We want to select the currently selected control in the new tree, but
+                    // to select nested nodes in TreeView, currently the TreeView has to be able to
+                    // expand the parent nodes. Because at this point the TreeView isn't visible,
+                    // this will fail unless we schedule the selection to run after layout.
+                    DispatcherTimer.RunOnce(
+                        () =>
+                        {
+                            try
+                            {
+                                newTree.SelectControl(control);
+                            }
+                            catch { }
+                        },
+                        TimeSpan.FromMilliseconds(0),
+                        DispatcherPriority.ApplicationIdle);
                 }
 
                 RaiseAndSetIfChanged(ref _content, value);

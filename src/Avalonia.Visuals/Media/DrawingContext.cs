@@ -4,6 +4,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media
@@ -141,28 +142,30 @@ namespace Avalonia.Media
         /// <param name="radiusY">The radius in the Y dimension of the rounded corners.
         ///     This value will be clamped to the range of 0 to Height/2
         /// </param>
+        /// <param name="boxShadows">Box shadow effect parameters</param>
         /// <remarks>
         /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
         /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
         /// </remarks>
-        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0, double radiusY = 0)
+        public void DrawRectangle(IBrush brush, IPen pen, Rect rect, double radiusX = 0, double radiusY = 0,
+            BoxShadows boxShadows = default)
         {
             if (brush == null && !PenIsVisible(pen))
             {
                 return;
             }
 
-            if (Math.Abs(radiusX) > double.Epsilon)
+            if (!MathUtilities.IsZero(radiusX))
             {
                 radiusX = Math.Min(radiusX, rect.Width / 2);
             }
 
-            if (Math.Abs(radiusY) > double.Epsilon)
+            if (!MathUtilities.IsZero(radiusY))
             {
                 radiusY = Math.Min(radiusY, rect.Height / 2);
             }
 
-            PlatformImpl.DrawRectangle(brush, pen, rect, radiusX, radiusY);
+            PlatformImpl.DrawRectangle(brush, pen, new RoundedRect(rect, radiusX, radiusY), boxShadows);
         }
 
         /// <summary>
@@ -280,6 +283,12 @@ namespace Avalonia.Media
         }
 
 
+        public PushedState PushClip(RoundedRect clip)
+        {
+            PlatformImpl.PushClip(clip);
+            return new PushedState(this, PushedState.PushedStateType.Clip);
+        }
+
         /// <summary>
         /// Pushes a clip rectangle.
         /// </summary>
@@ -348,7 +357,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="matrix">The matrix</param>
         /// <returns>A disposable used to undo the transformation.</returns>
-        PushedState PushSetTransform(Matrix matrix)
+        public PushedState PushSetTransform(Matrix matrix)
         {
             var oldMatrix = CurrentTransform;
             CurrentTransform = matrix;

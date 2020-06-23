@@ -301,7 +301,7 @@ namespace Avalonia.Controls
         private static bool CanResizeColumn(DataGridColumn column)
         {
             if (column.OwningGrid != null && column.OwningGrid.ColumnsInternal != null && column.OwningGrid.UsesStarSizing &&
-                (column.OwningGrid.ColumnsInternal.LastVisibleColumn == column || !DoubleUtil.AreClose(column.OwningGrid.ColumnsInternal.VisibleEdgedColumnsWidth, column.OwningGrid.CellsWidth)))
+                (column.OwningGrid.ColumnsInternal.LastVisibleColumn == column || !MathUtilities.AreClose(column.OwningGrid.ColumnsInternal.VisibleEdgedColumnsWidth, column.OwningGrid.CellsWidth)))
             {
                 return false;
             }
@@ -457,7 +457,7 @@ namespace Avalonia.Controls
 
         private void DataGridColumnHeader_PointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (OwningColumn == null || e.Handled || !IsEnabled || e.MouseButton != MouseButton.Left)
+            if (OwningColumn == null || e.Handled || !IsEnabled || e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 return;
             }

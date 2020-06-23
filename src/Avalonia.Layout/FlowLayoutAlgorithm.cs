@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Specialized;
+using Avalonia.Logging;
 
 namespace Avalonia.Layout
 {
@@ -74,6 +75,7 @@ namespace Avalonia.Layout
             double lineSpacing,
             int maxItemsPerLine,
             ScrollOrientation orientation,
+            bool disableVirtualization,
             string layoutId)
         {
             _orientation.ScrollOrientation = orientation;
@@ -81,6 +83,9 @@ namespace Avalonia.Layout
             // If minor size is infinity, there is only one line and no need to align that line.
             _scrollOrientationSameAsFlow = double.IsInfinity(_orientation.Minor(availableSize));
             var realizationRect = RealizationRect;
+            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: MeasureLayout Realization({Rect})",
+                layoutId,
+                realizationRect);
 
             var suggestedAnchorIndex = _context.RecommendedAnchorIndex;
             if (_elementManager.IsIndexValidInData(suggestedAnchorIndex))
@@ -95,14 +100,15 @@ namespace Avalonia.Layout
             _elementManager.OnBeginMeasure(orientation);
 
             int anchorIndex = GetAnchorIndex(availableSize, isWrapping, minItemSpacing, layoutId);
-            Generate(GenerateDirection.Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, layoutId);
-            Generate(GenerateDirection.Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, layoutId);
+            Generate(GenerateDirection.Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
+            Generate(GenerateDirection.Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
             if (isWrapping && IsReflowRequired())
             {
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Reflow Pass", layoutId);
                 var firstElementBounds = _elementManager.GetLayoutBoundsForRealizedIndex(0);
                 _orientation.SetMinorStart(ref firstElementBounds, 0);
                 _elementManager.SetLayoutBoundsForRealizedIndex(0, firstElementBounds);
-                Generate(GenerateDirection.Forward, 0 /*anchorIndex*/, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, layoutId);
+                Generate(GenerateDirection.Forward, 0 /*anchorIndex*/, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
             }
 
             RaiseLineArranged();
@@ -120,6 +126,7 @@ namespace Avalonia.Layout
             LineAlignment lineAlignment,
             string layoutId)
         {
+            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: ArrangeLayout", layoutId);
             ArrangeVirtualizingLayout(finalSize, lineAlignment, isWrapping, layoutId);
 
             return new Size(
@@ -183,6 +190,7 @@ namespace Avalonia.Layout
 
                 if (isAnchorSuggestionValid)
                 {
+                    Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Using suggested anchor {Anchor}", layoutId, suggestedAnchorIndex);
                     anchorIndex = _algorithmCallbacks.Algorithm_GetAnchorForTargetElement(
                         suggestedAnchorIndex,
                         availableSize,
@@ -222,6 +230,9 @@ namespace Avalonia.Layout
                 }
                 else if (needAnchorColumnRevaluation || !isRealizationWindowConnected)
                 {
+                    if (needAnchorColumnRevaluation) { Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: NeedAnchorColumnReevaluation", layoutId); }
+                    if (!isRealizationWindowConnected) { Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Disconnected Window", layoutId); }
+
                     // The anchor is based on the realization window because a connected ItemsRepeater might intersect the realization window
                     // but not the visible window. In that situation, we still need to produce a valid anchor.
                     var anchorInfo = _algorithmCallbacks.Algorithm_GetAnchorForRealizationRect(availableSize, context);
@@ -230,6 +241,7 @@ namespace Avalonia.Layout
                 }
                 else
                 {
+                    Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Connected Window - picking first realized element as anchor", layoutId);
                     // No suggestion - just pick first in realized range
                     anchorIndex = _elementManager.GetDataIndexFromRealizedRangeIndex(0);
                     var firstElementBounds = _elementManager.GetLayoutBoundsForRealizedIndex(0);
@@ -237,12 +249,14 @@ namespace Avalonia.Layout
                 }
             }
 
+            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Picked anchor: {Anchor}", layoutId, anchorIndex);
             _firstRealizedDataIndexInsideRealizationWindow = _lastRealizedDataIndexInsideRealizationWindow = anchorIndex;
             if (_elementManager.IsIndexValidInData(anchorIndex))
             {
                 if (!_elementManager.IsDataIndexRealized(anchorIndex))
                 {
                     // Disconnected, throw everything and create new anchor
+                    Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId} Disconnected Window - throwing away all realized elements", layoutId);
                     _elementManager.ClearRealizedRange();
 
                     var anchor = _context.GetOrCreateElementAt(anchorIndex, ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
@@ -253,9 +267,17 @@ namespace Avalonia.Layout
                 var desiredSize = MeasureElement(anchorElement, anchorIndex, availableSize, _context);
                 var layoutBounds = new Rect(anchorPosition.X, anchorPosition.Y, desiredSize.Width, desiredSize.Height);
                 _elementManager.SetLayoutBoundsForDataIndex(anchorIndex, layoutBounds);
+
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Layout bounds of anchor {anchor} are ({Bounds})",
+                    layoutId,
+                    anchorIndex,
+                    layoutBounds);
             }
             else
             {
+                // Throw everything away
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId} Anchor index is not valid - throwing away all realized elements",
+                    layoutId);
                 _elementManager.ClearRealizedRange();
             }
 
@@ -273,11 +295,18 @@ namespace Avalonia.Layout
             double minItemSpacing,
             double lineSpacing,
             int maxItemsPerLine,
+            bool disableVirtualization,
             string layoutId)
         {
             if (anchorIndex != -1)
             {
                 int step = (direction == GenerateDirection.Forward) ? 1 : -1;
+
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Generating {Direction} from anchor {Anchor}",
+                    layoutId,
+                    direction,
+                    anchorIndex);
+
                 int previousIndex = anchorIndex;
                 int currentIndex = anchorIndex + step;
                 var anchorBounds = _elementManager.GetLayoutBoundsForDataIndex(anchorIndex);
@@ -288,7 +317,7 @@ namespace Avalonia.Layout
                 bool lineNeedsReposition = false;
 
                 while (_elementManager.IsIndexValidInData(currentIndex) &&
-                    ShouldContinueFillingUpSpace(previousIndex, direction))
+                    (disableVirtualization || ShouldContinueFillingUpSpace(previousIndex, direction)))
                 {
                     // Ensure layout element.
                     _elementManager.EnsureElementRealized(direction == GenerateDirection.Forward, currentIndex, layoutId);
@@ -363,6 +392,10 @@ namespace Avalonia.Layout
                                         _orientation.SetMajorStart(ref bounds, previousLineOffset - lineMajorSize - lineSpacing);
                                         _orientation.SetMajorSize(ref bounds, lineMajorSize);
                                         _elementManager.SetLayoutBoundsForDataIndex(dataIndex, bounds);
+                                        Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Corrected Layout bounds of element {Index} are ({Bounds})",
+                                            layoutId,
+                                            dataIndex,
+                                            bounds);
                                     }
                                 }
                             }
@@ -385,6 +418,11 @@ namespace Avalonia.Layout
                     }
 
                     _elementManager.SetLayoutBoundsForDataIndex(currentIndex, currentBounds);
+
+                    Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Layout bounds of element {Index} are ({Bounds}).",
+                        layoutId,
+                        currentIndex,
+                        currentBounds);
                     previousIndex = currentIndex;
                     currentIndex += step;
                 }
@@ -392,20 +430,17 @@ namespace Avalonia.Layout
                 // If we did not reach the top or bottom of the extent, we realized one 
                 // extra item before we knew we were outside the realization window. Do not
                 // account for that element in the indicies inside the realization window.
-                if (count > 0)
+                if (direction == GenerateDirection.Forward)
                 {
-                    if (direction == GenerateDirection.Forward)
-                    {
-                        int dataCount = _context.ItemCount;
-                        _lastRealizedDataIndexInsideRealizationWindow = previousIndex == dataCount - 1 ? dataCount - 1 : previousIndex - 1;
-                        _lastRealizedDataIndexInsideRealizationWindow = Math.Max(0, _lastRealizedDataIndexInsideRealizationWindow);
-                    }
-                    else
-                    {
-                        int dataCount = _context.ItemCount;
-                        _firstRealizedDataIndexInsideRealizationWindow = previousIndex == 0 ? 0 : previousIndex + 1;
-                        _firstRealizedDataIndexInsideRealizationWindow = Math.Min(dataCount - 1, _firstRealizedDataIndexInsideRealizationWindow);
-                    }
+                    int dataCount = _context.ItemCount;
+                    _lastRealizedDataIndexInsideRealizationWindow = previousIndex == dataCount - 1 ? dataCount - 1 : previousIndex - 1;
+                    _lastRealizedDataIndexInsideRealizationWindow = Math.Max(0, _lastRealizedDataIndexInsideRealizationWindow);
+                }
+                else
+                {
+                    int dataCount = _context.ItemCount;
+                    _firstRealizedDataIndexInsideRealizationWindow = previousIndex == 0 ? 0 : previousIndex + 1;
+                    _firstRealizedDataIndexInsideRealizationWindow = Math.Min(dataCount - 1, _firstRealizedDataIndexInsideRealizationWindow);
                 }
 
                 _elementManager.DiscardElementsOutsideWindow(direction == GenerateDirection.Forward, currentIndex);
@@ -506,6 +541,7 @@ namespace Avalonia.Layout
                 lastDataIndex,
                 lastBounds);
 
+            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId} Extent: ({Bounds})", layoutId, extent);
             return extent;
         }
 
@@ -674,6 +710,11 @@ namespace Avalonia.Layout
                 }
 
                 var element = _elementManager.GetAt(rangeIndex);
+
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Arranging element {Index} at ({Bounds})",
+                    layoutId,
+                    _elementManager.GetDataIndexFromRealizedRangeIndex(rangeIndex),
+                    bounds);
                 element.Arrange(bounds);
             }
         }

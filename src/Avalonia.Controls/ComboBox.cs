@@ -51,6 +51,18 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
             ItemsPresenter.VirtualizationModeProperty.AddOwner<ComboBox>();
 
+        /// <summary>
+        /// Defines the <see cref="PlaceholderText"/> property.
+        /// </summary>
+        public static readonly StyledProperty<string> PlaceholderTextProperty =
+            AvaloniaProperty.Register<ComboBox, string>(nameof(PlaceholderText));
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderForeground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush> PlaceholderForegroundProperty =
+            AvaloniaProperty.Register<ComboBox, IBrush>(nameof(PlaceholderForeground));
+
         private bool _isDropDownOpen;
         private Popup _popup;
         private object _selectionBoxItem;
@@ -92,6 +104,24 @@ namespace Avalonia.Controls
         {
             get { return _selectionBoxItem; }
             set { SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the PlaceHolder text.
+        /// </summary>
+        public string PlaceholderText
+        {
+            get { return GetValue(PlaceholderTextProperty); }
+            set { SetValue(PlaceholderTextProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the Brush that renders the placeholder text.
+        /// </summary>
+        public IBrush PlaceholderForeground
+        {
+            get { return GetValue(PlaceholderForegroundProperty); }
+            set { SetValue(PlaceholderForegroundProperty, value); }
         }
 
         /// <summary>
@@ -219,7 +249,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             if (_popup != null)
             {
@@ -230,8 +260,6 @@ namespace Avalonia.Controls
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
             _popup.Closed += PopupClosed;
-
-            base.OnTemplateApplied(e);
         }
 
         /// <summary>
@@ -306,9 +334,9 @@ namespace Avalonia.Controls
             {
                 var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
 
-                if (container == null && SelectedItems.Count > 0)
+                if (container == null && SelectedIndex != -1)
                 {
-                    ScrollIntoView(SelectedItems[0]);
+                    ScrollIntoView(Selection.SelectedIndex);
                     container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
                 }
 

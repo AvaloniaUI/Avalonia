@@ -30,8 +30,7 @@ namespace Avalonia.UnitTests
                 width += glyphTypeface.GetGlyphAdvance(glyph);
             }
 
-            return new GlyphRun(glyphTypeface, textFormat.FontRenderingEmSize, glyphIndices, characters: text,
-                bounds: new Rect(0, 0, width, height));
+            return new GlyphRun(glyphTypeface, textFormat.FontRenderingEmSize, glyphIndices, characters: text);
         }
     }
 }

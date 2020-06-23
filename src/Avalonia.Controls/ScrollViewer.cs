@@ -1,4 +1,5 @@
 using System;
+using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -167,6 +168,18 @@ namespace Avalonia.Controls
                 ScrollBarVisibility.Auto);
 
         /// <summary>
+        /// Defines the <see cref="IsExpandedProperty"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollViewer, bool> IsExpandedProperty =
+            ScrollBar.IsExpandedProperty.AddOwner<ScrollViewer>(o => o.IsExpanded);
+
+        /// <summary>
+        /// Defines the <see cref="AllowAutoHide"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> AllowAutoHideProperty =
+            ScrollBar.AllowAutoHideProperty.AddOwner<ScrollViewer>();
+
+        /// <summary>
         /// Defines the <see cref="ScrollChanged"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollChangedEventArgs> ScrollChangedEvent =
@@ -181,8 +194,13 @@ namespace Avalonia.Controls
         private Size _extent;
         private Vector _offset;
         private Size _viewport;
+        private Size _oldExtent;
+        private Vector _oldOffset;
+        private Size _oldViewport;
         private Size _largeChange;
         private Size _smallChange = new Size(DefaultSmallChange, DefaultSmallChange);
+        private bool _isExpanded;
+        private IDisposable _scrollBarExpandSubscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollViewer"/> class.
@@ -198,6 +216,7 @@ namespace Avalonia.Controls
         /// </summary>
         public ScrollViewer()
         {
+            LayoutUpdated += OnLayoutUpdated;
         }
 
         /// <summary>
@@ -221,11 +240,9 @@ namespace Avalonia.Controls
 
             private set
             {
-                var old = _extent;
-
                 if (SetAndRaise(ExtentProperty, ref _extent, value))
                 {
-                    CalculatedPropertiesChanged(extentDelta: value - old);
+                    CalculatedPropertiesChanged();
                 }
             }
         }
@@ -242,13 +259,9 @@ namespace Avalonia.Controls
 
             set
             {
-                var old = _offset;
-
-                value = ValidateOffset(this, value);
-
-                if (SetAndRaise(OffsetProperty, ref _offset, value))
+                if (SetAndRaise(OffsetProperty, ref _offset, CoerceOffset(Extent, Viewport, value)))
                 {
-                    CalculatedPropertiesChanged(offsetDelta: value - old);
+                    CalculatedPropertiesChanged();
                 }
             }
         }
@@ -265,11 +278,9 @@ namespace Avalonia.Controls
 
             private set
             {
-                var old = _viewport;
-
                 if (SetAndRaise(ViewportProperty, ref _viewport, value))
                 {
-                    CalculatedPropertiesChanged(viewportDelta: value - old);
+                    CalculatedPropertiesChanged();
                 }
             }
         }
@@ -317,6 +328,9 @@ namespace Avalonia.Controls
         {
             get { return VerticalScrollBarVisibility != ScrollBarVisibility.Disabled; }
         }
+
+        /// <inheritdoc/>
+        public IControl CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;
 
         /// <summary>
         /// Gets the maximum horizontal scrollbar value.
@@ -384,8 +398,55 @@ namespace Avalonia.Controls
             get { return _viewport.Height; }
         }
 
-        /// <inheritdoc/>
-        IControl IScrollAnchorProvider.CurrentAnchor => null; // TODO: Implement
+        /// <summary>
+        /// Gets a value that indicates whether any scrollbar is expanded.
+        /// </summary>
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            private set => SetAndRaise(ScrollBar.IsExpandedProperty, ref _isExpanded, value);
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether scrollbars can hide itself when user is not interacting with it.
+        /// </summary>
+        public bool AllowAutoHide
+        {
+            get => GetValue(AllowAutoHideProperty);
+            set => SetValue(AllowAutoHideProperty, value);
+        }
+
+        /// <summary>
+        /// Scrolls the content up one line.
+        /// </summary>
+        public void LineUp()
+        {
+            Offset -= new Vector(0, _smallChange.Height);
+        }
+
+        /// <summary>
+        /// Scrolls the content down one line.
+        /// </summary>
+        public void LineDown()
+        {
+            Offset += new Vector(0, _smallChange.Height);
+        }
+
+        /// <summary>
+        /// Scrolls the content left one line.
+        /// </summary>
+        public void LineLeft()
+        {
+            Offset -= new Vector(_smallChange.Width, 0);
+        }
+
+        /// <summary>
+        /// Scrolls the content right one line.
+        /// </summary>
+        public void LineRight()
+        {
+            Offset += new Vector(_smallChange.Width, 0);
+        }
 
         /// <summary>
         /// Scrolls to the top-left corner of the content.
@@ -443,14 +504,16 @@ namespace Avalonia.Controls
             control.SetValue(VerticalScrollBarVisibilityProperty, value);
         }
 
-        void IScrollAnchorProvider.RegisterAnchorCandidate(IControl element)
+        /// <inheritdoc/>
+        public void RegisterAnchorCandidate(IControl element)
         {
-            // TODO: Implement
+            (Presenter as IScrollAnchorProvider)?.RegisterAnchorCandidate(element);
         }
 
-        void IScrollAnchorProvider.UnregisterAnchorCandidate(IControl element)
+        /// <inheritdoc/>
+        public void UnregisterAnchorCandidate(IControl element)
         {
-            // TODO: Implement
+            (Presenter as IScrollAnchorProvider)?.UnregisterAnchorCandidate(element);
         }
 
         protected override bool RegisterContentPresenter(IContentPresenter presenter)
@@ -485,22 +548,6 @@ namespace Avalonia.Controls
         {
             var result = Math.Max(x, y);
             return double.IsNaN(result) ? 0 : result;
-        }
-
-        private static Vector ValidateOffset(AvaloniaObject o, Vector value)
-        {
-            ScrollViewer scrollViewer = o as ScrollViewer;
-
-            if (scrollViewer != null)
-            {
-                var extent = scrollViewer.Extent;
-                var viewport = scrollViewer.Viewport;
-                return CoerceOffset(extent, viewport, value);
-            }
-            else
-            {
-                return value;
-            }
         }
 
         private void ChildChanged(IControl child)
@@ -549,10 +596,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void CalculatedPropertiesChanged(
-            Size extentDelta = default,
-            Vector offsetDelta = default,
-            Size viewportDelta = default)
+        private void CalculatedPropertiesChanged()
         {
             // Pass old values of 0 here because we don't have the old values at this point,
             // and it shouldn't matter as only the template uses these properies.
@@ -573,20 +617,6 @@ namespace Avalonia.Controls
                 SetAndRaise(SmallChangeProperty, ref _smallChange, new Size(DefaultSmallChange, DefaultSmallChange));
                 SetAndRaise(LargeChangeProperty, ref _largeChange, Viewport);
             }
-
-            if (extentDelta != default || offsetDelta != default || viewportDelta != default)
-            {
-                using var route = BuildEventRoute(ScrollChangedEvent);
-
-                if (route.HasHandlers)
-                {
-                    var e = new ScrollChangedEventArgs(
-                        new Vector(extentDelta.Width, extentDelta.Height),
-                        offsetDelta,
-                        new Vector(viewportDelta.Width, viewportDelta.Height));
-                    route.RaiseEvent(this, e);
-                }
-            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -600,6 +630,87 @@ namespace Avalonia.Controls
             {
                 VerticalScrollBarValue = Math.Min(_offset.Y + _viewport.Height, VerticalScrollBarMaximum);
                 e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Called when a change in scrolling state is detected, such as a change in scroll
+        /// position, extent, or viewport size.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// If you override this method, call `base.OnScrollChanged(ScrollChangedEventArgs)` to
+        /// ensure that this event is raised.
+        /// </remarks>
+        protected virtual void OnScrollChanged(ScrollChangedEventArgs e)
+        {
+            RaiseEvent(e);
+        }
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+
+            _scrollBarExpandSubscription?.Dispose();
+
+            _scrollBarExpandSubscription = SubscribeToScrollBars(e);
+        }
+
+        private IDisposable SubscribeToScrollBars(TemplateAppliedEventArgs e)
+        {
+            static IObservable<bool> GetExpandedObservable(ScrollBar scrollBar)
+            {
+                return scrollBar?.GetObservable(ScrollBar.IsExpandedProperty);
+            }
+
+            var horizontalScrollBar = e.NameScope.Find<ScrollBar>("PART_HorizontalScrollBar");
+            var verticalScrollBar = e.NameScope.Find<ScrollBar>("PART_VerticalScrollBar");
+
+            var horizontalExpanded = GetExpandedObservable(horizontalScrollBar);
+            var verticalExpanded = GetExpandedObservable(verticalScrollBar);
+
+            IObservable<bool> actualExpanded = null;
+
+            if (horizontalExpanded != null && verticalExpanded != null)
+            {
+                actualExpanded = horizontalExpanded.CombineLatest(verticalExpanded, (h, v) => h || v);
+            }
+            else
+            {
+                if (horizontalExpanded != null)
+                {
+                    actualExpanded = horizontalExpanded;
+                }
+                else if (verticalExpanded != null)
+                {
+                    actualExpanded = verticalExpanded;
+                }
+            }
+
+            return actualExpanded?.Subscribe(OnScrollBarExpandedChanged);
+        }
+
+        private void OnScrollBarExpandedChanged(bool isExpanded)
+        {
+            IsExpanded = isExpanded;
+        }
+
+        private void OnLayoutUpdated(object sender, EventArgs e) => RaiseScrollChanged();
+
+        private void RaiseScrollChanged()
+        {
+            var extentDelta = new Vector(Extent.Width - _oldExtent.Width, Extent.Height - _oldExtent.Height);
+            var offsetDelta = Offset - _oldOffset;
+            var viewportDelta = new Vector(Viewport.Width - _oldViewport.Width, Viewport.Height - _oldViewport.Height);
+
+            if (!extentDelta.NearlyEquals(default) || !offsetDelta.NearlyEquals(default) || !viewportDelta.NearlyEquals(default))
+            {
+                var e = new ScrollChangedEventArgs(extentDelta, offsetDelta, viewportDelta);
+                OnScrollChanged(e);
+
+                _oldExtent = Extent;
+                _oldOffset = Offset;
+                _oldViewport = Viewport;
             }
         }
     }

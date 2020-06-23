@@ -42,7 +42,7 @@ namespace Avalonia.UnitTests
 
         public Size MaxClientSize { get; set; } = Size.Infinity;
 
-        public double LayoutScaling => 1;
+        public double LayoutScaling { get; set; } = 1;
 
         public ILayoutManager LayoutManager { get; set; } = new LayoutManager();
 

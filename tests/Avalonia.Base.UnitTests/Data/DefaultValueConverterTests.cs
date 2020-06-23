@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System;
 using Avalonia.Data.Converters;
 using Avalonia.Layout;
+using System.ComponentModel;
 
 namespace Avalonia.Base.UnitTests.Data.Converters
 {
@@ -33,6 +34,54 @@ namespace Avalonia.Base.UnitTests.Data.Converters
                 CultureInfo.InvariantCulture);
 
             Assert.Equal(5.0, result);
+        }
+
+        [Fact]
+        public void Do_Not_Throw_On_InvalidInput_For_NullableInt()
+        {
+            var result = DefaultValueConverter.Instance.Convert(
+                "<not-a-number>",
+                typeof(int?),
+                null,
+                CultureInfo.InvariantCulture);
+
+            Assert.IsType(typeof(BindingNotification), result);
+        }
+
+        [Fact]
+        public void Can_Convert_Decimal_To_NullableDouble()
+        {
+            var result = DefaultValueConverter.Instance.Convert(
+                5m,
+                typeof(double?),
+                null,
+                CultureInfo.InvariantCulture);
+
+            Assert.Equal(5.0, result);
+        }
+
+        [Fact]
+        public void Can_Convert_CustomType_To_Int()
+        {
+            var result = DefaultValueConverter.Instance.Convert(
+                new CustomType(123),
+                typeof(int),
+                null,
+                CultureInfo.InvariantCulture);
+
+            Assert.Equal(123, result);
+        }
+
+        [Fact]
+        public void Can_Convert_Int_To_CustomType()
+        {
+            var result = DefaultValueConverter.Instance.Convert(
+                123,
+                typeof(CustomType),
+                null,
+                CultureInfo.InvariantCulture);
+
+            Assert.Equal(new CustomType(123), result);
         }
 
         [Fact]
@@ -185,6 +234,45 @@ namespace Avalonia.Base.UnitTests.Data.Converters
             public static explicit operator double (ExplicitDouble v)
             {
                 return v.Value;
+            }
+        }
+
+        [TypeConverter(typeof(CustomTypeConverter))]
+        private class CustomType {
+
+            public int Value { get; }
+
+            public CustomType(int value)
+            {
+                Value = value;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is CustomType other && this.Value == other.Value;
+            }
+        }
+
+        private class CustomTypeConverter : TypeConverter
+        {
+            public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+            {
+                return destinationType == typeof(int);
+            }
+
+            public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+            {
+                return sourceType == typeof(int);
+            }
+
+            public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+            {
+                return ((CustomType)value).Value;
+            }
+
+            public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+            {
+                return new CustomType((int)value);
             }
         }
     }

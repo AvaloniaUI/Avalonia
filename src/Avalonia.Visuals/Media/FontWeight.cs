@@ -30,6 +30,11 @@ namespace Avalonia.Media
         Light = 300,
 
         /// <summary>
+        /// Specifies a "semi light" font weight.
+        /// </summary>
+        SemiLight = 350,
+
+        /// <summary>
         /// Specifies a "normal" font weight.
         /// </summary>
         Normal = 400,

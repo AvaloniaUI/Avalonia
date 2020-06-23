@@ -55,8 +55,15 @@ namespace Avalonia.Controls.Primitives
                 ((ILogical)layer).NotifyAttachedToLogicalTree(new LogicalTreeAttachmentEventArgs(_logicalRoot, layer, this));
             InvalidateArrange();
         }
-        
-        
+
+        protected override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            foreach (var l in _layers)
+                ((ILogical)l).NotifyResourcesChanged(e);
+
+            base.NotifyChildResourcesChanged(e);
+        }
+
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
@@ -73,7 +80,6 @@ namespace Avalonia.Controls.Primitives
             foreach (var l in _layers)
                 ((ILogical)l).NotifyDetachedFromLogicalTree(e);
         }
-
 
         protected override Size MeasureOverride(Size availableSize)
         {

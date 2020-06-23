@@ -1,5 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
-// This source is subject to the Microsoft Public License (Ms-PL).
+﻿// This source is subject to the Microsoft Public License (Ms-PL).
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved. 
 
@@ -767,7 +766,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// ItemsProperty property changed handler.
         /// </summary>
-        /// <param name="e">AvaloniaPropertyChangedEventArgs.</param>
+        /// <param name="e">The event arguments.</param>
         private void OnItemsPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
@@ -2245,7 +2244,7 @@ namespace Avalonia.Controls
         /// Builds the visual tree for the column header when a new template is applied.
         /// </summary>
         //TODO Validation UI
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             // The template has changed, so we need to refresh the visuals
             _measured = false;
@@ -2682,7 +2681,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            Debug.Assert(DoubleUtil.LessThanOrClose(_vScrollBar.Value, _vScrollBar.Maximum));
+            Debug.Assert(MathUtilities.LessThanOrClose(_vScrollBar.Value, _vScrollBar.Maximum));
 
             _verticalScrollChangesIgnored++;
             try
@@ -2699,7 +2698,7 @@ namespace Avalonia.Controls
                 }
                 else if (scrollEventType == ScrollEventType.SmallDecrement)
                 {
-                    if (DoubleUtil.GreaterThan(NegVerticalOffset, 0))
+                    if (MathUtilities.GreaterThan(NegVerticalOffset, 0))
                     {
                         DisplayData.PendingVerticalScrollHeight -= NegVerticalOffset;
                     }
@@ -2718,7 +2717,7 @@ namespace Avalonia.Controls
                     DisplayData.PendingVerticalScrollHeight = _vScrollBar.Value - _verticalOffset;
                 }
 
-                if (!DoubleUtil.IsZero(DisplayData.PendingVerticalScrollHeight))
+                if (!MathUtilities.IsZero(DisplayData.PendingVerticalScrollHeight))
                 {
                     // Invalidate so the scroll happens on idle
                     InvalidateRowsMeasure(invalidateIndividualElements: false);
@@ -3347,22 +3346,22 @@ namespace Avalonia.Controls
                 bool needHorizScrollbarWithoutVertScrollbar = false;
 
                 if (allowHorizScrollbar &&
-                    DoubleUtil.GreaterThan(totalVisibleWidth, cellsWidth) &&
-                    DoubleUtil.LessThan(totalVisibleFrozenWidth, cellsWidth) &&
-                    DoubleUtil.LessThanOrClose(horizScrollBarHeight, cellsHeight))
+                    MathUtilities.GreaterThan(totalVisibleWidth, cellsWidth) &&
+                    MathUtilities.LessThan(totalVisibleFrozenWidth, cellsWidth) &&
+                    MathUtilities.LessThanOrClose(horizScrollBarHeight, cellsHeight))
                 {
                     double oldDataHeight = cellsHeight;
                     cellsHeight -= horizScrollBarHeight;
                     Debug.Assert(cellsHeight >= 0);
                     needHorizScrollbarWithoutVertScrollbar = needHorizScrollbar = true;
-                    if (allowVertScrollbar && (DoubleUtil.LessThanOrClose(totalVisibleWidth - cellsWidth, vertScrollBarWidth) ||
-                        DoubleUtil.LessThanOrClose(cellsWidth - totalVisibleFrozenWidth, vertScrollBarWidth)))
+                    if (allowVertScrollbar && (MathUtilities.LessThanOrClose(totalVisibleWidth - cellsWidth, vertScrollBarWidth) ||
+                        MathUtilities.LessThanOrClose(cellsWidth - totalVisibleFrozenWidth, vertScrollBarWidth)))
                     {
                         // Would we still need a horizontal scrollbar without the vertical one?
                         UpdateDisplayedRows(DisplayData.FirstScrollingSlot, cellsHeight);
                         if (DisplayData.NumTotallyDisplayedScrollingElements != VisibleSlotCount)
                         {
-                            needHorizScrollbar = DoubleUtil.LessThan(totalVisibleFrozenWidth, cellsWidth - vertScrollBarWidth);
+                            needHorizScrollbar = MathUtilities.LessThan(totalVisibleFrozenWidth, cellsWidth - vertScrollBarWidth);
                         }
                     }
 
@@ -3375,8 +3374,8 @@ namespace Avalonia.Controls
 
                 UpdateDisplayedRows(DisplayData.FirstScrollingSlot, cellsHeight);
                 if (allowVertScrollbar &&
-                    DoubleUtil.GreaterThan(cellsHeight, 0) &&
-                    DoubleUtil.LessThanOrClose(vertScrollBarWidth, cellsWidth) &&
+                    MathUtilities.GreaterThan(cellsHeight, 0) &&
+                    MathUtilities.LessThanOrClose(vertScrollBarWidth, cellsWidth) &&
                     DisplayData.NumTotallyDisplayedScrollingElements != VisibleSlotCount)
                 {
                     cellsWidth -= vertScrollBarWidth;
@@ -3390,9 +3389,9 @@ namespace Avalonia.Controls
 
                 if (allowHorizScrollbar &&
                     needVertScrollbar && !needHorizScrollbar &&
-                    DoubleUtil.GreaterThan(totalVisibleWidth, cellsWidth) &&
-                    DoubleUtil.LessThan(totalVisibleFrozenWidth, cellsWidth) &&
-                    DoubleUtil.LessThanOrClose(horizScrollBarHeight, cellsHeight))
+                    MathUtilities.GreaterThan(totalVisibleWidth, cellsWidth) &&
+                    MathUtilities.LessThan(totalVisibleFrozenWidth, cellsWidth) &&
+                    MathUtilities.LessThanOrClose(horizScrollBarHeight, cellsHeight))
                 {
                     cellsWidth += vertScrollBarWidth;
                     cellsHeight -= horizScrollBarHeight;
@@ -3423,7 +3422,7 @@ namespace Avalonia.Controls
                 if (allowVertScrollbar)
                 {
                     if (cellsHeight > 0 &&
-                        DoubleUtil.LessThanOrClose(vertScrollBarWidth, cellsWidth) &&
+                        MathUtilities.LessThanOrClose(vertScrollBarWidth, cellsWidth) &&
                         DisplayData.NumTotallyDisplayedScrollingElements != VisibleSlotCount)
                     {
                         cellsWidth -= vertScrollBarWidth;
@@ -3440,9 +3439,9 @@ namespace Avalonia.Controls
                 if (allowHorizScrollbar)
                 {
                     if (cellsWidth > 0 &&
-                        DoubleUtil.LessThanOrClose(horizScrollBarHeight, cellsHeight) &&
-                        DoubleUtil.GreaterThan(totalVisibleWidth, cellsWidth) &&
-                        DoubleUtil.LessThan(totalVisibleFrozenWidth, cellsWidth))
+                        MathUtilities.LessThanOrClose(horizScrollBarHeight, cellsHeight) &&
+                        MathUtilities.GreaterThan(totalVisibleWidth, cellsWidth) &&
+                        MathUtilities.LessThan(totalVisibleFrozenWidth, cellsWidth))
                     {
                         cellsHeight -= horizScrollBarHeight;
                         Debug.Assert(cellsHeight >= 0);
@@ -5388,7 +5387,7 @@ namespace Avalonia.Controls
         private void SetVerticalOffset(double newVerticalOffset)
         {
             _verticalOffset = newVerticalOffset;
-            if (_vScrollBar != null && !DoubleUtil.AreClose(newVerticalOffset, _vScrollBar.Value))
+            if (_vScrollBar != null && !MathUtilities.AreClose(newVerticalOffset, _vScrollBar.Value))
             {
                 _vScrollBar.Value = _verticalOffset;
             }

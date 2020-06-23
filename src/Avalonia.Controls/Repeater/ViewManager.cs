@@ -11,6 +11,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -60,11 +61,13 @@ namespace Avalonia.Controls
             if (suppressAutoRecycle)
             {
                 virtInfo.AutoRecycleCandidate = false;
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "GetElement: {Index} Not AutoRecycleCandidate:", virtInfo.Index);
             }
             else
             {
                 virtInfo.AutoRecycleCandidate = true;
                 virtInfo.KeepAlive = true;
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "GetElement: {Index} AutoRecycleCandidate:", virtInfo.Index);
             }
 
             return element;
@@ -107,9 +110,27 @@ namespace Avalonia.Controls
             }
         }
 
+        // We need to clear the datacontext to prevent crashes from happening,
+        //  however we only do that if we were the ones setting it.
+        // That is when one of the following is the case (numbering taken from line ~642):
+        // 1.2    No ItemTemplate, data is not a UIElement
+        // 2.1    ItemTemplate, data is not FrameworkElement
+        // 2.2.2  Itemtemplate, data is FrameworkElement, ElementFactory returned Element different to data
+        //
+        // In all of those three cases, we the ItemTemplateShim is NOT null.
+        // Luckily when we create the items, we store whether we were the once setting the DataContext.
         public void ClearElementToElementFactory(IControl element)
         {
             _owner.OnElementClearing(element);
+
+            var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
+            virtInfo.MoveOwnershipToElementFactory();
+
+            // During creation of this object, we were the one setting the DataContext, so clear it now.
+            if (virtInfo.MustClearDataContext)
+            {
+                element.DataContext = null;
+            }
 
             if (_owner.ItemTemplateShim != null)
             {
@@ -123,9 +144,6 @@ namespace Avalonia.Controls
                     throw new InvalidOperationException("ItemsRepeater's child not found in its Children collection.");
                 }
             }
-
-            var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
-            virtInfo.MoveOwnershipToElementFactory();
 
             if (_lastFocusedElement == element)
             {
@@ -388,19 +406,24 @@ namespace Avalonia.Controls
                     }
 
                 case NotifyCollectionChangedAction.Reset:
-                    if (_owner.ItemsSourceView.HasKeyIndexMapping)
+                    // If we get multiple resets back to back before
+                    // running layout, we dont have to clear all the elements again.
+                    if (!_isDataSourceStableResetPending)
                     {
-                        _isDataSourceStableResetPending = true;
-                    }
-
-                    // Walk through all the elements and make sure they are cleared, they will go into
-                    // the stable id reset pool.
-                    foreach (var element in _owner.Children)
-                    {
-                        var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
-                        if (virtInfo.IsRealized && virtInfo.AutoRecycleCandidate)
+                        if (_owner.ItemsSourceView.HasKeyIndexMapping)
                         {
-                            _owner.ClearElementImpl(element);
+                            _isDataSourceStableResetPending = true;
+                        }
+
+                        // Walk through all the elements and make sure they are cleared, they will go into
+                        // the stable id reset pool.
+                        foreach (var element in _owner.Children)
+                        {
+                            var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
+                            if (virtInfo.IsRealized && virtInfo.AutoRecycleCandidate)
+                            {
+                                _owner.ClearElementImpl(element);
+                            }
                         }
                     }
 
@@ -441,6 +464,9 @@ namespace Avalonia.Controls
                 }
 
                 _resetPool.Clear();
+
+                // Flush the realized indices once the stable reset pool is cleared to start fresh.
+                InvalidateRealizedIndicesHeldByLayout();
             }
         }
 
@@ -498,6 +524,10 @@ namespace Avalonia.Controls
                     var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
                     virtInfo.MoveOwnershipToLayoutFromUniqueIdResetPool();
                     UpdateElementIndex(element, virtInfo, index);
+
+                    // Update realized indices
+                    _firstRealizedElementIndexHeldByLayout = Math.Min(_firstRealizedElementIndexHeldByLayout, index);
+                    _lastRealizedElementIndexHeldByLayout = Math.Max(_lastRealizedElementIndexHeldByLayout, index);
                 }
             }
 
@@ -519,6 +549,10 @@ namespace Avalonia.Controls
                     _pinnedPool.RemoveAt(i);
                     element = elementInfo.PinnedElement;
                     elementInfo.VirtualizationInfo.MoveOwnershipToLayoutFromPinnedPool();
+
+                    // Update realized indices
+                    _firstRealizedElementIndexHeldByLayout = Math.Min(_firstRealizedElementIndexHeldByLayout, index);
+                    _lastRealizedElementIndexHeldByLayout = Math.Max(_lastRealizedElementIndexHeldByLayout, index);
                     break;
                 }
             }
@@ -578,11 +612,14 @@ namespace Avalonia.Controls
             {
                 virtInfo = ItemsRepeater.CreateAndInitializeVirtualizationInfo(element);
             }
+            // Clear flag
+            virtInfo.MustClearDataContext = false;
 
             if (data != element)
             {
                 // Prepare the element
                 element.DataContext = data;
+                virtInfo.MustClearDataContext = true;
             }
 
             virtInfo.MoveOwnershipToLayoutFromElementFactory(

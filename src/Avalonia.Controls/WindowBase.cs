@@ -109,7 +109,7 @@ namespace Avalonia.Controls
         public WindowBase Owner
         {
             get { return _owner; }
-            set { SetAndRaise(OwnerProperty, ref _owner, value); }
+            protected set { SetAndRaise(OwnerProperty, ref _owner, value); }
         }
 
         /// <summary>

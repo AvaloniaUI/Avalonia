@@ -367,6 +367,46 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Clicking_Item_Should_Raise_BringIntoView_For_Correct_Control()
+        {
+            // Issue #3934
+            var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToArray();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
+                SelectionMode = SelectionMode.AlwaysSelected,
+                VirtualizationMode = ItemVirtualizationMode.None,
+            };
+
+            Prepare(target);
+
+            // First an item that is not index 0 must be selected.
+            _mouse.Click(target.Presenter.Panel.Children[1]);
+            Assert.Equal(new IndexPath(1), target.Selection.AnchorIndex);
+
+            // We're going to be clicking on item 9.
+            var item = (ListBoxItem)target.Presenter.Panel.Children[9];
+            var raised = 0;
+
+            // Make sure a RequestBringIntoView event is raised for item 9. It won't be handled
+            // by the ScrollContentPresenter as the item is already visible, so we don't need
+            // handledEventsToo: true. Issue #3934 failed here because item 0 was being scrolled
+            // into view due to SelectionMode.AlwaysSelected.
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) =>
+            {
+                Assert.Same(item, e.TargetObject);
+                ++raised;
+            });
+
+            // Click item 9.
+            _mouse.Click(item);
+
+            Assert.Equal(1, raised);
+        }
+
         private FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>((parent, scope) =>

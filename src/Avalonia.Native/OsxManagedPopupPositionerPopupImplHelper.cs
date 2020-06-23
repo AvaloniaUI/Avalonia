@@ -9,8 +9,7 @@ namespace Avalonia.Native
         {
 
         }
-        public override Point TranslatePoint(Point pt) => pt;
 
-        public override Size TranslateSize(Size size) => size;
+        public override double Scaling => 1;
     }
 }

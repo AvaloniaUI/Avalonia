@@ -19,7 +19,7 @@ namespace Avalonia.Skia
 
         public SKTypeface Get(Typeface typeface)
         {
-            var key = new FontKey(typeface.FontFamily, typeface.Weight, typeface.Style);
+            var key = new FontKey(typeface.FontFamily.Name, typeface.Weight, typeface.Style);
 
             return GetNearestMatch(_typefaces, key);
         }
@@ -49,7 +49,7 @@ namespace Avalonia.Skia
 
             if (keys.Length == 0)
             {
-                return SKTypeface.Default;
+                return null;
             }
 
             key = keys[0];

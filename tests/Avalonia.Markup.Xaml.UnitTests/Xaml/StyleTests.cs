@@ -337,5 +337,50 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, listBox.Background);
             }
         }
+
+        [Fact]
+        public void Transitions_Can_Be_Styled()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='Border'>
+            <Setter Property='Transitions'>
+                <Transitions>
+                    <DoubleTransition Property='Width' Duration='0:0:1'/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector='Border.foo'>
+            <Setter Property='Transitions'>
+                <Transitions>
+                    <DoubleTransition Property='Height' Duration='0:0:1'/>
+                </Transitions>
+            </Setter>
+        </Style>
+    </Window.Styles>
+    <Border/>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var border = (Border)window.Content;
+
+                Assert.Equal(1, border.Transitions.Count);
+                Assert.Equal(Border.WidthProperty, border.Transitions[0].Property);
+
+                border.Classes.Add("foo");
+
+                Assert.Equal(1, border.Transitions.Count);
+                Assert.Equal(Border.HeightProperty, border.Transitions[0].Property);
+
+                border.Classes.Remove("foo");
+
+                Assert.Equal(1, border.Transitions.Count);
+                Assert.Equal(Border.WidthProperty, border.Transitions[0].Property);
+            }
+        }
     }
 }

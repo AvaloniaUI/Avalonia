@@ -22,5 +22,11 @@ namespace Avalonia.iOS
             UIPasteboard.General.String = "";
             return Task.FromResult(0);
         }
+
+        public Task SetDataObjectAsync(IDataObject data) => throw new PlatformNotSupportedException();
+
+        public Task<string[]> GetFormatsAsync() => throw new PlatformNotSupportedException();
+
+        public Task<object> GetDataAsync(string format) => throw new PlatformNotSupportedException();
     }
 }

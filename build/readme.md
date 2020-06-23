@@ -9,8 +9,6 @@
 <Import Project="..\..\build\Moq.props" />
 <Import Project="..\..\build\NetCore.props" />
 <Import Project="..\..\build\Rx.props" />
-<Import Project="..\..\build\Serilog.props" />
-<Import Project="..\..\build\Serilog.Sinks.Trace.props" />
 <Import Project="..\..\build\SharpDX.props" />
 <Import Project="..\..\build\SkiaSharp.Desktop.props" />
 <Import Project="..\..\build\SkiaSharp.props" />
