@@ -77,7 +77,7 @@ namespace Avalonia.Layout
             {
                 if (_shouldEnqueue(item.Key))
                 {
-                    _loopQueueInfo[item.Key] = new Info() { Active = true, Count = item.Value.Count + 1 };
+                    _loopQueueInfo[item.Key] = new Info() { Active = true, Count = 0 };
                     _inner.Enqueue(item.Key);
                 }
             }

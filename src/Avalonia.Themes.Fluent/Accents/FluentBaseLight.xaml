@@ -473,5 +473,56 @@
     <SolidColorBrush x:Key="PivotNavButtonPressedBackgroundThemeBrush" Color="#BD292929" />
     <SolidColorBrush x:Key="PivotNavButtonPressedBorderThemeBrush" Color="#BD292929" />
     <SolidColorBrush x:Key="PivotNavButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
+
+    <!-- BaseResources for ScrollBar.xaml -->
+    <StaticResource x:Key="ScrollBarBackground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarForeground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundListLowBrush" />
+    <StaticResource x:Key="ScrollBarButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumBrush" />
+    <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonArrowForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="ScrollBarButtonArrowForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="ScrollBarButtonArrowForegroundPressed" ResourceKey="SystemControlForegroundAltHighBrush" />
+    <StaticResource x:Key="ScrollBarButtonArrowForegroundDisabled" ResourceKey="SystemControlForegroundBaseLowBrush" />
+    <StaticResource x:Key="ScrollBarThumbFill" ResourceKey="SystemControlForegroundChromeDisabledLowBrush" />
+    <StaticResource x:Key="ScrollBarThumbFillPointerOver" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+    <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="SystemControlBackgroundBaseMediumBrush" />
+    <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    <SolidColorBrush x:Key="ScrollBarTrackFill" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
+    <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
+    <StaticResource x:Key="ScrollBarTrackFillDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="ScrollBarTrackStrokeDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    <StaticResource x:Key="ScrollBarPanningThumbBackgroundDisabled" ResourceKey="SystemControlDisabledChromeHighBrush" />
+    <StaticResource x:Key="ScrollBarThumbBackgroundColor" ResourceKey="SystemBaseLowColor" />
+    <StaticResource x:Key="ScrollBarPanningThumbBackgroundColor" ResourceKey="SystemChromeDisabledLowColor" />
+    <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="{StaticResource ScrollBarThumbBackgroundColor}" />
+    <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="{StaticResource ScrollBarPanningThumbBackgroundColor}" />
+    <x:String x:Key="ScrollBarExpandDuration">00:00:00.1</x:String>
+    <x:String x:Key="ScrollBarExpandBeginTime">00:00:00.40</x:String>
+    <x:String x:Key="ScrollBarContractBeginTime">00:00:02.00</x:String>
+    <x:String x:Key="ScrollBarContractDelay">00:00:02</x:String>
+    <x:String x:Key="ScrollBarContractDuration">00:00:00.1</x:String>
+    <x:String x:Key="ScrollBarContractFinalKeyframe">00:00:02.1</x:String>
+    <x:Double x:Key="ScrollBarSize">16</x:Double>
+    <x:Double x:Key="SmallScrollThumbScale">0.125</x:Double>
+    <x:Double x:Key="SmallScrollThumbOffset">-2</x:Double>
+    <TransformOperations x:Key="VerticalSmallScrollThumbScaleTransform">scaleX(0.125) translateX(-2px)</TransformOperations>
+    <TransformOperations x:Key="HorizontalSmallScrollThumbScaleTransform">scaleY(0.125) translateY(-2px)</TransformOperations>
+    <x:Double x:Key="ScrollBarButtonArrowIconFontSize">8</x:Double>
+
+    <!-- BaseResources for ScrollViewer.xaml -->
+    <SolidColorBrush x:Key="ScrollViewerScrollBarsSeparatorBackground" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
   </Style.Resources>
 </Style>
