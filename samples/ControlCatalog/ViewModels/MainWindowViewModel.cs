@@ -65,7 +65,7 @@ namespace ControlCatalog.ViewModels
                 WindowState.FullScreen,
             };
 
-            this.WhenAnyValue(x => x.SystemChromeButtonsEnabled, x=>x.ManagedChromeButtonsEnabled, x => x.SystemTitleBarEnabled)
+            this.WhenAnyValue(x => x.SystemChromeButtonsEnabled, x=>x.ManagedChromeButtonsEnabled, x => x.SystemTitleBarEnabled, x=>x.PreferSystemChromeButtonsEnabled)
                 .Subscribe(x =>
                 {
                     var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
@@ -83,6 +83,11 @@ namespace ControlCatalog.ViewModels
                     if(x.Item3)
                     {
                         hints |= ExtendClientAreaChromeHints.SystemTitleBar;
+                    }
+
+                    if(x.Item4)
+                    {
+                        hints |= ExtendClientAreaChromeHints.PreferSystemChromeButtons;
                     }
 
                     ChromeHints = hints;
@@ -142,6 +147,13 @@ namespace ControlCatalog.ViewModels
             set { this.RaiseAndSetIfChanged(ref _managedChromeButtonsEnabled, value); }
         }
 
+        private bool _preferSystemChromeButtonsEnabled;
+
+        public bool PreferSystemChromeButtonsEnabled
+        {
+            get { return _preferSystemChromeButtonsEnabled; }
+            set { this.RaiseAndSetIfChanged(ref _preferSystemChromeButtonsEnabled, value); }
+        }
 
         private double _titleBarHeight;
 

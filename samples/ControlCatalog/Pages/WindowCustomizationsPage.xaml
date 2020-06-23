@@ -9,6 +9,7 @@
     <CheckBox Content="Titlebar" IsChecked="{Binding SystemTitleBarEnabled}" />
     <CheckBox Content="System Chrome Buttons" IsChecked="{Binding SystemChromeButtonsEnabled}" />
     <CheckBox Content="Managed Chrome Buttons" IsChecked="{Binding ManagedChromeButtonsEnabled}" />
+    <CheckBox Content="Prefer System Chrome Buttons" IsChecked="{Binding PreferSystemChromeButtonsEnabled}" />
     <Slider Minimum="-1" Maximum="200" Value="{Binding TitleBarHeight}" />
     <ComboBox x:Name="TransparencyLevels" SelectedIndex="{Binding TransparencyLevel}">
       <ComboBoxItem>None</ComboBoxItem>
