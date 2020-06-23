@@ -6,9 +6,9 @@ namespace Avalonia.Platform
     public enum ExtendClientAreaChromeHints
     {
         NoChrome,
-        Default = SystemTitleBar,        
-        SystemTitleBar = 0x01,
-        PreferSystemChromeButtons = 0x02,
+        Default = SystemChrome,        
+        SystemChrome = 0x01,
+        PreferSystemChrome = 0x02,
         OSXThickTitleBar = 0x08,               
     }
 }

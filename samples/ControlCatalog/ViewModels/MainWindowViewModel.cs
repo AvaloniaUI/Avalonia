@@ -78,12 +78,12 @@ namespace ControlCatalog.ViewModels
 
                     if(x.Item1)
                     {
-                        hints |= ExtendClientAreaChromeHints.SystemTitleBar;
+                        hints |= ExtendClientAreaChromeHints.SystemChrome;
                     }
 
                     if(x.Item2)
                     {
-                        hints |= ExtendClientAreaChromeHints.PreferSystemChromeButtons;
+                        hints |= ExtendClientAreaChromeHints.PreferSystemChrome;
                     }
 
                     ChromeHints = hints;

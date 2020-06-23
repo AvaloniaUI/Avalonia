@@ -694,7 +694,7 @@ namespace Avalonia.Win32
             borderCaptionThickness.left *= -1;
             borderCaptionThickness.top *= -1;
 
-            bool wantsTitleBar = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar) || _extendTitleBarHint == -1;
+            bool wantsTitleBar = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) || _extendTitleBarHint == -1;
 
             if (!wantsTitleBar)
             {
@@ -711,7 +711,7 @@ namespace Avalonia.Win32
                 borderCaptionThickness.top = (int)(_extendTitleBarHint * Scaling);                
             }
 
-            margins.cyTopHeight = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemTitleBar) ? borderCaptionThickness.top : 1;
+            margins.cyTopHeight = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
 
             if (WindowState == WindowState.Maximized)
             {
@@ -727,7 +727,7 @@ namespace Avalonia.Win32
             return margins;
         }
 
-        private void ExtendClientArea ()
+        private void ExtendClientArea()
         {
             if (DwmIsCompositionEnabled(out bool compositionEnabled) < 0 || !compositionEnabled)
             {
@@ -735,36 +735,28 @@ namespace Avalonia.Win32
                 return;
             }
 
-            if (!_isClientAreaExtended || WindowState == WindowState.FullScreen)
+            GetWindowRect(_hwnd, out var rcClient);
+
+            // Inform the application of the frame change.
+            SetWindowPos(_hwnd,
+                         IntPtr.Zero,
+                         rcClient.left, rcClient.top,
+                         rcClient.Width, rcClient.Height,
+                         SetWindowPosFlags.SWP_FRAMECHANGED);
+
+            if (_isClientAreaExtended && WindowState != WindowState.FullScreen)
             {
-                _extendedMargins = new Thickness(0, 0, 0, 0);
-                _offScreenMargin = new Thickness();
+                var margins = UpdateExtendMargins();
+
+                DwmExtendFrameIntoClientArea(_hwnd, ref margins);
             }
             else
             {
-                GetWindowRect(_hwnd, out var rcClient);
+                var margins = new MARGINS();
+                DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
-                // Inform the application of the frame change.
-                SetWindowPos(_hwnd,
-                             IntPtr.Zero,
-                             rcClient.left, rcClient.top,
-                             rcClient.Width, rcClient.Height,
-                             SetWindowPosFlags.SWP_FRAMECHANGED);
-
-                if (_isClientAreaExtended)
-                {
-                    var margins = UpdateExtendMargins();
-
-                    DwmExtendFrameIntoClientArea(_hwnd, ref margins);
-                }
-                else
-                {
-                    var margins = new MARGINS();
-                    DwmExtendFrameIntoClientArea(_hwnd, ref margins);
-
-                    _offScreenMargin = new Thickness();
-                    _extendedMargins = new Thickness();
-                }
+                _offScreenMargin = new Thickness();
+                _extendedMargins = new Thickness();
             }
 
             ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
@@ -1061,7 +1053,7 @@ namespace Avalonia.Win32
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
         
         /// <inheritdoc/>
-        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChromeButtons);
+        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome);
 
         /// <inheritdoc/>
         public Thickness ExtendedMargins => _extendedMargins;
