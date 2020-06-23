@@ -73,7 +73,10 @@ namespace Avalonia.Data.Core
                 }
             }
 
-            Debug.Assert(accessor != null);
+            if (accessor is null)
+            {
+                throw new AvaloniaInternalException("Data validators must return non-null accessor.");
+            }
 
             _accessor = accessor;
             accessor.Subscribe(ValueChanged);
