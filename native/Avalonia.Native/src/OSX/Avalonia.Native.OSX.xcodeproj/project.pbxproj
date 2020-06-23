@@ -10,6 +10,8 @@
 		1A002B9E232135EE00021753 /* app.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A002B9D232135EE00021753 /* app.mm */; };
 		1A3E5EA823E9E83B00EDE661 /* rendertarget.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */; };
 		1A3E5EAA23E9F26C00EDE661 /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A3E5EA923E9F26C00EDE661 /* IOSurface.framework */; };
+		1A1852DC23E05814008F0DED /* deadlock.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A1852DB23E05814008F0DED /* deadlock.mm */; };
+		1AFD334123E03C4F0042899B /* controlhost.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1AFD334023E03C4F0042899B /* controlhost.mm */; };
 		1A3E5EAE23E9FB1300EDE661 /* cgl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A3E5EAD23E9FB1300EDE661 /* cgl.mm */; };
 		1A3E5EB023E9FE8300EDE661 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A3E5EAF23E9FE8300EDE661 /* QuartzCore.framework */; };
 		1A465D10246AB61600C5858B /* dnd.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A465D0F246AB61600C5858B /* dnd.mm */; };
@@ -32,6 +34,8 @@
 		1A002B9D232135EE00021753 /* app.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = app.mm; sourceTree = "<group>"; };
 		1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = rendertarget.mm; sourceTree = "<group>"; };
 		1A3E5EA923E9F26C00EDE661 /* IOSurface.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOSurface.framework; path = System/Library/Frameworks/IOSurface.framework; sourceTree = SDKROOT; };
+		1A1852DB23E05814008F0DED /* deadlock.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = deadlock.mm; sourceTree = "<group>"; };
+		1AFD334023E03C4F0042899B /* controlhost.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = controlhost.mm; sourceTree = "<group>"; };
 		1A3E5EAD23E9FB1300EDE661 /* cgl.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = cgl.mm; sourceTree = "<group>"; };
 		1A3E5EAF23E9FE8300EDE661 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		1A465D0F246AB61600C5858B /* dnd.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = dnd.mm; sourceTree = "<group>"; };
@@ -86,11 +90,13 @@
 		AB7A61E62147C814003C5833 = {
 			isa = PBXGroup;
 			children = (
+				1A1852DB23E05814008F0DED /* deadlock.mm */,
 				1A002B9D232135EE00021753 /* app.mm */,
 				37DDA9B121933371002E132B /* AvnString.h */,
 				37DDA9AF219330F8002E132B /* AvnString.mm */,
 				37A4E71A2178846A00EACBCD /* headers */,
 				1A3E5EAD23E9FB1300EDE661 /* cgl.mm */,
+				1AFD334023E03C4F0042899B /* controlhost.mm */,
 				5BF943652167AD1D009CAE35 /* cursor.h */,
 				5B21A981216530F500CEE36E /* cursor.mm */,
 				5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */,
@@ -191,6 +197,7 @@
 			files = (
 				1A002B9E232135EE00021753 /* app.mm in Sources */,
 				5B8BD94F215BFEA6005ED2A7 /* clipboard.mm in Sources */,
+				1A1852DC23E05814008F0DED /* deadlock.mm in Sources */,
 				5B21A982216530F500CEE36E /* cursor.mm in Sources */,
 				37DDA9B0219330F8002E132B /* AvnString.mm in Sources */,
 				AB8F7D6B21482D7F0057DBA5 /* platformthreading.mm in Sources */,
@@ -199,6 +206,7 @@
 				37E2330F21583241000CB7E2 /* KeyTransform.mm in Sources */,
 				520624B322973F4100C4DCEF /* menu.mm in Sources */,
 				37A517B32159597E00FBA241 /* Screens.mm in Sources */,
+				1AFD334123E03C4F0042899B /* controlhost.mm in Sources */,
 				1A465D10246AB61600C5858B /* dnd.mm in Sources */,
 				AB00E4F72147CA920032A60A /* main.mm in Sources */,
 				37C09D8821580FE4006A6758 /* SystemDialogs.mm in Sources */,
