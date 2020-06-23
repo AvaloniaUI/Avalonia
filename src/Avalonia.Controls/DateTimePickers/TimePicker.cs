@@ -15,33 +15,34 @@ namespace Avalonia.Controls
         /// Defines the <see cref="MinuteIncrement"/> property
         /// </summary>
         public static readonly DirectProperty<TimePicker, int> MinuteIncrementProperty =
-            AvaloniaProperty.RegisterDirect<TimePicker, int>("MinuteIncrement", x => x.MinuteIncrement,
-                (x, v) => x.MinuteIncrement = v);
+            AvaloniaProperty.RegisterDirect<TimePicker, int>(nameof(MinuteIncrement), 
+                x => x.MinuteIncrement, (x, v) => x.MinuteIncrement = v);
 
         /// <summary>
         /// Defines the <see cref="Header"/> property
         /// </summary>
         public static readonly StyledProperty<object> HeaderProperty =
-            AvaloniaProperty.Register<DatePicker, object>("Header");
+            AvaloniaProperty.Register<DatePicker, object>(nameof(Header));
 
         /// <summary>
         /// Defines the <see cref="HeaderTemplate"/> property
         /// </summary>
         public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
-            AvaloniaProperty.Register<DatePicker, IDataTemplate>("HeaderTemplate");
+            AvaloniaProperty.Register<DatePicker, IDataTemplate>(nameof(HeaderTemplate));
 
         /// <summary>
         /// Defines the <see cref="ClockIdentifier"/> property
         /// </summary>
         public static readonly DirectProperty<TimePicker, string> ClockIdentifierProperty =
-           AvaloniaProperty.RegisterDirect<TimePicker, string>("ClockIdentifier", x => x.ClockIdentifier,
-               (x, v) => x.ClockIdentifier = v);
+           AvaloniaProperty.RegisterDirect<TimePicker, string>(nameof(ClockIdentifier), 
+               x => x.ClockIdentifier, (x, v) => x.ClockIdentifier = v);
 
         /// <summary>
         /// Defines the <see cref="SelectedTime"/> property
         /// </summary>
         public static readonly DirectProperty<TimePicker, TimeSpan?> SelectedTimeProperty =
-            AvaloniaProperty.RegisterDirect<TimePicker, TimeSpan?>("Time", x => x.SelectedTime, (x, v) => x.SelectedTime = v);
+            AvaloniaProperty.RegisterDirect<TimePicker, TimeSpan?>(nameof(SelectedTime), 
+                x => x.SelectedTime, (x, v) => x.SelectedTime = v);
 
         //Template Items
         private TimePickerPresenter _presenter;
@@ -230,8 +231,6 @@ namespace Avalonia.Controls
             {
                 var newTime = SelectedTime.Value;
 
-                bool clock12 = ClockIdentifier == "12HourClock";
-
                 if (ClockIdentifier == "12HourClock")
                 {
                     var hr = newTime.Hours;
@@ -265,7 +264,7 @@ namespace Avalonia.Controls
 
         private void OnFlyoutButtonClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            _presenter.Time = SelectedTime.HasValue ? SelectedTime.Value : DateTime.Now.TimeOfDay;
+            _presenter.Time = SelectedTime ?? DateTime.Now.TimeOfDay;
 
             _popup.IsOpen = true;
 

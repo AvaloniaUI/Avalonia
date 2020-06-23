@@ -22,25 +22,25 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="ItemHeight"/> property
         /// </summary>
         public static readonly StyledProperty<double> ItemHeightProperty =
-            AvaloniaProperty.Register<DateTimePickerPanel, double>("ItemHeight", 40.0);
+            AvaloniaProperty.Register<DateTimePickerPanel, double>(nameof(ItemHeight), 40.0);
 
         /// <summary>
         /// Defines the <see cref="PanelType"/> property
         /// </summary>
         public static readonly StyledProperty<DateTimePickerPanelType> PanelTypeProperty =
-            AvaloniaProperty.Register<DateTimePickerPanel, DateTimePickerPanelType>("PanelType");
+            AvaloniaProperty.Register<DateTimePickerPanel, DateTimePickerPanelType>(nameof(PanelType));
 
         /// <summary>
         /// Defines the <see cref="ItemFormat"/> property
         /// </summary>
         public static readonly StyledProperty<string> ItemFormatProperty =
-            AvaloniaProperty.Register<DateTimePickerPanel, string>("ItemFormat", "yyyy");
+            AvaloniaProperty.Register<DateTimePickerPanel, string>(nameof(ItemFormat), "yyyy");
 
         /// <summary>
         /// Defines the <see cref="ShouldLoop"/> property
         /// </summary>
         public static readonly StyledProperty<bool> ShouldLoopProperty =
-            AvaloniaProperty.Register<DateTimePickerPanel, bool>("ShouldLoop");
+            AvaloniaProperty.Register<DateTimePickerPanel, bool>(nameof(ShouldLoop));
 
         //Backing fields for properties
         private int _minimumValue = 1;

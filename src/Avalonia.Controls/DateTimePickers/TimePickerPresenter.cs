@@ -6,8 +6,6 @@ using System;
 
 namespace Avalonia.Controls
 {
-    //Combines TimePickerFlyout & TimePickerFlyoutPicker from WinUI
-
     /// <summary>
     /// Defines the presenter used for selecting a time. Intended for use with
     /// <see cref="TimePicker"/> but can be used independently
@@ -32,7 +30,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Time"/> property
         /// </summary>
         public static readonly DirectProperty<TimePickerPresenter, TimeSpan> TimeProperty =
-            AvaloniaProperty.RegisterDirect<TimePickerPresenter, TimeSpan>("Time",
+            AvaloniaProperty.RegisterDirect<TimePickerPresenter, TimeSpan>(nameof(Time),
                 x => x.Time, (x, v) => x.Time = v);
 
         public TimePickerPresenter()
@@ -100,7 +98,6 @@ namespace Avalonia.Controls
             get => _Time;
             set
             {
-                var old = _Time;
                 SetAndRaise(TimeProperty, ref _Time, value);
                 InitPicker();
             }

@@ -17,69 +17,76 @@ namespace Avalonia.Controls
         /// Define the <see cref="DayFormat"/> Property
         /// </summary>
         public static readonly DirectProperty<DatePicker, string> DayFormatProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, string>("DayFormat",
+            AvaloniaProperty.RegisterDirect<DatePicker, string>(nameof(DayFormat),
                 x => x.DayFormat, (x, v) => x.DayFormat = v);
 
         /// <summary>
         /// Defines the <see cref="DayVisible"/> Property
         /// </summary>
         public static readonly DirectProperty<DatePicker, bool> DayVisibleProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, bool>("DayVisible",
+            AvaloniaProperty.RegisterDirect<DatePicker, bool>(nameof(DayVisible),
                 x => x.DayVisible, (x, v) => x.DayVisible = v);
 
         /// <summary>
         /// Defines the <see cref="Header"/> Property
         /// </summary>
         public static readonly StyledProperty<object> HeaderProperty =
-            AvaloniaProperty.Register<DatePicker, object>("Header");
+            AvaloniaProperty.Register<DatePicker, object>(nameof(Header));
 
         /// <summary>
         /// Defines the <see cref="HeaderTemplate"/> Property
         /// </summary>
         public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
-            AvaloniaProperty.Register<DatePicker, IDataTemplate>("HeaderTemplate");
+            AvaloniaProperty.Register<DatePicker, IDataTemplate>(nameof(HeaderTemplate));
 
         /// <summary>
         /// Defines the <see cref="MaxYear"/> Property
         /// </summary>
         public static readonly DirectProperty<DatePicker, DateTimeOffset> MaxYearProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, DateTimeOffset>("MaxYear", x => x.MaxYear, (x, v) => x.MaxYear = v);
+            AvaloniaProperty.RegisterDirect<DatePicker, DateTimeOffset>(nameof(MaxYear), 
+                x => x.MaxYear, (x, v) => x.MaxYear = v);
 
         /// <summary>
         /// Defines the <see cref="MinYear"/> Property
         /// </summary>
         public static readonly DirectProperty<DatePicker, DateTimeOffset> MinYearProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, DateTimeOffset>("MinYear", x => x.MinYear, (x, v) => x.MinYear = v);
+            AvaloniaProperty.RegisterDirect<DatePicker, DateTimeOffset>(nameof(MinYear), 
+                x => x.MinYear, (x, v) => x.MinYear = v);
 
         /// <summary>
         /// Defines the <see cref="MonthFormat"/> Property
         /// </summary>
         public static readonly DirectProperty<DatePicker, string> MonthFormatProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, string>("MonthFormat", x => x.MonthFormat, (x, v) => x.MonthFormat = v);
+            AvaloniaProperty.RegisterDirect<DatePicker, string>(nameof(MonthFormat), 
+                x => x.MonthFormat, (x, v) => x.MonthFormat = v);
 
         /// <summary>
         /// Defines the <see cref="MonthVisible"/> Property
         /// </summary>
         public static readonly DirectProperty<DatePicker, bool> MonthVisibleProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, bool>("MonthVisible", x => x.MonthVisible, (x, v) => x.MonthVisible = v);
+            AvaloniaProperty.RegisterDirect<DatePicker, bool>(nameof(MonthVisible), 
+                x => x.MonthVisible, (x, v) => x.MonthVisible = v);
 
         /// <summary>
         /// Defiens the <see cref="YearFormat"/> Property
         /// </summary>
         public static readonly DirectProperty<DatePicker, string> YearFormatProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, string>("YearFormat", x => x.YearFormat, (x, v) => x.YearFormat = v);
+            AvaloniaProperty.RegisterDirect<DatePicker, string>(nameof(YearFormat), 
+                x => x.YearFormat, (x, v) => x.YearFormat = v);
 
         /// <summary>
         /// Defines the <see cref="YearVisible"/> Property
         /// </summary>
         public static readonly DirectProperty<DatePicker, bool> YearVisibleProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, bool>("YearVisible", x => x.YearVisible, (x, v) => x.YearVisible = v);
+            AvaloniaProperty.RegisterDirect<DatePicker, bool>(nameof(YearVisible), 
+                x => x.YearVisible, (x, v) => x.YearVisible = v);
 
         /// <summary>
         /// Defines the <see cref="SelectedDate"/> Property
         /// </summary>
         public static readonly DirectProperty<DatePicker, DateTimeOffset?> SelectedDateProperty =
-            AvaloniaProperty.RegisterDirect<DatePicker, DateTimeOffset?>("SelectedDate", x => x.SelectedDate, (x, v) => x.SelectedDate = v);
+            AvaloniaProperty.RegisterDirect<DatePicker, DateTimeOffset?>(nameof(SelectedDate), 
+                x => x.SelectedDate, (x, v) => x.SelectedDate = v);
 
         //Template Items
         private Button _flyoutButton;
@@ -385,7 +392,7 @@ namespace Avalonia.Controls
             if (_presenter == null)
                 throw new InvalidOperationException("No DatePickerPresenter found");
 
-            _presenter.Date = SelectedDate.HasValue ? SelectedDate.Value : DateTimeOffset.Now;
+            _presenter.Date = SelectedDate ?? DateTimeOffset.Now;
 
             _popup.IsOpen = true;
 
