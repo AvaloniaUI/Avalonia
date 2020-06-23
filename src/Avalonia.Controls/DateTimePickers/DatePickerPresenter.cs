@@ -87,9 +87,8 @@ namespace Avalonia.Controls
         private Button _dayDownButton;
         private Button _yearDownButton;
 
-
         private DateTimeOffset _date;
-        private string _dayFormat = "d (ddd)";
+        private string _dayFormat = "%d";
         private bool _dayVisible = true;
         private DateTimeOffset _maxYear;
         private DateTimeOffset _minYear;
@@ -237,11 +236,9 @@ namespace Avalonia.Controls
 
             _daySelector = e.NameScope.Get<DateTimePickerPanel>("DaySelector");
             _daySelector.SelectionChanged += OnDayChanged;
-            //init _daySelector later
 
             _yearSelector = e.NameScope.Get<DateTimePickerPanel>("YearSelector");
             _yearSelector.SelectionChanged += OnYearChanged;
-            //Subscribe to selected changed
 
             _acceptButton = e.NameScope.Get<Button>("AcceptButton");
 
@@ -521,6 +518,5 @@ namespace Avalonia.Controls
             var acceptDismissButtonHeight = _acceptButton != null ? _acceptButton.Bounds.Height : 41;
             return -(MaxHeight - acceptDismissButtonHeight) / 2 - (_monthSelector.ItemHeight / 2);
         }
-
     }
 }

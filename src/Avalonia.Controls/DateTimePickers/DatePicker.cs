@@ -94,7 +94,7 @@ namespace Avalonia.Controls
 
         private bool _areControlsAvailable;
 
-        private string _dayFormat = "d (ddd)";
+        private string _dayFormat = "%d";
         private bool _dayVisible = true;
         private DateTimeOffset _maxYear;
         private DateTimeOffset _minYear;
@@ -356,7 +356,6 @@ namespace Avalonia.Controls
             Grid.SetColumn(_spacer2, 3);
             _spacer1.IsVisible = columnIndex > 1;
             _spacer2.IsVisible = columnIndex > 2;
-
         }
 
         private void SetSelectedDateText()
@@ -394,15 +393,13 @@ namespace Avalonia.Controls
 
             //The extra 5 px I think is related to default popup placement behavior
             _popup.Host.ConfigurePosition(_popup.PlacementTarget, PlacementMode.AnchorAndGravity, new Point(0, deltaY + 5),
-                Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.Bottom, Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.Bottom,
-                 Avalonia.Controls.Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY);
+                Primitives.PopupPositioning.PopupAnchor.Bottom, Primitives.PopupPositioning.PopupGravity.Bottom,
+                 Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY);
         }
 
         protected virtual void OnSelectedDateChanged(object sender, DatePickerSelectedValueChangedEventArgs e)
         {
             SelectedDateChanged?.Invoke(sender, e);
         }
-
-
     }
 }
