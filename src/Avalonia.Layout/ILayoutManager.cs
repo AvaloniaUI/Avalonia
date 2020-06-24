@@ -7,7 +7,7 @@ namespace Avalonia.Layout
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>
-    public interface ILayoutManager
+    public interface ILayoutManager : IDisposable
     {
         /// <summary>
         /// Raised when the layout manager completes a layout pass.

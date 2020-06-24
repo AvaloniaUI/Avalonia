@@ -268,6 +268,23 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Close_Should_Dispose_LayoutManager()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                impl.SetupAllProperties();
+
+                var layoutManager = new Mock<ILayoutManager>();
+                var target = new TestTopLevel(impl.Object, layoutManager.Object);
+
+                impl.Object.Closed();
+
+                layoutManager.Verify(x => x.Dispose());
+            }
+        }
+
+        [Fact]
         public void Reacts_To_Changes_In_Global_Styles()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

@@ -348,6 +348,7 @@ namespace Avalonia.Controls
             OnClosed(EventArgs.Empty);
             Renderer?.Dispose();
             Renderer = null;
+            LayoutManager?.Dispose();
         }
 
         /// <summary>

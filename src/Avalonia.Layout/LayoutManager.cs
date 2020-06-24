@@ -10,12 +10,13 @@ namespace Avalonia.Layout
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>
-    public class LayoutManager : ILayoutManager
+    public class LayoutManager : ILayoutManager, IDisposable
     {
         private readonly ILayoutRoot _owner;
         private readonly LayoutQueue<ILayoutable> _toMeasure = new LayoutQueue<ILayoutable>(v => !v.IsMeasureValid);
         private readonly LayoutQueue<ILayoutable> _toArrange = new LayoutQueue<ILayoutable>(v => !v.IsArrangeValid);
         private readonly Action _executeLayoutPass;
+        private bool _disposed;
         private bool _queued;
         private bool _running;
 
@@ -32,6 +33,11 @@ namespace Avalonia.Layout
         {
             control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
+
+            if (_disposed)
+            {
+                return;
+            }
 
             if (!control.IsAttachedToVisualTree)
             {
@@ -59,6 +65,11 @@ namespace Avalonia.Layout
             control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
 
+            if (_disposed)
+            {
+                return;
+            }
+
             if (!control.IsAttachedToVisualTree)
             {
 #if DEBUG
@@ -85,7 +96,7 @@ namespace Avalonia.Layout
 
             Dispatcher.UIThread.VerifyAccess();
 
-            if (!_owner.IsVisible)
+            if (_disposed)
             {
                 return;
             }
@@ -150,6 +161,11 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         public virtual void ExecuteInitialLayoutPass()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             try
             {
                 _running = true;
@@ -177,6 +193,13 @@ namespace Avalonia.Layout
             }
 
             ExecuteInitialLayoutPass();
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
+            _toMeasure.Dispose();
+            _toArrange.Dispose();
         }
 
         private void ExecuteMeasurePass()
@@ -256,7 +279,7 @@ namespace Avalonia.Layout
 
         private void QueueLayoutPass()
         {
-            if (!_queued && !_running && _owner.IsVisible)
+            if (!_queued && !_running)
             {
                 Dispatcher.UIThread.Post(_executeLayoutPass, DispatcherPriority.Layout);
                 _queued = true;
