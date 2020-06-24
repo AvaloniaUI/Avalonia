@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reactive.Disposables;
-using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 
@@ -39,11 +38,13 @@ namespace Avalonia.Animation.Animators
                 }
             }
 
-            // Add SCB if the target prop is empty.
-            if (control.GetValue(Property) == null)
-                control.SetValue(Property, new SolidColorBrush(Colors.Transparent));
-
             var targetVal = control.GetValue(Property);
+            // Add SCB if the target prop is empty.
+            if (targetVal is null)
+            {
+                targetVal = new SolidColorBrush(Colors.Transparent);
+                control.SetValue(Property, targetVal);
+            }
 
             // Continue if target prop is not empty & is a SolidColorBrush derivative. 
             if (typeof(ISolidColorBrush).IsAssignableFrom(targetVal.GetType()))
