@@ -132,6 +132,7 @@ namespace Avalonia.Layout
         private bool _measuring;
         private Size? _previousMeasure;
         private Rect? _previousArrange;
+        private EventHandler<EffectiveViewportChangedEventArgs>? _effectiveViewportChanged;
         private EventHandler? _layoutUpdated;
 
         /// <summary>
@@ -150,6 +151,32 @@ namespace Avalonia.Layout
                 MarginProperty,
                 HorizontalAlignmentProperty,
                 VerticalAlignmentProperty);
+        }
+
+        /// <summary>
+        /// Occurs when the element's effective viewport changes.
+        /// </summary>
+        public event EventHandler<EffectiveViewportChangedEventArgs>? EffectiveViewportChanged
+        {
+            add
+            {
+                if (_effectiveViewportChanged is null && VisualRoot is ILayoutRoot r)
+                {
+                    r.LayoutManager.RegisterEffectiveViewportListener(this);
+                }
+
+                _effectiveViewportChanged += value;
+            }
+
+            remove
+            {
+                _effectiveViewportChanged -= value;
+
+                if (_effectiveViewportChanged is null && VisualRoot is ILayoutRoot r)
+                {
+                    r.LayoutManager.UnregisterEffectiveViewportListener(this);
+                }
+            }
         }
 
         /// <summary>
@@ -385,13 +412,6 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
-        /// Called by InvalidateMeasure
-        /// </summary>
-        protected virtual void OnMeasureInvalidated()
-        {
-        }
-
-        /// <summary>
         /// Invalidates the measurement of the control and queues a new layout pass.
         /// </summary>
         public void InvalidateMeasure()
@@ -434,6 +454,11 @@ namespace Avalonia.Layout
             {
                 InvalidateMeasure();
             }
+        }
+
+        void ILayoutable.EffectiveViewportChanged(EffectiveViewportChangedEventArgs e)
+        {
+            _effectiveViewportChanged?.Invoke(this, e);
         }
 
         /// <summary>
@@ -717,9 +742,17 @@ namespace Avalonia.Layout
         {
             base.OnAttachedToVisualTreeCore(e);
 
-            if (_layoutUpdated is object && e.Root is ILayoutRoot r)
+            if (e.Root is ILayoutRoot r)
             {
-                r.LayoutManager.LayoutUpdated += LayoutManagedLayoutUpdated;
+                if (_layoutUpdated is object)
+                {
+                    r.LayoutManager.LayoutUpdated += LayoutManagedLayoutUpdated;
+                }
+
+                if (_effectiveViewportChanged is object)
+                {
+                    r.LayoutManager.RegisterEffectiveViewportListener(this);
+                }
             }
         }
 
@@ -727,10 +760,25 @@ namespace Avalonia.Layout
         {
             base.OnDetachedFromVisualTreeCore(e);
 
-            if (_layoutUpdated is object && e.Root is ILayoutRoot r)
+            if (e.Root is ILayoutRoot r)
             {
-                r.LayoutManager.LayoutUpdated -= LayoutManagedLayoutUpdated;
+                if (_layoutUpdated is object)
+                {
+                    r.LayoutManager.LayoutUpdated -= LayoutManagedLayoutUpdated;
+                }
+
+                if (_effectiveViewportChanged is object)
+                {
+                    r.LayoutManager.UnregisterEffectiveViewportListener(this);
+                }
             }
+        }
+
+        /// <summary>
+        /// Called by InvalidateMeasure
+        /// </summary>
+        protected virtual void OnMeasureInvalidated()
+        {
         }
 
         /// <inheritdoc/>
