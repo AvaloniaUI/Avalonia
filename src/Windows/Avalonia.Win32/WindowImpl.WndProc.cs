@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Win32.Input;
@@ -22,7 +23,8 @@ namespace Avalonia.Win32
             uint timestamp = unchecked((uint)GetMessageTime());
 
             RawInputEventArgs e = null;
-
+            var shouldTakeFocus = false;
+            
             switch ((WindowsMessage)msg)
             {
                 case WindowsMessage.WM_ACTIVATE:
@@ -149,6 +151,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONDOWN:
                 case WindowsMessage.WM_XBUTTONDOWN:
                 {
+                    shouldTakeFocus = ShouldTakeFocusOnClick;
                     if (ShouldIgnoreTouchEmulatedMessage())
                     {
                         break;
@@ -177,6 +180,7 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONUP:
                 case WindowsMessage.WM_XBUTTONUP:
                 {
+                    shouldTakeFocus = ShouldTakeFocusOnClick;
                     if (ShouldIgnoreTouchEmulatedMessage())
                     {
                         break;
@@ -429,12 +433,18 @@ namespace Avalonia.Win32
                     (Screen as ScreenImpl)?.InvalidateScreensCache();
                     return IntPtr.Zero;
                 }
+                case WindowsMessage.WM_KILLFOCUS:
+                    LostFocus?.Invoke();
+                    break;
             }
 
 #if USE_MANAGED_DRAG
             if (_managedDrag.PreprocessInputEvent(ref e))
                 return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
 #endif
+            
+            if (shouldTakeFocus)
+                SetFocus(_hwnd);
 
             if (e != null && Input != null)
             {
@@ -519,5 +529,9 @@ namespace Avalonia.Win32
 
             return modifiers;
         }
+        
+        public INativeControlHostImpl NativeControlHost => _nativeControlHost;
+
+        protected virtual bool ShouldTakeFocusOnClick => true;
     }
 }

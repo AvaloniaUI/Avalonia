@@ -67,7 +67,7 @@ namespace Avalonia.Android
             throw new NotSupportedException();
         }
 
-        public IEmbeddableWindowImpl CreateEmbeddableWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotSupportedException();
         }
