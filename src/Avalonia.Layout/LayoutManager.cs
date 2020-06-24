@@ -199,7 +199,9 @@ namespace Avalonia.Layout
         void ILayoutManager.RegisterEffectiveViewportListener(ILayoutable control)
         {
             _effectiveViewportChangedListeners ??= new List<EffectiveViewportChangedListener>();
-            _effectiveViewportChangedListeners.Add(new EffectiveViewportChangedListener(control));
+            _effectiveViewportChangedListeners.Add(new EffectiveViewportChangedListener(
+                control,
+                CalculateEffectiveViewport(control)));
         }
 
         void ILayoutManager.UnregisterEffectiveViewportListener(ILayoutable control)
@@ -331,8 +333,7 @@ namespace Avalonia.Layout
                 for (var i = 0; i < _effectiveViewportChangedListeners.Count; ++i)
                 {
                     var l = _effectiveViewportChangedListeners[i];
-                    var viewport = new Rect(0, 0, double.PositiveInfinity, double.PositiveInfinity);
-                    CalculateEffectiveViewport(l.Listener, ref viewport);
+                    var viewport = CalculateEffectiveViewport(l.Listener);
 
                     if (viewport != l.Viewport)
                     {
@@ -343,6 +344,13 @@ namespace Avalonia.Layout
             }
 
             return startCount != _toMeasure.Count + _toMeasure.Count;
+        }
+
+        private Rect CalculateEffectiveViewport(IVisual control)
+        {
+            var viewport = new Rect(0, 0, double.PositiveInfinity, double.PositiveInfinity);
+            CalculateEffectiveViewport(control, ref viewport);
+            return viewport;
         }
 
         private void CalculateEffectiveViewport(IVisual control, ref Rect viewport)
@@ -364,12 +372,6 @@ namespace Avalonia.Layout
 
         private readonly struct EffectiveViewportChangedListener
         {
-            public EffectiveViewportChangedListener(ILayoutable listener)
-            {
-                Listener = listener;
-                Viewport = new Rect(double.NaN, double.NaN, double.NaN, double.NaN);
-            }
-
             public EffectiveViewportChangedListener(ILayoutable listener, Rect viewport)
             {
                 Listener = listener;

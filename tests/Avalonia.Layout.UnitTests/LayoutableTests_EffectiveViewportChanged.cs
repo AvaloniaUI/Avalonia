@@ -1,7 +1,10 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -10,257 +13,302 @@ namespace Avalonia.Layout.UnitTests
     public class LayoutableTests_EffectiveViewportChanged
     {
         [Fact]
-        public void EffectiveViewportChanged_Not_Raised_When_Control_Added_To_Tree()
+        public async Task EffectiveViewportChanged_Not_Raised_When_Control_Added_To_Tree()
         {
-            var root = new TestRoot();
-            var canvas = new Canvas();
-            var raised = 0;
-
-            canvas.EffectiveViewportChanged += (s, e) =>
+            await RunOnUIThread.Execute(async () =>
             {
-                ++raised;
-            };
+                var root = CreateRoot();
+                var target = new Canvas();
+                var raised = 0;
 
-            root.Child = canvas;
+                target.EffectiveViewportChanged += (s, e) =>
+                {
+                    ++raised;
+                };
 
-            Assert.Equal(0, raised);
+                root.Child = target;
+
+                Assert.Equal(0, raised);
+            });
         }
 
         [Fact]
-        public void EffectiveViewportChanged_Raised_Before_LayoutUpdated()
+        public async Task EffectiveViewportChanged_Raised_Before_LayoutUpdated()
         {
-            var root = new TestRoot();
-            var canvas = new Canvas();
-            var raised = 0;
-            var layoutUpdatedRaised = 0;
-
-            canvas.LayoutUpdated += (s, e) =>
+            await RunOnUIThread.Execute(async () =>
             {
+                var root = CreateRoot();
+                var target = new Canvas();
+                var raised = 0;
+
+                target.EffectiveViewportChanged += (s, e) =>
+                {
+                    ++raised;
+                };
+
+                root.Child = target;
+
+                await ExecuteInitialLayoutPass(root);
+
                 Assert.Equal(1, raised);
-                ++layoutUpdatedRaised;
-            };
-
-            canvas.EffectiveViewportChanged += (s, e) =>
-            {
-                ++raised;
-            };
-
-            root.Child = canvas;
-            root.LayoutManager.ExecuteInitialLayoutPass(root);
-
-            Assert.Equal(1, layoutUpdatedRaised);
-            Assert.Equal(1, raised);
+            });
         }
 
         [Fact]
-        public void Invalidating_In_Handler_Causes_Layout_To_Be_Rerun_Before_LayoutUpdated()
+        public async Task Parent_Affects_EffectiveViewport()
         {
-            var root = new TestRoot();
-            var canvas = new TestCanvas();
-            var raised = 0;
-            var layoutUpdatedRaised = 0;
-
-            canvas.LayoutUpdated += (s, e) =>
+            await RunOnUIThread.Execute(async () =>
             {
-                Assert.Equal(2, canvas.MeasureCount);
-                Assert.Equal(2, canvas.ArrangeCount);
-                ++layoutUpdatedRaised;
-            };
+                var root = CreateRoot();
+                var target = new Canvas { Width = 100, Height = 100 };
+                var parent = new Border { Width = 200, Height = 200, Child = target };
+                var raised = 0;
 
-            canvas.EffectiveViewportChanged += (s, e) =>
-            {
-                canvas.InvalidateMeasure();
-                ++raised;
-            };
+                root.Child = parent;
 
-            root.Child = canvas;
-            root.LayoutManager.ExecuteInitialLayoutPass(root);
+                target.EffectiveViewportChanged += (s, e) =>
+                {
+                    Assert.Equal(new Rect(-550, -400, 1200, 900), e.EffectiveViewport);
+                    ++raised;
+                };
 
-            Assert.Equal(1, raised);
-            Assert.Equal(1, layoutUpdatedRaised);
+                await ExecuteInitialLayoutPass(root);
+            });
         }
 
         [Fact]
-        public void Viewport_Extends_Beyond_Centered_Control()
+        public async Task Invalidating_In_Handler_Causes_Layout_To_Be_Rerun_Before_LayoutUpdated_Raised()
         {
-            var root = new TestRoot
+            await RunOnUIThread.Execute(async () =>
             {
-                Width = 1200,
-                Height = 900,
-            };
+                var root = CreateRoot();
+                var target = new TestCanvas();
+                var raised = 0;
+                var layoutUpdatedRaised = 0;
 
-            var canvas = new Canvas
-            {
-                Width = 52,
-                Height = 52,
-            };
-            var raised = 0;
+                root.LayoutUpdated += (s, e) =>
+                {
+                    Assert.Equal(2, target.MeasureCount);
+                    Assert.Equal(2, target.ArrangeCount);
+                    ++layoutUpdatedRaised;
+                };
 
-            canvas.EffectiveViewportChanged += (s, e) =>
-            {
-                Assert.Equal(new Rect(-574, -424, 1200, 900), e.EffectiveViewport);
-                ++raised;
-            };
+                target.EffectiveViewportChanged += (s, e) =>
+                {
+                    target.InvalidateMeasure();
+                    ++raised;
+                };
 
-            root.Child = canvas;
-            root.LayoutManager.ExecuteInitialLayoutPass(root);
+                root.Child = target;
 
-            Assert.Equal(1, raised);
+                await ExecuteInitialLayoutPass(root);
+
+                Assert.Equal(1, raised);
+                Assert.Equal(1, layoutUpdatedRaised);
+            });
         }
 
         [Fact]
-        public void Viewport_Extends_Beyond_Nested_Centered_Control()
+        public async Task Viewport_Extends_Beyond_Centered_Control()
         {
-            var root = new TestRoot
+            await RunOnUIThread.Execute(async () =>
             {
-                Width = 1200,
-                Height = 900,
-            };
+                var root = CreateRoot();
+                var target = new Canvas { Width = 52, Height = 52, };
+                var raised = 0;
 
-            var canvas = new Canvas
-            {
-                Width = 52,
-                Height = 52,
-            };
+                target.EffectiveViewportChanged += (s, e) =>
+                {
+                    Assert.Equal(new Rect(-574, -424, 1200, 900), e.EffectiveViewport);
+                    ++raised;
+                };
 
-            var outer = new Border
-            {
-                Width = 100,
-                Height = 100,
-                Child = canvas,
-            };
+                root.Child = target;
 
-            var raised = 0;
-
-            canvas.EffectiveViewportChanged += (s, e) =>
-            {
-                Assert.Equal(new Rect(-574, -424, 1200, 900), e.EffectiveViewport);
-                ++raised;
-            };
-
-            root.Child = outer;
-            root.LayoutManager.ExecuteInitialLayoutPass(root);
-
-            Assert.Equal(1, raised);
+                await ExecuteInitialLayoutPass(root);
+                Assert.Equal(1, raised);
+            });
         }
 
         [Fact]
-        public void ScrollViewer_Determines_EffectiveViewport()
+        public async Task Viewport_Extends_Beyond_Nested_Centered_Control()
         {
-            var root = new TestRoot
+            await RunOnUIThread.Execute(async () =>
             {
-                Width = 1200,
-                Height = 900,
-            };
+                var root = CreateRoot();
+                var target = new Canvas { Width = 52, Height = 52 };
+                var parent = new Border { Width = 100, Height = 100, Child = target };
+                var raised = 0;
 
-            var canvas = new Canvas
-            {
-                Width = 200,
-                Height = 200,
-            };
+                target.EffectiveViewportChanged += (s, e) =>
+                {
+                    Assert.Equal(new Rect(-574, -424, 1200, 900), e.EffectiveViewport);
+                    ++raised;
+                };
 
-            var outer = new ScrollViewer
-            {
-                Width = 100,
-                Height = 100,
-                Content = canvas,
-                Template = ScrollViewerTemplate(),
-            };
+                root.Child = parent;
 
-            var raised = 0;
-
-            canvas.EffectiveViewportChanged += (s, e) =>
-            {
-                Assert.Equal(new Rect(0, 0, 100, 100), e.EffectiveViewport);
-                ++raised;
-            };
-
-            root.Child = outer;
-            root.LayoutManager.ExecuteInitialLayoutPass(root);
-
-            Assert.Equal(1, raised);
+                await ExecuteInitialLayoutPass(root);
+                Assert.Equal(1, raised);
+            });
         }
 
         [Fact]
-        public void Scrolled_ScrollViewer_Determines_EffectiveViewport()
+        public async Task ScrollViewer_Determines_EffectiveViewport()
         {
-            var root = new TestRoot
+            await RunOnUIThread.Execute(async () =>
             {
-                Width = 1200,
-                Height = 900,
-            };
+                var root = CreateRoot();
+                var target = new Canvas { Width = 200, Height = 200 };
+                var scroller = new ScrollViewer { Width = 100, Height = 100, Content = target, Template = ScrollViewerTemplate() };
+                var raised = 0;
 
-            var canvas = new Canvas
+                target.EffectiveViewportChanged += (s, e) =>
+                {
+                    Assert.Equal(new Rect(0, 0, 100, 100), e.EffectiveViewport);
+                    ++raised;
+                };
+
+                root.Child = scroller;
+
+                await ExecuteInitialLayoutPass(root);
+                Assert.Equal(1, raised);
+            });
+        }
+
+        [Fact]
+        public async Task Scrolled_ScrollViewer_Determines_EffectiveViewport()
+        {
+            await RunOnUIThread.Execute(async () =>
             {
-                Width = 200,
-                Height = 200,
-            };
+                var root = CreateRoot();
+                var target = new Canvas { Width = 200, Height = 200 };
+                var scroller = new ScrollViewer { Width = 100, Height = 100, Content = target, Template = ScrollViewerTemplate() };
+                var raised = 0;
 
-            var outer = new ScrollViewer
+                root.Child = scroller;
+
+                await ExecuteInitialLayoutPass(root);
+                scroller.Offset = new Vector(0, 10);
+
+                await ExecuteScrollerLayoutPass(root, scroller, target, (s, e) =>
+                {
+                    Assert.Equal(new Rect(0, 10, 100, 100), e.EffectiveViewport);
+                    ++raised;
+                });
+
+                Assert.Equal(1, raised);
+            });
+        }
+
+        [Fact]
+        public async Task Moving_Parent_Updates_EffectiveViewport()
+        {
+            await RunOnUIThread.Execute(async () =>
             {
-                Width = 100,
-                Height = 100,
-                Content = canvas,
-                Template = ScrollViewerTemplate(),
-            };
+                var root = CreateRoot();
+                var target = new Canvas { Width = 100, Height = 100 };
+                var parent = new Border { Width = 200, Height = 200, Child = target };
+                var raised = 0;
 
-            var raised = 0;
+                root.Child = parent;
 
-            root.Child = outer;
+                await ExecuteInitialLayoutPass(root);
+
+                target.EffectiveViewportChanged += (s, e) =>
+                {
+                    Assert.Equal(new Rect(-554, -400, 1200, 900), e.EffectiveViewport);
+                    ++raised;
+                };
+
+                parent.Margin = new Thickness(8, 0, 0, 0);
+                await ExecuteLayoutPass(root);
+
+                Assert.Equal(1, raised);
+            });
+        }
+
+        [Fact]
+        public async Task Translate_Transform_Doesnt_Affect_EffectiveViewport()
+        {
+            await RunOnUIThread.Execute(async () =>
+            {
+                var root = CreateRoot();
+                var target = new Canvas { Width = 100, Height = 100 };
+                var parent = new Border { Width = 200, Height = 200, Child = target };
+                var raised = 0;
+
+                root.Child = parent;
+
+                await ExecuteInitialLayoutPass(root);
+                target.EffectiveViewportChanged += (s, e) => ++raised;
+                target.RenderTransform = new TranslateTransform { X = 8 };
+                target.InvalidateMeasure();
+                await ExecuteLayoutPass(root);
+
+                Assert.Equal(0, raised);
+            });
+        }
+
+        [Fact]
+        public async Task Translate_Transform_On_Parent_Affects_EffectiveViewport()
+        {
+            await RunOnUIThread.Execute(async () =>
+            {
+                var root = CreateRoot();
+                var target = new Canvas { Width = 100, Height = 100 };
+                var parent = new Border { Width = 200, Height = 200, Child = target };
+                var raised = 0;
+
+                root.Child = parent;
+
+                await ExecuteInitialLayoutPass(root);
+
+                target.EffectiveViewportChanged += (s, e) =>
+                {
+                    Assert.Equal(new Rect(-558, -400, 1200, 900), e.EffectiveViewport);
+                    ++raised;
+                };
+
+                // Change the parent render transform to move it. A layout is then needed before
+                // EffectiveViewportChanged is raised.
+                parent.RenderTransform = new TranslateTransform { X = 8 };
+                parent.InvalidateMeasure();
+                await ExecuteLayoutPass(root);
+
+                Assert.Equal(1, raised);
+            });
+        }
+
+        private TestRoot CreateRoot() => new TestRoot { Width = 1200, Height = 900 };
+
+        private Task ExecuteInitialLayoutPass(TestRoot root)
+        {
             root.LayoutManager.ExecuteInitialLayoutPass(root);
+            return Task.CompletedTask;
+        }
 
-            canvas.EffectiveViewportChanged += (s, e) =>
-            {
-                Assert.Equal(new Rect(0, 10, 100, 100), e.EffectiveViewport);
-                ++raised;
-            };
-            
-            outer.Offset = new Vector(0, 10);
+        private Task ExecuteLayoutPass(TestRoot root)
+        {
             root.LayoutManager.ExecuteLayoutPass();
-
-            Assert.Equal(1, raised);
+            return Task.CompletedTask;
         }
 
-        [Fact]
-        public void Moving_Parent_Updates_EffectiveViewport()
+        private Task ExecuteScrollerLayoutPass(
+            TestRoot root,
+            ScrollViewer scroller,
+            Control target,
+            Action<object, EffectiveViewportChangedEventArgs> handler)
         {
-            var root = new TestRoot
+            void ViewportChanged(object sender, EffectiveViewportChangedEventArgs e)
             {
-                Width = 1200,
-                Height = 900,
-            };
+                handler(sender, e);
+            }
 
-            var canvas = new Canvas
-            {
-                Width = 100,
-                Height = 100,
-            };
-
-            var outer = new Border
-            {
-                Width = 200,
-                Height = 200,
-                Child = canvas,
-            };
-
-            var raised = 0;
-
-            root.Child = outer;
-            root.LayoutManager.ExecuteInitialLayoutPass(root);
-
-            canvas.EffectiveViewportChanged += (s, e) =>
-            {
-                Assert.Equal(new Rect(-554, -400, 1200, 900), e.EffectiveViewport);
-                ++raised;
-            };
-
-            // Change the parent margin to move it.
-            outer.Margin = new Thickness(8, 0, 0, 0);
+            target.EffectiveViewportChanged += ViewportChanged;
             root.LayoutManager.ExecuteLayoutPass();
-
-            Assert.Equal(1, raised);
+            return Task.CompletedTask;
         }
-
         private IControlTemplate ScrollViewerTemplate()
         {
             return new FuncControlTemplate<ScrollViewer>((control, scope) => new Grid
@@ -327,6 +375,14 @@ namespace Avalonia.Layout.UnitTests
             {
                 ++ArrangeCount;
                 return base.ArrangeOverride(finalSize);
+            }
+        }
+
+        private static class RunOnUIThread
+        {
+            public static async Task Execute(Func<Task> func)
+            {
+                await func();
             }
         }
     }
