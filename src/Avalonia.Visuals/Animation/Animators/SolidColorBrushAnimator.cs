@@ -10,9 +10,9 @@ namespace Avalonia.Animation.Animators
     /// </summary>
     public class SolidColorBrushAnimator : Animator<SolidColorBrush>
     {
-        ColorAnimator _colorAnimator;
+        private ColorAnimator _colorAnimator;
 
-        void InitializeColorAnimator()
+        private void InitializeColorAnimator()
         {
             _colorAnimator = new ColorAnimator();
 
@@ -38,28 +38,29 @@ namespace Avalonia.Animation.Animators
                 }
             }
 
+            SolidColorBrush finalTarget;
             var targetVal = control.GetValue(Property);
-            // Add SCB if the target prop is empty.
             if (targetVal is null)
             {
-                targetVal = new SolidColorBrush(Colors.Transparent);
-                control.SetValue(Property, targetVal);
+                finalTarget = new SolidColorBrush(Colors.Transparent);
+                control.SetValue(Property, finalTarget);
             }
-
-            if (!(targetVal is ISolidColorBrush))
+            else if (targetVal is ImmutableSolidColorBrush immutableSolidColorBrush)
+            {
+                finalTarget = new SolidColorBrush(immutableSolidColorBrush.Color);
+                control.SetValue(Property, finalTarget);
+            }
+            else if (!(targetVal is ISolidColorBrush))
+            {
                 return Disposable.Empty;
+            }
+            else
+            {
+                finalTarget = targetVal as SolidColorBrush;
+            }
 
             if (_colorAnimator == null)
                 InitializeColorAnimator();
-
-            // If it's ISCB, change it back to SCB.
-            if (targetVal is ImmutableSolidColorBrush immutableSolidColorBrush)
-            {
-                targetVal = new SolidColorBrush(immutableSolidColorBrush.Color);
-                control.SetValue(Property, targetVal);
-            }
-
-            var finalTarget = targetVal as SolidColorBrush;
 
             return _colorAnimator.Apply(animation, finalTarget, clock ?? control.Clock, match, onComplete);
         }
