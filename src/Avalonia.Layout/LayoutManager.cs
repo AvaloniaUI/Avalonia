@@ -10,16 +10,19 @@ namespace Avalonia.Layout
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>
-    public class LayoutManager : ILayoutManager
+    public class LayoutManager : ILayoutManager, IDisposable
     {
+        private readonly ILayoutRoot _owner;
         private readonly LayoutQueue<ILayoutable> _toMeasure = new LayoutQueue<ILayoutable>(v => !v.IsMeasureValid);
         private readonly LayoutQueue<ILayoutable> _toArrange = new LayoutQueue<ILayoutable>(v => !v.IsArrangeValid);
         private readonly Action _executeLayoutPass;
+        private bool _disposed;
         private bool _queued;
         private bool _running;
 
-        public LayoutManager()
+        public LayoutManager(ILayoutRoot owner)
         {
+            _owner = owner ?? throw new ArgumentNullException(nameof(owner));
             _executeLayoutPass = ExecuteLayoutPass;
         }
 
@@ -31,6 +34,11 @@ namespace Avalonia.Layout
             control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
 
+            if (_disposed)
+            {
+                return;
+            }
+
             if (!control.IsAttachedToVisualTree)
             {
 #if DEBUG
@@ -39,6 +47,11 @@ namespace Avalonia.Layout
 #else
                 return;
 #endif
+            }
+
+            if (control.VisualRoot != _owner)
+            {
+                throw new ArgumentException("Attempt to call InvalidateMeasure on wrong LayoutManager.");
             }
 
             _toMeasure.Enqueue(control);
@@ -52,6 +65,11 @@ namespace Avalonia.Layout
             control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
 
+            if (_disposed)
+            {
+                return;
+            }
+
             if (!control.IsAttachedToVisualTree)
             {
 #if DEBUG
@@ -60,6 +78,11 @@ namespace Avalonia.Layout
 #else
                 return;
 #endif
+            }
+
+            if (control.VisualRoot != _owner)
+            {
+                throw new ArgumentException("Attempt to call InvalidateArrange on wrong LayoutManager.");
             }
 
             _toArrange.Enqueue(control);
@@ -72,6 +95,11 @@ namespace Avalonia.Layout
             const int MaxPasses = 3;
 
             Dispatcher.UIThread.VerifyAccess();
+
+            if (_disposed)
+            {
+                return;
+            }
 
             if (!_running)
             {
@@ -131,13 +159,18 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc/>
-        public virtual void ExecuteInitialLayoutPass(ILayoutRoot root)
+        public virtual void ExecuteInitialLayoutPass()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             try
             {
                 _running = true;
-                Measure(root);
-                Arrange(root);
+                Measure(_owner);
+                Arrange(_owner);
             }
             finally
             {
@@ -149,6 +182,24 @@ namespace Avalonia.Layout
             // whether they will need to be shown until the layout pass has run and if the
             // first guess was incorrect the layout will need to be updated).
             ExecuteLayoutPass();
+        }
+
+        [Obsolete("Call ExecuteInitialLayoutPass without parameter")]
+        public void ExecuteInitialLayoutPass(ILayoutRoot root)
+        {
+            if (root != _owner)
+            {
+                throw new ArgumentException("ExecuteInitialLayoutPass called with incorrect root.");
+            }
+
+            ExecuteInitialLayoutPass();
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
+            _toMeasure.Dispose();
+            _toArrange.Dispose();
         }
 
         private void ExecuteMeasurePass()
