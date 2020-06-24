@@ -15,7 +15,7 @@ namespace Avalonia.Win32.Interop
     [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1310:FieldNamesMustNotContainUnderscore", Justification = "Using Win32 naming for consistency.")]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements must be documented", Justification = "Look in Win32 docs.")]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1602:Enumeration items must be documented", Justification = "Look in Win32 docs.")]
-    internal static class UnmanagedMethods
+    internal unsafe static class UnmanagedMethods
     {
         public const int CW_USEDEFAULT = unchecked((int)0x80000000);
 
@@ -1001,6 +1001,10 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool InvalidateRect(IntPtr hWnd, ref RECT lpRect, bool bErase);
 
+
+        [DllImport("user32.dll")]
+        public static extern bool InvalidateRect(IntPtr hWnd, RECT* lpRect, bool bErase);
+
         [DllImport("user32.dll")]
         public static extern bool IsWindowEnabled(IntPtr hWnd);
 
@@ -1050,6 +1054,8 @@ namespace Avalonia.Win32.Interop
         public static extern bool SetFocus(IntPtr hWnd);
         [DllImport("user32.dll")]
         public static extern bool SetParent(IntPtr hWnd, IntPtr hWndNewParent);
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetParent(IntPtr hWnd);
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommand nCmdShow);
 

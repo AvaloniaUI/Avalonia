@@ -25,7 +25,7 @@ namespace Avalonia.Benchmarks.Layout
             _controls.Add(panel);
             _controls = ControlHierarchyCreator.CreateChildren(_controls, panel, 3, 5, 5);
 
-            _root.LayoutManager.ExecuteInitialLayoutPass(_root);
+            _root.LayoutManager.ExecuteInitialLayoutPass();
         }
 
         [Benchmark, MethodImpl(MethodImplOptions.NoInlining)]

@@ -26,6 +26,7 @@ namespace Avalonia.Controls
         static TabItem()
         {
             SelectableMixin.Attach<TabItem>(IsSelectedProperty);
+            PressedMixin.Attach<TabItem>();
             FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
             DataContextProperty.Changed.AddClassHandler<TabItem>((x, e) => x.UpdateHeader(e));
         }

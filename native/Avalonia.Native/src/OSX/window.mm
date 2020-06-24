@@ -390,6 +390,14 @@ public:
         return *ppv == nil ? E_FAIL : S_OK;
     }
     
+    virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut) override
+    {
+        if(View == NULL)
+            return E_FAIL;
+        *retOut = ::CreateNativeControlHost(View);
+        return S_OK;
+    }
+    
     virtual HRESULT SetBlurEnabled (bool enable) override
     {
         [Window setContentView: enable ? VisualEffect : View];
@@ -1060,9 +1068,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height});
 }
 
-
 - (void)updateLayer
 {
+    AvnInsidePotentialDeadlock deadlock;
     if (_parent == nullptr)
     {
         return;
@@ -1107,7 +1115,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _lastPixelSize.Width = (int)fsize.width;
     _lastPixelSize.Height = (int)fsize.height;
     [self updateRenderTarget];
-    _parent->BaseEvents->ScalingChanged([_parent->Window backingScaleFactor]);
+    
+    if(_parent != nullptr)
+    {
+        _parent->BaseEvents->ScalingChanged([_parent->Window backingScaleFactor]);
+    }
     
     [super viewDidChangeBackingProperties];
 }
@@ -1138,7 +1150,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         return;
     }
     
-    [self becomeFirstResponder];
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
     auto avnPoint = [self toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
@@ -1165,9 +1176,29 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     auto timestamp = [event timestamp] * 1000;
     auto modifiers = [self getModifiers:[event modifierFlags]];
     
-    [self becomeFirstResponder];
-    _parent->BaseEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
+    if(type != AvnRawMouseEventType::Move ||
+       (
+           [self window] != nil &&
+           (
+                [[self window] firstResponder] == nil
+                || ![[[self window] firstResponder] isKindOfClass: [NSView class]]
+           )
+       )
+    )
+        [self becomeFirstResponder];
+    
+    if(_parent != nullptr)
+    {
+        _parent->BaseEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
+    }
+    
     [super mouseMoved:event];
+}
+
+- (BOOL) resignFirstResponder
+{
+    _parent->BaseEvents->LostFocus();
+    return YES;
 }
 
 - (void)mouseMoved:(NSEvent *)event
@@ -1290,7 +1321,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     auto timestamp = [event timestamp] * 1000;
     auto modifiers = [self getModifiers:[event modifierFlags]];
      
-    _lastKeyHandled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
+    if(_parent != nullptr)
+    {
+        _lastKeyHandled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
+    }
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent *)event
@@ -1381,7 +1415,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     if(!_lastKeyHandled)
     {
-        _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
+        if(_parent != nullptr)
+        {
+            _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
+        }
     }
 }
 
@@ -1677,7 +1714,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         [self showWindowMenuWithAppMenu];
         
-        _parent->BaseEvents->Activated();
+        if(_parent != nullptr)
+        {
+            _parent->BaseEvents->Activated();
+        }
+        
         [super becomeKeyWindow];
     }
 }
@@ -1794,8 +1835,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (void)windowDidMove:(NSNotification *)notification
 {
     AvnPoint position;
-    _parent->GetPosition(&position);
-    _parent->BaseEvents->PositionChanged(position);
+    
+    if(_parent != nullptr)
+    {
+        _parent->GetPosition(&position);
+        _parent->BaseEvents->PositionChanged(position);
+    }
 }
 @end
 

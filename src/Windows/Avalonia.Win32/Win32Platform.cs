@@ -209,7 +209,7 @@ namespace Avalonia.Win32
             return new WindowImpl();
         }
 
-        public IEmbeddableWindowImpl CreateEmbeddableWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             var embedded = new EmbeddedWindowImpl();
             embedded.Show();

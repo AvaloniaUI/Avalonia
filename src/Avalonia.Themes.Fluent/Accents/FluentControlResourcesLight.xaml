@@ -366,8 +366,8 @@
     <x:Double x:Key="AutoCompleteBoxIconFontSize">12</x:Double>
 
     <!-- Resources for CheckBox.xaml -->
-    <x:Double x:Key="CheckBoxBorderThemeThickness">1</x:Double>
-    <x:Double x:Key="CheckBoxCheckedStrokeThickness">0</x:Double>
+    <Thickness x:Key="CheckBoxBorderThemeThickness">1</Thickness>
+    <Thickness x:Key="CheckBoxCheckedStrokeThickness">0</Thickness>
     <StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="CheckBoxForegroundUncheckedPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="CheckBoxForegroundUncheckedPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -655,5 +655,167 @@
     <SolidColorBrush x:Key="ToolTipBorderThemeBrush" Color="#FF808080" />
     <SolidColorBrush x:Key="ToolTipForegroundThemeBrush" Color="#FF666666" />
     <Thickness x:Key="ToolTipBorderThemePadding">8,5,8,7</Thickness>
+
+    <!-- Resources for Pivot.xaml -->
+    <FontFamily x:Key="PivotHeaderItemFontFamily">XamlAutoFontFamily</FontFamily>
+    <FontFamily x:Key="PivotTitleFontFamily">XamlAutoFontFamily</FontFamily>
+    <x:Double x:Key="PivotHeaderItemFontSize">24</x:Double>
+    <x:Double x:Key="PivotHeaderItemLockedTranslation">40</x:Double>
+    <x:Double x:Key="PivotTitleFontSize">14</x:Double>
+    <x:Int32 x:Key="PivotHeaderItemCharacterSpacing">-25</x:Int32>
+    <Thickness x:Key="PivotHeaderItemMargin">12,0,12,0</Thickness>
+    <Thickness x:Key="PivotItemMargin">12,0,12,0</Thickness>
+    <Thickness x:Key="PivotLandscapeThemePadding">12,14,0,13</Thickness>
+    <Thickness x:Key="PivotNavButtonBorderThemeThickness">0</Thickness>
+    <Thickness x:Key="PivotNavButtonMargin">0,6,0,0</Thickness>
+    <Thickness x:Key="PivotPortraitThemePadding">12,14,0,13</Thickness>
+    <FontWeight x:Key="PivotHeaderItemThemeFontWeight">SemiLight</FontWeight>
+    <FontWeight x:Key="PivotTitleThemeFontWeight">Bold</FontWeight>
+    <StaticResource x:Key="PivotBackground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderBackground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="PivotNextButtonBackground" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+    <StaticResource x:Key="PivotNextButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
+    <StaticResource x:Key="PivotNextButtonBackgroundPressed" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+    <StaticResource x:Key="PivotNextButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="PivotNextButtonBorderBrushPointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="PivotNextButtonBorderBrushPressed" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="PivotNextButtonForeground" ResourceKey="SystemControlForegroundAltMediumHighBrush" />
+    <StaticResource x:Key="PivotNextButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltAltMediumHighBrush" />
+    <StaticResource x:Key="PivotNextButtonForegroundPressed" ResourceKey="SystemControlHighlightAltAltMediumHighBrush" />
+    <StaticResource x:Key="PivotPreviousButtonBackground" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+    <StaticResource x:Key="PivotPreviousButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
+    <StaticResource x:Key="PivotPreviousButtonBackgroundPressed" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+    <StaticResource x:Key="PivotPreviousButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="PivotPreviousButtonBorderBrushPointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="PivotPreviousButtonBorderBrushPressed" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="PivotPreviousButtonForeground" ResourceKey="SystemControlForegroundAltMediumHighBrush" />
+    <StaticResource x:Key="PivotPreviousButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltAltMediumHighBrush" />
+    <StaticResource x:Key="PivotPreviousButtonForegroundPressed" ResourceKey="SystemControlHighlightAltAltMediumHighBrush" />
+    <!-- Resources for PivotItem -->
+    <StaticResource x:Key="PivotItemBackground" ResourceKey="SystemControlTransparentBrush" />
+    <!-- Resources for PivotHeaderItem -->
+    <StaticResource x:Key="PivotHeaderItemBackgroundUnselected" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemBackgroundUnselectedPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemBackgroundUnselectedPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemBackgroundSelected" ResourceKey="SystemControlHighlightTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundUnselected" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundUnselectedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundUnselectedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundSelectedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="PivotHeaderItemFocusPipeFill" ResourceKey="SystemControlHighlightAltAccentBrush" />
+    <StaticResource x:Key="PivotHeaderItemSelectedPipeFill" ResourceKey="SystemControlHighlightAltAccentBrush" />
+    <SolidColorBrush x:Key="PivotForegroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="PivotHeaderBackgroundSelectedBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="PivotHeaderBackgroundUnselectedBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="PivotHeaderForegroundSelectedBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="PivotHeaderForegroundUnselectedBrush" Color="#66000000" />
+    <SolidColorBrush x:Key="PivotNavButtonBackgroundThemeBrush" Color="#59D5D5D5" />
+    <SolidColorBrush x:Key="PivotNavButtonBorderThemeBrush" Color="#59D5D5D5" />
+    <SolidColorBrush x:Key="PivotNavButtonForegroundThemeBrush" Color="#99000000" />
+    <SolidColorBrush x:Key="PivotNavButtonPointerOverBackgroundThemeBrush" Color="#F0D7D7D7" />
+    <SolidColorBrush x:Key="PivotNavButtonPointerOverBorderThemeBrush" Color="#9EC1C1C1" />
+    <SolidColorBrush x:Key="PivotNavButtonPointerOverForegroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="PivotNavButtonPressedBackgroundThemeBrush" Color="#BD292929" />
+    <SolidColorBrush x:Key="PivotNavButtonPressedBorderThemeBrush" Color="#BD292929" />
+    <SolidColorBrush x:Key="PivotNavButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
+
+    <!-- Resources for ScrollBar.xaml -->
+    <x:Double x:Key="ScrollBarTrackBorderThemeThickness">0</x:Double>
+    <Thickness x:Key="ScrollBarPanningBorderThemeThickness">1</Thickness>
+    <StaticResource x:Key="ScrollBarBackground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarForeground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundListLowBrush" />
+    <StaticResource x:Key="ScrollBarButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumBrush" />
+    <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonArrowForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="ScrollBarButtonArrowForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="ScrollBarButtonArrowForegroundPressed" ResourceKey="SystemControlForegroundAltHighBrush" />
+    <StaticResource x:Key="ScrollBarButtonArrowForegroundDisabled" ResourceKey="SystemControlForegroundBaseLowBrush" />
+    <StaticResource x:Key="ScrollBarThumbFill" ResourceKey="SystemControlForegroundChromeDisabledLowBrush" />
+    <StaticResource x:Key="ScrollBarThumbFillPointerOver" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+    <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="SystemControlBackgroundBaseMediumBrush" />
+    <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    <SolidColorBrush x:Key="ScrollBarTrackFill" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
+    <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
+    <StaticResource x:Key="ScrollBarTrackFillDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="ScrollBarTrackStrokeDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="{StaticResource ScrollBarThumbBackgroundColor}" />
+    <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="{StaticResource ScrollBarPanningThumbBackgroundColor}" />
+    <StaticResource x:Key="ScrollBarPanningThumbBackgroundDisabled" ResourceKey="SystemControlDisabledChromeHighBrush" />
+    <SolidColorBrush x:Key="ScrollBarButtonForegroundThemeBrush" Color="#99000000" />
+    <SolidColorBrush x:Key="ScrollBarButtonPointerOverBackgroundThemeBrush" Color="#FFDADADA" />
+    <SolidColorBrush x:Key="ScrollBarButtonPointerOverBorderThemeBrush" Color="#FFDADADA" />
+    <SolidColorBrush x:Key="ScrollBarButtonPointerOverForegroundThemeBrush" Color="#FF000000" />
+    <SolidColorBrush x:Key="ScrollBarButtonPressedBackgroundThemeBrush" Color="#99000000" />
+    <SolidColorBrush x:Key="ScrollBarButtonPressedBorderThemeBrush" Color="#99000000" />
+    <SolidColorBrush x:Key="ScrollBarButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ScrollBarPanningBackgroundThemeBrush" Color="#FFCDCDCD" />
+    <SolidColorBrush x:Key="ScrollBarPanningBorderThemeBrush" Color="#7D9A9A9A" />
+    <SolidColorBrush x:Key="ScrollBarThumbBackgroundThemeBrush" Color="#FFCDCDCD" />
+    <SolidColorBrush x:Key="ScrollBarThumbBorderThemeBrush" Color="#3B555555" />
+    <SolidColorBrush x:Key="ScrollBarThumbPointerOverBackgroundThemeBrush" Color="#FFDADADA" />
+    <SolidColorBrush x:Key="ScrollBarThumbPointerOverBorderThemeBrush" Color="#6BB7B7B7" />
+    <SolidColorBrush x:Key="ScrollBarThumbPressedBackgroundThemeBrush" Color="#99000000" />
+    <SolidColorBrush x:Key="ScrollBarThumbPressedBorderThemeBrush" Color="#ED555555" />
+    <SolidColorBrush x:Key="ScrollBarTrackBackgroundThemeBrush" Color="#59D5D5D5" />
+    <SolidColorBrush x:Key="ScrollBarTrackBorderThemeBrush" Color="#59D5D5D5" />
+    <StaticResource x:Key="ScrollBarThumbBackgroundColor" ResourceKey="SystemBaseLowColor" />
+    <StaticResource x:Key="ScrollBarPanningThumbBackgroundColor" ResourceKey="SystemChromeDisabledLowColor" />
+    <x:String x:Key="ScrollBarExpandDuration">00:00:00.1</x:String>
+    <x:String x:Key="ScrollBarContractDelay">00:00:02</x:String>
+    <x:String x:Key="ScrollBarContractDuration">00:00:00.1</x:String>
+    <x:String x:Key="ScrollBarContractFinalKeyframe">00:00:02.1</x:String>
+    <x:Double x:Key="ScrollBarSize">16</x:Double>
+    <x:Double x:Key="ScrollBarButtonArrowIconFontSize">8</x:Double>
+    <x:String x:Key="ScrollBarExpandBeginTime">00:00:00.40</x:String>
+    <x:String x:Key="ScrollBarContractBeginTime">00:00:02.00</x:String>
+    <!-- Resources for TreeViewItem.xaml -->
+    <StaticResource x:Key="TreeViewItemBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealBackgroundBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundSelected" ResourceKey="SystemControlHighlightAccent3RevealBackgroundBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightAccent2RevealBackgroundBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListMediumRevealBackgroundBrush" />
+    <StaticResource x:Key="TreeViewItemBackgroundSelectedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="TreeViewItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundSelectedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    <StaticResource x:Key="TreeViewItemForegroundSelectedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushPointerOver" ResourceKey="SystemControlHighlightAltTransparentRevealBorderBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushPressed" ResourceKey="SystemControlHighlightAltTransparentRevealBorderBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushSelected" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushSelectedPointerOver" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushSelectedPressed" ResourceKey="SystemControlBackgroundTransparentRevealBorderBrush" />
+    <StaticResource x:Key="TreeViewItemBorderBrushSelectedDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="TreeViewItemCheckBoxBackgroundSelected" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="TreeViewItemCheckBoxBorderSelected" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+    <StaticResource x:Key="TreeViewItemCheckGlyphSelected" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+    <Thickness x:Key="TreeViewItemBorderThemeThickness">1</Thickness>
+    <x:Double x:Key="TreeViewItemMinHeight">32</x:Double>
   </Style.Resources>
 </Style>
