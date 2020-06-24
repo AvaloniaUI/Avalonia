@@ -49,8 +49,8 @@ namespace Avalonia.Controls
         // For non-virtualizing layouts, we do not need to keep
         // updating viewports and invalidating measure often. So when
         // a non virtualizing layout is used, we stop doing all that work.
-        bool _managingViewportDisabled;
-        private IDisposable _effectiveViewportChangedRevoker;
+        private bool _managingViewportDisabled;
+        private bool _effectiveViewportChangedSubscribed;
         private bool _layoutUpdatedSubscribed;
 
         public ViewportManager(ItemsRepeater owner)
@@ -228,11 +228,15 @@ namespace Avalonia.Controls
             _pendingViewportShift = default;
             _unshiftableShift = default;
 
-            _effectiveViewportChangedRevoker?.Dispose();
-
-            if (!_managingViewportDisabled)
+            if (_managingViewportDisabled && _effectiveViewportChangedSubscribed)
             {
-                _effectiveViewportChangedRevoker = SubscribeToEffectiveViewportChanged(_owner);
+                _owner.EffectiveViewportChanged -= OnEffectiveViewportChanged;
+                _effectiveViewportChangedSubscribed = false;
+            }
+            else if (!_managingViewportDisabled && !_effectiveViewportChangedSubscribed)
+            {
+                _owner.EffectiveViewportChanged += OnEffectiveViewportChanged;
+                _effectiveViewportChangedSubscribed = true;
             }
         }
 
@@ -415,15 +419,15 @@ namespace Avalonia.Controls
                 _scroller = null;
             }
 
-            _effectiveViewportChangedRevoker?.Dispose();
-            _effectiveViewportChangedRevoker = null;
+            _owner.EffectiveViewportChanged -= OnEffectiveViewportChanged;
+            _effectiveViewportChangedSubscribed = false;
             _ensuredScroller = false;
         }
 
-        private void OnEffectiveViewportChanged(Rect effectiveViewport)
+        private void OnEffectiveViewportChanged(object sender, EffectiveViewportChangedEventArgs e)
         {
             Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: EffectiveViewportChanged event callback", _owner.Layout.LayoutId);
-            UpdateViewport(effectiveViewport);
+            UpdateViewport(e.EffectiveViewport);
 
             _pendingViewportShift = default;
             _unshiftableShift = default;
@@ -468,8 +472,8 @@ namespace Avalonia.Controls
                 }
                 else if (!_managingViewportDisabled)
                 {
-                    _effectiveViewportChangedRevoker?.Dispose();
-                    _effectiveViewportChangedRevoker = SubscribeToEffectiveViewportChanged(_owner);
+                    _owner.EffectiveViewportChanged += OnEffectiveViewportChanged;
+                    _effectiveViewportChangedSubscribed = true;
                 }
 
                 _ensuredScroller = true;
@@ -541,24 +545,13 @@ namespace Avalonia.Controls
             // UWP uses the EffectiveViewportChanged event (which I think was implemented specially
             // for this case): we need to implement that in Avalonia, but the semantics of it aren't
             // clear to me. Hopefully the source for this event will be released with WinUI 3.
-            if (control.VisualParent is ScrollContentPresenter scp)
+            if (control.VisualParent is Layoutable layoutable)
             {
-                scp.PreArrange += ScrollContentPresenterPreArrange;
-                return Disposable.Create(() => scp.PreArrange -= ScrollContentPresenterPreArrange);
+                layoutable.EffectiveViewportChanged += OnEffectiveViewportChanged;
+                return Disposable.Create(() => layoutable.EffectiveViewportChanged -= OnEffectiveViewportChanged);
             }
 
             return Disposable.Empty;
-        }
-
-        private void ScrollContentPresenterPreArrange(object sender, VectorEventArgs e)
-        {
-            var scp = (ScrollContentPresenter)sender;
-            var effectiveViewport = new Rect((Point)scp.Offset, new Size(e.Vector.X, e.Vector.Y));
-
-            if (effectiveViewport != _visibleWindow)
-            {
-                OnEffectiveViewportChanged(effectiveViewport);
-            }
         }
 
         private class ScrollerInfo
