@@ -46,25 +46,22 @@ namespace Avalonia.Animation.Animators
                 control.SetValue(Property, targetVal);
             }
 
-            // Continue if target prop is not empty & is a SolidColorBrush derivative. 
-            if (typeof(ISolidColorBrush).IsAssignableFrom(targetVal.GetType()))
+            if (!(targetVal is ISolidColorBrush))
+                return Disposable.Empty;
+
+            if (_colorAnimator == null)
+                InitializeColorAnimator();
+
+            // If it's ISCB, change it back to SCB.
+            if (targetVal is ImmutableSolidColorBrush immutableSolidColorBrush)
             {
-                if (_colorAnimator == null)
-                    InitializeColorAnimator();
-
-                // If it's ISCB, change it back to SCB.
-                if (targetVal is ImmutableSolidColorBrush immutableSolidColorBrush)
-                {
-                    targetVal = new SolidColorBrush(immutableSolidColorBrush.Color);
-                    control.SetValue(Property, targetVal);
-                }
-
-                var finalTarget = targetVal as SolidColorBrush;
-
-                return _colorAnimator.Apply(animation, finalTarget, clock ?? control.Clock, match, onComplete);
+                targetVal = new SolidColorBrush(immutableSolidColorBrush.Color);
+                control.SetValue(Property, targetVal);
             }
 
-            return Disposable.Empty;
+            var finalTarget = targetVal as SolidColorBrush;
+
+            return _colorAnimator.Apply(animation, finalTarget, clock ?? control.Clock, match, onComplete);
         }
 
         public override SolidColorBrush Interpolate(double p, SolidColorBrush o, SolidColorBrush n) => null;
