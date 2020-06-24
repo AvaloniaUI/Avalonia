@@ -355,19 +355,26 @@ namespace Avalonia.Layout
 
         private void CalculateEffectiveViewport(IVisual target, IVisual control, ref Rect viewport)
         {
+            // Recurse until the top level control.
             if (control.VisualParent is object)
             {
                 CalculateEffectiveViewport(target, control.VisualParent, ref viewport);
             }
-
-            if (control.ClipToBounds || control.VisualParent is null)
-            {
-                viewport = control.Bounds;
-            }
             else
             {
-                viewport = viewport.Translate(-control.Bounds.Position);
+                viewport = new Rect(control.Bounds.Size);
             }
+
+            // Apply the control clip bounds if it's not the target control. We don't apply it to
+            // the target control because it may itself be clipped to bounds and if so the viewport
+            // we calculate would be of no use.
+            if (control != target && control.ClipToBounds)
+            {
+                viewport = control.Bounds.Intersect(viewport);
+            }
+
+            // Translate the viewport into this control's coordinate space.
+            viewport = viewport.Translate(-control.Bounds.Position);
 
             if (control != target && control.RenderTransform is object)
             {
