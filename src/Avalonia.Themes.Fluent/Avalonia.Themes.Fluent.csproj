@@ -14,6 +14,7 @@
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <AvaloniaResource Include="FluentTheme.xaml" />
     <AvaloniaResource Include="Accents/*.xaml" />
+    <AvaloniaResource Include="DensityStyles/*.xaml" />
     <!-- Compatibility with old apps, probably need to replace with AvaloniaResource -->
     <EmbeddedResource Include="**/*.xaml" />
   </ItemGroup>
