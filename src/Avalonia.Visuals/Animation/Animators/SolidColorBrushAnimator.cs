@@ -51,17 +51,14 @@ namespace Avalonia.Animation.Animators
                 if (_colorAnimator == null)
                     InitializeColorAnimator();
 
-                SolidColorBrush finalTarget;
-
                 // If it's ISCB, change it back to SCB.
-                if (targetVal.GetType() == typeof(ImmutableSolidColorBrush))
+                if (targetVal is ImmutableSolidColorBrush immutableSolidColorBrush)
                 {
-                    var col = (ImmutableSolidColorBrush)targetVal;
-                    targetVal = new SolidColorBrush(col.Color);
+                    targetVal = new SolidColorBrush(immutableSolidColorBrush.Color);
                     control.SetValue(Property, targetVal);
                 }
 
-                finalTarget = targetVal as SolidColorBrush;
+                var finalTarget = targetVal as SolidColorBrush;
 
                 return _colorAnimator.Apply(animation, finalTarget, clock ?? control.Clock, match, onComplete);
             }
