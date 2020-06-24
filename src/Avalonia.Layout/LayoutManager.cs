@@ -349,15 +349,15 @@ namespace Avalonia.Layout
         private Rect CalculateEffectiveViewport(IVisual control)
         {
             var viewport = new Rect(0, 0, double.PositiveInfinity, double.PositiveInfinity);
-            CalculateEffectiveViewport(control, ref viewport);
+            CalculateEffectiveViewport(control, control, ref viewport);
             return viewport;
         }
 
-        private void CalculateEffectiveViewport(IVisual control, ref Rect viewport)
+        private void CalculateEffectiveViewport(IVisual target, IVisual control, ref Rect viewport)
         {
             if (control.VisualParent is object)
             {
-                CalculateEffectiveViewport(control.VisualParent, ref viewport);
+                CalculateEffectiveViewport(target, control.VisualParent, ref viewport);
             }
 
             if (control.ClipToBounds || control.VisualParent is null)
@@ -367,6 +367,14 @@ namespace Avalonia.Layout
             else
             {
                 viewport = viewport.Translate(-control.Bounds.Position);
+            }
+
+            if (control != target && control.RenderTransform is object)
+            {
+                var origin = control.RenderTransformOrigin.ToPixels(control.Bounds.Size);
+                var offset = Matrix.CreateTranslation(origin);
+                var renderTransform = (-offset) * control.RenderTransform.Value.Invert() * (offset);
+                viewport = viewport.TransformToAABB(renderTransform);
             }
         }
 
