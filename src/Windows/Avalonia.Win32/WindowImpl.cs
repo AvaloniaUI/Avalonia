@@ -600,8 +600,8 @@ namespace Avalonia.Win32
                 }
             }
 
-            Interop.WindowsComposition.CompositionHost.Instance.Initialize(_hwnd);
-            Interop.WindowsComposition.CompositionHost.Instance.CreateBlur();
+            //Interop.WindowsComposition.CompositionHost.Instance.Initialize(_hwnd);
+            //Interop.WindowsComposition.CompositionHost.Instance.CreateBlur();
         }
 
         private void CreateDropTarget()
