@@ -47,6 +47,7 @@ namespace Avalonia.Win32
                         }
                     }
 
+                        _gl.AttachToWindow(_hwnd);
                     return IntPtr.Zero;
                 }
 

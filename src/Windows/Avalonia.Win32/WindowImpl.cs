@@ -599,6 +599,9 @@ namespace Avalonia.Win32
                     _scaling = dpix / 96.0;
                 }
             }
+
+            Interop.WindowsComposition.CompositionHost.Instance.Initialize(_hwnd);
+            Interop.WindowsComposition.CompositionHost.Instance.CreateBlur();
         }
 
         private void CreateDropTarget()

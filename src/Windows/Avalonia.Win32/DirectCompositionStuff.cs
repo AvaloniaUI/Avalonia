@@ -26,6 +26,7 @@ namespace Avalonia.Win32
 
         public void AttachToWindow(IntPtr hWnd)
         {
+            return;
             if (_virtualSurface != null)
             {
                 return;
@@ -62,31 +63,34 @@ namespace Avalonia.Win32
             _device = DCompDevice.QueryInterface<Device>();
 
             var visual = new SharpDX.DirectComposition.Visual(_device);
-            var surface = Target.FromHwnd(DCompDevice, hWnd, false);
-            surface.Root = visual;
 
-            GetClientRect(hWnd, out var window_rectangle);
 
-            _virtualSurface = new SharpDX.DirectComposition.VirtualSurface(_device, window_rectangle.right, window_rectangle.bottom, SharpDX.DXGI.Format.B8G8R8A8_UNorm, SharpDX.DXGI.AlphaMode.Premultiplied);
+            //var surface = Target.FromHwnd(DCompDevice, hWnd, false);
+            //surface.Root = visual;
 
-            visual.Content = _virtualSurface;
+            //GetClientRect(hWnd, out var window_rectangle);
+
+            //_virtualSurface = new SharpDX.DirectComposition.VirtualSurface(_device, window_rectangle.right, window_rectangle.bottom, SharpDX.DXGI.Format.B8G8R8A8_UNorm, SharpDX.DXGI.AlphaMode.Premultiplied);
+
+            //visual.Content = _virtualSurface;
         }
 
         public SharpDX.Direct2D1.DeviceContext BeginDraw()
         {
-            var result = _virtualSurface.BeginDraw<SharpDX.Direct2D1.DeviceContext>(null, out var offset);
+            //var result = _virtualSurface.BeginDraw<SharpDX.Direct2D1.DeviceContext>(null, out var offset);
 
-            var brush = new SharpDX.Direct2D1.SolidColorBrush(result, new SharpDX.Mathematics.Interop.RawColor4(1, 0, 0, 1));
+            //var brush = new SharpDX.Direct2D1.SolidColorBrush(result, new SharpDX.Mathematics.Interop.RawColor4(1, 0, 0, 1));
 
-            result.DrawLine(new SharpDX.Mathematics.Interop.RawVector2(0, 0), new SharpDX.Mathematics.Interop.RawVector2(100, 100), brush);
+            //result.DrawLine(new SharpDX.Mathematics.Interop.RawVector2(0, 0), new SharpDX.Mathematics.Interop.RawVector2(100, 100), brush);
 
-            return result;
+            //return result;
+            return null;
         }
 
         public void EndDraw()
         {
-            _virtualSurface.EndDraw();
-            _device.Commit();
+            _virtualSurface?.EndDraw();
+            _device?.Commit();
         }
 
         public EglGlPlatformSurface(EglContext context, IEglWindowGlPlatformSurfaceInfo info)
@@ -132,7 +136,7 @@ namespace Avalonia.Win32
                 {
                     if (IsCorrupted)
                         throw new RenderTargetCorruptedException();
-                    var d2dcontext = _surface.BeginDraw();
+                    _surface.BeginDraw();
                     //var restoreContext = _context.MakeCurrent(_sr);
                     _display.EglInterface.WaitClient();
                     _display.EglInterface.WaitGL();
