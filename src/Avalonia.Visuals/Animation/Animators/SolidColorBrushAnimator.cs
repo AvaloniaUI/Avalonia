@@ -26,15 +26,16 @@ namespace Avalonia.Animation.Animators
 
         public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
         {
+            // Preprocess keyframe values to Color if the xaml parser converts them to ISCB.
             foreach (var keyframe in this)
             {
-                if (!(keyframe.Value is ISolidColorBrush))
-                    return Disposable.Empty;
-
-                // Preprocess keyframe values to Color if the xaml parser converts them to ISCB.
                 if (keyframe.Value is ISolidColorBrush colorBrush)
                 {
                     keyframe.Value = colorBrush.Color;
+                }
+                else
+                {
+                    return Disposable.Empty;
                 }
             }
 
