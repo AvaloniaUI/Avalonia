@@ -4,7 +4,15 @@
     <AssemblyName>Avalonia.Base</AssemblyName>
     <RootNamespace>Avalonia</RootNamespace>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj"/>
   </ItemGroup>
