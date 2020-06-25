@@ -4,6 +4,7 @@ using System.Text;
 using Avalonia.Controls;
 using Avalonia.OpenGL;
 using SharpDX.DirectComposition;
+using WinRT;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -23,6 +24,7 @@ namespace Avalonia.Win32
         private readonly EglDisplay _display;
         private readonly EglContext _context;
         private readonly IEglWindowGlPlatformSurfaceInfo _info;
+        private IntPtr _d3dDeviceHandle;
 
         public void AttachToWindow(IntPtr hWnd)
         {
@@ -46,18 +48,14 @@ namespace Avalonia.Win32
                     SharpDX.Direct3D.FeatureLevel.Level_9_1,
                 };
 
-            var Direct3D11Device = new SharpDX.Direct3D11.Device(
-                    SharpDX.Direct3D.DriverType.Hardware,
-                    SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport | SharpDX.Direct3D11.DeviceCreationFlags.VideoSupport,
-                    featureLevels);
+            var Direct3D11Device = new SharpDX.Direct3D11.Device(_d3dDeviceHandle);
+
+            
 
 
-            var DxgiDevice = Direct3D11Device.QueryInterface<SharpDX.DXGI.Device1>();
+            var DxgiDevice = Direct3D11Device.QueryInterface<SharpDX.DXGI.Device1>();            
 
-            var Direct2D1Device = new SharpDX.Direct2D1.Device(Direct2D1Factory, DxgiDevice);
-
-
-            var DCompDevice = new SharpDX.DirectComposition.DesktopDevice(Direct2D1Device);
+            var DCompDevice = new SharpDX.DirectComposition.DesktopDevice(Direct3D11Device);
 
             _device = DCompDevice.QueryInterface<Device>();
 
@@ -72,14 +70,10 @@ namespace Avalonia.Win32
             visual.Content = _virtualSurface;
         }
 
-        public SharpDX.Direct2D1.DeviceContext BeginDraw()
+        public SharpDX.Direct3D11.Texture2D BeginDraw()
         {
-            var result = _virtualSurface.BeginDraw<SharpDX.Direct2D1.DeviceContext>(null, out var offset);
-
-            var brush = new SharpDX.Direct2D1.SolidColorBrush(result, new SharpDX.Mathematics.Interop.RawColor4(1, 0, 0, 1));
-
-            result.DrawLine(new SharpDX.Mathematics.Interop.RawVector2(0, 0), new SharpDX.Mathematics.Interop.RawVector2(100, 100), brush);
-
+            var result = _virtualSurface.BeginDraw<SharpDX.Direct3D11.Texture2D>(null, out var offset);            
+            
             return result;
         }
 
@@ -94,7 +88,18 @@ namespace Avalonia.Win32
             _display = context.Display;
             _context = context;
             _info = info;
+
+            if (!_display.EglInterface.QueryDisplayAttribExt(_display.Handle, EglConsts.EGL_DEVICE_EXT, out var eglDevice))
+                throw new OpenGlException("Unable to get EGL_DEVICE_EXT");
+            if (!_display.EglInterface.QueryDeviceAttribExt(eglDevice, EglConsts.EGL_D3D11_DEVICE_ANGLE, out var d3dDeviceHandle))
+                throw new OpenGlException("Unable to get EGL_D3D9_DEVICE_ANGLE");
+
+            _d3dDeviceHandle = d3dDeviceHandle;
+
+
         }
+
+        private EglSurface CreateSurfaceFromSufaceHandle(IntPtr intPtr) => _display.CreatePBufferFromClientBuffer(intPtr);
 
         protected virtual EglSurface CreateEglSurface() => _display.CreateWindowSurface(_info.Handle);
 
@@ -132,13 +137,15 @@ namespace Avalonia.Win32
                 {
                     if (IsCorrupted)
                         throw new RenderTargetCorruptedException();
-                    var d2dcontext = _surface.BeginDraw();
-                    //var restoreContext = _context.MakeCurrent(_sr);
+                    var d2dtexture = _surface.BeginDraw();
+
+                    var eglSurface = _surface.CreateSurfaceFromSufaceHandle(d2dtexture.NativePointer);
+                    var restoreContext = _context.MakeCurrent(eglSurface);
                     _display.EglInterface.WaitClient();
                     _display.EglInterface.WaitGL();
                     _display.EglInterface.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
 
-                    return new Session(_surface, _display, _context, null, _info, l, null);
+                    return new Session(_surface, _display, _context, eglSurface, _info, l, restoreContext);
                 }
                 catch
                 {
@@ -181,6 +188,7 @@ namespace Avalonia.Win32
                     _display.EglInterface.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
                     _dcompSurface.EndDraw();
                     _restoreContext?.Dispose();
+                    _glSurface.Dispose();
                     _lock.Dispose();
                 }
 

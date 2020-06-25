@@ -165,9 +165,16 @@ namespace Avalonia.OpenGL
             return rv;
         }
 
-        public void CreatePBufferFromClientBuffer ()
+        public EglSurface CreatePBufferFromClientBuffer (IntPtr d2dTextureSharedHandle)
         {
-            //_egl.CreatePBufferSurface(_)
+            var s = _egl.CreatePbufferFromClientBuffer(
+                _display,
+                EglConsts.EGL_D3D_TEXTURE_ANGLE,
+                d2dTextureSharedHandle, _config, new[] { EGL_NONE, EGL_NONE });            
+
+            if (s == IntPtr.Zero)
+                throw OpenGlException.GetFormattedException("eglCreateWindowSurface", _egl);
+            return new EglSurface(this, _egl, s);
         }
 
         public EglSurface CreateWindowSurface(IntPtr window)

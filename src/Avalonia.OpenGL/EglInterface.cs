@@ -153,6 +153,16 @@ namespace Avalonia.OpenGL
             return Marshal.PtrToStringAnsi(rv);
         }
 
+        public delegate bool EglQueryDisplayAttribEXT(IntPtr display, int attr, out IntPtr res);
+
+        [GlEntryPoint("eglQueryDisplayAttribEXT")]
+        public EglQueryDisplayAttribEXT QueryDisplayAttribExt { get; }
+
+        public delegate bool EglQueryDeviceAttribEXT(IntPtr display, int attr, out IntPtr res);
+
+        [GlEntryPoint("eglQueryDeviceAttribEXT")]
+        public EglQueryDisplayAttribEXT QueryDeviceAttribExt { get; }
+
         // ReSharper restore UnassignedGetOnlyAutoProperty
     }
 }
