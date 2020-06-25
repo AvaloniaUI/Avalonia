@@ -2,9 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Avalonia.Utilities;
 
-namespace Avalonia.Utility
+namespace Avalonia.Utilities
 {
     /// <summary>
     ///     ReadOnlySlice enables the ability to work with a sequence within a region of memory and retains the position in within that region.
@@ -47,7 +46,7 @@ namespace Avalonia.Utility
         public int Length { get; }
 
         /// <summary>
-        ///     Gets a value that indicates whether this instance of <see cref="ReadOnlySpan{T}"/> is Empty.
+        ///     Gets a value that indicates whether this instance of <see cref="ReadOnlySlice{T}"/> is Empty.
         /// </summary>
         public bool IsEmpty => Length == 0;
 

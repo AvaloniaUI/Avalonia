@@ -16,7 +16,7 @@
 // Ported from: https://github.com/foliojs/linebreak
 // Copied from: https://github.com/toptensoftware/RichTextKit
 
-using Avalonia.Utility;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {

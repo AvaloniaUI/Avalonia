@@ -1,4 +1,4 @@
-﻿using Avalonia.Utility;
+﻿using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {

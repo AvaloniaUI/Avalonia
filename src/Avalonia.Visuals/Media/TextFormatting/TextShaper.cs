@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Globalization;
 using Avalonia.Platform;
-using Avalonia.Utility;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -44,9 +45,10 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <inheritdoc cref="ITextShaperImpl.ShapeText"/>
-        public GlyphRun ShapeText(ReadOnlySlice<char> text, TextFormat textFormat)
+        public GlyphRun ShapeText(ReadOnlySlice<char> text, Typeface typeface, double fontRenderingEmSize,
+            CultureInfo culture)
         {
-            return _platformImpl.ShapeText(text, textFormat);
+            return _platformImpl.ShapeText(text, typeface, fontRenderingEmSize, culture);
         }
     }
 }
