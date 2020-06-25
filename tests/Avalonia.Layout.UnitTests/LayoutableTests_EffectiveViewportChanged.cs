@@ -280,11 +280,40 @@ namespace Avalonia.Layout.UnitTests
             });
         }
 
+        [Fact]
+        public async Task Rotate_Transform_On_Parent_Affects_EffectiveViewport()
+        {
+            await RunOnUIThread.Execute(async () =>
+            {
+                var root = CreateRoot();
+                var target = new Canvas { Width = 100, Height = 100 };
+                var parent = new Border { Width = 200, Height = 200, Child = target };
+                var raised = 0;
+
+                root.Child = parent;
+
+                await ExecuteInitialLayoutPass(root);
+
+                target.EffectiveViewportChanged += (s, e) =>
+                {
+                    AssertArePixelEqual(new Rect(-651, -792, 1484, 1484), e.EffectiveViewport);
+                    ++raised;
+                };
+
+                parent.RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Absolute);
+                parent.RenderTransform = new RotateTransform { Angle = 45 };
+                parent.InvalidateMeasure();
+                await ExecuteLayoutPass(root);
+
+                Assert.Equal(1, raised);
+            });
+        }
+
         private TestRoot CreateRoot() => new TestRoot { Width = 1200, Height = 900 };
 
         private Task ExecuteInitialLayoutPass(TestRoot root)
         {
-            root.LayoutManager.ExecuteInitialLayoutPass(root);
+            root.LayoutManager.ExecuteInitialLayoutPass();
             return Task.CompletedTask;
         }
 
@@ -359,6 +388,12 @@ namespace Avalonia.Layout.UnitTests
             });
         }
 
+        private void AssertArePixelEqual(Rect expected, Rect actual)
+        {
+            var expectedRounded = new Rect((int)expected.X, (int)expected.Y, (int)expected.Width, (int)expected.Height);
+            var actualRounded = new Rect((int)actual.X, (int)actual.Y, (int)actual.Width, (int)actual.Height);
+            Assert.Equal(expectedRounded, actualRounded);
+        }
 
         private class TestCanvas : Canvas
         {
