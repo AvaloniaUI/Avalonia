@@ -498,8 +498,9 @@ namespace Avalonia.Controls.Primitives
                 case DateTimePickerPanelType.TimePeriod:
                     return value == MinimumValue ? CultureInfo.CurrentCulture.DateTimeFormat.AMDesignator :
                         CultureInfo.CurrentCulture.DateTimeFormat.PMDesignator;
+                default:
+                        return "";
             }
-            return "";
         }
 
         /// <summary>
