@@ -50,13 +50,13 @@ namespace Avalonia.Animation.Animators
                 finalTarget = new SolidColorBrush(immutableSolidColorBrush.Color);
                 control.SetValue(Property, finalTarget);
             }
-            else if (!(targetVal is ISolidColorBrush))
+            else if (targetVal is ISolidColorBrush)
             {
-                return Disposable.Empty;
+                finalTarget = targetVal as SolidColorBrush;
             }
             else
             {
-                finalTarget = targetVal as SolidColorBrush;
+                return Disposable.Empty;
             }
 
             if (_colorAnimator == null)
