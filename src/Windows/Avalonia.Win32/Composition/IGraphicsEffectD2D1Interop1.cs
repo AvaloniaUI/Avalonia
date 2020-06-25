@@ -122,7 +122,7 @@ namespace ABI.Windows.Graphics.Effects.Interop
                 value = default;
 
                 try
-                {
+                {                    
                     var source = ComWrappersSupport.FindObject<global::Windows.Graphics.Effects.Interop.IGraphicsEffectD2D1Interop>(thisPtr).GetSource(index);
 
                     value = MarshalInterface<global::Windows.Graphics.Effects.IGraphicsEffectSource>.FromManaged(source);

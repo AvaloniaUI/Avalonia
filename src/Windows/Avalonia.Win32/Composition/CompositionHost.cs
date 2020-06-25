@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Avalonia.OpenGL.Angle;
 using Windows.UI.Composition;
+using Windows.UI.Composition.Interop;
 using WinRT;
 
 namespace Avalonia.Win32
@@ -89,8 +90,24 @@ namespace Avalonia.Win32
 
             var gDevice = interop.CreateGraphicsDevice(display.GetDirect3DDevice());
 
-            gDevice.CreateDrawingSurface(new Windows.Foundation.Size(100,100), Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized, Windows.Graphics.DirectX.DirectXAlphaMode.Premultiplied);
-                
+            var surface = gDevice.CreateDrawingSurface(new Windows.Foundation.Size(100,100), Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized, Windows.Graphics.DirectX.DirectXAlphaMode.Premultiplied);
+
+            var surfaceInterop = surface.As<ICompositionDrawingSurfaceInterop>();
+
+            surfaceInterop.BeginDraw(new Windows.Foundation.Rect(0, 0, 100, 100), Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c"), out var texture, new Windows.Foundation.Point(0, 0));
+            surfaceInterop.EndDraw();
+            
+            var brush = _compositor.CreateSurfaceBrush(surface);
+
+            var visual = _compositor.CreateSpriteVisual();
+
+            visual.RelativeSizeAdjustment = new System.Numerics.Vector2(1.0f, 1.0f);
+            visual.Brush = brush;
+
+            _target.Root = visual;
+
+            AddElement(100, 200, 200);
+
         }
 
         public void CreateBlur()
