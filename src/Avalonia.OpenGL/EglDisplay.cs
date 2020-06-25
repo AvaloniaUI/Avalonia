@@ -15,7 +15,6 @@ namespace Avalonia.OpenGL
         private readonly int _surfaceType;
 
         public IntPtr Handle => _display;
-        private AngleOptions.PlatformApi? _angleApi;
         private int _sampleCount;
         private int _stencilSize;
         private GlVersion _version;
@@ -24,56 +23,41 @@ namespace Avalonia.OpenGL
         {
             
         }
-        public EglDisplay(EglInterface egl, int platformType, IntPtr platformDisplay, int[] attrs)
-        {
-            _egl = egl;
 
+        static IntPtr CreateDisplay(EglInterface egl, int platformType, IntPtr platformDisplay, int[] attrs)
+        {
+            var display = IntPtr.Zero;
             if (platformType == -1 && platformDisplay == IntPtr.Zero)
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    if (_egl.GetPlatformDisplayEXT == null)
-                        throw new OpenGlException("eglGetPlatformDisplayEXT is not supported by libegl.dll");
-
-                    var allowedApis = AvaloniaLocator.Current.GetService<AngleOptions>()?.AllowedPlatformApis
-                                      ?? new List<AngleOptions.PlatformApi> {AngleOptions.PlatformApi.DirectX9};
-
-                    foreach (var platformApi in allowedApis)
-                    {
-                        int dapi;
-                        if (platformApi == AngleOptions.PlatformApi.DirectX9)
-                            dapi = EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE;
-                        else if (platformApi == AngleOptions.PlatformApi.DirectX11)
-                            dapi = EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE;
-                        else
-                            continue;
-
-                        _display = _egl.GetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, IntPtr.Zero,
-                            new[] {EGL_PLATFORM_ANGLE_TYPE_ANGLE, dapi, EGL_NONE});
-                        if (_display != IntPtr.Zero)
-                        {
-                            _angleApi = platformApi;
-                            break;
-                        }
-                    }
-
-                    if (_display == IntPtr.Zero)
-                        throw new OpenGlException("Unable to create ANGLE display");
-                }
-
-                if (_display == IntPtr.Zero)
-                    _display = _egl.GetDisplay(IntPtr.Zero);
+                if (display == IntPtr.Zero)
+                    display = egl.GetDisplay(IntPtr.Zero);
             }
             else
             {
-                if (_egl.GetPlatformDisplayEXT == null)
+                if (egl.GetPlatformDisplayEXT == null)
                     throw new OpenGlException("eglGetPlatformDisplayEXT is not supported by libegl");
-                _display = _egl.GetPlatformDisplayEXT(platformType, platformDisplay, attrs);
+                display = egl.GetPlatformDisplayEXT(platformType, platformDisplay, attrs);
             }
+            
+            if (display == IntPtr.Zero)
+                throw OpenGlException.GetFormattedException("eglGetDisplay", egl);
+            return display;
+        }
 
-            if (_display == IntPtr.Zero)
-                throw OpenGlException.GetFormattedException("eglGetDisplay", _egl);
+        public EglDisplay(EglInterface egl, int platformType, IntPtr platformDisplay, int[] attrs)
+            : this(egl, CreateDisplay(egl, platformType, platformDisplay, attrs))
+        {
 
+        }
+
+        public EglDisplay(EglInterface egl, IntPtr display)
+        {
+            _egl = egl;
+            _display = display;
+            if(_display == IntPtr.Zero)
+                throw new ArgumentException();
+            
+            
             if (!_egl.Initialize(_display, out var major, out var minor))
                 throw OpenGlException.GetFormattedException("eglInitialize", _egl);
 
@@ -170,6 +154,16 @@ namespace Avalonia.OpenGL
             var s = _egl.CreateWindowSurface(_display, _config, window, new[] {EGL_NONE, EGL_NONE});
             if (s == IntPtr.Zero)
                 throw OpenGlException.GetFormattedException("eglCreateWindowSurface", _egl);
+            return new EglSurface(this, _egl, s);
+        }
+        
+        public EglSurface CreatePBufferFromClientBuffer (int bufferType, IntPtr handle, int[] attribs)
+        {
+            var s = _egl.CreatePbufferFromClientBuffer(_display, bufferType, handle,
+                _config, attribs);         
+
+            if (s == IntPtr.Zero)
+                throw OpenGlException.GetFormattedException("eglCreatePbufferFromClientBuffer", _egl);
             return new EglSurface(this, _egl, s);
         }
     }
