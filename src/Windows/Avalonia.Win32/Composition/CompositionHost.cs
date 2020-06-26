@@ -24,7 +24,7 @@ namespace Avalonia.Win32
 
         public void AttachToCompositionTree(IntPtr hwnd)
         {
-            _surfaceInterop = CompositionHost.Instance.Initialize(hwnd);
+            _surfaceInterop = CompositionHost.Instance.InitialiseWindowCompositionTree(hwnd);
         }
 
         public override IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
@@ -47,6 +47,8 @@ namespace Avalonia.Win32
                 _surfaceInterop = interopSurface;
                 _info = info;
                 _initialSize = info.Size;
+                lastSize = new POINT { X = _info.Size.Width, Y = _info.Size.Height };
+                _surfaceInterop.Resize(lastSize);
             }
 
             public override bool IsCorrupted => _initialSize != _info.Size;
@@ -85,7 +87,7 @@ namespace Avalonia.Win32
                 if (lastSize.X != _info.Size.Width || lastSize.Y != _info.Size.Height)
                 {
                     lastSize = new POINT { X = _info.Size.Width, Y = _info.Size.Height };
-                    _surfaceInterop.Resize(lastSize);
+                   // _surfaceInterop.Resize(lastSize);
                 }                
                 _surfaceInterop.BeginDraw(
                     ref updateRect,
@@ -135,17 +137,18 @@ namespace Avalonia.Win32
 
         private Compositor _compositor;
         private Windows.System.DispatcherQueueController _dispatcherQueueController;
-        private Windows.UI.Composition.Desktop.DesktopWindowTarget _target;
+        private CompositionGraphicsDevice _graphicsDevice;
 
         private CompositionHost()
         {
+            Initialize();
         }
 
-        public void AddElement(float size, float x, float y)
+        public void AddElement(CompositionTarget target, float size, float x, float y)
         {
-            if (_target.Root != null)
+            if (target.Root != null)
             {
-                var visuals = _target.Root.As<ContainerVisual>().Children;
+                var visuals = target.Root.As<ContainerVisual>().Children;
 
                 var visual = _compositor.CreateSpriteVisual();
 
@@ -169,22 +172,24 @@ namespace Avalonia.Win32
             }
         }
 
-        public ICompositionDrawingSurfaceInterop Initialize(IntPtr hwnd)
+        private void Initialize()
         {
             EnsureDispatcherQueue();
             if (_dispatcherQueueController != null)
                 _compositor = new Windows.UI.Composition.Compositor();
 
-            CreateDesktopWindowTarget(hwnd);
-            CreateCompositionRoot();
-
             var interop = _compositor.As<Windows.UI.Composition.Interop.ICompositorInterop>();
 
             var display = Win32GlManager.EglFeature.Display as AngleWin32EglDisplay;
 
-            var gDevice = interop.CreateGraphicsDevice(display.GetDirect3DDevice());
+            _graphicsDevice = interop.CreateGraphicsDevice(display.GetDirect3DDevice());
+        }
 
-            var surface = gDevice.CreateDrawingSurface(new Windows.Foundation.Size(0, 0),
+        public ICompositionDrawingSurfaceInterop InitialiseWindowCompositionTree(IntPtr hwnd)
+        {
+            var target = CreateDesktopWindowTarget(hwnd);            
+
+            var surface = _graphicsDevice.CreateDrawingSurface(new Windows.Foundation.Size(0, 0),
                 Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 Windows.Graphics.DirectX.DirectXAlphaMode.Premultiplied);
 
@@ -198,16 +203,16 @@ namespace Avalonia.Win32
             visual.Brush = brush;
             //_target.Root = visual;
 
-            CreateBlur();
+            target.Root = CreateBlur();
 
-            var visuals = _target.Root.As<ContainerVisual>().Children;
+            var visuals = target.Root.As<ContainerVisual>().Children;
 
             visuals.InsertAtTop(visual);
 
             return surfaceInterop;
         }
 
-        public void CreateBlur()
+        public SpriteVisual CreateBlur()
         {
             var effect = new GaussianBlurEffect();
             var effectFactory = _compositor.CreateEffectFactory(effect);
@@ -222,23 +227,15 @@ namespace Avalonia.Win32
             visual.RelativeSizeAdjustment = new System.Numerics.Vector2(1.0f, 1.0f);
             visual.Brush = blurBrush;
 
-            _target.Root = visual;
+            return visual;
         }
 
-        void CreateCompositionRoot()
-        {
-            var root = _compositor.CreateContainerVisual();
-            root.RelativeSizeAdjustment = new System.Numerics.Vector2(1.0f, 1.0f);            
-            //root.Offset = new System.Numerics.Vector3(0, 0, 0);
-            _target.Root = root;
-        }
-
-        void CreateDesktopWindowTarget(IntPtr window)
+        CompositionTarget CreateDesktopWindowTarget(IntPtr window)
         {
             var interop = _compositor.As<global::Windows.UI.Composition.Desktop.ICompositorDesktopInterop>();
 
             interop.CreateDesktopWindowTarget(window, false, out var windowTarget);
-            _target = Windows.UI.Composition.Desktop.DesktopWindowTarget.FromAbi(windowTarget);
+            return Windows.UI.Composition.Desktop.DesktopWindowTarget.FromAbi(windowTarget);
         }
 
         void EnsureDispatcherQueue()

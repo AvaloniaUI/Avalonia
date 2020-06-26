@@ -110,7 +110,7 @@ namespace Avalonia.Win32
             }
             else
             {
-                CompositionHost.Instance.Initialize(_hwnd);
+                CompositionHost.Instance.InitialiseWindowCompositionTree(_hwnd);
             }
 
             Screen = new ScreenImpl();
