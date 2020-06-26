@@ -1,23 +1,39 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Windows.Foundation;
 using WinRT;
 
 namespace Windows.UI.Composition.Interop
 {
+    public struct POINT
+    {
+        public int X;
+        public int Y;
+    }
+
+    public struct RECT
+    {
+        public int left;
+        public int top;
+        public int right;
+        public int bottom;
+
+        public int Width => right - left;
+        public int Height => bottom - top;
+    }
+
     [WindowsRuntimeType]
     [Guid("FD04E6E3-FE0C-4C3C-AB19-A07601A576EE")]
     public interface ICompositionDrawingSurfaceInterop
     {
-        void BeginDraw(Rect updateRect, Guid iid, out IntPtr updateObject, Point point);
+        void BeginDraw(ref RECT updateRect, ref Guid iid, out IntPtr updateObject, ref POINT point);
 
         void EndDraw();
 
-        void Resize(Size sizePixels);
+        void Resize(POINT sizePixels);
 
         void ResumeDraw();
 
-        void Scroll(Rect scrollRect, Rect clipRect, int offsetX, int offsetY);
+        void Scroll(RECT scrollRect, RECT clipRect, int offsetX, int offsetY);
 
         void SuspendDraw();
     }
@@ -28,6 +44,7 @@ namespace ABI.Windows.UI.Composition.Interop
     using global::System;
     using global::System.Runtime.InteropServices;
     using global::Windows.UI.Composition;
+    using global::Windows.UI.Composition.Interop;
 
     [Guid("FD04E6E3-FE0C-4C3C-AB19-A07601A576EE")]
     internal class ICompositionDrawingSurfaceInterop : global::Windows.UI.Composition.Interop.ICompositionDrawingSurfaceInterop
@@ -36,11 +53,11 @@ namespace ABI.Windows.UI.Composition.Interop
         [Guid("FD04E6E3-FE0C-4C3C-AB19-A07601A576EE")]
         public struct Vftbl
         {
-            public delegate int _BeginDraw(IntPtr ThisPtr, Guid iid, out IntPtr updateObject, Point updateOffset);
+            public delegate int _BeginDraw(IntPtr ThisPtr, ref RECT updateRect, ref Guid iid, out IntPtr updateObject, ref POINT updateOffset);
             public delegate int _EndDraw(IntPtr ThisPtr);
-            public delegate int _Resize(IntPtr ThisPtr, Size sizePixels);
+            public delegate int _Resize(IntPtr ThisPtr, POINT sizePixels);
             public delegate int _ResumeDraw(IntPtr ThisPtr);
-            public delegate int _Scroll(IntPtr ThisPtr, Rect scrollRect, Rect clipRect, int offsetX, int offsetY);
+            public delegate int _Scroll(IntPtr ThisPtr, RECT scrollRect, RECT clipRect, int offsetX, int offsetY);
             public delegate int _SuspendDraw(IntPtr ThisPtr);
 
             internal global::WinRT.Interop.IUnknownVftbl IUnknownVftbl;
@@ -70,7 +87,7 @@ namespace ABI.Windows.UI.Composition.Interop
                 Marshal.StructureToPtr(AbiToProjectionVftable, AbiToProjectionVftablePtr, false);
             }
 
-            private static int Do_Abi_BeginDraw(IntPtr ThisPtr, Guid iid, out IntPtr updateObject, Point updateOffset)
+            private static int Do_Abi_BeginDraw(IntPtr ThisPtr, ref RECT updateRect, ref Guid iid, out IntPtr updateObject, ref POINT updateOffset)
             {
                 updateObject = IntPtr.Zero;
                 return 0;
@@ -81,7 +98,7 @@ namespace ABI.Windows.UI.Composition.Interop
                 return 0;
             }
 
-            private static int Do_Abi_Resize(IntPtr ThisPtr, Size sizePixels)
+            private static int Do_Abi_Resize(IntPtr ThisPtr, POINT sizePixels)
             {
                 return 0;
             }
@@ -101,9 +118,9 @@ namespace ABI.Windows.UI.Composition.Interop
             _obj = obj;
         }
 
-        public void BeginDraw(Rect updateRect, Guid iid, out IntPtr updateObject, Point point)
+        public void BeginDraw(ref RECT updateRect, ref Guid iid, out IntPtr updateObject, ref POINT point)
         {
-            Marshal.ThrowExceptionForHR(_obj.Vftbl.BeginDraw(ThisPtr, iid, out updateObject, point));
+            Marshal.ThrowExceptionForHR(_obj.Vftbl.BeginDraw(ThisPtr, ref updateRect, ref iid, out updateObject, ref point));
         }
 
         public void EndDraw()
@@ -111,9 +128,9 @@ namespace ABI.Windows.UI.Composition.Interop
             Marshal.ThrowExceptionForHR(_obj.Vftbl.EndDraw(ThisPtr));
         }
 
-        public void Resize(Size sizePixels)
+        public void Resize(POINT sizePixels)
         {
-            throw new NotImplementedException();
+            Marshal.ThrowExceptionForHR(_obj.Vftbl.Resize(ThisPtr, sizePixels));
         }
 
         public void ResumeDraw()
@@ -121,7 +138,7 @@ namespace ABI.Windows.UI.Composition.Interop
             throw new NotImplementedException();
         }
 
-        public void Scroll(Rect scrollRect, Rect clipRect, int offsetX, int offsetY)
+        public void Scroll(RECT scrollRect, RECT clipRect, int offsetX, int offsetY)
         {
             throw new NotImplementedException();
         }

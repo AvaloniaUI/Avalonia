@@ -28,36 +28,99 @@ namespace Avalonia.Win32
         }
 
         public override IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
-        {
-            var glSurface = _display.CreateWindowSurface(_info.Handle);
-            return new CompositionRenderTarget(_display, _context, glSurface, _surfaceInterop, _info);
+        {            
+            return new CompositionRenderTarget(_display, _context, _surfaceInterop, _info);
         }
 
         class CompositionRenderTarget : EglPlatformSurfaceRenderTargetBase
         {
             private readonly EglDisplay _display;
-            private readonly EglContext _context;
-            private readonly EglSurface _glSurface;
+            private readonly EglContext _context;            
             private readonly IEglWindowGlPlatformSurfaceInfo _info;
             private PixelSize _initialSize;
             private readonly ICompositionDrawingSurfaceInterop _surfaceInterop;
 
-            public CompositionRenderTarget(EglDisplay display, EglContext context,
-                EglSurface glSurface, ICompositionDrawingSurfaceInterop interopSurface, IEglWindowGlPlatformSurfaceInfo info) : base(display, context)
+            public CompositionRenderTarget(EglDisplay display, EglContext context, ICompositionDrawingSurfaceInterop interopSurface, IEglWindowGlPlatformSurfaceInfo info) : base(display, context)
             {
                 _display = display;
-                _context = context;
-                _glSurface = glSurface;
+                _context = context;                
                 _surfaceInterop = interopSurface;
                 _info = info;
                 _initialSize = info.Size;
             }
 
-            public override void Dispose() => _glSurface.Dispose();
+            public override bool IsCorrupted => _initialSize != _info.Size;
 
-            public override bool IsCorrupted => _initialSize != _info.Size;            
+            public override IGlPlatformSurfaceRenderingSession BeginDraw()
+            {
+                var l = _context.Lock();
 
-            public override IGlPlatformSurfaceRenderingSession BeginDraw() => base.BeginDraw(_glSurface, _info);
+                var iid = Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
+                var updateRect = new RECT { right = _info.Size.Width, bottom = _info.Size.Height };
+                var offset = new POINT();
+
+                _surfaceInterop.Resize(new POINT { X = _info.Size.Width, Y = _info.Size.Height });
+                _surfaceInterop.BeginDraw(
+                    ref updateRect,
+                    ref iid,
+                    out IntPtr texture, ref offset);
+
+                var surface = (_display as AngleWin32EglDisplay).WrapDirect3D11Texture(texture);
+
+                var restoreContext = _context.MakeCurrent(surface);
+
+                return new Session(_display, _context, null, _info, l, restoreContext, () => { }, true);
+            }
+
+            public override void Dispose()
+            {
+                _surfaceInterop.EndDraw();
+                base.Dispose();
+            }
+        }
+
+        class Session : IGlPlatformSurfaceRenderingSession
+        {
+            private readonly EglContext _context;
+            private readonly EglSurface _glSurface;
+            private readonly EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo _info;
+            private readonly EglDisplay _display;
+            private readonly IDisposable _lock;
+            private readonly IDisposable _restoreContext;
+            private readonly Action _onFinish;
+
+
+            public Session(EglDisplay display, EglContext context,
+                EglSurface glSurface, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo info,
+                IDisposable @lock, IDisposable restoreContext, Action onFinish, bool isYFlipped)
+            {
+                IsYFlipped = isYFlipped;
+                _context = context;
+                _display = display;
+                _glSurface = glSurface;
+                _info = info;
+                _lock = @lock;
+                _restoreContext = restoreContext;
+                _onFinish = onFinish;
+            }
+
+            public void Dispose()
+            {
+                _context.GlInterface.Flush();
+                _display.EglInterface.WaitGL();
+                _glSurface?.SwapBuffers();
+                _display.EglInterface.WaitClient();
+                _display.EglInterface.WaitGL();
+                _display.EglInterface.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
+                _restoreContext.Dispose();
+                _lock.Dispose();
+                _onFinish?.Invoke();
+            }
+
+            public IGlContext Context => _context;
+            public PixelSize Size => _info.Size;
+            public double Scaling => _info.Scaling;
+            public bool IsYFlipped { get; }
         }
     }
 
@@ -146,12 +209,11 @@ namespace Avalonia.Win32
 
             var gDevice = interop.CreateGraphicsDevice(display.GetDirect3DDevice());
 
-            var surface = gDevice.CreateDrawingSurface(new Windows.Foundation.Size(100, 100), Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized, Windows.Graphics.DirectX.DirectXAlphaMode.Premultiplied);
+            var surface = gDevice.CreateDrawingSurface(new Windows.Foundation.Size(100, 100), 
+                Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized, 
+                Windows.Graphics.DirectX.DirectXAlphaMode.Premultiplied);
 
-            var surfaceInterop = surface.As<ICompositionDrawingSurfaceInterop>();
-
-            //surfaceInterop.BeginDraw(new Windows.Foundation.Rect(0, 0, 100, 100), Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c"), out var texture, new Windows.Foundation.Point(0, 0));
-            //surfaceInterop.EndDraw();
+            var surfaceInterop = surface.As<ICompositionDrawingSurfaceInterop>();            
 
             var brush = _compositor.CreateSurfaceBrush(surface);
 
