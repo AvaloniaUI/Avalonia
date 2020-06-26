@@ -100,7 +100,9 @@ namespace Avalonia.Win32
             _framebuffer = new FramebufferManager(_hwnd);
 
             if (Win32GlManager.EglFeature != null)
+            {                
                 _gl = new CompositionEglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
+            }
 
             if (_gl is CompositionEglGlPlatformSurface cgl)
             {

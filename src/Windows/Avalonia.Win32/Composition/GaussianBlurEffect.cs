@@ -52,7 +52,7 @@ namespace Avalonia.Win32
                     return 30.0f;
 
                 case D2D1GaussianBlurProp.D2D1_GAUSSIANBLUR_PROP_OPTIMIZATION:
-                    return (UInt32)D2D1_GAUSSIANBLUR_OPTIMIZATION.D2D1_GAUSSIANBLUR_OPTIMIZATION_SPEED;
+                    return (UInt32)D2D1_GAUSSIANBLUR_OPTIMIZATION.D2D1_GAUSSIANBLUR_OPTIMIZATION_BALANCED;
 
                 case D2D1GaussianBlurProp.D2D1_GAUSSIANBLUR_PROP_BORDER_MODE:
                     return (UInt32)D2D1_BORDER_MODE.D2D1_BORDER_MODE_HARD;
