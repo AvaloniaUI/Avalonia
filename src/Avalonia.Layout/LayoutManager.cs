@@ -208,7 +208,7 @@ namespace Avalonia.Layout
         {
             if (_effectiveViewportChangedListeners is object)
             {
-                for (var i = 0; i < _effectiveViewportChangedListeners.Count; ++i)
+                for (var i = _effectiveViewportChangedListeners.Count - 1; i >= 0; --i)
                 {
                     if (_effectiveViewportChangedListeners[i].Listener == control)
                     {
