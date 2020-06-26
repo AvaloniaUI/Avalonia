@@ -344,6 +344,11 @@ namespace Avalonia.Controls
                 // Note that the element being brought into view could be a descendant.
                 var targetChild = GetImmediateChildOfRepeater((IControl)args.TargetObject);
 
+                if (targetChild is null)
+                {
+                    return;
+                }
+
                 // Make sure that only the target child can be the anchor during the bring into view operation.
                 foreach (var child in _owner.Children)
                 {
@@ -377,7 +382,7 @@ namespace Avalonia.Controls
 
             if (parent == null)
             {
-                throw new InvalidOperationException("OnBringIntoViewRequested called with args.target element not under the ItemsRepeater that recieved the call");
+                return null;
             }
 
             return targetChild;
