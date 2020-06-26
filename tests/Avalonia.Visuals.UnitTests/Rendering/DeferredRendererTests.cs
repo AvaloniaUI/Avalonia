@@ -557,7 +557,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Layers are disabled. See #2244")]
         public void Should_Create_And_Delete_Layers_For_Controls_With_Animated_Opacity()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -599,7 +599,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Layers are disabled. See #2244")]
         public void Should_Not_Create_Layer_For_Childless_Control_With_Animated_Opacity()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -629,7 +629,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Layers are disabled. See #2244")]
         public void Should_Not_Push_Opacity_For_Transparent_Layer_Root_Control()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -658,7 +658,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Layers are disabled. See #2244")]
         public void Should_Draw_Transparent_Layer_With_Correct_Opacity()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

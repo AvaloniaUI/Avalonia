@@ -208,14 +208,12 @@ namespace Avalonia.Layout.UnitTests
         {
             Border border1;
             Border border2;
-            var layoutManager = new LayoutManager();
             var root = new TestRoot
             {
                 Child = border1 = new Border
                 {
                     Child = border2 = new Border(),
                 },
-                LayoutManager = layoutManager,
             };
             var raised = 0;
 
@@ -233,7 +231,7 @@ namespace Avalonia.Layout.UnitTests
             root.Measure(new Size(100, 100));
             root.Arrange(new Rect(0, 0, 100, 100));
             
-            layoutManager.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
 
             Assert.Equal(3, raised);
             Assert.Equal(new Rect(0, 0, 100, 100), border1.Bounds);

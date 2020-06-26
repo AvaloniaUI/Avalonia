@@ -49,8 +49,8 @@ namespace Avalonia.Controls
         // For non-virtualizing layouts, we do not need to keep
         // updating viewports and invalidating measure often. So when
         // a non virtualizing layout is used, we stop doing all that work.
-        bool _managingViewportDisabled;
-        private IDisposable _effectiveViewportChangedRevoker;
+        private bool _managingViewportDisabled;
+        private bool _effectiveViewportChangedSubscribed;
         private bool _layoutUpdatedSubscribed;
 
         public ViewportManager(ItemsRepeater owner)
@@ -228,11 +228,15 @@ namespace Avalonia.Controls
             _pendingViewportShift = default;
             _unshiftableShift = default;
 
-            _effectiveViewportChangedRevoker?.Dispose();
-
-            if (!_managingViewportDisabled)
+            if (_managingViewportDisabled && _effectiveViewportChangedSubscribed)
             {
-                _effectiveViewportChangedRevoker = SubscribeToEffectiveViewportChanged(_owner);
+                _owner.EffectiveViewportChanged -= OnEffectiveViewportChanged;
+                _effectiveViewportChangedSubscribed = false;
+            }
+            else if (!_managingViewportDisabled && !_effectiveViewportChangedSubscribed)
+            {
+                _owner.EffectiveViewportChanged += OnEffectiveViewportChanged;
+                _effectiveViewportChangedSubscribed = true;
             }
         }
 
@@ -340,6 +344,11 @@ namespace Avalonia.Controls
                 // Note that the element being brought into view could be a descendant.
                 var targetChild = GetImmediateChildOfRepeater((IControl)args.TargetObject);
 
+                if (targetChild is null)
+                {
+                    return;
+                }
+
                 // Make sure that only the target child can be the anchor during the bring into view operation.
                 foreach (var child in _owner.Children)
                 {
@@ -373,7 +382,7 @@ namespace Avalonia.Controls
 
             if (parent == null)
             {
-                throw new InvalidOperationException("OnBringIntoViewRequested called with args.target element not under the ItemsRepeater that recieved the call");
+                return null;
             }
 
             return targetChild;
@@ -415,15 +424,15 @@ namespace Avalonia.Controls
                 _scroller = null;
             }
 
-            _effectiveViewportChangedRevoker?.Dispose();
-            _effectiveViewportChangedRevoker = null;
+            _owner.EffectiveViewportChanged -= OnEffectiveViewportChanged;
+            _effectiveViewportChangedSubscribed = false;
             _ensuredScroller = false;
         }
 
-        private void OnEffectiveViewportChanged(Rect effectiveViewport)
+        private void OnEffectiveViewportChanged(object sender, EffectiveViewportChangedEventArgs e)
         {
             Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: EffectiveViewportChanged event callback", _owner.Layout.LayoutId);
-            UpdateViewport(effectiveViewport);
+            UpdateViewport(e.EffectiveViewport);
 
             _pendingViewportShift = default;
             _unshiftableShift = default;
@@ -468,8 +477,8 @@ namespace Avalonia.Controls
                 }
                 else if (!_managingViewportDisabled)
                 {
-                    _effectiveViewportChangedRevoker?.Dispose();
-                    _effectiveViewportChangedRevoker = SubscribeToEffectiveViewportChanged(_owner);
+                    _owner.EffectiveViewportChanged += OnEffectiveViewportChanged;
+                    _effectiveViewportChangedSubscribed = true;
                 }
 
                 _ensuredScroller = true;
@@ -526,38 +535,6 @@ namespace Avalonia.Controls
                 // avoid layout cycles.
                 Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Invalidating measure due to viewport change", _owner.Layout.LayoutId);
                 _owner.InvalidateMeasure();
-            }
-        }
-
-        private IDisposable SubscribeToEffectiveViewportChanged(IControl control)
-        {
-            // HACK: This is a bit of a hack. We need the effective viewport of the ItemsRepeater -
-            // we can get this from TransformedBounds, but this property is updated after layout has
-            // run, which is too late. Instead, for now lets just hook into an internal event on
-            // ScrollContentPresenter to find out what the offset and viewport will be after arrange
-            // and use those values. Note that this doesn't handle nested ScrollViewers at all, but
-            // it's enough to get scrolling to non-uniformly sized items working for now.
-            //
-            // UWP uses the EffectiveViewportChanged event (which I think was implemented specially
-            // for this case): we need to implement that in Avalonia, but the semantics of it aren't
-            // clear to me. Hopefully the source for this event will be released with WinUI 3.
-            if (control.VisualParent is ScrollContentPresenter scp)
-            {
-                scp.PreArrange += ScrollContentPresenterPreArrange;
-                return Disposable.Create(() => scp.PreArrange -= ScrollContentPresenterPreArrange);
-            }
-
-            return Disposable.Empty;
-        }
-
-        private void ScrollContentPresenterPreArrange(object sender, VectorEventArgs e)
-        {
-            var scp = (ScrollContentPresenter)sender;
-            var effectiveViewport = new Rect((Point)scp.Offset, new Size(e.Vector.X, e.Vector.Y));
-
-            if (effectiveViewport != _visibleWindow)
-            {
-                OnEffectiveViewportChanged(effectiveViewport);
             }
         }
 
