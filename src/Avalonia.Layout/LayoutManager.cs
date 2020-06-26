@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Logging;
@@ -329,17 +330,35 @@ namespace Avalonia.Layout
 
             if (_effectiveViewportChangedListeners is object)
             {
-                // TODO: This may not work correctly if listener is removed in event handler.
-                for (var i = 0; i < _effectiveViewportChangedListeners.Count; ++i)
-                {
-                    var l = _effectiveViewportChangedListeners[i];
-                    var viewport = CalculateEffectiveViewport(l.Listener);
+                var count = _effectiveViewportChangedListeners.Count;
+                var pool = ArrayPool<EffectiveViewportChangedListener>.Shared;
+                var listeners = pool.Rent(count);
 
-                    if (viewport != l.Viewport)
+                _effectiveViewportChangedListeners.CopyTo(listeners);
+
+                try
+                {
+                    for (var i = 0; i < count; ++i)
                     {
-                        l.Listener.EffectiveViewportChanged(new EffectiveViewportChangedEventArgs(viewport));
-                        _effectiveViewportChangedListeners[i] = new EffectiveViewportChangedListener(l.Listener, viewport);
+                        var l = _effectiveViewportChangedListeners[i];
+
+                        if (!l.Listener.IsAttachedToVisualTree)
+                        {
+                            continue;
+                        }
+
+                        var viewport = CalculateEffectiveViewport(l.Listener);
+
+                        if (viewport != l.Viewport)
+                        {
+                            l.Listener.EffectiveViewportChanged(new EffectiveViewportChangedEventArgs(viewport));
+                            _effectiveViewportChangedListeners[i] = new EffectiveViewportChangedListener(l.Listener, viewport);
+                        }
                     }
+                }
+                finally
+                {
+                    pool.Return(listeners, clearArray: true);
                 }
             }
 
