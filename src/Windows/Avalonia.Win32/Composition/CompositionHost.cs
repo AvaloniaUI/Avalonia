@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Windows.UI.Composition;
 using Windows.UI.Composition.Interop;
@@ -7,6 +8,61 @@ using WinRT;
 
 namespace Avalonia.Win32
 {
+    public class CompositionEglGlPlatformSurface : EglGlPlatformSurfaceBase
+    {
+        private readonly EglDisplay _display;
+        private readonly EglContext _context;
+        private readonly IEglWindowGlPlatformSurfaceInfo _info;
+        private ICompositionDrawingSurfaceInterop _surfaceInterop;
+
+        public CompositionEglGlPlatformSurface(EglContext context, IEglWindowGlPlatformSurfaceInfo info) : base()
+        {
+            _display = context.Display;
+            _context = context;
+            _info = info;
+        }
+
+        public void AttachToCompositionTree(IntPtr hwnd)
+        {
+            _surfaceInterop = CompositionHost.Instance.Initialize(hwnd);
+        }
+
+        public override IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
+        {
+            var glSurface = _display.CreateWindowSurface(_info.Handle);
+            return new CompositionRenderTarget(_display, _context, glSurface, _surfaceInterop, _info);
+        }
+
+        class CompositionRenderTarget : EglPlatformSurfaceRenderTargetBase
+        {
+            private readonly EglDisplay _display;
+            private readonly EglContext _context;
+            private readonly EglSurface _glSurface;
+            private readonly IEglWindowGlPlatformSurfaceInfo _info;
+            private PixelSize _initialSize;
+            private readonly ICompositionDrawingSurfaceInterop _surfaceInterop;
+
+            public CompositionRenderTarget(EglDisplay display, EglContext context,
+                EglSurface glSurface, ICompositionDrawingSurfaceInterop interopSurface, IEglWindowGlPlatformSurfaceInfo info) : base(display, context)
+            {
+                _display = display;
+                _context = context;
+                _glSurface = glSurface;
+                _surfaceInterop = interopSurface;
+                _info = info;
+                _initialSize = info.Size;
+            }
+
+            public override void Dispose() => _glSurface.Dispose();
+
+            public override bool IsCorrupted => _initialSize != _info.Size;            
+
+            public override IGlPlatformSurfaceRenderingSession BeginDraw() => base.BeginDraw(_glSurface, _info);
+        }
+    }
+
+
+
     class CompositionHost
     {
         internal enum DISPATCHERQUEUE_THREAD_APARTMENTTYPE
@@ -75,7 +131,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public void Initialize(IntPtr hwnd)
+        public ICompositionDrawingSurfaceInterop Initialize(IntPtr hwnd)
         {
             EnsureDispatcherQueue();
             if (_dispatcherQueueController != null)
@@ -90,13 +146,13 @@ namespace Avalonia.Win32
 
             var gDevice = interop.CreateGraphicsDevice(display.GetDirect3DDevice());
 
-            var surface = gDevice.CreateDrawingSurface(new Windows.Foundation.Size(100,100), Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized, Windows.Graphics.DirectX.DirectXAlphaMode.Premultiplied);
+            var surface = gDevice.CreateDrawingSurface(new Windows.Foundation.Size(100, 100), Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized, Windows.Graphics.DirectX.DirectXAlphaMode.Premultiplied);
 
             var surfaceInterop = surface.As<ICompositionDrawingSurfaceInterop>();
 
-            surfaceInterop.BeginDraw(new Windows.Foundation.Rect(0, 0, 100, 100), Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c"), out var texture, new Windows.Foundation.Point(0, 0));
-            surfaceInterop.EndDraw();
-            
+            //surfaceInterop.BeginDraw(new Windows.Foundation.Rect(0, 0, 100, 100), Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c"), out var texture, new Windows.Foundation.Point(0, 0));
+            //surfaceInterop.EndDraw();
+
             var brush = _compositor.CreateSurfaceBrush(surface);
 
             var visual = _compositor.CreateSpriteVisual();
@@ -108,6 +164,7 @@ namespace Avalonia.Win32
 
             AddElement(100, 200, 200);
 
+            return surfaceInterop;
         }
 
         public void CreateBlur()
