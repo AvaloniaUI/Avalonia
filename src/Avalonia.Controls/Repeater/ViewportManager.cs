@@ -533,27 +533,6 @@ namespace Avalonia.Controls
             }
         }
 
-        private IDisposable SubscribeToEffectiveViewportChanged(IControl control)
-        {
-            // HACK: This is a bit of a hack. We need the effective viewport of the ItemsRepeater -
-            // we can get this from TransformedBounds, but this property is updated after layout has
-            // run, which is too late. Instead, for now lets just hook into an internal event on
-            // ScrollContentPresenter to find out what the offset and viewport will be after arrange
-            // and use those values. Note that this doesn't handle nested ScrollViewers at all, but
-            // it's enough to get scrolling to non-uniformly sized items working for now.
-            //
-            // UWP uses the EffectiveViewportChanged event (which I think was implemented specially
-            // for this case): we need to implement that in Avalonia, but the semantics of it aren't
-            // clear to me. Hopefully the source for this event will be released with WinUI 3.
-            if (control.VisualParent is Layoutable layoutable)
-            {
-                layoutable.EffectiveViewportChanged += OnEffectiveViewportChanged;
-                return Disposable.Create(() => layoutable.EffectiveViewportChanged -= OnEffectiveViewportChanged);
-            }
-
-            return Disposable.Empty;
-        }
-
         private class ScrollerInfo
         {
             public ScrollerInfo(ScrollViewer scroller)
