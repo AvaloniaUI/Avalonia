@@ -54,5 +54,17 @@ namespace Avalonia.Layout
         /// </remarks>
         [Obsolete("Call ExecuteInitialLayoutPass without parameter")]
         void ExecuteInitialLayoutPass(ILayoutRoot root);
+
+        /// <summary>
+        /// Registers a control as wanting to receive effective viewport notifications.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        void RegisterEffectiveViewportListener(ILayoutable control);
+
+        /// <summary>
+        /// Registers a control as no longer wanting to receive effective viewport notifications.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        void UnregisterEffectiveViewportListener(ILayoutable control);
     }
 }
