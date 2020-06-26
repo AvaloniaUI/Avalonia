@@ -69,7 +69,7 @@ namespace Avalonia.Win32
 
                 var restoreContext = _context.MakeCurrent(surface);
 
-                return new Session(_display, _context, null, _info, l, restoreContext, () => { }, true);
+                return new Session(_display, _context, surface, _info, l, restoreContext, () => { }, true);
             }
 
             public override void Dispose()
@@ -108,7 +108,7 @@ namespace Avalonia.Win32
             {
                 _context.GlInterface.Flush();
                 _display.EglInterface.WaitGL();
-                _glSurface?.SwapBuffers();
+                _glSurface.SwapBuffers();
                 _display.EglInterface.WaitClient();
                 _display.EglInterface.WaitGL();
                 _display.EglInterface.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
