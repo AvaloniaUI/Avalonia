@@ -28,14 +28,14 @@ namespace Avalonia.Win32
         }
 
         public override IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
-        {            
+        {
             return new CompositionRenderTarget(_display, _context, _surfaceInterop, _info);
         }
 
         class CompositionRenderTarget : EglPlatformSurfaceRenderTargetBase
         {
             private readonly EglDisplay _display;
-            private readonly EglContext _context;            
+            private readonly EglContext _context;
             private readonly IEglWindowGlPlatformSurfaceInfo _info;
             private PixelSize _initialSize;
             private readonly ICompositionDrawingSurfaceInterop _surfaceInterop;
@@ -43,7 +43,7 @@ namespace Avalonia.Win32
             public CompositionRenderTarget(EglDisplay display, EglContext context, ICompositionDrawingSurfaceInterop interopSurface, IEglWindowGlPlatformSurfaceInfo info) : base(display, context)
             {
                 _display = display;
-                _context = context;                
+                _context = context;
                 _surfaceInterop = interopSurface;
                 _info = info;
                 _initialSize = info.Size;
@@ -53,8 +53,6 @@ namespace Avalonia.Win32
 
             public override IGlPlatformSurfaceRenderingSession BeginDraw()
             {
-                var l = _context.Lock();
-
                 var iid = Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
                 var updateRect = new RECT { right = _info.Size.Width, bottom = _info.Size.Height };
                 var offset = new POINT();
@@ -66,8 +64,6 @@ namespace Avalonia.Win32
                     out IntPtr texture, ref offset);
 
                 var surface = (_display as AngleWin32EglDisplay).WrapDirect3D11Texture(texture);
-
-                var restoreContext = _context.MakeCurrent(surface);
 
                 return base.BeginDraw(surface, _info, () => { _surfaceInterop.EndDraw(); }, true);
             }
@@ -159,11 +155,11 @@ namespace Avalonia.Win32
 
             var gDevice = interop.CreateGraphicsDevice(display.GetDirect3DDevice());
 
-            var surface = gDevice.CreateDrawingSurface(new Windows.Foundation.Size(100, 100), 
-                Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized, 
+            var surface = gDevice.CreateDrawingSurface(new Windows.Foundation.Size(100, 100),
+                Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 Windows.Graphics.DirectX.DirectXAlphaMode.Premultiplied);
 
-            var surfaceInterop = surface.As<ICompositionDrawingSurfaceInterop>();            
+            var surfaceInterop = surface.As<ICompositionDrawingSurfaceInterop>();
 
             var brush = _compositor.CreateSurfaceBrush(surface);
 
@@ -174,7 +170,7 @@ namespace Avalonia.Win32
 
             _target.Root = visual;
 
-            AddElement(100, 200, 200);
+            //CreateBlur();
 
             return surfaceInterop;
         }
