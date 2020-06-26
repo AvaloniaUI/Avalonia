@@ -69,7 +69,7 @@ namespace Avalonia.Win32
 
                 var restoreContext = _context.MakeCurrent(surface);
 
-                return new Session(_display, _context, surface, _info, l, restoreContext, () => { }, true);
+                return new Session(_display, _context, surface, _info, l, restoreContext, () => { _surfaceInterop.EndDraw(); }, true);
             }
 
             public override void Dispose()
