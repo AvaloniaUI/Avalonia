@@ -106,6 +106,10 @@ namespace Avalonia.Win32
             {
                 cgl.AttachToCompositionTree(_hwnd);
             }
+            else
+            {
+                CompositionHost.Instance.Initialize(_hwnd);
+            }
 
             Screen = new ScreenImpl();
 

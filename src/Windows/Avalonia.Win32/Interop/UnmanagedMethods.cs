@@ -465,6 +465,7 @@ namespace Avalonia.Win32.Interop
             WS_VSCROLL = 0x200000,
             WS_EX_DLGMODALFRAME = 0x00000001,
             WS_EX_NOPARENTNOTIFY = 0x00000004,
+            WS_EX_NOREDIRECTIONBITMAP = 0x00200000,
             WS_EX_TOPMOST = 0x00000008,
             WS_EX_ACCEPTFILES = 0x00000010,
             WS_EX_TRANSPARENT = 0x00000020,

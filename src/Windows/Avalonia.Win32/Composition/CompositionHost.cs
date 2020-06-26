@@ -155,7 +155,7 @@ namespace Avalonia.Win32
 
             var gDevice = interop.CreateGraphicsDevice(display.GetDirect3DDevice());
 
-            var surface = gDevice.CreateDrawingSurface(new Windows.Foundation.Size(100, 100),
+            var surface = gDevice.CreateDrawingSurface(new Windows.Foundation.Size(0, 0),
                 Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 Windows.Graphics.DirectX.DirectXAlphaMode.Premultiplied);
 
@@ -167,10 +167,13 @@ namespace Avalonia.Win32
 
             visual.RelativeSizeAdjustment = new System.Numerics.Vector2(1.0f, 1.0f);
             visual.Brush = brush;
+            //_target.Root = visual;
 
-            _target.Root = visual;
+            CreateBlur();
 
-            //CreateBlur();
+            var visuals = _target.Root.As<ContainerVisual>().Children;
+
+            visuals.InsertAtTop(visual);
 
             return surfaceInterop;
         }
@@ -196,7 +199,7 @@ namespace Avalonia.Win32
         void CreateCompositionRoot()
         {
             var root = _compositor.CreateContainerVisual();
-            root.RelativeSizeAdjustment = new System.Numerics.Vector2(1.0f, 1.0f);
+            root.RelativeSizeAdjustment = new System.Numerics.Vector2(1.0f, 1.0f);            
             //root.Offset = new System.Numerics.Vector3(0, 0, 0);
             _target.Root = root;
         }
