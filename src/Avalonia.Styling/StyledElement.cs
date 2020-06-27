@@ -67,6 +67,7 @@ namespace Avalonia
         private List<IStyleInstance>? _appliedStyles;
         private ITemplatedControl? _templatedParent;
         private bool _dataContextUpdating;
+        private int _resourceBatchUpdate;
 
         /// <summary>
         /// Initializes static members of the <see cref="StyledElement"/> class.
@@ -370,6 +371,18 @@ namespace Avalonia
 
         /// <inheritdoc/>
         void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
+
+        /// <inheritdoc/>
+        void IResourceHost.BeginBatchUpdate() => ++_resourceBatchUpdate;
+
+        /// <inheritdoc/>
+        void IResourceHost.EndBatchUpdate()
+        {
+            if (_resourceBatchUpdate > 0 && --_resourceBatchUpdate == 0)
+            {
+                NotifyResourcesChanged();
+            }
+        }
 
         /// <inheritdoc/>
         void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
@@ -799,6 +812,11 @@ namespace Avalonia
             ResourcesChangedEventArgs? e = null,
             bool propagate = true)
         {
+            if (_resourceBatchUpdate > 0)
+            {
+                return;
+            }
+
             if (ResourcesChanged is object)
             {
                 e ??= ResourcesChangedEventArgs.Empty;

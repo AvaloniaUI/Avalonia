@@ -18,6 +18,20 @@ namespace Avalonia.Controls
         event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
         /// <summary>
+        /// Begin batch updating resources hosted by this element.
+        /// </summary>
+        /// <remarks>
+        /// After calling this method, <see cref="ResourcesChanged"/> will not be raised until
+        /// <see cref="EndBatchUpdate"/> is called.
+        /// </remarks>
+        void BeginBatchUpdate();
+
+        /// <summary>
+        /// End batch updating resources hosted by this element.
+        /// </summary>
+        void EndBatchUpdate();
+
+        /// <summary>
         /// Notifies the resource host that one or more of its hosted resources has changed.
         /// </summary>
         /// <param name="e">The event args.</param>

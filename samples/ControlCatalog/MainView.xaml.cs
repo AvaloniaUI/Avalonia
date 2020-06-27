@@ -35,6 +35,8 @@ namespace ControlCatalog
             var themes = this.Find<ComboBox>("Themes");
             themes.SelectionChanged += (sender, e) =>
             {
+                ((IResourceHost)Application.Current).BeginBatchUpdate();
+
                 switch (themes.SelectedIndex)
                 {
                     case 0:
@@ -50,6 +52,8 @@ namespace ControlCatalog
                         Application.Current.Styles[0] = App.DefaultDark;
                         break;
                 }
+
+                ((IResourceHost)Application.Current).EndBatchUpdate();
             };            
 
             var decorations = this.Find<ComboBox>("Decorations");

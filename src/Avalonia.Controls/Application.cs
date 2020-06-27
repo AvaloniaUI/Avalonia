@@ -43,6 +43,7 @@ namespace Avalonia
         private Styles _styles;
         private IResourceDictionary _resources;
         private bool _notifyingResourcesChanged;
+        private int _resourceBatchUpdate;
         private Action<IReadOnlyList<IStyle>> _stylesAdded;
         private Action<IReadOnlyList<IStyle>> _stylesRemoved;
 
@@ -199,9 +200,24 @@ namespace Avalonia
                    Styles.TryGetResource(key, out value);
         }
 
+        /// <inheritdoc/>
+        void IResourceHost.BeginBatchUpdate() => ++_resourceBatchUpdate;
+
+        /// <inheritdoc/>
+        void IResourceHost.EndBatchUpdate()
+        {
+            if (_resourceBatchUpdate > 0 && --_resourceBatchUpdate == 0)
+            {
+                ResourcesChanged?.Invoke(this, ResourcesChangedEventArgs.Empty);
+            }
+        }
+
         void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e)
         {
-            ResourcesChanged?.Invoke(this, e);
+            if (_resourceBatchUpdate == 0)
+            {
+                ResourcesChanged?.Invoke(this, e);
+            }
         }
 
         void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
