@@ -452,19 +452,16 @@ namespace Avalonia.Controls
             PseudoClasses.Remove($":{oldState}");
             PseudoClasses.Add($":{newState}");
 
-            var state = (SplitViewDisplayMode)e.NewValue;
-            //PaneColumn Specs: Width/ColumnWidth
-            //   Overlay - 0px/0px
-            //   CompactOverlay - CompactPaneLength/CompactPaneLength
-            //   Inline - 0px/Auto
-            //   CompactInline - CompactPaneLength/Auto
-            TemplateSettings.ClosedPaneWidth = (state == SplitViewDisplayMode.CompactInline ||
-                state == SplitViewDisplayMode.CompactOverlay) ? CompactPaneLength : 0;
-
-            TemplateSettings.PaneColumnGridLength = (state == SplitViewDisplayMode.CompactInline ||
-                state == SplitViewDisplayMode.Inline) ? new GridLength(0, GridUnitType.Auto) :
-                state == SplitViewDisplayMode.Overlay ? new GridLength(0, GridUnitType.Pixel) :
-                new GridLength(CompactPaneLength, GridUnitType.Pixel);
+            var (closedPaneWidth, paneColumnGridLength) = (SplitViewDisplayMode)e.NewValue switch
+            {
+                SplitViewDisplayMode.Overlay => (0, new GridLength(0, GridUnitType.Pixel)),
+                SplitViewDisplayMode.CompactOverlay => (CompactPaneLength, new GridLength(CompactPaneLength, GridUnitType.Pixel)),
+                SplitViewDisplayMode.Inline => (0, new GridLength(0, GridUnitType.Auto)),
+                SplitViewDisplayMode.CompactInline => (CompactPaneLength, new GridLength(0, GridUnitType.Auto)),
+                _ => throw new NotImplementedException(),
+            };
+            TemplateSettings.ClosedPaneWidth = closedPaneWidth;
+            TemplateSettings.PaneColumnGridLength = paneColumnGridLength;
         }
 
         private void OnUseLightDismissChanged(AvaloniaPropertyChangedEventArgs e)
