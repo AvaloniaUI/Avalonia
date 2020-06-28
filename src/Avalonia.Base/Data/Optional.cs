@@ -60,7 +60,7 @@ namespace Avalonia.Data
         /// Casts the value (if any) to an <see cref="object"/>.
         /// </summary>
         /// <returns>The cast optional value.</returns>
-        public Optional<object> ToObject() => HasValue ? new Optional<object>(_value) : default;
+        public Optional<object> ToObject() => HasValue ? new Optional<object>(_value!) : default;
 
         /// <inheritdoc/>
         public override string ToString() => HasValue ? _value?.ToString() ?? "(null)" : "(empty)";
@@ -69,7 +69,7 @@ namespace Avalonia.Data
         /// Gets the value if present, otherwise the default value.
         /// </summary>
         /// <returns>The value.</returns>
-        public T GetValueOrDefault() => HasValue ? _value : default;
+        public T GetValueOrDefault() => HasValue ? _value : default!;
 
         /// <summary>
         /// Gets the value if present, otherwise a default value.
@@ -88,8 +88,8 @@ namespace Avalonia.Data
         public TResult GetValueOrDefault<TResult>()
         {
             return HasValue ?
-                _value is TResult result ? result : default
-                : default;
+                _value is TResult result ? result : default!
+                : default!;
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Avalonia.Data
         public TResult GetValueOrDefault<TResult>(TResult defaultValue)
         {
             return HasValue ?
-                _value is TResult result ? result : default
+                _value is TResult result ? result : default!
                 : defaultValue;
         }
 

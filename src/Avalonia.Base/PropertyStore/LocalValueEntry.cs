@@ -15,11 +15,11 @@ namespace Avalonia.PropertyStore
 
         public LocalValueEntry(T value) => _value = value;
         public BindingPriority Priority => BindingPriority.LocalValue;
-        Optional<object> IValue.GetValue() => new Optional<object>(_value);
+        Optional<object> IValue.GetValue() => new Optional<object>(_value!);
         
         public Optional<T> GetValue(BindingPriority maxPriority)
         {
-            return BindingPriority.LocalValue >= maxPriority ? _value : Optional<T>.Empty;
+            return BindingPriority.LocalValue >= maxPriority ? _value! : Optional<T>.Empty;
         }
 
         public void SetValue(T value) => _value = value;

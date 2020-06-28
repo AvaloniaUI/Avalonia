@@ -122,7 +122,7 @@ namespace Avalonia
 
         internal override object RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
         {
-            return o.GetValue<TValue>(this);
+            return o.GetValue<TValue>(this)!;
         }
 
         /// <inheritdoc/>
