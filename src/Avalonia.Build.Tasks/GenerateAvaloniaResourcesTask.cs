@@ -100,7 +100,7 @@ namespace Avalonia.Build.Tasks
             
             foreach (var s in sources.ToList())
             {
-                if (s.Path.ToLowerInvariant().EndsWith(".xaml") || s.Path.ToLowerInvariant().EndsWith(".paml"))
+                if (s.Path.ToLowerInvariant().EndsWith(".xaml") || s.Path.ToLowerInvariant().EndsWith(".paml") || s.Path.ToLowerInvariant().EndsWith(".axaml"))
                 {
                     XamlFileInfo info;
                     try
@@ -139,7 +139,7 @@ namespace Avalonia.Build.Tasks
         
         public bool Execute()
         {
-            foreach(var r in EmbeddedResources.Where(r=>r.ItemSpec.EndsWith(".xaml")||r.ItemSpec.EndsWith(".paml")))
+            foreach (var r in EmbeddedResources.Where(r => r.ItemSpec.EndsWith(".xaml") || r.ItemSpec.EndsWith(".paml") || r.ItemSpec.EndsWith(".axaml")))
                 BuildEngine.LogWarning(BuildEngineErrorCode.LegacyResmScheme, r.ItemSpec,
                     "XAML file is packed using legacy EmbeddedResource/resm scheme, relative URIs won't work");
             var resources = BuildResourceSources();
