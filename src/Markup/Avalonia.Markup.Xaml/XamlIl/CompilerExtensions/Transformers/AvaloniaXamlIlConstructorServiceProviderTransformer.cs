@@ -1,15 +1,17 @@
 using System.Linq;
-using XamlIl.Ast;
-using XamlIl.Transform;
-using XamlIl.TypeSystem;
+using XamlX.Ast;
+using XamlX.Emit;
+using XamlX.IL;
+using XamlX.Transform;
+using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AvaloniaXamlIlConstructorServiceProviderTransformer : IXamlIlAstTransformer
+    class AvaloniaXamlIlConstructorServiceProviderTransformer : IXamlAstTransformer
     {
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (node is XamlIlAstObjectNode on && on.Arguments.Count == 0)
+            if (node is XamlAstObjectNode on && on.Arguments.Count == 0)
             {
                 var ctors = on.Type.GetClrType().Constructors;
                 if (!ctors.Any(c => c.IsPublic && !c.IsStatic && c.Parameters.Count == 0))
@@ -27,20 +29,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             return node;
         }
 
-        class InjectServiceProviderNode : XamlIlAstNode, IXamlIlAstValueNode,IXamlIlAstNodeNeedsParentStack,
-            IXamlIlAstEmitableNode
+        class InjectServiceProviderNode : XamlAstNode, IXamlAstValueNode,IXamlAstNodeNeedsParentStack,
+            IXamlAstEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
         {
-            public InjectServiceProviderNode(IXamlIlType type, IXamlIlLineInfo lineInfo) : base(lineInfo)
+            public InjectServiceProviderNode(IXamlType type, IXamlLineInfo lineInfo) : base(lineInfo)
             {
-                Type = new XamlIlAstClrTypeReference(lineInfo, type, false);
+                Type = new XamlAstClrTypeReference(lineInfo, type, false);
             }
 
-            public IXamlIlAstTypeReference Type { get; }
+            public IXamlAstTypeReference Type { get; }
             public bool NeedsParentStack => true;
-            public XamlIlNodeEmitResult Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+            public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
             {
                 codeGen.Ldloc(context.ContextLocal);
-                return XamlIlNodeEmitResult.Type(0, Type.GetClrType());
+                return XamlILNodeEmitResult.Type(0, Type.GetClrType());
             }
         }
     }
