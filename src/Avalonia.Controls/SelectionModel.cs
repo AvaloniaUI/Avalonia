@@ -189,8 +189,6 @@ namespace Avalonia.Controls
             }
             set
             {
-                var isSelected = IsSelectedWithPartialAt(value);
-
                 if (!IsSelectedAt(value) || SelectedItems.Count > 1)
                 {
                     using var operation = new Operation(this);

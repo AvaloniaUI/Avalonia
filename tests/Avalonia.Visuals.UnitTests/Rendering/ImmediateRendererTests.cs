@@ -134,7 +134,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 var root = new TestRoot(child);
                 root.Renderer = new ImmediateRenderer(root);
 
-                root.LayoutManager.ExecuteInitialLayoutPass(root);
+                root.LayoutManager.ExecuteInitialLayoutPass();
 
                 root.Measure(new Size(50, 100));
                 root.Arrange(new Rect(new Size(50, 100)));
@@ -171,7 +171,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 var root = new TestRoot(child);
                 root.Renderer = new ImmediateRenderer(root);
 
-                root.LayoutManager.ExecuteInitialLayoutPass(root);
+                root.LayoutManager.ExecuteInitialLayoutPass();
 
                 root.Measure(new Size(300, 100));
                 root.Arrange(new Rect(new Size(300, 100)));
@@ -222,7 +222,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
                 var root = new TestRoot(rootGrid);
                 root.Renderer = new ImmediateRenderer(root);
-                root.LayoutManager.ExecuteInitialLayoutPass(root);
+                root.LayoutManager.ExecuteInitialLayoutPass();
 
                 var rootSize = new Size(RootWidth, RootHeight);
                 root.Measure(rootSize);
@@ -277,7 +277,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
                 var root = new TestRoot(rootGrid);
                 root.Renderer = new ImmediateRenderer(root);
-                root.LayoutManager.ExecuteInitialLayoutPass(root);
+                root.LayoutManager.ExecuteInitialLayoutPass();
 
                 var rootSize = new Size(RootWidth, RootHeight);
                 root.Measure(rootSize);

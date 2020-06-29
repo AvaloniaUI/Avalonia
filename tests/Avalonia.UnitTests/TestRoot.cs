@@ -19,6 +19,8 @@ namespace Avalonia.UnitTests
         public TestRoot()
         {
             Renderer = Mock.Of<IRenderer>();
+            LayoutManager = new LayoutManager(this);
+            IsVisible = true;
         }
 
         public TestRoot(IControl child)
@@ -44,7 +46,7 @@ namespace Avalonia.UnitTests
 
         public double LayoutScaling { get; set; } = 1;
 
-        public ILayoutManager LayoutManager { get; set; } = new LayoutManager();
+        public ILayoutManager LayoutManager { get; set; }
 
         public double RenderScaling => 1;
 
