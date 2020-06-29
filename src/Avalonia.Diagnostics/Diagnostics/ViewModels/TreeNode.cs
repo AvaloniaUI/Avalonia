@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reactive;
 using System.Reactive.Linq;
-using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class TreeNode : ViewModelBase
+    internal class TreeNode : ViewModelBase, IDisposable
     {
         private string _classes;
         private bool _isExpanded;
@@ -49,7 +48,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public IAvaloniaReadOnlyList<TreeNode> Children
+        public TreeNodeCollection Children
         {
             get;
             protected set;
@@ -102,6 +101,11 @@ namespace Avalonia.Diagnostics.ViewModels
                 indices.Reverse();
                 return new IndexPath(indices);
             }
+        }
+
+        public void Dispose()
+        {
+            Children.Dispose();
         }
 
         private static int IndexOf(IReadOnlyList<TreeNode> collection, TreeNode item)
