@@ -116,8 +116,7 @@ namespace Avalonia.Native
 
             public void HideWithSize(Size size)
             {
-                //TODO
-                _native?.Hide();
+                _native.HideWithSize(Math.Max(1, (float)size.Width), Math.Max(1, (float)size.Height));
             }
             
             public void ShowInBounds(Rect bounds)
@@ -126,7 +125,7 @@ namespace Avalonia.Native
                     throw new InvalidOperationException("Native control isn't attached to a toplevel");
                 bounds = new Rect(bounds.X, bounds.Y, Math.Max(1, bounds.Width),
                     Math.Max(1, bounds.Height));
-                _native.MoveTo((float) bounds.X, (float) bounds.Y, (float) bounds.Width, (float) bounds.Height);
+                _native.ShowInBounds((float) bounds.X, (float) bounds.Y, (float) bounds.Width, (float) bounds.Height);
             }
 
             public void InitWithChild(IPlatformHandle handle) 
