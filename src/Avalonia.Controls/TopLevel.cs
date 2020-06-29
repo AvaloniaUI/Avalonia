@@ -340,6 +340,9 @@ namespace Avalonia.Controls
                 _globalStyles.GlobalStylesRemoved -= ((IStyleHost)this).StylesRemoved;
             }
 
+            Renderer?.Dispose();
+            Renderer = null;
+            
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
@@ -349,8 +352,7 @@ namespace Avalonia.Controls
             (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
             PlatformImpl = null;
             OnClosed(EventArgs.Empty);
-            Renderer?.Dispose();
-            Renderer = null;
+
             LayoutManager?.Dispose();
         }
 
