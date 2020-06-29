@@ -278,6 +278,7 @@ AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
     virtual HRESULT SetTitleBarColor (AvnColor color) = 0;
     virtual HRESULT SetWindowState(AvnWindowState state) = 0;
     virtual HRESULT GetWindowState(AvnWindowState*ret) = 0;
+    virtual HRESULT TakeFocusFromChildren() = 0;
 };
 
 AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
