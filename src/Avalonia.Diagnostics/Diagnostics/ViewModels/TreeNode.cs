@@ -11,6 +11,7 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class TreeNode : ViewModelBase, IDisposable
     {
+        private IDisposable _classesSubscription;
         private string _classes;
         private bool _isExpanded;
 
@@ -32,7 +33,7 @@ namespace Avalonia.Diagnostics.ViewModels
                         x => control.Classes.CollectionChanged -= x)
                     .TakeUntil(removed);
 
-                classesChanged.Select(_ => Unit.Default)
+                _classesSubscription = classesChanged.Select(_ => Unit.Default)
                     .StartWith(Unit.Default)
                     .Subscribe(_ =>
                     {
@@ -105,6 +106,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void Dispose()
         {
+            _classesSubscription.Dispose();
             Children.Dispose();
         }
 
