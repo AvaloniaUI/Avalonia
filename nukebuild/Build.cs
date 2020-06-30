@@ -101,7 +101,7 @@ partial class Build : NukeBuild
             .SetProjectFile(projectFile)
             // This is required for VS2019 image on Azure Pipelines
             .When(Parameters.IsRunningOnWindows &&
-                  Parameters.IsRunningOnAzure, c => c
+                  Parameters.IsRunningOnAzure, _ => _
                 .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_8_X64")))
             .AddProperty("PackageVersion", Parameters.Version)
             .AddProperty("iOSRoslynPathHackRequired", true)
@@ -176,7 +176,7 @@ partial class Build : NukeBuild
                 .SetFramework(fw)
                 .EnableNoBuild()
                 .EnableNoRestore()
-                .When(Parameters.PublishTestResults, c => c
+                .When(Parameters.PublishTestResults, _ => _
                     .SetLogger("trx")
                     .SetResultsDirectory(Parameters.TestResultsRoot)));
         }

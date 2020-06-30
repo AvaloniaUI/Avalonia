@@ -158,7 +158,7 @@ namespace Avalonia.Controls.UnitTests
             target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
             target.Offset = new Vector(10, 10);
 
-            root.LayoutManager.ExecuteInitialLayoutPass(root);
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             target.ScrollChanged += (s, e) =>
             {
@@ -188,7 +188,7 @@ namespace Avalonia.Controls.UnitTests
             target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
             target.Offset = new Vector(10, 10);
 
-            root.LayoutManager.ExecuteInitialLayoutPass(root);
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             target.ScrollChanged += (s, e) =>
             {
@@ -218,7 +218,7 @@ namespace Avalonia.Controls.UnitTests
             target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
             target.Offset = new Vector(10, 10);
 
-            root.LayoutManager.ExecuteInitialLayoutPass(root);
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             target.ScrollChanged += (s, e) =>
             {

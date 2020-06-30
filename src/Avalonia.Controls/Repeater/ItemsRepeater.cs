@@ -10,6 +10,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -80,6 +81,7 @@ namespace Avalonia.Controls
         static ItemsRepeater()
         {
             ClipToBoundsProperty.OverrideDefaultValue<ItemsRepeater>(true);
+            RequestBringIntoViewEvent.AddClassHandler<ItemsRepeater>((x, e) => x.OnRequestBringIntoView(e));
         }
 
         /// <summary>
@@ -305,6 +307,7 @@ namespace Avalonia.Controls
                             virtInfo.AutoRecycleCandidate &&
                             !virtInfo.KeepAlive)
                         {
+                            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "AutoClear - {Index}", virtInfo.Index);
                             ClearElementImpl(element);
                         }
                     }
@@ -741,6 +744,11 @@ namespace Avalonia.Controls
             {
                 _processingItemsSourceChange = null;
             }
+        }
+
+        private void OnRequestBringIntoView(RequestBringIntoViewEventArgs e)
+        {
+            _viewportManager.OnBringIntoViewRequested(e);
         }
 
         private void InvalidateMeasureForLayout(object sender, EventArgs e) => InvalidateMeasure();

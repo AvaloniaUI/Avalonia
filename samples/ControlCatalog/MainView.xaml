@@ -52,7 +52,9 @@
       <TabItem Header="Pointers (Touch)"><pages:PointersPage/></TabItem>
       <TabItem Header="ProgressBar"><pages:ProgressBarPage/></TabItem>
       <TabItem Header="RadioButton"><pages:RadioButtonPage/></TabItem>
+      <TabItem Header="ScrollViewer"><pages:ScrollViewerPage/></TabItem>
       <TabItem Header="Slider"><pages:SliderPage/></TabItem>
+      <TabItem Header="SplitView"><pages:SplitViewPage/></TabItem>
       <TabItem Header="TabControl"><pages:TabControlPage/></TabItem>
       <TabItem Header="TabStrip"><pages:TabStripPage/></TabItem>
       <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>

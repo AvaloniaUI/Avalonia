@@ -116,16 +116,26 @@ public:
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
-            
-            [Window makeKeyAndOrderFront:Window];
-            [NSApp activateIgnoringOtherApps:YES];
-            
+            if(ShouldTakeFocusOnShow())
+            {
+                [Window makeKeyAndOrderFront:Window];
+                [NSApp activateIgnoringOtherApps:YES];
+            }
+            else
+            {
+                [Window orderFront: Window];
+            }
             [Window setTitle:_lastTitle];
             
             _shown = true;
         
             return S_OK;
         }
+    }
+    
+    virtual bool ShouldTakeFocusOnShow()
+    {
+        return true;
     }
     
     virtual HRESULT Hide () override
@@ -388,6 +398,14 @@ public:
             return E_FAIL;
         *ppv = [renderTarget createSurfaceRenderTarget];
         return *ppv == nil ? E_FAIL : S_OK;
+    }
+    
+    virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut) override
+    {
+        if(View == NULL)
+            return E_FAIL;
+        *retOut = ::CreateNativeControlHost(View);
+        return S_OK;
     }
     
     virtual HRESULT SetBlurEnabled (bool enable) override
@@ -766,6 +784,15 @@ private:
         }
     }
     
+    virtual HRESULT TakeFocusFromChildren () override
+    {
+        if(Window == nil)
+            return S_OK;
+        if([Window isKeyWindow])
+            [Window makeFirstResponder: View];
+        return S_OK;
+    }
+    
     void EnterFullScreenMode ()
     {
         _fullScreenActive = true;
@@ -1060,9 +1087,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height});
 }
 
-
 - (void)updateLayer
 {
+    AvnInsidePotentialDeadlock deadlock;
     if (_parent == nullptr)
     {
         return;
@@ -1142,7 +1169,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         return;
     }
     
-    [self becomeFirstResponder];
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
     auto avnPoint = [self toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
@@ -1169,7 +1195,16 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     auto timestamp = [event timestamp] * 1000;
     auto modifiers = [self getModifiers:[event modifierFlags]];
     
-    [self becomeFirstResponder];
+    if(type != AvnRawMouseEventType::Move ||
+       (
+           [self window] != nil &&
+           (
+                [[self window] firstResponder] == nil
+                || ![[[self window] firstResponder] isKindOfClass: [NSView class]]
+           )
+       )
+    )
+        [self becomeFirstResponder];
     
     if(_parent != nullptr)
     {
@@ -1177,6 +1212,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
     
     [super mouseMoved:event];
+}
+
+- (BOOL) resignFirstResponder
+{
+    _parent->BaseEvents->LostFocus();
+    return YES;
 }
 
 - (void)mouseMoved:(NSEvent *)event
@@ -1836,7 +1877,6 @@ private:
         WindowEvents = events;
         [Window setLevel:NSPopUpMenuWindowLevel];
     }
-    
 protected:
     virtual NSWindowStyleMask GetStyle() override
     {
@@ -1853,6 +1893,11 @@ protected:
             
             return S_OK;
         }
+    }
+public:
+    virtual bool ShouldTakeFocusOnShow() override
+    {
+        return false;
     }
 };
 

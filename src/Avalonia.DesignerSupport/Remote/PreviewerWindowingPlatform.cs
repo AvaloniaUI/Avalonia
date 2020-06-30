@@ -19,7 +19,7 @@ namespace Avalonia.DesignerSupport.Remote
         
         public IWindowImpl CreateWindow() => new WindowStub();
 
-        public IEmbeddableWindowImpl CreateEmbeddableWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             if (s_lastWindow != null)
             {

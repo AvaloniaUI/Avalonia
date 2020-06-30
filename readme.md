@@ -68,7 +68,7 @@ Avalonia is licenced under the [MIT licence](licence.md).
 
 ## Contributors
 
-This project exists thanks to all the people who contribute. [[Contribute](http://avaloniaui.net/contributing/contributing)].
+This project exists thanks to all the people who contribute. [[Contribute](http://avaloniaui.net/contributing)].
 <a href="https://github.com/AvaloniaUI/Avalonia/graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
 
 ### Backers

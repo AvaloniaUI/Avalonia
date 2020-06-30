@@ -2,36 +2,8 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
   xmlns:sys="clr-namespace:System;assembly=netstandard">
   <Style.Resources>
-    <Color x:Key="SystemAccentColor">#FF0078D7</Color>
-    <Color x:Key="SystemAltHighColor">#FF000000</Color>
-    <Color x:Key="SystemAltLowColor">#FF000000</Color>
-    <Color x:Key="SystemAltMediumColor">#FF000000</Color>
-    <Color x:Key="SystemAltMediumHighColor">#FF000000</Color>
-    <Color x:Key="SystemAltMediumLowColor">#FF000000</Color>
-    <Color x:Key="SystemBaseHighColor">#FFFFFFFF</Color>
-    <Color x:Key="SystemBaseLowColor">#FF333333</Color>
-    <Color x:Key="SystemBaseMediumColor">#FF9A9A9A</Color>
-    <Color x:Key="SystemBaseMediumHighColor">#FFB4B4B4</Color>
-    <Color x:Key="SystemBaseMediumLowColor">#FF676767</Color>
-    <Color x:Key="SystemChromeAltLowColor">#FFB4B4B4</Color>
-    <Color x:Key="SystemChromeBlackHighColor">#FF000000</Color>
-    <Color x:Key="SystemChromeBlackLowColor">#FFB4B4B4</Color>
-    <Color x:Key="SystemChromeBlackMediumColor">#FF000000</Color>
-    <Color x:Key="SystemChromeBlackMediumLowColor">#FF000000</Color>
-    <Color x:Key="SystemChromeDisabledHighColor">#FF333333</Color>
-    <Color x:Key="SystemChromeDisabledLowColor">#FF9A9A9A</Color>
-    <Color x:Key="SystemChromeGrayColor">#FF808080</Color>
-    <Color x:Key="SystemChromeHighColor">#FF808080</Color>
-    <Color x:Key="SystemChromeLowColor">#FF151515</Color>
-    <Color x:Key="SystemChromeMediumColor">#FF1D1D1D</Color>
-    <Color x:Key="SystemChromeMediumLowColor">#FF2C2C2C</Color>
-    <Color x:Key="SystemChromeWhiteColor">#FFFFFFFF</Color>
-    <Color x:Key="SystemListLowColor">#FF1D1D1D</Color>
-    <Color x:Key="SystemListMediumColor">#FF333333</Color>
-    <Color x:Key="SystemChromeAltMediumHighColor">#CC000000</Color>
-    <Color x:Key="SystemChromeAltHighColor">#FF333333</Color>
-    <Color x:Key="SystemRevealListLowColor">#FF1D1D1D</Color>
-    <Color x:Key="SystemRevealListMediumColor">#FF333333</Color>
+    <Color x:Key="SystemRevealListLowColor">#18FFFFFF</Color>
+    <Color x:Key="SystemRevealListMediumColor">#30FFFFFF</Color>
     <!--<AcrylicBrush x:Key="SystemControlAcrylicWindowBrush" BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{ThemeResource SystemChromeMediumColor}" />-->
     <!--<RevealBackgroundBrush x:Key="SystemControlTransparentRevealBackgroundBrush" TargetTheme="Dark" Color="Transparent" FallbackColor="Transparent" />-->
     <SolidColorBrush x:Key="SystemControlTransparentRevealBackgroundBrush" Color="Transparent" />
@@ -68,13 +40,6 @@
     <Thickness x:Key="ComboBoxItemRevealBorderThemeThickness">1,1,1,1</Thickness>
     <x:Double x:Key="PersonPictureEllipseBadgeStrokeThickness">1</x:Double>
     
-    <!-- Override system generated accent colors -->
-    <Color x:Key="SystemAccentColorDark1">#FF005A9E</Color>
-    <Color x:Key="SystemAccentColorDark2">#FF004275</Color>
-    <Color x:Key="SystemAccentColorDark3">#FF002642</Color>
-    <Color x:Key="SystemAccentColorLight1">#FF429CE3</Color>
-    <Color x:Key="SystemAccentColorLight2">#FF76B9ED</Color>
-    <Color x:Key="SystemAccentColorLight3">#FFA6D8FF</Color>
     <Color x:Key="RegionColor">#FF000000</Color>
     <SolidColorBrush x:Key="RegionBrush" Color="{StaticResource RegionColor}" />
     
@@ -219,6 +184,11 @@
     <SolidColorBrush x:Key="ListBoxItemSelectedDisabledForegroundThemeBrush" Color="#99000000" />
     <SolidColorBrush x:Key="ListBoxItemSelectedForegroundThemeBrush" Color="White" />
     <SolidColorBrush x:Key="ListBoxItemSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
+    <!-- BaseResources for ProgressBar.xaml -->
+    <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="#30000000" />
+    <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="#FF4617B4" />
+    <SolidColorBrush x:Key="ProgressBarIndeterminateForegroundThemeBrush" Color="#FF4617B4" />
 
     <!-- BaseResources for TextBox.xaml -->
     <StaticResource x:Key="TextControlForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -471,5 +441,56 @@
     <SolidColorBrush x:Key="PivotNavButtonPressedBackgroundThemeBrush" Color="#BD292929" />
     <SolidColorBrush x:Key="PivotNavButtonPressedBorderThemeBrush" Color="#BD292929" />
     <SolidColorBrush x:Key="PivotNavButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
+
+    <!-- BaseResources for ScrollBar.xaml -->
+    <StaticResource x:Key="ScrollBarBackground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarForeground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBackground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundListLowBrush" />
+    <StaticResource x:Key="ScrollBarButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumBrush" />
+    <StaticResource x:Key="ScrollBarButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="ScrollBarButtonArrowForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="ScrollBarButtonArrowForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="ScrollBarButtonArrowForegroundPressed" ResourceKey="SystemControlForegroundAltHighBrush" />
+    <StaticResource x:Key="ScrollBarButtonArrowForegroundDisabled" ResourceKey="SystemControlForegroundBaseLowBrush" />
+    <StaticResource x:Key="ScrollBarThumbFill" ResourceKey="SystemControlForegroundChromeDisabledLowBrush" />
+    <StaticResource x:Key="ScrollBarThumbFillPointerOver" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
+    <StaticResource x:Key="ScrollBarThumbFillPressed" ResourceKey="SystemControlBackgroundBaseMediumBrush" />
+    <StaticResource x:Key="ScrollBarThumbFillDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    <SolidColorBrush x:Key="ScrollBarTrackFill" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
+    <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
+    <StaticResource x:Key="ScrollBarTrackFillDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    <StaticResource x:Key="ScrollBarTrackStroke" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="ScrollBarTrackStrokePointerOver" ResourceKey="SystemControlForegroundTransparentBrush" />
+    <StaticResource x:Key="ScrollBarTrackStrokeDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    <StaticResource x:Key="ScrollBarPanningThumbBackgroundDisabled" ResourceKey="SystemControlDisabledChromeHighBrush" />
+    <StaticResource x:Key="ScrollBarThumbBackgroundColor" ResourceKey="SystemBaseLowColor" />
+    <StaticResource x:Key="ScrollBarPanningThumbBackgroundColor" ResourceKey="SystemChromeDisabledLowColor" />
+    <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="{StaticResource ScrollBarThumbBackgroundColor}" />
+    <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="{StaticResource ScrollBarPanningThumbBackgroundColor}" />
+    <x:TimeSpan x:Key="ScrollBarExpandDuration">00:00:00.1</x:TimeSpan>
+    <x:String x:Key="ScrollBarExpandBeginTime">00:00:00.40</x:String>
+    <x:String x:Key="ScrollBarContractBeginTime">00:00:02.00</x:String>
+    <x:String x:Key="ScrollBarContractDelay">00:00:02</x:String>
+    <x:String x:Key="ScrollBarContractDuration">00:00:00.1</x:String>
+    <x:String x:Key="ScrollBarContractFinalKeyframe">00:00:02.1</x:String>
+    <x:Double x:Key="ScrollBarSize">16</x:Double>
+    <x:Double x:Key="SmallScrollThumbScale">0.125</x:Double>
+    <x:Double x:Key="SmallScrollThumbOffset">-2</x:Double>
+    <TransformOperations x:Key="VerticalSmallScrollThumbScaleTransform">scaleX(0.125) translateX(-2px)</TransformOperations>
+    <TransformOperations x:Key="HorizontalSmallScrollThumbScaleTransform">scaleY(0.125) translateY(-2px)</TransformOperations>
+    <x:Double x:Key="ScrollBarButtonArrowIconFontSize">8</x:Double>
+
+    <!-- BaseResources for ScrollViewer.xaml -->
+    <SolidColorBrush x:Key="ScrollViewerScrollBarsSeparatorBackground" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
   </Style.Resources>
 </Style>

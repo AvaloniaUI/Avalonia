@@ -1,11 +1,14 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"       
+        xmlns:sys="clr-namespace:System;assembly=netstandard">
+
   <Design.PreviewWith>
     <Grid RowDefinitions="Auto,Auto"
           ColumnDefinitions="Auto,Auto"
           HorizontalAlignment="Center">
       <Border Grid.Column="0"
               Grid.Row="1"
-              Background="{DynamicResource ThemeAccentBrush}"
+              Background="{DynamicResource SystemControlBackgroundAccentBrush}"
               Margin="5"
               Padding="50"
               ToolTip.Tip="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.">
@@ -19,7 +22,7 @@
       <Border Name="Border"
               Grid.Column="1"
               Grid.Row="1"
-              Background="{DynamicResource ThemeAccentBrush}"
+              Background="{DynamicResource SystemControlBackgroundAccentBrush}"
               Margin="5"
               Padding="50"
               ToolTip.Placement="Bottom">
@@ -34,6 +37,10 @@
     </Grid>
   </Design.PreviewWith>
 
+  <Styles.Resources>
+    <sys:Double x:Key="ToolTipContentMaxWidth">320</sys:Double>
+  </Styles.Resources>
+
   <Style Selector="ToolTip">
     <Setter Property="Foreground" Value="{DynamicResource ToolTipForeground}" />
     <Setter Property="Background" Value="{DynamicResource ToolTipBackground}" />
@@ -42,6 +49,7 @@
     <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource ToolTipContentThemeFontSize}" />
     <Setter Property="Padding" Value="{DynamicResource ToolTipBorderThemePadding}" />
+    <Setter Property="MaxWidth" Value="{DynamicResource ToolTipContentMaxWidth}" />
     <Setter Property="Transitions">
       <Transitions>
         <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
@@ -56,7 +64,7 @@
                 Padding="{TemplateBinding Padding}"
                 CornerRadius="{DynamicResource OverlayCornerRadius}">
           <ContentPresenter Name="PART_ContentPresenter"
-                            MaxWidth="320"
+                            MaxWidth="{TemplateBinding MaxWidth}"
                             Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}" />
         </Border>
