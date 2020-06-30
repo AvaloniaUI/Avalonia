@@ -81,7 +81,10 @@ namespace Avalonia.Animation
         /// <returns>A <see cref="KeySpline"/> with the appropriate values set</returns>
         public static KeySpline Parse(string value, CultureInfo culture)
         {
-            using (var tokenizer = new StringTokenizer((string)value, CultureInfo.InvariantCulture, exceptionMessage: "Invalid KeySpline."))
+            if (culture is null)
+                culture = CultureInfo.InvariantCulture;
+
+            using (var tokenizer = new StringTokenizer((string)value, culture, exceptionMessage: $"Invalid KeySpline string: \"{value}\"."))
             {
                 return new KeySpline(tokenizer.ReadDouble(), tokenizer.ReadDouble(), tokenizer.ReadDouble(), tokenizer.ReadDouble());
             }
@@ -98,6 +101,7 @@ namespace Avalonia.Animation
                 if (IsValidXValue(value))
                 {
                     _controlPointX1 = value;
+                    _isDirty = true;
                 }
                 else
                 {
@@ -112,7 +116,11 @@ namespace Avalonia.Animation
         public double ControlPointY1
         {
             get => _controlPointY1;
-            set => _controlPointY1 = value;
+            set
+            {
+                _controlPointY1 = value;
+                _isDirty = true;
+            }
         }
 
         /// <summary>
@@ -126,6 +134,7 @@ namespace Avalonia.Animation
                 if (IsValidXValue(value))
                 {
                     _controlPointX2 = value;
+                    _isDirty = true;
                 }
                 else
                 {
@@ -140,7 +149,11 @@ namespace Avalonia.Animation
         public double ControlPointY2
         {
             get => _controlPointY2;
-            set => _controlPointY2 = value;
+            set
+            {
+                _controlPointY2 = value;
+                _isDirty = true;
+            }
         }
 
         /// <summary>
@@ -328,22 +341,6 @@ namespace Avalonia.Animation
                     }
                 }
             }
-        }
-    }
-
-    /// <summary>
-    /// Converts string values to <see cref="KeySpline"/> values
-    /// </summary>
-    public class KeySplineTypeConverter : TypeConverter
-    {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-        {
-            return sourceType == typeof(string);
-        }
-
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-        {
-            return KeySpline.Parse((string)value, culture);
         }
     }
 }
