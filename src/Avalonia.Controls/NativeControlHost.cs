@@ -1,7 +1,9 @@
+using System;
+using System.Collections.Generic;
 using Avalonia.Controls.Platform;
-using Avalonia.LogicalTree;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -12,14 +14,18 @@ namespace Avalonia.Controls
         private INativeControlHostControlTopLevelAttachment _attachment;
         private IPlatformHandle _nativeControlHandle;
         private bool _queuedForDestruction;
+        private bool _queuedForMoveResize;
+        private readonly List<Visual> _propertyChangedSubscriptions = new List<Visual>();
+        private readonly EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChangedHandler;
         static NativeControlHost()
         {
             IsVisibleProperty.Changed.AddClassHandler<NativeControlHost>(OnVisibleChanged);
-            TransformedBoundsProperty.Changed.AddClassHandler<NativeControlHost>(OnBoundsChanged);
         }
 
-        private static void OnBoundsChanged(NativeControlHost host, AvaloniaPropertyChangedEventArgs arg2) 
-            => host.UpdateHost();
+        public NativeControlHost()
+        {
+            _propertyChangedHandler = PropertyChangedHandler;
+        }
 
         private static void OnVisibleChanged(NativeControlHost host, AvaloniaPropertyChangedEventArgs arg2)
             => host.UpdateHost();
@@ -27,21 +33,46 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             _currentRoot = e.Root as TopLevel;
+            var visual = (IVisual)this;
+            while (visual != _currentRoot)
+            {
+
+                if (visual is Visual v)
+                {
+                    v.PropertyChanged += _propertyChangedHandler;
+                    _propertyChangedSubscriptions.Add(v);
+                }
+
+                visual = visual.GetVisualParent();
+            }
+
             UpdateHost();
+        }
+
+        private void PropertyChangedHandler(object sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.IsEffectiveValueChange && e.Property == BoundsProperty)
+                EnqueueForMoveResize();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             _currentRoot = null;
+            if (_propertyChangedSubscriptions != null)
+            {
+                foreach (var v in _propertyChangedSubscriptions)
+                    v.PropertyChanged -= _propertyChangedHandler;
+                _propertyChangedSubscriptions.Clear();
+            }
             UpdateHost();
         }
 
 
-        void UpdateHost()
+        private void UpdateHost()
         {
+            _queuedForMoveResize = false;
             _currentHost = (_currentRoot?.PlatformImpl as ITopLevelImplWithNativeControlHost)?.NativeControlHost;
             var needsAttachment = _currentHost != null;
-            var needsShow = needsAttachment && IsEffectivelyVisible && TransformedBounds.HasValue;
             
             if (needsAttachment)
             {
@@ -93,22 +124,46 @@ namespace Avalonia.Controls
                 }
             }
 
-            if (needsShow)
-                _attachment?.ShowInBounds(TransformedBounds.Value);
-            else if (needsAttachment)
-                _attachment?.Hide();
+            if (_attachment?.AttachedTo != _currentHost)
+                return;
+
+            TryUpdateNativeControlPosition();
+        }
+
+        
+        private Rect? GetAbsoluteBounds()
+        {
+            var bounds = Bounds;
+            var position = this.TranslatePoint(bounds.Position, _currentRoot);
+            if (position == null)
+                return null;
+            return new Rect(position.Value, bounds.Size);
+        }
+
+        void EnqueueForMoveResize()
+        {
+            if(_queuedForMoveResize)
+                return;
+            _queuedForMoveResize = true;
+            Dispatcher.UIThread.Post(UpdateHost, DispatcherPriority.Render);
         }
 
         public bool TryUpdateNativeControlPosition()
         {
-            var needsShow = _currentHost != null && IsEffectivelyVisible && TransformedBounds.HasValue;
+            if (_currentHost == null)
+                return false;
+            
+            var bounds = GetAbsoluteBounds();
+            var needsShow = IsEffectivelyVisible && bounds.HasValue;
 
-            if(needsShow)
-                _attachment?.ShowInBounds(TransformedBounds.Value);
-            return needsShow;
+            if (needsShow)
+                _attachment?.ShowInBounds(bounds.Value);
+            else
+                _attachment?.HideWithSize(Bounds.Size);
+            return false;
         }
 
-        void CheckDestruction()
+        private void CheckDestruction()
         {
             _queuedForDestruction = false;
             if (_currentRoot == null)
@@ -117,10 +172,12 @@ namespace Avalonia.Controls
         
         protected virtual IPlatformHandle CreateNativeControlCore(IPlatformHandle parent)
         {
+            if (_currentHost == null)
+                throw new InvalidOperationException();
             return _currentHost.CreateDefaultChild(parent);
         }
 
-        void DestroyNativeControl()
+        private void DestroyNativeControl()
         {
             if (_nativeControlHandle != null)
             {

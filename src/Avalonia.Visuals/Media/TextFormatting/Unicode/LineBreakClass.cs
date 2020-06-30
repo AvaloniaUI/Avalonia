@@ -34,10 +34,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
         EBase, //EB
         EModifier, //EM
         ZWJ, //ZWJ
+        ContingentBreak, //CB
 
+        Unknown, //XX
         Ambiguous, //AI
         MandatoryBreak, //BK
-        ContingentBreak, //CB
         ConditionalJapaneseStarter, //CJ
         CarriageReturn, //CR
         LineFeed, //LF
@@ -45,6 +46,5 @@ namespace Avalonia.Media.TextFormatting.Unicode
         ComplexContext, //SA
         Surrogate, //SG
         Space, //SP
-        Unknown, //XX
     }
 }
