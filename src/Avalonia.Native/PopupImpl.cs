@@ -13,6 +13,7 @@ namespace Avalonia.Native
         private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
         private readonly GlPlatformFeature _glFeature;
+        private readonly IWindowBaseImpl _parent;
 
         public PopupImpl(IAvaloniaNativeFactory factory,
             AvaloniaNativePlatformOptions opts,
@@ -22,6 +23,7 @@ namespace Avalonia.Native
             _factory = factory;
             _opts = opts;
             _glFeature = glFeature;
+            _parent = parent;
             using (var e = new PopupEvents(this))
             {
                 Init(factory.CreatePopup(e, _opts.UseGpu ? glFeature?.DeferredContext.Context : null), factory.CreateScreens());
@@ -53,6 +55,16 @@ namespace Avalonia.Native
             void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
             {
             }
+        }
+
+        public override void Show()
+        {
+            var parent = _parent;
+            while (parent is PopupImpl p) 
+                parent = p._parent;
+            if (parent is WindowImpl w)
+                w.Native.TakeFocusFromChildren();
+            base.Show();
         }
 
         public override IPopupImpl CreatePopup() => new PopupImpl(_factory, _opts, _glFeature, this);
