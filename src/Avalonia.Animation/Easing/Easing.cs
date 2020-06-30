@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 
 namespace Avalonia.Animation.Easings
@@ -25,6 +26,11 @@ namespace Avalonia.Animation.Easings
         /// <returns>Returns the instance of the parsed type.</returns>
         public static Easing Parse(string e)
         {
+            if (e.Contains(','))
+            {
+                return new SplineEasing(KeySpline.Parse(e, CultureInfo.InvariantCulture));
+            }
+
             if (_easingTypes == null)
             {
                 _easingTypes = new Dictionary<string, Type>();
