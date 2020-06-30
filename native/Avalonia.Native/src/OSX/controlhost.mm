@@ -97,7 +97,7 @@ public:
         return S_OK;
     };
     
-    virtual void MoveTo(float x, float y, float width, float height) override
+    virtual void ShowInBounds(float x, float y, float width, float height) override
     {
         if(_child == nil)
             return;
@@ -106,7 +106,7 @@ public:
             IAvnNativeControlHostTopLevelAttachment* slf = this;
             slf->AddRef();
             dispatch_async(dispatch_get_main_queue(), ^{
-                slf->MoveTo(x, y, width, height);
+                slf->ShowInBounds(x, y, width, height);
                 slf->Release();
             });
             return;
@@ -122,9 +122,24 @@ public:
             [[_holder superview] setNeedsDisplay:true];
     }
     
-    virtual void Hide() override
+    virtual void HideWithSize(float width, float height) override
     {
+        if(_child == nil)
+            return;
+        if(AvnInsidePotentialDeadlock::IsInside())
+        {
+            IAvnNativeControlHostTopLevelAttachment* slf = this;
+            slf->AddRef();
+            dispatch_async(dispatch_get_main_queue(), ^{
+                slf->HideWithSize(width, height);
+                slf->Release();
+            });
+            return;
+        }
+        
+        NSRect frame = {0, 0, width, height};
         [_holder setHidden: true];
+        [_child setFrame: frame];
     }
     
     virtual void ReleaseChild() override

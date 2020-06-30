@@ -20,7 +20,16 @@
     <DockPanel DockPanel.Dock="Top">
       <Button DockPanel.Dock="Right" Click="ShowPopupDelay">Show popup (delay)</Button>
       <Button DockPanel.Dock="Right" Click="ShowPopup">Show popup</Button>
+      <Border DockPanel.Dock="Right" Background="#c0c0c0">
+        <ToolTip.Tip>
+          <ToolTip>
+              <TextBlock>Text</TextBlock>
+          </ToolTip>
+        </ToolTip.Tip>
+        <TextBlock>Tooltip</TextBlock>
+      </Border>
       <TextBox Text="Lorem ipsum dolor sit amet"/>
+      
     </DockPanel>
     <Grid ColumnDefinitions="*,5,*">
       <DockPanel>
