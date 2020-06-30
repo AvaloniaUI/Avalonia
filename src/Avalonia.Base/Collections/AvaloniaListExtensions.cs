@@ -140,6 +140,7 @@ namespace Avalonia.Collections
             }
         }
 
+        [Obsolete("Causes memory leaks. Use DynamicData or similar instead.")]
         public static IAvaloniaReadOnlyList<TDerived> CreateDerivedList<TSource, TDerived>(
             this IAvaloniaReadOnlyList<TSource> collection,
             Func<TSource, TDerived> select)
