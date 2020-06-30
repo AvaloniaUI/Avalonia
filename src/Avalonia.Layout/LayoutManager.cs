@@ -106,8 +106,6 @@ namespace Avalonia.Layout
 
             if (!_running)
             {
-                _running = true;
-
                 Stopwatch? stopwatch = null;
 
                 const LogEventLevel timingLogLevel = LogEventLevel.Information;
@@ -128,14 +126,23 @@ namespace Avalonia.Layout
                 _toMeasure.BeginLoop(MaxPasses);
                 _toArrange.BeginLoop(MaxPasses);
 
-                for (var pass = 0; pass < MaxPasses; ++pass)
+                try
                 {
-                    InnerLayoutPass();
+                    _running = true;
 
-                    if (!RaiseEffectiveViewportChanged())
+                    for (var pass = 0; pass < MaxPasses; ++pass)
                     {
-                        break;
+                        InnerLayoutPass();
+
+                        if (!RaiseEffectiveViewportChanged())
+                        {
+                            break;
+                        }
                     }
+                }
+                finally
+                {
+                    _running = false;
                 }
 
                 _toMeasure.EndLoop();
@@ -221,22 +228,15 @@ namespace Avalonia.Layout
 
         private void InnerLayoutPass()
         {
-            try
+            for (var pass = 0; pass < MaxPasses; ++pass)
             {
-                for (var pass = 0; pass < MaxPasses; ++pass)
-                {
-                    ExecuteMeasurePass();
-                    ExecuteArrangePass();
+                ExecuteMeasurePass();
+                ExecuteArrangePass();
 
-                    if (_toMeasure.Count == 0)
-                    {
-                        break;
-                    }
+                if (_toMeasure.Count == 0)
+                {
+                    break;
                 }
-            }
-            finally
-            {
-                _running = false;
             }
         }
 
@@ -362,7 +362,7 @@ namespace Avalonia.Layout
                 }
             }
 
-            return startCount != _toMeasure.Count + _toMeasure.Count;
+            return startCount != _toMeasure.Count + _toArrange.Count;
         }
 
         private Rect CalculateEffectiveViewport(IVisual control)
