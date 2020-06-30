@@ -60,7 +60,8 @@ namespace Avalonia.Animation.Easings
 
         public SplineEasing(double x1 = 0d, double y1 = 0d, double x2 = 1d, double y2 = 1d)
         {
-            this._internalKeySpline = new KeySpline();
+            _internalKeySpline = new KeySpline();
+
             this.X1 = x1;
             this.Y1 = y1;
             this.X2 = x2;
@@ -69,7 +70,7 @@ namespace Avalonia.Animation.Easings
 
         public SplineEasing()
         {
-            this._internalKeySpline = new KeySpline();
+            _internalKeySpline = new KeySpline();
         }
 
         /// <inheritdoc/>
