@@ -27,6 +27,16 @@ namespace Avalonia.Animation.UnitTests
         }
 
         [Theory]
+        [InlineData("1,2F,3,4")] 
+        [InlineData("Foo,Bar,Fee,Buzz")] 
+        public void Can_Handle_Invalid_String_KeySpline_Via_TypeConverter(string input)
+        {
+            var conv = new KeySplineTypeConverter();
+
+            Assert.ThrowsAny<Exception>(() => (KeySpline)conv.ConvertFrom(input));
+        }
+
+        [Theory]
         [InlineData(0.00)]
         [InlineData(0.50)]
         [InlineData(1.00)]
