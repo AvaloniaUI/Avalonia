@@ -810,7 +810,9 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 Assert.Equal(expected, scene.Layers[tree].Dirty.ToArray());
-                Assert.Equal(expected, scene.Layers[border].Dirty.ToArray());
+                
+                // Layers are disabled. See #2244
+                // Assert.Equal(expected, scene.Layers[border].Dirty.ToArray());
             }
         }
 

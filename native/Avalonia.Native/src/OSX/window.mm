@@ -387,6 +387,51 @@ public:
         return *ppv == nil ? E_FAIL : S_OK;
     }
     
+    virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
+                                              IAvnClipboard* clipboard, IAvnDndResultCallback* cb,
+                                              void* sourceHandle) override
+    {
+        auto item = TryGetPasteboardItem(clipboard);
+        [item setString:@"" forType:GetAvnCustomDataType()];
+        if(item == nil)
+            return E_INVALIDARG;
+        if(View == NULL)
+            return E_FAIL;
+        
+        auto nsevent = [NSApp currentEvent];
+        auto nseventType = [nsevent type];
+        
+        // If current event isn't a mouse one (probably due to malfunctioning user app)
+        // attempt to forge a new one
+        if(!((nseventType >= NSEventTypeLeftMouseDown && nseventType <= NSEventTypeMouseExited)
+           || (nseventType >= NSEventTypeOtherMouseDown && nseventType <= NSEventTypeOtherMouseDragged)))
+        {
+            auto nspoint = [Window convertBaseToScreen: ToNSPoint(point)];
+            CGPoint cgpoint = NSPointToCGPoint(nspoint);
+            auto cgevent = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, cgpoint, kCGMouseButtonLeft);
+            nsevent = [NSEvent eventWithCGEvent: cgevent];
+            CFRelease(cgevent);
+        }
+        
+        auto dragItem = [[NSDraggingItem alloc] initWithPasteboardWriter: item];
+        
+        auto dragItemImage = [NSImage imageNamed:NSImageNameMultipleDocuments];
+        NSRect dragItemRect = {(float)point.X, (float)point.Y, [dragItemImage size].width, [dragItemImage size].height};
+        [dragItem setDraggingFrame: dragItemRect contents: dragItemImage];
+        
+        int op = 0; int ieffects = (int)effects;
+        if((ieffects & (int)AvnDragDropEffects::Copy) != 0)
+            op |= NSDragOperationCopy;
+        if((ieffects & (int)AvnDragDropEffects::Link) != 0)
+            op |= NSDragOperationLink;
+        if((ieffects & (int)AvnDragDropEffects::Move) != 0)
+            op |= NSDragOperationMove;
+        [View beginDraggingSessionWithItems: @[dragItem] event: nsevent
+                                     source: CreateDraggingSource((NSDragOperation) op, cb, sourceHandle)];
+        
+        return S_OK;
+    }
+    
     virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut) override
     {
         if(View == NULL)
@@ -717,7 +762,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _area = nullptr;
     _lastPixelSize.Height = 100;
     _lastPixelSize.Width = 100;
-
+    [self registerForDraggedTypes: @[@"public.data", GetAvnCustomDataType()]];
     return self;
 }
 
@@ -835,7 +880,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _lastPixelSize.Width = (int)fsize.width;
     _lastPixelSize.Height = (int)fsize.height;
     [self updateRenderTarget];
-    _parent->BaseEvents->ScalingChanged([_parent->Window backingScaleFactor]);
+    
+    if(_parent != nullptr)
+    {
+        _parent->BaseEvents->ScalingChanged([_parent->Window backingScaleFactor]);
+    }
     
     [super viewDidChangeBackingProperties];
 }
@@ -888,9 +937,15 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
            )
        )
     )
-        [self becomeFirstResponder];
+    {
+    	[self becomeFirstResponder];
+    }
     
-    _parent->BaseEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
+    if(_parent != nullptr)
+    {
+    	_parent->BaseEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
+    }
+    
     [super mouseMoved:event];
 }
 
@@ -990,7 +1045,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     auto timestamp = [event timestamp] * 1000;
     auto modifiers = [self getModifiers:[event modifierFlags]];
      
-    _lastKeyHandled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
+    if(_parent != nullptr)
+    {
+        _lastKeyHandled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
+    }
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent *)event
@@ -1077,7 +1135,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     if(!_lastKeyHandled)
     {
-        _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
+        if(_parent != nullptr)
+        {
+            _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
+        }
     }
 }
 
@@ -1092,6 +1153,68 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     return result;
 }
+
+- (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
+{
+    auto localPoint = [self convertPoint:[info draggingLocation] toView:self];
+    auto avnPoint = [self toAvnPoint:localPoint];
+    auto point = [self translateLocalPoint:avnPoint];
+    auto modifiers = [self getModifiers:[[NSApp currentEvent] modifierFlags]];
+    NSDragOperation nsop = [info draggingSourceOperationMask];
+   
+        auto effects = ConvertDragDropEffects(nsop);
+    int reffects = (int)_parent->BaseEvents
+    ->DragEvent(type, point, modifiers, effects,
+                CreateClipboard([info draggingPasteboard], nil),
+                GetAvnDataObjectHandleFromDraggingInfo(info));
+    
+    NSDragOperation ret = 0;
+    
+    // Ensure that the managed part didn't add any new effects
+    reffects = (int)effects & (int)reffects;
+    
+    // OSX requires exactly one operation
+    if((reffects & (int)AvnDragDropEffects::Copy) != 0)
+        ret = NSDragOperationCopy;
+    else if((reffects & (int)AvnDragDropEffects::Move) != 0)
+        ret = NSDragOperationMove;
+    else if((reffects & (int)AvnDragDropEffects::Link) != 0)
+        ret = NSDragOperationLink;
+    if(ret == 0)
+        ret = NSDragOperationNone;
+    return ret;
+}
+
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+{
+    return [self triggerAvnDragEvent: AvnDragEventType::Enter info:sender];
+}
+
+- (NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender
+{
+    return [self triggerAvnDragEvent: AvnDragEventType::Over info:sender];
+}
+
+- (void)draggingExited:(id <NSDraggingInfo>)sender
+{
+    [self triggerAvnDragEvent: AvnDragEventType::Leave info:sender];
+}
+
+- (BOOL)prepareForDragOperation:(id <NSDraggingInfo>)sender
+{
+    return [self triggerAvnDragEvent: AvnDragEventType::Over info:sender] != NSDragOperationNone;
+}
+
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+{
+    return [self triggerAvnDragEvent: AvnDragEventType::Drop info:sender] != NSDragOperationNone;
+}
+
+- (void)concludeDragOperation:(nullable id <NSDraggingInfo>)sender
+{
+    
+}
+
 @end
 
 
@@ -1297,7 +1420,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         [self showWindowMenuWithAppMenu];
         
-        _parent->BaseEvents->Activated();
+        if(_parent != nullptr)
+        {
+            _parent->BaseEvents->Activated();
+        }
+        
         [super becomeKeyWindow];
     }
 }
@@ -1334,7 +1461,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)windowDidResize:(NSNotification *)notification
 {
-    _parent->OnResized();
+    if(_parent != nullptr)
+    {
+        _parent->OnResized();
+    }
 }
 
 - (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame
@@ -1355,8 +1485,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (void)windowDidMove:(NSNotification *)notification
 {
     AvnPoint position;
-    _parent->GetPosition(&position);
-    _parent->BaseEvents->PositionChanged(position);
+    
+    if(_parent != nullptr)
+    {
+        _parent->GetPosition(&position);
+        _parent->BaseEvents->PositionChanged(position);
+    }
 }
 @end
 

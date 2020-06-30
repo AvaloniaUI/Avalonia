@@ -153,14 +153,15 @@ public:
 }
 @end
 
-
+static ComPtr<IAvnGCHandleDeallocatorCallback> _deallocator;
 class AvaloniaNative : public ComSingleObject<IAvaloniaNativeFactory, &IID_IAvaloniaNativeFactory>
 {
     
 public:
     FORWARD_IUNKNOWN()
-    virtual HRESULT Initialize() override
+    virtual HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator) override
     {
+        _deallocator = deallocator;
         @autoreleasepool{
             [[ThreadingInitializer new] do];
         }
@@ -210,7 +211,13 @@ public:
 
     virtual HRESULT CreateClipboard(IAvnClipboard** ppv) override
     {
-        *ppv = ::CreateClipboard ();
+        *ppv = ::CreateClipboard (nil, nil);
+        return S_OK;
+    }
+    
+    virtual HRESULT CreateDndClipboard(IAvnClipboard** ppv) override
+    {
+        *ppv = ::CreateClipboard (nil, [NSPasteboardItem new]);
         return S_OK;
     }
 
@@ -259,6 +266,12 @@ extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
 {
     return new AvaloniaNative();
 };
+
+extern void FreeAvnGCHandle(void* handle)
+{
+    if(_deallocator != nil)
+        _deallocator->FreeGCHandle(handle);
+}
 
 NSSize ToNSSize (AvnSize s)
 {

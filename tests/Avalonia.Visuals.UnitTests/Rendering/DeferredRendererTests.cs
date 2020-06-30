@@ -546,7 +546,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             Assert.Single(target.Layers);
         }
 
-        [Fact]
+        [Fact(Skip = "Layers are disabled. See #2244")]
         public void Should_Create_And_Delete_Layers_For_Controls_With_Animated_Opacity()
         {
             Border border;
@@ -586,7 +586,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             Assert.Equal(new[] { root }, target.Layers.Select(x => x.LayerRoot));
         }
 
-        [Fact]
+        [Fact(Skip = "Layers are disabled. See #2244")]
         public void Should_Not_Create_Layer_For_Childless_Control_With_Animated_Opacity()
         {
             Border border;
@@ -616,7 +616,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             Assert.Single(target.Layers);
         }
 
-        [Fact]
+        [Fact(Skip = "Layers are disabled. See #2244")]
         public void Should_Not_Push_Opacity_For_Transparent_Layer_Root_Control()
         {
             Border border;
@@ -645,7 +645,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             context.Verify(x => x.PopOpacity(), Times.Never);
         }
 
-        [Fact]
+        [Fact(Skip = "Layers are disabled. See #2244")]
         public void Should_Draw_Transparent_Layer_With_Correct_Opacity()
         {
             Border border;

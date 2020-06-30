@@ -22,6 +22,11 @@ struct IAvnGlContext;
 struct IAvnGlDisplay;
 struct IAvnGlSurfaceRenderTarget;
 struct IAvnGlSurfaceRenderingSession;
+struct IAvnAppMenu;
+struct IAvnAppMenuItem;
+struct IAvnStringArray;
+struct IAvnDndResultCallback;
+struct IAvnGCHandleDeallocatorCallback;
 struct IAvnNativeControlHost;
 struct IAvnNativeControlHostTopLevelAttachment;
 struct IAvnMenu;
@@ -118,6 +123,22 @@ enum AvnInputModifiers
     MiddleMouseButton = 64
 };
 
+enum class AvnDragDropEffects
+{
+    None = 0,
+    Copy = 1,
+    Move = 2,
+    Link = 4,
+};
+
+enum class AvnDragEventType
+{
+    Enter,
+    Over,
+    Leave,
+    Drop
+};
+
 enum AvnWindowState
 {
     Normal,
@@ -168,7 +189,7 @@ enum AvnWindowEdge
 AVNCOM(IAvaloniaNativeFactory, 01) : IUnknown
 {
 public:
-    virtual HRESULT Initialize() = 0;
+    virtual HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator) = 0;
     virtual IAvnMacOptions* GetMacOptions() = 0;
     virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnWindow** ppv) = 0;
     virtual HRESULT CreatePopup (IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnPopup** ppv) = 0;
@@ -176,6 +197,7 @@ public:
     virtual HRESULT CreateSystemDialogs (IAvnSystemDialogs** ppv) = 0;
     virtual HRESULT CreateScreens (IAvnScreens** ppv) = 0;
     virtual HRESULT CreateClipboard(IAvnClipboard** ppv) = 0;
+    virtual HRESULT CreateDndClipboard(IAvnClipboard** ppv) = 0;
     virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) = 0;
     virtual HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv) = 0;
     virtual HRESULT SetAppMenu(IAvnMenu* menu) = 0;
@@ -216,6 +238,8 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT ObtainNSWindowHandleRetained(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandle(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandleRetained(void** retOut) = 0;
+    virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
+                                              IAvnClipboard* clipboard, IAvnDndResultCallback* cb, void* sourceHandle) = 0;
     virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut) = 0;
 };
 
@@ -252,6 +276,9 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
     virtual bool RawTextInputEvent (unsigned int timeStamp, const char* text) = 0;
     virtual void ScalingChanged(double scaling) = 0;
     virtual void RunRenderPriorityJobs() = 0;
+    virtual AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
+                                         AvnInputModifiers modifiers, AvnDragDropEffects effects,
+                                         IAvnClipboard* clipboard, void* dataObjectHandle) = 0;
     virtual void LostFocus() = 0;
 };
 
@@ -336,8 +363,10 @@ AVNCOM(IAvnScreens, 0e) : IUnknown
 
 AVNCOM(IAvnClipboard, 0f) : IUnknown
 {
-    virtual HRESULT GetText (IAvnString**ppv) = 0;
-    virtual HRESULT SetText (void* utf8Text) = 0;
+    virtual HRESULT GetText (char* type, IAvnString**ppv) = 0;
+    virtual HRESULT SetText (char* type, void* utf8Text) = 0;
+    virtual HRESULT ObtainFormats(IAvnStringArray**ppv) = 0;
+    virtual HRESULT GetStrings(char* type, IAvnStringArray**ppv) = 0;
     virtual HRESULT Clear() = 0;
 };
 
@@ -400,7 +429,23 @@ AVNCOM(IAvnMenuItem, 19) : IUnknown
     virtual HRESULT SetIsChecked (bool isChecked) = 0;
 };
 
-AVNCOM(IAvnMenuEvents, 1A) : IUnknown
+AVNCOM(IAvnStringArray, 1A) : IUnknown
+{
+    virtual unsigned int GetCount() = 0;
+    virtual HRESULT Get(unsigned int index, IAvnString**ppv) = 0;
+};
+
+AVNCOM(IAvnDndResultCallback, 1B) : IUnknown
+{
+    virtual void OnDragAndDropComplete(AvnDragDropEffects effecct) = 0;
+};
+
+AVNCOM(IAvnGCHandleDeallocatorCallback, 1C) : IUnknown
+{
+    virtual void FreeGCHandle(void* handle) = 0;
+};
+
+AVNCOM(IAvnMenuEvents, 1D) : IUnknown
 {
     /**
      * NeedsUpdate
@@ -408,14 +453,14 @@ AVNCOM(IAvnMenuEvents, 1A) : IUnknown
     virtual void NeedsUpdate () = 0;
 };
 
-AVNCOM(IAvnNativeControlHost, 20) : IUnknown
+AVNCOM(IAvnNativeControlHost, 1E) : IUnknown
 {
     virtual HRESULT CreateDefaultChild(void* parent, void** retOut) = 0;
     virtual IAvnNativeControlHostTopLevelAttachment* CreateAttachment() = 0;
     virtual void DestroyDefaultChild(void* child) = 0;
 };
 
-AVNCOM(IAvnNativeControlHostTopLevelAttachment, 21) : IUnknown
+AVNCOM(IAvnNativeControlHostTopLevelAttachment, 1F) : IUnknown
 {
     virtual void* GetParentHandle() = 0;
     virtual HRESULT InitializeWithChildHandle(void* child) = 0;
