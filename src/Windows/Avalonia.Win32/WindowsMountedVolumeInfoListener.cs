@@ -5,12 +5,13 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Controls.Platform;
+using Avalonia.Logging;
 
 namespace Avalonia.Win32
 {
     internal class WindowsMountedVolumeInfoListener : IDisposable
     {
-        private readonly CompositeDisposable _disposables;        
+        private readonly CompositeDisposable _disposables;
         private bool _beenDisposed = false;
         private ObservableCollection<MountedVolumeInfo> mountedDrives;
 
@@ -32,10 +33,22 @@ namespace Avalonia.Win32
             var allDrives = DriveInfo.GetDrives();
 
             var mountVolInfos = allDrives
-                                .Where(p => p.IsReady)
+                                .Where(p =>
+                                {
+                                    try
+                                    {
+                                        var ret = p.IsReady;
+                                        return ret;
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(this, $"Error in Windows drive enumeration: {e.Message}");
+                                    }
+                                    return false;
+                                })
                                 .Select(p => new MountedVolumeInfo()
                                 {
-                                    VolumeLabel = string.IsNullOrEmpty(p.VolumeLabel.Trim()) ? p.RootDirectory.FullName 
+                                    VolumeLabel = string.IsNullOrEmpty(p.VolumeLabel.Trim()) ? p.RootDirectory.FullName
                                                                                              : $"{p.VolumeLabel} ({p.Name})",
                                     VolumePath = p.RootDirectory.FullName,
                                     VolumeSizeBytes = (ulong)p.TotalSize

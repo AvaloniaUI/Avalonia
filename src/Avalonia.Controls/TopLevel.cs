@@ -318,7 +318,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Creates the layout manager for this <see cref="TopLevel" />.
         /// </summary>
-        protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager();
+        protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
 
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
@@ -340,6 +340,9 @@ namespace Avalonia.Controls
                 _globalStyles.GlobalStylesRemoved -= ((IStyleHost)this).StylesRemoved;
             }
 
+            Renderer?.Dispose();
+            Renderer = null;
+            
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
@@ -349,8 +352,8 @@ namespace Avalonia.Controls
             (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
             PlatformImpl = null;
             OnClosed(EventArgs.Empty);
-            Renderer?.Dispose();
-            Renderer = null;
+
+            LayoutManager?.Dispose();
         }
 
         /// <summary>
