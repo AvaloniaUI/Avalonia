@@ -111,16 +111,26 @@ public:
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
-            
-            [Window makeKeyAndOrderFront:Window];
-            [NSApp activateIgnoringOtherApps:YES];
-            
+            if(ShouldTakeFocusOnShow())
+            {
+                [Window makeKeyAndOrderFront:Window];
+                [NSApp activateIgnoringOtherApps:YES];
+            }
+            else
+            {
+                [Window orderFront: Window];
+            }
             [Window setTitle:_lastTitle];
             
             _shown = true;
         
             return S_OK;
         }
+    }
+    
+    virtual bool ShouldTakeFocusOnShow()
+    {
+        return true;
     }
     
     virtual HRESULT Hide () override
@@ -805,6 +815,16 @@ private:
             
             return S_OK;
         }
+    }
+    
+    virtual HRESULT TakeFocusFromChildren () override
+    {
+        if(Window == nil)
+            return S_OK;
+        if([Window isKeyWindow])
+            [Window makeFirstResponder: View];
+        
+        return S_OK;
     }
     
     virtual HRESULT SetExtendClientArea (bool enable) override
@@ -2096,7 +2116,6 @@ private:
         WindowEvents = events;
         [Window setLevel:NSPopUpMenuWindowLevel];
     }
-    
 protected:
     virtual NSWindowStyleMask GetStyle() override
     {
@@ -2113,6 +2132,11 @@ protected:
             
             return S_OK;
         }
+    }
+public:
+    virtual bool ShouldTakeFocusOnShow() override
+    {
+        return false;
     }
 };
 

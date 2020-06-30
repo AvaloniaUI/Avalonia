@@ -16,6 +16,7 @@ namespace Avalonia.UnitTests
 
         public TestTemplatedRoot()
         {
+            LayoutManager = new LayoutManager(this);
             Template = new FuncControlTemplate<TestTemplatedRoot>((x, scope) => new ContentPresenter
             {
                 Name = "PART_ContentPresenter",
@@ -28,7 +29,7 @@ namespace Avalonia.UnitTests
 
         public double LayoutScaling => 1;
 
-        public ILayoutManager LayoutManager { get; set; } = new LayoutManager();
+        public ILayoutManager LayoutManager { get; set; }
 
         public double RenderScaling => 1;
 

@@ -641,7 +641,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            LayoutManager.ExecuteInitialLayoutPass(this);
+            LayoutManager.ExecuteInitialLayoutPass();
 
             using (BeginAutoSizing())
             {
@@ -714,7 +714,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            LayoutManager.ExecuteInitialLayoutPass(this);
+            LayoutManager.ExecuteInitialLayoutPass();
 
             var result = new TaskCompletionSource<TResult>();
 
