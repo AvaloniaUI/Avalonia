@@ -42,7 +42,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
         public static List<DataEntry> CreateGeneralCategoryEnum()
         {
-            var entries = new List<DataEntry> { new DataEntry("Other", "C#", string.Empty) };
+            var entries = new List<DataEntry> { new DataEntry("Other", "C", " Cc | Cf | Cn | Co | Cs") };
 
             ParseDataEntries("# General_Category (gc)", entries);
 

@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using Avalonia.Media.TextFormatting.Unicode;
 using Xunit;
 
@@ -16,7 +11,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
     public class GraphemeBreakClassTrieGeneratorTests
     {
         [Theory/*(Skip = "Only run when we update the trie.")*/]
-        [ClassData(typeof(GraphemeEnumeratorTestDataGenerator))]
+        [ClassData(typeof(GraphemeBreakTestDataGenerator))]
         public void Should_Enumerate(string text, int expectedLength)
         {
             var textMemory = text.AsMemory();
@@ -55,77 +50,11 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             GraphemeBreakClassTrieGenerator.Execute();
         }
 
-        public class GraphemeEnumeratorTestDataGenerator : IEnumerable<object[]>
+        private class GraphemeBreakTestDataGenerator : TestDataGenerator
         {
-            private readonly List<object[]> _testData;
-
-            public GraphemeEnumeratorTestDataGenerator()
+            public GraphemeBreakTestDataGenerator() 
+                : base("auxiliary/GraphemeBreakTest.txt")
             {
-                _testData = ReadTestData();
-            }
-
-            public IEnumerator<object[]> GetEnumerator()
-            {
-                return _testData.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-
-            private static List<object[]> ReadTestData()
-            {
-                var testData = new List<object[]>();
-
-                using (var client = new HttpClient())
-                {
-                    var url = Path.Combine(UnicodeDataGenerator.Ucd, "auxiliary/GraphemeBreakTest.txt");
-
-                    using (var result = client.GetAsync(url).GetAwaiter().GetResult())
-                    {
-                        if (!result.IsSuccessStatusCode)
-                            return testData;
-
-                        using (var stream = result.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
-                        using (var reader = new StreamReader(stream))
-                        {
-                            while (!reader.EndOfStream)
-                            {
-                                var line = reader.ReadLine();
-
-                                if (line == null)
-                                {
-                                    break;
-                                }
-
-                                if (line.StartsWith("#") || string.IsNullOrEmpty(line))
-                                {
-                                    continue;
-                                }
-
-                                var elements = line.Split('#');
-
-                                elements = elements[0].Replace("÷\t", "÷").Trim('÷').Split('÷');
-
-                                var chars = elements[0].Replace(" × ", " ").Split(' ');
-
-                                var codepoints = chars.Where(x => x != "" && x != "×")
-                                    .Select(x => Convert.ToInt32(x, 16)).ToArray();
-
-                                var text = string.Join(null, codepoints.Select(char.ConvertFromUtf32));
-
-                                var length = codepoints.Select(x => x > ushort.MaxValue ? 2 : 1).Sum();
-
-                                var data = new object[] { text, length };
-
-                                testData.Add(data);
-                            }
-                        }
-                    }
-                }
-
-                return testData;
             }
         }
     }
