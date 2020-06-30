@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Avalonia.Controls;
 using ReactiveUI;
 
@@ -9,6 +7,8 @@ namespace ControlCatalog.ViewModels
     public class SplitViewPageViewModel : ReactiveObject
     {
         private bool _isLeft = true;
+        private int _displayMode = 3; //CompactOverlay
+
         public bool IsLeft
         {
             get => _isLeft;
@@ -18,8 +18,7 @@ namespace ControlCatalog.ViewModels
                 this.RaisePropertyChanged(nameof(PanePlacement));
             }
         }
-
-        private int _displayMode = 3; //CompactOverlay
+        
         public int DisplayMode
         {
             get => _displayMode;

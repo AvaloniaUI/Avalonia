@@ -201,7 +201,9 @@ namespace Avalonia.Controls
             set
             {
                 if (value == _isPaneOpen)
+                {
                     return;
+                }
 
                 if (value)
                 {
@@ -340,25 +342,31 @@ namespace Avalonia.Controls
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            if (_pointerDisposables != null)
-                _pointerDisposables.Dispose();
+            _pointerDisposables?.Dispose();
         }
 
         private void OnWindowLostFocus()
         {
             if (IsPaneOpen && ShouldClosePane())
+            {
                 IsPaneOpen = false;
+            }                
         }
 
         private void PointerPressedOutside(object sender, PointerPressedEventArgs e)
         {
             if (!IsPaneOpen)
+            {
                 return;
+            }
+
             //If we click within the Pane, don't do anything
             //Otherwise, ClosePane if open & using an overlay display mode
             bool closePane = ShouldClosePane();
             if (!closePane)
+            {
                 return;
+            }
 
             var src = e.Source as IVisual;
             while (src != null)
@@ -368,6 +376,7 @@ namespace Avalonia.Controls
                     closePane = false;
                     break;
                 }
+
                 src = src.VisualParent;
             }
             if (closePane)
@@ -380,7 +389,10 @@ namespace Avalonia.Controls
         private void OnNonClientClick(RawInputEventArgs obj)
         {
             if (!IsPaneOpen)
+            {
                 return;
+            }              
+
             var mouse = obj as RawPointerEventArgs;
             if (mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
 
@@ -393,7 +405,9 @@ namespace Avalonia.Controls
         private void Window_Deactivated(object sender, EventArgs e)
         {
             if (IsPaneOpen && ShouldClosePane())
+            {
                 IsPaneOpen = false;
+            }                
         }
 
         private bool ShouldClosePane()
