@@ -31,28 +31,34 @@ namespace Avalonia.Animation.Easings
                 var k = e.Split(',');
 
                 if (k.Count() != 4)
+                {
                     throw new FormatException($"SplineEasing only accepts exactly 4 arguments.");
+                }
+                
                 var splineEase = new SplineEasing();
 
-                if (double.TryParse(k[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var x1))
-                    splineEase.X1 = x1;
-                else
-                    throw new FormatException($"Invalid SplineEasing control point X1 value: {k[0]}");
+                var setterArray = new Action<double>[4]
+                {
+                    (x) => splineEase.X1 = x,
 
-                if (double.TryParse(k[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var y1))
-                    splineEase.Y1 = y1;
-                else
-                    throw new FormatException($"Invalid SplineEasing control point Y1 value: {k[1]}");
+                    (x) => splineEase.Y1 = x,
 
-                if (double.TryParse(k[2], NumberStyles.Any, CultureInfo.InvariantCulture, out var x2))
-                    splineEase.X2 = x2;
-                else
-                    throw new FormatException($"Invalid SplineEasing control point Y1 value: {k[2]}");
+                    (x) => splineEase.X2 = x,
 
-                if (double.TryParse(k[3], NumberStyles.Any, CultureInfo.InvariantCulture, out var y2))
-                    splineEase.Y2 = y2;
-                else
-                    throw new FormatException($"Invalid SplineEasing control point Y1 value: {k[3]}");
+                    (x) => splineEase.Y2 = x
+                };
+
+                for (int i = 0; i < 4; i++)
+                {
+                    if (double.TryParse(k[i], NumberStyles.Any, CultureInfo.InvariantCulture, out var x))
+                    {
+                        setterArray[i](x);
+                    }
+                    else
+                    {
+                        throw new FormatException($"Parameter string \"{k[i]}\" is not a double.");
+                    }
+                }
 
                 return splineEase;
             }

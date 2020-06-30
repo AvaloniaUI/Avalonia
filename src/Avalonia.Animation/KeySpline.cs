@@ -98,6 +98,7 @@ namespace Avalonia.Animation
                 if (IsValidXValue(value))
                 {
                     _controlPointX1 = value;
+                    _isDirty = true;
                 }
                 else
                 {
@@ -112,7 +113,11 @@ namespace Avalonia.Animation
         public double ControlPointY1
         {
             get => _controlPointY1;
-            set => _controlPointY1 = value;
+            set
+            {
+                _controlPointY1 = value;
+                _isDirty = true;
+            }
         }
 
         /// <summary>
@@ -126,6 +131,7 @@ namespace Avalonia.Animation
                 if (IsValidXValue(value))
                 {
                     _controlPointX2 = value;
+                    _isDirty = true;
                 }
                 else
                 {
@@ -140,7 +146,11 @@ namespace Avalonia.Animation
         public double ControlPointY2
         {
             get => _controlPointY2;
-            set => _controlPointY2 = value;
+            set
+            {
+                _controlPointY2 = value;
+                _isDirty = true;
+            }
         }
 
         /// <summary>

@@ -17,7 +17,8 @@ namespace Avalonia.Animation.Easings
             get => _x1;
             set
             {
-                _x1 = value; _internalKeySpline.ControlPointX1 = _x1;
+                _x1 = value;
+                _internalKeySpline.ControlPointX1 = _x1;
             }
         }
 
@@ -30,14 +31,15 @@ namespace Avalonia.Animation.Easings
             get => _y1;
             set
             {
-                _y1 = value; _internalKeySpline.ControlPointY1 = _y1;
+                _y1 = value;
+                _internalKeySpline.ControlPointY1 = _y1;
             }
         }
 
         /// <summary>
         /// X coordinate of the second control point
         /// </summary>
-        private double _x2 = 1.0d;
+        private double _x2;
         public double X2
         {
             get => _x2;
@@ -51,7 +53,7 @@ namespace Avalonia.Animation.Easings
         /// <summary>
         /// Y coordinate of the second control point
         /// </summary>
-        private double _y2 = 1.0d;
+        private double _y2;
         public double Y2
         {
             get => _y2;
