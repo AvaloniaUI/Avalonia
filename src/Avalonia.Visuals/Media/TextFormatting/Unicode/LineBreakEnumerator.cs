@@ -96,7 +96,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     if (_nextClass.Value == LineBreakClass.MandatoryBreak)
                     {
                         _lastPos = _pos;
-                        Current = new LineBreak(FindPriorNonWhitespace(_lastPos), _lastPos);
+                        Current = new LineBreak(FindPriorNonWhitespace(_lastPos), _lastPos, true);
                         return true;
                     }
 
