@@ -10,7 +10,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
     /// </summary>
     public class GraphemeBreakClassTrieGeneratorTests
     {
-        [Theory/*(Skip = "Only run when we update the trie.")*/]
+        [Theory(Skip = "Only run when we update the trie.")]
         [ClassData(typeof(GraphemeBreakTestDataGenerator))]
         public void Should_Enumerate(string text, int expectedLength)
         {
@@ -44,7 +44,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             Assert.Equal(10, count);
         }
 
-        [Fact/*(Skip = "Only run when we update the trie.")*/]
+        [Fact(Skip = "Only run when we update the trie.")]
         public void Should_Generate_Trie()
         {
             GraphemeBreakClassTrieGenerator.Execute();

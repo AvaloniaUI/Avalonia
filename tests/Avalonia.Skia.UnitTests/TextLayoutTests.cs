@@ -409,8 +409,6 @@ namespace Avalonia.Skia.UnitTests
         [InlineData("abcde\r\n", 7)] // Carriage Return + Line Feed
         [InlineData("abcde\n\r", 7)] // This isn't valid but we somehow have to support it.
         [InlineData("abcde\u000A", 6)] // Line Feed
-        [InlineData("abcde\u000B", 6)] // Vertical Tab
-        [InlineData("abcde\u000C", 6)] // Form Feed
         [InlineData("abcde\u000D", 6)] // Carriage Return
         public void Should_Break_With_BreakChar(string text, int expectedLength)
         {
