@@ -166,13 +166,11 @@
     <Setter Property="Grid.ColumnSpan" Value="1"/>
   </Style>
 
-  <!-- Open/Close Pane animation
-  Uses KeySpline in WinUI, QuinticEaseOut easing seemed to match best
-  -->
+  <!-- Open/Close Pane animation  -->
   <Style Selector="SplitView:open /template/ Panel#PART_PaneRoot">
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Width" Duration="00:00:00.2" Easing="QuinticEaseOut" />
+        <DoubleTransition Property="Width" Duration="00:00:00.2" Easing="0.1,0.9,0.2,1.0" />
       </Transitions>
     </Setter>
     <Setter Property="Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=OpenPaneLength}" />
@@ -180,7 +178,7 @@
   <Style Selector="SplitView:open /template/ Rectangle#LightDismissLayer">
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Opacity" Duration="00:00:00.2" Easing="QuinticEaseOut" />
+        <DoubleTransition Property="Opacity" Duration="00:00:00.2" Easing="0.1,0.9,0.2,1.0" />
       </Transitions>
     </Setter>
     <Setter Property="Opacity" Value="1.0"/>
@@ -189,7 +187,7 @@
   <Style Selector="SplitView:closed /template/ Panel#PART_PaneRoot">
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Width" Duration="00:00:00.1" Easing="QuinticEaseOut" />
+        <DoubleTransition Property="Width" Duration="00:00:00.1" Easing="0.1,0.9,0.2,1.0" />
       </Transitions>
     </Setter>
     <Setter Property="Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClosedPaneWidth}" />
@@ -197,7 +195,7 @@
   <Style Selector="SplitView:closed /template/ Rectangle#LightDismissLayer">
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Opacity" Duration="00:00:00.2" Easing="QuinticEaseOut" />
+        <DoubleTransition Property="Opacity" Duration="00:00:00.2" Easing="0.1,0.9,0.2,1.0" />
       </Transitions>
     </Setter>
     <Setter Property="Opacity" Value="0.0"/>
