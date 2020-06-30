@@ -28,39 +28,7 @@ namespace Avalonia.Animation.Easings
         {
             if (e.Contains(','))
             {
-                var k = e.Split(',');
-
-                if (k.Count() != 4)
-                {
-                    throw new FormatException($"SplineEasing only accepts exactly 4 arguments.");
-                }
-                
-                var splineEase = new SplineEasing();
-
-                var setterArray = new Action<double>[4]
-                {
-                    (x) => splineEase.X1 = x,
-
-                    (x) => splineEase.Y1 = x,
-
-                    (x) => splineEase.X2 = x,
-
-                    (x) => splineEase.Y2 = x
-                };
-
-                for (int i = 0; i < 4; i++)
-                {
-                    if (double.TryParse(k[i], NumberStyles.Any, CultureInfo.InvariantCulture, out var x))
-                    {
-                        setterArray[i](x);
-                    }
-                    else
-                    {
-                        throw new FormatException($"Parameter string \"{k[i]}\" is not a double.");
-                    }
-                }
-
-                return splineEase;
+                return new SplineEasing(KeySpline.Parse(e, CultureInfo.InvariantCulture));
             }
 
             if (_easingTypes == null)

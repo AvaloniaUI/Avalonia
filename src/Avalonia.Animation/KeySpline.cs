@@ -81,7 +81,10 @@ namespace Avalonia.Animation
         /// <returns>A <see cref="KeySpline"/> with the appropriate values set</returns>
         public static KeySpline Parse(string value, CultureInfo culture)
         {
-            using (var tokenizer = new StringTokenizer((string)value, CultureInfo.InvariantCulture, exceptionMessage: "Invalid KeySpline."))
+            if (culture is null)
+                culture = CultureInfo.InvariantCulture;
+
+            using (var tokenizer = new StringTokenizer((string)value, culture, exceptionMessage: $"Invalid KeySpline string: \"{value}\"."))
             {
                 return new KeySpline(tokenizer.ReadDouble(), tokenizer.ReadDouble(), tokenizer.ReadDouble(), tokenizer.ReadDouble());
             }
