@@ -11,56 +11,48 @@ namespace Avalonia.Animation.Easings
         /// <summary>
         /// X coordinate of the first control point
         /// </summary>
-        private double _x1;
         public double X1
         {
-            get => _x1;
+            get => _internalKeySpline.ControlPointX1;
             set
             {
-                _x1 = value;
-                _internalKeySpline.ControlPointX1 = _x1;
+                _internalKeySpline.ControlPointX1 = value;
             }
         }
 
         /// <summary>
         /// Y coordinate of the first control point
         /// </summary>
-        private double _y1;
         public double Y1
         {
-            get => _y1;
+            get => _internalKeySpline.ControlPointY1;
             set
             {
-                _y1 = value;
-                _internalKeySpline.ControlPointY1 = _y1;
+                _internalKeySpline.ControlPointY1 = value;
             }
         }
 
         /// <summary>
         /// X coordinate of the second control point
-        /// </summary>
-        private double _x2;
+        /// </summary> 
         public double X2
         {
-            get => _x2;
+            get => _internalKeySpline.ControlPointX2;
             set
             {
-                _x2 = value;
-                _internalKeySpline.ControlPointX2 = _x2;
+                _internalKeySpline.ControlPointX2 = value;
             }
         }
 
         /// <summary>
         /// Y coordinate of the second control point
         /// </summary>
-        private double _y2;
         public double Y2
         {
-            get => _y2;
+            get => _internalKeySpline.ControlPointY2;
             set
             {
-                _y2 = value;
-                _internalKeySpline.ControlPointY2 = _y2;
+                _internalKeySpline.ControlPointY2 = value;
             }
         }
 
