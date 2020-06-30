@@ -4,6 +4,20 @@
     <_AvaloniaUseExternalMSBuild Condition="'$(_AvaloniaForceInternalMSBuild)' == 'true'">false</_AvaloniaUseExternalMSBuild>
     <AvaloniaXamlReportImportance Condition="'$(AvaloniaXamlReportImportance)' == ''">low</AvaloniaXamlReportImportance>
   </PropertyGroup>
+
+  <!-- Unfortunately we have to update default items in .targets since custom nuget props are improted before Microsoft.NET.Sdk.DefaultItems.props -->
+  <ItemGroup Condition="'$(EnableDefaultItems)'=='True'">
+    <Compile Update="**\*.paml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="**\*.axaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <None Remove="**\*.axaml" />
+    <None Remove="**\*.paml" />
+  </ItemGroup>
   
   <UsingTask TaskName="GenerateAvaloniaResourcesTask"
              AssemblyFile="$(AvaloniaBuildTasksLocation)"
@@ -31,9 +45,12 @@
   
   <Target Name="GenerateAvaloniaResources" 
           BeforeTargets="CoreCompile;CoreResGen"
-          Inputs="@(AvaloniaResource);$(MSBuildAllProjects)"
+          Inputs="@(AvaloniaResource);@(AvaloniaXaml);$(MSBuildAllProjects)"
           Outputs="$(AvaloniaResourcesTemporaryFilePath)"
-          DependsOnTargets="$(BuildAvaloniaResourcesDependsOn)">
+	  DependsOnTargets="$(BuildAvaloniaResourcesDependsOn)">
+    <ItemGroup>
+        <AvaloniaResource Include="@(AvaloniaXaml)"/>
+    </ItemGroup>
     <GenerateAvaloniaResourcesTask
       Condition="'$(_AvaloniaUseExternalMSBuild)' != 'true'"
       Output="$(AvaloniaResourcesTemporaryFilePath)"
@@ -79,5 +96,6 @@
   
   <ItemGroup>
     <UpToDateCheckInput Include="@(AvaloniaResource)" />
+    <UpToDateCheckInput Include="@(AvaloniaXaml)" />
   </ItemGroup>
 </Project>

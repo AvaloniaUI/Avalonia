@@ -319,7 +319,7 @@ namespace Avalonia.Native
         }
 
 
-        public void Show()
+        public virtual void Show()
         {
             _native.Show();
         }

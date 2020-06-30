@@ -1,0 +1,18 @@
+<ProjectSchemaDefinitions xmlns="http://schemas.microsoft.com/build/2009/properties">
+    <ContentType
+        Name="AvaloniaXaml"
+        DisplayName="Avalonia XAML"
+        ItemType="AvaloniaXaml">
+      <NameValuePair Name="DependentFileExtensions" Value=".cs" />
+      <NameValuePair Name="DefaultMetadata_SubType" Value="Designer" />
+    </ContentType>
+
+    <ItemType Name="AvaloniaXaml" DisplayName="Avalonia XAML" />
+    <FileExtension Name=".axaml" ContentType="AvaloniaXaml" />
+    <FileExtension Name=".paml" ContentType="AvaloniaXaml" />
+    <ContentType
+        Name="AvaloniaResource"
+        DisplayName="Avalonia Resource"
+        ItemType="AvaloniaResource"
+    />
+</ProjectSchemaDefinitions>
