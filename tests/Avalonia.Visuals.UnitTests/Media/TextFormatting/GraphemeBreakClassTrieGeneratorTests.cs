@@ -15,11 +15,13 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
     /// </summary>
     public class GraphemeBreakClassTrieGeneratorTests
     {
-        [Theory(Skip = "Only run when we update the trie.")]
+        [Theory/*(Skip = "Only run when we update the trie.")*/]
         [ClassData(typeof(GraphemeEnumeratorTestDataGenerator))]
         public void Should_Enumerate(string text, int expectedLength)
         {
-            var enumerator = new GraphemeEnumerator(text.AsMemory());
+            var textMemory = text.AsMemory();
+
+            var enumerator = new GraphemeEnumerator(textMemory);
 
             Assert.True(enumerator.MoveNext());
 
@@ -31,7 +33,9 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
         {
             const string text = "ABCDEFGHIJ";
 
-            var enumerator = new GraphemeEnumerator(text.AsMemory());
+            var textMemory = text.AsMemory();
+
+            var enumerator = new GraphemeEnumerator(textMemory);
 
             var count = 0;
 
@@ -45,7 +49,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             Assert.Equal(10, count);
         }
 
-        [Fact(Skip = "Only run when we update the trie.")]
+        [Fact/*(Skip = "Only run when we update the trie.")*/]
         public void Should_Generate_Trie()
         {
             GraphemeBreakClassTrieGenerator.Execute();
@@ -76,7 +80,9 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
                 using (var client = new HttpClient())
                 {
-                    using (var result = client.GetAsync("https://www.unicode.org/Public/UNIDATA/auxiliary/GraphemeBreakTest.txt").GetAwaiter().GetResult())
+                    var url = Path.Combine(UnicodeDataGenerator.Ucd, "auxiliary/GraphemeBreakTest.txt");
+
+                    using (var result = client.GetAsync(url).GetAwaiter().GetResult())
                     {
                         if (!result.IsSuccessStatusCode)
                             return testData;
@@ -98,7 +104,9 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                                     continue;
                                 }
 
-                                var elements = line.Split('#')[0].Replace("÷\t", "÷").Trim('÷').Split('÷');
+                                var elements = line.Split('#');
+
+                                elements = elements[0].Replace("÷\t", "÷").Trim('÷').Split('÷');
 
                                 var chars = elements[0].Replace(" × ", " ").Split(' ');
 
