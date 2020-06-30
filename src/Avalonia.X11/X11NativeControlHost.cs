@@ -157,21 +157,30 @@ namespace Avalonia.X11
 
             public bool IsCompatibleWith(INativeControlHostImpl host) => host is X11NativeControlHost;
 
-            public void Hide()
+            public void HideWithSize(Size size)
             {
                 if(_attachedTo == null || _child == null)
                     return;
-                _mapped = false;
-                XUnmapWindow(_display, _holder.Handle);
+                if (_mapped)
+                {
+                    _mapped = false;
+                    XUnmapWindow(_display, _holder.Handle);
+                }
+
+                size *= _attachedTo.Window.Scaling;
+                XResizeWindow(_display, _child.Handle,
+                    Math.Max(1, (int)size.Width), Math.Max(1, (int)size.Height));
             }
             
-            public void ShowInBounds(TransformedBounds transformedBounds)
+            
+            
+            public void ShowInBounds(Rect bounds)
             {
                 CheckDisposed();
                 if (_attachedTo == null)
                     throw new InvalidOperationException("The control isn't currently attached to a toplevel");
-                var bounds = transformedBounds.Bounds.TransformToAABB(transformedBounds.Transform) *
-                             new Vector(_attachedTo.Window.Scaling, _attachedTo.Window.Scaling);
+                bounds *= _attachedTo.Window.Scaling;
+                
                 var pixelRect = new PixelRect((int)bounds.X, (int)bounds.Y, Math.Max(1, (int)bounds.Width),
                     Math.Max(1, (int)bounds.Height));
                 XMoveResizeWindow(_display, _child.Handle, 0, 0, pixelRect.Width, pixelRect.Height);
@@ -183,7 +192,6 @@ namespace Avalonia.X11
                     XRaiseWindow(_display, _holder.Handle);
                     _mapped = true;
                 }
-                Console.WriteLine($"Moved {_child.Handle} to {pixelRect}");
             }
         }
     }

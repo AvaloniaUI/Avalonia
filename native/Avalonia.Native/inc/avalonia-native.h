@@ -493,8 +493,8 @@ AVNCOM(IAvnNativeControlHostTopLevelAttachment, 21) : IUnknown
     virtual void* GetParentHandle() = 0;
     virtual HRESULT InitializeWithChildHandle(void* child) = 0;
     virtual HRESULT AttachTo(IAvnNativeControlHost* host) = 0;
-    virtual void MoveTo(float x, float y, float width, float height) = 0;
-    virtual void Hide() = 0;
+    virtual void ShowInBounds(float x, float y, float width, float height) = 0;
+    virtual void HideWithSize(float width, float height) = 0;
     virtual void ReleaseChild() = 0;
 };
 
