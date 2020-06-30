@@ -239,13 +239,13 @@ namespace Avalonia.X11
 
             if (ev.Type == XiEventType.XI_ButtonPress && ev.Button >= 4 && ev.Button <= 7 && !ev.Emulated)
             {
-                Vector? scrollDelta = ev.Button switch
+                var scrollDelta = ev.Button switch
                 {
                     4 => new Vector(0, 1),
                     5 => new Vector(0, -1),
                     6 => new Vector(1, 0),
                     7 => new Vector(-1, 0),
-                    _ => null
+                    _ => (Vector?)null
                 };
 
                 if (scrollDelta.HasValue)

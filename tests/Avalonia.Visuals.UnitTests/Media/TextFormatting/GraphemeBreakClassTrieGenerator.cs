@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -12,6 +11,11 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
     {
         public static void Execute()
         {
+            if (!Directory.Exists("Generated"))
+            {
+                Directory.CreateDirectory("Generated");
+            }
+
             using (var stream = File.Create("Generated\\GraphemeBreak.trie"))
             {
                 var trie = GenerateBreakTypeTrie();
@@ -22,48 +26,29 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
         private static UnicodeTrie GenerateBreakTypeTrie()
         {
-            var graphemeBreakClassValues = UnicodeEnumsGenerator.GetPropertyValueAliases("# Grapheme_Cluster_Break (GCB)");
-
-            var graphemeBreakClassMapping = graphemeBreakClassValues.Select(x => x.name).ToList();
-
             var trieBuilder = new UnicodeTrieBuilder();
 
-            var graphemeBreakData = ReadBreakData(
-                "https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/GraphemeBreakProperty.txt");
+            var graphemeBreakData = ReadBreakData(Path.Combine(UnicodeDataGenerator.Ucd, "auxiliary/GraphemeBreakProperty.txt"));
 
-            foreach (var (start, end, graphemeBreakType) in graphemeBreakData)
+            var emojiBreakData = ReadBreakData(Path.Combine(UnicodeDataGenerator.Ucd, "emoji/emoji-data.txt"));
+
+            foreach (var breakData in new [] { graphemeBreakData, emojiBreakData })
             {
-                if (!graphemeBreakClassMapping.Contains(graphemeBreakType))
+                foreach (var (start, end, graphemeBreakType) in breakData)
                 {
-                    continue;
-                }
+                    if (!Enum.TryParse<GraphemeBreakClass>(graphemeBreakType, out var value))
+                    {
+                        continue;
+                    }
 
-                if (start == end)
-                {
-                    trieBuilder.Set(start, (uint)graphemeBreakClassMapping.IndexOf(graphemeBreakType));
-                }
-                else
-                {
-                    trieBuilder.SetRange(start, end, (uint)graphemeBreakClassMapping.IndexOf(graphemeBreakType));
-                }
-            }
-
-            var emojiBreakData = ReadBreakData("https://unicode.org/Public/emoji/12.0/emoji-data.txt");
-
-            foreach (var (start, end, graphemeBreakType) in emojiBreakData)
-            {
-                if (!graphemeBreakClassMapping.Contains(graphemeBreakType))
-                {
-                    continue;
-                }
-
-                if (start == end)
-                {
-                    trieBuilder.Set(start, (uint)graphemeBreakClassMapping.IndexOf(graphemeBreakType));
-                }
-                else
-                {
-                    trieBuilder.SetRange(start, end, (uint)graphemeBreakClassMapping.IndexOf(graphemeBreakType));
+                    if (start == end)
+                    {
+                        trieBuilder.Set(start, (uint)value);
+                    }
+                    else
+                    {
+                        trieBuilder.SetRange(start, end, (uint)value);
+                    }
                 }
             }
 
@@ -113,7 +98,9 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                                 end = Convert.ToInt32(match.Groups[2].Value, 16);
                             }
 
-                            data.Add((start, end, match.Groups[3].Value));
+                            var breakType = match.Groups[3].Value;
+
+                            data.Add((start, end, breakType));
                         }
                     }
                 }

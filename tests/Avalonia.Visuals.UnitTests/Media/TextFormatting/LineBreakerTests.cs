@@ -3,7 +3,7 @@ using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utility;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Media.Text
+namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 {
     public class LineBreakerTests
     {
