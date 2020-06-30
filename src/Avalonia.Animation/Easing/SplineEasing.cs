@@ -64,7 +64,7 @@ namespace Avalonia.Animation.Easings
             }
         }
 
-        private KeySpline _internalKeySpline;
+        private readonly KeySpline _internalKeySpline;
 
         public SplineEasing(double x1 = 0d, double y1 = 0d, double x2 = 1d, double y2 = 1d) : base()
         {
