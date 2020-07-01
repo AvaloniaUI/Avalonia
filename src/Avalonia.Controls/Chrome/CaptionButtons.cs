@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reactive.Disposables;
-using System.Text;
 using Avalonia.Controls.Primitives;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Chrome
 {
+#nullable enable
+
     public class CaptionButtons : TemplatedControl
     {
-        private CompositeDisposable _disposables;
-        private Window _hostWindow;
+        private CompositeDisposable? _disposables;
+        private Window? _hostWindow;
 
         public void Attach(Window hostWindow)
         {
@@ -54,10 +53,31 @@ namespace Avalonia.Controls.Chrome
             var minimiseButton = e.NameScope.Get<Panel>("PART_MinimiseButton");
             var fullScreenButton = e.NameScope.Get<Panel>("PART_FullScreenButton");
 
-            closeButton.PointerReleased += (sender, e) => _hostWindow.Close();
-            restoreButton.PointerReleased += (sender, e) => _hostWindow.WindowState = _hostWindow.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
-            minimiseButton.PointerReleased += (sender, e) => _hostWindow.WindowState = WindowState.Minimized;
-            fullScreenButton.PointerReleased += (sender, e) => _hostWindow.WindowState = _hostWindow.WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen;
+            closeButton.PointerReleased += (sender, e) => _hostWindow?.Close();
+
+            restoreButton.PointerReleased += (sender, e) =>
+            {
+                if (_hostWindow != null)
+                {
+                    _hostWindow.WindowState = _hostWindow.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+                }
+            };
+
+            minimiseButton.PointerReleased += (sender, e) =>
+            {
+                if (_hostWindow != null)
+                {
+                    _hostWindow.WindowState = WindowState.Minimized;
+                }
+            };
+
+            fullScreenButton.PointerReleased += (sender, e) =>
+            {
+                if (_hostWindow != null)
+                {
+                    _hostWindow.WindowState = _hostWindow.WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen;
+                }
+            };
         }
     }
 }

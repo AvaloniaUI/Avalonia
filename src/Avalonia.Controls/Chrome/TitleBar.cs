@@ -103,7 +103,10 @@ namespace Avalonia.Controls.Chrome
 
             _captionButtons = e.NameScope.Get<CaptionButtons>("PART_CaptionButtons");
 
-            _captionButtons.Attach(_hostWindow);
+            if (_hostWindow != null)
+            {
+                _captionButtons.Attach(_hostWindow);
+            }
 
             UpdateSize();
         }
