@@ -53,4 +53,7 @@
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.NotificationCard.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.NativeMenuBar.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.ToggleSwitch.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.SplitView.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.DatePicker.xaml?assembly=Avalonia.Themes.Fluent"/>  
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.TimePicker.xaml?assembly=Avalonia.Themes.Fluent"/>
 </Styles>
