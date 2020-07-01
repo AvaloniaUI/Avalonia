@@ -191,20 +191,20 @@
   </Style>
 
   <!--  Focused State  -->
-  <Style Selector="ComboBox:focus /template/ Border#HighlightBackground">
+  <Style Selector="ComboBox:focusvisual /template/ Border#HighlightBackground">
     <Setter Property="IsVisible" Value="True" />
     <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBackgroundBorderBrushFocused}" />
   </Style>
 
-  <Style Selector="ComboBox:focus /template/ ContentControl#ContentPresenter">
+  <Style Selector="ComboBox:focusvisual /template/ ContentControl#ContentPresenter">
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxForegroundFocused}" />
   </Style>
 
-  <Style Selector="ComboBox:focus /template/ TextBlock#PlaceholderTextBlock">
+  <Style Selector="ComboBox:focusvisual /template/ TextBlock#PlaceholderTextBlock">
     <Setter Property="TextBlock.Foreground" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={DynamicResource ComboBoxForegroundFocused}}" />
   </Style>
 
-  <Style Selector="ComboBox:focus /template/ Path#DropDownGlyph">
+  <Style Selector="ComboBox:focusvisual /template/ Path#DropDownGlyph">
     <Setter Property="Fill" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocused}" />
   </Style>
 
