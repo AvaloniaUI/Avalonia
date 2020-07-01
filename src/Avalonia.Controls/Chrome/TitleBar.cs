@@ -2,14 +2,17 @@
 using System.Reactive.Disposables;
 using Avalonia.Controls.Primitives;
 
-namespace Avalonia.Controls.Chrome
-{
 #nullable enable
 
+namespace Avalonia.Controls.Chrome
+{
+    /// <summary>
+    /// Draws a titlebar when managed client decorations are enabled.
+    /// </summary>
     public class TitleBar : TemplatedControl
     {
         private CompositeDisposable? _disposables;
-        private Window? _hostWindow;
+        private readonly Window? _hostWindow;
         private CaptionButtons? _captionButtons;
 
         public TitleBar(Window hostWindow)
@@ -60,7 +63,7 @@ namespace Avalonia.Controls.Chrome
             }
         }
 
-        void UpdateSize()
+        private void UpdateSize()
         {
             if (_hostWindow != null)
             {

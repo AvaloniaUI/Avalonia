@@ -2,10 +2,13 @@
 using System.Reactive.Disposables;
 using Avalonia.Controls.Primitives;
 
-namespace Avalonia.Controls.Chrome
-{
 #nullable enable
 
+namespace Avalonia.Controls.Chrome
+{
+    /// <summary>
+    /// Draws window minimize / maximize / close buttons in a <see cref="TitleBar"/> when managed client decorations are enabled.
+    /// </summary>
     public class CaptionButtons : TemplatedControl
     {
         private CompositeDisposable? _disposables;
