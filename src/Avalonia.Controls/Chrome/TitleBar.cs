@@ -26,36 +26,36 @@ namespace Avalonia.Controls.Chrome
             {
                 var layer = ChromeOverlayLayer.GetOverlayLayer(_hostWindow);
 
-                layer.Children.Add(this);
+                layer?.Children.Add(this);
 
                 _disposables = new CompositeDisposable
                 {
                     _hostWindow.GetObservable(Window.WindowDecorationMarginsProperty)
-                    .Subscribe(x => InvalidateSize()),
+                        .Subscribe(x => UpdateSize()),
 
                     _hostWindow.GetObservable(Window.ExtendClientAreaTitleBarHeightHintProperty)
-                    .Subscribe(x => InvalidateSize()),
+                        .Subscribe(x => UpdateSize()),
 
                     _hostWindow.GetObservable(Window.OffScreenMarginProperty)
-                    .Subscribe(x => InvalidateSize()),
+                        .Subscribe(x => UpdateSize()),
 
                     _hostWindow.GetObservable(Window.WindowStateProperty)
-                    .Subscribe(x =>
-                    {
-                        PseudoClasses.Set(":minimized", x == WindowState.Minimized);
-                        PseudoClasses.Set(":normal", x == WindowState.Normal);
-                        PseudoClasses.Set(":maximized", x == WindowState.Maximized);
-                        PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
-                    })
+                        .Subscribe(x =>
+                        {
+                            PseudoClasses.Set(":minimized", x == WindowState.Minimized);
+                            PseudoClasses.Set(":normal", x == WindowState.Normal);
+                            PseudoClasses.Set(":maximized", x == WindowState.Maximized);
+                            PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
+                        })
                 };
 
                 _captionButtons?.Attach(_hostWindow);
 
-                InvalidateSize();
+                UpdateSize();
             }
         }
 
-        void InvalidateSize()
+        void UpdateSize()
         {
             Margin = new Thickness(
                 _hostWindow.OffScreenMargin.Left,
@@ -80,7 +80,7 @@ namespace Avalonia.Controls.Chrome
             {
                 var layer = ChromeOverlayLayer.GetOverlayLayer(_hostWindow);
 
-                layer.Children.Remove(this);
+                layer?.Children.Remove(this);
 
                 _disposables.Dispose();
                 _disposables = null;
@@ -93,11 +93,11 @@ namespace Avalonia.Controls.Chrome
         {
             base.OnApplyTemplate(e);
 
-            _captionButtons = e.NameScope.Find<CaptionButtons>("PART_CaptionButtons");
+            _captionButtons = e.NameScope.Get<CaptionButtons>("PART_CaptionButtons");
 
             _captionButtons.Attach(_hostWindow);
 
-            InvalidateSize();
+            UpdateSize();
         }
     }
 }

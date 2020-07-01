@@ -38,7 +38,7 @@ namespace Avalonia.Controls.Chrome
             {
                 var layer = ChromeOverlayLayer.GetOverlayLayer(_hostWindow);
 
-                layer.Children.Remove(this);
+                layer?.Children.Remove(this);
 
                 _disposables.Dispose();
                 _disposables = null;
@@ -49,10 +49,10 @@ namespace Avalonia.Controls.Chrome
         {
             base.OnApplyTemplate(e);
 
-            var closeButton = e.NameScope.Find<Panel>("PART_CloseButton");
-            var restoreButton = e.NameScope.Find<Panel>("PART_RestoreButton");
-            var minimiseButton = e.NameScope.Find<Panel>("PART_MinimiseButton");
-            var fullScreenButton = e.NameScope.Find<Panel>("PART_FullScreenButton");
+            var closeButton = e.NameScope.Get<Panel>("PART_CloseButton");
+            var restoreButton = e.NameScope.Get<Panel>("PART_RestoreButton");
+            var minimiseButton = e.NameScope.Get<Panel>("PART_MinimiseButton");
+            var fullScreenButton = e.NameScope.Get<Panel>("PART_FullScreenButton");
 
             closeButton.PointerReleased += (sender, e) => _hostWindow.Close();
             restoreButton.PointerReleased += (sender, e) => _hostWindow.WindowState = _hostWindow.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
