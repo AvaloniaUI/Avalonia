@@ -262,21 +262,6 @@ namespace Avalonia.Controls
             _popup.Closed += PopupClosed;
         }
 
-        protected override void OnGotFocus(GotFocusEventArgs e)
-        {
-            if (e.NavigationMethod == NavigationMethod.Tab
-                || e.NavigationMethod == NavigationMethod.Directional)
-            {
-                PseudoClasses.Set(":focusvisual", true);
-            }
-        }
-
-        protected override void OnLostFocus(RoutedEventArgs e)
-        {
-            base.OnLostFocus(e);
-            PseudoClasses.Set(":focusvisual", false);
-        }
-
         /// <summary>
         /// Called when the ComboBox popup is closed, with the <see cref="PopupClosedEventArgs"/>
         /// that caused the popup to close.

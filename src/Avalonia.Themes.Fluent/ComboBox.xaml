@@ -191,20 +191,20 @@
   </Style>
 
   <!--  Focused State  -->
-  <Style Selector="ComboBox:focusvisual /template/ Border#HighlightBackground">
+  <Style Selector="ComboBox:focus-visible /template/ Border#HighlightBackground">
     <Setter Property="IsVisible" Value="True" />
     <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBackgroundBorderBrushFocused}" />
   </Style>
 
-  <Style Selector="ComboBox:focusvisual /template/ ContentControl#ContentPresenter">
+  <Style Selector="ComboBox:focus-visible /template/ ContentControl#ContentPresenter">
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxForegroundFocused}" />
   </Style>
 
-  <Style Selector="ComboBox:focusvisual /template/ TextBlock#PlaceholderTextBlock">
-    <Setter Property="TextBlock.Foreground" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={DynamicResource ComboBoxForegroundFocused}}" />
+  <Style Selector="ComboBox:focus-visible /template/ TextBlock#PlaceholderTextBlock">
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxForegroundFocused}" />
   </Style>
 
-  <Style Selector="ComboBox:focusvisual /template/ Path#DropDownGlyph">
+  <Style Selector="ComboBox:focus-visible /template/ Path#DropDownGlyph">
     <Setter Property="Fill" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocused}" />
   </Style>
 
@@ -214,7 +214,7 @@
   </Style>
 
   <Style Selector="ComboBox:focused:pressed /template/ TextBlock#PlaceholderTextBlock">
-    <Setter Property="TextBlock.Foreground" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={DynamicResource ComboBoxPlaceHolderForegroundFocusedPressed}}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxPlaceHolderForegroundFocusedPressed}" />
   </Style>
 
   <Style Selector="ComboBox:focused:pressed /template/ Path#DropDownGlyph">
