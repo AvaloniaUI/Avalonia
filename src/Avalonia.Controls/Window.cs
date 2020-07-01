@@ -72,8 +72,9 @@ namespace Avalonia.Controls
     {
         private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();        
         private TitleBar _managedTitleBar;
-
         private bool _isExtendedIntoWindowDecorations;
+        private Thickness _windowDecorationMargins;
+        private Thickness _offScreenMargin;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -318,17 +319,13 @@ namespace Avalonia.Controls
         {
             get => _isExtendedIntoWindowDecorations;
             private set => SetAndRaise(IsExtendedIntoWindowDecorationsProperty, ref _isExtendedIntoWindowDecorations, value);
-        }
-
-        private Thickness _windowDecorationMargins;
+        }        
 
         public Thickness WindowDecorationMargins
         {
             get => _windowDecorationMargins;
             private set => SetAndRaise(WindowDecorationMarginsProperty, ref _windowDecorationMargins, value);
-        }
-
-        private Thickness _offScreenMargin;
+        }        
 
         public Thickness OffScreenMargin
         {
@@ -542,7 +539,7 @@ namespace Avalonia.Controls
 
             OffScreenMargin = PlatformImpl.OffScreenMargin;
 
-            if(PlatformImpl.NeedsManagedDecorations)
+            if (PlatformImpl.NeedsManagedDecorations)
             {
                 if (_managedTitleBar == null)
                 {
