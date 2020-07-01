@@ -4,11 +4,13 @@ using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Controls.Chrome
 {
+#nullable enable
+
     public class TitleBar : TemplatedControl
     {
-        private CompositeDisposable _disposables;
-        private Window _hostWindow;
-        private CaptionButtons _captionButtons;
+        private CompositeDisposable? _disposables;
+        private Window? _hostWindow;
+        private CaptionButtons? _captionButtons;
 
         public TitleBar(Window hostWindow)
         {
@@ -28,28 +30,31 @@ namespace Avalonia.Controls.Chrome
 
                 layer?.Children.Add(this);
 
-                _disposables = new CompositeDisposable
+                if (_hostWindow != null)
                 {
-                    _hostWindow.GetObservable(Window.WindowDecorationMarginsProperty)
-                        .Subscribe(x => UpdateSize()),
+                    _disposables = new CompositeDisposable
+                    {
+                        _hostWindow.GetObservable(Window.WindowDecorationMarginsProperty)
+                            .Subscribe(x => UpdateSize()),
 
-                    _hostWindow.GetObservable(Window.ExtendClientAreaTitleBarHeightHintProperty)
-                        .Subscribe(x => UpdateSize()),
+                        _hostWindow.GetObservable(Window.ExtendClientAreaTitleBarHeightHintProperty)
+                            .Subscribe(x => UpdateSize()),
 
-                    _hostWindow.GetObservable(Window.OffScreenMarginProperty)
-                        .Subscribe(x => UpdateSize()),
+                        _hostWindow.GetObservable(Window.OffScreenMarginProperty)
+                            .Subscribe(x => UpdateSize()),
 
-                    _hostWindow.GetObservable(Window.WindowStateProperty)
-                        .Subscribe(x =>
-                        {
-                            PseudoClasses.Set(":minimized", x == WindowState.Minimized);
-                            PseudoClasses.Set(":normal", x == WindowState.Normal);
-                            PseudoClasses.Set(":maximized", x == WindowState.Maximized);
-                            PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
-                        })
-                };
+                        _hostWindow.GetObservable(Window.WindowStateProperty)
+                            .Subscribe(x =>
+                            {
+                                PseudoClasses.Set(":minimized", x == WindowState.Minimized);
+                                PseudoClasses.Set(":normal", x == WindowState.Normal);
+                                PseudoClasses.Set(":maximized", x == WindowState.Maximized);
+                                PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
+                            })
+                    };
 
-                _captionButtons?.Attach(_hostWindow);
+                    _captionButtons?.Attach(_hostWindow);
+                }
 
                 UpdateSize();
             }
@@ -57,19 +62,22 @@ namespace Avalonia.Controls.Chrome
 
         void UpdateSize()
         {
-            Margin = new Thickness(
-                _hostWindow.OffScreenMargin.Left,
-                _hostWindow.OffScreenMargin.Top,
-                _hostWindow.OffScreenMargin.Right,
-                _hostWindow.OffScreenMargin.Bottom);
-
-            if (_hostWindow.WindowState != WindowState.FullScreen)
+            if (_hostWindow != null)
             {
-                Height = _hostWindow.WindowDecorationMargins.Top;
+                Margin = new Thickness(
+                    _hostWindow.OffScreenMargin.Left,
+                    _hostWindow.OffScreenMargin.Top,
+                    _hostWindow.OffScreenMargin.Right,
+                    _hostWindow.OffScreenMargin.Bottom);
 
-                if (_captionButtons != null)
+                if (_hostWindow.WindowState != WindowState.FullScreen)
                 {
-                    _captionButtons.Height = Height;
+                    Height = _hostWindow.WindowDecorationMargins.Top;
+
+                    if (_captionButtons != null)
+                    {
+                        _captionButtons.Height = Height;
+                    }
                 }
             }
         }
