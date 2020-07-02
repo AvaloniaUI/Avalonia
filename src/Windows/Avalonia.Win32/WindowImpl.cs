@@ -759,6 +759,16 @@ namespace Avalonia.Win32
                 _extendedMargins = new Thickness();
             }
 
+            if(_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) &&
+                !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome))
+            {
+                EnableCloseButton(_hwnd);
+            }
+            else
+            {
+                DisableCloseButton(_hwnd);
+            }
+
             ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
         }
 
