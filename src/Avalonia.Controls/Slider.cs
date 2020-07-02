@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using Avalonia.Collections;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -68,7 +68,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="TicksProperty"/> property.
         /// </summary>
-        public static readonly StyledProperty<List<double>> TicksProperty =
+        public static readonly StyledProperty<AvaloniaList<double>> TicksProperty =
             TickBar.TicksProperty.AddOwner<Slider>();
 
         // Slider required parts
@@ -105,7 +105,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the ticks to be drawn on the tick bar.
         /// </summary>
-        public List<double> Ticks
+        public AvaloniaList<double> Ticks
         {
             get => GetValue(TicksProperty);
             set => SetValue(TicksProperty, value);
@@ -263,7 +263,7 @@ namespace Avalonia.Controls
                 double next = Maximum;
 
                 // This property is rarely set so let's try to avoid the GetValue
-                List<double> ticks = Ticks;
+                var ticks = Ticks;
 
                 // If ticks collection is available, use it.
                 // Note that ticks may be unsorted.

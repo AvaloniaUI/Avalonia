@@ -19,6 +19,7 @@
                 Maximum="100"
                 TickPlacement="BottomRight"
                 IsSnapToTickEnabled="True"
+                Ticks="0,20,25,40,75,100"
                 Width="300" />
       </StackPanel>
       <Slider Value="0"
