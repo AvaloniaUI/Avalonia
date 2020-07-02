@@ -162,7 +162,7 @@ namespace Avalonia
                         _sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                             _owner,
                             property,
-                            old!,
+                            new Optional<T>(old),
                             default,
                             BindingPriority.Unset));
                     }

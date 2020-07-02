@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Utilities;
 
 #nullable enable
@@ -81,14 +82,14 @@ namespace Avalonia.Data
     /// </remarks>
     public readonly struct BindingValue<T>
     {
-        private readonly T _value;
+        [AllowNull] private readonly T _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BindingValue{T}"/> struct with a type of
         /// <see cref="BindingValueType.Value"/>
         /// </summary>
         /// <param name="value">The value.</param>
-        public BindingValue(T value)
+        public BindingValue([AllowNull] T value)
         {
             ValidateValue(value);
             _value = value;
@@ -96,7 +97,7 @@ namespace Avalonia.Data
             Error = null;
         }
 
-        private BindingValue(BindingValueType type, T value, Exception? error)
+        private BindingValue(BindingValueType type, [AllowNull] T value, Exception? error)
         {
             _value = value;
             Type = type;
@@ -154,7 +155,7 @@ namespace Avalonia.Data
                 BindingValueType.UnsetValue => AvaloniaProperty.UnsetValue,
                 BindingValueType.DoNothing => BindingOperations.DoNothing,
                 BindingValueType.Value => _value,
-                BindingValueType.BindingError => 
+                BindingValueType.BindingError =>
                     new BindingNotification(Error, BindingErrorType.Error),
                 BindingValueType.BindingErrorWithFallback =>
                     new BindingNotification(Error, BindingErrorType.Error, Value),
@@ -175,7 +176,7 @@ namespace Avalonia.Data
         /// The binding type is <see cref="BindingValueType.UnsetValue"/> or
         /// <see cref="BindingValueType.DoNothing"/>.
         /// </exception>
-        public BindingValue<T> WithValue(T value)
+        public BindingValue<T> WithValue([AllowNull] T value)
         {
             if (Type == BindingValueType.DoNothing)
             {
@@ -190,7 +191,8 @@ namespace Avalonia.Data
         /// Gets the value of the binding value if present, otherwise the default value.
         /// </summary>
         /// <returns>The value.</returns>
-        public T GetValueOrDefault() => HasValue ? _value : default!;
+        [return: MaybeNull]
+        public T GetValueOrDefault() => HasValue ? _value : default;
 
         /// <summary>
         /// Gets the value of the binding value if present, otherwise a default value.
@@ -206,11 +208,12 @@ namespace Avalonia.Data
         /// The value if present and of the correct type, `default(TResult)` if the value is
         /// not present or of an incorrect type.
         /// </returns>
+        [return: MaybeNull]
         public TResult GetValueOrDefault<TResult>()
         {
             return HasValue ?
-                _value is TResult result ? result : default!
-                : default!;
+                _value is TResult result ? result : default
+                : default;
         }
 
         /// <summary>
@@ -222,10 +225,11 @@ namespace Avalonia.Data
         /// present but not of the correct type or null, or <paramref name="defaultValue"/> if the
         /// value is not present.
         /// </returns>
-        public TResult GetValueOrDefault<TResult>(TResult defaultValue)
+        [return: MaybeNull]
+        public TResult GetValueOrDefault<TResult>([AllowNull] TResult defaultValue)
         {
             return HasValue ?
-                _value is TResult result ? result : default!
+                _value is TResult result ? result : default
                 : defaultValue;
         }
 
@@ -242,7 +246,7 @@ namespace Avalonia.Data
                 UnsetValueType _ => Unset,
                 DoNothingType _ => DoNothing,
                 BindingNotification n => n.ToBindingValue().Cast<T>(),
-                _ => (T)value!
+                _ => new BindingValue<T>((T)value)
             };
         }
 
@@ -250,7 +254,7 @@ namespace Avalonia.Data
         /// Creates a binding value from an instance of the underlying value type.
         /// </summary>
         /// <param name="value">The value.</param>
-        public static implicit operator BindingValue<T>(T value) => new BindingValue<T>(value);
+        public static implicit operator BindingValue<T>([AllowNull] T value) => new BindingValue<T>(value);
 
         /// <summary>
         /// Creates a binding value from an <see cref="Optional{T}"/>.
@@ -259,18 +263,18 @@ namespace Avalonia.Data
 
         public static implicit operator BindingValue<T>(Optional<T> optional)
         {
-            return optional.HasValue ? optional.Value! : Unset;
+            return optional.HasValue ? optional.Value : Unset;
         }
 
         /// <summary>
         /// Returns a binding value with a type of <see cref="BindingValueType.UnsetValue"/>.
         /// </summary>
-        public static BindingValue<T> Unset => new BindingValue<T>(BindingValueType.UnsetValue, default!, null);
+        public static BindingValue<T> Unset => new BindingValue<T>(BindingValueType.UnsetValue, default, null);
 
         /// <summary>
         /// Returns a binding value with a type of <see cref="BindingValueType.DoNothing"/>.
         /// </summary>
-        public static BindingValue<T> DoNothing => new BindingValue<T>(BindingValueType.DoNothing, default!, null);
+        public static BindingValue<T> DoNothing => new BindingValue<T>(BindingValueType.DoNothing, default, null);
 
         /// <summary>
         /// Returns a binding value with a type of <see cref="BindingValueType.BindingError"/>.
@@ -280,7 +284,7 @@ namespace Avalonia.Data
         {
             e = e ?? throw new ArgumentNullException(nameof(e));
 
-            return new BindingValue<T>(BindingValueType.BindingError, default!, e);
+            return new BindingValue<T>(BindingValueType.BindingError, default, e);
         }
 
         /// <summary>
@@ -309,7 +313,7 @@ namespace Avalonia.Data
                 fallbackValue.HasValue ?
                     BindingValueType.BindingErrorWithFallback :
                     BindingValueType.BindingError,
-                fallbackValue.HasValue ? fallbackValue.Value : default!,
+                fallbackValue.HasValue ? fallbackValue.Value : default,
                 e);
         }
 
@@ -321,7 +325,7 @@ namespace Avalonia.Data
         {
             e = e ?? throw new ArgumentNullException(nameof(e));
 
-            return new BindingValue<T>(BindingValueType.DataValidationError, default!, e);
+            return new BindingValue<T>(BindingValueType.DataValidationError, default, e);
         }
 
         /// <summary>
@@ -350,11 +354,11 @@ namespace Avalonia.Data
                 fallbackValue.HasValue ?
                     BindingValueType.DataValidationErrorWithFallback :
                     BindingValueType.DataValidationError,
-                fallbackValue.HasValue ? fallbackValue.Value : default!,
+                fallbackValue.HasValue ? fallbackValue.Value : default,
                 e);
         }
 
-        private static void ValidateValue(T value)
+        private static void ValidateValue([AllowNull] T value)
         {
             if (value is UnsetValueType)
             {
