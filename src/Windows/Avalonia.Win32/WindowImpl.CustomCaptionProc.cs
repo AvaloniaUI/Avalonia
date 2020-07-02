@@ -102,8 +102,6 @@ namespace Avalonia.Win32
 
                         uint timestamp = unchecked((uint)GetMessageTime());
 
-                        Debug.WriteLine(hittestResult);
-
                         if (hittestResult == HitTestValues.HTCAPTION)
                         {
                             var position = PointToClient(PointFromLParam(lParam));
