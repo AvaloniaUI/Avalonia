@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -64,6 +65,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TickPlacement> TickPlacementProperty =
             AvaloniaProperty.Register<TickBar, TickPlacement>(nameof(TickPlacement), 0d);
 
+        /// <summary>
+        /// Defines the <see cref="TicksProperty"/> property.
+        /// </summary>
+        public static readonly StyledProperty<List<double>> TicksProperty =
+            TickBar.TicksProperty.AddOwner<Slider>();
+
         // Slider required parts
         private bool _isDragging = false;
         private Track _track;
@@ -83,7 +90,8 @@ namespace Avalonia.Controls
             PressedMixin.Attach<Slider>();
             OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
             Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
-            Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e), RoutingStrategies.Bubble);
+            Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e),
+                RoutingStrategies.Bubble);
         }
 
         /// <summary>
@@ -92,6 +100,15 @@ namespace Avalonia.Controls
         public Slider()
         {
             UpdatePseudoClasses(Orientation);
+        }
+
+        /// <summary>
+        /// Defines the ticks to be drawn on the tick bar.
+        /// </summary>
+        public List<double> Ticks
+        {
+            get => GetValue(TicksProperty);
+            set => SetValue(TicksProperty, value);
         }
 
         /// <summary>
