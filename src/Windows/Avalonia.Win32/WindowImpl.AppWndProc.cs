@@ -377,7 +377,7 @@ namespace Avalonia.Win32
 
                         if (windowState != _lastWindowState)
                         {
-                            _lastWindowState = windowState;                                                       
+                            _lastWindowState = windowState;
 
                             WindowStateChanged?.Invoke(windowState);
 

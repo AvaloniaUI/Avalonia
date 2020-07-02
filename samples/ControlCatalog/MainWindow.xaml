@@ -84,7 +84,7 @@
       <Border.Background>
         <SolidColorBrush Color="White" Opacity="0.7" />
       </Border.Background>
-      <TextBlock Margin="5 5 5 0" Text="Content In TitleBar" />
+      <TextBlock Margin="5 5 5 0" Text="Content In Title Bar" />
     </Border>
   </Panel>
 </Window>

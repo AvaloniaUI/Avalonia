@@ -266,7 +266,7 @@ namespace Avalonia.Native
             return args.Handled;
         }
 
-        protected virtual bool ChromeHitTest (RawPointerEventArgs e)
+        protected virtual bool ChromeHitTest(RawPointerEventArgs e)
         {
             return false;
         }

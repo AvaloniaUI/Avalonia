@@ -104,7 +104,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> ExtendClientAreaTitleBarHeightHintProperty =
             AvaloniaProperty.Register<Window, double>(nameof(ExtendClientAreaTitleBarHeightHint), -1);
 
-
         /// <summary>
         /// Defines the <see cref="IsExtendedIntoWindowDecorations"/> property.
         /// </summary>
@@ -123,7 +122,6 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<Window, Thickness> OffScreenMarginProperty =
             AvaloniaProperty.RegisterDirect<Window, Thickness>(nameof(OffScreenMargin),
                 o => o.OffScreenMargin);
-
 
         /// <summary>
         /// Defines the <see cref="SystemDecorations"/> property.
@@ -534,9 +532,7 @@ namespace Avalonia.Controls
         protected virtual void ExtendClientAreaToDecorationsChanged(bool isExtended)
         {
             IsExtendedIntoWindowDecorations = isExtended;
-
             WindowDecorationMargins = PlatformImpl.ExtendedMargins;
-
             OffScreenMargin = PlatformImpl.OffScreenMargin;
 
             if (PlatformImpl.NeedsManagedDecorations)

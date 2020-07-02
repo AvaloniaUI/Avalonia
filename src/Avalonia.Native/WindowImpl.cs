@@ -138,9 +138,9 @@ namespace Avalonia.Native
             return false;
         }
         
-        private void InvalidateExtendedMargins ()
+        private void InvalidateExtendedMargins()
         {
-            if(WindowState ==  WindowState.FullScreen)
+            if (WindowState ==  WindowState.FullScreen)
             {
                 ExtendedMargins = new Thickness();
             }
