@@ -55,7 +55,7 @@ namespace ControlCatalog.ViewModels
             return new ObservableCollection<Item>(
                 Enumerable.Range(1, 100000).Select(i => new Item(i)
                 {
-                    Text = $"Item {i} {suffix}"
+                    Text = $"Item {i.ToString()} {suffix}"
                 }));
         }
 
