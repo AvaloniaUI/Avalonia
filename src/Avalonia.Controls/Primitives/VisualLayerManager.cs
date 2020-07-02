@@ -8,7 +8,6 @@ namespace Avalonia.Controls.Primitives
         private const int AdornerZIndex = int.MaxValue - 100;
         private const int ChromeZIndex = int.MaxValue - 99;
         private const int OverlayZIndex = int.MaxValue - 98;
-        private const int UnderlayZIndex = int.MinValue;
 
         private ILogicalRoot _logicalRoot;
         private readonly List<Control> _layers = new List<Control>();
@@ -23,17 +22,6 @@ namespace Avalonia.Controls.Primitives
                 var rv = FindLayer<AdornerLayer>();
                 if (rv == null)
                     AddLayer(rv = new AdornerLayer(), AdornerZIndex);
-                return rv;
-            }
-        }
-
-        public ChromeUnderlayLayer ChromeUnderlayLayer
-        {
-            get
-            {
-                var rv = FindLayer<ChromeUnderlayLayer>();
-                if (rv == null)
-                    AddLayer(rv = new ChromeUnderlayLayer(), UnderlayZIndex);
                 return rv;
             }
         }
