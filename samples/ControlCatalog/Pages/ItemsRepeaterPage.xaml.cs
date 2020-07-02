@@ -38,6 +38,12 @@ namespace ControlCatalog.Pages
             AvaloniaXamlLoader.Load(this);
         }
 
+        public void OnSelectTemplateKey(object sender, SelectTemplateEventArgs e)
+        {
+            var item = (ItemsRepeaterPageViewModel.Item)e.DataContext;
+            e.TemplateKey = (item.Index % 2 == 0) ? "even" : "odd";
+        }
+
         private void LayoutChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_repeater == null)

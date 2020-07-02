@@ -55,20 +55,16 @@ namespace ControlCatalog.ViewModels
             return new ObservableCollection<Item>(
                 Enumerable.Range(1, 100000).Select(i => new Item(i)
                 {
-                    Text = $"Item {i.ToString()} {suffix}"
+                    Text = $"Item {i} {suffix}"
                 }));
         }
 
         public class Item : ReactiveObject
         {
             private double _height = double.NaN;
-            private int _index;
 
-            public Item(int index)
-            {
-                _index = index;
-            }
-
+            public Item(int index) => Index = index;
+            public int Index { get; }
             public string Text { get; set; }
             
             public double Height 
@@ -76,8 +72,6 @@ namespace ControlCatalog.ViewModels
                 get => _height;
                 set => this.RaiseAndSetIfChanged(ref _height, value);
             }
-
-            public IBrush Background => ((_index % 2) == 0) ? Brushes.Yellow : Brushes.Wheat;
         }
     }
 }
