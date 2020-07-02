@@ -14,28 +14,32 @@ namespace Avalonia.Controls.Chrome
         private CompositeDisposable? _disposables;
         private readonly Window? _hostWindow;
         private CaptionButtons? _captionButtons;
+        private Panel _underlay;
 
-        public TitleBar(Window hostWindow)
+        public TitleBar(Window hostWindow) : this()
         {
             _hostWindow = hostWindow;
         }
 
         public TitleBar()
         {
-
+            _underlay = new Panel
+            {
+                IsHitTestVisible = false,
+                [~Panel.BackgroundProperty] = this[~BackgroundProperty],
+                VerticalAlignment = Layout.VerticalAlignment.Top
+            };
         }
 
         public void Attach()
         {
-            if (_disposables == null)
+            if (_disposables == null && _hostWindow != null)
             {
-                var layer = ChromeOverlayLayer.GetOverlayLayer(_hostWindow);
+                var overlay = ChromeOverlayLayer.GetOverlayLayer(_hostWindow);
 
-                layer?.Children.Add(this);
+                overlay?.Children.Add(this);
 
-                if (_hostWindow != null)
-                {
-                    _disposables = new CompositeDisposable
+                _disposables = new CompositeDisposable
                     {
                         _hostWindow.GetObservable(Window.WindowDecorationMarginsProperty)
                             .Subscribe(x => UpdateSize()),
@@ -56,11 +60,15 @@ namespace Avalonia.Controls.Chrome
                             })
                     };
 
-                    _captionButtons?.Attach(_hostWindow);
-                }
+                _captionButtons?.Attach(_hostWindow);
+
+                var underlay = ChromeUnderlayLayer.GetUnderlayLayer(_hostWindow);
+
+                underlay?.Children.Add(_underlay);
 
                 UpdateSize();
             }
+
         }
 
         private void UpdateSize()
@@ -76,6 +84,7 @@ namespace Avalonia.Controls.Chrome
                 if (_hostWindow.WindowState != WindowState.FullScreen)
                 {
                     Height = _hostWindow.WindowDecorationMargins.Top;
+                    _underlay.Height = Height;
 
                     if (_captionButtons != null)
                     {
@@ -89,9 +98,14 @@ namespace Avalonia.Controls.Chrome
         {
             if (_disposables != null)
             {
-                var layer = ChromeOverlayLayer.GetOverlayLayer(_hostWindow);
+                if (_hostWindow != null)
+                {
+                    var overlay = ChromeOverlayLayer.GetOverlayLayer(_hostWindow);
+                    overlay?.Children.Remove(this);
 
-                layer?.Children.Remove(this);
+                    var underlay = ChromeUnderlayLayer.GetUnderlayLayer(_hostWindow);
+                    underlay?.Children.Remove(_underlay);
+                }
 
                 _disposables.Dispose();
                 _disposables = null;

@@ -60,6 +60,11 @@
       </NativeMenuItem>
     </NativeMenu>
   </NativeMenu.Menu>
+  <Window.Styles>
+    <Style Selector="TitleBar">
+      <Setter Property="Background" Value="Green" />
+    </Style>
+  </Window.Styles>
 
   <Window.DataTemplates>
     <DataTemplate DataType="vm:NotificationViewModel">
