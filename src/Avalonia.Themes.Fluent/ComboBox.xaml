@@ -7,8 +7,10 @@
           <ComboBoxItem>Item 1</ComboBoxItem>
           <ComboBoxItem>Item 2</ComboBoxItem>
         </ComboBox>
-
-        <ComboBox IsEnabled="False">
+        <ComboBox IsEnabled="False"
+                  Width="200"
+                  SelectedIndex="1"
+                  HorizontalContentAlignment="Center">
           <ComboBoxItem>Item 1</ComboBoxItem>
           <ComboBoxItem>Item 2</ComboBoxItem>
         </ComboBox>
@@ -34,6 +36,8 @@
     <Setter Property="BorderThickness" Value="{DynamicResource ComboBoxBorderThemeThickness}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
@@ -71,8 +75,8 @@
           <TextBlock x:Name="PlaceholderTextBlock"
                      Grid.Row="1"
                      Grid.Column="0"
-                     HorizontalAlignment="Left"
-                     VerticalAlignment="Center"
+                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                      Margin="{TemplateBinding Padding}"
                      Text="{TemplateBinding PlaceholderText}"
                      IsVisible="{TemplateBinding SelectionBoxItem, Converter={x:Static ObjectConverters.IsNull}}" />
@@ -82,8 +86,8 @@
                           Grid.Row="1"
                           Grid.Column="0"
                           Margin="{TemplateBinding Padding}"
-                          HorizontalAlignment="Left"
-                          VerticalAlignment="Center" />
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
 
           <Border x:Name="DropDownOverlay"
                   Grid.Row="1"

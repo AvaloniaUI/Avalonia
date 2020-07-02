@@ -1,10 +1,31 @@
 <Styles xmlns="https://github.com/avaloniaui">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="10">
+        <ComboBox PlaceholderText="Select an item">
+          <ComboBoxItem>Item 1</ComboBoxItem>
+          <ComboBoxItem>Item 2</ComboBoxItem>
+        </ComboBox>
+        <ComboBox IsEnabled="False"
+                  Width="200"
+                  SelectedIndex="1"
+                  HorizontalContentAlignment="Center">
+          <ComboBoxItem>Item 1</ComboBoxItem>
+          <ComboBoxItem>Item 2</ComboBoxItem>
+        </ComboBox>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
   <Style Selector="ComboBox">
-    <Setter Property="Background" Value="Transparent"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
-    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
-    <Setter Property="Padding" Value="4"/>
-    <Setter Property="MinHeight" Value="20"/>
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Padding" Value="4" />
+    <Setter Property="MinHeight" Value="20" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="border"
@@ -15,8 +36,8 @@
             <ContentControl Content="{TemplateBinding SelectionBoxItem}"
                             ContentTemplate="{TemplateBinding ItemTemplate}"
                             Margin="{TemplateBinding Padding}"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"/>
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
             <ToggleButton Name="toggle"
                           BorderThickness="0"
                           Background="Transparent"
@@ -30,7 +51,7 @@
                     Stretch="Uniform"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Data="F1 M 301.14,-189.041L 311.57,-189.041L 306.355,-182.942L 301.14,-189.041 Z"/>
+                    Data="F1 M 301.14,-189.041L 311.57,-189.041L 306.355,-182.942L 301.14,-189.041 Z" />
             </ToggleButton>
             <Popup Name="PART_Popup"
                    IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
@@ -45,8 +66,7 @@
                                   Items="{TemplateBinding Items}"
                                   ItemsPanel="{TemplateBinding ItemsPanel}"
                                   ItemTemplate="{TemplateBinding ItemTemplate}"
-                                  VirtualizationMode="{TemplateBinding VirtualizationMode}"
-                              />
+                                  VirtualizationMode="{TemplateBinding VirtualizationMode}" />
                 </ScrollViewer>
               </Border>
             </Popup>
@@ -56,7 +76,7 @@
     </Setter>
   </Style>
   <Style Selector="ComboBox:pointerover /template/ Border#border">
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}" />
   </Style>
   <Style Selector="ComboBox:disabled /template/ Border#border">
     <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
