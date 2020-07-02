@@ -4,6 +4,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
+#nullable enable
+
 namespace Avalonia.Win32
 {
     public partial class WindowImpl
@@ -100,24 +102,29 @@ namespace Avalonia.Win32
 
                         uint timestamp = unchecked((uint)GetMessageTime());
 
+                        Debug.WriteLine(hittestResult);
+
                         if (hittestResult == HitTestValues.HTCAPTION)
                         {
                             var position = PointToClient(PointFromLParam(lParam));
 
-                            var visual = (_owner as Window).Renderer.HitTestFirst(position, _owner as Window, x =>
+                            if (_owner is Window window)
                             {
-                                if (x is IInputElement ie && !ie.IsHitTestVisible)
+                                var visual = window.Renderer.HitTestFirst(position, _owner as Window, x =>
                                 {
-                                    return false;
+                                    if (x is IInputElement ie && !ie.IsHitTestVisible)
+                                    {
+                                        return false;
+                                    }
+
+                                    return true;
+                                });
+
+                                if (visual != null)
+                                {
+                                    hittestResult = HitTestValues.HTCLIENT;
+                                    lRet = (IntPtr)hittestResult;
                                 }
-
-                                return true;
-                            });
-
-                            if (visual != null)
-                            {
-                                hittestResult = HitTestValues.HTCLIENT;
-                                lRet = (IntPtr)hittestResult;
                             }
                         }
 
