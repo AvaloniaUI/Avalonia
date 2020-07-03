@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using Avalonia.Data;
 
 namespace Avalonia
@@ -35,7 +34,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the value coercion callback, if any.
         /// </summary>
-        public Func<IAvaloniaObject, TValue, TValue>? CoerceValue { get; private set; }
+        public Func<IAvaloniaObject, TValue, TValue> CoerceValue { get; private set; }
 
         object IStyledPropertyMetadata.DefaultValue => DefaultValue;
 

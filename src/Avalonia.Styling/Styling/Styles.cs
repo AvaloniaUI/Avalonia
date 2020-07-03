@@ -21,7 +21,6 @@ namespace Avalonia.Styling
         private IResourceHost? _owner;
         private IResourceDictionary? _resources;
         private Dictionary<Type, List<IStyle>?>? _cache;
-        private bool _notifyingResourcesChanged;
 
         public Styles()
         {

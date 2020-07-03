@@ -382,5 +382,59 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Border.WidthProperty, border.Transitions[0].Property);
             }
         }
+
+        [Fact]
+        public void Style_Can_Use_Class_Selector_With_Dash()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='Border.foo-bar'>
+            <Setter Property='Background' Value='Red'/>
+        </Style>
+    </Window.Styles>
+    <StackPanel>
+        <Border Name='foo' Classes='foo-bar'/>
+    </StackPanel>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var foo = window.FindControl<Border>("foo");
+
+                Assert.Equal(Colors.Red, ((ISolidColorBrush)foo.Background).Color);
+            }
+        }
+
+        [Fact]
+        public void Style_Can_Use_Pseudolass_Selector_With_Dash()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='Border:foo-bar'>
+            <Setter Property='Background' Value='Red'/>
+        </Style>
+    </Window.Styles>
+    <StackPanel>
+        <Border Name='foo'/>
+    </StackPanel>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var foo = window.FindControl<Border>("foo");
+
+                Assert.Null(foo.Background);
+
+                ((IPseudoClasses)foo.Classes).Add(":foo-bar");
+
+                Assert.Equal(Colors.Red, ((ISolidColorBrush)foo.Background).Color);
+            }
+        }
     }
 }
