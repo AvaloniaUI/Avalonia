@@ -159,8 +159,6 @@ namespace Avalonia
         /// </summary>
         internal int Id { get; }
 
-        internal bool HasChangedSubscriptions => _changed?.HasObservers ?? false;
-
         /// <summary>
         /// Provides access to a property's binding via the <see cref="AvaloniaObject"/>
         /// indexer.
@@ -512,7 +510,7 @@ namespace Avalonia
         /// <returns>
         /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
         /// </returns>
-        internal abstract IDisposable? RouteSetValue(
+        internal abstract IDisposable RouteSetValue(
             IAvaloniaObject o,
             object value,
             BindingPriority priority);
