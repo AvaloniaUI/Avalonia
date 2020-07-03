@@ -1,4 +1,12 @@
 <Styles xmlns="https://github.com/avaloniaui">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel>
+        <ProgressBar VerticalAlignment="Center" IsIndeterminate="True" />
+        <ProgressBar HorizontalAlignment="Left" IsIndeterminate="True" Orientation="Vertical" />
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
   <Style Selector="ProgressBar">
     <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
     <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}"/>
@@ -69,11 +77,11 @@
                  Easing="LinearEasing">
         <KeyFrame Cue="0%">
           <Setter Property="TranslateTransform.Y"
-                  Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+                  Value="{Binding TemplateProperties.IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
         </KeyFrame>
         <KeyFrame Cue="100%">
           <Setter Property="TranslateTransform.Y"
-                  Value="{Binding IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+                  Value="{Binding TemplateProperties.IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
         </KeyFrame>
       </Animation>
     </Style.Animations>

@@ -45,7 +45,15 @@ namespace Avalonia.Diagnostics
 
                 window.Closed += DevToolsClosed;
                 s_open.Add(root, window);
-                window.Show();
+
+                if (root is Window inspectedWindow)
+                {
+                    window.Show(inspectedWindow);
+                }
+                else
+                {
+                    window.Show();
+                }
             }
 
             return Disposable.Create(() => window?.Close());
