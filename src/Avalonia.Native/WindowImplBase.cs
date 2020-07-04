@@ -46,7 +46,7 @@ namespace Avalonia.Native
     public abstract class WindowBaseImpl : IWindowBaseImpl,
         IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost
     {
-        IInputRoot _inputRoot;
+        protected IInputRoot _inputRoot;
         IAvnWindowBase _native;
         private object _syncRoot = new object();
         private bool _deferredRendering = false;
@@ -266,6 +266,11 @@ namespace Avalonia.Native
             return args.Handled;
         }
 
+        protected virtual bool ChromeHitTest(RawPointerEventArgs e)
+        {
+            return false;
+        }
+
         public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
@@ -277,7 +282,12 @@ namespace Avalonia.Native
                     break;
 
                 default:
-                    Input?.Invoke(new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers));
+                    var e = new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers);
+                    
+                    if(!ChromeHitTest(e))
+                    {
+                        Input?.Invoke(e);
+                    }
                     break;
             }
         }

@@ -67,7 +67,6 @@ namespace Avalonia
         private List<IStyleInstance>? _appliedStyles;
         private ITemplatedControl? _templatedParent;
         private bool _dataContextUpdating;
-        private bool _notifyingResourcesChanged;
 
         /// <summary>
         /// Initializes static members of the <see cref="StyledElement"/> class.

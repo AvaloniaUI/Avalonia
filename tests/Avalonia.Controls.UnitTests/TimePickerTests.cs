@@ -12,7 +12,7 @@ namespace Avalonia.Controls.UnitTests
 {
     public class TimePickerTests
     {
-        [Fact(Skip = "FIX ME ASAP")]
+        [Fact]
         public void SelectedTimeChanged_Should_Fire_When_SelectedTime_Set()
         {
             using (UnitTestApplication.Start(Services))
@@ -98,9 +98,10 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-
         private static TestServices Services => TestServices.MockThreadingInterface.With(
-            standardCursorFactory: Mock.Of<IStandardCursorFactory>());
+            fontManagerImpl: new MockFontManagerImpl(),
+            standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
+            textShaperImpl: new MockTextShaperImpl());
 
         private IControlTemplate CreateTemplate()
         {
