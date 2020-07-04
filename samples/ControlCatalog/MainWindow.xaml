@@ -69,7 +69,7 @@
   </Window.DataTemplates>
   <Panel>
     <Panel Margin="{Binding #MainWindow.OffScreenMargin}">
-      <DockPanel Background="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" LastChildFill="True" Margin="{Binding #MainWindow.WindowDecorationMargins}">
+      <DockPanel Background="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" LastChildFill="True" Margin="{Binding #MainWindow.WindowDecorationMargin}">
         <Menu Name="MainMenu" DockPanel.Dock="Top">
           <MenuItem Header="File">
             <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
