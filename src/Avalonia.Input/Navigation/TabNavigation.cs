@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,7 +77,8 @@ namespace Avalonia.Input.Navigation
         /// <param name="element">The element.</param>
         /// <param name="direction">The tab direction. Must be Next or Previous.</param>
         /// <returns>The element's focusable descendants.</returns>
-        private static IEnumerable<IInputElement> GetFocusableDescendants(IInputElement element, NavigationDirection direction)
+        private static IEnumerable<IInputElement> GetFocusableDescendants(IInputElement element,
+            NavigationDirection direction)
         {
             var mode = KeyboardNavigation.GetTabNavigation((InputElement)element);
 
@@ -116,7 +114,7 @@ namespace Avalonia.Input.Navigation
                 }
                 else
                 {
-                    if (child.CanFocus())
+                    if (child.CanFocus() && KeyboardNavigation.GetIsTabStop((InputElement)child))
                     {
                         yield return child;
                     }
@@ -125,7 +123,10 @@ namespace Avalonia.Input.Navigation
                     {
                         foreach (var descendant in GetFocusableDescendants(child, direction))
                         {
-                            yield return descendant;
+                            if (KeyboardNavigation.GetIsTabStop((InputElement)descendant))
+                            {
+                                yield return descendant;
+                            }
                         }
                     }
                 }
@@ -170,7 +171,9 @@ namespace Avalonia.Input.Navigation
                     {
                         element = navigable.GetControl(direction, element, false);
 
-                        if (element != null && element.CanFocus())
+                        if (element != null && 
+                            element.CanFocus() &&
+                            KeyboardNavigation.GetIsTabStop((InputElement) element))
                         {
                             break;
                         }
@@ -236,26 +239,22 @@ namespace Avalonia.Input.Navigation
                         return customNext.next;
                     }
 
-                    if (sibling.CanFocus())
+                    if (sibling.CanFocus() && KeyboardNavigation.GetIsTabStop((InputElement) sibling))
                     {
                         return sibling;
                     }
-                    else
+
+                    next = direction == NavigationDirection.Next ?
+                        GetFocusableDescendants(sibling, direction).FirstOrDefault() :
+                        GetFocusableDescendants(sibling, direction).LastOrDefault();
+
+                    if (next != null)
                     {
-                        next = direction == NavigationDirection.Next ?
-                            GetFocusableDescendants(sibling, direction).FirstOrDefault() :
-                            GetFocusableDescendants(sibling, direction).LastOrDefault();
-                        if(next != null)
-                        {
-                            return next;
-                        }
+                        return next;
                     }
                 }
 
-                if (next == null)
-                {
-                    next = GetFirstInNextContainer(element, parent, direction);
-                }
+                next = GetFirstInNextContainer(element, parent, direction);
             }
             else
             {
@@ -267,7 +266,8 @@ namespace Avalonia.Input.Navigation
             return next;
         }
 
-        private static (bool handled, IInputElement next) GetCustomNext(IInputElement element, NavigationDirection direction)
+        private static (bool handled, IInputElement next) GetCustomNext(IInputElement element,
+            NavigationDirection direction)
         {
             if (element is ICustomKeyboardNavigation custom)
             {

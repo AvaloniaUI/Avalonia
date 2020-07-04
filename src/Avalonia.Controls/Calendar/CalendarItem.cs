@@ -268,10 +268,8 @@ namespace Avalonia.Controls.Primitives
         /// <see cref="T:System.Windows.Controls.Primitives.CalendarItem" />
         /// when a new template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-            
             HeaderButton = e.NameScope.Find<Button>(PART_ElementHeaderButton);
             PreviousButton = e.NameScope.Find<Button>(PART_ElementPreviousButton);
             NextButton = e.NameScope.Find<Button>(PART_ElementNextButton);
@@ -911,7 +909,7 @@ namespace Avalonia.Controls.Primitives
                         case CalendarSelectionMode.SingleDate:
                             {
                                 DateTime selectedDate = (DateTime)b.DataContext;
-                                Owner.DatePickerDisplayDateFlag = true;
+                                Owner.CalendarDatePickerDisplayDateFlag = true;
                                 if (Owner.SelectedDates.Count == 0)
                                 {
                                     Owner.SelectedDates.Add(selectedDate);
@@ -943,8 +941,8 @@ namespace Avalonia.Controls.Primitives
             {
                 CalendarDayButton b = (CalendarDayButton)sender;
                 // The button is in Pressed state. Change the state to normal.
-                if (e.Device.Captured == b)
-                    e.Device.Capture(null);
+                if (e.Pointer.Captured == b)
+                    e.Pointer.Capture(null);
                 _lastCalendarDayButton = b;
             }
         }
@@ -958,7 +956,7 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 bool ctrl, shift;
-                CalendarExtensions.GetMetaKeyState(e.InputModifiers, out ctrl, out shift);
+                CalendarExtensions.GetMetaKeyState(e.KeyModifiers, out ctrl, out shift);
                 CalendarDayButton b = sender as CalendarDayButton;
 
                 if (b != null)
@@ -983,7 +981,7 @@ namespace Avalonia.Controls.Primitives
                                 }
                             case CalendarSelectionMode.SingleDate:
                                 {
-                                    Owner.DatePickerDisplayDateFlag = true;
+                                    Owner.CalendarDatePickerDisplayDateFlag = true;
                                     if (Owner.SelectedDates.Count == 0)
                                     {
                                         Owner.SelectedDates.Add(selectedDate);
@@ -1213,8 +1211,8 @@ namespace Avalonia.Controls.Primitives
             {
                 CalendarButton b = (CalendarButton)sender;
                 // The button is in Pressed state. Change the state to normal.
-                if (e.Device.Captured == b)
-                    e.Device.Capture(null);
+                if (e.Pointer.Captured == b)
+                    e.Pointer.Capture(null);
                 //b.ReleaseMouseCapture();
 
                 _lastCalendarButton = b;
@@ -1224,7 +1222,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_lastCalendarDayButton != null)
             {
-                e.Device.Capture(_lastCalendarDayButton);
+                e.Pointer.Capture(_lastCalendarDayButton);
             }
         }
 
@@ -1232,7 +1230,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_lastCalendarButton != null)
             {
-                e.Device.Capture(_lastCalendarButton);
+                e.Pointer.Capture(_lastCalendarButton);
             }
         }
         

@@ -1,0 +1,24 @@
+<Style xmlns="https://github.com/avaloniaui"
+       Selector="TreeView">
+  <Setter Property="Background" Value="Transparent" />
+  <Setter Property="BorderBrush" Value="Transparent" />
+  <Setter Property="BorderThickness" Value="0" />
+  <Setter Property="Padding" Value="0" />
+  <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+  <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}">
+        <ScrollViewer Background="{TemplateBinding Background}"
+                      HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                      VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+          <ItemsPresenter Name="PART_ItemsPresenter"
+                          Items="{TemplateBinding Items}"
+                          ItemsPanel="{TemplateBinding ItemsPanel}"
+                          Margin="{TemplateBinding Padding}" />
+        </ScrollViewer>
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</Style>

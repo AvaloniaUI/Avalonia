@@ -68,25 +68,11 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DataGridRowGroupHeader, double>(
                 nameof(SublevelIndent),
                 defaultValue: DataGrid.DATAGRID_defaultRowGroupSublevelIndent,
-                validate: ValidateSublevelIndent);
+                validate: IsValidSublevelIndent);
 
-        private static double ValidateSublevelIndent(DataGridRowGroupHeader header, double value)
+        private static bool IsValidSublevelIndent(double value)
         {
-            // We don't need to revert to the old value if our input is bad because we never read this property value
-            if (double.IsNaN(value))
-            {
-                throw DataGridError.DataGrid.ValueCannotBeSetToNAN(nameof(SublevelIndent));
-            }
-            else if (double.IsInfinity(value))
-            {
-                throw DataGridError.DataGrid.ValueCannotBeSetToInfinity(nameof(SublevelIndent));
-            }
-            else if (value < 0)
-            {
-                throw DataGridError.DataGrid.ValueMustBeGreaterThanOrEqualTo(nameof(value), nameof(SublevelIndent), 0);
-            }
-
-            return value;
+            return !double.IsNaN(value) && !double.IsInfinity(value) && value >= 0;
         }
 
         /// <summary>
@@ -182,7 +168,7 @@ namespace Avalonia.Controls
 
         private IDisposable _expanderButtonSubscription;
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _rootElement = e.NameScope.Find<Panel>(DataGridRow.DATAGRIDROW_elementRoot);
 
@@ -213,8 +199,6 @@ namespace Avalonia.Controls
             _itemCountElement = e.NameScope.Find<TextBlock>(DATAGRIDROWGROUPHEADER_itemCountElement);
             _propertyNameElement = e.NameScope.Find<TextBlock>(DATAGRIDROWGROUPHEADER_propertyNameElement);
             UpdateTitleElements();
-
-            base.OnTemplateApplied(e);
         }
 
         internal void ApplyHeaderStatus()
@@ -291,7 +275,7 @@ namespace Avalonia.Controls
         //TODO TabStop
         private void DataGridRowGroupHeader_PointerPressed(PointerPressedEventArgs e)
         {
-            if (OwningGrid != null && e.MouseButton == MouseButton.Left)
+            if (OwningGrid != null && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 if (OwningGrid.IsDoubleClickRecordsClickOnCall(this) && !e.Handled)
                 {

@@ -21,6 +21,8 @@ namespace Avalonia.Data
         /// </summary>
         public BindingBase()
         {
+            FallbackValue = AvaloniaProperty.UnsetValue;
+            TargetNullValue = AvaloniaProperty.UnsetValue;
         }
 
         /// <summary>
@@ -28,8 +30,8 @@ namespace Avalonia.Data
         /// </summary>
         /// <param name="mode">The binding mode.</param>
         public BindingBase(BindingMode mode = BindingMode.Default)
+            :this()
         {
-            FallbackValue = AvaloniaProperty.UnsetValue;
             Mode = mode;
         }
 
@@ -47,6 +49,11 @@ namespace Avalonia.Data
         /// Gets or sets the value to use when the binding is unable to produce a value.
         /// </summary>
         public object FallbackValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value to use when the binding result is null.
+        /// </summary>
+        public object TargetNullValue { get; set; }
 
         /// <summary>
         /// Gets or sets the binding mode.
@@ -114,6 +121,7 @@ namespace Avalonia.Data
                 observer,
                 targetType,
                 fallback,
+                TargetNullValue,
                 converter ?? DefaultValueConverter.Instance,
                 ConverterParameter,
                 Priority);

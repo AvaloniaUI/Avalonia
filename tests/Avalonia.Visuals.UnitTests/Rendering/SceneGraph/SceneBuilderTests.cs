@@ -63,8 +63,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Same(textBlock, textBlockNode.Visual);
                 Assert.Equal(1, textBlockNode.DrawOperations.Count);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
-                Assert.NotNull(textNode.Text);
+                var textNode = (GlyphRunNode)textBlockNode.DrawOperations[0].Item;
+                Assert.NotNull(textNode.GlyphRun);
             }
         }
 
@@ -360,7 +360,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var result = initial.CloneScene();
                 sceneBuilder.Update(result, border);
-                
+
                 var borderNode = (VisualNode)result.Root.Children[0];
                 Assert.Same(border, borderNode.Visual);
 
@@ -371,7 +371,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 var textBlockNode = (VisualNode)borderNode.Children[0];
                 Assert.Same(textBlock, textBlockNode.Visual);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
+                var textNode = (GlyphRunNode)textBlockNode.DrawOperations[0].Item;
                 Assert.Same(initialTextNode.Item, textNode);
             }
         }
@@ -578,6 +578,58 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void Should_Not_Dispose_Active_VisualNode_When_Control_Reparented_And_Child_Made_Invisible()
+        {
+            // Issue #3115
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                StackPanel panel;
+                Border border1;
+                Border border2;
+                var tree = new TestRoot
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = panel = new StackPanel
+                    {
+                        Children =
+                        {
+                            (border1 = new Border
+                            {
+                                Background = Brushes.Red,
+                            }),
+                            (border2 = new Border
+                            {
+                                Background = Brushes.Green,
+                            }),
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var decorator = new Decorator();
+                tree.Child = null;
+                decorator.Child = panel;
+                tree.Child = decorator;
+                border1.IsVisible = false;
+
+                scene = scene.CloneScene();
+                sceneBuilder.Update(scene, decorator);
+
+                var panelNode = (VisualNode)scene.FindNode(panel);
+                Assert.Equal(2, panelNode.Children.Count);
+                Assert.False(panelNode.Children[0].Disposed);
+                Assert.False(panelNode.Children[1].Disposed);
+            }
+        }
+
+        [Fact]
         public void Should_Update_ClipBounds_For_Negative_Margin()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -601,7 +653,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
@@ -644,7 +696,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
@@ -692,7 +744,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
@@ -758,7 +810,9 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 Assert.Equal(expected, scene.Layers[tree].Dirty.ToArray());
-                Assert.Equal(expected, scene.Layers[border].Dirty.ToArray());
+                
+                // Layers are disabled. See #2244
+                // Assert.Equal(expected, scene.Layers[border].Dirty.ToArray());
             }
         }
 
@@ -828,15 +882,23 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>(
+                    x => x.PixelSize == new PixelSize(100, 100) &&
+                    x.Dpi == new Vector(96, 96)));
+
                 Image img;
                 var tree = new TestRoot
                 {
                     Child = img = new Image
                     {
-                        Source = new Bitmap(bitmap)
+                        Source = new Bitmap(bitmap),
+                        Height = 100,
+                        Width = 100
                     }
                 };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(new Size(100, 100)));
 
                 Assert.Equal(2, bitmap.RefCount);
                 IRef<IDrawOperation> operation;
@@ -860,15 +922,23 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>(
+                    x => x.PixelSize == new PixelSize(100, 100) &&
+                    x.Dpi == new Vector(96, 96)));
+
                 Image img;
                 var tree = new TestRoot
                 {
                     Child = img = new Image
                     {
-                        Source = new Bitmap(bitmap)
+                        Source = new Bitmap(bitmap),
+                        Width = 100,
+                        Height = 100
                     }
                 };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(new Size(100, 100)));
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();

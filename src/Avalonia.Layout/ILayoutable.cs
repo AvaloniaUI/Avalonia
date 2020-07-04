@@ -1,7 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.VisualTree;
+
+#nullable enable
 
 namespace Avalonia.Layout
 {
@@ -112,5 +111,12 @@ namespace Avalonia.Layout
         /// </summary>
         /// <param name="control">The child control.</param>
         void ChildDesiredSizeChanged(ILayoutable control);
+
+        /// <summary>
+        /// Used by the <see cref="LayoutManager"/> to notify the control that its effective
+        /// viewport is changed.
+        /// </summary>
+        /// <param name="e">The viewport information.</param>
+        void EffectiveViewportChanged(EffectiveViewportChangedEventArgs e);
     }
 }

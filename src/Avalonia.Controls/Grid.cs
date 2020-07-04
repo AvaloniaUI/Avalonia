@@ -6,11 +6,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
-using Avalonia;
-using Avalonia.Collections;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
@@ -24,13 +23,14 @@ namespace Avalonia.Controls
     {
         static Grid()
         {
-            IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(DefinitionBase.OnIsSharedSizeScopePropertyChanged);
             ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
 
-            ColumnProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
-            ColumnSpanProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
-            RowProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
-            RowSpanProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
+            IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(DefinitionBase.OnIsSharedSizeScopePropertyChanged);
+            ColumnProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+            ColumnSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+            RowProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+            RowSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+
             AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
         }
 
@@ -177,6 +177,7 @@ namespace Avalonia.Controls
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.ColumnDefinitions = value;
                 _data.ColumnDefinitions.Parent = this;
+                InvalidateMeasure();
             }
         }
 
@@ -197,6 +198,7 @@ namespace Avalonia.Controls
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.RowDefinitions = value;
                 _data.RowDefinitions.Parent = this;
+                InvalidateMeasure();
             }
         }
 
@@ -566,6 +568,15 @@ namespace Avalonia.Controls
                 ArrangeOverrideInProgress = false;
             }
             return (arrangeSize);
+        }
+
+        /// <summary>
+        /// <see cref="Panel.ChildrenChanged"/>
+        /// </summary>
+        protected override void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            CellsStructureDirty = true;
+            base.ChildrenChanged(sender, e);
         }
 
         /// <summary>
@@ -1215,7 +1226,7 @@ namespace Avalonia.Controls
             Debug.Assert(1 < count && 0 <= start && (start + count) <= definitions.Count);
 
             //  avoid processing when asked to distribute "0"
-            if (!_IsZero(requestedSize))
+            if (!MathUtilities.IsZero(requestedSize))
             {
                 DefinitionBase[] tempDefinitions = TempDefinitions; //  temp array used to remember definitions for sorting
                 int end = start + count;
@@ -1293,7 +1304,7 @@ namespace Avalonia.Controls
                         }
 
                         //  sanity check: requested size must all be distributed
-                        Debug.Assert(_IsZero(sizeToDistribute));
+                        Debug.Assert(MathUtilities.IsZero(sizeToDistribute));
                     }
                     else if (requestedSize <= rangeMaxSize)
                     {
@@ -1333,7 +1344,7 @@ namespace Avalonia.Controls
                         }
 
                         //  sanity check: requested size must all be distributed
-                        Debug.Assert(_IsZero(sizeToDistribute));
+                        Debug.Assert(MathUtilities.IsZero(sizeToDistribute));
                     }
                     else
                     {
@@ -1345,7 +1356,7 @@ namespace Avalonia.Controls
                         double equalSize = requestedSize / count;
 
                         if (equalSize < maxMaxSize
-                            && !_AreClose(equalSize, maxMaxSize))
+                            && !MathUtilities.AreClose(equalSize, maxMaxSize))
                         {
                             //  equi-size is less than maximum of maxSizes.
                             //  in this case distribute so that smaller definitions grow faster than
@@ -2090,7 +2101,7 @@ namespace Avalonia.Controls
                 for (int i = 0; i < definitions.Count; ++i)
                 {
                     DefinitionBase def = definitions[i];
-                    double roundedSize = MathUtilities.RoundLayoutValue(def.SizeCache, dpi);
+                    double roundedSize = LayoutHelper.RoundLayoutValue(def.SizeCache, dpi);
                     roundingErrors[i] = (roundedSize - def.SizeCache);
                     def.SizeCache = roundedSize;
                     roundedTakenSize += roundedSize;
@@ -2138,7 +2149,7 @@ namespace Avalonia.Controls
                 // and precision of floating-point computation.  (However, the resulting
                 // display is subject to anti-aliasing problems.   TANSTAAFL.)
 
-                if (!_AreClose(roundedTakenSize, finalSize))
+                if (!MathUtilities.AreClose(roundedTakenSize, finalSize))
                 {
                     // Compute deltas
                     for (int i = 0; i < definitions.Count; ++i)
@@ -2155,7 +2166,7 @@ namespace Avalonia.Controls
                     if (roundedTakenSize > finalSize)
                     {
                         int i = definitions.Count - 1;
-                        while ((adjustedSize > finalSize && !_AreClose(adjustedSize, finalSize)) && i >= 0)
+                        while ((adjustedSize > finalSize && !MathUtilities.AreClose(adjustedSize, finalSize)) && i >= 0)
                         {
                             DefinitionBase definition = definitions[definitionIndices[i]];
                             double final = definition.SizeCache - dpiIncrement;
@@ -2171,7 +2182,7 @@ namespace Avalonia.Controls
                     else if (roundedTakenSize < finalSize)
                     {
                         int i = 0;
-                        while ((adjustedSize < finalSize && !_AreClose(adjustedSize, finalSize)) && i < definitions.Count)
+                        while ((adjustedSize < finalSize && !MathUtilities.AreClose(adjustedSize, finalSize)) && i < definitions.Count)
                         {
                             DefinitionBase definition = definitions[definitionIndices[i]];
                             double final = definition.SizeCache + dpiIncrement;
@@ -2583,27 +2594,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// fp version of <c>d == 0</c>.
-        /// </summary>
-        /// <param name="d">Value to check.</param>
-        /// <returns><c>true</c> if d == 0.</returns>
-        private static bool _IsZero(double d)
-        {
-            return (Math.Abs(d) < double.Epsilon);
-        }
-
-        /// <summary>
-        /// fp version of <c>d1 == d2</c>
-        /// </summary>
-        /// <param name="d1">First value to compare</param>
-        /// <param name="d2">Second value to compare</param>
-        /// <returns><c>true</c> if d1 == d2</returns>
-        private static bool _AreClose(double d1, double d2)
-        {
-            return (Math.Abs(d1 - d2) < double.Epsilon);
-        }
-
-        /// <summary>
         /// Returns reference to extended data bag.
         /// </summary>
         private ExtendedData ExtData
@@ -2728,11 +2718,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "Column",
                 defaultValue: 0,
-                validate: (_, v) =>
-                {
-                    if (v >= 0) return v;
-                    else throw new ArgumentException("Invalid Grid.Column value.");
-                });
+                validate: v => v >= 0);
 
         /// <summary>
         /// Row property. This is an attached property.
@@ -2749,11 +2735,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "Row",
                 defaultValue: 0,
-                validate: (_, v) =>
-                {
-                    if (v >= 0) return v;
-                    else throw new ArgumentException("Invalid Grid.Row value.");
-                });
+                validate: v => v >= 0);
 
         /// <summary>
         /// ColumnSpan property. This is an attached property.
@@ -2769,11 +2751,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "ColumnSpan",
                 defaultValue: 1,
-                validate: (_, v) =>
-                {
-                    if (v >= 1) return v;
-                    else throw new ArgumentException("Invalid Grid.ColumnSpan value.");
-                });
+                validate: v => v >= 0);
 
         /// <summary>
         /// RowSpan property. This is an attached property.
@@ -2789,11 +2767,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "RowSpan",
                 defaultValue: 1,
-                validate: (_, v) =>
-                {
-                    if (v >= 1) return v;
-                    else throw new ArgumentException("Invalid Grid.RowSpan value.");
-                });
+                validate: v => v >= 0);
 
         /// <summary>
         /// IsSharedSizeScope property marks scoping element for shared size.

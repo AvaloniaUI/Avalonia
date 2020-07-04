@@ -1,16 +1,17 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using Avalonia.Media.Fonts;
-using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
-    public class FontFamily
+    public sealed class FontFamily
     {
+        public const string DefaultFontFamilyName = "$Default";
+
+        static FontFamily()
+        {
+            Default = new FontFamily(DefaultFontFamilyName);
+        }
+
         /// <inheritdoc />
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Media.FontFamily" /> class.
@@ -30,9 +31,7 @@ namespace Avalonia.Media
         {
             if (string.IsNullOrEmpty(name))
             {
-                FamilyNames = new FamilyNameCollection(string.Empty);
-
-                return;
+                throw new ArgumentNullException(nameof(name));
             }
 
             var fontFamilySegment = GetFontFamilyIdentifier(name);
@@ -53,13 +52,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Represents the default font family
         /// </summary>
-        public static FontFamily Default => new FontFamily(string.Empty);
-
-        /// <summary>
-        /// Represents all font families in the system. This can be an expensive call depending on platform implementation.
-        /// </summary>
-        public static IEnumerable<FontFamily> SystemFontFamilies =>
-            AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().InstalledFontNames.Select(name => new FontFamily(name));
+        public static FontFamily Default { get; }
 
         /// <summary>
         /// Gets the primary family name of the font family.
@@ -81,9 +74,15 @@ namespace Avalonia.Media
         /// Gets the key for associated assets.
         /// </summary>
         /// <value>
-        /// The family familyNames.
+        /// The family key.
         /// </value>
+        /// <remarks>Key is only used for custom fonts.</remarks>
         public FontFamilyKey Key { get; }
+
+        /// <summary>
+        /// Returns <c>True</c> if this instance is the system's default.
+        /// </summary>
+        public bool IsDefault => Name.Equals(DefaultFontFamilyName);
 
         /// <summary>
         /// Implicit conversion of string to FontFamily
@@ -179,29 +178,40 @@ namespace Avalonia.Media
         {
             unchecked
             {
-                var hash = (int)2186146271;
-
-                hash = (hash * 15768619) ^ FamilyNames.GetHashCode();
-
-                if (Key != null)
-                {
-                    hash = (hash * 15768619) ^ Key.GetHashCode();
-                }
-
-                return hash;
+                return ((FamilyNames != null ? FamilyNames.GetHashCode() : 0) * 397) ^ (Key != null ? Key.GetHashCode() : 0);
             }
+        }
+
+        public static bool operator !=(FontFamily a, FontFamily b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator ==(FontFamily a, FontFamily b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+
+            return !(a is null) && a.Equals(b);
         }
 
         public override bool Equals(object obj)
         {
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
             if (!(obj is FontFamily other))
             {
                 return false;
             }
 
-            if (Key != null)
+            if (!Equals(Key, other.Key))
             {
-                return other.FamilyNames.Equals(FamilyNames) && other.Key.Equals(Key);
+                return false;
             }
 
             return other.FamilyNames.Equals(FamilyNames);

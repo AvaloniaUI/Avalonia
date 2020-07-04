@@ -1,8 +1,8 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.Collections.Generic;
 using Avalonia.Collections;
+
+#nullable enable
 
 namespace Avalonia.Styling
 {
@@ -11,11 +11,6 @@ namespace Avalonia.Styling
     /// </summary>
     public interface IStyleable : IAvaloniaObject, INamed
     {
-        /// <summary>
-        /// Signaled when the control's style should be removed.
-        /// </summary>
-        IObservable<IStyleable> StyleDetach { get; }
-
         /// <summary>
         /// Gets the list of classes for the control.
         /// </summary>
@@ -29,6 +24,27 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets the template parent of this element if the control comes from a template.
         /// </summary>
-        ITemplatedControl TemplatedParent { get; }
+        ITemplatedControl? TemplatedParent { get; }
+
+        /// <summary>
+        /// Notifies the element that a style has been applied.
+        /// </summary>
+        /// <param name="instance">The style instance.</param>
+        void StyleApplied(IStyleInstance instance);
+
+        /// <summary>
+        /// Detaches all styles applied to the element.
+        /// </summary>
+        void DetachStyles();
+
+        /// <summary>
+        /// Detaches a collection of styles, if applied to the element.
+        /// </summary>
+        void DetachStyles(IReadOnlyList<IStyle> styles);
+
+        /// <summary>
+        /// Detaches all styles from the element and queues a restyle.
+        /// </summary>
+        void InvalidateStyles();
     }
 }

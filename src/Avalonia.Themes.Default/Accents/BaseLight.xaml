@@ -12,9 +12,14 @@
         <Color x:Key="ThemeBorderLowColor">#FFAAAAAA</Color>
         <Color x:Key="ThemeBorderMidColor">#FF888888</Color>
         <Color x:Key="ThemeBorderHighColor">#FF333333</Color>
-        <Color x:Key="ThemeControlLowColor">#FFFFFFFF</Color>
-        <Color x:Key="ThemeControlMidColor">#FFAAAAAA</Color>
-        <Color x:Key="ThemeControlHighColor">#FF888888</Color>
+      
+      
+        <Color x:Key="ThemeControlLowColor">#FF868999</Color>
+        <Color x:Key="ThemeControlMidColor">#FFF5F5F5</Color>
+        <Color x:Key="ThemeControlMidHighColor">#FFC2C3C9</Color>
+        <Color x:Key="ThemeControlHighColor">#FF686868</Color>
+        <Color x:Key="ThemeControlVeryHighColor">#FF5B5B5B</Color>
+
         <Color x:Key="ThemeControlHighlightLowColor">#FFF0F0F0</Color>
         <Color x:Key="ThemeControlHighlightMidColor">#FFD0D0D0</Color>
         <Color x:Key="ThemeControlHighlightHighColor">#FF808080</Color>
@@ -32,7 +37,9 @@
         <SolidColorBrush x:Key="ThemeBorderHighBrush" Color="{DynamicResource ThemeBorderHighColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeControlLowBrush" Color="{DynamicResource ThemeControlLowColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeControlMidBrush" Color="{DynamicResource ThemeControlMidColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeControlMidHighBrush" Color="{DynamicResource ThemeControlMidHighColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeControlHighBrush" Color="{DynamicResource ThemeControlHighColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeControlVeryHighBrush" Color="{DynamicResource ThemeControlVeryHighColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeControlHighlightLowBrush" Color="{DynamicResource ThemeControlHighlightLowColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeControlHighlightMidBrush" Color="{DynamicResource ThemeControlHighlightMidColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ThemeControlHighlightHighBrush" Color="{DynamicResource ThemeControlHighlightHighColor}"></SolidColorBrush>
@@ -61,6 +68,7 @@
         <sys:Double x:Key="FontSizeNormal">12</sys:Double>
         <sys:Double x:Key="FontSizeLarge">16</sys:Double>
 
-        <sys:Double x:Key="ScrollBarThickness">10</sys:Double>
+        <sys:Double x:Key="ScrollBarThickness">18</sys:Double>
+        <sys:Double x:Key="ScrollBarThumbThickness">8</sys:Double>
     </Style.Resources>
 </Style>

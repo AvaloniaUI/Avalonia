@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
@@ -125,9 +122,8 @@ namespace Avalonia.Controls
             });
             
             // Copy-pasted because we can't call extension methods due to generic constraints
-            var lifetime = new ClassicDesktopStyleApplicationLifetime(Instance) {ShutdownMode = ShutdownMode.OnMainWindowClose};
-            Instance.ApplicationLifetime = lifetime;
-            SetupWithoutStarting();
+            var lifetime = new ClassicDesktopStyleApplicationLifetime() {ShutdownMode = ShutdownMode.OnMainWindowClose};
+            SetupWithLifetime(lifetime);
             lifetime.Start(Array.Empty<string>());
         }
 

@@ -1,6 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
+﻿using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -21,23 +19,23 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="rect">The rectangle to draw.</param>
-        /// <param name="cornerRadius">The rectangle corner radius.</param>
+        /// <param name="boxShadow">The box shadow parameters</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public RectangleNode(
             Matrix transform,
             IBrush brush,
             IPen pen,
-            Rect rect,
-            float cornerRadius,
+            RoundedRect rect,
+            BoxShadows boxShadows,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(rect, transform, pen)
+            : base(boxShadows.TransformBounds(rect.Rect).Inflate((pen?.Thickness ?? 0) / 2), transform)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Rect = rect;
-            CornerRadius = cornerRadius;
             ChildScenes = childScenes;
+            BoxShadows = boxShadows;
         }
 
         /// <summary>
@@ -58,12 +56,12 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the rectangle to draw.
         /// </summary>
-        public Rect Rect { get; }
-
+        public RoundedRect Rect { get; }
+        
         /// <summary>
-        /// Gets the rectangle corner radius.
+        /// The parameters for the box-shadow effect
         /// </summary>
-        public float CornerRadius { get; }
+        public BoxShadows BoxShadows { get; }
 
         /// <inheritdoc/>
         public override IDictionary<IVisual, Scene> ChildScenes { get; }
@@ -75,19 +73,19 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill of the other draw operation.</param>
         /// <param name="pen">The stroke of the other draw operation.</param>
         /// <param name="rect">The rectangle of the other draw operation.</param>
-        /// <param name="cornerRadius">The rectangle corner radius of the other draw operation.</param>
+        /// <param name="boxShadow">The box shadow parameters of the other draw operation</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, IPen pen, Rect rect, float cornerRadius)
+        public bool Equals(Matrix transform, IBrush brush, IPen pen, RoundedRect rect, BoxShadows boxShadows)
         {
             return transform == Transform &&
-                Equals(brush, Brush) &&
-                Equals(Pen, pen) &&
-                rect == Rect &&
-                cornerRadius == CornerRadius;
+                   Equals(brush, Brush) &&
+                   Equals(Pen, pen) &&
+                   Media.BoxShadows.Equals(BoxShadows, boxShadows) &&
+                   rect.Equals(Rect);
         }
 
         /// <inheritdoc/>
@@ -95,15 +93,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             context.Transform = Transform;
 
-            if (Brush != null)
-            {
-                context.FillRectangle(Brush, Rect, CornerRadius);
-            }
-
-            if (Pen != null)
-            {
-                context.DrawRectangle(Pen, Rect, CornerRadius);
-            }
+            context.DrawRectangle(Brush, Pen, Rect, BoxShadows);
         }
 
         /// <inheritdoc/>
@@ -116,13 +106,13 @@ namespace Avalonia.Rendering.SceneGraph
 
                 if (Brush != null)
                 {
-                    var rect = Rect.Inflate((Pen?.Thickness / 2) ?? 0);
+                    var rect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
                     return rect.Contains(p);
                 }
                 else
                 {
-                    var borderRect = Rect.Inflate((Pen?.Thickness / 2) ?? 0);
-                    var emptyRect = Rect.Deflate((Pen?.Thickness / 2) ?? 0);
+                    var borderRect = Rect.Rect.Inflate((Pen?.Thickness / 2) ?? 0);
+                    var emptyRect = Rect.Rect.Deflate((Pen?.Thickness / 2) ?? 0);
                     return borderRect.Contains(p) && !emptyRect.Contains(p);
                 }
             }

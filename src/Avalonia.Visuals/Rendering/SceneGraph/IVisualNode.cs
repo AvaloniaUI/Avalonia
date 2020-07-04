@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -28,6 +25,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the transform for the node from global to control coordinates.
         /// </summary>
         Matrix Transform { get; }
+
+        /// <summary>
+        /// Gets the corner radius of visual. Contents are clipped to this radius.
+        /// </summary>
+        CornerRadius ClipToBoundsRadius { get; }
 
         /// <summary>
         /// Gets the bounds of the node's geometry in global coordinates.

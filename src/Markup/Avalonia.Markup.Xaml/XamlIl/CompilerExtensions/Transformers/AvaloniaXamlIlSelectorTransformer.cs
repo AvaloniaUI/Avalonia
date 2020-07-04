@@ -104,6 +104,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     }
                 }
 
+                if (results != null && result != null)
+                {
+                    results.Add(result);
+                }
+
                 return results ?? result;
             }
 
@@ -158,9 +163,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         protected void EmitCall(XamlIlEmitContext context, IXamlIlEmitter codeGen, Func<IXamlIlMethod, bool> method)
         {
             var selectors = context.Configuration.TypeSystem.GetType("Avalonia.Styling.Selectors");
-            var found = selectors.FindMethod(m => m.IsStatic && m.Parameters.Count > 0 &&
-                                      m.Parameters[0].FullName == "Avalonia.Styling.Selector"
-                                      && method(m));
+            var found = selectors.FindMethod(m => m.IsStatic && m.Parameters.Count > 0 && method(m));
             codeGen.EmitCall(found);
         }
     }
@@ -308,8 +311,35 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             _selectors.Add(node);
         }
         
-        //TODO: actually find the type
-        public override IXamlIlType TargetType => _selectors.FirstOrDefault()?.TargetType;
+        public override IXamlIlType TargetType
+        {
+            get
+            {
+                IXamlIlType result = null;
+
+                foreach (var selector in _selectors)
+                {
+                    if (selector.TargetType == null)
+                    {
+                        return null;
+                    }
+                    else if (result == null)
+                    {
+                        result = selector.TargetType;
+                    }
+                    else
+                    {
+                        while (!result.IsAssignableFrom(selector.TargetType))
+                        {
+                            result = result.BaseType;
+                        }
+                    }
+                }
+
+                return result;
+            }
+        }
+
         protected override void DoEmit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
         {
             if (_selectors.Count == 0)

@@ -19,25 +19,28 @@ namespace Avalonia.X11
     class AvaloniaX11Platform : IWindowingPlatform
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
-        private Lazy<MouseDevice> _mouseDevice = new Lazy<MouseDevice>(() => new MouseDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
-        public MouseDevice MouseDevice => _mouseDevice.Value;
         public Dictionary<IntPtr, Action<XEvent>> Windows = new Dictionary<IntPtr, Action<XEvent>>();
         public XI2Manager XI2;
         public X11Info Info { get; private set; }
         public IX11Screens X11Screens { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
+        public IntPtr OrphanedWindow { get; private set; }
+        public X11Globals Globals { get; private set; }
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
             DeferredDisplay = XOpenDisplay(IntPtr.Zero);
+            OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
+                IntPtr.Zero);
             if (Display == IntPtr.Zero)
                 throw new Exception("XOpenDisplay failed");
             XError.Init();
             Info = new X11Info(Display, DeferredDisplay);
+            Globals = new X11Globals(this);
             //TODO: log
             if (options.UseDBusMenu)
                 DBusHelper.TryInitialize();
@@ -46,7 +49,7 @@ namespace Avalonia.X11
                 .Bind<IPlatformThreadingInterface>().ToConstant(new X11PlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(InputModifiers.Control))
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<IStandardCursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
@@ -69,7 +72,7 @@ namespace Avalonia.X11
                 if (options.UseEGL)
                     EglGlPlatformFeature.TryInitialize();
                 else
-                    GlxGlPlatformFeature.TryInitialize(Info);
+                    GlxGlPlatformFeature.TryInitialize(Info, Options.GlProfiles);
             }
 
             
@@ -82,7 +85,7 @@ namespace Avalonia.X11
             return new X11Window(this, null);
         }
 
-        public IEmbeddableWindowImpl CreateEmbeddableWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotSupportedException();
         }
@@ -98,6 +101,17 @@ namespace Avalonia
         public bool UseGpu { get; set; } = true;
         public bool OverlayPopups { get; set; }
         public bool UseDBusMenu { get; set; }
+        public bool UseDeferredRendering { get; set; } = true;
+
+        public List<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
+        {
+            new GlVersion(GlProfileType.OpenGL, 4, 0),
+            new GlVersion(GlProfileType.OpenGL, 3, 2),
+            new GlVersion(GlProfileType.OpenGL, 3, 0),
+            new GlVersion(GlProfileType.OpenGLES, 3, 2),
+            new GlVersion(GlProfileType.OpenGLES, 3, 0),
+            new GlVersion(GlProfileType.OpenGLES, 2, 0)
+        };
 
         public List<string> GlxRendererBlacklist { get; set; } = new List<string>
         {

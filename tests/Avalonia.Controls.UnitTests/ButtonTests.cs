@@ -9,6 +9,7 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
 using Xunit;
+using MouseButton = Avalonia.Input.MouseButton;
 
 namespace Avalonia.Controls.UnitTests
 {

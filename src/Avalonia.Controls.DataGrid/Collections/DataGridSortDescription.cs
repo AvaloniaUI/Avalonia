@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -238,7 +235,7 @@ namespace Avalonia.Collections
                 }
                 else
                 {
-                    return seq.ThenByDescending(o => GetValue(o), InternalComparer);
+                    return seq.ThenBy(o => GetValue(o), InternalComparer);
                 }
             }
 

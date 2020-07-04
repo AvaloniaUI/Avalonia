@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -235,7 +232,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 var scroll = (TestScroller)target.Parent;
 
                 scroll.Width = scroll.Height = 100;
-                scroll.LayoutManager.ExecuteInitialLayoutPass(scroll);
+                scroll.LayoutManager.ExecuteInitialLayoutPass();
 
                 // Ensure than an intermediate measure pass doesn't add more controls than it
                 // should. This can happen if target gets measured with Size.Infinity which
@@ -327,6 +324,11 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
         private class TestScroller : ScrollContentPresenter, IRenderRoot, ILayoutRoot
         {
+            public TestScroller()
+            {
+                LayoutManager = new LayoutManager(this);
+            }
+
             public IRenderer Renderer { get; }
             public Size ClientSize { get; }
             public double RenderScaling => 1;
@@ -335,7 +337,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             public double LayoutScaling => 1;
 
-            public ILayoutManager LayoutManager { get; } = new LayoutManager();
+            public ILayoutManager LayoutManager { get; }
 
             public IRenderTarget CreateRenderTarget() => throw new NotImplementedException();
             public void Invalidate(Rect rect) => throw new NotImplementedException();

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Specialized;
@@ -63,7 +60,7 @@ namespace Avalonia.Controls.Presenters
                 _itemsSubscription?.Dispose();
                 _itemsSubscription = null;
 
-                if (_createdPanel && value is INotifyCollectionChanged incc)
+                if (!IsHosted && _createdPanel && value is INotifyCollectionChanged incc)
                 {
                     _itemsSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
                 }
@@ -130,6 +127,8 @@ namespace Avalonia.Controls.Presenters
             private set;
         }
 
+        protected bool IsHosted => TemplatedParent is IItemsPresenterHost;
+
         /// <inheritdoc/>
         public override sealed void ApplyTemplate()
         {
@@ -140,8 +139,17 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public virtual void ScrollIntoView(object item)
+        public virtual void ScrollIntoView(int index)
         {
+        }
+
+        /// <inheritdoc/>
+        void IItemsPresenter.ItemsChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (Panel != null)
+            {
+                ItemsChanged(e);
+            }
         }
 
         /// <summary>
@@ -215,7 +223,7 @@ namespace Avalonia.Controls.Presenters
 
             _createdPanel = true;
 
-            if (_itemsSubscription == null && Items is INotifyCollectionChanged incc)
+            if (!IsHosted && _itemsSubscription == null && Items is INotifyCollectionChanged incc)
             {
                 _itemsSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
             }

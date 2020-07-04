@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -41,7 +38,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1
             {
-                Classes = new Classes { "foo" },
+                Classes = { "foo" },
             };
 
             var target = default(Selector).Not(x => x.Class("foo"));
@@ -56,7 +53,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1
             {
-                Classes = new Classes { "bar" },
+                Classes = { "bar" },
             };
 
             var target = default(Selector).Not(x => x.Class("foo"));
@@ -71,7 +68,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1
             {
-                Classes = new Classes { "bar" },
+                Classes = { "bar" },
             };
 
             var target = default(Selector).OfType<Control1>().Not(x => x.Class("foo"));
@@ -86,7 +83,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control2
             {
-                Classes = new Classes { "foo" },
+                Classes = { "foo" },
             };
 
             var target = default(Selector).OfType<Control1>().Not(x => x.Class("foo"));
@@ -103,11 +100,11 @@ namespace Avalonia.Styling.UnitTests
             Assert.Equal(typeof(Control1), target.TargetType);
         }
 
-        public class Control1 : TestControlBase
+        public class Control1 : Control
         {
         }
 
-        public class Control2 : TestControlBase
+        public class Control2 : Control
         {
         }
     }

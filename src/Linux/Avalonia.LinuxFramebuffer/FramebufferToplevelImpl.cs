@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.LinuxFramebuffer.Input;
@@ -9,7 +10,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    class FramebufferToplevelImpl : IEmbeddableWindowImpl, IScreenInfoProvider
+    class FramebufferToplevelImpl : ITopLevelImpl, IScreenInfoProvider
     {
         private readonly IOutputBackend _outputBackend;
         private readonly IInputBackend _inputBackend;
@@ -70,13 +71,16 @@ namespace Avalonia.LinuxFramebuffer
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
+
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
         public Action Closed { get; set; }
-        public event Action LostFocus
-        {
-            add {}
-            remove {}
-        }
+        public Action LostFocus { get; set; }
 
         public Size ScaledSize => _outputBackend.PixelSize.ToSize(Scaling);
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
     }
 }

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Primitives;
@@ -207,13 +204,15 @@ namespace Avalonia.Controls
         private static void IsOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var control = (Control)e.Sender;
+            var newValue = (bool)e.NewValue;
+            ToolTip toolTip;
 
-            if ((bool)e.NewValue)
+            if (newValue)
             {
                 var tip = GetTip(control);
                 if (tip == null) return;
 
-                var toolTip = control.GetValue(ToolTipProperty);
+                toolTip = control.GetValue(ToolTipProperty);
                 if (toolTip == null || (tip != toolTip && tip != toolTip.Content))
                 {
                     toolTip?.Close();
@@ -226,9 +225,11 @@ namespace Avalonia.Controls
             }
             else
             {
-                var toolTip = control.GetValue(ToolTipProperty);
+                toolTip = control.GetValue(ToolTipProperty);
                 toolTip?.Close();
             }
+
+            toolTip?.UpdatePseudoClasses(newValue);
         }
 
         private void Open(Control control)
@@ -241,6 +242,9 @@ namespace Avalonia.Controls
             
             _popup.ConfigurePosition(control, GetPlacement(control), 
                 new Point(GetHorizontalOffset(control), GetVerticalOffset(control)));
+
+            WindowManagerAddShadowHintChanged(_popup, false);
+
             _popup.Show();
         }
 
@@ -249,9 +253,22 @@ namespace Avalonia.Controls
             if (_popup != null)
             {
                 _popup.SetChild(null);
-                _popup.Hide();
+                _popup.Dispose();
                 _popup = null;
             }
+        }
+
+        private void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
+        {
+            if (host is PopupRoot pr)
+            {
+                pr.PlatformImpl.SetWindowManagerAddShadowHint(hint);
+            }
+        }
+
+        private void UpdatePseudoClasses(bool newValue)
+        {
+            PseudoClasses.Set(":open", newValue);
         }
     }
 }

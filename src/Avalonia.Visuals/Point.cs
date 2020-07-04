@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using Avalonia.Animation.Animators;
@@ -175,7 +172,7 @@ namespace Avalonia
         /// Parses a <see cref="Point"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <returns>The <see cref="Thickness"/>.</returns>
+        /// <returns>The <see cref="Point"/>.</returns>
         public static Point Parse(string s)
         {
             using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Point."))

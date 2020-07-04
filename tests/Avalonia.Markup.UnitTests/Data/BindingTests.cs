@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -406,6 +403,24 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public void Should_Return_TargetNullValue_When_Value_Is_Null()
+        {
+            var target = new TextBlock();
+            var source = new Source { Foo = null };
+
+            var binding = new Binding
+            {
+                Source = source,
+                Path = "Foo",
+                TargetNullValue = "(null)",
+            };
+
+            target.Bind(TextBlock.TextProperty, binding);
+
+            Assert.Equal("(null)", target.Text);
+        }
+
+        [Fact]
         public void Null_Path_Should_Bind_To_DataContext()
         {
             var target = new TextBlock { DataContext = "foo" };
@@ -780,7 +795,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public OldDataContextTest()
             {
-                Bind(BarProperty, this.GetObservable(FooProperty));
+                this.Bind(BarProperty, this.GetObservable(FooProperty));
             }
         }
 

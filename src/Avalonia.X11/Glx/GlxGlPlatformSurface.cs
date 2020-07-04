@@ -43,8 +43,8 @@ namespace Avalonia.X11.Glx
                 var l = _context.Lock();
                 try
                 {
-                    _context.MakeCurrent(_info.Handle);
-                    return new Session(_context, _info, l);
+
+                    return new Session(_context, _info, l, _context.MakeCurrent(_info.Handle));
                 }
                 catch
                 {
@@ -58,28 +58,31 @@ namespace Avalonia.X11.Glx
                 private readonly GlxContext _context;
                 private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
                 private IDisposable _lock;
+                private readonly IDisposable _clearContext;
+                public IGlContext Context => _context;
 
                 public Session(GlxContext context, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info,
-                    IDisposable @lock)
+                    IDisposable @lock, IDisposable clearContext)
                 {
                     _context = context;
                     _info = info;
                     _lock = @lock;
+                    _clearContext = clearContext;
                 }
 
                 public void Dispose()
                 {
-                    _context.Display.GlInterface.Flush();
+                    _context.GlInterface.Flush();
                     _context.Glx.WaitGL();
                     _context.Display.SwapBuffers(_info.Handle);
                     _context.Glx.WaitX();
-                    _context.Display.ClearContext();
+                    _clearContext.Dispose();
                     _lock.Dispose();
                 }
 
-                public IGlDisplay Display => _context.Display;
                 public PixelSize Size => _info.Size;
                 public double Scaling => _info.Scaling;
+                public bool IsYFlipped { get; }
             }
         }
     }

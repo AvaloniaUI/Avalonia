@@ -1,30 +1,22 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Metadata;
+
+#nullable enable
 
 namespace Avalonia.Styling
 {
     /// <summary>
     /// Defines a style.
     /// </summary>
-    public class Style : AvaloniaObject, IStyle, ISetStyleParent
+    public class Style : AvaloniaObject, IStyle, IResourceProvider
     {
-        private static Dictionary<IStyleable, CompositeDisposable> _applied =
-            new Dictionary<IStyleable, CompositeDisposable>();
-        private IResourceNode _parent;
-
-        private CompositeDisposable _subscriptions;
-
-        private IResourceDictionary _resources;
-
-        private IList<IAnimation> _animations;
+        private IResourceHost? _owner;
+        private IResourceDictionary? _resources;
+        private List<ISetter>? _setters;
+        private List<IAnimation>? _animations;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
@@ -37,13 +29,23 @@ namespace Avalonia.Styling
         /// Initializes a new instance of the <see cref="Style"/> class.
         /// </summary>
         /// <param name="selector">The style selector.</param>
-        public Style(Func<Selector, Selector> selector)
+        public Style(Func<Selector?, Selector> selector)
         {
             Selector = selector(null);
         }
 
-        /// <inheritdoc/>
-        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+        public IResourceHost? Owner
+        {
+            get => _owner;
+            private set
+            {
+                if (_owner != value)
+                {
+                    _owner = value;
+                    OwnerChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets a dictionary of style resources.
@@ -53,22 +55,20 @@ namespace Avalonia.Styling
             get => _resources ?? (Resources = new ResourceDictionary());
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
+                value = value ?? throw new ArgumentNullException(nameof(value));
 
-                var hadResources = false;
-
-                if (_resources != null)
-                {
-                    hadResources = _resources.Count > 0;
-                    _resources.ResourcesChanged -= ResourceDictionaryChanged;
-                }
+                var hadResources = _resources?.HasResources ?? false;
 
                 _resources = value;
-                _resources.ResourcesChanged += ResourceDictionaryChanged;
 
-                if (hadResources || _resources.Count > 0)
+                if (Owner is object)
                 {
-                    ((ISetStyleParent)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                    _resources.AddOwner(Owner);
+
+                    if (hadResources || _resources.HasResources)
+                    {
+                        Owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                    }
                 }
             }
         }
@@ -76,102 +76,42 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets or sets the style's selector.
         /// </summary>
-        public Selector Selector { get; set; }
+        public Selector? Selector { get; set; }
 
         /// <summary>
-        /// Gets or sets the style's setters.
+        /// Gets the style's setters.
         /// </summary>
         [Content]
-        public IList<ISetter> Setters { get; set; } = new List<ISetter>();
+        public IList<ISetter> Setters => _setters ??= new List<ISetter>();
 
-        public IList<IAnimation> Animations
+        /// <summary>
+        /// Gets the style's animations.
+        /// </summary>
+        public IList<IAnimation> Animations => _animations ??= new List<IAnimation>();
+
+        bool IResourceNode.HasResources => _resources?.Count > 0;
+        IReadOnlyList<IStyle> IStyle.Children => Array.Empty<IStyle>();
+
+        public event EventHandler? OwnerChanged;
+
+        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
         {
-            get
+            target = target ?? throw new ArgumentNullException(nameof(target));
+
+            var match = Selector is object ? Selector.Match(target) :
+                target == host ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
+
+            if (match.IsMatch && (_setters is object || _animations is object))
             {
-                return _animations ?? (_animations = new List<IAnimation>());
+                var instance = new StyleInstance(this, target, _setters, _animations, match.Activator);
+                target.StyleApplied(instance);
+                instance.Start();
             }
+
+            return match.Result;
         }
 
-        private CompositeDisposable Subscriptions
-        {
-            get
-            {
-                return _subscriptions ?? (_subscriptions = new CompositeDisposable(2));
-            }
-        }
-
-        /// <inheritdoc/>
-        IResourceNode IResourceNode.ResourceParent => _parent;
-
-        /// <inheritdoc/>
-        bool IResourceProvider.HasResources => _resources?.Count > 0;
-
-        /// <inheritdoc/>
-        public bool Attach(IStyleable control, IStyleHost container)
-        {
-            if (Selector != null)
-            {
-                var match = Selector.Match(control);
-
-                if (match.IsMatch)
-                {
-                    var controlSubscriptions = GetSubscriptions(control);
-                    
-                    var subs = new CompositeDisposable(Setters.Count + Animations.Count);
-
-                    if (control is Animatable animatable)
-                    {
-                        foreach (var animation in Animations)
-                        {
-                            var obsMatch = match.Activator;
-
-                            if (match.Result == SelectorMatchResult.AlwaysThisType ||
-                                match.Result == SelectorMatchResult.AlwaysThisInstance)
-                            {
-                                obsMatch = Observable.Return(true);
-                            }
-
-                            var sub = animation.Apply(animatable, null, obsMatch);
-                            subs.Add(sub);
-                        } 
-                    }
-
-                    foreach (var setter in Setters)
-                    {
-                        var sub = setter.Apply(this, control, match.Activator);
-                        subs.Add(sub);
-                    }
-
-                    controlSubscriptions.Add(subs);
-                    controlSubscriptions.Add(Disposable.Create(() => Subscriptions.Remove(subs)));
-                    Subscriptions.Add(subs);
-                }
-
-                return match.Result != SelectorMatchResult.NeverThisType;
-            }
-            else if (control == container)
-            {
-                var controlSubscriptions = GetSubscriptions(control);
-
-                var subs = new CompositeDisposable(Setters.Count);
-
-                foreach (var setter in Setters)
-                {
-                    var sub = setter.Apply(this, control, null);
-                    subs.Add(sub);
-                }
-
-                controlSubscriptions.Add(subs);
-                controlSubscriptions.Add(Disposable.Create(() => Subscriptions.Remove(subs)));
-                Subscriptions.Add(subs);
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc/>
-        public bool TryGetResource(object key, out object result)
+        public bool TryGetResource(object key, out object? result)
         {
             result = null;
             return _resources?.TryGetResource(key, out result) ?? false;
@@ -193,63 +133,28 @@ namespace Avalonia.Styling
             }
         }
 
-        /// <inheritdoc/>
-        void ISetStyleParent.NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        void IResourceProvider.AddOwner(IResourceHost owner)
         {
-            ResourcesChanged?.Invoke(this, e);
-        }
+            owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
-        /// <inheritdoc/>
-        void ISetStyleParent.SetParent(IResourceNode parent)
-        {
-            if (_parent != null && parent != null)
+            if (Owner != null)
             {
                 throw new InvalidOperationException("The Style already has a parent.");
             }
 
-            if (parent == null)
+            Owner = owner;
+            _resources?.AddOwner(owner);
+        }
+
+        void IResourceProvider.RemoveOwner(IResourceHost owner)
+        {
+            owner = owner ?? throw new ArgumentNullException(nameof(owner));
+
+            if (Owner == owner)
             {
-                Detach();
+                Owner = null;
+                _resources?.RemoveOwner(owner);
             }
-
-            _parent = parent;
-        }
-
-        public void Detach()
-        {
-            _subscriptions?.Dispose();
-            _subscriptions = null;
-        }
-
-        private static CompositeDisposable GetSubscriptions(IStyleable control)
-        {
-            if (!_applied.TryGetValue(control, out var subscriptions))
-            {
-                subscriptions = new CompositeDisposable(3);
-                subscriptions.Add(control.StyleDetach.Subscribe(ControlDetach));
-                _applied.Add(control, subscriptions);
-            }
-
-            return subscriptions;
-        }
-
-        /// <summary>
-        /// Called when a control's <see cref="IStyleable.StyleDetach"/> is signaled to remove
-        /// all applied styles.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        private static void ControlDetach(IStyleable control)
-        {
-            var subscriptions = _applied[control];
-
-            subscriptions.Dispose();
-
-            _applied.Remove(control);
-        }
-
-        private void ResourceDictionaryChanged(object sender, ResourcesChangedEventArgs e)
-        {
-            ResourcesChanged?.Invoke(this, e);
         }
     }
 }

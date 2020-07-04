@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Platform;
 
 namespace Avalonia.Skia
@@ -21,10 +18,12 @@ namespace Avalonia.Skia
         public static void Initialize(SkiaOptions options)
         {
             var customGpu = options.CustomGpuFactory?.Invoke();
-            var renderInterface = new PlatformRenderInterface(customGpu);
+            var renderInterface = new PlatformRenderInterface(customGpu, options.MaxGpuResourceSizeBytes);
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformRenderInterface>().ToConstant(renderInterface);
+                .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
+                .Bind<IFontManagerImpl>().ToConstant(new FontManagerImpl())
+                .Bind<ITextShaperImpl>().ToConstant(new TextShaperImpl());
         }
 
         /// <summary>

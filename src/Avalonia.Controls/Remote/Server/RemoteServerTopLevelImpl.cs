@@ -115,7 +115,7 @@ namespace Avalonia.Controls.Remote.Server
                 {
                     lock (_lock)
                     {
-                        _lastReceivedFrame = lastFrame.SequenceId;
+                        _lastReceivedFrame = Math.Max(lastFrame.SequenceId, _lastReceivedFrame);
                     }
                     Dispatcher.UIThread.Post(RenderIfNeeded);
                 }
@@ -227,6 +227,7 @@ namespace Avalonia.Controls.Remote.Server
                         Input?.Invoke(new RawKeyEventArgs(
                             KeyboardDevice,
                             0,
+                            InputRoot,
                             key.IsDown ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                             (Key)key.Key,
                             GetAvaloniaRawInputModifiers(key.Modifiers)));
@@ -241,6 +242,7 @@ namespace Avalonia.Controls.Remote.Server
                         Input?.Invoke(new RawTextInputEventArgs(
                             KeyboardDevice,
                             0,
+                            InputRoot,
                             text.Text));
                     }, DispatcherPriority.Input);
                 }
@@ -296,6 +298,8 @@ namespace Avalonia.Controls.Remote.Server
                 Width = width,
                 Height = height,
                 Stride = width * bpp,
+                DpiX = _dpi.X,
+                DpiY = _dpi.Y
             };
         }
 

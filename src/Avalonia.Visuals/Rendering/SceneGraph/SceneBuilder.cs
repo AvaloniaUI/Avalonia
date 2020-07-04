@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -51,7 +48,7 @@ namespace Avalonia.Rendering.SceneGraph
                 UpdateSize(scene);
             }
 
-            if (visual.VisualRoot != null)
+            if (visual.VisualRoot == scene.Root.Visual)
             {
                 if (node?.Parent != null &&
                     visual.VisualParent != null &&
@@ -148,11 +145,28 @@ namespace Avalonia.Rendering.SceneGraph
             return (VisualNode)node;
         }
 
+        private static object GetOrCreateChildNode(Scene scene, IVisual child, VisualNode parent)
+        {
+            var result = (VisualNode)scene.FindNode(child);
+
+            if (result != null && result.Parent != parent)
+            {
+                Deindex(scene, result);
+                result = null;
+            }
+
+            return result ?? CreateNode(scene, child, parent);
+        }
+
         private static void Update(DrawingContext context, Scene scene, VisualNode node, Rect clip, bool forceRecurse)
         {
             var visual = node.Visual;
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
+            var clipToBoundsRadius = visual is IVisualWithRoundRectClip roundRectClip ?
+                roundRectClip.ClipToBoundsRadius :
+                default;
+            
             var bounds = new Rect(visual.Bounds.Size);
             var contextImpl = (DeferredDrawingContextImpl)context.PlatformImpl;
 
@@ -191,6 +205,7 @@ namespace Avalonia.Rendering.SceneGraph
                     node.ClipBounds = clipBounds;
                     node.ClipToBounds = clipToBounds;
                     node.LayoutBounds = globalBounds;
+                    node.ClipToBoundsRadius = clipToBoundsRadius;
                     node.GeometryClip = visual.Clip?.PlatformImpl;
                     node.Opacity = opacity;
 
@@ -231,7 +246,7 @@ namespace Avalonia.Rendering.SceneGraph
                     {
                         foreach (var child in visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance))
                         {
-                            var childNode = scene.FindNode(child) ?? CreateNode(scene, child, node);
+                            var childNode = GetOrCreateChildNode(scene, child, node);
                             Update(context, scene, (VisualNode)childNode, clip, forceRecurse);
                         }
 
@@ -239,6 +254,10 @@ namespace Avalonia.Rendering.SceneGraph
                         contextImpl.TrimChildren();
                     }
                 }
+            }
+            else
+            {
+                contextImpl.BeginUpdate(node).Dispose();
             }
         }
 
@@ -375,13 +394,8 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
-        private static bool ShouldStartLayer(IVisual visual)
-        {
-            var o = visual as IAvaloniaObject;
-            return visual.VisualChildren.Count > 0 &&
-                o != null &&
-                o.IsAnimating(Visual.OpacityProperty);
-        }
+        // HACK: Disabled layers because they're broken in current renderer. See #2244.
+        private static bool ShouldStartLayer(IVisual visual) => false;
 
         private static IGeometryImpl CreateLayerGeometryClip(VisualNode node)
         {

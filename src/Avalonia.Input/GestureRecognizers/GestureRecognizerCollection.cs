@@ -111,9 +111,7 @@ namespace Avalonia.Input.GestureRecognizers
             _pointerGrabs.Remove(e.Pointer);
             foreach (var r in _recognizers)
             {
-                if(e.Handled)
-                    break;
-                r.PointerCaptureLost(e);
+                r.PointerCaptureLost(e.Pointer);
             }
         }
 
@@ -121,6 +119,11 @@ namespace Avalonia.Input.GestureRecognizers
         {
             pointer.Capture(_inputElement);
             _pointerGrabs[pointer] = recognizer;
+            foreach (var r in _recognizers)
+            {
+                if (r != recognizer)
+                    r.PointerCaptureLost(pointer);
+            }
         }
 
     }

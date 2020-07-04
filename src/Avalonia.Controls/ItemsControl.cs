@@ -1,11 +1,7 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
@@ -237,25 +233,7 @@ namespace Avalonia.Controls
                 // it was added to the Items collection.
                 if (container.ContainerControl != null && container.ContainerControl != container.Item)
                 {
-                    if (ItemContainerGenerator.ContainerType == null)
-                    {
-                        var containerControl = container.ContainerControl as ContentPresenter;
-
-                        if (containerControl != null)
-                        {
-                            ((ISetLogicalParent)containerControl).SetParent(this);
-                            containerControl.UpdateChild();
-
-                            if (containerControl.Child != null)
-                            {
-                                LogicalChildren.Add(containerControl.Child);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        LogicalChildren.Add(container.ContainerControl);
-                    }
+                    LogicalChildren.Add(container.ContainerControl);
                 }
             }
         }
@@ -273,24 +251,7 @@ namespace Avalonia.Controls
                 // when it is removed from the Items collection.
                 if (container?.ContainerControl != container?.Item)
                 {
-                    if (ItemContainerGenerator.ContainerType == null)
-                    {
-                        var containerControl = container.ContainerControl as ContentPresenter;
-
-                        if (containerControl != null)
-                        {
-                            ((ISetLogicalParent)containerControl).SetParent(null);
-
-                            if (containerControl.Child != null)
-                            {
-                                LogicalChildren.Remove(containerControl.Child);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        LogicalChildren.Remove(container.ContainerControl);
-                    }
+                    LogicalChildren.Remove(container.ContainerControl);
                 }
             }
         }
@@ -324,20 +285,24 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                var current = focus.Current
-                    .GetSelfAndVisualAncestors()
-                    .OfType<IInputElement>()
-                    .FirstOrDefault(x => x.VisualParent == container);
+                IVisual current = focus.Current;
 
-                if (current != null)
+                while (current != null)
                 {
-                    var next = GetNextControl(container, direction.Value, current, false);
-
-                    if (next != null)
+                    if (current.VisualParent == container && current is IInputElement inputElement)
                     {
-                        focus.Focus(next, NavigationMethod.Directional);
-                        e.Handled = true;
+                        IInputElement next = GetNextControl(container, direction.Value, inputElement, false);
+
+                        if (next != null)
+                        {
+                            focus.Focus(next, NavigationMethod.Directional);
+                            e.Handled = true;
+                        }
+
+                        break;
                     }
+
+                    current = current.VisualParent;
                 }
             }
 
@@ -359,6 +324,12 @@ namespace Avalonia.Controls
             UpdateItemCount();
             RemoveControlItemsFromLogicalChildren(oldValue);
             AddControlItemsToLogicalChildren(newValue);
+
+            if (Presenter != null)
+            {
+                Presenter.Items = newValue;
+            }
+
             SubscribeToItems(newValue);
         }
 
@@ -370,6 +341,8 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            UpdateItemCount();
+
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -381,7 +354,7 @@ namespace Avalonia.Controls
                     break;
             }
 
-            UpdateItemCount();
+            Presenter?.ItemsChanged(e);
 
             var collection = sender as ICollection;
             PseudoClasses.Set(":empty", collection == null || collection.Count == 0);
@@ -489,18 +462,23 @@ namespace Avalonia.Controls
             bool wrap)
         {
             IInputElement result;
+            var c = from;
 
             do
             {
-                result = container.GetControl(direction, from, wrap);
+                result = container.GetControl(direction, c, wrap);
+                from = from ?? result;
 
-                if (result?.Focusable == true)
+                if (result != null &&
+                    result.Focusable &&
+                    result.IsEffectivelyEnabled &&
+                    result.IsEffectivelyVisible)
                 {
                     return result;
                 }
 
-                from = result;
-            } while (from != null);
+                c = result;
+            } while (c != null && c != from);
 
             return null;
         }

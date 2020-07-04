@@ -17,7 +17,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Add_VisualNode()
         {
             var parent = new VisualNode(new TestRoot(), null);
-            var child = new VisualNode(Mock.Of<IVisual>(), null);
+            var child = new VisualNode(Mock.Of<IVisual>(), parent);
             var layers = new SceneLayers(parent.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -32,7 +32,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Not_Replace_Identical_VisualNode()
         {
             var parent = new VisualNode(new TestRoot(), null);
-            var child = new VisualNode(Mock.Of<IVisual>(), null);
+            var child = new VisualNode(Mock.Of<IVisual>(), parent);
             var layers = new SceneLayers(parent.Visual);
 
             parent.AddChild(child);
@@ -50,8 +50,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Replace_Different_VisualNode()
         {
             var parent = new VisualNode(new TestRoot(), null);
-            var child1 = new VisualNode(Mock.Of<IVisual>(), null);
-            var child2 = new VisualNode(Mock.Of<IVisual>(), null);
+            var child1 = new VisualNode(Mock.Of<IVisual>(), parent);
+            var child2 = new VisualNode(Mock.Of<IVisual>(), parent);
             var layers = new SceneLayers(parent.Visual);
 
             parent.AddChild(child1);
@@ -78,8 +78,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             var layers = new SceneLayers(root);
             var target = new DeferredDrawingContextImpl(null, layers);
-            var child1 = new VisualNode(Mock.Of<IVisual>(), null) { LayerRoot = root };
-            var child2 = new VisualNode(Mock.Of<IVisual>(), null) { LayerRoot = root };
+            var child1 = new VisualNode(Mock.Of<IVisual>(), node) { LayerRoot = root };
+            var child2 = new VisualNode(Mock.Of<IVisual>(), node) { LayerRoot = root };
 
             target.BeginUpdate(node);
             using (target.BeginUpdate(child1)) { }
@@ -100,20 +100,18 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             using (target.BeginUpdate(node))
             {
-                target.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100));
-                target.DrawRectangle(new Pen(Brushes.Green, 1), new Rect(0, 0, 100, 100));
+                target.DrawRectangle(Brushes.Red, new Pen(Brushes.Green, 1), new Rect(0, 0, 100, 100));
             }
 
-            Assert.Equal(2, node.DrawOperations.Count);
+            Assert.Equal(1, node.DrawOperations.Count);
             Assert.IsType<RectangleNode>(node.DrawOperations[0].Item);
-            Assert.IsType<RectangleNode>(node.DrawOperations[1].Item);
         }
 
         [Fact]
         public void Should_Not_Replace_Identical_DrawOperation()
         {
             var node = new VisualNode(new TestRoot(), null);
-            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0));
+            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), default));
             var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -122,7 +120,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             using (target.BeginUpdate(node))
             {
-                target.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100));
+                target.DrawRectangle(Brushes.Red, null, new Rect(0, 0, 100, 100));
             }
 
             Assert.Equal(1, node.DrawOperations.Count);
@@ -135,7 +133,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Replace_Different_DrawOperation()
         {
             var node = new VisualNode(new TestRoot(), null);
-            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0));
+            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), default));
             var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -144,7 +142,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             using (target.BeginUpdate(node))
             {
-                target.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100));
+                target.DrawRectangle(Brushes.Green, null, new Rect(0, 0, 100, 100));
             }
 
             Assert.Equal(1, node.DrawOperations.Count);
@@ -157,7 +155,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Update_DirtyRects()
         {
             var node = new VisualNode(new TestRoot(), null);
-            var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0);
+            var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), default);
             var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -165,7 +163,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             using (target.BeginUpdate(node))
             {
-                target.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100));
+                target.DrawRectangle(Brushes.Green, null, new Rect(0, 0, 100, 100));
             }
 
             Assert.Equal(new Rect(0, 0, 100, 100), layers.Single().Dirty.Single());
@@ -192,8 +190,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             using (target.BeginUpdate(node))
             {
-                target.FillRectangle(Brushes.Green, new Rect(0, 0, 10, 100));
-                target.FillRectangle(Brushes.Blue, new Rect(0, 0, 20, 100));
+                target.DrawRectangle(Brushes.Green, null, new Rect(0, 0, 10, 100));
+                target.DrawRectangle(Brushes.Blue, null, new Rect(0, 0, 20, 100));
             }
 
             Assert.Equal(2, node.DrawOperations.Count);
@@ -208,7 +206,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Trimmed_DrawOperations_Releases_Reference()
         {
             var node = new VisualNode(new TestRoot(), null);
-            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0));
+            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), default));
             var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -218,7 +216,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             using (target.BeginUpdate(node))
             {
-                target.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100));
+                target.DrawRectangle(Brushes.Green, null, new Rect(0, 0, 100, 100));
             }
 
             Assert.Equal(1, node.DrawOperations.Count);

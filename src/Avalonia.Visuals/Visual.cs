@@ -1,10 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Logging;
@@ -73,8 +68,8 @@ namespace Avalonia
         /// <summary>
         /// Defines the <see cref="RenderTransform"/> property.
         /// </summary>
-        public static readonly StyledProperty<Transform> RenderTransformProperty =
-            AvaloniaProperty.Register<Visual, Transform>(nameof(RenderTransform));
+        public static readonly StyledProperty<ITransform> RenderTransformProperty =
+            AvaloniaProperty.Register<Visual, ITransform>(nameof(RenderTransform));
 
         /// <summary>
         /// Defines the <see cref="RenderTransformOrigin"/> property.
@@ -119,9 +114,12 @@ namespace Avalonia
         /// </summary>
         public Visual()
         {
+            // Disable transitions until we're added to the visual tree.
+            DisableTransitions();
+
             var visualChildren = new AvaloniaList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
-            visualChildren.Validate = ValidateVisualChild;
+            visualChildren.Validate = visual => ValidateVisualChild(visual);
             visualChildren.CollectionChanged += VisualChildrenChanged;
             VisualChildren = visualChildren;
         }
@@ -173,7 +171,22 @@ namespace Avalonia
         /// </summary>
         public bool IsEffectivelyVisible
         {
-            get { return this.GetSelfAndVisualAncestors().All(x => x.IsVisible); }
+            get
+            {
+                IVisual node = this;
+
+                while (node != null)
+                {
+                    if (!node.IsVisible)
+                    {
+                        return false;
+                    }
+
+                    node = node.VisualParent;
+                }
+
+                return true;
+            }
         }
 
         /// <summary>
@@ -206,7 +219,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the render transform of the control.
         /// </summary>
-        public Transform RenderTransform
+        public ITransform RenderTransform
         {
             get { return GetValue(RenderTransformProperty); }
             set { SetValue(RenderTransformProperty, value); }
@@ -322,7 +335,15 @@ namespace Avalonia
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
             where T : Visual
         {
-            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            static void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Sender is T sender)
+                {
+                    sender.InvalidateVisual();
+                }
+            }
+
+            static void InvalidateAndSubscribe(AvaloniaPropertyChangedEventArgs e)
             {
                 if (e.Sender is T sender)
                 {
@@ -333,7 +354,7 @@ namespace Avalonia
 
                     if (e.NewValue is IAffectsRender newValue)
                     {
-                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);                        
+                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);
                     }
 
                     sender.InvalidateVisual();
@@ -342,7 +363,14 @@ namespace Avalonia
 
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(Invalidate);
+                if (property.CanValueAffectRender())
+                {
+                    property.Changed.Subscribe(e => InvalidateAndSubscribe(e));
+                }
+                else
+                {
+                    property.Changed.Subscribe(e => Invalidate(e));
+                }
             }
         }
 
@@ -359,24 +387,32 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Visual, this, "Attached to visual tree");
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.Visual)?.Log(this, "Attached to visual tree");
 
             _visualRoot = e.Root;
 
-            if (RenderTransform != null)
+            if (RenderTransform is IMutableTransform mutableTransform)
             {
-                RenderTransform.Changed += RenderTransformChanged;
+                mutableTransform.Changed += RenderTransformChanged;
             }
 
+            EnableTransitions();
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
 
-            if (VisualChildren != null)
+            var visualChildren = VisualChildren;
+
+            if (visualChildren != null)
             {
-                foreach (Visual child in VisualChildren.OfType<Visual>())
+                var visualChildrenCount = visualChildren.Count;
+
+                for (var i = 0; i < visualChildrenCount; i++)
                 {
-                    child.OnAttachedToVisualTreeCore(e);
+                    if (visualChildren[i] is Visual child)
+                    {
+                        child.OnAttachedToVisualTreeCore(e);
+                    }
                 }
             }
         }
@@ -388,24 +424,32 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Visual, this, "Detached from visual tree");
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.Visual)?.Log(this, "Detached from visual tree");
 
             _visualRoot = null;
 
-            if (RenderTransform != null)
+            if (RenderTransform is IMutableTransform mutableTransform)
             {
-                RenderTransform.Changed -= RenderTransformChanged;
+                mutableTransform.Changed -= RenderTransformChanged;
             }
 
+            DisableTransitions();
             OnDetachedFromVisualTree(e);
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root?.Renderer?.AddDirty(this);
 
-            if (VisualChildren != null)
+            var visualChildren = VisualChildren;
+
+            if (visualChildren != null)
             {
-                foreach (Visual child in VisualChildren.OfType<Visual>())
+                var visualChildrenCount = visualChildren.Count;
+
+                for (var i = 0; i < visualChildrenCount; i++)
                 {
-                    child.OnDetachedFromVisualTreeCore(e);
+                    if (visualChildren[i] is Visual child)
+                    {
+                        child.OnDetachedFromVisualTreeCore(e);
+                    }
                 }
             }
         }
@@ -433,7 +477,11 @@ namespace Avalonia
         /// <param name="newParent">The new visual parent.</param>
         protected virtual void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            RaisePropertyChanged(VisualParentProperty, oldParent, newParent, BindingPriority.LocalValue);
+            RaisePropertyChanged(
+                VisualParentProperty,
+                new Optional<IVisual>(oldParent),
+                new BindingValue<IVisual>(newParent),
+                BindingPriority.LocalValue);
         }
 
         protected override sealed void LogBindingError(AvaloniaProperty property, Exception e)
@@ -453,8 +501,7 @@ namespace Avalonia
                     return;
                 }
 
-                Logger.TryGet(LogEventLevel.Warning)?.Log(
-                    LogArea.Binding,
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Binding)?.Log(
                     this,
                     "Error in binding to {Target}.{Property}: {Message}",
                     this,
@@ -552,7 +599,7 @@ namespace Avalonia
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
             {
-                var root = this.GetVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
+                var root = this.FindAncestorOfType<IRenderRoot>();
                 var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
                 OnAttachedToVisualTreeCore(e);
             }

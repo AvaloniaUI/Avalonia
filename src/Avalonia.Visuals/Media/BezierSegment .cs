@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Media
 {
     public sealed class BezierSegment : PathSegment
@@ -61,5 +58,8 @@ namespace Avalonia.Media
         {
             ctx.CubicBezierTo(Point1, Point2, Point3);
         }
+
+        public override string ToString()
+            => $"C {Point1} {Point2} {Point3}";
     }
 }

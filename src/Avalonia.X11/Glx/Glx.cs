@@ -15,10 +15,29 @@ namespace Avalonia.X11.Glx
         public GlxMakeContextCurrent MakeContextCurrent { get; }
         public delegate bool GlxMakeContextCurrent(IntPtr display, IntPtr draw, IntPtr read, IntPtr context);
 
+        [GlEntryPoint("glXGetCurrentContext")]
+        public GlxGetCurrentContext GetCurrentContext { get; }
+        public delegate IntPtr GlxGetCurrentContext();
+
+        [GlEntryPoint("glXGetCurrentDisplay")]
+        public GlxGetCurrentDisplay GetCurrentDisplay { get; }
+        public delegate IntPtr GlxGetCurrentDisplay();
+        
+        [GlEntryPoint("glXGetCurrentDrawable")]
+        public GlxGetCurrentDrawable GetCurrentDrawable { get; }
+        public delegate IntPtr GlxGetCurrentDrawable();
+        
+        [GlEntryPoint("glXGetCurrentReadDrawable")]
+        public GlxGetCurrentReadDrawable GetCurrentReadDrawable { get; }
+        public delegate IntPtr GlxGetCurrentReadDrawable();
+        
         [GlEntryPoint("glXCreatePbuffer")]
         public GlxCreatePbuffer CreatePbuffer { get; }
-
         public delegate IntPtr GlxCreatePbuffer(IntPtr dpy, IntPtr fbc, int[] attrib_list);
+        
+        [GlEntryPoint("glXDestroyPbuffer")]
+        public GlxDestroyPbuffer DestroyPbuffer { get; }
+        public delegate IntPtr GlxDestroyPbuffer(IntPtr dpy, IntPtr fb);
         
         [GlEntryPointAttribute("glXChooseVisual")]
         public GlxChooseVisual ChooseVisual { get; }
@@ -78,14 +97,42 @@ namespace Avalonia.X11.Glx
         
         [GlEntryPointAttribute("glXWaitGL")]
         public GlxWaitGL WaitGL { get; }
-        public delegate  void GlxWaitGL();
+        public delegate void GlxWaitGL();
         
         public delegate int GlGetError();
         [GlEntryPoint("glGetError")]
         public GlGetError GetError { get; }
 
-        public GlxInterface() : base(GlxGetProcAddress)
+        public delegate IntPtr GlxQueryExtensionsString(IntPtr display, int screen);
+        [GlEntryPoint("glXQueryExtensionsString")]
+        public GlxQueryExtensionsString QueryExtensionsString { get; }
+
+        public GlxInterface() : base(SafeGetProcAddress)
         {
+        }
+
+        // Ignores egl functions.
+        // On some Linux systems, glXGetProcAddress will return valid pointers for even EGL functions.
+        // This makes Skia try to load some data from EGL,
+        // which can then cause segmentation faults because they return garbage.
+        public static IntPtr SafeGetProcAddress(string proc)
+        {
+            if (proc.StartsWith("egl", StringComparison.InvariantCulture))
+            {
+                return IntPtr.Zero;
+            }
+
+            return GlxConverted(proc);
+        }
+
+        private static readonly Func<string, IntPtr> GlxConverted = ConvertNative(GlxGetProcAddress);
+
+        public string[] GetExtensions(IntPtr display)
+        {
+            var s = Marshal.PtrToStringAnsi(QueryExtensionsString(display, 0));
+            return s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim()).ToArray();
+
         }
     }
 }

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +15,7 @@ namespace Avalonia.Skia
         public FormattedTextImpl(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -28,47 +26,22 @@ namespace Avalonia.Skia
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
 
-            SKTypeface skiaTypeface = null;
+            var glyphTypeface = (GlyphTypefaceImpl)typeface.GlyphTypeface.PlatformImpl;
 
-            if (typeface.FontFamily.Key != null)
+            _paint = new SKPaint
             {
-                var typefaces = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
-                skiaTypeface = typefaces.GetTypeFace(typeface);
-            }
-            else
-            {
-                if (typeface.FontFamily.FamilyNames.HasFallbacks)
-                {
-                    foreach (var familyName in typeface.FontFamily.FamilyNames)
-                    {
-                        skiaTypeface = TypefaceCache.GetTypeface(
-                            familyName,
-                            typeface.Style,
-                            typeface.Weight);
-                        if (skiaTypeface.FamilyName != TypefaceCache.DefaultFamilyName) break;
-                    }
-                }
-                else
-                {
-                    skiaTypeface = TypefaceCache.GetTypeface(
-                        typeface.FontFamily.Name,
-                        typeface.Style,
-                        typeface.Weight);
-                }
-            }
-
-            _paint = new SKPaint();
+                TextEncoding = SKTextEncoding.Utf16,
+                IsStroke = false,
+                IsAntialias = true,
+                LcdRenderText = true,
+                SubpixelText = true,
+                Typeface = glyphTypeface.Typeface,
+                TextSize = (float)fontSize,
+                TextAlign = textAlignment.ToSKTextAlign()
+            };
 
             //currently Skia does not measure properly with Utf8 !!!
             //Paint.TextEncoding = SKTextEncoding.Utf8;
-            _paint.TextEncoding = SKTextEncoding.Utf16;
-            _paint.IsStroke = false;
-            _paint.IsAntialias = true;
-            _paint.LcdRenderText = true;
-            _paint.SubpixelText = true;
-            _paint.Typeface = skiaTypeface;
-            _paint.TextSize = (float)typeface.FontSize;
-            _paint.TextAlign = textAlignment.ToSKTextAlign();
 
             _wrapping = wrapping;
             _constraint = constraint;
@@ -99,7 +72,24 @@ namespace Avalonia.Skia
         public TextHitTestResult HitTestPoint(Point point)
         {
             float y = (float)point.Y;
-            var line = _skiaLines.Find(l => l.Top <= y && (l.Top + l.Height) > y);
+
+            AvaloniaFormattedTextLine line = default;
+
+            float nextTop = 0;
+
+            foreach(var currentLine in _skiaLines)
+            {
+                if(currentLine.Top <= y)
+                {
+                    line = currentLine;
+                    nextTop = currentLine.Top + currentLine.Height;
+                }
+                else
+                {
+                    nextTop = currentLine.Top;
+                    break;
+                }
+            }
 
             if (!line.Equals(default(AvaloniaFormattedTextLine)))
             {
@@ -127,12 +117,15 @@ namespace Avalonia.Skia
                                     line.Length : (line.Length - 1);
                 }
 
-                return new TextHitTestResult
+                if (y < nextTop)
                 {
-                    IsInside = false,
-                    TextPosition = line.Start + offset,
-                    IsTrailing = Text.Length == (line.Start + offset + 1)
-                };
+                    return new TextHitTestResult
+                    {
+                        IsInside = false,
+                        TextPosition = line.Start + offset,
+                        IsTrailing = Text.Length == (line.Start + offset + 1)
+                    };
+                }
             }
 
             bool end = point.X > _bounds.Width || point.Y > _lines.Sum(l => l.Height);
@@ -147,25 +140,27 @@ namespace Avalonia.Skia
 
         public Rect HitTestTextPosition(int index)
         {
+            if (string.IsNullOrEmpty(Text))
+            {
+                var alignmentOffset = TransformX(0, 0, _paint.TextAlign);
+                return new Rect(alignmentOffset, 0, 0, _lineHeight);
+            }
             var rects = GetRects();
-
-            if (index < 0 || index >= rects.Count)
+            if (index >= Text.Length || index < 0)
             {
                 var r = rects.LastOrDefault();
-                return new Rect(r.X + r.Width, r.Y, 0, _lineHeight);
-            }
 
-            if (rects.Count == 0)
-            {
-                return new Rect(0, 0, 1, _lineHeight);
-            }
+                var c = Text[Text.Length - 1];
 
-            if (index == rects.Count)
-            {
-                var lr = rects[rects.Count - 1];
-                return new Rect(new Point(lr.X + lr.Width, lr.Y), rects[index - 1].Size);
+                switch (c)
+                {
+                    case '\n':
+                    case '\r':
+                        return new Rect(r.X, r.Y, 0, _lineHeight);
+                    default:
+                        return new Rect(r.X + r.Width, r.Y, 0, _lineHeight);
+                }
             }
-
             return rects[index];
         }
 
@@ -281,7 +276,8 @@ namespace Avalonia.Skia
                                 if (fb != null)
                                 {
                                     //TODO: figure out how to get the brush size
-                                    currentWrapper = context.CreatePaint(fb, new Size());
+                                    currentWrapper = context.CreatePaint(new SKPaint { IsAntialias = true }, fb,
+                                        new Size());
                                 }
                                 else
                                 {
@@ -645,6 +641,11 @@ namespace Avalonia.Skia
             {
                 var lastLine = _skiaLines[_skiaLines.Count - 1];
                 _bounds = new Rect(0, 0, maxX, lastLine.Top + lastLine.Height);
+
+                if (double.IsPositiveInfinity(Constraint.Width))
+                {
+                    return;
+                }
 
                 switch (_paint.TextAlign)
                 {

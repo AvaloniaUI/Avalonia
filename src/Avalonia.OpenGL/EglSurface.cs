@@ -21,8 +21,6 @@ namespace Avalonia.OpenGL
         }
 
         public override bool IsInvalid => handle == IntPtr.Zero;
-
-        public IGlDisplay Display => _display;
         public void SwapBuffers() => _egl.SwapBuffers(_display.Handle, handle);
     }
 }

@@ -1,7 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
 using System;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -17,11 +16,11 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions _options;
+        private GlPlatformFeature _glFeature;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
 
-        internal static readonly MouseDevice MouseDevice = new MouseDevice();
         internal static readonly KeyboardDevice KeyboardDevice = new KeyboardDevice();
 
         public Size DoubleClickSize => new Size(4, 4);
@@ -78,10 +77,18 @@ namespace Avalonia.Native
             _factory = factory;
         }
 
+        class GCHandleDeallocator : CallbackBase, IAvnGCHandleDeallocatorCallback
+        {
+            public void FreeGCHandle(IntPtr handle)
+            {
+                GCHandle.FromIntPtr(handle).Free();
+            }
+        }
+        
         void DoInitialize(AvaloniaNativePlatformOptions options)
         {
             _options = options;
-            _factory.Initialize();
+            _factory.Initialize(new GCHandleDeallocator());
             if (_factory.MacOptions != null)
             {
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
@@ -95,24 +102,27 @@ namespace Avalonia.Native
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
-                .Bind<IMouseDevice>().ToConstant(MouseDevice)
                 .Bind<IPlatformSettings>().ToConstant(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
-                .Bind<IWindowingPlatformGlFeature>().ToConstant(new GlPlatformFeature(_factory.ObtainGlFeature()))
-                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(InputModifiers.Windows))
-                .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider());
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta))
+                .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
+                .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
+                ;
+            if (_options.UseGpu)
+                AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>()
+                    .ToConstant(_glFeature = new GlPlatformFeature(_factory.ObtainGlDisplay()));
         }
 
         public IWindowImpl CreateWindow()
         {
-            return new WindowImpl(_factory, _options);
+            return new WindowImpl(_factory, _options, _glFeature);
         }
 
-        public IEmbeddableWindowImpl CreateEmbeddableWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
         }

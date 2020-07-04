@@ -6,15 +6,19 @@
     <TextBlock Classes="h2">A progress bar control</TextBlock>
 
     <StackPanel>
+      <CheckBox
+          x:Name="showProgress"
+          Margin="10,16,0,0"
+          Content="Show Progress Text" />
       <StackPanel Orientation="Horizontal"
                   Margin="0,16,0,0"
                   HorizontalAlignment="Center"
                   Spacing="16">
         <StackPanel Spacing="16">
-          <ProgressBar Value="{Binding #hprogress.Value}" />
+          <ProgressBar ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #hprogress.Value}" />
           <ProgressBar IsIndeterminate="True"/>
         </StackPanel>
-        <ProgressBar Value="{Binding #vprogress.Value}" Orientation="Vertical" />
+        <ProgressBar ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #vprogress.Value}" Orientation="Vertical" />
         <ProgressBar Orientation="Vertical" IsIndeterminate="True" />
       </StackPanel>
       <StackPanel Margin="16">

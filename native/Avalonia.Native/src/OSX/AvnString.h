@@ -10,5 +10,7 @@
 #define AvnString_h
 
 extern IAvnString* CreateAvnString(NSString* string);
-
+extern IAvnStringArray* CreateAvnStringArray(NSArray<NSString*>* array);
+extern IAvnStringArray* CreateAvnStringArray(NSString* string);
+extern IAvnString* CreateByteArray(void* data, int len);
 #endif /* AvnString_h */

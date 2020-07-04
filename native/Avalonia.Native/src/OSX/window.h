@@ -1,26 +1,32 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 #ifndef window_h
 #define window_h
 
 class WindowBaseImpl;
 
-@interface AvnView : NSView<NSTextInputClient>
+@interface AutoFitContentVisualEffectView : NSVisualEffectView
+@end
+
+@interface AvnView : NSView<NSTextInputClient, NSDraggingDestination>
 -(AvnView* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
 -(NSEvent* _Nonnull) lastMouseDownEvent;
 -(AvnPoint) translateLocalPoint:(AvnPoint)pt;
 -(void) setSwRenderedFrame: (AvnFramebuffer* _Nonnull) fb dispose: (IUnknown* _Nonnull) dispose;
 -(void) onClosed;
+-(AvnPixelSize) getPixelSize;
 @end
 
 @interface AvnWindow : NSWindow <NSWindowDelegate>
++(void) closeAll;
 -(AvnWindow* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
 -(void) setCanBecomeKeyAndMain;
 -(void) pollModalSession: (NSModalSession _Nonnull) session;
 -(void) restoreParentWindow;
 -(bool) shouldTryToHandleEvents;
--(void) applyMenu:(NSMenu *)menu;
+-(void) setEnabled: (bool) enable;
+-(void) showAppMenuOnly;
+-(void) showWindowMenuWithAppMenu;
+-(void) applyMenu:(NSMenu* _Nullable)menu;
+-(double) getScaling;
 @end
 
 struct INSWindowHolder
@@ -31,6 +37,10 @@ struct INSWindowHolder
 struct IWindowStateChanged
 {
     virtual void WindowStateChanged () = 0;
+    virtual void StartStateTransition () = 0;
+    virtual void EndStateTransition () = 0;
+    virtual SystemDecorations Decorations () = 0;
+    virtual AvnWindowState WindowState () = 0;
 };
 
 #endif /* window_h */

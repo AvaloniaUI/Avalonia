@@ -1,8 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls;
+using Avalonia.Input;
 
 namespace Avalonia.Platform
 {
@@ -28,14 +26,26 @@ namespace Avalonia.Platform
         void SetTitle(string title);
 
         /// <summary>
-        /// Shows the window as a dialog.
+        /// Sets the parent of the window.
         /// </summary>
-        void ShowDialog(IWindowImpl parent);
+        /// <param name="parent">The parent <see cref="IWindowImpl"/>.</param>
+        void SetParent(IWindowImpl parent);
+        
+        /// <summary>
+        /// Disables the window for example when a modal dialog is open.
+        /// </summary>
+        /// <param name="enable">true if the window is enabled, or false if it is disabled.</param>
+        void SetEnabled(bool enable);
+
+        /// <summary>
+        /// Called when a disabled window received input. Can be used to activate child windows.
+        /// </summary>
+        Action GotInputWhenDisabled { get; set; }        
 
         /// <summary>
         /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
-        void SetSystemDecorations(bool enabled);
+        void SetSystemDecorations(SystemDecorations enabled);
 
         /// <summary>
         /// Sets the icon of this window.
@@ -57,28 +67,28 @@ namespace Avalonia.Platform
         /// Return true to prevent the underlying implementation from closing.
         /// </summary>
         Func<bool> Closing { get; set; }
-        
+
         /// <summary>
         /// Starts moving a window with left button being held. Should be called from left mouse button press event handler.
         /// </summary>
-        void BeginMoveDrag();
+        void BeginMoveDrag(PointerPressedEventArgs e);
 
         /// <summary>
         /// Starts resizing a window. This function is used if an application has window resizing controls. 
         /// Should be called from left mouse button press event handler
         /// </summary>
-        void BeginResizeDrag(WindowEdge edge);
-        
+        void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e);
+
         /// <summary>
         /// Sets the client size of the top level.
         /// </summary>
         void Resize(Size clientSize);
-        
+
         /// <summary>
         /// Sets the client size of the top level.
         /// </summary>
         void Move(PixelPoint point);
-        
+
         /// <summary>
         /// Minimum width of the window.
         /// </summary>

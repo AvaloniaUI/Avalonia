@@ -1,17 +1,28 @@
 <Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
         xmlns:sys="clr-namespace:System;assembly=netstandard">
-  
+  <Styles.Resources>
+    <conv:PlatformKeyGestureConverter x:Key="KeyGestureConverter"/>
+  </Styles.Resources>
   <Style Selector="MenuItem">
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="BorderThickness" Value="1"/>
-    <Setter Property="Padding" Value="6,0"/>
+    <Setter Property="Padding" Value="6 0"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="root"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
-          <Grid ColumnDefinitions="22,13,*,20">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="20"/>
+              <ColumnDefinition Width="5"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto" SharedSizeGroup="MenuItemIGT"/>
+              <ColumnDefinition Width="20"/>
+            </Grid.ColumnDefinitions>
             <ContentPresenter Name="icon"
                               Content="{TemplateBinding Icon}"
                               Width="16"
@@ -36,34 +47,29 @@
                 </DataTemplate>
               </ContentPresenter.DataTemplates>
             </ContentPresenter>
+            <TextBlock x:Name="PART_InputGestureText"
+                       Grid.Column="3"
+                       Text="{TemplateBinding InputGesture, Converter={StaticResource KeyGestureConverter}}"
+                       VerticalAlignment="Center"/>
             <Path Name="rightArrow"
                   Data="M0,0L4,3.5 0,7z"
                   Fill="{DynamicResource ThemeForegroundBrush}"
                   Margin="10,0,0,0"
                   VerticalAlignment="Center"
-                  Grid.Column="3"/>
+                  Grid.Column="4"/>
             <Popup Name="PART_Popup"
                    PlacementMode="Right"
                    StaysOpen="True"
-                   IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
-                   ObeyScreenEdges="True">
+                   IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
               <Border Background="{TemplateBinding Background}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">
-                <ScrollViewer>
-                  <Panel>
+                <ScrollViewer>                  
                     <ItemsPresenter Name="PART_ItemsPresenter"
                                     Items="{TemplateBinding Items}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
                                     ItemTemplate="{TemplateBinding ItemTemplate}"
-                                    Margin="2"/>
-                    <Rectangle Name="iconSeparator"
-                               Fill="{DynamicResource ThemeControlMidBrush}"
-                               HorizontalAlignment="Left"
-                               IsHitTestVisible="False"
-                               Margin="29,2,0,2"
-                               Width="1"/>
-                  </Panel>
+                                    Grid.IsSharedSizeScope="True"/>
                 </ScrollViewer>
               </Border>
             </Popup>
@@ -77,13 +83,14 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Separator Background="{DynamicResource ThemeControlMidBrush}"
-                   Margin="29,1,0,1"
+                   Margin="20,1,0,1"
                    Height="1"/>
       </ControlTemplate>
     </Setter>
   </Style>
 
   <Style Selector="Menu > MenuItem">
+    <Setter Property="Padding" Value="6 0"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="root"
@@ -102,25 +109,16 @@
             </ContentPresenter>
             <Popup Name="PART_Popup"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
-                   StaysOpen="True" 
-                   ObeyScreenEdges="True">
+                   StaysOpen="True">
               <Border Background="{TemplateBinding Background}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">
-                <ScrollViewer>
-                  <Panel>
-                    <ItemsPresenter Name="PART_ItemsPresenter"
-                                    Items="{TemplateBinding Items}"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}"
-                                    ItemTemplate="{TemplateBinding ItemTemplate}"
-                                    Margin="2"/>
-                    <Rectangle Name="iconSeparator"
-                               Fill="{DynamicResource ThemeControlMidBrush}"
-                               HorizontalAlignment="Left"
-                               IsHitTestVisible="False"
-                               Margin="29,2,0,2"
-                               Width="1"/>
-                  </Panel>
+                <ScrollViewer Classes="menuscroller">
+                  <ItemsPresenter Name="PART_ItemsPresenter"
+                                  Items="{TemplateBinding Items}"
+                                  ItemsPanel="{TemplateBinding ItemsPanel}"
+                                  ItemTemplate="{TemplateBinding ItemTemplate}"
+                                  Grid.IsSharedSizeScope="True"/>
                 </ScrollViewer>
               </Border>
             </Popup>
@@ -128,6 +126,10 @@
         </Border>
       </ControlTemplate>
     </Setter>
+  </Style>
+
+  <Style Selector="MenuItem /template/ ItemsPresenter#PART_ItemsPresenter">
+    <Setter Property="Margin" Value="2"/>
   </Style>
 
   <Style Selector="MenuItem:selected /template/ Border#root">

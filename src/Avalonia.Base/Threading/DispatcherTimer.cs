@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Disposables;
 using Avalonia.Platform;
@@ -17,7 +14,7 @@ namespace Avalonia.Threading
         private readonly DispatcherPriority _priority;
 
         private TimeSpan _interval;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DispatcherTimer"/> class.
         /// </summary>
@@ -157,6 +154,8 @@ namespace Avalonia.Threading
             TimeSpan interval,
             DispatcherPriority priority = DispatcherPriority.Normal)
         {
+            interval = (interval != TimeSpan.Zero) ? interval : TimeSpan.FromTicks(1);
+            
             var timer = new DispatcherTimer(priority) { Interval = interval };
 
             timer.Tick += (s, e) =>
@@ -200,7 +199,7 @@ namespace Avalonia.Threading
             }
         }
 
-        
+
 
         /// <summary>
         /// Raises the <see cref="Tick"/> event on the dispatcher thread.

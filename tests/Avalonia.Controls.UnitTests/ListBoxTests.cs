@@ -1,9 +1,7 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
@@ -45,6 +43,26 @@ namespace Avalonia.Controls.UnitTests
             Prepare(target);
 
             Assert.IsType<ItemsPresenter>(target.Presenter);
+        }
+
+        [Fact]
+        public void ListBox_Should_Find_Scrollviewer_In_Template()
+        {
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+            };
+
+            ScrollViewer viewer = null;
+
+            target.TemplateApplied += (sender, e) =>
+            {
+                viewer = target.Scroll as ScrollViewer;
+            };
+
+            Prepare(target);
+
+            Assert.NotNull(viewer);
         }
 
         [Fact]
@@ -225,6 +243,23 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(false, item.IsSelected);
         }
 
+        [Fact]
+        public void Can_Decrease_Number_Of_Materialized_Items_By_Removing_From_Source_Collection()
+        {
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 20).Select(x => $"Item {x}"));
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 })
+            };
+
+            Prepare(target);
+            target.Scroll.Offset = new Vector(0, 1);
+
+            items.RemoveRange(0, 11);
+        }
+
         private void RaisePressedEvent(ListBox listBox, ListBoxItem item, MouseButton mouseButton)
         {
             _mouse.Click(listBox, item, mouseButton);
@@ -294,7 +329,7 @@ namespace Avalonia.Controls.UnitTests
                     return tb;
                 }, true);
 
-                lm.ExecuteInitialLayoutPass(wnd);
+                lm.ExecuteInitialLayoutPass();
 
                 target.Items = items;
 
@@ -332,6 +367,46 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Clicking_Item_Should_Raise_BringIntoView_For_Correct_Control()
+        {
+            // Issue #3934
+            var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToArray();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
+                SelectionMode = SelectionMode.AlwaysSelected,
+                VirtualizationMode = ItemVirtualizationMode.None,
+            };
+
+            Prepare(target);
+
+            // First an item that is not index 0 must be selected.
+            _mouse.Click(target.Presenter.Panel.Children[1]);
+            Assert.Equal(new IndexPath(1), target.Selection.AnchorIndex);
+
+            // We're going to be clicking on item 9.
+            var item = (ListBoxItem)target.Presenter.Panel.Children[9];
+            var raised = 0;
+
+            // Make sure a RequestBringIntoView event is raised for item 9. It won't be handled
+            // by the ScrollContentPresenter as the item is already visible, so we don't need
+            // handledEventsToo: true. Issue #3934 failed here because item 0 was being scrolled
+            // into view due to SelectionMode.AlwaysSelected.
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) =>
+            {
+                Assert.Same(item, e.TargetObject);
+                ++raised;
+            });
+
+            // Click item 9.
+            _mouse.Click(item);
+
+            Assert.Equal(1, raised);
+        }
+
         private FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>((parent, scope) =>
@@ -363,14 +438,26 @@ namespace Avalonia.Controls.UnitTests
         private FuncControlTemplate ScrollViewerTemplate()
         {
             return new FuncControlTemplate<ScrollViewer>((parent, scope) =>
-                new ScrollContentPresenter
+                new Panel
                 {
-                    Name = "PART_ContentPresenter",
-                    [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
-                    [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
-                    [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
-                    [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
-                }.RegisterInNameScope(scope));
+                    Children =
+                    {
+                        new ScrollContentPresenter
+                        {
+                            Name = "PART_ContentPresenter",
+                            [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty).ToBinding(),
+                            [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
+                            [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
+                            [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
+                        }.RegisterInNameScope(scope),
+                        new ScrollBar
+                        {
+                            Name = "verticalScrollBar",
+                            [~ScrollBar.MaximumProperty] = parent[~ScrollViewer.VerticalScrollBarMaximumProperty],
+                            [~~ScrollBar.ValueProperty] = parent[~~ScrollViewer.VerticalScrollBarValueProperty],
+                        }
+                    }
+                });
         }
 
         private void Prepare(ListBox target)

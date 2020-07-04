@@ -11,6 +11,7 @@
     <ItemGroup>
         <Compile Include="AvaloniaXamlLoader.cs" />
         <Compile Include="Converters\AvaloniaUriTypeConverter.cs" />
+        <Compile Include="Converters\ColorToBrushConverter.cs" />
         <Compile Include="Converters\FontFamilyTypeConverter.cs" />
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />
         <Compile Include="Extensions.cs" />

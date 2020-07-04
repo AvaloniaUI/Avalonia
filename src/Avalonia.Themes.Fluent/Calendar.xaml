@@ -1,0 +1,32 @@
+<!--
+// (c) Copyright Microsoft Corporation.
+// This source is subject to the Microsoft Public License (Ms-PL).
+// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// All other rights reserved.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui">  
+  <Style Selector="Calendar">
+    <Setter Property="Foreground" Value="{DynamicResource CalendarViewForeground}" />
+    <Setter Property="Background" Value="{DynamicResource CalendarViewBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Name="Root"
+                    HorizontalAlignment="Center"
+                    ClipToBounds="True">
+
+                    <CalendarItem Name="CalendarItem"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        HeaderBackground="{TemplateBinding HeaderBackground}"/>
+
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>

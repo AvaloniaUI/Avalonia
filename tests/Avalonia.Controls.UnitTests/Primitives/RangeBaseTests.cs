@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.ComponentModel;
 using Avalonia.Controls.Primitives;
@@ -80,22 +77,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(0, target.Minimum);
             Assert.Equal(50, target.Maximum);
             Assert.Equal(50, target.Value);
-        }
-
-        [Fact]
-        public void Properties_Should_Not_Accept_Nan_And_Inifinity()
-        {
-            var target = new TestRange();
-
-            Assert.Throws<ArgumentException>(() => target.Minimum = double.NaN);
-            Assert.Throws<ArgumentException>(() => target.Minimum = double.PositiveInfinity);
-            Assert.Throws<ArgumentException>(() => target.Minimum = double.NegativeInfinity);
-            Assert.Throws<ArgumentException>(() => target.Maximum = double.NaN);
-            Assert.Throws<ArgumentException>(() => target.Maximum = double.PositiveInfinity);
-            Assert.Throws<ArgumentException>(() => target.Maximum = double.NegativeInfinity);
-            Assert.Throws<ArgumentException>(() => target.Value = double.NaN);
-            Assert.Throws<ArgumentException>(() => target.Value = double.PositiveInfinity);
-            Assert.Throws<ArgumentException>(() => target.Value = double.NegativeInfinity);
         }
 
         [Theory]

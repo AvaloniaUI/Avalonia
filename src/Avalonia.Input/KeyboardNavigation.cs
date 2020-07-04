@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Input
 {
     /// <summary>
@@ -32,6 +29,19 @@ namespace Avalonia.Input
             AvaloniaProperty.RegisterAttached<InputElement, IInputElement>(
                 "TabOnceActiveElement",
                 typeof(KeyboardNavigation));
+
+
+        /// <summary>
+        /// Defines the IsTabStop attached property.
+        /// </summary>
+        /// <remarks>
+        /// The IsTabStop attached property determines whether the control is focusable by tab navigation. 
+        /// </remarks>
+        public static readonly AttachedProperty<bool> IsTabStopProperty =
+            AvaloniaProperty.RegisterAttached<InputElement, bool>(
+                "IsTabStop",
+                typeof(KeyboardNavigation), 
+                true);
 
         /// <summary>
         /// Gets the <see cref="TabNavigationProperty"/> for a container.
@@ -71,6 +81,26 @@ namespace Avalonia.Input
         public static void SetTabOnceActiveElement(InputElement element, IInputElement value)
         {
             element.SetValue(TabOnceActiveElementProperty, value);
+        }
+
+        /// <summary>
+        /// Sets the <see cref="IsTabStopProperty"/> for a container.
+        /// </summary>
+        /// <param name="element">The container.</param>
+        /// <param name="value">Value indicating whether the container is a tab stop.</param>
+        public static void SetIsTabStop(InputElement element, bool value)
+        {
+            element.SetValue(IsTabStopProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IsTabStopProperty"/> for a container.
+        /// </summary>
+        /// <param name="element">The container.</param>
+        /// <returns>Whether the container is a tab stop.</returns>
+        public static bool GetIsTabStop(InputElement element)
+        {
+            return element.GetValue(IsTabStopProperty);
         }
     }
 }

@@ -1,314 +1,325 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using Avalonia.Utilities;
-using Moq;
-using System;
+﻿using System;
 using System.Linq;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
+using System.Reactive.Disposables;
+using Avalonia.Data;
+using Avalonia.PropertyStore;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
 {
     public class PriorityValueTests
     {
-        private static readonly AvaloniaProperty TestProperty = 
-            new StyledProperty<string>(
-                "Test", 
-                typeof(PriorityValueTests), 
-                new StyledPropertyMetadata<string>());
+        private static readonly IValueSink NullSink = new MockSink();
+        private static readonly IAvaloniaObject Owner = Mock.Of<IAvaloniaObject>();
+        private static readonly StyledProperty<string> TestProperty = new StyledProperty<string>(
+            "Test",
+            typeof(PriorityValueTests),
+            new StyledPropertyMetadata<string>());
 
         [Fact]
-        public void Initial_Value_Should_Be_UnsetValue()
+        public void Constructor_Should_Set_Value_Based_On_Initial_Entry()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
+            var target = new PriorityValue<string>(
+                Owner,
+                TestProperty,
+                NullSink,
+                new ConstantValueEntry<string>(
+                    TestProperty,
+                    "1",
+                    BindingPriority.StyleTrigger,
+                    NullSink));
 
-            Assert.Same(AvaloniaProperty.UnsetValue, target.Value);
-        }
-
-        [Fact]
-        public void First_Binding_Sets_Value()
-        {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
-
-            target.Add(Single("foo"), 0);
-
-            Assert.Equal("foo", target.Value);
-        }
-
-        [Fact]
-        public void Changing_Binding_Should_Set_Value()
-        {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
-            var subject = new BehaviorSubject<string>("foo");
-
-            target.Add(subject, 0);
-            Assert.Equal("foo", target.Value);
-            subject.OnNext("bar");
-            Assert.Equal("bar", target.Value);
+            Assert.Equal("1", target.GetValue().Value);
+            Assert.Equal(BindingPriority.StyleTrigger, target.Priority);
         }
 
         [Fact]
-        public void Setting_Direct_Value_Should_Override_Binding()
+        public void GetValue_Should_Respect_MaxPriority()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
+            var target = new PriorityValue<string>(
+                Owner,
+                TestProperty,
+                NullSink);
 
-            target.Add(Single("foo"), 0);
-            target.SetValue("bar", 0);
+            target.SetValue("animation", BindingPriority.Animation);
+            target.SetValue("local", BindingPriority.LocalValue);
+            target.SetValue("styletrigger", BindingPriority.StyleTrigger);
+            target.SetValue("style", BindingPriority.Style);
 
-            Assert.Equal("bar", target.Value);
+            Assert.Equal("animation", target.GetValue(BindingPriority.Animation));
+            Assert.Equal("local", target.GetValue(BindingPriority.LocalValue));
+            Assert.Equal("styletrigger", target.GetValue(BindingPriority.StyleTrigger));
+            Assert.Equal("style", target.GetValue(BindingPriority.TemplatedParent));
+            Assert.Equal("style", target.GetValue(BindingPriority.Style));
         }
 
         [Fact]
-        public void Binding_Firing_Should_Override_Direct_Value()
+        public void SetValue_LocalValue_Should_Not_Add_Entries()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
-            var source = new BehaviorSubject<object>("initial");
+            var target = new PriorityValue<string>(
+                Owner,
+                TestProperty,
+                NullSink);
 
-            target.Add(source, 0);
-            Assert.Equal("initial", target.Value);
-            target.SetValue("first", 0);
-            Assert.Equal("first", target.Value);
-            source.OnNext("second");
-            Assert.Equal("second", target.Value);
+            target.SetValue("1", BindingPriority.LocalValue);
+            target.SetValue("2", BindingPriority.LocalValue);
+
+            Assert.Empty(target.Entries);
         }
 
         [Fact]
-        public void Earlier_Binding_Firing_Should_Not_Override_Later()
+        public void SetValue_Non_LocalValue_Should_Add_Entries()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
-            var nonActive = new BehaviorSubject<object>("na");
-            var source = new BehaviorSubject<object>("initial");
+            var target = new PriorityValue<string>(
+                Owner,
+                TestProperty,
+                NullSink);
 
-            target.Add(nonActive, 1);
-            target.Add(source, 1);
-            Assert.Equal("initial", target.Value);
-            target.SetValue("first", 1);
-            Assert.Equal("first", target.Value);
-            nonActive.OnNext("second");
-            Assert.Equal("first", target.Value);
+            target.SetValue("1", BindingPriority.Style);
+            target.SetValue("2", BindingPriority.Animation);
+
+            var result = target.Entries
+                .OfType<ConstantValueEntry<string>>()
+                .Select(x => x.GetValue().Value)
+                .ToList();
+
+            Assert.Equal(new[] { "1", "2" }, result);
         }
 
         [Fact]
-        public void Binding_Completing_Should_Revert_To_Direct_Value()
+        public void Priority_Should_Be_Set()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
-            var source = new BehaviorSubject<object>("initial");
+            var target = new PriorityValue<string>(
+                Owner,
+                TestProperty,
+                NullSink);
 
-            target.Add(source, 0);
-            Assert.Equal("initial", target.Value);
-            target.SetValue("first", 0);
-            Assert.Equal("first", target.Value);
-            source.OnNext("second");
-            Assert.Equal("second", target.Value);
-            source.OnCompleted();
-            Assert.Equal("first", target.Value);
+            Assert.Equal(BindingPriority.Unset, target.Priority);
+            target.SetValue("style", BindingPriority.Style);
+            Assert.Equal(BindingPriority.Style, target.Priority);
+            target.SetValue("local", BindingPriority.LocalValue);
+            Assert.Equal(BindingPriority.LocalValue, target.Priority);
+            target.SetValue("animation", BindingPriority.Animation);
+            Assert.Equal(BindingPriority.Animation, target.Priority);
+            target.SetValue("local2", BindingPriority.LocalValue);
+            Assert.Equal(BindingPriority.Animation, target.Priority);
         }
 
         [Fact]
-        public void Binding_With_Lower_Priority_Has_Precedence()
+        public void Binding_With_Same_Priority_Should_Be_Appended()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var source1 = new Source("1");
+            var source2 = new Source("2");
 
-            target.Add(Single("foo"), 1);
-            target.Add(Single("bar"), 0);
-            target.Add(Single("baz"), 1);
+            target.AddBinding(source1, BindingPriority.LocalValue);
+            target.AddBinding(source2, BindingPriority.LocalValue);
 
-            Assert.Equal("bar", target.Value);
+            var result = target.Entries
+                .OfType<BindingEntry<string>>()
+                .Select(x => x.Source)
+                .OfType<Source>()
+                .Select(x => x.Id)
+                .ToList();
+
+            Assert.Equal(new[] { "1", "2" }, result);
         }
 
         [Fact]
-        public void Later_Binding_With_Same_Priority_Should_Take_Precedence()
+        public void Binding_With_Higher_Priority_Should_Be_Appended()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var source1 = new Source("1");
+            var source2 = new Source("2");
 
-            target.Add(Single("foo"), 1);
-            target.Add(Single("bar"), 0);
-            target.Add(Single("baz"), 0);
-            target.Add(Single("qux"), 1);
+            target.AddBinding(source1, BindingPriority.LocalValue);
+            target.AddBinding(source2, BindingPriority.Animation);
 
-            Assert.Equal("baz", target.Value);
+            var result = target.Entries
+                .OfType<BindingEntry<string>>()
+                .Select(x => x.Source)
+                .OfType<Source>()
+                .Select(x => x.Id)
+                .ToList();
+
+            Assert.Equal(new[] { "1", "2" }, result);
         }
 
         [Fact]
-        public void Changing_Binding_With_Lower_Priority_Should_Set_Not_Value()
+        public void Binding_With_Lower_Priority_Should_Be_Prepended()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
-            var subject = new BehaviorSubject<string>("bar");
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var source1 = new Source("1");
+            var source2 = new Source("2");
 
-            target.Add(Single("foo"), 0);
-            target.Add(subject, 1);
-            Assert.Equal("foo", target.Value);
-            subject.OnNext("baz");
-            Assert.Equal("foo", target.Value);
+            target.AddBinding(source1, BindingPriority.LocalValue);
+            target.AddBinding(source2, BindingPriority.Style);
+
+            var result = target.Entries
+                .OfType<BindingEntry<string>>()
+                .Select(x => x.Source)
+                .OfType<Source>()
+                .Select(x => x.Id)
+                .ToList();
+
+            Assert.Equal(new[] { "2", "1" }, result);
         }
 
         [Fact]
-        public void UnsetValue_Should_Fall_Back_To_Next_Binding()
+        public void Second_Binding_With_Lower_Priority_Should_Be_Inserted_In_Middle()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
-            var subject = new BehaviorSubject<object>("bar");
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var source1 = new Source("1");
+            var source2 = new Source("2");
+            var source3 = new Source("3");
 
-            target.Add(subject, 0);
-            target.Add(Single("foo"), 1);
+            target.AddBinding(source1, BindingPriority.LocalValue);
+            target.AddBinding(source2, BindingPriority.Style);
+            target.AddBinding(source3, BindingPriority.Style);
 
-            Assert.Equal("bar", target.Value);
+            var result = target.Entries
+                .OfType<BindingEntry<string>>()
+                .Select(x => x.Source)
+                .OfType<Source>()
+                .Select(x => x.Id)
+                .ToList();
 
-            subject.OnNext(AvaloniaProperty.UnsetValue);
-
-            Assert.Equal("foo", target.Value);
+            Assert.Equal(new[] { "2", "3", "1" }, result);
         }
 
         [Fact]
-        public void Adding_Value_Should_Call_OnNext()
+        public void Competed_Binding_Should_Be_Removed()
         {
-            var owner = GetMockOwner();
-            var target = new PriorityValue(owner.Object, TestProperty, typeof(string));
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var source1 = new Source("1");
+            var source2 = new Source("2");
+            var source3 = new Source("3");
 
-            target.Add(Single("foo"), 0);
+            target.AddBinding(source1, BindingPriority.LocalValue).Start();
+            target.AddBinding(source2, BindingPriority.Style).Start();
+            target.AddBinding(source3, BindingPriority.Style).Start();
+            source3.OnCompleted();
 
-            owner.Verify(x => x.Changed(target.Property, target.ValuePriority, AvaloniaProperty.UnsetValue, "foo"));
+            var result = target.Entries
+                .OfType<BindingEntry<string>>()
+                .Select(x => x.Source)
+                .OfType<Source>()
+                .Select(x => x.Id)
+                .ToList();
+
+            Assert.Equal(new[] { "2", "1" }, result);
         }
 
         [Fact]
-        public void Changing_Value_Should_Call_OnNext()
+        public void Value_Should_Come_From_Last_Entry()
         {
-            var owner = GetMockOwner();
-            var target = new PriorityValue(owner.Object, TestProperty, typeof(string));
-            var subject = new BehaviorSubject<object>("foo");
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var source1 = new Source("1");
+            var source2 = new Source("2");
+            var source3 = new Source("3");
 
-            target.Add(subject, 0);
-            subject.OnNext("bar");
+            target.AddBinding(source1, BindingPriority.LocalValue).Start();
+            target.AddBinding(source2, BindingPriority.Style).Start();
+            target.AddBinding(source3, BindingPriority.Style).Start();
 
-            owner.Verify(x => x.Changed(target.Property, target.ValuePriority, "foo", "bar"));
+            Assert.Equal("1", target.GetValue().Value);
         }
 
         [Fact]
-        public void Disposing_A_Binding_Should_Revert_To_Next_Value()
+        public void LocalValue_Should_Override_LocalValue_Binding()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var source1 = new Source("1");
 
-            target.Add(Single("foo"), 0);
-            var disposable = target.Add(Single("bar"), 0);
+            target.AddBinding(source1, BindingPriority.LocalValue).Start();
+            target.SetValue("2", BindingPriority.LocalValue);
 
-            Assert.Equal("bar", target.Value);
-            disposable.Dispose();
-            Assert.Equal("foo", target.Value);
+            Assert.Equal("2", target.GetValue().Value);
         }
 
         [Fact]
-        public void Disposing_A_Binding_Should_Remove_BindingEntry()
+        public void LocalValue_Should_Override_Style_Binding()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var source1 = new Source("1");
 
-            target.Add(Single("foo"), 0);
-            var disposable = target.Add(Single("bar"), 0);
+            target.AddBinding(source1, BindingPriority.Style).Start();
+            target.SetValue("2", BindingPriority.LocalValue);
 
-            Assert.Equal(2, target.GetBindings().Count());
-            disposable.Dispose();
-            Assert.Single(target.GetBindings());
+            Assert.Equal("2", target.GetValue().Value);
         }
 
         [Fact]
-        public void Completing_A_Binding_Should_Revert_To_Previous_Binding()
+        public void LocalValue_Should_Not_Override_Animation_Binding()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
-            var source = new BehaviorSubject<object>("bar");
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var source1 = new Source("1");
 
-            target.Add(Single("foo"), 0);
-            target.Add(source, 0);
+            target.AddBinding(source1, BindingPriority.Animation).Start();
+            target.SetValue("2", BindingPriority.LocalValue);
 
-            Assert.Equal("bar", target.Value);
-            source.OnCompleted();
-            Assert.Equal("foo", target.Value);
+            Assert.Equal("1", target.GetValue().Value);
         }
 
         [Fact]
-        public void Completing_A_Binding_Should_Revert_To_Lower_Priority()
+        public void NonAnimated_Value_Should_Be_Correct_1()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
-            var source = new BehaviorSubject<object>("bar");
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var source1 = new Source("1");
+            var source2 = new Source("2");
+            var source3 = new Source("3");
 
-            target.Add(Single("foo"), 1);
-            target.Add(source, 0);
+            target.AddBinding(source1, BindingPriority.LocalValue).Start();
+            target.AddBinding(source2, BindingPriority.Style).Start();
+            target.AddBinding(source3, BindingPriority.Animation).Start();
 
-            Assert.Equal("bar", target.Value);
-            source.OnCompleted();
-            Assert.Equal("foo", target.Value);
+            Assert.Equal("3", target.GetValue().Value);
+            Assert.Equal("1", target.GetValue(BindingPriority.LocalValue).Value);
         }
 
         [Fact]
-        public void Completing_A_Binding_Should_Remove_BindingEntry()
+        public void NonAnimated_Value_Should_Be_Correct_2()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(string));
-            var subject = new BehaviorSubject<object>("bar");
+            var target = new PriorityValue<string>(Owner, TestProperty, NullSink);
+            var source1 = new Source("1");
+            var source2 = new Source("2");
+            var source3 = new Source("3");
 
-            target.Add(Single("foo"), 0);
-            target.Add(subject, 0);
+            target.AddBinding(source1, BindingPriority.Animation).Start();
+            target.AddBinding(source2, BindingPriority.Style).Start();
+            target.AddBinding(source3, BindingPriority.Style).Start();
 
-            Assert.Equal(2, target.GetBindings().Count());
-            subject.OnCompleted();
-            Assert.Single(target.GetBindings());
+            Assert.Equal("1", target.GetValue().Value);
+            Assert.Equal("3", target.GetValue(BindingPriority.LocalValue).Value);
         }
 
-        [Fact]
-        public void Direct_Value_Should_Be_Coerced()
+        private class Source : IObservable<BindingValue<string>>
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(int), x => Math.Min((int)x, 10));
+            private IObserver<BindingValue<string>> _observer;
 
-            target.SetValue(5, 0);
-            Assert.Equal(5, target.Value);
-            target.SetValue(15, 0);
-            Assert.Equal(10, target.Value);
+            public Source(string id) => Id = id;
+            public string Id { get; }
+
+            public IDisposable Subscribe(IObserver<BindingValue<string>> observer)
+            {
+                _observer = observer;
+                observer.OnNext(Id);
+                return Disposable.Empty;
+            }
+
+            public void OnCompleted() => _observer.OnCompleted();
         }
 
-        [Fact]
-        public void Bound_Value_Should_Be_Coerced()
+        private class MockSink : IValueSink
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(int), x => Math.Min((int)x, 10));
-            var source = new Subject<object>();
+            public void Completed<T>(StyledPropertyBase<T> property, IPriorityValueEntry entry, Optional<T> oldValue)
+            {
+            }
 
-            target.Add(source, 0);
-            source.OnNext(5);
-            Assert.Equal(5, target.Value);
-            source.OnNext(15);
-            Assert.Equal(10, target.Value);
-        }
-
-        [Fact]
-        public void Revalidate_Should_ReCoerce_Value()
-        {
-            var max = 10;
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(int), x => Math.Min((int)x, max));
-            var source = new Subject<object>();
-
-            target.Add(source, 0);
-            source.OnNext(5);
-            Assert.Equal(5, target.Value);
-            source.OnNext(15);
-            Assert.Equal(10, target.Value);
-            max = 12;
-            target.Revalidate();
-            Assert.Equal(12, target.Value);
-        }
-
-        /// <summary>
-        /// Returns an observable that returns a single value but does not complete.
-        /// </summary>
-        /// <typeparam name="T">The type of the observable.</typeparam>
-        /// <param name="value">The value.</param>
-        /// <returns>The observable.</returns>
-        private IObservable<T> Single<T>(T value)
-        {
-            return Observable.Never<T>().StartWith(value);
-        }
-
-        private static Mock<IPriorityValueOwner> GetMockOwner()
-        {
-            var owner = new Mock<IPriorityValueOwner>();
-            owner.Setup(o => o.GetNonDirectDeferredSetter(It.IsAny<AvaloniaProperty>())).Returns(new DeferredSetter<object>());
-            return owner;
+            public void ValueChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+            {
+            }
         }
     }
 }

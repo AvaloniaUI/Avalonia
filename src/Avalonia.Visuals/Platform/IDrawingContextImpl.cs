@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Media;
 using Avalonia.Rendering.SceneGraph;
@@ -33,7 +30,7 @@ namespace Avalonia.Platform
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default);
+        void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default);
 
         /// <summary>
         /// Draws a bitmap image.
@@ -42,7 +39,7 @@ namespace Avalonia.Platform
         /// <param name="opacityMask">The opacity mask to draw with.</param>
         /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect);
+        void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect);
 
         /// <summary>
         /// Draws a line.
@@ -61,12 +58,18 @@ namespace Avalonia.Platform
         void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry);
 
         /// <summary>
-        /// Draws the outline of a rectangle.
+        /// Draws a rectangle with the specified Brush and Pen.
         /// </summary>
-        /// <param name="pen">The pen.</param>
+        /// <param name="brush">The brush used to fill the rectangle, or <c>null</c> for no fill.</param>
+        /// <param name="pen">The pen used to stroke the rectangle, or <c>null</c> for no stroke.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        /// <param name="cornerRadius">The corner radius.</param>
-        void DrawRectangle(IPen pen, Rect rect, float cornerRadius = 0.0f);
+        /// <param name="boxShadows">Box shadow effect parameters</param>
+        /// <remarks>
+        /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
+        /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
+        /// </remarks>
+        void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect,
+            BoxShadows boxShadow = default);
 
         /// <summary>
         /// Draws text.
@@ -77,12 +80,12 @@ namespace Avalonia.Platform
         void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text);
 
         /// <summary>
-        /// Draws a filled rectangle.
+        /// Draws a glyph run.
         /// </summary>
-        /// <param name="brush">The brush.</param>
-        /// <param name="rect">The rectangle bounds.</param>
-        /// <param name="cornerRadius">The corner radius.</param>
-        void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f);
+        /// <param name="foreground">The foreground.</param>
+        /// <param name="glyphRun">The glyph run.</param>
+        /// <param name="baselineOrigin">The baseline origin of the glyph run.</param>
+        void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin);
 
         /// <summary>
         /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer
@@ -103,6 +106,12 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="clip">The clip rectangle.</param>
         void PushClip(Rect clip);
+
+        /// <summary>
+        /// Pushes a clip rounded rectangle.
+        /// </summary>
+        /// <param name="clip">The clip rounded rectangle</param>
+        void PushClip(RoundedRect clip);
 
         /// <summary>
         /// Pops the latest pushed clip rectangle.

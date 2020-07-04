@@ -1,10 +1,8 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Native.Interop;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 
@@ -14,14 +12,18 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
+        private readonly GlPlatformFeature _glFeature;
         IAvnWindow _native;
-        public WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(opts)
+        internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
+            GlPlatformFeature glFeature) : base(opts, glFeature)
         {
             _factory = factory;
             _opts = opts;
+            _glFeature = glFeature;
             using (var e = new WindowEvents(this))
             {
-                Init(_native = factory.CreateWindow(e), factory.CreateScreens());
+                var context = _opts.UseGpu ? glFeature?.DeferredContext : null;
+                Init(_native = factory.CreateWindow(e, context?.Context), factory.CreateScreens(), context);
             }
 
             NativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
@@ -38,7 +40,7 @@ namespace Avalonia.Native
 
             bool IAvnWindowEvents.Closing()
             {
-                if(_parent.Closing != null)
+                if (_parent.Closing != null)
                 {
                     return _parent.Closing();
                 }
@@ -50,26 +52,26 @@ namespace Avalonia.Native
             {
                 _parent.WindowStateChanged?.Invoke((WindowState)state);
             }
+
+            void IAvnWindowEvents.GotInputWhenDisabled()
+            {
+                _parent.GotInputWhenDisabled?.Invoke();
+            }
         }
 
         public IAvnWindow Native => _native;
-
-        public void ShowDialog(IWindowImpl window)
-        {
-            _native.ShowDialog(((WindowImpl)window).Native);
-        }
 
         public void CanResize(bool value)
         {
             _native.CanResize = value;
         }
 
-        public void SetSystemDecorations(bool enabled)
+        public void SetSystemDecorations(Controls.SystemDecorations enabled)
         {
-            _native.HasDecorations = enabled;
+            _native.Decorations = (Interop.SystemDecorations)enabled;
         }
 
-        public void SetTitleBarColor (Avalonia.Media.Color color)
+        public void SetTitleBarColor(Avalonia.Media.Color color)
         {
             _native.SetTitleBarColor(new AvnColor { Alpha = color.A, Red = color.R, Green = color.G, Blue = color.B });
         }
@@ -113,6 +115,18 @@ namespace Avalonia.Native
         public void Move(PixelPoint point) => Position = point;
 
         public override IPopupImpl CreatePopup() =>
-            _opts.OverlayPopups ? null : new PopupImpl(_factory, _opts, this);
+            _opts.OverlayPopups ? null : new PopupImpl(_factory, _opts, _glFeature, this);
+
+        public Action GotInputWhenDisabled { get; set; }
+
+        public void SetParent(IWindowImpl parent)
+        {
+            _native.SetParent(((WindowImpl)parent).Native);
+        }
+
+        public void SetEnabled(bool enable)
+        {
+            _native.SetEnabled(enable);
+        }
     }
 }
