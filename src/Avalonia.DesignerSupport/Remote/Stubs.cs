@@ -19,7 +19,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
         public IPlatformHandle Handle { get; }
-        public Size MaxClientSize { get; }
+        public Size MaxAutoSizeHint { get; }
         public Size ClientSize { get; }
         public double Scaling { get; } = 1.0;
         public IEnumerable<object> Surfaces { get; }
@@ -29,6 +29,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<double> ScalingChanged { get; set; }
         public Func<bool> Closing { get; set; }
         public Action Closed { get; set; }
+        public Action LostFocus { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
         public IPopupImpl CreatePopup() => new WindowStub(this);
 

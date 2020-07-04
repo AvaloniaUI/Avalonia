@@ -27,6 +27,7 @@
                             Grid.ColumnSpan="2"
                             TextBlock.FontWeight="Normal"
                             TextBlock.Foreground="{DynamicResource TextControlHeaderForeground}"
+                            IsVisible="False"
                             Margin="{DynamicResource TextBoxTopHeaderMargin}" />
           
           <Border Name="border"

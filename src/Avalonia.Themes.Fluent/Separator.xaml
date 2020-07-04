@@ -4,17 +4,15 @@
     <Setter Property="Focusable" Value="False"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Border BorderBrush="{TemplateBinding BorderBrush}"
+        <Border Padding="{TemplateBinding Margin}"
+                Height="{TemplateBinding Height}"
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 Background="{TemplateBinding Background}"/>
       </ControlTemplate>
     </Setter>
-  </Style>
-
-  <Style Selector="MenuItem > Separator, ContextMenu > Separator">
-    <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}"/>
-    <Setter Property="Margin" Value="29,1,0,1"/>
-    <Setter Property="Height" Value="1"/>
   </Style>
 
 </Styles>

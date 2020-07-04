@@ -12,7 +12,7 @@ namespace Avalonia.Data.Core.Plugins
     public class InpcPropertyAccessorPlugin : IPropertyAccessorPlugin
     {
         /// <inheritdoc/>
-        public bool Match(object obj, string propertyName) => true;
+        public bool Match(object obj, string propertyName) => GetPropertyWithName(obj.GetType(), propertyName) != null;
 
         /// <summary>
         /// Starts monitoring the value of a property on an object.
@@ -30,10 +30,7 @@ namespace Avalonia.Data.Core.Plugins
 
             reference.TryGetTarget(out object instance);
 
-            const BindingFlags bindingFlags = BindingFlags.NonPublic | BindingFlags.Public |
-                                              BindingFlags.Static | BindingFlags.Instance;
-
-            var p = instance.GetType().GetProperty(propertyName, bindingFlags);
+            var p = GetPropertyWithName(instance.GetType(), propertyName);
 
             if (p != null)
             {
@@ -45,6 +42,14 @@ namespace Avalonia.Data.Core.Plugins
                 var exception = new MissingMemberException(message);
                 return new PropertyError(new BindingNotification(exception, BindingErrorType.Error));
             }
+        }
+
+        private static PropertyInfo GetPropertyWithName(Type type, string propertyName)
+        {
+            const BindingFlags bindingFlags = BindingFlags.NonPublic | BindingFlags.Public |
+                                              BindingFlags.Static | BindingFlags.Instance;
+
+            return type.GetProperty(propertyName, bindingFlags);
         }
 
         private class Accessor : PropertyAccessorBase, IWeakSubscriber<PropertyChangedEventArgs>

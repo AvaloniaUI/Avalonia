@@ -389,6 +389,12 @@ namespace Avalonia.Skia
             Canvas.ClipRect(clip.ToSKRect());
         }
 
+        public void PushClip(RoundedRect clip)
+        {
+            Canvas.Save();
+            Canvas.ClipRoundRect(clip.ToSKRoundRect());
+        }
+
         /// <inheritdoc />
         public void PopClip()
         {

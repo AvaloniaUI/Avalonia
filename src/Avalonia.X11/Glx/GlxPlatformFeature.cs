@@ -37,7 +37,7 @@ namespace Avalonia.X11.Glx
             }
             catch(Exception e)
             {
-                Logger.TryGet(LogEventLevel.Error)?.Log("OpenGL", null, "Unable to initialize GLX-based rendering: {0}", e);
+                Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log(null, "Unable to initialize GLX-based rendering: {0}", e);
                 return null;
             }
         }

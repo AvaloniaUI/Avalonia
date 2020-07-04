@@ -28,6 +28,5 @@
     <ProjectReference Include="..\..\src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj" />
   </ItemGroup>
   
-  <Import Project="..\..\build\Serilog.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

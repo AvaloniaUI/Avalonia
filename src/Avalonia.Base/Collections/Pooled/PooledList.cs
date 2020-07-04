@@ -138,7 +138,6 @@ namespace Avalonia.Collections.Pooled
         /// initially empty, but will have room for the given number of elements
         /// before any reallocations are required.
         /// </summary>
-        /// <param name="sizeToCapacity">If true, Count of list equals capacity. Depending on ClearMode, rented items may or may not hold dirty values.</param>
         public PooledList(int capacity, ClearMode clearMode, ArrayPool<T> customPool, bool sizeToCapacity)
         {
             if (capacity < 0)
@@ -499,11 +498,13 @@ namespace Avalonia.Collections.Pooled
         public void AddRange(T[] array)
             => AddRange(array.AsSpan());
 
+#pragma warning disable CS0419
         /// <summary>
         /// Adds the elements of the given <see cref="ReadOnlySpan{T}"/> to the end of this list. If
         /// required, the capacity of the list is increased to twice the previous
         /// capacity or the new size, whichever is larger.
         /// </summary>
+#pragma warning restore CS0419
         public void AddRange(ReadOnlySpan<T> span)
         {
             var newSpan = InsertSpan(_size, span.Length, false);

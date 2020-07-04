@@ -113,7 +113,7 @@ namespace Avalonia.Controls.Presenters
         {
             var scrollable = (ILogicalScrollable)Owner;
             var visualRoot = Owner.GetVisualRoot();
-            var maxAvailableSize = (visualRoot as WindowBase)?.PlatformImpl?.MaxClientSize
+            var maxAvailableSize = (visualRoot as WindowBase)?.PlatformImpl?.MaxAutoSizeHint
                  ?? (visualRoot as TopLevel)?.ClientSize;
 
             // If infinity is passed as the available size and we're virtualized then we need to

@@ -259,7 +259,7 @@ namespace Avalonia.Controls.Primitives
                 CoerceLength(ref increaseButtonLength, arrangeSize.Width);
                 CoerceLength(ref thumbLength, arrangeSize.Width);
 
-                offset = offset.WithY(isDirectionReversed ? increaseButtonLength + thumbLength : 0.0);
+                offset = offset.WithX(isDirectionReversed ? increaseButtonLength + thumbLength : 0.0);
                 pieceSize = pieceSize.WithWidth(decreaseButtonLength);
 
                 if (DecreaseButton != null)

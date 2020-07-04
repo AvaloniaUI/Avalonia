@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media;
@@ -18,7 +19,8 @@ namespace Avalonia.Win32
     /// <summary>
     /// Window implementation for Win32 platform.
     /// </summary>
-    public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
+    public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
+        ITopLevelImplWithNativeControlHost
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -52,6 +54,7 @@ namespace Avalonia.Win32
         private readonly FramebufferManager _framebuffer;
         private readonly IGlPlatformSurface _gl;
 
+        private Win32NativeControlHost _nativeControlHost;
         private WndProc _wndProcDelegate;
         private string _className;
         private IntPtr _hwnd;
@@ -66,6 +69,7 @@ namespace Avalonia.Win32
         private OleDropTarget _dropTarget;
         private Size _minSize;
         private Size _maxSize;
+        private POINT _maxTrackSize;
         private WindowImpl _parent;
 
         public WindowImpl()
@@ -100,6 +104,7 @@ namespace Avalonia.Win32
 
             Screen = new ScreenImpl();
 
+            _nativeControlHost = new Win32NativeControlHost(this);
             s_instances.Add(this);
         }
 
@@ -122,6 +127,8 @@ namespace Avalonia.Win32
         public Action<PixelPoint> PositionChanged { get; set; }
 
         public Action<WindowState> WindowStateChanged { get; set; }
+        
+        public Action LostFocus { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
@@ -168,16 +175,7 @@ namespace Avalonia.Win32
 
         public IPlatformHandle Handle { get; private set; }
 
-        public Size MaxClientSize
-        {
-            get
-            {
-                return (new Size(
-                            GetSystemMetrics(SystemMetric.SM_CXMAXTRACK),
-                            GetSystemMetrics(SystemMetric.SM_CYMAXTRACK))
-                        - BorderThickness) / Scaling;
-            }
-        }
+        public virtual Size MaxAutoSizeHint => new Size(_maxTrackSize.X / Scaling, _maxTrackSize.Y / Scaling);
 
         public IMouseDevice MouseDevice => _mouseDevice;
 
@@ -210,6 +208,8 @@ namespace Avalonia.Win32
         }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        protected IntPtr Hwnd => _hwnd;
 
         public void SetTransparencyLevelHint (WindowTransparencyLevel transparencyLevel)
         {
@@ -529,7 +529,7 @@ namespace Avalonia.Win32
                 0,
                 atom,
                 null,
-                (int)WindowStyles.WS_OVERLAPPEDWINDOW,
+                (int)WindowStyles.WS_OVERLAPPEDWINDOW | (int) WindowStyles.WS_CLIPCHILDREN,
                 CW_USEDEFAULT,
                 CW_USEDEFAULT,
                 CW_USEDEFAULT,
@@ -577,7 +577,7 @@ namespace Avalonia.Win32
 
             Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
 
-            _multitouch = Win32Platform.Options.EnableMultitouch ?? false;
+            _multitouch = Win32Platform.Options.EnableMultitouch ?? true;
 
             if (_multitouch)
             {

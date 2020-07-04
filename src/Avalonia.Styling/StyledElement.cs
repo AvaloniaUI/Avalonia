@@ -67,7 +67,6 @@ namespace Avalonia
         private List<IStyleInstance>? _appliedStyles;
         private ITemplatedControl? _templatedParent;
         private bool _dataContextUpdating;
-        private bool _notifyingResourcesChanged;
 
         /// <summary>
         /// Initializes static members of the <see cref="StyledElement"/> class.
@@ -689,8 +688,7 @@ namespace Avalonia
 #if DEBUG
                 if (((INotifyCollectionChangedDebug)Classes).GetCollectionChangedSubscribers()?.Length > 0)
                 {
-                    Logger.TryGet(LogEventLevel.Warning)?.Log(
-                        LogArea.Control,
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
                         this,
                         "{Type} detached from logical tree but still has class listeners",
                         GetType());

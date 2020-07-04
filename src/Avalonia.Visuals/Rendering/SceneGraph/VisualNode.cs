@@ -47,6 +47,9 @@ namespace Avalonia.Rendering.SceneGraph
         public IVisualNode Parent { get; }
 
         /// <inheritdoc/>
+        public CornerRadius ClipToBoundsRadius { get; set; }
+
+        /// <inheritdoc/>
         public Matrix Transform { get; set; }
 
         /// <inheritdoc/>
@@ -262,6 +265,7 @@ namespace Avalonia.Rendering.SceneGraph
             {
                 Transform = Transform,
                 ClipBounds = ClipBounds,
+                ClipToBoundsRadius =  ClipToBoundsRadius,
                 ClipToBounds = ClipToBounds,
                 LayoutBounds = LayoutBounds,
                 GeometryClip = GeometryClip,
@@ -301,7 +305,10 @@ namespace Avalonia.Rendering.SceneGraph
             if (ClipToBounds)
             {
                 context.Transform = Matrix.Identity;
-                context.PushClip(ClipBounds);
+                if (ClipToBoundsRadius.IsEmpty)
+                    context.PushClip(ClipBounds);
+                else
+                    context.PushClip(new RoundedRect(ClipBounds, ClipToBoundsRadius));
             }
 
             context.Transform = Transform;

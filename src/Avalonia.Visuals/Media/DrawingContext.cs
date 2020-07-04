@@ -4,6 +4,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media
@@ -154,12 +155,12 @@ namespace Avalonia.Media
                 return;
             }
 
-            if (Math.Abs(radiusX) > double.Epsilon)
+            if (!MathUtilities.IsZero(radiusX))
             {
                 radiusX = Math.Min(radiusX, rect.Width / 2);
             }
 
-            if (Math.Abs(radiusY) > double.Epsilon)
+            if (!MathUtilities.IsZero(radiusY))
             {
                 radiusY = Math.Min(radiusY, rect.Height / 2);
             }
@@ -281,6 +282,12 @@ namespace Avalonia.Media
             }
         }
 
+
+        public PushedState PushClip(RoundedRect clip)
+        {
+            PlatformImpl.PushClip(clip);
+            return new PushedState(this, PushedState.PushedStateType.Clip);
+        }
 
         /// <summary>
         /// Pushes a clip rectangle.

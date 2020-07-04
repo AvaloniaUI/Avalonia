@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia.Media;
 using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
@@ -27,7 +28,7 @@ namespace ControlCatalog.ViewModels
         public void AddItem()
         {
             var index = SelectedItem != null ? Items.IndexOf(SelectedItem) : -1;
-            Items.Insert(index + 1, new Item { Text = $"New Item {_newItemIndex++}" });
+            Items.Insert(index + 1, new Item(index + 1) { Text = $"New Item {_newItemIndex++}" });
         }
 
         public void RandomizeHeights()
@@ -52,7 +53,7 @@ namespace ControlCatalog.ViewModels
             _newGenerationIndex++;
 
             return new ObservableCollection<Item>(
-                Enumerable.Range(1, 100000).Select(i => new Item
+                Enumerable.Range(1, 100000).Select(i => new Item(i)
                 {
                     Text = $"Item {i.ToString()} {suffix}"
                 }));
@@ -61,6 +62,12 @@ namespace ControlCatalog.ViewModels
         public class Item : ReactiveObject
         {
             private double _height = double.NaN;
+            private int _index;
+
+            public Item(int index)
+            {
+                _index = index;
+            }
 
             public string Text { get; set; }
             
@@ -69,6 +76,8 @@ namespace ControlCatalog.ViewModels
                 get => _height;
                 set => this.RaiseAndSetIfChanged(ref _height, value);
             }
+
+            public IBrush Background => ((_index % 2) == 0) ? Brushes.Yellow : Brushes.Wheat;
         }
     }
 }

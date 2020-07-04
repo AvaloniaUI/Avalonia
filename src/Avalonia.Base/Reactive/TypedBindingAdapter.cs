@@ -32,8 +32,7 @@ namespace Avalonia.Reactive
             }
             catch (InvalidCastException e)
             {
-                Logger.TryGet(LogEventLevel.Error)?.Log(
-                    LogArea.Binding,
+                Logger.TryGet(LogEventLevel.Error, LogArea.Binding)?.Log(
                     _target,
                     "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
                     _property.Name,

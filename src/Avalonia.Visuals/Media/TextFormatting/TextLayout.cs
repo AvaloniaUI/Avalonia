@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Media.Immutable;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 using Avalonia.Utility;
 
 namespace Avalonia.Media.TextFormatting
@@ -184,7 +185,7 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         private void UpdateLayout()
         {
-            if (_text.IsEmpty || Math.Abs(MaxWidth) < double.Epsilon || Math.Abs(MaxHeight) < double.Epsilon)
+            if (_text.IsEmpty || MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
             {
                 var textLine = CreateEmptyTextLine(0);
 

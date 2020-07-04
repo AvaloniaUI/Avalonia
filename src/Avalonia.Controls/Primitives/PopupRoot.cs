@@ -82,11 +82,13 @@ namespace Avalonia.Controls.Primitives
         }
 
         public void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
-            PopupPositioningEdge anchor = PopupPositioningEdge.None,
-            PopupPositioningEdge gravity = PopupPositioningEdge.None)
+            PopupAnchor anchor = PopupAnchor.None,
+            PopupGravity gravity = PopupGravity.None,
+            PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
+            Rect? rect = null)
         {
             _positionerParameters.ConfigurePosition(_parent, target,
-                placement, offset, anchor, gravity);
+                placement, offset, anchor, gravity, constraintAdjustment, rect);
 
             if (_positionerParameters.Size != default)
                 UpdatePosition();
@@ -119,7 +121,20 @@ namespace Avalonia.Controls.Primitives
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var measured = base.MeasureOverride(availableSize);
+            var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
+            var constraint = availableSize;
+
+            if (double.IsInfinity(constraint.Width))
+            {
+                constraint = constraint.WithWidth(maxAutoSize.Width);
+            }
+
+            if (double.IsInfinity(constraint.Height))
+            {
+                constraint = constraint.WithHeight(maxAutoSize.Height);
+            }
+
+            var measured = base.MeasureOverride(constraint);
             var width = measured.Width;
             var height = measured.Height;
             var widthCache = Width;

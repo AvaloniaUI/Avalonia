@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Avalonia.Layout
 {
-    internal class LayoutQueue<T> : IReadOnlyCollection<T>
+    internal class LayoutQueue<T> : IReadOnlyCollection<T>, IDisposable
     {
         private struct Info
         {
@@ -77,11 +77,18 @@ namespace Avalonia.Layout
             {
                 if (_shouldEnqueue(item.Key))
                 {
-                    _loopQueueInfo[item.Key] = new Info() { Active = true, Count = item.Value.Count + 1 };
+                    _loopQueueInfo[item.Key] = new Info() { Active = true, Count = 0 };
                     _inner.Enqueue(item.Key);
                 }
             }
 
+            _notFinalizedBuffer.Clear();
+        }
+
+        public void Dispose()
+        {
+            _inner.Clear();
+            _loopQueueInfo.Clear();
             _notFinalizedBuffer.Clear();
         }
     }

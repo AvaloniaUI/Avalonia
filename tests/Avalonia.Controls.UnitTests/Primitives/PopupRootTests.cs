@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -181,18 +182,21 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Child_Should_Be_Measured_With_Infinity()
+        public void Child_Should_Be_Measured_With_MaxAutoSizeHint()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var child = new ChildControl();
                 var window = new Window();
-                var target = CreateTarget(window);
+                var popupImpl = MockWindowingPlatform.CreatePopupMock(window.PlatformImpl);
+                popupImpl.Setup(x => x.MaxAutoSizeHint).Returns(new Size(1200, 1000));
+                var target = CreateTarget(window, popupImpl.Object);
                 
                 target.Content = child;
                 target.Show();
 
-                Assert.Equal(Size.Infinity, child.MeasureSize);
+                Assert.Equal(1, child.MeasureSizes.Count);
+                Assert.Equal(new Size(1200, 1000), child.MeasureSizes[0]);
             }
         }
 
@@ -210,7 +214,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 target.Content = child;
                 target.Show();
 
-                Assert.Equal(new Size(500, 600), child.MeasureSize);
+                Assert.Equal(1, child.MeasureSizes.Count);
+                Assert.Equal(new Size(500, 600), child.MeasureSizes[0]);
             }
         }
 
@@ -228,7 +233,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 target.Content = child;
                 target.Show();
 
-                Assert.Equal(new Size(500, 600), child.MeasureSize);
+                Assert.Equal(1, child.MeasureSizes.Count);
+                Assert.Equal(new Size(500, 600), child.MeasureSizes[0]);
             }
         }
 
@@ -365,11 +371,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class ChildControl : Control
         {
-            public Size MeasureSize { get; private set; }
+            public List<Size> MeasureSizes { get; } = new List<Size>();
 
             protected override Size MeasureOverride(Size availableSize)
             {
-                MeasureSize = availableSize;
+                MeasureSizes.Add(availableSize);
                 return base.MeasureOverride(availableSize);
             }
         }

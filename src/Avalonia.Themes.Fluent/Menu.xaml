@@ -1,15 +1,33 @@
-<Style xmlns="https://github.com/avaloniaui" Selector="Menu">
+<Style xmlns="https://github.com/avaloniaui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+       Selector="Menu">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <Menu>
+        <MenuItem Header="New" />
+        <MenuItem Header="Open" />
+      </Menu>
+    </Border>
+  </Design.PreviewWith>
+
+  <Style.Resources>
+    <x:Double x:Key="MenuHeight">32</x:Double>
+  </Style.Resources>
+  <Setter Property="Background" Value="Transparent" />
+  <Setter Property="Height" Value="{StaticResource MenuHeight}" />
   <Setter Property="Template">
     <ControlTemplate>
       <Border Background="{TemplateBinding Background}"
               BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}"
+              HorizontalAlignment="Stretch"
               Padding="{TemplateBinding Padding}">
-        <ItemsPresenter Name="PART_ItemsPresenter" 
-                        Items="{TemplateBinding Items}" 
+        <ItemsPresenter Name="PART_ItemsPresenter"
+                        Items="{TemplateBinding Items}"
                         ItemsPanel="{TemplateBinding ItemsPanel}"
                         ItemTemplate="{TemplateBinding ItemTemplate}"
-                        KeyboardNavigation.TabNavigation="Continue"/>
+                        VerticalAlignment="Stretch"
+                        KeyboardNavigation.TabNavigation="Continue" />
       </Border>
     </ControlTemplate>
   </Setter>
