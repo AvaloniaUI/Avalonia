@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using Avalonia.Controls.Primitives;
-using Avalonia.Data;
-using Avalonia.Data.Converters;
+using Avalonia.Collections;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Utilities;
@@ -135,15 +131,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Ticks"/> property.
         /// </summary>
-        public static readonly StyledProperty<List<double>> TicksProperty =
-            AvaloniaProperty.Register<TickBar, List<double>>(nameof(Ticks));
+        public static readonly StyledProperty<AvaloniaList<double>> TicksProperty =
+            AvaloniaProperty.Register<TickBar, AvaloniaList<double>>(nameof(Ticks));
 
         /// <summary>
         /// The Ticks property contains collection of value of type Double which
         /// are the logical positions use to draw the ticks.
         /// The property value is a <see cref="DoubleCollection" />.
         /// </summary>
-        public List<double> Ticks
+        public AvaloniaList<double> Ticks
         {
             get { return GetValue(TicksProperty); }
             set { SetValue(TicksProperty, value); }

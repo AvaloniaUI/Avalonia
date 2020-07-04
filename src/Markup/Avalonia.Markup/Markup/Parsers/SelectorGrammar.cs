@@ -154,7 +154,7 @@ namespace Avalonia.Markup.Parsers
 
         private static (State, ISyntax) ParseColon(ref CharacterReader r)
         {
-            var identifier = r.ParseIdentifier();
+            var identifier = r.ParseStyleClass();
 
             if (identifier.IsEmpty)
             {
@@ -214,7 +214,7 @@ namespace Avalonia.Markup.Parsers
 
         private static (State, ISyntax) ParseClass(ref CharacterReader r)
         {
-            var @class = r.ParseIdentifier();
+            var @class = r.ParseStyleClass();
             if (@class.IsEmpty)
             {
                 throw new ExpressionParseException(r.Position, $"Expected a class name after '.'.");

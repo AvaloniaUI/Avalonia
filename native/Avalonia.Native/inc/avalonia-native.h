@@ -205,6 +205,15 @@ enum AvnMenuItemToggleType
     Radio
 };
 
+enum AvnExtendClientAreaChromeHints
+{
+    AvnNoChrome = 0,
+    AvnSystemChrome = 0x01,
+    AvnPreferSystemChrome = 0x02,
+    AvnOSXThickTitleBar = 0x08,
+    AvnDefaultChrome = AvnSystemChrome,
+};
+
 AVNCOM(IAvaloniaNativeFactory, 01) : IUnknown
 {
 public:
@@ -278,6 +287,11 @@ AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
     virtual HRESULT SetTitleBarColor (AvnColor color) = 0;
     virtual HRESULT SetWindowState(AvnWindowState state) = 0;
     virtual HRESULT GetWindowState(AvnWindowState*ret) = 0;
+    virtual HRESULT TakeFocusFromChildren() = 0;
+    virtual HRESULT SetExtendClientArea (bool enable) = 0;
+    virtual HRESULT SetExtendClientAreaHints (AvnExtendClientAreaChromeHints hints) = 0;
+    virtual HRESULT GetExtendTitleBarHeight (double*ret) = 0;
+    virtual HRESULT SetExtendTitleBarHeight (double value) = 0;
 };
 
 AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
@@ -493,8 +507,8 @@ AVNCOM(IAvnNativeControlHostTopLevelAttachment, 21) : IUnknown
     virtual void* GetParentHandle() = 0;
     virtual HRESULT InitializeWithChildHandle(void* child) = 0;
     virtual HRESULT AttachTo(IAvnNativeControlHost* host) = 0;
-    virtual void MoveTo(float x, float y, float width, float height) = 0;
-    virtual void Hide() = 0;
+    virtual void ShowInBounds(float x, float y, float width, float height) = 0;
+    virtual void HideWithSize(float width, float height) = 0;
     virtual void ReleaseChild() = 0;
 };
 

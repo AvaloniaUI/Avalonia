@@ -8,9 +8,16 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 {
     internal static class UnicodeEnumsGenerator
     {
-        public static List<(string name, string tag, string comment)> CreateScriptEnum()
+        public static List<DataEntry> CreateScriptEnum()
         {
-            var scriptValues = GetPropertyValueAliases("# Script (sc)");
+            var entries = new List<DataEntry>
+            {
+                new DataEntry("Unknown", "Zzzz", string.Empty),
+                new DataEntry("Common", "Zyyy", string.Empty),
+                new DataEntry("Inherited", "Zinh", string.Empty)
+            };
+
+            ParseDataEntries("# Script (sc)", entries);
 
             using (var stream = File.Create("Generated\\Script.cs"))
             using (var writer = new StreamWriter(stream))
@@ -20,22 +27,24 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                 writer.WriteLine("    public enum Script");
                 writer.WriteLine("    {");
 
-                foreach (var (name, tag, comment) in scriptValues)
+                foreach (var entry in entries)
                 {
-                    writer.WriteLine("        " + name + ", //" + tag +
-                                     (string.IsNullOrEmpty(comment) ? string.Empty : "#" + comment));
+                    writer.WriteLine("        " + entry.Name.Replace("_", "") + ", //" + entry.Tag +
+                                     (string.IsNullOrEmpty(entry.Comment) ? string.Empty : "#" + entry.Comment));
                 }
 
                 writer.WriteLine("    }");
                 writer.WriteLine("}");
             }
 
-            return scriptValues;
+            return entries;
         }
 
-        public static List<(string name, string tag, string comment)> CreateGeneralCategoryEnum()
+        public static List<DataEntry> CreateGeneralCategoryEnum()
         {
-            var generalCategoryValues = GetPropertyValueAliases("# General_Category (gc)");
+            var entries = new List<DataEntry> { new DataEntry("Other", "C", " Cc | Cf | Cn | Co | Cs") };
+
+            ParseDataEntries("# General_Category (gc)", entries);
 
             using (var stream = File.Create("Generated\\GeneralCategory.cs"))
             using (var writer = new StreamWriter(stream))
@@ -45,22 +54,24 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                 writer.WriteLine("    public enum GeneralCategory");
                 writer.WriteLine("    {");
 
-                foreach (var (name, tag, comment) in generalCategoryValues)
+                foreach (var entry in entries)
                 {
-                    writer.WriteLine("        " + name + ", //" + tag +
-                                     (string.IsNullOrEmpty(comment) ? string.Empty : "#" + comment));
+                    writer.WriteLine("        " + entry.Name.Replace("_", "") + ", //" + entry.Tag +
+                                     (string.IsNullOrEmpty(entry.Comment) ? string.Empty : "#" + entry.Comment));
                 }
 
                 writer.WriteLine("    }");
                 writer.WriteLine("}");
             }
 
-            return generalCategoryValues;
+            return entries;
         }
 
-        public static List<(string name, string tag, string comment)> CreateGraphemeBreakTypeEnum()
+        public static List<DataEntry> CreateGraphemeBreakTypeEnum()
         {
-            var graphemeClusterBreakValues = GetPropertyValueAliases("# Grapheme_Cluster_Break (GCB)");
+            var entries = new List<DataEntry> { new DataEntry("Other", "XX", string.Empty) };
+
+            ParseDataEntries("# Grapheme_Cluster_Break (GCB)", entries);
 
             using (var stream = File.Create("Generated\\GraphemeBreakClass.cs"))
             using (var writer = new StreamWriter(stream))
@@ -70,10 +81,10 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                 writer.WriteLine("    public enum GraphemeBreakClass");
                 writer.WriteLine("    {");
 
-                foreach (var (name, tag, comment) in graphemeClusterBreakValues)
+                foreach (var entry in entries)
                 {
-                    writer.WriteLine("        " + name + ", //" + tag +
-                                     (string.IsNullOrEmpty(comment) ? string.Empty : "#" + comment));
+                    writer.WriteLine("        " + entry.Name.Replace("_", "") + ", //" + entry.Tag +
+                                     (string.IsNullOrEmpty(entry.Comment) ? string.Empty : "#" + entry.Comment));
                 }
 
                 writer.WriteLine("        ExtendedPictographic");
@@ -82,7 +93,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                 writer.WriteLine("}");
             }
 
-            return graphemeClusterBreakValues;
+            return entries;
         }
 
         private static List<string> GenerateBreakPairTable()
@@ -185,20 +196,32 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             }
         }
 
-        public static List<(string name, string tag, string comment)> CreateLineBreakClassEnum()
+        public static List<DataEntry> CreateLineBreakClassEnum()
         {
             var usedLineBreakClasses = GenerateBreakPairTable();
 
-            var lineBreakValues = GetPropertyValueAliases("# Line_Break (lb)");
+            var entries = new List<DataEntry> { new DataEntry("Unknown", "XX", string.Empty) };
 
-            var lineBreakClassMappings = lineBreakValues.ToDictionary(x => x.tag, x => (x.name, x.tag, x.comment));
+            ParseDataEntries("# Line_Break (lb)", entries);
 
-            var orderedLineBreakValues = usedLineBreakClasses.Select(x =>
+            var orderedLineBreakEntries = new Dictionary<string, DataEntry>();
+
+            foreach (var tag in usedLineBreakClasses)
             {
-                var value = lineBreakClassMappings[x];
-                lineBreakClassMappings.Remove(x);
-                return value;
-            }).ToList();
+                var entry = entries.Single(x => x.Tag == tag);
+
+                orderedLineBreakEntries.Add(tag, entry);
+            }
+
+            foreach (var entry in entries)
+            {
+                if (orderedLineBreakEntries.ContainsKey(entry.Tag))
+                {
+                    continue;
+                }
+
+                orderedLineBreakEntries.Add(entry.Tag, entry);
+            }
 
             using (var stream = File.Create("Generated\\LineBreakClass.cs"))
             using (var writer = new StreamWriter(stream))
@@ -208,32 +231,24 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                 writer.WriteLine("    public enum LineBreakClass");
                 writer.WriteLine("    {");
 
-                foreach (var (name, tag, comment) in orderedLineBreakValues)
+                foreach (var entry in orderedLineBreakEntries.Values)
                 {
-                    writer.WriteLine("        " + name + ", //" + tag +
-                                     (string.IsNullOrEmpty(comment) ? string.Empty : "#" + comment));
-                }
-
-                writer.WriteLine();
-
-                foreach (var (name, tag, comment) in lineBreakClassMappings.Values)
-                {
-                    writer.WriteLine("        " + name + ", //" + tag +
-                                     (string.IsNullOrEmpty(comment) ? string.Empty : "#" + comment));
+                    writer.WriteLine("        " + entry.Name.Replace("_", "") + ", //" + entry.Tag +
+                                     (string.IsNullOrEmpty(entry.Comment) ? string.Empty : "#" + entry.Comment));
                 }
 
                 writer.WriteLine("    }");
                 writer.WriteLine("}");
             }
 
-            orderedLineBreakValues.AddRange(lineBreakClassMappings.Values);
-
-            return orderedLineBreakValues;
+            return orderedLineBreakEntries.Values.ToList();
         }
 
-        public static List<(string name, string tag, string comment)> CreateBiDiClassEnum()
+        public static List<DataEntry> CreateBiDiClassEnum()
         {
-            var biDiClassValues = GetPropertyValueAliases("# Bidi_Class (bc)");
+            var entries = new List<DataEntry> { new DataEntry("Left_To_Right", "L", string.Empty) };
+
+            ParseDataEntries("# Bidi_Class (bc)", entries);
 
             using (var stream = File.Create("Generated\\BiDiClass.cs"))
             using (var writer = new StreamWriter(stream))
@@ -243,23 +258,21 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                 writer.WriteLine("    public enum BiDiClass");
                 writer.WriteLine("    {");
 
-                foreach (var (name, tag, comment) in biDiClassValues)
+                foreach (var entry in entries)
                 {
-                    writer.WriteLine("        " + name + ", //" + tag +
-                                     (string.IsNullOrEmpty(comment) ? string.Empty : "#" + comment));
+                    writer.WriteLine("        " + entry.Name.Replace("_", "") + ", //" + entry.Tag +
+                                     (string.IsNullOrEmpty(entry.Comment) ? string.Empty : "#" + entry.Comment));
                 }
 
                 writer.WriteLine("    }");
                 writer.WriteLine("}");
             }
 
-            return biDiClassValues;
+            return entries;
         }
 
-        public static void CreatePropertyValueAliasHelper(List<(string name, string tag, string comment)> scriptValues,
-            List<(string name, string tag, string comment)> generalCategoryValues,
-            List<(string name, string tag, string comment)> biDiClassValues,
-            List<(string name, string tag, string comment)> lineBreakValues)
+        public static void CreatePropertyValueAliasHelper(List<DataEntry> scriptEntries, IEnumerable<DataEntry> generalCategoryEntries,
+            IEnumerable<DataEntry> biDiClassEntries, IEnumerable<DataEntry> lineBreakClassEntries)
         {
             using (var stream = File.Create("Generated\\PropertyValueAliasHelper.cs"))
             using (var writer = new StreamWriter(stream))
@@ -269,35 +282,35 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
                 writer.WriteLine("namespace Avalonia.Media.TextFormatting.Unicode");
                 writer.WriteLine("{");
-                writer.WriteLine("    public static class PropertyValueAliasHelper");
+                writer.WriteLine("    internal static class PropertyValueAliasHelper");
                 writer.WriteLine("    {");
 
-                WritePropertyValueAliasGetTag(writer, scriptValues, "Script", "Zzzz");
+                WritePropertyValueAliasGetTag(writer, scriptEntries, "Script", "Zzzz");
 
-                WritePropertyValueAlias(writer, scriptValues, "Script", "Unknown");
+                WritePropertyValueAlias(writer, scriptEntries, "Script", "Unknown");
 
-                WritePropertyValueAlias(writer, generalCategoryValues, "GeneralCategory", "Other");
+                WritePropertyValueAlias(writer, generalCategoryEntries, "GeneralCategory", "Other");
 
-                WritePropertyValueAlias(writer, biDiClassValues, "BiDiClass", "LeftToRight");
+                WritePropertyValueAlias(writer, biDiClassEntries, "BiDiClass", "LeftToRight");
 
-                WritePropertyValueAlias(writer, lineBreakValues, "LineBreakClass", "Unknown");
+                WritePropertyValueAlias(writer, lineBreakClassEntries, "LineBreakClass", "Unknown");
 
                 writer.WriteLine("    }");
                 writer.WriteLine("}");
             }
         }
 
-        public static List<(string name, string tag, string comment)> GetPropertyValueAliases(string property)
+        public static void ParseDataEntries(string property, List<DataEntry> entries)
         {
-            var data = new List<(string name, string tag, string comment)>();
-
             using (var client = new HttpClient())
             {
-                using (var result = client.GetAsync("https://www.unicode.org/Public/UCD/latest/ucd/PropertyValueAliases.txt").GetAwaiter().GetResult())
+                var url = Path.Combine(UnicodeDataGenerator.Ucd, "PropertyValueAliases.txt");
+
+                using (var result = client.GetAsync(url).GetAwaiter().GetResult())
                 {
                     if (!result.IsSuccessStatusCode)
                     {
-                        return data;
+                        return;
                     }
 
                     using (var stream = result.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
@@ -337,7 +350,12 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
                             elements = elements[2].Split('#');
 
-                            var name = elements[0].Trim().Replace("_", string.Empty);
+                            var name = elements[0].Trim();
+
+                            if (entries.Any(x => x.Name == name))
+                            {
+                                continue;
+                            }
 
                             var comment = string.Empty;
 
@@ -346,24 +364,25 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                                 comment = elements[1];
                             }
 
-                            data.Add((name, tag, comment));
+                            var entry = new DataEntry(name, tag, comment);
+
+                            entries.Add(entry);
                         }
                     }
                 }
             }
-
-            return data;
         }
 
-        private static void WritePropertyValueAliasGetTag(TextWriter writer,
-            IEnumerable<(string name, string tag, string comment)> values, string typeName, string defaultValue)
+        private static void WritePropertyValueAliasGetTag(TextWriter writer, IEnumerable<DataEntry> entries,
+            string typeName, string defaultValue)
         {
-            writer.WriteLine($"        private static readonly Dictionary<{typeName}, string> s_{typeName.ToLower()}ToTag = ");
+            writer.WriteLine(
+                $"        private static readonly Dictionary<{typeName}, string> s_{typeName.ToLower()}ToTag = ");
             writer.WriteLine($"            new Dictionary<{typeName}, string>{{");
 
-            foreach (var (name, tag, comment) in values)
+            foreach (var entry in entries)
             {
-                writer.WriteLine($"                {{ {typeName}.{name}, \"{tag}\"}},");
+                writer.WriteLine($"                {{ {typeName}.{entry.Name.Replace("_", "")}, \"{entry.Tag}\"}},");
             }
 
             writer.WriteLine("        };");
@@ -382,15 +401,15 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             writer.WriteLine();
         }
 
-        private static void WritePropertyValueAlias(TextWriter writer,
-            IEnumerable<(string name, string tag, string comment)> values, string typeName, string defaultValue)
+        private static void WritePropertyValueAlias(TextWriter writer, IEnumerable<DataEntry> entries, string typeName,
+            string defaultValue)
         {
             writer.WriteLine($"        private static readonly Dictionary<string, {typeName}> s_tagTo{typeName} = ");
             writer.WriteLine($"            new Dictionary<string,{typeName}>{{");
 
-            foreach (var (name, tag, comment) in values)
+            foreach (var entry in entries)
             {
-                writer.WriteLine($"                {{ \"{tag}\", {typeName}.{name}}},");
+                writer.WriteLine($"                {{ \"{entry.Tag}\", {typeName}.{entry.Name.Replace("_", "")}}},");
             }
 
             writer.WriteLine("        };");
@@ -408,5 +427,19 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
             writer.WriteLine();
         }
+    }
+
+    public readonly struct DataEntry
+    {
+        public DataEntry(string name, string tag, string comment)
+        {
+            Name = name;
+            Tag = tag;
+            Comment = comment;
+        }
+
+        public string Name { get; }
+        public string Tag { get; }
+        public string Comment { get; }
     }
 }

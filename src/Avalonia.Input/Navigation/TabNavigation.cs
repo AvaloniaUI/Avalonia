@@ -219,7 +219,9 @@ namespace Avalonia.Input.Navigation
 
             if (parent != null)
             {
-                if (direction == NavigationDirection.Previous && parent.CanFocus())
+                if (direction == NavigationDirection.Previous &&
+                    parent.CanFocus() && 
+                    KeyboardNavigation.GetIsTabStop((InputElement) parent))
                 {
                     return parent;
                 }
