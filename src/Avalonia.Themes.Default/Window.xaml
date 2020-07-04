@@ -6,7 +6,7 @@
     <ControlTemplate>
       <Panel>
         <Panel IsHitTestVisible="False" Margin="{TemplateBinding OffScreenMargin}">
-          <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" Margin="{TemplateBinding WindowDecorationMargins}" />
+          <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
         </Panel>
         <Border Background="{TemplateBinding Background}">
           <VisualLayerManager>

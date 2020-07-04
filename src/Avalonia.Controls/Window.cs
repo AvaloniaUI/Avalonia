@@ -73,7 +73,7 @@ namespace Avalonia.Controls
         private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();        
         private TitleBar _managedTitleBar;
         private bool _isExtendedIntoWindowDecorations;
-        private Thickness _windowDecorationMargins;
+        private Thickness _windowDecorationMargin;
         private Thickness _offScreenMargin;
 
         /// <summary>
@@ -113,11 +113,11 @@ namespace Avalonia.Controls
                 unsetValue: false);
 
         /// <summary>
-        /// Defines the <see cref="WindowDecorationMargins"/> property.
+        /// Defines the <see cref="WindowDecorationMargin"/> property.
         /// </summary>
-        public static readonly DirectProperty<Window, Thickness> WindowDecorationMarginsProperty =
-            AvaloniaProperty.RegisterDirect<Window, Thickness>(nameof(WindowDecorationMargins),
-                o => o.WindowDecorationMargins);
+        public static readonly DirectProperty<Window, Thickness> WindowDecorationMarginProperty =
+            AvaloniaProperty.RegisterDirect<Window, Thickness>(nameof(WindowDecorationMargin),
+                o => o.WindowDecorationMargin);
 
         public static readonly DirectProperty<Window, Thickness> OffScreenMarginProperty =
             AvaloniaProperty.RegisterDirect<Window, Thickness>(nameof(OffScreenMargin),
@@ -298,12 +298,21 @@ namespace Avalonia.Controls
             set { SetValue(ExtendClientAreaToDecorationsHintProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or Sets the <see cref="Avalonia.Platform.ExtendClientAreaChromeHints"/> that control
+        /// how the chrome looks when the client area is extended.
+        /// </summary>
         public ExtendClientAreaChromeHints ExtendClientAreaChromeHints
         {
             get => GetValue(ExtendClientAreaChromeHintsProperty);
             set => SetValue(ExtendClientAreaChromeHintsProperty, value);
         }
 
+        /// <summary>
+        /// Gets or Sets the TitlebarHeightHint for when the client area is extended.
+        /// A value of -1 will cause the titlebar to be auto sized to the OS default.
+        /// Any other positive value will cause the titlebar to assume that height.
+        /// </summary>
         public double ExtendClientAreaTitleBarHeightHint
         {
             get => GetValue(ExtendClientAreaTitleBarHeightHintProperty);
@@ -319,12 +328,21 @@ namespace Avalonia.Controls
             private set => SetAndRaise(IsExtendedIntoWindowDecorationsProperty, ref _isExtendedIntoWindowDecorations, value);
         }        
 
-        public Thickness WindowDecorationMargins
+        /// <summary>
+        /// Gets the WindowDecorationMargin.
+        /// This tells you the thickness around the window that is used by borders and the titlebar.
+        /// </summary>
+        public Thickness WindowDecorationMargin
         {
-            get => _windowDecorationMargins;
-            private set => SetAndRaise(WindowDecorationMarginsProperty, ref _windowDecorationMargins, value);
+            get => _windowDecorationMargin;
+            private set => SetAndRaise(WindowDecorationMarginProperty, ref _windowDecorationMargin, value);
         }        
 
+        /// <summary>
+        /// Gets the window margin that is hidden off the screen area.
+        /// This is generally only the case on Windows when in Maximized where the window border
+        /// is hidden off the screen. This Margin may be used to ensure user content doesnt overlap this space.
+        /// </summary>
         public Thickness OffScreenMargin
         {
             get => _offScreenMargin;
@@ -532,7 +550,7 @@ namespace Avalonia.Controls
         protected virtual void ExtendClientAreaToDecorationsChanged(bool isExtended)
         {
             IsExtendedIntoWindowDecorations = isExtended;
-            WindowDecorationMargins = PlatformImpl.ExtendedMargins;
+            WindowDecorationMargin = PlatformImpl.ExtendedMargins;
             OffScreenMargin = PlatformImpl.OffScreenMargin;
 
             if (PlatformImpl.NeedsManagedDecorations)

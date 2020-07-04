@@ -37,7 +37,7 @@ namespace Avalonia.Controls.Chrome
                 {
                     _disposables = new CompositeDisposable
                     {
-                        _hostWindow.GetObservable(Window.WindowDecorationMarginsProperty)
+                        _hostWindow.GetObservable(Window.WindowDecorationMarginProperty)
                             .Subscribe(x => UpdateSize()),
 
                         _hostWindow.GetObservable(Window.ExtendClientAreaTitleBarHeightHintProperty)
@@ -75,7 +75,7 @@ namespace Avalonia.Controls.Chrome
 
                 if (_hostWindow.WindowState != WindowState.FullScreen)
                 {
-                    Height = _hostWindow.WindowDecorationMargins.Top;
+                    Height = _hostWindow.WindowDecorationMargin.Top;
 
                     if (_captionButtons != null)
                     {
