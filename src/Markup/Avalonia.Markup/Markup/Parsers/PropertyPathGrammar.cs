@@ -160,7 +160,7 @@ namespace Avalonia.Markup.Parsers
             
 
             
-            throw new ExpressionParseException(r.Position, "Unexpected character " + r.PeekOneOrThrow + " after property name");
+            throw new ExpressionParseException(r.Position, "Unexpected character " + r.Peek + " after property name");
         }
 
         private static (State, ISyntax) ParseEnsureType(ref CharacterReader r)

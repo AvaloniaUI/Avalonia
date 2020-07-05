@@ -290,7 +290,7 @@ namespace Avalonia.Markup.Parsers
 
         private static bool PeekOpenBracket(ref CharacterReader r)
         {
-            return !r.End && r.PeekOneOrThrow == '[';
+            return !r.End && r.Peek == '[';
         }
 
         private static bool ParseStreamOperator(ref CharacterReader r)

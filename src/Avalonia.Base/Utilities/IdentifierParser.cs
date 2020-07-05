@@ -10,7 +10,7 @@ namespace Avalonia.Utilities
     {
         public static ReadOnlySpan<char> ParseIdentifier(this ref CharacterReader r)
         {
-            if (IsValidIdentifierStart(r.PeekOneOrThrow))
+            if (IsValidIdentifierStart(r.Peek))
             {
                 return r.TakeWhile(c => IsValidIdentifierChar(c));
             }

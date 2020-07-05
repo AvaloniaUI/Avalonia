@@ -16,7 +16,7 @@ namespace Avalonia.Utilities
         }
 
         public bool End => _s.IsEmpty;
-        public char PeekOneOrThrow => _s[0];
+        public char Peek => _s[0];
         public int Position { get; private set; }
         public char Take()
         {
@@ -35,7 +35,7 @@ namespace Avalonia.Utilities
 
         public bool TakeIf(char c)
         {
-            if (PeekOneOrThrow == c)
+            if (Peek == c)
             {
                 Take();
                 return true;
@@ -48,7 +48,7 @@ namespace Avalonia.Utilities
 
         public bool TakeIf(Func<char, bool> condition)
         {
-            if (condition(PeekOneOrThrow))
+            if (condition(Peek))
             {
                 Take();
                 return true;

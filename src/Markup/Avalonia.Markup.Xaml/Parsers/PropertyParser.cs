@@ -41,7 +41,7 @@ namespace Avalonia.Markup.Xaml.Parsers
                             throw new ExpressionParseException(r.Position, $"Expected ')'.");
                         }
 
-                        throw new ExpressionParseException(r.Position, $"Unexpected '{r.PeekOneOrThrow}'.");
+                        throw new ExpressionParseException(r.Position, $"Unexpected '{r.Peek}'.");
                     }
                 }
                 else if (!r.End && r.TakeIf(':'))

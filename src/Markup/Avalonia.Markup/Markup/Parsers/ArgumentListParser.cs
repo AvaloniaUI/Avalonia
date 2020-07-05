@@ -11,7 +11,7 @@ namespace Avalonia.Markup.Parsers
     {
         public static IList<string> ParseArguments(this ref CharacterReader r, char open, char close, char delimiter = ',')
         {
-            if (r.PeekOneOrThrow == open)
+            if (r.Peek == open)
             {
                 var result = new List<string>();
 

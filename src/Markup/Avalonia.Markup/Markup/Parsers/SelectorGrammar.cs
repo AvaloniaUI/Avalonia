@@ -120,7 +120,7 @@ namespace Avalonia.Markup.Parsers
             {
                 return (State.Class, null);
             }
-            else if (r.TakeIf(char.IsWhiteSpace) || r.PeekOneOrThrow == '>')
+            else if (r.TakeIf(char.IsWhiteSpace) || r.Peek == '>')
             {
                 return (State.Traversal, null);
             }
@@ -136,7 +136,7 @@ namespace Avalonia.Markup.Parsers
             {
                 return (State.Start, new CommaSyntax());
             }
-            else if (end.HasValue && !r.End && r.PeekOneOrThrow == end.Value)
+            else if (end.HasValue && !r.End && r.Peek == end.Value)
             {
                 return (State.End, null);
             }
@@ -259,7 +259,7 @@ namespace Avalonia.Markup.Parsers
 
             if (!r.TakeIf('='))
             {
-                throw new ExpressionParseException(r.Position, $"Expected '=', got '{r.PeekOneOrThrow}'");
+                throw new ExpressionParseException(r.Position, $"Expected '=', got '{r.Peek}'");
             }
 
             var value = r.TakeUntil(']');
@@ -278,7 +278,7 @@ namespace Avalonia.Markup.Parsers
 
             if (namespaceOrTypeName.IsEmpty)
             {
-                throw new ExpressionParseException(r.Position, $"Expected an identifier, got '{r.PeekOneOrThrow}");
+                throw new ExpressionParseException(r.Position, $"Expected an identifier, got '{r.Peek}");
             }
 
             if (!r.End && r.TakeIf('|'))
@@ -308,7 +308,7 @@ namespace Avalonia.Markup.Parsers
             }
             else if (!r.TakeIf(')'))
             {
-                throw new ExpressionParseException(r.Position, $"Expected '{c}', got '{r.PeekOneOrThrow}'.");
+                throw new ExpressionParseException(r.Position, $"Expected '{c}', got '{r.Peek}'.");
             }
         }
 
