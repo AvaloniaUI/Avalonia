@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Collections;
-using Avalonia.Media.Immutable;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media
@@ -11,22 +10,6 @@ namespace Avalonia.Media
     /// </summary>
     public class TextDecorationCollection : AvaloniaList<TextDecoration>
     {
-        /// <summary>
-        /// Creates an immutable clone of the <see cref="TextDecorationCollection"/>.
-        /// </summary>
-        /// <returns>The immutable clone.</returns>
-        public ImmutableTextDecoration[] ToImmutable()
-        {
-            var immutable = new ImmutableTextDecoration[Count];
-
-            for (var i = 0; i < Count; i++)
-            {
-                immutable[i] = this[i].ToImmutable();
-            }
-
-            return immutable;
-        }
-
         /// <summary>
         /// Parses a <see cref="TextDecorationCollection"/> string.
         /// </summary>

@@ -9,7 +9,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Fact]
         public void Exception_Should_Be_Thrown_If_FontWeight_LessThanEqualTo_Zero()
         {
-            Assert.Throws<ArgumentException>(() => new Typeface("foo", 0, (FontStyle)12));
+            Assert.Throws<ArgumentException>(() => new Typeface("foo", (FontStyle)12, 0));
         }
 
         [Fact]

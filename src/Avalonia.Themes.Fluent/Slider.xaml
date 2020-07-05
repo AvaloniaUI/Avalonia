@@ -182,6 +182,7 @@
 
   <Style Selector="Slider /template/ TickBar">
     <Setter Property="IsVisible" Value="False" />
+    <Setter Property="Ticks" Value="{TemplateBinding Ticks}" />
   </Style>
 
   <!-- TickBar Placement States -->

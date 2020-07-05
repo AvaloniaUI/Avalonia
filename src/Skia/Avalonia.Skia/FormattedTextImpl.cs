@@ -569,7 +569,7 @@ namespace Avalonia.Skia
                 
                 float constraint = -1;
 
-                if (_wrapping == TextWrapping.Wrap)
+                if (_wrapping != TextWrapping.NoWrap)
                 {
                     constraint = widthConstraint <= 0 ? MAX_LINE_WIDTH : widthConstraint;
                     if (constraint > MAX_LINE_WIDTH)

@@ -6,7 +6,7 @@ using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using SkiaSharp;
 
-namespace Avalonia.Skia.UnitTests
+namespace Avalonia.Skia.UnitTests.Media
 {
     public class CustomFontManagerImpl : IFontManagerImpl
     {
