@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.UnitTests;
 using SkiaSharp;
 using Xunit;
 
-namespace Avalonia.Skia.UnitTests
+namespace Avalonia.Skia.UnitTests.Media
 {
     public class FontManagerImplTests
     {
@@ -39,7 +37,7 @@ namespace Avalonia.Skia.UnitTests
             string fontName = fontManager.GetInstalledFontFamilyNames().First();
 
             var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                new Typeface(new FontFamily($"A, B, {fontName}"), FontWeight.Bold));
+                new Typeface(new FontFamily($"A, B, {fontName}"), weight: FontWeight.Bold));
 
             var skTypeface = glyphTypeface.Typeface;
 
@@ -88,7 +86,7 @@ namespace Avalonia.Skia.UnitTests
                 var fontManager = new FontManagerImpl();
 
                 var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                    new Typeface(s_fontUri, FontWeight.Black, FontStyle.Italic));
+                    new Typeface(s_fontUri, FontStyle.Italic, FontWeight.Black));
 
                 var skTypeface = glyphTypeface.Typeface;
 

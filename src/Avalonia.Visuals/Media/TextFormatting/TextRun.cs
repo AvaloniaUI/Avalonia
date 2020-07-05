@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using Avalonia.Utility;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -9,15 +9,22 @@ namespace Avalonia.Media.TextFormatting
     [DebuggerTypeProxy(typeof(TextRunDebuggerProxy))]
     public abstract class TextRun
     {
+        public static readonly int DefaultTextSourceLength = 1;
+
+        /// <summary>
+        ///  Gets the text source length.
+        /// </summary>
+        public virtual int TextSourceLength => DefaultTextSourceLength;
+
         /// <summary>
         /// Gets the text run's text.
         /// </summary>
-        public ReadOnlySlice<char> Text { get; protected set; }
+        public virtual ReadOnlySlice<char> Text => default;
 
         /// <summary>
-        /// Gets the text run's style.
+        /// A set of properties shared by every characters in the run
         /// </summary>
-        public TextStyle Style { get; protected set; }
+        public virtual TextRunProperties Properties => null;
 
         private class TextRunDebuggerProxy
         {
@@ -42,7 +49,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            public TextStyle Style => _textRun.Style;
+            public TextRunProperties Properties => _textRun.Properties;
         }
     }
 }

@@ -5,9 +5,9 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// References a portion of a text buffer.
     /// </summary>
-    public readonly struct TextPointer
+    public readonly struct TextRange
     {
-        public TextPointer(int start, int length)
+        public TextRange(int start, int length)
         {
             Start = start;
             Length = length;
@@ -41,30 +41,30 @@ namespace Avalonia.Media.TextFormatting
         /// Returns a specified number of contiguous elements from the start of the slice.
         /// </summary>
         /// <param name="length">The number of elements to return.</param>
-        /// <returns>A <see cref="TextPointer"/> that contains the specified number of elements from the start of this slice.</returns>
-        public TextPointer Take(int length)
+        /// <returns>A <see cref="TextRange"/> that contains the specified number of elements from the start of this slice.</returns>
+        public TextRange Take(int length)
         {
             if (length > Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
-            return new TextPointer(Start, length);
+            return new TextRange(Start, length);
         }
 
         /// <summary>
         /// Bypasses a specified number of elements in the slice and then returns the remaining elements.
         /// </summary>
         /// <param name="length">The number of elements to skip before returning the remaining elements.</param>
-        /// <returns>A <see cref="TextPointer"/> that contains the elements that occur after the specified index in this slice.</returns>
-        public TextPointer Skip(int length)
+        /// <returns>A <see cref="TextRange"/> that contains the elements that occur after the specified index in this slice.</returns>
+        public TextRange Skip(int length)
         {
             if (length > Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
-            return new TextPointer(Start + length, Length - length);
+            return new TextRange(Start + length, Length - length);
         }
     }
 }

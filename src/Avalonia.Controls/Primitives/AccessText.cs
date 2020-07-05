@@ -110,7 +110,7 @@ namespace Avalonia.Controls.Primitives
 
             foreach (var textLine in TextLayout.TextLines)
             {
-                if (textLine.Text.End < textPosition)
+                if (textLine.TextRange.End < textPosition)
                 {
                     currentY += textLine.LineMetrics.Size.Height;
 
@@ -121,21 +121,22 @@ namespace Avalonia.Controls.Primitives
 
                 foreach (var textRun in textLine.TextRuns)
                 {
-                    if (!(textRun is ShapedTextRun shapedRun))
+                    if (!(textRun is ShapedTextCharacters shapedTextCharacters))
                     {
                         continue;
                     }
 
-                    if (shapedRun.GlyphRun.Characters.End < textPosition)
+                    if (shapedTextCharacters.GlyphRun.Characters.End < textPosition)
                     {
-                        currentX += shapedRun.GlyphRun.Bounds.Width;
+                        currentX += shapedTextCharacters.GlyphRun.Bounds.Width;
 
                         continue;
                     }
 
-                    var characterHit = shapedRun.GlyphRun.FindNearestCharacterHit(textPosition, out var width);
+                    var characterHit =
+                        shapedTextCharacters.GlyphRun.FindNearestCharacterHit(textPosition, out var width);
 
-                    var distance = shapedRun.GlyphRun.GetDistanceFromCharacterHit(characterHit);
+                    var distance = shapedTextCharacters.GlyphRun.GetDistanceFromCharacterHit(characterHit);
 
                     currentX += distance - width;
 
@@ -144,7 +145,7 @@ namespace Avalonia.Controls.Primitives
                         width = 0.0;
                     }
 
-                    return new Rect(currentX, currentY, width, shapedRun.GlyphRun.Bounds.Height);
+                    return new Rect(currentX, currentY, width, shapedTextCharacters.GlyphRun.Bounds.Height);
                 }
             }
 
