@@ -49,25 +49,6 @@
       <Compile Remove="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\**\obj\**\*.cs" />
       <Compile Remove="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\src\XamlX\IL\SreTypeSystem.cs" />
       <PackageReference Include="Avalonia.Unofficial.Cecil" Version="20190417.2.0" PrivateAssets="All" />
-      <PackageReference Condition="$(TargetFramework) == 'netstandard2.0'" Include="ILRepack.MSBuild.Task" Version="2.0.13" PrivateAssets="All" />
       <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
     </ItemGroup>
-
-  <Target Name="ILRepack" AfterTargets="Build" Condition="$(TargetFramework) == 'netstandard2.0'">
-
-    <PropertyGroup>
-      <WorkingDirectory>$(MSBuildThisFileDirectory)bin\$(Configuration)\$(TargetFramework)</WorkingDirectory>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <InputAssemblies Include="Mono.Cecil.dll" />
-    </ItemGroup>
-    <ILRepack OutputType="$(OutputType)" MainAssembly="$(AssemblyName).dll" OutputAssembly="$(AssemblyName).dll" InputAssemblies="@(InputAssemblies)" WorkingDirectory="$(WorkingDirectory)" />
-    <ItemGroup>
-      <DeleteNonNeededResults Include="$(WorkingDirectory)\*.dll" />
-      <DeleteNonNeededResults Remove="$(WorkingDirectory)\Avalonia.Build.Tasks.dll" />
-    </ItemGroup>
-    <Delete Files="@(DeleteNonNeededResults)" />
-
-  </Target>
 </Project>
