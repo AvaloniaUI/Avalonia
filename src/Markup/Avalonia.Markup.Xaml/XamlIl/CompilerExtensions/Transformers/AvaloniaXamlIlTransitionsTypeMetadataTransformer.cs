@@ -1,17 +1,17 @@
-using XamlIl.Ast;
-using XamlIl.Transform;
+using XamlX.Ast;
+using XamlX.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AvaloniaXamlIlTransitionsTypeMetadataTransformer : IXamlIlAstTransformer
+    class AvaloniaXamlIlTransitionsTypeMetadataTransformer : IXamlAstTransformer
     {
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (node is XamlIlAstObjectNode on)
+            if (node is XamlAstObjectNode on)
             {
                 foreach (var ch in on.Children)
                 {
-                    if (ch is XamlIlAstXamlPropertyValueNode pn
+                    if (ch is XamlAstXamlPropertyValueNode pn
                         && pn.Property.GetClrProperty().Getter?.ReturnType.Equals(context.GetAvaloniaTypes().Transitions) == true)
                     {
                         for (var c = 0; c < pn.Values.Count; c++)
