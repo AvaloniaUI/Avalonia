@@ -1,20 +1,22 @@
 using System.Collections.Generic;
 using System.Linq;
-using XamlIl;
-using XamlIl.Ast;
-using XamlIl.Transform;
-using XamlIl.TypeSystem;
+using XamlX;
+using XamlX.Ast;
+using XamlX.Emit;
+using XamlX.IL;
+using XamlX.Transform;
+using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AvaloniaXamlIlTransformInstanceAttachedProperties : IXamlIlAstTransformer
+    class AvaloniaXamlIlTransformInstanceAttachedProperties : IXamlAstTransformer
     {
 
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (node is XamlIlAstNamePropertyReference prop 
-                && prop.TargetType is XamlIlAstClrTypeReference targetRef 
-                && prop.DeclaringType is XamlIlAstClrTypeReference declaringRef)
+            if (node is XamlAstNamePropertyReference prop 
+                && prop.TargetType is XamlAstClrTypeReference targetRef 
+                && prop.DeclaringType is XamlAstClrTypeReference declaringRef)
             {
                 // Target and declared type aren't assignable but both inherit from AvaloniaObject
                 var avaloniaObject = context.Configuration.TypeSystem.FindType("Avalonia.AvaloniaObject");
@@ -70,21 +72,21 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             return node;
         }
 
-        class AvaloniaAttachedInstanceProperty : XamlIlAstClrProperty, IXamlIlAvaloniaProperty
+        class AvaloniaAttachedInstanceProperty : XamlAstClrProperty, IXamlIlAvaloniaProperty
         {
-            private readonly XamlIlTransformerConfiguration _config;
-            private readonly IXamlIlType _declaringType;
-            private readonly IXamlIlType _avaloniaPropertyType;
-            private readonly IXamlIlType _avaloniaObject;
-            private readonly IXamlIlField _field;
+            private readonly TransformerConfiguration _config;
+            private readonly IXamlType _declaringType;
+            private readonly IXamlType _avaloniaPropertyType;
+            private readonly IXamlType _avaloniaObject;
+            private readonly IXamlField _field;
 
-            public AvaloniaAttachedInstanceProperty(XamlIlAstNamePropertyReference prop,
-                XamlIlTransformerConfiguration config,
-                IXamlIlType declaringType,
-                IXamlIlType type,
-                IXamlIlType avaloniaPropertyType,
-                IXamlIlType avaloniaObject,
-                IXamlIlField field) : base(prop, prop.Name,
+            public AvaloniaAttachedInstanceProperty(XamlAstNamePropertyReference prop,
+                TransformerConfiguration config,
+                IXamlType declaringType,
+                IXamlType type,
+                IXamlType avaloniaPropertyType,
+                IXamlType avaloniaObject,
+                IXamlField field) : base(prop, prop.Name,
                 declaringType, null)
             
             
@@ -104,11 +106,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 Getter = new GetterMethod(this);
             }
 
-            public IXamlIlType PropertyType { get;  }
+            public IXamlType PropertyType { get;  }
 
-            public IXamlIlField AvaloniaProperty => _field;
+            public IXamlField AvaloniaProperty => _field;
             
-            class SetterMethod : IXamlIlPropertySetter
+            class SetterMethod : IXamlPropertySetter, IXamlEmitablePropertySetter<IXamlILEmitter>
             {
                 private readonly AvaloniaAttachedInstanceProperty _parent;
 
@@ -118,10 +120,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     Parameters = new[] {_parent._avaloniaObject, _parent.PropertyType};
                 }
 
-                public IXamlIlType TargetType => _parent.DeclaringType;
+                public IXamlType TargetType => _parent.DeclaringType;
                 public PropertySetterBinderParameters BinderParameters { get; } = new PropertySetterBinderParameters();
-                public IReadOnlyList<IXamlIlType> Parameters { get; }
-                public void Emit(IXamlIlEmitter emitter)
+                public IReadOnlyList<IXamlType> Parameters { get; }
+                public void Emit(IXamlILEmitter emitter)
                 {
                     var so = _parent._config.WellKnownTypes.Object;
                     var method = _parent._avaloniaObject
@@ -133,7 +135,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                          && m.Parameters[2].IsEnum
                         );
                     if (method == null)
-                        throw new XamlIlTypeSystemException(
+                        throw new XamlTypeSystemException(
                             "Unable to find SetValue(AvaloniaProperty, object, BindingPriority) on AvaloniaObject");
                     using (var loc = emitter.LocalsPool.GetLocal(_parent.PropertyType))
                         emitter
@@ -150,7 +152,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 }
             }
 
-            class GetterMethod :  IXamlIlCustomEmitMethod
+            class GetterMethod :  IXamlCustomEmitMethod<IXamlILEmitter>
             {
                 public GetterMethod(AvaloniaAttachedInstanceProperty parent) 
                 {
@@ -163,16 +165,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 public bool IsPublic => true;
                 public bool IsStatic => true;
                 public string Name { get; protected set; }
-                public IXamlIlType DeclaringType { get; }
-                public IXamlIlMethod MakeGenericMethod(IReadOnlyList<IXamlIlType> typeArguments) 
+                public IXamlType DeclaringType { get; }
+                public IXamlMethod MakeGenericMethod(IReadOnlyList<IXamlType> typeArguments) 
                     => throw new System.NotSupportedException();
 
 
-                public bool Equals(IXamlIlMethod other) =>
+                public bool Equals(IXamlMethod other) =>
                     other is GetterMethod m && m.Name == Name && m.DeclaringType.Equals(DeclaringType);
-                public IXamlIlType ReturnType => Parent.PropertyType;
-                public IReadOnlyList<IXamlIlType> Parameters { get; }
-                public void EmitCall(IXamlIlEmitter emitter)
+                public IXamlType ReturnType => Parent.PropertyType;
+                public IReadOnlyList<IXamlType> Parameters { get; }
+                public void EmitCall(IXamlILEmitter emitter)
                 {
                     var method = Parent._avaloniaObject
                         .FindMethod(m => m.IsPublic && !m.IsStatic && m.Name == "GetValue"
@@ -180,7 +182,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                          m.Parameters.Count == 1
                                          && m.Parameters[0].Equals(Parent._avaloniaPropertyType));
                     if (method == null)
-                        throw new XamlIlTypeSystemException(
+                        throw new XamlTypeSystemException(
                             "Unable to find T GetValue<T>(AvaloniaProperty<T>) on AvaloniaObject");
                     emitter
                         .Ldsfld(Parent._field)

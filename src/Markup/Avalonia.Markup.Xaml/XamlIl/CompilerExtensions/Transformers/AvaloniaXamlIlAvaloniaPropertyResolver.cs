@@ -1,14 +1,14 @@
 using System.Linq;
-using XamlIl.Ast;
-using XamlIl.Transform;
+using XamlX.Ast;
+using XamlX.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AvaloniaXamlIlAvaloniaPropertyResolver : IXamlIlAstTransformer
+    class AvaloniaXamlIlAvaloniaPropertyResolver : IXamlAstTransformer
     {
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (node is XamlIlAstClrProperty prop)
+            if (node is XamlAstClrProperty prop)
             {
                 var n = prop.Name + "Property";
                 var field =
