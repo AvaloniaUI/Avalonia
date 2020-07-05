@@ -1,16 +1,16 @@
-using XamlIl.Ast;
-using XamlIl.Transform;
+using XamlX.Ast;
+using XamlX.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AvaloniaBindingExtensionHackTransformer : IXamlIlAstTransformer
+    class AvaloniaBindingExtensionHackTransformer : IXamlAstTransformer
     {
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
             // Our code base expects XAML parser to prefer `FooExtension` to `Foo` even with `<Foo>` syntax
             // This is the legacy of Portable.Xaml, so we emulate that behavior here
 
-            if (node is XamlIlAstXmlTypeReference tref
+            if (node is XamlAstXmlTypeReference tref
                 && tref.Name == "Binding"
                 && tref.XmlNamespace == "https://github.com/avaloniaui")
                 tref.IsMarkupExtension = true;

@@ -268,6 +268,8 @@ partial class Build : NukeBuild
         .DependsOn(CreateIntermediateNugetPackages)
         .Executes(() =>
         {
+            BuildTasksPatcher.PatchBuildTasksInPackage(Parameters.NugetIntermediateRoot / "Avalonia.Build.Tasks." +
+                                                       Parameters.Version + ".nupkg");
             var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.config");
             EnsureCleanDirectory(Parameters.NugetRoot);
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,

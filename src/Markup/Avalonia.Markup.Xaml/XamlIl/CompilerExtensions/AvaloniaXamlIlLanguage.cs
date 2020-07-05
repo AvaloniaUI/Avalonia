@@ -2,10 +2,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
-using XamlIl;
-using XamlIl.Ast;
-using XamlIl.Transform;
-using XamlIl.TypeSystem;
+using XamlX;
+using XamlX.Ast;
+using XamlX.Emit;
+using XamlX.IL;
+using XamlX.Transform;
+using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
@@ -17,12 +19,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
     
     class AvaloniaXamlIlLanguage
     {
-        public static XamlIlLanguageTypeMappings Configure(IXamlIlTypeSystem typeSystem)
+        public static (XamlLanguageTypeMappings language, XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> emit) Configure(IXamlTypeSystem typeSystem)
         {
             var runtimeHelpers = typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
             var assignBindingAttribute = typeSystem.GetType("Avalonia.Data.AssignBindingAttribute");
             var bindingType = typeSystem.GetType("Avalonia.Data.IBinding");
-            var rv = new XamlIlLanguageTypeMappings(typeSystem)
+            var rv = new XamlLanguageTypeMappings(typeSystem)
             {
                 SupportInitialize = typeSystem.GetType("System.ComponentModel.ISupportInitialize"),
                 XmlnsAttributes =
@@ -51,18 +53,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 },
                 InnerServiceProviderFactoryMethod =
                     runtimeHelpers.FindMethod(m => m.Name == "CreateInnerServiceProviderV1"),
-                ProvideValueTargetPropertyEmitter = XamlIlAvaloniaPropertyHelper.Emit,
             };
             rv.CustomAttributeResolver = new AttributeResolver(typeSystem, rv);
-            rv.ContextTypeBuilderCallback = (b, c) => EmitNameScopeField(rv, typeSystem, b, c);
-            return rv;
+
+            var emit = new XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult>
+            {
+                ProvideValueTargetPropertyEmitter = XamlIlAvaloniaPropertyHelper.Emit,
+                ContextTypeBuilderCallback = (b, c) => EmitNameScopeField(rv, typeSystem, b, c)
+            };
+            return (rv, emit);
         }
 
         public const string ContextNameScopeFieldName = "AvaloniaNameScope";
 
-        private static void EmitNameScopeField(XamlIlLanguageTypeMappings mappings,
-            IXamlIlTypeSystem typeSystem,
-            IXamlIlTypeBuilder typebuilder, IXamlIlEmitter constructor)
+        private static void EmitNameScopeField(XamlLanguageTypeMappings mappings,
+            IXamlTypeSystem typeSystem,
+            IXamlTypeBuilder<IXamlILEmitter> typebuilder, IXamlILEmitter constructor)
         {
 
             var nameScopeType = typeSystem.FindType("Avalonia.Controls.INameScope");
@@ -78,23 +84,23 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         }
         
 
-        class AttributeResolver : IXamlIlCustomAttributeResolver
+        class AttributeResolver : IXamlCustomAttributeResolver
         {
-            private readonly IXamlIlType _typeConverterAttribute;
+            private readonly IXamlType _typeConverterAttribute;
 
-            private readonly List<KeyValuePair<IXamlIlType, IXamlIlType>> _converters =
-                new List<KeyValuePair<IXamlIlType, IXamlIlType>>();
+            private readonly List<KeyValuePair<IXamlType, IXamlType>> _converters =
+                new List<KeyValuePair<IXamlType, IXamlType>>();
 
-            private readonly IXamlIlType _avaloniaList;
-            private readonly IXamlIlType _avaloniaListConverter;
+            private readonly IXamlType _avaloniaList;
+            private readonly IXamlType _avaloniaListConverter;
 
 
-            public AttributeResolver(IXamlIlTypeSystem typeSystem, XamlIlLanguageTypeMappings mappings)
+            public AttributeResolver(IXamlTypeSystem typeSystem, XamlLanguageTypeMappings mappings)
             {
                 _typeConverterAttribute = mappings.TypeConverterAttributes.First();
 
-                void AddType(IXamlIlType type, IXamlIlType conv) 
-                    => _converters.Add(new KeyValuePair<IXamlIlType, IXamlIlType>(type, conv));
+                void AddType(IXamlType type, IXamlType conv) 
+                    => _converters.Add(new KeyValuePair<IXamlType, IXamlType>(type, conv));
 
                 void Add(string type, string conv)
                     => AddType(typeSystem.GetType(type), typeSystem.GetType(conv));
@@ -113,7 +119,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 _avaloniaListConverter = typeSystem.GetType("Avalonia.Collections.AvaloniaListConverter`1");
             }
 
-            IXamlIlType LookupConverter(IXamlIlType type)
+            IXamlType LookupConverter(IXamlType type)
             {
                 foreach(var p in _converters)
                     if (p.Key.Equals(type))
@@ -123,15 +129,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return null;
             }
 
-            class ConstructedAttribute : IXamlIlCustomAttribute
+            class ConstructedAttribute : IXamlCustomAttribute
             {
-                public bool Equals(IXamlIlCustomAttribute other) => false;
+                public bool Equals(IXamlCustomAttribute other) => false;
                 
-                public IXamlIlType Type { get; }
+                public IXamlType Type { get; }
                 public List<object> Parameters { get; }
                 public Dictionary<string, object> Properties { get; }
 
-                public ConstructedAttribute(IXamlIlType type, List<object> parameters, Dictionary<string, object> properties)
+                public ConstructedAttribute(IXamlType type, List<object> parameters, Dictionary<string, object> properties)
                 {
                     Type = type;
                     Parameters = parameters ?? new List<object>();
@@ -139,7 +145,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
             }
             
-            public IXamlIlCustomAttribute GetCustomAttribute(IXamlIlType type, IXamlIlType attributeType)
+            public IXamlCustomAttribute GetCustomAttribute(IXamlType type, IXamlType attributeType)
             {
                 if (attributeType.Equals(_typeConverterAttribute))
                 {
@@ -151,25 +157,25 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return null;
             }
 
-            public IXamlIlCustomAttribute GetCustomAttribute(IXamlIlProperty property, IXamlIlType attributeType)
+            public IXamlCustomAttribute GetCustomAttribute(IXamlProperty property, IXamlType attributeType)
             {
                 return null;
             }
         }
 
-        public static bool CustomValueConverter(XamlIlAstTransformationContext context,
-            IXamlIlAstValueNode node, IXamlIlType type, out IXamlIlAstValueNode result)
+        public static bool CustomValueConverter(AstTransformationContext context,
+            IXamlAstValueNode node, IXamlType type, out IXamlAstValueNode result)
         {
             if (type.FullName == "System.TimeSpan" 
-                && node is XamlIlAstTextNode tn
+                && node is XamlAstTextNode tn
                 && !tn.Text.Contains(":"))
             {
                 var seconds = double.Parse(tn.Text, CultureInfo.InvariantCulture);
-                result = new XamlIlStaticOrTargetedReturnMethodCallNode(tn,
+                result = new XamlStaticOrTargetedReturnMethodCallNode(tn,
                     type.FindMethod("FromSeconds", type, false, context.Configuration.WellKnownTypes.Double),
                     new[]
                     {
-                        new XamlIlConstantNode(tn, context.Configuration.WellKnownTypes.Double, seconds)
+                        new XamlConstantNode(tn, context.Configuration.WellKnownTypes.Double, seconds)
                     });
                 return true;
             }
@@ -178,9 +184,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>().FirstOrDefault();
                 if (scope == null)
-                    throw new XamlIlLoadException("Unable to find the parent scope for AvaloniaProperty lookup", node);
-                if (!(node is XamlIlAstTextNode text))
-                    throw new XamlIlLoadException("Property should be a text node", node);
+                    throw new XamlX.XamlLoadException("Unable to find the parent scope for AvaloniaProperty lookup", node);
+                if (!(node is XamlAstTextNode text))
+                    throw new XamlX.XamlLoadException("Property should be a text node", node);
                 result = XamlIlAvaloniaPropertyHelper.CreateNode(context, text.Text, scope.TargetType, text);
                 return true;
             }
