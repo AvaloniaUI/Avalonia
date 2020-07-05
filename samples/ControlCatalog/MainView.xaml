@@ -29,6 +29,9 @@
                ScrollViewer.HorizontalScrollBarVisibility="Disabled">
           <pages:DataGridPage/>
       </TabItem>
+      <TabItem Header="Date/Time Picker">
+        <pages:DateTimePickerPage/>
+      </TabItem>
       <TabItem Header="CalendarDatePicker">
         <pages:CalendarDatePickerPage/></TabItem>
       <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
@@ -54,6 +57,7 @@
       <TabItem Header="RadioButton"><pages:RadioButtonPage/></TabItem>
       <TabItem Header="ScrollViewer"><pages:ScrollViewerPage/></TabItem>
       <TabItem Header="Slider"><pages:SliderPage/></TabItem>
+      <TabItem Header="SplitView"><pages:SplitViewPage/></TabItem>
       <TabItem Header="TabControl"><pages:TabControlPage/></TabItem>
       <TabItem Header="TabStrip"><pages:TabStripPage/></TabItem>
       <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
@@ -62,6 +66,7 @@
       <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
       <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
       <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
+      <TabItem Header="Window Customizations"><pages:WindowCustomizationsPage/></TabItem>
       <TabControl.Tag>
         <StackPanel Width="115" Spacing="4" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8">
           <ComboBox x:Name="Decorations" SelectedIndex="0">

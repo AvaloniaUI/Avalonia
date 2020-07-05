@@ -1,29 +1,19 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.ProgressBarPage">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ControlCatalog.Pages.ProgressBarPage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">ProgressBar</TextBlock>
     <TextBlock Classes="h2">A progress bar control</TextBlock>
-
     <StackPanel>
-      <CheckBox
-          x:Name="showProgress"
-          Margin="10,16,0,0"
-          Content="Show Progress Text" />
-      <StackPanel Orientation="Horizontal"
-                  Margin="0,16,0,0"
-                  HorizontalAlignment="Center"
-                  Spacing="16">
+      <CheckBox x:Name="showProgress" Margin="10,16,0,0" Content="Show Progress Text" />
+      <CheckBox x:Name="isIndeterminate" Margin="10,16,0,0" Content="Toggle Indeterminate" />
+      <StackPanel Orientation="Horizontal" Margin="0,16,0,0" HorizontalAlignment="Center" Spacing="16">
         <StackPanel Spacing="16">
-          <ProgressBar ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #hprogress.Value}" />
-          <ProgressBar IsIndeterminate="True"/>
+          <ProgressBar IsIndeterminate="{Binding #isIndeterminate.IsChecked}" ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #hprogress.Value}" />
         </StackPanel>
-        <ProgressBar ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #vprogress.Value}" Orientation="Vertical" />
-        <ProgressBar Orientation="Vertical" IsIndeterminate="True" />
+        <ProgressBar IsIndeterminate="{Binding #isIndeterminate.IsChecked}" ShowProgressText="{Binding #showProgress.IsChecked}" Value="{Binding #vprogress.Value}" Orientation="Vertical" />
       </StackPanel>
       <StackPanel Margin="16">
-        <Slider Name="hprogress" Maximum="100" Value="40"/>
-        <Slider Name="vprogress" Maximum="100" Value="60"/>
+        <Slider Name="hprogress" Maximum="100" Value="40" />
+        <Slider Name="vprogress" Maximum="100" Value="60" />
       </StackPanel>
     </StackPanel>
   </StackPanel>

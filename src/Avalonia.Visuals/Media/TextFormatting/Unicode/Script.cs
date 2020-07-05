@@ -2,6 +2,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
 {
     public enum Script
     {
+        Unknown, //Zzzz
+        Common, //Zyyy
+        Inherited, //Zinh
         Adlam, //Adlm
         CaucasianAlbanian, //Aghb
         Ahom, //Ahom
@@ -25,10 +28,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Carian, //Cari
         Cham, //Cham
         Cherokee, //Cher
+        Chorasmian, //Chrs
         Coptic, //Copt
         Cypriot, //Cprt
         Cyrillic, //Cyrl
         Devanagari, //Deva
+        DivesAkuru, //Diak
         Dogra, //Dogr
         Deseret, //Dsrt
         Duployan, //Dupl
@@ -63,6 +68,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Kharoshthi, //Khar
         Khmer, //Khmr
         Khojki, //Khoj
+        KhitanSmallScript, //Kits
         Kannada, //Knda
         Kaithi, //Kthi
         TaiTham, //Lana
@@ -151,10 +157,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Wancho, //Wcho
         OldPersian, //Xpeo
         Cuneiform, //Xsux
+        Yezidi, //Yezi
         Yi, //Yiii
         ZanabazarSquare, //Zanb
-        Inherited, //Zinh
-        Common, //Zyyy
-        Unknown, //Zzzz
     }
 }

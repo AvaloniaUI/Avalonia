@@ -1,7 +1,4 @@
-﻿using System;
-using Avalonia.Data;
-
-#nullable enable
+﻿#nullable enable
 
 namespace Avalonia.PropertyStore
 {
@@ -10,8 +7,6 @@ namespace Avalonia.PropertyStore
     /// </summary>
     internal interface IPriorityValueEntry : IValue
     {
-        BindingPriority Priority { get; }
-
         void Reparent(IValueSink sink);
     }
 

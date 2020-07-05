@@ -362,7 +362,7 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <remarks>
         /// You won't usually want to call this method directly, instead use the
-        /// <see cref="AvaloniaProperty.Register{TOwner, TValue}(string, TValue, bool, Data.BindingMode, Func{TOwner, TValue, TValue}, Action{IAvaloniaObject, bool})"/>
+        /// <see cref="AvaloniaProperty.Register{TOwner, TValue}(string, TValue, bool, Data.BindingMode, Func{TValue, bool}, Func{IAvaloniaObject, TValue, TValue}, Action{IAvaloniaObject, bool})"/>
         /// method.
         /// </remarks>
         public void Register(Type type, AvaloniaProperty property)
@@ -413,7 +413,7 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <remarks>
         /// You won't usually want to call this method directly, instead use the
-        /// <see cref="AvaloniaProperty.RegisterAttached{THost, TValue}(string, Type, TValue, bool, Data.BindingMode, Func{THost, TValue, TValue})"/>
+        /// <see cref="AvaloniaProperty.RegisterAttached{THost, TValue}(string, Type, TValue, bool, Data.BindingMode, Func{TValue, bool}, Func{IAvaloniaObject, TValue, TValue})"/>
         /// method.
         /// </remarks>
         public void RegisterAttached(Type type, AvaloniaProperty property)
