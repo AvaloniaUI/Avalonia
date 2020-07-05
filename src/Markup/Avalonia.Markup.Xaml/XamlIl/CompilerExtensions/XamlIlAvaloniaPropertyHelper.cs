@@ -20,6 +20,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
     class XamlIlAvaloniaPropertyHelper
     {
+        public static bool EmitProvideValueTarget(XamlIlEmitContext context, IXamlILEmitter emitter,
+            XamlAstClrProperty property)
+        {
+            if (Emit(context, emitter, property))
+                return true;
+            var foundClr = property.DeclaringType.Properties.FirstOrDefault(p => p.Name == property.Name);
+            if (foundClr == null)
+                return false;
+            context
+                .Configuration.GetExtra<XamlIlClrPropertyInfoEmitter>()
+                .Emit(context, emitter, foundClr);
+            return true;
+        }
+        
         public static bool Emit(XamlIlEmitContext context, IXamlILEmitter emitter, XamlAstClrProperty property)
         {
             if (property is IXamlIlAvaloniaProperty ap)
@@ -85,6 +99,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 context.Configuration.TypeSystem.GetType("Avalonia.AvaloniaProperty"),
                 clrProperty);
         }
+
+        public static IXamlType GetAvaloniaPropertyType(IXamlField field,
+            AvaloniaXamlIlWellKnownTypes types, IXamlLineInfo lineInfo)
+        {
+            var avaloniaPropertyType = field.FieldType;
+            while (avaloniaPropertyType != null)
+            {
+                if (avaloniaPropertyType.GenericTypeDefinition?.Equals(types.AvaloniaPropertyT) == true)
+                {
+                    return avaloniaPropertyType.GenericArguments[0];
+                }
+
+                avaloniaPropertyType = avaloniaPropertyType.BaseType;
+            }
+
+            throw new XamlX.XamlParseException(
+                $"{field.Name}'s type {field.FieldType} doesn't inherit from  AvaloniaProperty<T>, make sure to use typed properties",
+                lineInfo);
+
+        }
     }
 
     interface IXamlIlAvaloniaPropertyNode : IXamlAstValueNode
@@ -123,22 +157,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             IXamlLineInfo lineInfo, IXamlField field) : base(lineInfo)
         {
             _field = field;
-            var avaloniaPropertyType = field.FieldType;
-            while (avaloniaPropertyType != null)
-            {
-                if (avaloniaPropertyType.GenericTypeDefinition?.Equals(types.AvaloniaPropertyT) == true)
-                {
-                    AvaloniaPropertyType = avaloniaPropertyType.GenericArguments[0];
-                    return;
-                }
-
-                avaloniaPropertyType = avaloniaPropertyType.BaseType;
-            }
-
-            throw new XamlX.XamlParseException(
-                $"{field.Name}'s type {field.FieldType} doesn't inherit from AvaloniaProperty<T>, make sure to use typed properties",
-                lineInfo);
-
+            AvaloniaPropertyType = XamlIlAvaloniaPropertyHelper.GetAvaloniaPropertyType(field,
+                types, lineInfo);
         }
         
         

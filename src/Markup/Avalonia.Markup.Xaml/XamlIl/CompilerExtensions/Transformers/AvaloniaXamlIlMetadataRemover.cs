@@ -8,8 +8,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (node is AvaloniaXamlIlTargetTypeMetadataNode md)
-                return md.Value;
+            if (node is AvaloniaXamlIlTargetTypeMetadataNode targetType)
+                return targetType.Value;
 
             return node;
         }

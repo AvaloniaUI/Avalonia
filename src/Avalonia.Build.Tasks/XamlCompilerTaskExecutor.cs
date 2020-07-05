@@ -51,13 +51,22 @@ namespace Avalonia.Build.Tasks
             if (avares.Resources.Count(CheckXamlName) == 0 && emres.Resources.Count(CheckXamlName) == 0)
                 // Nothing to do
                 return new CompileResult(true);
-            
+
+            var clrPropertiesDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlHelpers",
+                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
+            asm.MainModule.Types.Add(clrPropertiesDef);
+            var indexerAccessorClosure = new TypeDefinition("CompiledAvaloniaXaml", "!IndexerAccessorFactoryClosure",
+                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
+            asm.MainModule.Types.Add(indexerAccessorClosure);
+
             var (xamlLanguage , emitConfig) = AvaloniaXamlIlLanguage.Configure(typeSystem);
-            var compilerConfig = new TransformerConfiguration(typeSystem,
+            var compilerConfig = new AvaloniaXamlIlCompilerConfiguration(typeSystem,
                 typeSystem.TargetAssembly,
                 xamlLanguage,
                 XamlXmlnsMappings.Resolve(typeSystem, xamlLanguage),
-                AvaloniaXamlIlLanguage.CustomValueConverter);
+                AvaloniaXamlIlLanguage.CustomValueConverter,
+                new XamlIlClrPropertyInfoEmitter(typeSystem.CreateTypeBuilder(clrPropertiesDef)),
+                new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)));
 
 
             var contextDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlContext", 

@@ -119,12 +119,17 @@ namespace Avalonia.Markup.Xaml.XamlIl
 
             InitializeSre();
             var asm = localAssembly == null ? null : _sreTypeSystem.GetAssembly(localAssembly);
+            var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + uri);
+            var clrPropertyBuilder = tb.DefineNestedType("ClrProperties_" + Guid.NewGuid().ToString("N"));
+            var indexerClosureType = _sreBuilder.DefineType("IndexerClosure_" + Guid.NewGuid().ToString("N"));
 
-            var compiler = new AvaloniaXamlIlCompiler(new TransformerConfiguration(_sreTypeSystem, asm,
-                    _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter),
+            var compiler = new AvaloniaXamlIlCompiler(new AvaloniaXamlIlCompilerConfiguration(_sreTypeSystem, asm,
+                _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter,
+                new XamlIlClrPropertyInfoEmitter(_sreTypeSystem.CreateTypeBuilder(clrPropertyBuilder)),
+                new XamlIlPropertyInfoAccessorFactoryEmitter(_sreTypeSystem.CreateTypeBuilder(indexerClosureType))), 
                 _sreEmitMappings,
                 _sreContextType) { EnableIlVerification = true };
-            var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + uri);
+            
 
             IXamlType overrideType = null;
             if (rootInstance != null)
@@ -135,6 +140,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             compiler.IsDesignMode = isDesignMode;
             compiler.ParseAndCompile(xaml, uri?.ToString(), null, _sreTypeSystem.CreateTypeBuilder(tb), overrideType);
             var created = tb.CreateTypeInfo();
+            clrPropertyBuilder.CreateTypeInfo();
 
             return LoadOrPopulate(created, rootInstance);
         }

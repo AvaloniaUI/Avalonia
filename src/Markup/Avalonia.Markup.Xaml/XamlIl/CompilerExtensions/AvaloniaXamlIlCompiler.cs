@@ -17,6 +17,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         private readonly TransformerConfiguration _configuration;
         private readonly IXamlType _contextType;
         private readonly AvaloniaXamlIlDesignPropertiesTransformer _designTransformer;
+        private readonly AvaloniaBindingExtensionTransformer _bindingTransformer;
 
         private AvaloniaXamlIlCompiler(TransformerConfiguration configuration, XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> emitMappings)
             : base(configuration, emitMappings, true)
@@ -35,32 +36,42 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             Transformers.Insert(0, new XNameTransformer());
             Transformers.Insert(1, new IgnoredDirectivesTransformer());
             Transformers.Insert(2, _designTransformer = new AvaloniaXamlIlDesignPropertiesTransformer());
-            Transformers.Insert(3, new AvaloniaBindingExtensionHackTransformer());
+            Transformers.Insert(3, _bindingTransformer = new AvaloniaBindingExtensionTransformer());
             
             
             // Targeted
 
-            InsertBefore<PropertyReferenceResolver>(new AvaloniaXamlIlTransformInstanceAttachedProperties());
+            InsertBefore<PropertyReferenceResolver>(
+                new AvaloniaXamlIlTransformInstanceAttachedProperties(),
+                new AvaloniaXamlIlTransformSyntheticCompiledBindingMembers());
             InsertAfter<PropertyReferenceResolver>(new AvaloniaXamlIlAvaloniaPropertyResolver());
             
 
 
             InsertBefore<ContentConvertTransformer>(
+                new AvaloniaXamlIlBindingPathParser(),
                 new AvaloniaXamlIlSelectorTransformer(),
-                new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
+                new AvaloniaXamlIlPropertyPathTransformer(),
+                new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer()
             );
-            
+
             // After everything else
-            
-            Transformers.Add(new AddNameScopeRegistration());
+            InsertBefore<NewObjectTransformer>(
+                new AddNameScopeRegistration(),
+                new AvaloniaXamlIlDataContextTypeTransformer(),
+                new AvaloniaXamlIlBindingPathTransformer(),
+                new AvaloniaXamlIlCompiledBindingsMetadataRemover()
+                );
+
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());
+            Transformers.Add(new AvaloniaXamlIlRootObjectScope());
 
             Emitters.Add(new AvaloniaNameScopeRegistrationXamlIlNodeEmitter());
+            Emitters.Add(new AvaloniaXamlIlRootObjectScope.Emitter());
         }
-
         public AvaloniaXamlIlCompiler(TransformerConfiguration configuration,
             XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> emitMappings,
             IXamlTypeBuilder<IXamlILEmitter> contextTypeBuilder)
@@ -84,6 +95,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         {
             get => _designTransformer.IsDesignMode;
             set => _designTransformer.IsDesignMode = value;
+        }
+
+        public bool DefaultCompileBindings
+        {
+            get => _bindingTransformer.CompileBindingsByDefault;
+            set => _bindingTransformer.CompileBindingsByDefault = value;
         }
 
         public void ParseAndCompile(string xaml, string baseUri, IFileSource fileSource, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlType overrideRootType)

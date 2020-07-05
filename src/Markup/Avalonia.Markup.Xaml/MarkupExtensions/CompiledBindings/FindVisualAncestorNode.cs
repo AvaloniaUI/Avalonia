@@ -1,16 +1,16 @@
 ﻿using System;
 using Avalonia.Data.Core;
-using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 
-namespace Avalonia.Markup.Parsers.Nodes
+namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
-    public class FindAncestorNode : ExpressionNode
+    class FindVisualAncestorNode : ExpressionNode
     {
         private readonly int _level;
         private readonly Type _ancestorType;
         private IDisposable _subscription;
 
-        public FindAncestorNode(Type ancestorType, int level)
+        public FindVisualAncestorNode(Type ancestorType, int level)
         {
             _level = level;
             _ancestorType = ancestorType;
@@ -22,20 +22,20 @@ namespace Avalonia.Markup.Parsers.Nodes
             {
                 if (_ancestorType == null)
                 {
-                    return $"$parent[{_level}]";
+                    return $"$visualparent[{_level}]";
                 }
                 else
                 {
-                    return $"$parent[{_ancestorType.Name}, {_level}]";
+                    return $"$visualparent[{_ancestorType.Name}, {_level}]";
                 }
             }
         }
 
         protected override void StartListeningCore(WeakReference<object> reference)
         {
-            if (reference.TryGetTarget(out object target) && target is ILogical logical)
+            if (reference.TryGetTarget(out object target) && target is IVisual visual)
             {
-                _subscription = ControlLocator.Track(logical, _level, _ancestorType).Subscribe(ValueChanged);
+                _subscription = VisualLocator.Track(visual, _level, _ancestorType).Subscribe(ValueChanged);
             }
             else
             {

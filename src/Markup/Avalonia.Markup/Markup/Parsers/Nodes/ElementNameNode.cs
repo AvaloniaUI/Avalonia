@@ -5,7 +5,7 @@ using Avalonia.LogicalTree;
 
 namespace Avalonia.Markup.Parsers.Nodes
 {
-    internal class ElementNameNode : ExpressionNode
+    public class ElementNameNode : ExpressionNode
     {
         private readonly WeakReference<INameScope> _nameScope;
         private readonly string _name;
