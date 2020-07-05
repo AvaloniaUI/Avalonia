@@ -7,7 +7,8 @@
 
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.FocusAdorner.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.Button.xaml?assembly=Avalonia.Themes.Fluent"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Fluent.Carousel.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.CaptionButtons.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.Carousel.xaml?assembly=Avalonia.Themes.Fluent"/>  
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.CheckBox.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.ComboBox.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.ComboBoxItem.xaml?assembly=Avalonia.Themes.Fluent"/>
@@ -36,6 +37,7 @@
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.TextBox.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.ToggleButton.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.Expander.xaml?assembly=Avalonia.Themes.Fluent"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Fluent.TitleBar.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.TreeView.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.TreeViewItem.xaml?assembly=Avalonia.Themes.Fluent"/>
   <StyleInclude Source="resm:Avalonia.Themes.Fluent.UserControl.xaml?assembly=Avalonia.Themes.Fluent"/>
