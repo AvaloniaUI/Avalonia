@@ -81,7 +81,7 @@
             <ComboBoxItem>Simple - Light</ComboBoxItem>
             <ComboBoxItem>Simple - Dark</ComboBoxItem>
           </ComboBox>
-          <ComboBox x:Name="TransparencyLevels" SelectedIndex="0">
+          <ComboBox x:Name="TransparencyLevels" SelectedIndex="{Binding TransparencyLevel}">
             <ComboBoxItem>None</ComboBoxItem>
             <ComboBoxItem>Transparent</ComboBoxItem>
             <ComboBoxItem>Blur</ComboBoxItem>
