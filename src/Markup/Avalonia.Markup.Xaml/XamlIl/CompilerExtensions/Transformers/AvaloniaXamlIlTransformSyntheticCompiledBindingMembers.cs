@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using XamlIl;
-using XamlIl.Ast;
-using XamlIl.Transform;
+using XamlX;
+using XamlX.Ast;
+using XamlX.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AvaloniaXamlIlTransformSyntheticCompiledBindingMembers : IXamlIlAstTransformer
+    class AvaloniaXamlIlTransformSyntheticCompiledBindingMembers : IXamlAstTransformer
     {
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (node is XamlIlAstNamePropertyReference prop
-               && prop.TargetType is XamlIlAstClrTypeReference targetRef
+            if (node is XamlAstNamePropertyReference prop
+               && prop.TargetType is XamlAstClrTypeReference targetRef
                && targetRef.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension))
             {
                 if (prop.Name == "ElementName")
@@ -43,12 +43,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         Source
     }
 
-    class AvaloniaSyntheticCompiledBindingProperty : XamlIlAstNode, IXamlIlAstPropertyReference
+    class AvaloniaSyntheticCompiledBindingProperty : XamlAstNode, IXamlAstPropertyReference
     {
         public SyntheticCompiledBindingPropertyName Name { get; }
 
         public AvaloniaSyntheticCompiledBindingProperty(
-            IXamlIlLineInfo lineInfo,
+            IXamlLineInfo lineInfo,
             SyntheticCompiledBindingPropertyName name)
             : base(lineInfo)
         {

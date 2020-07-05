@@ -3,38 +3,37 @@
     /// <summary>
     /// Provides a set of properties that are used during the paragraph layout.
     /// </summary>
-    public readonly struct TextParagraphProperties
+    public abstract class TextParagraphProperties
     {
-        public TextParagraphProperties(
-            TextStyle defaultTextStyle,
-            TextAlignment textAlignment = TextAlignment.Left,
-            TextWrapping textWrapping = TextWrapping.NoWrap,
-            TextTrimming textTrimming = TextTrimming.None)
-        {
-            DefaultTextStyle = defaultTextStyle;
-            TextAlignment = textAlignment;
-            TextWrapping = textWrapping;
-            TextTrimming = textTrimming;
-        }
+        /// <summary>
+        /// Gets the text alignment.
+        /// </summary>
+        public abstract TextAlignment TextAlignment { get; }
 
         /// <summary>
         /// Gets the default text style.
         /// </summary>
-        public TextStyle DefaultTextStyle { get; }
+        public abstract TextRunProperties DefaultTextRunProperties { get; }
 
         /// <summary>
-        /// Gets the text alignment.
+        /// If not null, text decorations to apply to all runs in the line. This is in addition
+        /// to any text decorations specified by the TextRunProperties for individual text runs.
         /// </summary>
-        public TextAlignment TextAlignment { get; }
+        public virtual TextDecorationCollection TextDecorations => null;
 
         /// <summary>
         /// Gets the text wrapping.
         /// </summary>
-        public TextWrapping TextWrapping { get; }
+        public abstract TextWrapping TextWrapping { get; }
 
         /// <summary>
         /// Gets the text trimming.
         /// </summary>
-        public TextTrimming TextTrimming { get; }
+        public abstract TextTrimming TextTrimming { get; }
+
+        /// <summary>
+        /// Paragraph's line height
+        /// </summary>
+        public abstract double LineHeight { get; }
     }
 }

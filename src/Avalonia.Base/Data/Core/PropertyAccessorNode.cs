@@ -89,6 +89,7 @@ namespace Avalonia.Data.Core
                     return x;
                 }
             }
+            return null;
         }
 
         protected override void StopListeningCore()

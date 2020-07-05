@@ -9,7 +9,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Data.Core;
 using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
-using XamlIl;
+using XamlX;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
@@ -328,7 +328,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ContentControl Name='target' Content='{CompiledBinding}' />
 </Window>";
                 var loader = new AvaloniaXamlLoader();
-                Assert.Throws<XamlIlTransformException>(() => loader.Load(xaml));
+                Assert.Throws<XamlTransformException>(() => loader.Load(xaml));
             }
         }
 
@@ -347,7 +347,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </ContentControl>
 </Window>";
                 var loader = new AvaloniaXamlLoader();
-                Assert.Throws<XamlIlTransformException>(() => loader.Load(xaml));
+                Assert.Throws<XamlTransformException>(() => loader.Load(xaml));
             }
         }
 
@@ -406,7 +406,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </ItemsControl>
 </Window>";
                 var loader = new AvaloniaXamlLoader();
-                Assert.Throws<XamlIlTransformException>(() => loader.Load(xaml));
+                Assert.Throws<XamlTransformException>(() => loader.Load(xaml));
             }
         }
 
@@ -562,7 +562,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Text='{Binding InvalidPath}' Name='textBlock' />
 </Window>";
                 var loader = new AvaloniaXamlLoader();
-                Assert.Throws<XamlIlParseException>(() => loader.Load(xaml));
+                Assert.Throws<XamlX.XamlParseException>(() => loader.Load(xaml));
             }
         }
 
@@ -579,7 +579,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         x:CompileBindings='notabool'>
 </Window>";
                 var loader = new AvaloniaXamlLoader();
-                Assert.Throws<XamlIlParseException>(() => loader.Load(xaml));
+                Assert.Throws<XamlX.XamlParseException>(() => loader.Load(xaml));
             }
         }
     }

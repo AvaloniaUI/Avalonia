@@ -4,14 +4,32 @@ using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Xunit;
 
-namespace Avalonia.Skia.UnitTests
+namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
     public class TextLayoutTests
     {
         private static readonly string s_singleLineText = "0123456789";
         private static readonly string s_multiLineText = "012345678\r\r0123456789";
+
+        [InlineData("01234\r01234\r", 3)]
+        [InlineData("01234\r01234", 2)]
+        [Theory]
+        public void Should_Break_Lines(string text, int numberOfLines)
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12.0f,
+                    Brushes.Black);
+
+                Assert.Equal(numberOfLines, layout.TextLines.Count);
+            }
+        }
 
         [Fact]
         public void Should_Apply_TextStyleSpan_To_Text_In_Between()
@@ -22,17 +40,16 @@ namespace Avalonia.Skia.UnitTests
 
                 var spans = new[]
                 {
-                    new TextStyleRun(
-                        new TextPointer(1, 2),
-                        new TextStyle(Typeface.Default, 12, foreground))
+                    new ValueSpan<TextRunProperties>(1, 2,
+                        new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground))
                 };
 
                 var layout = new TextLayout(
                     s_multiLineText,
-                    Typeface.Default, 
+                    Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    textStyleOverrides : spans);
+                    textStyleOverrides: spans);
 
                 var textLine = layout.TextLines[0];
 
@@ -46,7 +63,7 @@ namespace Avalonia.Skia.UnitTests
 
                 Assert.Equal("12", actual);
 
-                Assert.Equal(foreground, textRun.Style.Foreground);
+                Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
 
@@ -61,9 +78,8 @@ namespace Avalonia.Skia.UnitTests
                 {
                     var spans = new[]
                     {
-                        new TextStyleRun(
-                            new TextPointer(0, i),
-                            new TextStyle(Typeface.Default, 12, foreground))
+                        new ValueSpan<TextRunProperties>(0, i,
+                            new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground))
                     };
 
                     var expected = new TextLayout(
@@ -72,22 +88,22 @@ namespace Avalonia.Skia.UnitTests
                         12.0f,
                         Brushes.Black.ToImmutable(),
                         textWrapping: TextWrapping.Wrap,
-                        maxWidth : 25);
+                        maxWidth: 25);
 
                     var actual = new TextLayout(
                         s_multiLineText,
                         Typeface.Default,
                         12.0f,
                         Brushes.Black.ToImmutable(),
-                        textWrapping : TextWrapping.Wrap,
-                        maxWidth : 25,
-                        textStyleOverrides : spans);
+                        textWrapping: TextWrapping.Wrap,
+                        maxWidth: 25,
+                        textStyleOverrides: spans);
 
                     Assert.Equal(expected.TextLines.Count, actual.TextLines.Count);
 
                     for (var j = 0; j < actual.TextLines.Count; j++)
                     {
-                        Assert.Equal(expected.TextLines[j].Text.Length, actual.TextLines[j].Text.Length);
+                        Assert.Equal(expected.TextLines[j].TextRange.Length, actual.TextLines[j].TextRange.Length);
 
                         Assert.Equal(expected.TextLines[j].TextRuns.Sum(x => x.Text.Length),
                             actual.TextLines[j].TextRuns.Sum(x => x.Text.Length));
@@ -105,9 +121,8 @@ namespace Avalonia.Skia.UnitTests
 
                 var spans = new[]
                 {
-                    new TextStyleRun(
-                        new TextPointer(0, 2),
-                        new TextStyle(Typeface.Default, 12, foreground))
+                    new ValueSpan<TextRunProperties>(0, 2,
+                        new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground))
                 };
 
                 var layout = new TextLayout(
@@ -115,7 +130,7 @@ namespace Avalonia.Skia.UnitTests
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    textStyleOverrides : spans);
+                    textStyleOverrides: spans);
 
                 var textLine = layout.TextLines[0];
 
@@ -130,7 +145,7 @@ namespace Avalonia.Skia.UnitTests
 
                 Assert.Equal("01", actual);
 
-                Assert.Equal(foreground, textRun.Style.Foreground);
+                Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
 
@@ -143,9 +158,8 @@ namespace Avalonia.Skia.UnitTests
 
                 var spans = new[]
                 {
-                    new TextStyleRun(
-                        new TextPointer(8, 2),
-                        new TextStyle(Typeface.Default, 12, foreground))
+                    new ValueSpan<TextRunProperties>(8, 2,
+                        new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground)),
                 };
 
                 var layout = new TextLayout(
@@ -153,7 +167,7 @@ namespace Avalonia.Skia.UnitTests
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    textStyleOverrides : spans);
+                    textStyleOverrides: spans);
 
                 var textLine = layout.TextLines[0];
 
@@ -167,7 +181,7 @@ namespace Avalonia.Skia.UnitTests
 
                 Assert.Equal("89", actual);
 
-                Assert.Equal(foreground, textRun.Style.Foreground);
+                Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
 
@@ -180,9 +194,8 @@ namespace Avalonia.Skia.UnitTests
 
                 var spans = new[]
                 {
-                    new TextStyleRun(
-                        new TextPointer(0, 1),
-                        new TextStyle(Typeface.Default, 12, foreground))
+                    new ValueSpan<TextRunProperties>(0, 1,
+                        new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground))
                 };
 
                 var layout = new TextLayout(
@@ -190,7 +203,7 @@ namespace Avalonia.Skia.UnitTests
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    textStyleOverrides : spans);
+                    textStyleOverrides: spans);
 
                 var textLine = layout.TextLines[0];
 
@@ -200,7 +213,7 @@ namespace Avalonia.Skia.UnitTests
 
                 Assert.Equal(1, textRun.Text.Length);
 
-                Assert.Equal(foreground, textRun.Style.Foreground);
+                Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
 
@@ -215,9 +228,8 @@ namespace Avalonia.Skia.UnitTests
 
                 var spans = new[]
                 {
-                    new TextStyleRun(
-                        new TextPointer(2, 2),
-                        new TextStyle(Typeface.Default, 12, foreground))
+                    new ValueSpan<TextRunProperties>(2, 2,
+                        new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground))
                 };
 
                 var layout = new TextLayout(
@@ -239,7 +251,7 @@ namespace Avalonia.Skia.UnitTests
 
                 Assert.Equal("😄", actual);
 
-                Assert.Equal(foreground, textRun.Style.Foreground);
+                Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
         }
 
@@ -254,7 +266,7 @@ namespace Avalonia.Skia.UnitTests
                     12.0f,
                     Brushes.Black.ToImmutable());
 
-                Assert.Equal(s_multiLineText.Length, layout.TextLines.Sum(x => x.Text.Length));
+                Assert.Equal(s_multiLineText.Length, layout.TextLines.Sum(x => x.TextRange.Length));
             }
         }
 
@@ -291,9 +303,8 @@ namespace Avalonia.Skia.UnitTests
 
                 var spans = new[]
                 {
-                    new TextStyleRun(
-                        new TextPointer(0, 24),
-                        new TextStyle(Typeface.Default, 12, foreground))
+                    new ValueSpan<TextRunProperties>(0, 24,
+                        new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground))
                 };
 
                 var layout = new TextLayout(
@@ -301,8 +312,8 @@ namespace Avalonia.Skia.UnitTests
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    textWrapping : TextWrapping.Wrap,
-                    maxWidth : 180,
+                    textWrapping: TextWrapping.Wrap,
+                    maxWidth: 180,
                     textStyleOverrides: spans);
 
                 Assert.Equal(
@@ -322,9 +333,8 @@ namespace Avalonia.Skia.UnitTests
 
                 var spans = new[]
                 {
-                    new TextStyleRun(
-                        new TextPointer(5, 20),
-                        new TextStyle(Typeface.Default, 12, foreground))
+                    new ValueSpan<TextRunProperties>(5, 20,
+                        new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground))
                 };
 
                 var layout = new TextLayout(
@@ -332,13 +342,13 @@ namespace Avalonia.Skia.UnitTests
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
-                    maxWidth : 200,
-                    maxHeight : 125,
+                    maxWidth: 200,
+                    maxHeight: 125,
                     textStyleOverrides: spans);
 
-                Assert.Equal(foreground, layout.TextLines[0].TextRuns[1].Style.Foreground);
-                Assert.Equal(foreground, layout.TextLines[1].TextRuns[0].Style.Foreground);
-                Assert.Equal(foreground, layout.TextLines[2].TextRuns[0].Style.Foreground);
+                Assert.Equal(foreground, layout.TextLines[0].TextRuns[1].Properties.ForegroundBrush);
+                Assert.Equal(foreground, layout.TextLines[1].TextRuns[0].Properties.ForegroundBrush);
+                Assert.Equal(foreground, layout.TextLines[2].TextRuns[0].Properties.ForegroundBrush);
             }
         }
 
@@ -355,7 +365,7 @@ namespace Avalonia.Skia.UnitTests
                     12.0f,
                     Brushes.Black.ToImmutable());
 
-                var shapedRun = (ShapedTextRun)layout.TextLines[0].TextRuns[0];
+                var shapedRun = (ShapedTextCharacters)layout.TextLines[0].TextRuns[0];
 
                 var glyphRun = shapedRun.GlyphRun;
 
@@ -390,7 +400,7 @@ namespace Avalonia.Skia.UnitTests
 
                 foreach (var textRun in textLine.TextRuns)
                 {
-                    var shapedRun = (ShapedTextRun)textRun;
+                    var shapedRun = (ShapedTextCharacters)textRun;
 
                     var glyphRun = shapedRun.GlyphRun;
 
@@ -426,13 +436,13 @@ namespace Avalonia.Skia.UnitTests
 
                 Assert.Equal(1, layout.TextLines[0].TextRuns.Count);
 
-                Assert.Equal(expectedLength, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters.Length);
+                Assert.Equal(expectedLength, ((ShapedTextCharacters)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters.Length);
 
-                Assert.Equal(5, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters[5]);
+                Assert.Equal(5, ((ShapedTextCharacters)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters[5]);
 
-                if(expectedLength == 7)
+                if (expectedLength == 7)
                 {
-                    Assert.Equal(5, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters[6]);
+                    Assert.Equal(5, ((ShapedTextCharacters)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters[6]);
                 }
             }
         }
@@ -467,7 +477,7 @@ namespace Avalonia.Skia.UnitTests
 
                 var textLine = layout.TextLines[0];
 
-                var textRun = (ShapedTextRun)textLine.TextRuns[0];
+                var textRun = (ShapedTextCharacters)textLine.TextRuns[0];
 
                 Assert.Equal(7, textRun.Text.Length);
 
@@ -526,9 +536,28 @@ namespace Avalonia.Skia.UnitTests
             }
         }
 
+        [Fact]
+        public void Should_Produce_Fixed_Height_Lines()
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    s_multiLineText,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    lineHeight: 50);
+
+                foreach (var line in layout.TextLines)
+                {
+                    Assert.Equal(50, line.LineMetrics.Size.Height);
+                }
+            }
+        }
+
         private const string Text = "日本でTest一番読まれている英字新聞・ジャパンタイムズが発信する国内外ニュースと、様々なジャンルの特集記事。";
 
-        [Fact(Skip= "Only used for profiling.")]
+        [Fact(Skip = "Only used for profiling.")]
         public void Should_Wrap()
         {
             using (Start())
@@ -546,12 +575,12 @@ namespace Avalonia.Skia.UnitTests
             }
         }
 
-        public static IDisposable Start()
+        private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
                 .With(renderInterface: new PlatformRenderInterface(null),
                     textShaperImpl: new TextShaperImpl(),
-                    fontManagerImpl : new CustomFontManagerImpl()));
+                    fontManagerImpl: new CustomFontManagerImpl()));
 
             return disposable;
         }

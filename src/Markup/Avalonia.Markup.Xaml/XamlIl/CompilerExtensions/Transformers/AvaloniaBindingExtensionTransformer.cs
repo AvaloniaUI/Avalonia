@@ -1,35 +1,38 @@
 using System.Linq;
-using XamlIl;
-using XamlIl.Ast;
-using XamlIl.Transform;
+using XamlX;
+using XamlX.Ast;
+using XamlX.Transform;
+
+
+using XamlParseException = XamlX.XamlParseException;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AvaloniaBindingExtensionTransformer : IXamlIlAstTransformer
+    class AvaloniaBindingExtensionTransformer : IXamlAstTransformer
     {
         public bool CompileBindingsByDefault { get; set; }
 
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
             if (context.ParentNodes().FirstOrDefault() is AvaloniaXamlIlCompileBindingsNode)
             {
                 return node;
             }
 
-            if (node is XamlIlAstObjectNode obj)
+            if (node is XamlAstObjectNode obj)
             {
                 foreach (var item in obj.Children)
                 {
-                    if (item is XamlIlAstXmlDirective directive)
+                    if (item is XamlAstXmlDirective directive)
                     {
                         if (directive.Namespace == XamlNamespaces.Xaml2006
                             && directive.Name == "CompileBindings"
                             && directive.Values.Count == 1)
                         {
-                            if (!(directive.Values[0] is XamlIlAstTextNode text
+                            if (!(directive.Values[0] is XamlAstTextNode text
                                 && bool.TryParse(text.Text, out var compileBindings)))
                             {
-                                throw new XamlIlParseException("The value of x:CompileBindings must be a literal boolean value.", directive.Values[0]);
+                                throw new XamlParseException("The value of x:CompileBindings must be a literal boolean value.", directive.Values[0]);
                             }
 
                             obj.Children.Remove(directive);
@@ -40,10 +43,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 }
             }
 
-            // Our code base expects XAML parser to prefer `FooExtension` to `Foo` even with `<Foo>` syntax
-            // This is the legacy of Portable.Xaml, so we emulate that behavior here
+            // Convert the <Binding> tag to either a CompiledBinding or ReflectionBinding tag.
 
-            if (node is XamlIlAstXmlTypeReference tref
+            if (node is XamlAstXmlTypeReference tref
                 && tref.Name == "Binding"
                 && tref.XmlNamespace == "https://github.com/avaloniaui")
             {
@@ -60,9 +62,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         }
     }
 
-    internal class AvaloniaXamlIlCompileBindingsNode : XamlIlValueWithSideEffectNodeBase
+    internal class AvaloniaXamlIlCompileBindingsNode : XamlValueWithSideEffectNodeBase
     {
-        public AvaloniaXamlIlCompileBindingsNode(IXamlIlAstValueNode value, bool compileBindings)
+        public AvaloniaXamlIlCompileBindingsNode(IXamlAstValueNode value, bool compileBindings)
             : base(value, value)
         {
             CompileBindings = compileBindings;

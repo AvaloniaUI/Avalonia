@@ -1,47 +1,49 @@
-using XamlIl.Transform;
-using XamlIl.TypeSystem;
+using XamlX.Emit;
+using XamlX.IL;
+using XamlX.Transform;
+using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
     class AvaloniaXamlIlWellKnownTypes
     {
-        public IXamlIlType AvaloniaObject { get; }
-        public IXamlIlType IAvaloniaObject { get; }
-        public IXamlIlType BindingPriority { get; }
-        public IXamlIlType AvaloniaObjectExtensions { get; }
-        public IXamlIlType AvaloniaProperty { get; }
-        public IXamlIlType AvaloniaPropertyT { get; }
-        public IXamlIlType IBinding { get; }
-        public IXamlIlMethod AvaloniaObjectBindMethod { get; }
-        public IXamlIlMethod AvaloniaObjectSetValueMethod { get; }
-        public IXamlIlType IDisposable { get; }
-        public XamlIlTypeWellKnownTypes XamlIlTypes { get; }
-        public XamlIlLanguageTypeMappings XamlIlMappings { get; }
-        public IXamlIlType Transitions { get; }
-        public IXamlIlType AssignBindingAttribute { get; }
-        public IXamlIlType UnsetValueType { get; }
-        public IXamlIlType StyledElement { get; }
-        public IXamlIlType NameScope { get; }
-        public IXamlIlMethod NameScopeSetNameScope { get; }
-        public IXamlIlType INameScope { get; }
-        public IXamlIlMethod INameScopeRegister { get; }
-        public IXamlIlMethod INameScopeComplete { get; }
-        public IXamlIlType IPropertyInfo { get; }
-        public IXamlIlType ClrPropertyInfo { get; }
-        public IXamlIlType PropertyPath { get; }
-        public IXamlIlType PropertyPathBuilder { get; }
-        public IXamlIlType IPropertyAccessor { get; }
-        public IXamlIlType PropertyInfoAccessorFactory { get; }
-        public IXamlIlType CompiledBindingPathBuilder { get; }
-        public IXamlIlType CompiledBindingPath { get; }
-        public IXamlIlType CompiledBindingExtension { get; }
-        public IXamlIlType DataTemplate { get; }
-        public IXamlIlType IItemsPresenterHost { get; }
-        public IXamlIlType ReflectionBindingExtension { get; }
+        public IXamlType AvaloniaObject { get; }
+        public IXamlType IAvaloniaObject { get; }
+        public IXamlType BindingPriority { get; }
+        public IXamlType AvaloniaObjectExtensions { get; }
+        public IXamlType AvaloniaProperty { get; }
+        public IXamlType AvaloniaPropertyT { get; }
+        public IXamlType IBinding { get; }
+        public IXamlMethod AvaloniaObjectBindMethod { get; }
+        public IXamlMethod AvaloniaObjectSetValueMethod { get; }
+        public IXamlType IDisposable { get; }
+        public XamlTypeWellKnownTypes XamlIlTypes { get; }
+        public XamlLanguageTypeMappings XamlIlMappings { get; }
+        public IXamlType Transitions { get; }
+        public IXamlType AssignBindingAttribute { get; }
+        public IXamlType UnsetValueType { get; }
+        public IXamlType StyledElement { get; }
+        public IXamlType NameScope { get; }
+        public IXamlMethod NameScopeSetNameScope { get; }
+        public IXamlType INameScope { get; }
+        public IXamlMethod INameScopeRegister { get; }
+        public IXamlMethod INameScopeComplete { get; }
+        public IXamlType IPropertyInfo { get; }
+        public IXamlType ClrPropertyInfo { get; }
+        public IXamlType PropertyPath { get; }
+        public IXamlType PropertyPathBuilder { get; }
+        public IXamlType IPropertyAccessor { get; }
+        public IXamlType PropertyInfoAccessorFactory { get; }
+        public IXamlType CompiledBindingPathBuilder { get; }
+        public IXamlType CompiledBindingPath { get; }
+        public IXamlType CompiledBindingExtension { get; }
+        public IXamlType DataTemplate { get; }
+        public IXamlType IItemsPresenterHost { get; }
+        public IXamlType ReflectionBindingExtension { get; }
 
-        public IXamlIlType RelativeSource { get; }
+        public IXamlType RelativeSource { get; }
 
-        public AvaloniaXamlIlWellKnownTypes(XamlIlTransformerConfiguration cfg)
+        public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
             XamlIlTypes = cfg.WellKnownTypes;
             AvaloniaObject = cfg.TypeSystem.GetType("Avalonia.AvaloniaObject");
@@ -99,7 +101,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
     static class AvaloniaXamlIlWellKnownTypesExtensions
     {
-        public static AvaloniaXamlIlWellKnownTypes GetAvaloniaTypes(this XamlIlAstTransformationContext ctx)
+        public static AvaloniaXamlIlWellKnownTypes GetAvaloniaTypes(this AstTransformationContext ctx)
         {
             if (ctx.TryGetItem<AvaloniaXamlIlWellKnownTypes>(out var rv))
                 return rv;
@@ -107,7 +109,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             return rv;
         }
         
-        public static AvaloniaXamlIlWellKnownTypes GetAvaloniaTypes(this XamlIlEmitContext ctx)
+        public static AvaloniaXamlIlWellKnownTypes GetAvaloniaTypes(this XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> ctx)
         {
             if (ctx.TryGetItem<AvaloniaXamlIlWellKnownTypes>(out var rv))
                 return rv;

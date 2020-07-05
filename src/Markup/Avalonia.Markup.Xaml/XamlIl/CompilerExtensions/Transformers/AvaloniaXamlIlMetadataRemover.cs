@@ -1,12 +1,12 @@
 using System.Linq;
-using XamlIl.Ast;
-using XamlIl.Transform;
+using XamlX.Ast;
+using XamlX.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AvaloniaXamlIlMetadataRemover : IXamlIlAstTransformer
+    class AvaloniaXamlIlMetadataRemover : IXamlAstTransformer
     {
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
             if (node is AvaloniaXamlIlTargetTypeMetadataNode targetType)
                 return targetType.Value;

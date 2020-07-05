@@ -1,20 +1,22 @@
 ﻿using System;
 using System.Linq;
-using XamlIl;
-using XamlIl.Ast;
-using XamlIl.Transform;
-using XamlIl.TypeSystem;
+using XamlX;
+using XamlX.Ast;
+using XamlX.Transform;
+using XamlX.TypeSystem;
+using XamlX.IL;
+using XamlX.Emit;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AvaloniaXamlIlRootObjectScope : IXamlIlAstTransformer
+    class AvaloniaXamlIlRootObjectScope : IXamlAstTransformer
     {
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
             if (!context.ParentNodes().Any()
-                && node is XamlIlValueWithManipulationNode mnode)
+                && node is XamlValueWithManipulationNode mnode)
             {
-                mnode.Manipulation = new XamlIlManipulationGroupNode(mnode,
+                mnode.Manipulation = new XamlManipulationGroupNode(mnode,
                     new[]
                     {
                         mnode.Manipulation,
@@ -23,41 +25,48 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
             return node;
         }
-        class HandleRootObjectScopeNode : XamlIlAstNode, IXamlIlAstManipulationNode, IXamlIlAstEmitableNode
+        class HandleRootObjectScopeNode : XamlAstNode, IXamlAstManipulationNode
         {
             private readonly AvaloniaXamlIlWellKnownTypes _types;
 
-            public HandleRootObjectScopeNode(IXamlIlLineInfo lineInfo,
+            public HandleRootObjectScopeNode(IXamlLineInfo lineInfo,
                 AvaloniaXamlIlWellKnownTypes types) : base(lineInfo)
             {
                 _types = types;
             }
-
-            public XamlIlNodeEmitResult Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+        }
+        internal class Emitter : IXamlILAstNodeEmitter
+        {
+            public XamlILNodeEmitResult Emit(IXamlAstNode node, XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
             {
+                if (!(node is HandleRootObjectScopeNode))
+                {
+                    return null;
+                }
+                var types = context.GetAvaloniaTypes();
+                
                 var next = codeGen.DefineLabel();
                 var scopeField = context.RuntimeContext.ContextType.Fields.First(f =>
                     f.Name == AvaloniaXamlIlLanguage.ContextNameScopeFieldName);
-                using (var local = codeGen.LocalsPool.GetLocal(_types.StyledElement))
+                using (var local = codeGen.LocalsPool.GetLocal(types.StyledElement))
                 {
                     codeGen
-                        .Isinst(_types.StyledElement)
+                        .Isinst(types.StyledElement)
                         .Dup()
                         .Stloc(local.Local)
                         .Brfalse(next)
                         .Ldloc(local.Local)
                         .Ldloc(context.ContextLocal)
                         .Ldfld(scopeField)
-                        .EmitCall(_types.NameScopeSetNameScope, true)
+                        .EmitCall(types.NameScopeSetNameScope, true)
                         .MarkLabel(next)
                         .Ldloc(context.ContextLocal)
                         .Ldfld(scopeField)
-                        .EmitCall(_types.INameScopeComplete, true);
+                        .EmitCall(types.INameScopeComplete, true);
                 }
 
-                return XamlIlNodeEmitResult.Void(1);
+                return XamlILNodeEmitResult.Void(1);
             }
         }
-
     }
 }

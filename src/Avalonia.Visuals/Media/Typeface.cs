@@ -16,11 +16,11 @@ namespace Avalonia.Media
         /// Initializes a new instance of the <see cref="Typeface"/> class.
         /// </summary>
         /// <param name="fontFamily">The font family.</param>
-        /// <param name="weight">The font weight.</param>
         /// <param name="style">The font style.</param>
+        /// <param name="weight">The font weight.</param>
         public Typeface([NotNull]FontFamily fontFamily,
-            FontWeight weight = FontWeight.Normal,
-            FontStyle style = FontStyle.Normal)
+            FontStyle style = FontStyle.Normal,
+            FontWeight weight = FontWeight.Normal)
         {
             if (weight <= 0)
             {
@@ -39,9 +39,9 @@ namespace Avalonia.Media
         /// <param name="style">The font style.</param>
         /// <param name="weight">The font weight.</param>
         public Typeface(string fontFamilyName,
-            FontWeight weight = FontWeight.Normal,
-            FontStyle style = FontStyle.Normal)
-            : this(new FontFamily(fontFamilyName), weight, style)
+            FontStyle style = FontStyle.Normal,
+            FontWeight weight = FontWeight.Normal)
+            : this(new FontFamily(fontFamilyName), style, weight)
         {
         }
 

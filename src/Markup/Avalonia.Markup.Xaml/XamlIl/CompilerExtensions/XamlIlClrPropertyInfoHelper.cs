@@ -2,25 +2,27 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
-using XamlIl.Ast;
-using XamlIl.Transform;
-using XamlIl.TypeSystem;
+using XamlX.Ast;
+using XamlX.Transform;
+using XamlX.TypeSystem;
+using XamlX.IL;
+using XamlX.Emit;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
     class XamlIlClrPropertyInfoEmitter
     {
-        private readonly IXamlIlTypeBuilder _builder;
+        private readonly IXamlTypeBuilder<IXamlILEmitter> _builder;
 
-        private Dictionary<string, List<(IXamlIlProperty prop, IXamlIlMethod get)>> _fields
-            = new Dictionary<string, List<(IXamlIlProperty prop, IXamlIlMethod get)>>();
+        private Dictionary<string, List<(IXamlProperty prop, IXamlMethod get)>> _fields
+            = new Dictionary<string, List<(IXamlProperty prop, IXamlMethod get)>>();
         
-        public XamlIlClrPropertyInfoEmitter(IXamlIlTypeBuilder builder)
+        public XamlIlClrPropertyInfoEmitter(IXamlTypeBuilder<IXamlILEmitter> builder)
         {
             _builder = builder;
         }
 
-        static string GetKey(IXamlIlProperty property, string indexerArgumentsKey)
+        static string GetKey(IXamlProperty property, string indexerArgumentsKey)
         {
             var baseKey = property.Getter.DeclaringType.GetFullName() + "." + property.Name;
 
@@ -32,15 +34,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return baseKey + $"[{indexerArgumentsKey}]";
         }
 
-        public IXamlIlType Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen, IXamlIlProperty property, IEnumerable<IXamlIlAstValueNode> indexerArguments = null, string indexerArgumentsKey = null)
+        public IXamlType Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen, IXamlProperty property, IEnumerable<IXamlAstValueNode> indexerArguments = null, string indexerArgumentsKey = null)
         {
-            indexerArguments = indexerArguments ?? Enumerable.Empty<IXamlIlAstValueNode>();
+            indexerArguments = indexerArguments ?? Enumerable.Empty<IXamlAstValueNode>();
             var types = context.GetAvaloniaTypes();
-            IXamlIlMethod Get()
+            IXamlMethod Get()
             {
                 var key = GetKey(property, indexerArgumentsKey);
                 if (!_fields.TryGetValue(key, out var lst))
-                    _fields[key] = lst = new List<(IXamlIlProperty prop, IXamlIlMethod get)>();
+                    _fields[key] = lst = new List<(IXamlProperty prop, IXamlMethod get)>();
 
                 foreach (var cached in lst)
                 {
@@ -57,7 +59,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 
                 var field = _builder.DefineField(types.IPropertyInfo, name + "!Field", false, true);
 
-                void Load(IXamlIlMethod m, IXamlIlEmitter cg)
+                void Load(IXamlMethod m, IXamlILEmitter cg)
                 {
                     cg
                         .Ldarg_0();
@@ -105,7 +107,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         .Ret();
                 }
 
-                var get = _builder.DefineMethod(types.IPropertyInfo, Array.Empty<IXamlIlType>(),
+                var get = _builder.DefineMethod(types.IPropertyInfo, Array.Empty<IXamlType>(),
                     name + "!Property", true, true, false);
 
 
@@ -121,7 +123,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     .MarkLabel(cacheMiss)
                     .Ldstr(property.Name);
 
-                void EmitFunc(IXamlIlEmitter emitter, IXamlIlMethod method, IXamlIlType del)
+                void EmitFunc(IXamlILEmitter emitter, IXamlMethod method, IXamlType del)
                 {
                     if (method == null)
                         emitter.Ldnull();

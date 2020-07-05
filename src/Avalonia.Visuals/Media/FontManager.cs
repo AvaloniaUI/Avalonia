@@ -100,7 +100,7 @@ namespace Avalonia.Media
                     return typeface;
                 }
 
-                typeface = new Typeface(fontFamily, fontWeight, fontStyle);
+                typeface = new Typeface(fontFamily, fontStyle, fontWeight);
 
                 if (_typefaceCache.TryAdd(key, typeface))
                 {
@@ -143,7 +143,7 @@ namespace Avalonia.Media
             }
 
             var matchedTypeface = PlatformImpl.TryMatchCharacter(codepoint, fontWeight, fontStyle, fontFamily, culture, out var key) ?
-                _typefaceCache.GetOrAdd(key, new Typeface(key.FamilyName, key.Weight, key.Style)) :
+                _typefaceCache.GetOrAdd(key, new Typeface(key.FamilyName, key.Style, key.Weight)) :
                 null;
 
             return matchedTypeface;

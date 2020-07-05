@@ -6,18 +6,18 @@ using System.Text;
 using Avalonia.Markup.Parsers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using Avalonia.Utilities;
-using XamlIl;
-using XamlIl.Ast;
-using XamlIl.Transform;
-using XamlIl.Transform.Transformers;
-using XamlIl.TypeSystem;
+using XamlX;
+using XamlX.Ast;
+using XamlX.Transform;
+using XamlX.Transform.Transformers;
+using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AvaloniaXamlIlDataContextTypeTransformer : IXamlIlAstTransformer
+    class AvaloniaXamlIlDataContextTypeTransformer : IXamlAstTransformer
     {
         private const string AvaloniaNs = "https://github.com/avaloniaui";
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
             if (context.ParentNodes().FirstOrDefault() is AvaloniaXamlIlDataContextTypeMetadataNode)
             {
@@ -25,7 +25,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 return node;
             }
 
-            if (node is XamlIlAstObjectNode on)
+            if (node is XamlAstConstructableObjectNode on)
             {
                 AvaloniaXamlIlDataContextTypeMetadataNode inferredDataContextTypeNode = null;
                 AvaloniaXamlIlDataContextTypeMetadataNode directiveDataContextTypeNode = null;
@@ -34,7 +34,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 for (int i = 0; i < on.Children.Count; ++i)
                 {
                     var child = on.Children[i];
-                    if (child is XamlIlAstXmlDirective directive)
+                    if (child is XamlAstXmlDirective directive)
                     {
                         if (directive.Namespace == XamlNamespaces.Xaml2006
                             && directive.Name == "DataType"
@@ -42,29 +42,29 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         {
                             on.Children.RemoveAt(i);
                             i--;
-                            if (directive.Values[0] is XamlIlAstTextNode text)
+                            if (directive.Values[0] is XamlAstTextNode text)
                             {
                                 directiveDataContextTypeNode = new AvaloniaXamlIlDataContextTypeMetadataNode(on,
-                                    XamlIlTypeReferenceResolver.ResolveType(context, text.Text, isMarkupExtension: false, text, strict: true).Type);
+                                    TypeReferenceResolver.ResolveType(context, text.Text, isMarkupExtension: false, text, strict: true).Type);
                             }
                             else
                             {
-                                throw new XamlIlParseException("x:DataType should be set to a type name.", directive.Values[0]);
+                                throw new XamlX.XamlParseException("x:DataType should be set to a type name.", directive.Values[0]);
                             }
                         }
                     }
-                    else if (child is XamlIlPropertyAssignmentNode pa)
+                    else if (child is XamlPropertyAssignmentNode pa)
                     {
                         if (pa.Property.Name == "DataContext"
                             && pa.Property.DeclaringType.Equals(context.GetAvaloniaTypes().StyledElement)
-                            && pa.Values[0] is XamlIlMarkupExtensionNode ext
-                            && ext.Value is XamlIlAstObjectNode obj)
+                            && pa.Values[0] is XamlMarkupExtensionNode ext
+                            && ext.Value is XamlAstConstructableObjectNode obj)
                         {
                             inferredDataContextTypeNode = ParseDataContext(context, on, obj);
                         }
                         else if(isDataTemplate
                             && pa.Property.Name == "DataType"
-                            && pa.Values[0] is XamlIlTypeExtensionNode dataTypeNode)
+                            && pa.Values[0] is XamlTypeExtensionNode dataTypeNode)
                         {
                             inferredDataContextTypeNode = new AvaloniaXamlIlDataContextTypeMetadataNode(on, dataTypeNode.Value.GetClrType());
                         }
@@ -78,7 +78,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     if (isDataTemplate && inferredDataContextTypeNode is null)
                     {
                         // Infer data type from collection binding on a control that displays items.
-                        var parentObject = context.ParentNodes().OfType<XamlIlAstObjectNode>().FirstOrDefault();
+                        var parentObject = context.ParentNodes().OfType<XamlAstConstructableObjectNode>().FirstOrDefault();
                         if (parentObject != null && context.GetAvaloniaTypes().IItemsPresenterHost.IsDirectlyAssignableFrom(parentObject.Type.GetClrType()))
                         {
                             inferredDataContextTypeNode = InferDataContextOfPresentedItem(context, on, parentObject);
@@ -96,10 +96,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             return node;
         }
 
-        private static AvaloniaXamlIlDataContextTypeMetadataNode InferDataContextOfPresentedItem(XamlIlAstTransformationContext context, XamlIlAstObjectNode on, XamlIlAstObjectNode parentObject)
+        private static AvaloniaXamlIlDataContextTypeMetadataNode InferDataContextOfPresentedItem(AstTransformationContext context, XamlAstConstructableObjectNode on, XamlAstConstructableObjectNode parentObject)
         {
             var parentItemsValue = parentObject
-                                            .Children.OfType<XamlIlPropertyAssignmentNode>()
+                                            .Children.OfType<XamlPropertyAssignmentNode>()
                                             .FirstOrDefault(pa => pa.Property.Name == "Items")
                                             ?.Values[0];
             if (parentItemsValue is null)
@@ -109,11 +109,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 return new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
             }
 
-            IXamlIlType itemsCollectionType = null;
+            IXamlType itemsCollectionType = null;
             if (context.GetAvaloniaTypes().IBinding.IsAssignableFrom(parentItemsValue.Type.GetClrType()))
             {
                 if (parentItemsValue.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension)
-                    && parentItemsValue is XamlIlMarkupExtensionNode ext && ext.Value is XamlIlAstObjectNode parentItemsBinding)
+                    && parentItemsValue is XamlMarkupExtensionNode ext && ext.Value is XamlAstConstructableObjectNode parentItemsBinding)
                 {
                     var parentItemsDataContext = context.ParentNodes().SkipWhile(n => n != parentObject).OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
                     if (parentItemsDataContext != null)
@@ -141,7 +141,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             return new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
         }
 
-        private static AvaloniaXamlIlDataContextTypeMetadataNode ParseDataContext(XamlIlAstTransformationContext context, XamlIlAstObjectNode on, XamlIlAstObjectNode obj)
+        private static AvaloniaXamlIlDataContextTypeMetadataNode ParseDataContext(AstTransformationContext context, XamlAstConstructableObjectNode on, XamlAstConstructableObjectNode obj)
         {
             var bindingType = context.GetAvaloniaTypes().IBinding;
             if (!bindingType.IsAssignableFrom(obj.Type.GetClrType()) && !obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().ReflectionBindingExtension))
@@ -150,11 +150,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
             else if (obj.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension))
             {
-                IXamlIlType startType;
+                IXamlType startType;
                 var parentDataContextNode = context.ParentNodes().OfType<AvaloniaXamlIlDataContextTypeMetadataNode>().FirstOrDefault();
                 if (parentDataContextNode is null)
                 {
-                    throw new XamlIlParseException("Cannot parse a compiled binding without an explicit x:DataType directive to give a starting data type for bindings.", obj);
+                    throw new XamlX.XamlParseException("Cannot parse a compiled binding without an explicit x:DataType directive to give a starting data type for bindings.", obj);
                 }
 
                 startType = parentDataContextNode.DataContextType;
@@ -168,11 +168,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     }
 
     [DebuggerDisplay("DataType = {DataContextType}")]
-    class AvaloniaXamlIlDataContextTypeMetadataNode : XamlIlValueWithSideEffectNodeBase
+    class AvaloniaXamlIlDataContextTypeMetadataNode : XamlValueWithSideEffectNodeBase
     {
-        public virtual IXamlIlType DataContextType { get; }
+        public virtual IXamlType DataContextType { get; }
 
-        public AvaloniaXamlIlDataContextTypeMetadataNode(IXamlIlAstValueNode value, IXamlIlType targetType)
+        public AvaloniaXamlIlDataContextTypeMetadataNode(IXamlAstValueNode value, IXamlType targetType)
             : base(value, value)
         {
             DataContextType = targetType;
@@ -182,11 +182,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     [DebuggerDisplay("DataType = Unknown")]
     class AvaloniaXamlIlUninferrableDataContextMetadataNode : AvaloniaXamlIlDataContextTypeMetadataNode
     {
-        public AvaloniaXamlIlUninferrableDataContextMetadataNode(IXamlIlAstValueNode value)
+        public AvaloniaXamlIlUninferrableDataContextMetadataNode(IXamlAstValueNode value)
             : base(value, null)
         {
         }
 
-        public override IXamlIlType DataContextType => throw new XamlIlTransformException("Unable to infer DataContext type for compiled bindings nested within this element.", Value);
+        public override IXamlType DataContextType => throw new XamlTransformException("Unable to infer DataContext type for compiled bindings nested within this element.", Value);
     }
 }
