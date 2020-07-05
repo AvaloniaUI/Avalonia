@@ -2,7 +2,7 @@
 using Avalonia.UnitTests;
 using Xunit;
 
-namespace Avalonia.Skia.UnitTests
+namespace Avalonia.Skia.UnitTests.Media
 {
     public class SKTypefaceCollectionCacheTests
     {
@@ -19,7 +19,7 @@ namespace Avalonia.Skia.UnitTests
 
                 var notoMonoCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(notoMono);
 
-                var typeface = new Typeface("ABC", FontWeight.Bold, FontStyle.Italic);
+                var typeface = new Typeface("ABC", FontStyle.Italic, FontWeight.Bold);
 
                 Assert.Equal("Noto Mono", notoMonoCollection.Get(typeface).FamilyName);
 

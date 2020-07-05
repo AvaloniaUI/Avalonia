@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -8,38 +9,20 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public readonly struct TextLineMetrics
     {
-        public TextLineMetrics(double width, double xOrigin, double ascent, double descent, double lineGap)
+        public TextLineMetrics(Size size, Point baselineOrigin, TextRange textRange)
         {
-            Ascent = ascent;
-            Descent = descent;
-            LineGap = lineGap;
-            Size = new Size(width, descent - ascent + lineGap);
-            BaselineOrigin = new Point(xOrigin, -ascent);
+            Size = size;
+            BaselineOrigin = baselineOrigin;
+            TextRange = textRange;
         }
 
         /// <summary>
-        /// Gets the overall recommended distance above the baseline.
+        /// Gets the text range that is covered by the text line.
         /// </summary>
         /// <value>
-        /// The ascent.
+        /// The text range that is covered by the text line.
         /// </value>
-        public double Ascent { get; }
-
-        /// <summary>
-        /// Gets the overall recommended distance under the baseline.
-        /// </summary>
-        /// <value>
-        /// The descent.
-        /// </value>
-        public double Descent { get; }
-
-        /// <summary>
-        /// Gets the overall recommended additional space between two lines of text.
-        /// </summary>
-        /// <value>
-        /// The leading.
-        /// </value>
-        public double LineGap { get; }
+        public TextRange TextRange { get; }
 
         /// <summary>
         /// Gets the size of the text line.
@@ -61,10 +44,12 @@ namespace Avalonia.Media.TextFormatting
         /// Creates the text line metrics.
         /// </summary>
         /// <param name="textRuns">The text runs.</param>
+        /// <param name="textRange">The text range that is covered by the text line.</param>
         /// <param name="paragraphWidth">The paragraph width.</param>
-        /// <param name="textAlignment">The text alignment.</param>
+        /// <param name="paragraphProperties">The text alignment.</param>
         /// <returns></returns>
-        public static TextLineMetrics Create(IEnumerable<TextRun> textRuns, double paragraphWidth, TextAlignment textAlignment)
+        public static TextLineMetrics Create(IEnumerable<TextRun> textRuns, TextRange textRange, double paragraphWidth,
+            TextParagraphProperties paragraphProperties)
         {
             var lineWidth = 0.0;
             var ascent = 0.0;
@@ -73,31 +58,39 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textRun in textRuns)
             {
-                var shapedRun = (ShapedTextRun)textRun;
+                var shapedRun = (ShapedTextCharacters)textRun;
+
+                var fontMetrics =
+                    new FontMetrics(shapedRun.Properties.Typeface, shapedRun.Properties.FontRenderingEmSize);
 
                 lineWidth += shapedRun.Bounds.Width;
 
-                var textFormat = textRun.Style.TextFormat;
-
-                if (ascent > textRun.Style.TextFormat.FontMetrics.Ascent)
+                if (ascent > fontMetrics.Ascent)
                 {
-                    ascent = textFormat.FontMetrics.Ascent;
+                    ascent = fontMetrics.Ascent;
                 }
 
-                if (descent < textFormat.FontMetrics.Descent)
+                if (descent < fontMetrics.Descent)
                 {
-                    descent = textFormat.FontMetrics.Descent;
+                    descent = fontMetrics.Descent;
                 }
 
-                if (lineGap < textFormat.FontMetrics.LineGap)
+                if (lineGap < fontMetrics.LineGap)
                 {
-                    lineGap = textFormat.FontMetrics.LineGap;
+                    lineGap = fontMetrics.LineGap;
                 }
             }
 
-            var xOrigin = TextLine.GetParagraphOffsetX(lineWidth, paragraphWidth, textAlignment);
+            var xOrigin = TextLine.GetParagraphOffsetX(lineWidth, paragraphWidth, paragraphProperties.TextAlignment);
 
-            return new TextLineMetrics(lineWidth, xOrigin, ascent, descent, lineGap);
+            var baselineOrigin = new Point(xOrigin, -ascent);
+
+            var size = new Size(lineWidth,
+                double.IsNaN(paragraphProperties.LineHeight) || MathUtilities.IsZero(paragraphProperties.LineHeight) ?
+                    descent - ascent + lineGap :
+                    paragraphProperties.LineHeight);
+
+            return new TextLineMetrics(size, baselineOrigin, textRange);
         }
     }
 }
