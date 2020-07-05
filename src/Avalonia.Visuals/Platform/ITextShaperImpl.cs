@@ -1,6 +1,6 @@
-﻿using Avalonia.Media;
-using Avalonia.Media.TextFormatting;
-using Avalonia.Utility;
+﻿using System.Globalization;
+using Avalonia.Media;
+using Avalonia.Utilities;
 
 namespace Avalonia.Platform
 {
@@ -13,8 +13,10 @@ namespace Avalonia.Platform
         /// Shapes the specified region within the text and returns a resulting glyph run.
         /// </summary>
         /// <param name="text">The text.</param>
-        /// <param name="textFormat">The text format.</param>
+        /// <param name="typeface">The typeface.</param>
+        /// <param name="fontRenderingEmSize">The font rendering em size.</param>
+        /// <param name="culture">The culture.</param>
         /// <returns>A shaped glyph run.</returns>
-        GlyphRun ShapeText(ReadOnlySlice<char> text, TextFormat textFormat);
+        GlyphRun ShapeText(ReadOnlySlice<char> text, Typeface typeface, double fontRenderingEmSize, CultureInfo culture);
     }
 }

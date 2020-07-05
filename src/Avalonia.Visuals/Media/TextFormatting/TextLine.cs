@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Avalonia.Platform;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -9,12 +8,12 @@ namespace Avalonia.Media.TextFormatting
     public abstract class TextLine
     {
         /// <summary>
-        /// Gets the text.
+        /// Gets the text range that is covered by the line.
         /// </summary>
         /// <value>
-        /// The text pointer.
+        /// The text range that is covered by the line.
         /// </value>
-        public abstract TextPointer Text { get; }
+        public abstract TextRange TextRange { get; }
 
         /// <summary>
         /// Gets the text runs.
@@ -33,11 +32,19 @@ namespace Avalonia.Media.TextFormatting
         public abstract TextLineMetrics LineMetrics { get; }
 
         /// <summary>
+        /// Gets the state of the line when broken by line breaking process.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="LineBreak"/> value that represents the line break.
+        /// </returns>
+        public abstract TextLineBreak LineBreak { get; }
+
+        /// <summary>
         /// Draws the <see cref="TextLine"/> at the given origin.
         /// </summary>
         /// <param name="drawingContext">The drawing context.</param>
         /// <param name="origin">The origin.</param>
-        public abstract void Draw(IDrawingContextImpl drawingContext, Point origin);
+        public abstract void Draw(DrawingContext drawingContext, Point origin);
 
         /// <summary>
         /// Client to get the character hit corresponding to the specified 
