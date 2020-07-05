@@ -13,20 +13,12 @@ namespace ControlCatalog
         {
             new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
-                Source = new Uri("avares://Avalonia.Themes.Default/Accents/BaseDark.xaml")
-            },
-            new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
-            {
                 Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentDark.xaml")
             },
         };
 
         public static Styles FluentLight = new Styles
         {
-            new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
-            {
-                Source = new Uri("avares://Avalonia.Themes.Default/Accents/BaseLight.xaml")
-            },
             new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
                 Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentLight.xaml")
@@ -61,7 +53,7 @@ namespace ControlCatalog
         {
             AvaloniaXamlLoader.Load(this);
 
-            Styles.Insert(0, FluentLight);
+            Styles.Insert(0, FluentDark);
         }
 
         public override void OnFrameworkInitializationCompleted()

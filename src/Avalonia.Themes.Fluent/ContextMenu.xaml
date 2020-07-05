@@ -1,7 +1,7 @@
 <Style xmlns="https://github.com/avaloniaui"
        Selector="ContextMenu">
   <Design.PreviewWith>
-    <Border Background="{DynamicResource ThemeAccentBrush}"
+    <Border Background="{DynamicResource SystemAccentColor}"
             Margin="16"
             Padding="48"
             Width="400"

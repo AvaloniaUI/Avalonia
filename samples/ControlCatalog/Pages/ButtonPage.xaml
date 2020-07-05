@@ -12,7 +12,7 @@
       <StackPanel Orientation="Vertical" Spacing="8" Width="200">
         <Button>Standard XAML Button</Button>
         <Button Foreground="White">Foreground</Button>
-        <Button Background="{DynamicResource ThemeAccentBrush}">Background</Button>
+        <Button Background="{DynamicResource SystemAccentColor}">Background</Button>
         <Button IsEnabled="False">Disabled</Button>
         <Button Content="Re-themed">
           <Button.Styles>
@@ -32,10 +32,10 @@
 
       <StackPanel Orientation="Vertical" Spacing="8" Width="150">
         <Button BorderThickness="0">No Border</Button>
-        <Button BorderBrush="{DynamicResource ThemeAccentBrush}">Border Color</Button>
-        <Button BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="4">Thick Border</Button>
-        <Button BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="4" IsEnabled="False">Disabled</Button>
-        <Button BorderBrush="{DynamicResource ThemeAccentBrush}" KeyboardNavigation.IsTabStop="False">IsTabStop=False</Button>
+        <Button BorderBrush="{DynamicResource SystemAccentColor}">Border Color</Button>
+        <Button BorderBrush="{DynamicResource SystemAccentColor}" BorderThickness="4">Thick Border</Button>
+        <Button BorderBrush="{DynamicResource SystemAccentColor}" BorderThickness="4" IsEnabled="False">Disabled</Button>
+        <Button BorderBrush="{DynamicResource SystemAccentColor}" KeyboardNavigation.IsTabStop="False">IsTabStop=False</Button>
       </StackPanel>
     </StackPanel>    
   </StackPanel>

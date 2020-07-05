@@ -53,7 +53,7 @@
                                Grid.RowSpan="1"
                                StrokeThickness="1"
                                Stroke="{DynamicResource ThemeBorderHighBrush}"
-                               Fill="{DynamicResource ThemeAccentBrush}">
+                               Fill="{DynamicResource SystemAccentColor}">
                     </Rectangle>
                     <TextBlock Margin="0,-1,0,0"
                                VerticalAlignment="Center"
@@ -80,7 +80,7 @@
             </Style>
 
             <Style Selector="Button.CalendarDropDown:pointerover /template/ Border#Background">
-              <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
+              <Setter Property="Background" Value="{DynamicResource SystemAccentColorDark2}"/>
             </Style>
             
           </Grid.Styles>
