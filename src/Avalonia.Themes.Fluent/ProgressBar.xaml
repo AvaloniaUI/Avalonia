@@ -142,35 +142,15 @@
     </Style.Animations>
   </Style>
   <Style Selector="ProgressBar:horizontal /template/ Border#IndeterminateProgressBarIndicator">
-    <Setter Property="Width" Value="{Binding $parent[ProgressBar].TemplateProperties.ContainerWidth}" />
-    <Setter Property="RenderTransform">
-      <Setter.Value>
-        <TranslateTransform X="{Binding $parent[ProgressBar].TemplateProperties.ContainerAnimationStartPosition}" />
-      </Setter.Value>
-    </Setter>
+    <Setter Property="Width" Value="{Binding $parent[ProgressBar].TemplateProperties.ContainerWidth}" />    
   </Style>
   <Style Selector="ProgressBar:horizontal /template/ Border#IndeterminateProgressBarIndicator2">
-    <Setter Property="Width" Value="{Binding $parent[ProgressBar].TemplateProperties.Container2Width}" />
-    <Setter Property="RenderTransform">
-      <Setter.Value>
-        <TranslateTransform X="{Binding $parent[ProgressBar].TemplateProperties.Container2AnimationStartPosition}" />
-      </Setter.Value>
-    </Setter>
+    <Setter Property="Width" Value="{Binding $parent[ProgressBar].TemplateProperties.Container2Width}" />    
   </Style>
   <Style Selector="ProgressBar:vertical /template/ Border#IndeterminateProgressBarIndicator">
-    <Setter Property="Height" Value="{Binding $parent[ProgressBar].TemplateProperties.ContainerWidth}" />
-    <Setter Property="RenderTransform">
-      <Setter.Value>
-        <TranslateTransform Y="{Binding $parent[ProgressBar].TemplateProperties.ContainerAnimationStartPosition}" />
-      </Setter.Value>
-    </Setter>
+    <Setter Property="Height" Value="{Binding $parent[ProgressBar].TemplateProperties.ContainerWidth}" />    
   </Style>
   <Style Selector="ProgressBar:vertical /template/ Border#IndeterminateProgressBarIndicator2">
-    <Setter Property="Height" Value="{Binding $parent[ProgressBar].TemplateProperties.Container2Width}" />
-    <Setter Property="RenderTransform">
-      <Setter.Value>
-        <TranslateTransform Y="{Binding $parent[ProgressBar].TemplateProperties.Container2AnimationStartPosition}" />
-      </Setter.Value>
-    </Setter>
+    <Setter Property="Height" Value="{Binding $parent[ProgressBar].TemplateProperties.Container2Width}" />    
   </Style>
 </Styles>
