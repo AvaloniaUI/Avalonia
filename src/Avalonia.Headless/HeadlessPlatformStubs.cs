@@ -12,7 +12,7 @@ using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
-using Avalonia.Utility;
+using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
@@ -127,9 +127,9 @@ namespace Avalonia.Headless
 
     class HeadlessTextShaperStub : ITextShaperImpl
     {
-        public GlyphRun ShapeText(ReadOnlySlice<char> text, TextFormat textFormat)
+        public GlyphRun ShapeText(ReadOnlySlice<char> text, Typeface typeface, double fontRenderingEmSize, CultureInfo culture)
         {
-            return new GlyphRun(new GlyphTypeface(new Typeface("Arial")), textFormat.FontRenderingEmSize,
+            return new GlyphRun(new GlyphTypeface(typeface), 10,
                 new ReadOnlySlice<ushort>(new ushort[] { 1, 2, 3 }),
                 new ReadOnlySlice<double>(new double[] { 1, 2, 3 }),
                 new ReadOnlySlice<Vector>(new Vector[] { new Vector(1, 1), new Vector(2, 2), new Vector(3, 3) }),
