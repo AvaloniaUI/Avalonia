@@ -47,54 +47,91 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Color> TintColorProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicMaterial, Color>(nameof(TintColor));
 
+        /// <summary>
+        /// Defines the <see cref="BackgroundSource"/> property.
+        /// </summary>
         public static readonly StyledProperty<AcrylicBackgroundSource> BackgroundSourceProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicMaterial, AcrylicBackgroundSource>(nameof(BackgroundSource));
 
+        /// <summary>
+        /// Defines the <see cref="TintOpacity"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> TintOpacityProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicMaterial, double>(nameof(TintOpacity), 0.8);
 
+        /// <summary>
+        /// Defines the <see cref="MaterialOpacity"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> MaterialOpacityProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicMaterial, double>(nameof(MaterialOpacity), 0.5);
 
+        /// <summary>
+        /// Defines the <see cref="PlatformTransparencyCompensationLevel"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> PlatformTransparencyCompensationLevelProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicMaterial, double>(nameof(PlatformTransparencyCompensationLevel), 0.0);
 
+        /// <summary>
+        /// Defines the <see cref="FallbackColor"/> property.
+        /// </summary>
         public static readonly StyledProperty<Color> FallbackColorProperty =
             AvaloniaProperty.Register<ExperimentalAcrylicMaterial, Color>(nameof(FallbackColor));
 
         /// <inheritdoc/>
         public event EventHandler Invalidated;
 
+        /// <summary>
+        /// Gets or Sets the BackgroundSource <seealso cref="AcrylicBackgroundSource"/>.
+        /// </summary>
         public AcrylicBackgroundSource BackgroundSource
         {
             get => GetValue(BackgroundSourceProperty);
             set => SetValue(BackgroundSourceProperty, value);
         }
 
+        /// <summary>
+        /// Gets or Sets the TintColor.
+        /// </summary>
         public Color TintColor
         {
             get => GetValue(TintColorProperty);
             set => SetValue(TintColorProperty, value);
         }
 
+        /// <summary>
+        /// Gets or Sets the Tint Opacity.
+        /// </summary>
         public double TintOpacity
         {
             get => GetValue(TintOpacityProperty);
             set => SetValue(TintOpacityProperty, value);
         }
 
+        /// <summary>
+        /// Gets or Sets the Fallback Color.
+        /// This is used on rendering plaforms that dont support acrylic.
+        /// </summary>
         public Color FallbackColor
         {
             get => GetValue(FallbackColorProperty);
             set => SetValue(FallbackColorProperty, value);
         }
 
+        /// <summary>
+        /// Gets or Sets the MaterialOpacity.
+        /// This makes the material more or less opaque.
+        /// </summary>
         public double MaterialOpacity
         {
             get => GetValue(MaterialOpacityProperty);
             set => SetValue(MaterialOpacityProperty, value);
         }
 
+        /// <summary>
+        /// Gets or Sets the PlatformTransparencyCompensationLevel.
+        /// This value defines the minimum <see cref="MaterialOpacity"/> that can be used.
+        /// It means material opacity is re-scaled from this value to 1.
+        /// </summary>
         public double PlatformTransparencyCompensationLevel
         {
             get => GetValue(PlatformTransparencyCompensationLevelProperty);
