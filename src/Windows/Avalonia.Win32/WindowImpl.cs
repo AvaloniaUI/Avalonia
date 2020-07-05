@@ -1071,6 +1071,9 @@ namespace Avalonia.Win32
         /// <inheritdoc/>
         public Thickness OffScreenMargin => _offScreenMargin;
 
+        /// <inheritdoc/>
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0);
+
         private struct SavedWindowInfo
         {
             public WindowStyles Style { get; set; }

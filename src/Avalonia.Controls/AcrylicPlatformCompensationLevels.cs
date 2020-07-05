@@ -7,6 +7,13 @@
     /// </summary>
     public struct AcrylicPlatformCompensationLevels
     {
+        public AcrylicPlatformCompensationLevels(double transparent, double blurred, double acrylic)
+        {
+            TransparentLevel = transparent;
+            BlurLevel = blurred;
+            AcrylicBlurLevel = acrylic;
+        }
+
         public double TransparentLevel { get; }
 
         public double BlurLevel { get; }
