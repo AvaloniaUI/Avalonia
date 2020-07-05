@@ -11,8 +11,8 @@
     <SolidColorBrush x:Key="SystemControlTransparentRevealBorderBrush" Color="Transparent" />
     
     <!-- Override system shape defaults -->
-    <CornerRadius x:Key="ControlCornerRadius">2,2,2,2</CornerRadius>
-    <CornerRadius x:Key="OverlayCornerRadius">4,4,4,4</CornerRadius>
+    <CornerRadius x:Key="ControlCornerRadius">3</CornerRadius>
+    <CornerRadius x:Key="OverlayCornerRadius">5</CornerRadius>
     
     <!-- Override system borders -->
     <Thickness x:Key="MenuBarItemBorderThickness">1,1,1,1</Thickness>

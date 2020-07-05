@@ -13,8 +13,7 @@
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />    
     <AvaloniaResource Include="**/*.xaml" />
-    <AvaloniaResource Include="Assets\*" />
-  </ItemGroup>
+    <AvaloniaResource Include="Assets\*" />  
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\Rx.props" />

@@ -9,8 +9,8 @@
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
                 Spacing="16">
-      <StackPanel Orientation="Vertical" Spacing="8" Width="150">
-        <Button>Button</Button>
+      <StackPanel Orientation="Vertical" Spacing="8" Width="200">
+        <Button>Standard XAML Button</Button>
         <Button Foreground="White">Foreground</Button>
         <Button Background="{DynamicResource ThemeAccentBrush}">Background</Button>
         <Button IsEnabled="False">Disabled</Button>
