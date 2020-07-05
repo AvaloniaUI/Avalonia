@@ -105,14 +105,14 @@ namespace Avalonia.Media
 
         Color IExperimentalAcrylicMaterial.TintColor => _effectiveTintColor;
 
-        public struct HsvColor
+        private struct HsvColor
         {
             public float Hue { get; set; }
             public float Saturation { get; set; }
             public float Value { get; set; }
         }
 
-        public static HsvColor RgbToHsv(Color color)
+        private static HsvColor RgbToHsv(Color color)
         {
             var r = color.R / 255.0f;
             var g = color.G / 255.0f;
@@ -121,9 +121,7 @@ namespace Avalonia.Media
             var min = Math.Min(r, Math.Min(g, b));
 
             float h, s, v;
-            h = s = v = max;
-
-            //v = (0.299f * r + 0.587f * g + 0.114f * b);
+            h = v = max;
 
             var d = max - min;
             s = max == 0 ? 0 : d / max;
@@ -158,16 +156,7 @@ namespace Avalonia.Media
             // Update tintColor's alpha with the combined opacity value
             double tintOpacityModifier = GetTintOpacityModifier(tintColor);
 
-            if (false) // non-acrylic blue // TODO detect blur level.
-            {
-                tintColor = new Color((byte)(Math.Round(tintColor.A * (((tintOpacity * tintOpacityModifier) * 0.15) + 0.85))), tintColor.R, tintColor.G, tintColor.B);
-            }
-            else
-            {
-                tintColor = new Color((byte)(255 * ((255.0 / tintColor.A) * tintOpacity) * tintOpacityModifier), tintColor.R, tintColor.G, tintColor.B);
-            }
-
-            return tintColor;
+            return new Color((byte)(255 * ((255.0 / tintColor.A) * tintOpacity) * tintOpacityModifier), tintColor.R, tintColor.G, tintColor.B);
         }
 
         private static double GetTintOpacityModifier(Color tintColor)
@@ -182,7 +171,7 @@ namespace Avalonia.Media
 
             const double whiteMaxOpacity = 0.2; // 100% luminosity
             const double midPointMaxOpacity = 0.45; // 50% luminosity
-            const double blackMaxOpacity = 0.42; // 0% luminosity
+            const double blackMaxOpacity = 0.45; // 0% luminosity
 
             var hsv = RgbToHsv(tintColor);
 
@@ -225,65 +214,11 @@ namespace Avalonia.Media
             return opacityModifier;
         }
 
-        Color GetEffectiveLuminosityColor()
+        private Color GetEffectiveLuminosityColor()
         {
-            double tintOpacity = TintOpacity;
-
-            // Purposely leaving out tint opacity modifier here because GetLuminosityColor needs the *original* tint opacity set by the user.
-            var tintColor = new Color((byte)(Math.Round(TintColor.A * tintOpacity)), TintColor.R, TintColor.G, TintColor.B);
-
             double? luminosityOpacity = MaterialOpacity;
 
             return GetLuminosityColor(luminosityOpacity);
-        }
-
-        public static Color FromHsv(HsvColor color)
-        {
-            float r = 0;
-            float g = 0;
-            float b = 0;
-
-            var i = (float)Math.Floor(color.Hue * 6f);
-            var f = color.Hue * 6f - i;
-            var p = color.Value * (1f - color.Saturation);
-            var q = color.Value * (1f - f * color.Saturation);
-            var t = color.Value * (1f - (1f - f) * color.Saturation);
-
-            switch (i % 6)
-            {
-                case 0:
-                    r = color.Value;
-                    g = t;
-                    b = p;
-                    break;
-                case 1:
-                    r = q;
-                    g = color.Value;
-                    b = p;
-                    break;
-                case 2:
-                    r = p;
-                    g = color.Value;
-                    b = t;
-                    break;
-                case 3:
-                    r = p;
-                    g = q;
-                    b = color.Value;
-                    break;
-                case 4:
-                    r = t;
-                    g = p;
-                    b = color.Value;
-                    break;
-                case 5:
-                    r = color.Value;
-                    g = p;
-                    b = q;
-                    break;
-            }
-
-            return new Color(Trim(r), Trim(g), Trim(b), 255);
         }
 
         private static byte Trim(double value)
@@ -318,30 +253,8 @@ namespace Avalonia.Media
                 return (color.G < color.B) ? color.G : color.B;
         }
 
-        static byte Blend(byte leftColor, byte leftAlpha, byte rightColor, byte rightAlpha)
-        {
-            var ca = leftColor / 255d;
-            var aa = leftAlpha / 255d;
-            var cb = rightColor / 255d;
-            var ab = rightAlpha / 255d;
-            var r = (ca * aa + cb * ab * (1 - aa)) / (aa + ab * (1 - aa));
-            return (byte)(r * 255);
-        }
-
-        static Color Blend(Color left, Color right)
-        {
-            var aa = left.A / 255d;
-            var ab = right.A / 255d;
-            return new Color(
-                (byte)((aa + ab * (1 - aa)) * 255),
-                Blend(left.R, left.A, right.R, right.A),
-                Blend(left.G, left.A, right.G, right.A),
-                Blend(left.B, left.A, right.B, right.A)
-            );
-        }
-
         // The tintColor passed into this method should be the original, unmodified color created using user values for TintColor + TintOpacity
-        Color GetLuminosityColor(double? luminosityOpacity)
+        private Color GetLuminosityColor(double? luminosityOpacity)
         {
             // Calculate the HSL lightness value of the color.
             var max = (float)RGBMax(TintColor) / 255.0f;
@@ -355,10 +268,8 @@ namespace Avalonia.Media
 
             var luminosityColor = new Color(255, Trim(lightness), Trim(lightness), Trim(lightness));
 
-            luminosityColor = Blend(luminosityColor, new Color(255, TintColor.R, TintColor.G, TintColor.B));
-
             var compensationMultiplier = 1 - PlatformTransparencyCompensationLevel;
-            return new Color((byte)(255 * Math.Max(Math.Min(PlatformTransparencyCompensationLevel + ( luminosityOpacity.Value * compensationMultiplier), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);            
+            return new Color((byte)(255 * Math.Max(Math.Min(PlatformTransparencyCompensationLevel + (luminosityOpacity.Value * compensationMultiplier), 1.0), 0.0)), luminosityColor.R, luminosityColor.G, luminosityColor.B);
         }
 
         /// <summary>
