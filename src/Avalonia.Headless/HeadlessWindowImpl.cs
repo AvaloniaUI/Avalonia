@@ -232,6 +232,18 @@ namespace Avalonia.Headless
 
         public Action GotInputWhenDisabled { get; set; }
 
+        public bool IsClientAreaExtendedToDecorations => false;
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public bool NeedsManagedDecorations => false;
+
+        public Thickness ExtendedMargins => new Thickness();
+
+        public Thickness OffScreenMargin => new Thickness();
+
+        public Action LostFocus { get; set; }
+
         void IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers)
         {
             Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot, RawKeyEventType.KeyDown, key, modifiers));
@@ -306,6 +318,21 @@ namespace Avalonia.Headless
         }
 
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
+        {
+            
+        }
+
+        public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
+        {
+            
+        }
+
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {
+            
+        }
+
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
             
         }

@@ -48,7 +48,7 @@ namespace Avalonia.Headless
         {
             public IWindowImpl CreateWindow() => new HeadlessWindowImpl(false);
 
-            public IEmbeddableWindowImpl CreateEmbeddableWindow() => throw new PlatformNotSupportedException();
+            public IWindowImpl CreateEmbeddableWindow() => throw new PlatformNotSupportedException();
 
             public IPopupImpl CreatePopup() => new HeadlessWindowImpl(true);
         }
