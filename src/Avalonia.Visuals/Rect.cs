@@ -121,7 +121,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the size of the rectangle.
         /// </summary>
-        public Size Size => new Size(_width, _height);        
+        public Size Size => new Size(_width, _height);
 
         /// <summary>
         /// Gets the right position of the rectangle.
