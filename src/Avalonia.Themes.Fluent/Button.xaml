@@ -77,6 +77,19 @@
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource AccentButtonForegroundPressed}" />
   </Style>
 
+  <Style Selector="Button">
+    <Setter Property="RenderTransform" Value="none" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:.15" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="Button:pressed">
+    <Setter Property="RenderTransform" Value="scale(0.98)" />    
+  </Style>
+
   <Style Selector="Button.accent:disabled /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundDisabled}" />
     <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBorderBrushDisabled}" />
