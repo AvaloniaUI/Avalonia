@@ -21,8 +21,8 @@
 
   <Style Selector="TabControl">
     <Setter Property="Margin" Value="0" />
-    <Setter Property="Padding" Value="{DynamicResource PivotItemMargin}" />
-    <Setter Property="Background" Value="{DynamicResource PivotBackground}" />
+    <Setter Property="Padding" Value="{DynamicResource TabItemMargin}" />
+    <Setter Property="Background" Value="{DynamicResource TabControlBackground}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Margin="{TemplateBinding Margin}"
