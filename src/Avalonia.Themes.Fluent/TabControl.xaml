@@ -20,7 +20,7 @@
   </Design.PreviewWith>
 
   <Styles.Resources>
-    <x:Double x:Key="TabControlTopPlacementItemMargin">0 0 0 2</x:Double>
+    <Thickness x:Key="TabControlTopPlacementItemMargin">0 0 0 2</Thickness>
   </Styles.Resources>
   
   <Style Selector="TabControl">
