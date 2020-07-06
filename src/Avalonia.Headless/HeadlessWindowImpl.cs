@@ -244,6 +244,8 @@ namespace Avalonia.Headless
 
         public Action LostFocus { get; set; }
 
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
+
         void IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers)
         {
             Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot, RawKeyEventType.KeyDown, key, modifiers));
