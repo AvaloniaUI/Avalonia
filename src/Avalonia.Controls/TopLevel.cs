@@ -11,6 +11,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 using JetBrains.Annotations;
 
 namespace Avalonia.Controls
@@ -170,6 +171,8 @@ namespace Avalonia.Controls
                     nameof(IResourceHost.ResourcesChanged),
                     this);
             }
+
+            impl.LostFocus += PlatformImpl_LostFocus;
         }
 
         /// <summary>
@@ -277,9 +280,6 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        Size ILayoutRoot.MaxClientSize => Size.Infinity;
-
-        /// <inheritdoc/>
         double ILayoutRoot.LayoutScaling => PlatformImpl?.Scaling ?? 1;
 
         /// <inheritdoc/>
@@ -318,7 +318,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Creates the layout manager for this <see cref="TopLevel" />.
         /// </summary>
-        protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager();
+        protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
 
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
@@ -340,6 +340,9 @@ namespace Avalonia.Controls
                 _globalStyles.GlobalStylesRemoved -= ((IStyleHost)this).StylesRemoved;
             }
 
+            Renderer?.Dispose();
+            Renderer = null;
+            
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
@@ -349,8 +352,8 @@ namespace Avalonia.Controls
             (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
             PlatformImpl = null;
             OnClosed(EventArgs.Empty);
-            Renderer?.Dispose();
-            Renderer = null;
+
+            LayoutManager?.Dispose();
         }
 
         /// <summary>
@@ -402,7 +405,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    _transparencyFallbackBorder.Background = Brushes.Transparent;
+                    _transparencyFallbackBorder.Background = null;
                 }
             }
 
@@ -452,8 +455,7 @@ namespace Avalonia.Controls
 
             if (result == null)
             {
-                Logger.TryGet(LogEventLevel.Warning)?.Log(
-                    LogArea.Control,
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
                     this,
                     "Could not create {Service} : maybe Application.RegisterServices() wasn't called?",
                     typeof(T));
@@ -474,6 +476,18 @@ namespace Avalonia.Controls
         private void SceneInvalidated(object sender, SceneInvalidatedEventArgs e)
         {
             (this as IInputRoot).MouseDevice.SceneInvalidated(this, e.DirtyRect);
+        }
+
+        void PlatformImpl_LostFocus()
+        {
+            var focused = (IVisual)FocusManager.Instance.Current;
+            if (focused == null)
+                return;
+            while (focused.VisualParent != null)
+                focused = focused.VisualParent;
+
+            if (focused == this)
+                KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
         }
     }
 }

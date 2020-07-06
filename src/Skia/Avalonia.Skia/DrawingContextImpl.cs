@@ -17,7 +17,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia based drawing context.
     /// </summary>
-    internal class DrawingContextImpl : IDrawingContextImpl, ISkiaDrawingContextImpl
+    internal class DrawingContextImpl : IDrawingContextImpl, ISkiaDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
     {
         private IDisposable[] _disposables;
         private readonly Vector _dpi;
@@ -34,6 +34,7 @@ namespace Avalonia.Skia
         private readonly SKPaint _strokePaint = new SKPaint();
         private readonly SKPaint _fillPaint = new SKPaint();
         private readonly SKPaint _boxShadowPaint = new SKPaint();
+        private static SKShader s_acrylicNoiseShader;
 
         /// <summary>
         /// Context create info.
@@ -227,6 +228,41 @@ namespace Avalonia.Skia
             return bounds;
         }
 
+        /// <inheritdoc />
+        public void DrawRectangle(IExperimentalAcrylicMaterial material, RoundedRect rect)
+        {
+            if (rect.Rect.Height <= 0 || rect.Rect.Width <= 0)
+                return;
+            
+            var rc = rect.Rect.ToSKRect();
+            var isRounded = rect.IsRounded;
+            var needRoundRect = rect.IsRounded;
+            using var skRoundRect = needRoundRect ? new SKRoundRect() : null;
+
+            if (needRoundRect)
+                skRoundRect.SetRectRadii(rc,
+                    new[]
+                    {
+                        rect.RadiiTopLeft.ToSKPoint(), rect.RadiiTopRight.ToSKPoint(),
+                        rect.RadiiBottomRight.ToSKPoint(), rect.RadiiBottomLeft.ToSKPoint(),
+                    });
+
+            if (material != null)
+            {
+                using (var paint = CreateAcrylicPaint(_fillPaint, material))
+                {
+                    if (isRounded)
+                    {
+                        Canvas.DrawRoundRect(skRoundRect, paint.Paint);
+                    }
+                    else
+                    {
+                        Canvas.DrawRect(rc, paint.Paint);
+                    }
+
+                }
+            }
+        }
 
         /// <inheritdoc />
         public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect, BoxShadows boxShadows = default)
@@ -387,6 +423,12 @@ namespace Avalonia.Skia
         {
             Canvas.Save();
             Canvas.ClipRect(clip.ToSKRect());
+        }
+
+        public void PushClip(RoundedRect clip)
+        {
+            Canvas.Save();
+            Canvas.ClipRoundRect(clip.ToSKRoundRect());
         }
 
         /// <inheritdoc />
@@ -653,6 +695,86 @@ namespace Avalonia.Skia
             }
         }
 
+        static SKColorFilter CreateAlphaColorFilter(double opacity)
+        {
+            if (opacity > 1)
+                opacity = 1;
+            var c = new byte[256];
+            var a = new byte[256];
+            for (var i = 0; i < 256; i++)
+            {
+                c[i] = (byte)i;
+                a[i] = (byte)(i * opacity);
+            }
+
+            return SKColorFilter.CreateTable(a, c, c, c);
+        }
+
+        static byte Blend(byte leftColor, byte leftAlpha, byte rightColor, byte rightAlpha)
+        {
+            var ca = leftColor / 255d;
+            var aa = leftAlpha / 255d;
+            var cb = rightColor / 255d;
+            var ab = rightAlpha / 255d;
+            var r = (ca * aa + cb * ab * (1 - aa)) / (aa + ab * (1 - aa));
+            return (byte)(r * 255);
+        }
+
+        static Color Blend(Color left, Color right)
+        {
+            var aa = left.A / 255d;
+            var ab = right.A / 255d;
+            return new Color(
+                (byte)((aa + ab * (1 - aa)) * 255),
+                Blend(left.R, left.A, right.R, right.A),
+                Blend(left.G, left.A, right.G, right.A),
+                Blend(left.B, left.A, right.B, right.A)                
+            );
+        }
+
+        internal PaintWrapper CreateAcrylicPaint (SKPaint paint, IExperimentalAcrylicMaterial material, bool disposePaint = false)
+        {
+            var paintWrapper = new PaintWrapper(paint, disposePaint);
+
+            paint.IsAntialias = true;
+
+            double opacity = _currentOpacity;
+
+            var tintOpacity =
+                material.BackgroundSource == AcrylicBackgroundSource.Digger ?
+                material.TintOpacity : 1;
+
+            const double noiseOpcity = 0.0225;
+
+            var tintColor = material.TintColor;
+            var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, tintColor.A);
+
+            if (s_acrylicNoiseShader == null)
+            {
+                using (var stream = typeof(DrawingContextImpl).Assembly.GetManifestResourceStream("Avalonia.Skia.Assets.NoiseAsset_256X256_PNG.png"))
+                using (var bitmap = SKBitmap.Decode(stream))
+                {
+                    s_acrylicNoiseShader = SKShader.CreateBitmap(bitmap, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat)
+                        .WithColorFilter(CreateAlphaColorFilter(noiseOpcity));
+                }
+            }
+
+            using (var backdrop = SKShader.CreateColor(new SKColor(material.MaterialColor.R, material.MaterialColor.G, material.MaterialColor.B, material.MaterialColor.A)))
+            using (var tintShader = SKShader.CreateColor(tint))
+            using (var effectiveTint = SKShader.CreateCompose(backdrop, tintShader))
+            using (var compose = SKShader.CreateCompose(effectiveTint, s_acrylicNoiseShader))
+            {
+                paint.Shader = compose;
+
+                if (material.BackgroundSource == AcrylicBackgroundSource.Digger)
+                {
+                    paint.BlendMode = SKBlendMode.Src;
+                }
+
+                return paintWrapper;
+            }
+        }
+
         /// <summary>
         /// Creates paint wrapper for given brush.
         /// </summary>
@@ -805,7 +927,7 @@ namespace Avalonia.Skia
             };
 
             return new SurfaceRenderTarget(createInfo);
-        }
+        }        
 
         /// <summary>
         /// Skia cached paint state.

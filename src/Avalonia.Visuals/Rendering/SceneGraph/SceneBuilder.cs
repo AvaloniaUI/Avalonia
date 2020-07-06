@@ -163,6 +163,10 @@ namespace Avalonia.Rendering.SceneGraph
             var visual = node.Visual;
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
+            var clipToBoundsRadius = visual is IVisualWithRoundRectClip roundRectClip ?
+                roundRectClip.ClipToBoundsRadius :
+                default;
+            
             var bounds = new Rect(visual.Bounds.Size);
             var contextImpl = (DeferredDrawingContextImpl)context.PlatformImpl;
 
@@ -201,6 +205,7 @@ namespace Avalonia.Rendering.SceneGraph
                     node.ClipBounds = clipBounds;
                     node.ClipToBounds = clipToBounds;
                     node.LayoutBounds = globalBounds;
+                    node.ClipToBoundsRadius = clipToBoundsRadius;
                     node.GeometryClip = visual.Clip?.PlatformImpl;
                     node.Opacity = opacity;
 
@@ -389,13 +394,8 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
-        private static bool ShouldStartLayer(IVisual visual)
-        {
-            var o = visual as IAvaloniaObject;
-            return visual.VisualChildren.Count > 0 &&
-                o != null &&
-                o.IsAnimating(Visual.OpacityProperty);
-        }
+        // HACK: Disabled layers because they're broken in current renderer. See #2244.
+        private static bool ShouldStartLayer(IVisual visual) => false;
 
         private static IGeometryImpl CreateLayerGeometryClip(VisualNode node)
         {

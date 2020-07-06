@@ -119,9 +119,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the selected item.
         /// </summary>
-        /// <summary>
-        /// Gets or sets the selected item.
-        /// </summary>
+        /// <remarks>
+        /// Note that setting this property only currently works if the item is expanded to be visible.
+        /// To select non-expanded nodes use `Selection.SelectedIndex`.
+        /// </remarks>
         public object SelectedItem
         {
             get => Selection.SelectedItem;
@@ -346,7 +347,7 @@ namespace Avalonia.Controls
 
                 if (container != null)
                 {
-                    container.BringIntoView();
+                    DispatcherTimer.RunOnce(container.BringIntoView, TimeSpan.Zero);
                 }
             }
         }
@@ -395,10 +396,17 @@ namespace Avalonia.Controls
 
         private void OnSelectionModelChildrenRequested(object sender, SelectionModelChildrenRequestedEventArgs e)
         {
-            var container = ItemContainerGenerator.Index.ContainerFromItem(e.Source) as ItemsControl;
+            var container = ItemContainerGenerator.Index.ContainerFromItem(e.Source) as TreeViewItem;
 
             if (container is object)
             {
+                if (e.SourceIndex.IsAncestorOf(e.FinalIndex))
+                {
+                    container.IsExpanded = true;
+                    container.ApplyTemplate();
+                    container.Presenter?.ApplyTemplate();
+                }
+
                 e.Children = Observable.CombineLatest(
                     container.GetObservable(TreeViewItem.IsExpandedProperty),
                     container.GetObservable(ItemsProperty),

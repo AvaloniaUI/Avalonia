@@ -211,6 +211,21 @@ namespace Avalonia
                 rect.Width * scale.X,
                 rect.Height * scale.Y);
         }
+        
+        /// <summary>
+        /// Multiplies a rectangle by a scale.
+        /// </summary>
+        /// <param name="rect">The rectangle.</param>
+        /// <param name="scale">The scale.</param>
+        /// <returns>The scaled rectangle.</returns>
+        public static Rect operator *(Rect rect, double scale)
+        {
+            return new Rect(
+                rect.X * scale,
+                rect.Y * scale,
+                rect.Width * scale,
+                rect.Height * scale);
+        }
 
         /// <summary>
         /// Divides a rectangle by a vector.

@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Embedding
 {
     public class EmbeddableControlRoot : TopLevel, IStyleable, IFocusScope, IDisposable
     {
-        public EmbeddableControlRoot(IEmbeddableWindowImpl impl) : base(impl)
+        public EmbeddableControlRoot(ITopLevelImpl impl) : base(impl)
         {
             
         }
@@ -19,16 +19,13 @@ namespace Avalonia.Controls.Embedding
         {
         }
 
-        [CanBeNull]
-        public new IEmbeddableWindowImpl PlatformImpl => (IEmbeddableWindowImpl) base.PlatformImpl;
-
         protected bool EnforceClientSize { get; set; } = true;
 
         public void Prepare()
         {
             EnsureInitialized();
             ApplyTemplate();
-            LayoutManager.ExecuteInitialLayoutPass(this);
+            LayoutManager.ExecuteInitialLayoutPass();
         }
 
         private void EnsureInitialized()

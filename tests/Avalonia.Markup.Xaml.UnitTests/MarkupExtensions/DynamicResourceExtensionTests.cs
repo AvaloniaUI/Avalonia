@@ -797,6 +797,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
+        [Fact]
+        public void Automatically_Converts_Color_To_SolidColorBrush()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Resources>
+        <Color x:Key='color'>#ff506070</Color>
+    </UserControl.Resources>
+
+    <Border Name='border' Background='{DynamicResource color}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            var brush = (ISolidColorBrush)border.Background;
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
+
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(

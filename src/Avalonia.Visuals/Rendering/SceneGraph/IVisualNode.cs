@@ -27,6 +27,11 @@ namespace Avalonia.Rendering.SceneGraph
         Matrix Transform { get; }
 
         /// <summary>
+        /// Gets the corner radius of visual. Contents are clipped to this radius.
+        /// </summary>
+        CornerRadius ClipToBoundsRadius { get; }
+
+        /// <summary>
         /// Gets the bounds of the node's geometry in global coordinates.
         /// </summary>
         Rect Bounds { get; }

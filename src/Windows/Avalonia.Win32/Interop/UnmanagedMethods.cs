@@ -15,7 +15,7 @@ namespace Avalonia.Win32.Interop
     [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1310:FieldNamesMustNotContainUnderscore", Justification = "Using Win32 naming for consistency.")]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements must be documented", Justification = "Look in Win32 docs.")]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1602:Enumeration items must be documented", Justification = "Look in Win32 docs.")]
-    internal static class UnmanagedMethods
+    internal unsafe static class UnmanagedMethods
     {
         public const int CW_USEDEFAULT = unchecked((int)0x80000000);
 
@@ -989,6 +989,12 @@ namespace Avalonia.Win32.Interop
             }
         }
 
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
+
+        [DllImport("user32.dll")]
+        public static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
@@ -1000,6 +1006,10 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern bool InvalidateRect(IntPtr hWnd, ref RECT lpRect, bool bErase);
+
+
+        [DllImport("user32.dll")]
+        public static extern bool InvalidateRect(IntPtr hWnd, RECT* lpRect, bool bErase);
 
         [DllImport("user32.dll")]
         public static extern bool IsWindowEnabled(IntPtr hWnd);
@@ -1050,6 +1060,8 @@ namespace Avalonia.Win32.Interop
         public static extern bool SetFocus(IntPtr hWnd);
         [DllImport("user32.dll")]
         public static extern bool SetParent(IntPtr hWnd, IntPtr hWndNewParent);
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetParent(IntPtr hWnd);
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommand nCmdShow);
 
@@ -1168,6 +1180,12 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern IntPtr SetClipboardData(ClipboardFormat uFormat, IntPtr hMem);
+
+        [DllImport("ole32.dll", PreserveSig = false)]
+        public static extern int OleGetClipboard(out IOleDataObject dataObject);
+
+        [DllImport("ole32.dll", PreserveSig = true)]
+        public static extern int OleSetClipboard(IOleDataObject dataObject);
 
         [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern IntPtr GlobalLock(IntPtr handle);
@@ -1305,6 +1323,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("dwmapi.dll")]
         public static extern int DwmIsCompositionEnabled(out bool enabled);
 
+        [DllImport("dwmapi.dll")]
+        public static extern bool DwmDefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref IntPtr plResult);
+        
         [DllImport("dwmapi.dll")]
         public static extern void DwmEnableBlurBehindWindow(IntPtr hwnd, ref DWM_BLURBEHIND blurBehind);
 

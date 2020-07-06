@@ -104,6 +104,11 @@ namespace Avalonia.Platform
         /// Gets or sets a method called when the underlying implementation is destroyed.
         /// </summary>
         Action Closed { get; set; }
+        
+        /// <summary>
+        /// Gets or sets a method called when the input focus is lost.
+        /// </summary>
+        Action LostFocus { get; set; }
 
         /// <summary>
         /// Gets a mouse device associated with toplevel
@@ -122,5 +127,10 @@ namespace Avalonia.Platform
         /// Gets the current <see cref="WindowTransparencyLevel"/> of the TopLevel.
         /// </summary>
         WindowTransparencyLevel TransparencyLevel { get; }
+
+        /// <summary>
+        /// Gets the <see cref="AcrylicPlatformCompensationLevels"/> for the platform.        
+        /// </summary>
+        AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
     }
 }

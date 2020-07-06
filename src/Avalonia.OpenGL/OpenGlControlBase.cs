@@ -94,7 +94,7 @@ namespace Avalonia.OpenGL
             }
             catch (Exception e)
             {
-                Logger.TryGet(LogEventLevel.Error)?.Log("OpenGL", "OpenGlControlBase",
+                Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
                     "Unable to initialize OpenGL: unable to create additional OpenGL context: {exception}", e);
                 _glFailed = true;
                 return false;
@@ -109,7 +109,7 @@ namespace Avalonia.OpenGL
             {
                 _context.Dispose();
                 _context = null;
-                Logger.TryGet(LogEventLevel.Error)?.Log("OpenGL", "OpenGlControlBase",
+                Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
                     "Unable to initialize OpenGL: unable to create OpenGlTextureBitmap: {exception}", e);
                 _glFailed = true;
                 return false;
@@ -138,7 +138,7 @@ namespace Avalonia.OpenGL
                     {
                         int code;
                         while ((code = gl.GetError()) != 0)
-                            Logger.TryGet(LogEventLevel.Error)?.Log("OpenGL", "OpenGlControlBase",
+                            Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
                                 "Unable to initialize OpenGL FBO: {code}", code);
 
                         _glFailed = true;
@@ -147,7 +147,7 @@ namespace Avalonia.OpenGL
                 }
                 catch(Exception e)
                 {
-                    Logger.TryGet(LogEventLevel.Error)?.Log("OpenGL", "OpenGlControlBase",
+                    Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
                         "Unable to initialize OpenGL FBO: {exception}", e);
                     _glFailed = true;
                 }

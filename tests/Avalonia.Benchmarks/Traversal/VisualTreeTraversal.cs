@@ -26,7 +26,7 @@ namespace Avalonia.Benchmarks.Traversal
 
             _shuffledControls = _controls.OrderBy(r => random.Next()).ToList();
 
-            _root.LayoutManager.ExecuteInitialLayoutPass(_root);
+            _root.LayoutManager.ExecuteInitialLayoutPass();
         }
 
         [Benchmark]

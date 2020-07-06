@@ -24,7 +24,7 @@ namespace Avalonia.Benchmarks.Layout
                 Renderer = new NullRenderer()
             };
 
-            _root.LayoutManager.ExecuteInitialLayoutPass(_root);
+            _root.LayoutManager.ExecuteInitialLayoutPass();
         }
 
         [Benchmark]

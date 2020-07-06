@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.UnitTests;
@@ -41,6 +42,43 @@ namespace Avalonia.Markup.Xaml.UnitTests.MakrupExtensions
 
                     var brush = (SolidColorBrush)border.Background;
                     Assert.Equal(0xff506070, brush.Color.ToUint32());
+                }
+            }
+
+            [Fact]
+            public void Missing_ResourceKey_In_ResourceInclude_Does_Not_Cause_StackOverflow()
+            {
+                var styleXaml = @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <StaticResource x:Key='brush' ResourceKey='missing' />
+</ResourceDictionary>";
+
+                using (StartWithResources(("test:style.xaml", styleXaml)))
+                {
+                    var xaml = @"
+<Application xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source='test:style.xaml'/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>";
+
+                    var loader = new AvaloniaXamlLoader();
+                    var app = Application.Current;
+
+                    try
+                    {
+                        loader.Load(xaml, null, app);
+                    }
+                    catch (KeyNotFoundException)
+                    {
+
+                    }
                 }
             }
 

@@ -93,16 +93,16 @@ namespace Avalonia.Animation
                 var oldTransitions = change.OldValue.GetValueOrDefault<Transitions>();
                 var newTransitions = change.NewValue.GetValueOrDefault<Transitions>();
 
-                if (oldTransitions is object)
-                {
-                    oldTransitions.CollectionChanged -= TransitionsCollectionChanged;
-                    RemoveTransitions(oldTransitions);
-                }
-
                 if (newTransitions is object)
                 {
                     newTransitions.CollectionChanged += TransitionsCollectionChanged;
                     AddTransitions(newTransitions);
+                }
+
+                if (oldTransitions is object)
+                {
+                    oldTransitions.CollectionChanged -= TransitionsCollectionChanged;
+                    RemoveTransitions(oldTransitions);
                 }
             }
             else if (_transitionsEnabled &&
@@ -111,8 +111,10 @@ namespace Avalonia.Animation
                      !change.Property.IsDirect &&
                      change.Priority > BindingPriority.Animation)
             {
-                foreach (var transition in Transitions)
+                for (var i = Transitions.Count -1; i >= 0; --i)
                 {
+                    var transition = Transitions[i];
+
                     if (transition.Property == change.Property)
                     {
                         var state = _transitionState[transition];

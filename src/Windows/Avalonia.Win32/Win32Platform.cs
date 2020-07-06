@@ -36,7 +36,7 @@ namespace Avalonia
     public class Win32PlatformOptions
     {
         public bool UseDeferredRendering { get; set; } = true;
-        public bool AllowEglInitialization { get; set; }
+        public bool AllowEglInitialization { get; set; } = true;
         public bool? EnableMultitouch { get; set; }
         public bool OverlayPopups { get; set; }
     }
@@ -209,7 +209,7 @@ namespace Avalonia.Win32
             return new WindowImpl();
         }
 
-        public IEmbeddableWindowImpl CreateEmbeddableWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             var embedded = new EmbeddedWindowImpl();
             embedded.Show();

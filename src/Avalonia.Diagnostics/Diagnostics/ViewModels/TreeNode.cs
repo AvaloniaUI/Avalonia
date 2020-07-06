@@ -1,17 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reactive;
 using System.Reactive.Linq;
-using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
-using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class TreeNode : ViewModelBase
+    internal class TreeNode : ViewModelBase, IDisposable
     {
+        private IDisposable _classesSubscription;
         private string _classes;
         private bool _isExpanded;
 
@@ -33,7 +33,7 @@ namespace Avalonia.Diagnostics.ViewModels
                         x => control.Classes.CollectionChanged -= x)
                     .TakeUntil(removed);
 
-                classesChanged.Select(_ => Unit.Default)
+                _classesSubscription = classesChanged.Select(_ => Unit.Default)
                     .StartWith(Unit.Default)
                     .Subscribe(_ =>
                     {
@@ -49,7 +49,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public IAvaloniaReadOnlyList<TreeNode> Children
+        public TreeNodeCollection Children
         {
             get;
             protected set;
@@ -81,6 +81,48 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             get;
             private set;
+        }
+
+        public IndexPath Index
+        {
+            get
+            {
+                var indices = new List<int>();
+                var child = this;
+                var parent = Parent;
+                
+                while (parent is object)
+                {
+                    indices.Add(IndexOf(parent.Children, child));
+                    child = child.Parent;
+                    parent = parent.Parent;
+                }
+
+                indices.Add(0);
+                indices.Reverse();
+                return new IndexPath(indices);
+            }
+        }
+
+        public void Dispose()
+        {
+            _classesSubscription.Dispose();
+            Children.Dispose();
+        }
+
+        private static int IndexOf(IReadOnlyList<TreeNode> collection, TreeNode item)
+        {
+            var count = collection.Count;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (collection[i] == item)
+                {
+                    return i;
+                }
+            }
+
+            throw new AvaloniaInternalException("TreeNode was not present in parent Children collection.");
         }
     }
 }

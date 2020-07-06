@@ -10,6 +10,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -80,6 +81,7 @@ namespace Avalonia.Controls
         static ItemsRepeater()
         {
             ClipToBoundsProperty.OverrideDefaultValue<ItemsRepeater>(true);
+            RequestBringIntoViewEvent.AddClassHandler<ItemsRepeater>((x, e) => x.OnRequestBringIntoView(e));
         }
 
         /// <summary>
@@ -219,11 +221,20 @@ namespace Avalonia.Controls
         /// </returns>
         public IControl TryGetElement(int index) => GetElementFromIndexImpl(index);
 
+        /// <summary>
+        /// Retrieves the UIElement that corresponds to the item at the specified index in the
+        /// data source.
+        /// </summary>
+        /// <param name="index">The index of the item.</param>
+        /// <returns>
+        /// An <see cref="IControl"/> that corresponds to the item at the specified index. If the
+        /// item is not realized, a new UIElement is created.
+        /// </returns>
+        public IControl GetOrCreateElement(int index) => GetOrCreateElementImpl(index);
+
         internal void PinElement(IControl element) => _viewManager.UpdatePin(element, true);
 
         internal void UnpinElement(IControl element) => _viewManager.UpdatePin(element, false);
-
-        internal IControl GetOrCreateElement(int index) => GetOrCreateElementImpl(index);
 
         internal static VirtualizationInfo TryGetVirtualizationInfo(IControl element)
         {
@@ -296,6 +307,7 @@ namespace Avalonia.Controls
                             virtInfo.AutoRecycleCandidate &&
                             !virtInfo.KeepAlive)
                         {
+                            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "AutoClear - {Index}", virtInfo.Index);
                             ClearElementImpl(element);
                         }
                     }
@@ -732,6 +744,11 @@ namespace Avalonia.Controls
             {
                 _processingItemsSourceChange = null;
             }
+        }
+
+        private void OnRequestBringIntoView(RequestBringIntoViewEventArgs e)
+        {
+            _viewportManager.OnBringIntoViewRequested(e);
         }
 
         private void InvalidateMeasureForLayout(object sender, EventArgs e) => InvalidateMeasure();

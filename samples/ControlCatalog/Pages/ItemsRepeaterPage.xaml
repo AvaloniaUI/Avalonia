@@ -18,6 +18,8 @@
       <Button Command="{Binding AddItem}">Add Item</Button>
       <Button Command="{Binding RandomizeHeights}">Randomize Heights</Button>
       <Button Command="{Binding ResetItems}">Reset items</Button>
+      <Button x:Name="scrollToLast">Scroll to Last</Button>
+      <Button x:Name="scrollToRandom">Scroll to Random</Button>
     </StackPanel>
     <Border BorderThickness="1" BorderBrush="{DynamicResource ThemeBorderMidBrush}" Margin="0 0 0 16">
       <ScrollViewer Name="scroller"
@@ -30,10 +32,10 @@
             </Style>
           </ItemsRepeater.Styles>
           <ItemsRepeater.ItemTemplate>
-            <DataTemplate>              
+            <DataTemplate>
               <Border Background="Purple" BorderThickness="2" BorderBrush="Green" MinHeight="100" MinWidth="100">
                 <TextBlock Focusable="True" Height="{Binding Height}" Text="{Binding Text}"  Foreground="White" />
-              </Border>              
+              </Border>
             </DataTemplate>
           </ItemsRepeater.ItemTemplate>
         </ItemsRepeater>

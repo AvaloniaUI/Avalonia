@@ -82,6 +82,40 @@ public:
         
         return S_OK;
     }
+    
+    virtual HRESULT SetBytes(char* type, void* bytes, int len) override
+    {
+        auto typeString = [NSString stringWithUTF8String:(const char*)type];
+        auto data = [NSData dataWithBytes:bytes length:len];
+        if(_item == nil)
+            [_pb setData:data forType:typeString];
+        else
+            [_item setData:data forType:typeString];
+        return S_OK;
+    }
+       
+    virtual HRESULT GetBytes(char* type, IAvnString**ppv) override
+    {
+        *ppv = nil;
+        auto typeString = [NSString stringWithUTF8String:(const char*)type];
+        NSData*data;
+        @try
+        {
+            if(_item)
+                data = [_item dataForType:typeString];
+            else
+                data = [_pb dataForType:typeString];
+            if(data == nil)
+                return E_FAIL;
+        }
+        @catch(NSException* e)
+        {
+            return E_FAIL;
+        }
+        *ppv = CreateByteArray((void*)data.bytes, (int)data.length);
+        return S_OK;
+    }
+
 
     virtual HRESULT Clear() override
     {

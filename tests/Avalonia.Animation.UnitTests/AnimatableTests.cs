@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -262,6 +263,70 @@ namespace Avalonia.Animation.UnitTests
                     double.NaN,
                     100.0),
                     Times.Once);
+            }
+        }
+
+        [Fact]
+        public void Replacing_Transitions_During_Animation_Does_Not_Throw_KeyNotFound()
+        {
+            // Issue #4059
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles =
+                    {
+                        new Style(x => x.OfType<Border>())
+                        {
+                            Setters =
+                            {
+                                new Setter(Border.TransitionsProperty,
+                                    new Transitions
+                                    {
+                                        new DoubleTransition
+                                        {
+                                            Property = Border.OpacityProperty,
+                                            Duration = TimeSpan.FromSeconds(1),
+                                        },
+                                    }),
+                            },
+                        },
+                        new Style(x => x.OfType<Border>().Class("foo"))
+                        {
+                            Setters =
+                            {
+                                new Setter(Border.TransitionsProperty,
+                                    new Transitions
+                                    {
+                                        new DoubleTransition
+                                        {
+                                            Property = Border.OpacityProperty,
+                                            Duration = TimeSpan.FromSeconds(1),
+                                        },
+                                    }),
+                                new Setter(Border.OpacityProperty, 0.0),
+                            },
+                        },
+                    },
+                    Child = target = new Border
+                    {
+                        Background = Brushes.Red,
+                    }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                target.Classes.Add("foo");
+                clock.Step(TimeSpan.FromSeconds(0));
+                clock.Step(TimeSpan.FromSeconds(0.5));
+
+                Assert.Equal(0.5, target.Opacity);
+
+                target.Classes.Remove("foo");
             }
         }
 

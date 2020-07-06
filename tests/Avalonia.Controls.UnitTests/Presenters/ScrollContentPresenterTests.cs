@@ -117,10 +117,14 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     Width = 150,
                     Height = 150,
                 },
-                Offset = new Vector(25, 25),
             };
 
             target.UpdateChild();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            target.Offset = new Vector(25, 25);
+
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 

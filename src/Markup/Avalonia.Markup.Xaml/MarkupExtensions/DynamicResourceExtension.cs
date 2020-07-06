@@ -1,6 +1,8 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Markup.Xaml.Converters;
+using Avalonia.Media;
 
 #nullable enable
 
@@ -54,11 +56,23 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             if (control != null)
             {
-                return InstancedBinding.OneWay(control.GetResourceObservable(ResourceKey));
+                var source = control.GetResourceObservable(ResourceKey, GetConverter(targetProperty));
+                return InstancedBinding.OneWay(source);
             }
             else if (_resourceProvider is object)
             {
-                return InstancedBinding.OneWay(_resourceProvider.GetResourceObservable(ResourceKey));
+                var source = _resourceProvider.GetResourceObservable(ResourceKey, GetConverter(targetProperty));
+                return InstancedBinding.OneWay(source);
+            }
+
+            return null;
+        }
+
+        private Func<object?, object?>? GetConverter(AvaloniaProperty targetProperty)
+        {
+            if (targetProperty?.PropertyType == typeof(IBrush))
+            {
+                return x => ColorToBrushConverter.Convert(x, typeof(IBrush));
             }
 
             return null;

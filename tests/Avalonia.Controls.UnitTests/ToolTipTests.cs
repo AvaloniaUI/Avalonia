@@ -102,5 +102,76 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(ToolTip.GetIsOpen(target));
             }
         }
+
+        [Fact]
+        public void Open_Class_Should_Not_Initially_Be_Added()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var toolTip = new ToolTip();
+                var window = new Window();
+
+                var decorator = new Decorator()
+                {
+                    [ToolTip.TipProperty] = toolTip
+                };
+
+                window.Content = decorator;
+
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                Assert.Empty(toolTip.Classes);
+            }
+        }
+
+        [Fact]
+        public void Setting_IsOpen_Should_Add_Open_Class()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var toolTip = new ToolTip();
+                var window = new Window();
+
+                var decorator = new Decorator()
+                {
+                    [ToolTip.TipProperty] = toolTip
+                };
+
+                window.Content = decorator;
+
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                ToolTip.SetIsOpen(decorator, true);
+
+                Assert.Equal(new[] { ":open" }, toolTip.Classes);
+            }
+        }
+
+        [Fact]
+        public void Clearing_IsOpen_Should_Remove_Open_Class()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var toolTip = new ToolTip();
+                var window = new Window();
+
+                var decorator = new Decorator()
+                {
+                    [ToolTip.TipProperty] = toolTip
+                };
+
+                window.Content = decorator;
+
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                ToolTip.SetIsOpen(decorator, true);
+                ToolTip.SetIsOpen(decorator, false);
+
+                Assert.Empty(toolTip.Classes);
+            }
+        }
     }
 }

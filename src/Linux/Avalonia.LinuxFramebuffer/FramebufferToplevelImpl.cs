@@ -10,7 +10,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    class FramebufferToplevelImpl : IEmbeddableWindowImpl, IScreenInfoProvider
+    class FramebufferToplevelImpl : ITopLevelImpl, IScreenInfoProvider
     {
         private readonly IOutputBackend _outputBackend;
         private readonly IInputBackend _inputBackend;
@@ -75,16 +75,14 @@ namespace Avalonia.LinuxFramebuffer
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
         public Action Closed { get; set; }
-        public event Action LostFocus
-        {
-            add {}
-            remove {}
-        }
+        public Action LostFocus { get; set; }
 
         public Size ScaledSize => _outputBackend.PixelSize.ToSize(Scaling);
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }
 }

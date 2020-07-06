@@ -21,7 +21,9 @@ using static Avalonia.X11.XLib;
 // ReSharper disable StringLiteralTypo
 namespace Avalonia.X11
 {
-    unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client, ITopLevelImplWithNativeMenuExporter
+    unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
+        ITopLevelImplWithNativeMenuExporter,
+        ITopLevelImplWithNativeControlHost
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IWindowImpl _popupParent;
@@ -185,6 +187,7 @@ namespace Avalonia.X11
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
             if (platform.Options.UseDBusMenu)
                 NativeMenuExporter = DBusMenuExporter.TryCreate(_handle);
+            NativeControlHost = new X11NativeControlHost(_platform, this);
         }
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -309,10 +312,19 @@ namespace Avalonia.X11
         {
             get => _transparencyHelper.TransparencyLevelChanged;
             set => _transparencyHelper.TransparencyLevelChanged = value;
-        }
+        }        
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public Thickness ExtendedMargins { get; } = new Thickness();
+
+        public Thickness OffScreenMargin { get; } = new Thickness();
+
+        public bool IsClientAreaExtendedToDecorations { get; }
 
         public Action Closed { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
+        public Action LostFocus { get; set; }
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
@@ -922,7 +934,7 @@ namespace Avalonia.X11
 
         public IScreenImpl Screen => _platform.Screens;
 
-        public Size MaxClientSize => _platform.X11Screens.Screens.Select(s => s.Bounds.Size.ToSize(s.PixelDensity))
+        public Size MaxAutoSizeHint => _platform.X11Screens.Screens.Select(s => s.Bounds.Size.ToSize(s.PixelDensity))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
 
@@ -1035,6 +1047,18 @@ namespace Avalonia.X11
             _disabled = !enable;
         }
 
+        public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
+        {
+        }
+
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {
+        }
+
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+        }
+
         public Action GotInputWhenDisabled { get; set; }
 
         public void SetIcon(IWindowIconImpl icon)
@@ -1094,10 +1118,18 @@ namespace Avalonia.X11
 
         public IPopupPositioner PopupPositioner { get; }
         public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
-
+        public INativeControlHostImpl NativeControlHost { get; }
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) =>
             _transparencyHelper.SetTransparencyRequest(transparencyLevel);
 
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+        }
+
         public WindowTransparencyLevel TransparencyLevel => _transparencyHelper.CurrentLevel;
+
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
+
+        public bool NeedsManagedDecorations => false;
     }
 }

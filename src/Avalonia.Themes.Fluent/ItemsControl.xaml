@@ -1,0 +1,15 @@
+<Style xmlns="https://github.com/avaloniaui" Selector="ItemsControl">
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              Padding="{TemplateBinding Padding}">
+        <ItemsPresenter Name="PART_ItemsPresenter"
+                        Items="{TemplateBinding Items}"
+                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                        ItemTemplate="{TemplateBinding ItemTemplate}"/>
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</Style>

@@ -132,6 +132,53 @@ namespace Avalonia.Controls
             return result;
         }
 
+        public static int Intersect(
+            IList<IndexRange> ranges,
+            IndexRange range,
+            IList<IndexRange>? removed = null)
+        {
+            var result = 0;
+
+            for (var i = 0; i < ranges.Count && range != s_invalid; ++i)
+            {
+                var existing = ranges[i];
+
+                if (existing.End < range.Begin || existing.Begin > range.End)
+                {
+                    removed?.Add(existing);
+                    ranges.RemoveAt(i--);
+                    result += existing.Count;
+                }
+                else
+                {
+                    if (existing.Begin < range.Begin)
+                    {
+                        var except = new IndexRange(existing.Begin, range.Begin - 1);
+                        removed?.Add(except);
+                        ranges[i] = existing = new IndexRange(range.Begin, existing.End);
+                        result += except.Count;
+                    }
+
+                    if (existing.End > range.End)
+                    {
+                        var except = new IndexRange(range.End + 1, existing.End);
+                        removed?.Add(except);
+                        ranges[i] = new IndexRange(existing.Begin, range.End);
+                        result += except.Count;
+                    }
+                }
+            }
+
+            MergeRanges(ranges);
+
+            if (removed is object)
+            {
+                MergeRanges(removed);
+            }
+
+            return result;
+        }
+
         public static int Remove(
             IList<IndexRange> ranges,
             IndexRange range,

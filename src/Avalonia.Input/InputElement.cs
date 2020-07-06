@@ -158,6 +158,7 @@ namespace Avalonia.Input
 
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
+        private bool _isFocusVisible;
         private bool _isPointerOver;
         private GestureRecognizerCollection _gestureRecognizers;
 
@@ -427,7 +428,9 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnGotFocus(GotFocusEventArgs e)
         {
-            IsFocused = e.Source == this;
+            var isFocused = e.Source == this;
+            _isFocusVisible = isFocused && (e.NavigationMethod == NavigationMethod.Directional || e.NavigationMethod == NavigationMethod.Tab);
+            IsFocused = isFocused;
         }
 
         /// <summary>
@@ -436,6 +439,7 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnLostFocus(RoutedEventArgs e)
         {
+            _isFocusVisible = false;
             IsFocused = false;
         }
 
@@ -602,6 +606,7 @@ namespace Avalonia.Input
             if (isFocused.HasValue)
             {
                 PseudoClasses.Set(":focus", isFocused.Value);
+                PseudoClasses.Set(":focus-visible", _isFocusVisible);
             }
             
             if (isPointerOver.HasValue)

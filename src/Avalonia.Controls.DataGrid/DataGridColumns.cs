@@ -44,7 +44,7 @@ namespace Avalonia.Controls
         /// <returns>The remaining amount of adjustment.</returns>
         internal double AdjustColumnWidths(int displayIndex, double amount, bool userInitiated)
         {
-            if (!DoubleUtil.IsZero(amount))
+            if (!MathUtilities.IsZero(amount))
             {
                 if (amount < 0)
                 {
@@ -777,7 +777,7 @@ namespace Avalonia.Controls
         private double AdjustStarColumnWidths(int displayIndex, double adjustment, bool userInitiated)
         {
             double remainingAdjustment = adjustment;
-            if (DoubleUtil.IsZero(remainingAdjustment))
+            if (MathUtilities.IsZero(remainingAdjustment))
             {
                 return remainingAdjustment;
             }
@@ -843,7 +843,7 @@ namespace Avalonia.Controls
         /// <returns>The remaining amount of adjustment.</returns>
         private double AdjustStarColumnWidths(int displayIndex, double remainingAdjustment, bool userInitiated, Func<DataGridColumn, double> targetWidth)
         {
-            if (DoubleUtil.IsZero(remainingAdjustment))
+            if (MathUtilities.IsZero(remainingAdjustment))
             {
                 return remainingAdjustment;
             }
@@ -1244,7 +1244,7 @@ namespace Avalonia.Controls
             Debug.Assert(amount < 0);
             Debug.Assert(column.Width.UnitType != DataGridLengthUnitType.Star);
 
-            if (DoubleUtil.GreaterThanOrClose(targetWidth, column.Width.DisplayValue))
+            if (MathUtilities.GreaterThanOrClose(targetWidth, column.Width.DisplayValue))
             {
                 return amount;
             }
@@ -1271,7 +1271,7 @@ namespace Avalonia.Controls
         /// <returns>The remaining amount of adjustment.</returns>
         private double DecreaseNonStarColumnWidths(int displayIndex, Func<DataGridColumn, double> targetWidth, double amount, bool reverse, bool affectNewColumns)
         {
-            if (DoubleUtil.GreaterThanOrClose(amount, 0))
+            if (MathUtilities.GreaterThanOrClose(amount, 0))
             {
                 return amount;
             }
@@ -1285,7 +1285,7 @@ namespace Avalonia.Controls
                     (affectNewColumns || column.IsInitialDesiredWidthDetermined)))
             {
                 amount = DecreaseNonStarColumnWidth(column, Math.Max(column.ActualMinWidth, targetWidth(column)), amount);
-                if (DoubleUtil.IsZero(amount))
+                if (MathUtilities.IsZero(amount))
                 {
                     break;
                 }
@@ -1392,7 +1392,7 @@ namespace Avalonia.Controls
         /// <returns>The remaining amount of adjustment.</returns>
         private double IncreaseNonStarColumnWidths(int displayIndex, Func<DataGridColumn, double> targetWidth, double amount, bool reverse, bool affectNewColumns)
         {
-            if (DoubleUtil.LessThanOrClose(amount, 0))
+            if (MathUtilities.LessThanOrClose(amount, 0))
             {
                 return amount;
             }
@@ -1406,7 +1406,7 @@ namespace Avalonia.Controls
                     (affectNewColumns || column.IsInitialDesiredWidthDetermined)))
             {
                 amount = IncreaseNonStarColumnWidth(column, Math.Min(column.ActualMaxWidth, targetWidth(column)), amount);
-                if (DoubleUtil.IsZero(amount))
+                if (MathUtilities.IsZero(amount))
                 {
                     break;
                 }

@@ -1513,6 +1513,47 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Batch_Update_Selection_Is_Correct_Throughout()
+        {
+            var data = new[] { "foo", "bar", "baz", "qux" };
+            var target = new SelectionModel { Source = data };
+            var raised = 0;
+
+            using (target.Update())
+            {
+                target.Select(1);
+
+                Assert.Equal(new IndexPath(1), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndices);
+                Assert.Equal("bar", target.SelectedItem);
+                Assert.Equal(new[] { "bar" }, target.SelectedItems);
+
+                target.Deselect(1);
+
+                Assert.Equal(new IndexPath(), target.SelectedIndex);
+                Assert.Empty(target.SelectedIndices);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+
+                target.SelectRange(new IndexPath(1), new IndexPath(1));
+
+                Assert.Equal(new IndexPath(1), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndices);
+                Assert.Equal("bar", target.SelectedItem);
+                Assert.Equal(new[] { "bar" }, target.SelectedItems);
+
+                target.ClearSelection();
+
+                Assert.Equal(new IndexPath(), target.SelectedIndex);
+                Assert.Empty(target.SelectedIndices);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+            }
+
+            Assert.Equal(0, raised);
+        }
+
+        [Fact]
         public void AutoSelect_Selects_When_Enabled()
         {
             var data = new[] { "foo", "bar", "baz" };
@@ -1714,6 +1755,30 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void AutoSelect_Is_Applied_At_End_Of_Batch_Update()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { AutoSelect = true, Source = data };
+
+            using (target.Update())
+            {
+                target.ClearSelection();
+
+                Assert.Equal(new IndexPath(), target.SelectedIndex);
+                Assert.Empty(target.SelectedIndices);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+            }
+
+            Assert.Equal(new IndexPath(0), target.SelectedIndex);
+            Assert.Equal(new[] { new IndexPath(0) }, target.SelectedIndices);
+            Assert.Equal("foo", target.SelectedItem);
+            Assert.Equal(new[] { "foo" }, target.SelectedItems);
+
+            Assert.Equal(new IndexPath(0), target.SelectedIndex);
+        }
+
+        [Fact]
         public void Can_Replace_Parent_Children_Collection()
         {
             var root = new Node("Root");
@@ -1804,6 +1869,87 @@ namespace Avalonia.Controls.UnitTests
             root.ReplaceChildren();
 
             Assert.Equal(0, node.PropertyChangedSubscriptions);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_To_Minus_1_Clears_Selection()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { Source = data };
+            target.SelectedIndex = new IndexPath(1);
+            target.SelectedIndex = new IndexPath(-1);
+            Assert.Empty(target.SelectedIndices);
+        }
+
+        [Fact]
+        public void Assigning_Source_With_Less_Items_Than_Previous_Clears_Selection()
+        {
+            var data = new[] { "foo", "bar", "baz", "boo", "hoo" };
+            var smallerData = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { RetainSelectionOnReset = true };
+            target.Source = data;
+            target.SelectedIndex = new IndexPath(4);
+            target.Source = smallerData;
+            Assert.Empty(target.SelectedIndices);
+        }
+
+        [Fact]
+        public void Initializing_Source_With_Less_Items_Than_Selection_Trims_Selection()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel();
+            target.SelectedIndex = new IndexPath(4);
+            target.Source = data;
+            Assert.Empty(target.SelectedIndices);
+        }
+
+        [Fact]
+        public void Initializing_Source_With_Less_Items_Than_Selection_Trims_Selection_RetainSelection()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { RetainSelectionOnReset = true };
+            target.SelectedIndex = new IndexPath(4);
+            target.Source = data;
+            Assert.Empty(target.SelectedIndices);
+        }
+
+        [Fact]
+        public void Initializing_Source_With_Less_Items_Than_Multiple_Selection_Trims_Selection()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel { RetainSelectionOnReset = true };
+            target.Select(4);
+            target.Select(2);
+            target.Source = data;
+            Assert.Equal(1, target.SelectedIndices.Count);
+            Assert.Equal(new IndexPath(2), target.SelectedIndices.First());
+        }
+
+        [Fact]
+        public void Initializing_Source_With_Less_Items_Than_Selection_Raises_SelectionChanged()
+        {
+            var data = new[] { "foo", "bar", "baz" };
+            var target = new SelectionModel();
+            var raised = 0;
+
+            target.SelectedIndex = new IndexPath(4);
+
+            target.SelectionChanged += (s, e) =>
+            {
+                if (raised == 0)
+                {
+                    Assert.Equal(new[] { Path(4) }, e.DeselectedIndices);
+                    Assert.Equal(new object[] { null }, e.DeselectedItems);
+                    Assert.Empty(e.SelectedIndices);
+                    Assert.Empty(e.SelectedItems);
+                }
+
+                ++raised;
+            };
+
+            target.Source = data;
+            
+            Assert.Equal(2, raised);
         }
 
         private int GetSubscriberCount(AvaloniaList<object> list)

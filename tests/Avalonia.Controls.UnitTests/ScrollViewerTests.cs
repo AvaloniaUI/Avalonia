@@ -4,6 +4,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
+using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
@@ -150,11 +151,14 @@ namespace Avalonia.Controls.UnitTests
         public void Changing_Extent_Should_Raise_ScrollChanged()
         {
             var target = new ScrollViewer();
+            var root = new TestRoot(target);
             var raised = 0;
 
             target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
             target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
             target.Offset = new Vector(10, 10);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             target.ScrollChanged += (s, e) =>
             {
@@ -166,19 +170,25 @@ namespace Avalonia.Controls.UnitTests
 
             target.SetValue(ScrollViewer.ExtentProperty, new Size(111, 112));
 
-            Assert.Equal(1, raised);
+            Assert.Equal(0, raised);
 
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(1, raised);
         }
 
         [Fact]
         public void Changing_Offset_Should_Raise_ScrollChanged()
         {
             var target = new ScrollViewer();
+            var root = new TestRoot(target);
             var raised = 0;
 
             target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
             target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
             target.Offset = new Vector(10, 10);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             target.ScrollChanged += (s, e) =>
             {
@@ -190,19 +200,25 @@ namespace Avalonia.Controls.UnitTests
 
             target.Offset = new Vector(22, 24);
 
-            Assert.Equal(1, raised);
+            Assert.Equal(0, raised);
 
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(1, raised);
         }
 
         [Fact]
         public void Changing_Viewport_Should_Raise_ScrollChanged()
         {
             var target = new ScrollViewer();
+            var root = new TestRoot(target);
             var raised = 0;
 
             target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
             target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
             target.Offset = new Vector(10, 10);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             target.ScrollChanged += (s, e) =>
             {
@@ -214,8 +230,11 @@ namespace Avalonia.Controls.UnitTests
 
             target.SetValue(ScrollViewer.ViewportProperty, new Size(56, 58));
 
-            Assert.Equal(1, raised);
+            Assert.Equal(0, raised);
 
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(1, raised);
         }
 
         private Control CreateTemplate(ScrollViewer control, INameScope scope)

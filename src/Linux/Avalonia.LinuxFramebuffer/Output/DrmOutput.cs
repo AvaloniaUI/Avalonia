@@ -7,6 +7,8 @@ using Avalonia.OpenGL;
 using Avalonia.Platform.Interop;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
+using static Avalonia.LinuxFramebuffer.Output.LibDrm.GbmColorFormats;
+
 namespace Avalonia.LinuxFramebuffer.Output
 {
     public unsafe class DrmOutput : IOutputBackend, IGlPlatformSurface, IWindowingPlatformGlFeature
@@ -71,11 +73,26 @@ namespace Avalonia.LinuxFramebuffer.Output
             var w = gbm_bo_get_width(bo); 
             var h = gbm_bo_get_height(bo);
             var stride = gbm_bo_get_stride(bo);
-            var handle = gbm_bo_get_handle(bo);
+            var handle = gbm_bo_get_handle(bo).u32;
+            var format = gbm_bo_get_format(bo);
 
-            var ret = drmModeAddFB(_card.Fd, w, h, 24, 32, stride, (uint)handle, out var fbHandle);
+            // prepare for the new ioctl call
+            var handles = new uint[] {handle, 0, 0, 0};
+            var pitches = new uint[] {stride, 0, 0, 0};
+            var offsets = new uint[] {};
+
+            var ret = drmModeAddFB2(_card.Fd, w, h, format, handles, pitches,
+                                    offsets, out var fbHandle, 0);
+
             if (ret != 0)
-                throw new Win32Exception(ret, "drmModeAddFb failed");
+            {
+                // legacy fallback
+                ret = drmModeAddFB(_card.Fd, w, h, 24, 32, stride, (uint)handle,
+                                   out fbHandle);
+
+                if (ret != 0)
+                    throw new Win32Exception(ret, $"drmModeAddFb failed {ret}");
+            }
 
             gbm_bo_set_user_data(bo, new IntPtr((int)fbHandle), FbDestroyDelegate);
             
