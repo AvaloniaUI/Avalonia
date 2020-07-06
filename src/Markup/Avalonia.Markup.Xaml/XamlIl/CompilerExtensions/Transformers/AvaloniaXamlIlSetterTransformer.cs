@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Data.Core;
 using XamlX;
 using XamlX.Ast;
 using XamlX.Emit;
@@ -37,29 +38,39 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 throw new XamlParseException(
                     "Can not resolve parent Style Selector type", node);
 
-
+            IXamlType propType = null;
             var property = @on.Children.OfType<XamlAstXamlPropertyValueNode>()
                 .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Property");
-            if (property == null)
-                throw new XamlParseException("Setter without a property is not valid", node);
-
-            var propertyName = property.Values.OfType<XamlAstTextNode>().FirstOrDefault()?.Text;
-            if (propertyName == null)
-                throw new XamlParseException("Setter.Property must be a string", node);
-
-
-            var avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
-                new XamlAstClrTypeReference(selector, selector.TargetType, false), property.Values[0]);
-            property.Values = new List<IXamlAstValueNode>
+            if (property != null)
             {
-                avaloniaPropertyNode
-            };
+
+                var propertyName = property.Values.OfType<XamlAstTextNode>().FirstOrDefault()?.Text;
+                if (propertyName == null)
+                    throw new XamlParseException("Setter.Property must be a string", node);
+
+
+                var avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
+                    new XamlAstClrTypeReference(selector, selector.TargetType, false), property.Values[0]);
+                property.Values = new List<IXamlAstValueNode> {avaloniaPropertyNode};
+                propType = avaloniaPropertyNode.AvaloniaPropertyType;
+            }
+            else
+            {
+                var propertyPath = on.Children.OfType<XamlAstXamlPropertyValueNode>()
+                    .FirstOrDefault(x => x.Property.GetClrProperty().Name == "PropertyPath");
+                if (propertyPath == null)
+                    throw new XamlX.XamlParseException("Setter without a property or property path is not valid", node);
+                if (propertyPath.Values[0] is IXamlIlPropertyPathNode ppn
+                    && ppn.PropertyType != null)
+                    propType = ppn.PropertyType;
+                else
+                    throw new XamlX.XamlParseException("Unable to get the property path property type", node);
+            }
 
             var valueProperty = on.Children
                 .OfType<XamlAstXamlPropertyValueNode>().FirstOrDefault(p => p.Property.GetClrProperty().Name == "Value");
             if (valueProperty?.Values?.Count == 1 && valueProperty.Values[0] is XamlAstTextNode)
             {
-                var propType = avaloniaPropertyNode.AvaloniaPropertyType;
                 if (!XamlTransformHelpers.TryGetCorrectlyTypedValue(context, valueProperty.Values[0],
                         propType, out var converted))
                     throw new XamlParseException(

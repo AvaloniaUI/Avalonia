@@ -58,7 +58,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             var emit = new XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult>
             {
-                ProvideValueTargetPropertyEmitter = XamlIlAvaloniaPropertyHelper.Emit,
+                ProvideValueTargetPropertyEmitter = XamlIlAvaloniaPropertyHelper.EmitProvideValueTarget,
                 ContextTypeBuilderCallback = (b, c) => EmitNameScopeField(rv, typeSystem, b, c)
             };
             return (rv, emit);
