@@ -277,7 +277,7 @@ namespace Avalonia.Win32
             }
 
             accent.AccentFlags = 2;
-            accent.GradientColor = 0x00FFFFFF;
+            accent.GradientColor = 0x01000000;
 
             var accentPtr = Marshal.AllocHGlobal(accentStructSize);
             Marshal.StructureToPtr(accent, accentPtr, false);
@@ -1070,6 +1070,9 @@ namespace Avalonia.Win32
 
         /// <inheritdoc/>
         public Thickness OffScreenMargin => _offScreenMargin;
+
+        /// <inheritdoc/>
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0);
 
         private struct SavedWindowInfo
         {

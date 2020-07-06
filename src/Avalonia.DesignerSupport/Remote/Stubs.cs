@@ -174,6 +174,8 @@ namespace Avalonia.DesignerSupport.Remote
         public bool IsClientAreaExtendedToDecorations { get; }
 
         public bool NeedsManagedDecorations => false;
+        
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }
 
     class ClipboardStub : IClipboard
