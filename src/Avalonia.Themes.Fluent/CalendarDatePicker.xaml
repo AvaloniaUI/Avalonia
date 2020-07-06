@@ -8,11 +8,20 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=netstandard">
+  <Design.PreviewWith>
+    <Border Margin="20">
+      <CalendarDatePicker/>
+    </Border>
+  </Design.PreviewWith>
+  
   <Style Selector="CalendarDatePicker">
 
-    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
-    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
+    <Setter Property="Background" Value="{DynamicResource CalendarDatePickerBackground}"/>
+    <Setter Property="Foreground" Value="{DynamicResource CalendarDatePickerForeground}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CalendarDatePickerBorderBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource CalendarDatePickerBorderThemeThickness}"/>
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Padding" Value="4"/>
     
     <Setter Property="Template">
@@ -24,12 +33,11 @@
             <Style Selector="Button.CalendarDropDown">
               <Setter Property="Template">
                 <ControlTemplate>
-                  <Grid Height="18"
-                        Width="19"
+                  <Grid Height="24"
+                        Width="20"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Margin="0"
-                        Background="{DynamicResource ThemeControlLowBrush}"
                         ColumnDefinitions="*,*,*,*"
                         RowDefinitions="23*,19*,19*,19*"
                         ClipToBounds="False">
@@ -40,19 +48,19 @@
                             Grid.Row="0"
                             Grid.RowSpan="4"
                             BorderThickness="1"
-                            BorderBrush="{DynamicResource HighlightBrush}" />
+                            BorderBrush="{DynamicResource SystemAccentColor}" />
                     <Border Name="Background"
                             Margin="0,-1,0,0"
                             Grid.ColumnSpan="4"
                             Grid.Row="1"
                             Grid.RowSpan="3"
                             BorderThickness="1"
-                            BorderBrush="{DynamicResource ThemeBorderHighBrush}"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                             CornerRadius=".5" />
                     <Rectangle Grid.ColumnSpan="4"
                                Grid.RowSpan="1"
                                StrokeThickness="1"
-                               Stroke="{DynamicResource ThemeBorderHighBrush}"
+                               Stroke="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                Fill="{DynamicResource SystemAccentColor}">
                     </Rectangle>
                     <TextBlock Margin="0,-1,0,0"
@@ -63,10 +71,9 @@
                                Grid.ColumnSpan="4"
                                Grid.RowSpan="3"
                                FontSize="{DynamicResource FontSizeSmall}"
-                               Foreground="{DynamicResource ThemeBorderHighBrush}"
                                Text="{Binding Source={x:Static sys:DateTime.Today}, Path=Day}"/>
 
-                    <Ellipse HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource ThemeControlLowBrush}" StrokeThickness="0" Grid.ColumnSpan="4" Width="3" Height="3"/>
+                    <Ellipse HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" StrokeThickness="0" Grid.ColumnSpan="4" Width="3" Height="3"/>
                   </Grid>
                 </ControlTemplate>
               </Setter>
@@ -117,10 +124,6 @@
         </Grid>
       </ControlTemplate>
     </Setter>
-  </Style>
-
-  <Style Selector="CalendarDatePicker:focus /template/ TextBox#PART_TextBox">
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
   </Style>
   
 </Styles>

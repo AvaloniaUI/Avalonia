@@ -102,7 +102,6 @@
   </Style>
 
   <Style Selector="TextBox:disabled /template/ Border#border">
-    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
     <Setter Property="Background" Value="{DynamicResource TextControlBackgroundDisabled}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushDisabled}" />
   </Style>
