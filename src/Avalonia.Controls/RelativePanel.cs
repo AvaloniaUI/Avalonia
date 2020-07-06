@@ -420,7 +420,7 @@ namespace Avalonia.Controls
                 throw new ArgumentException(string.Format("RelativePanel error: Element does not exist in the current context", property.Name));
             }
 
-            return null;
+            //return null;
             throw new ArgumentException("RelativePanel error: Value must be of type ILayoutable");
         }
     }
