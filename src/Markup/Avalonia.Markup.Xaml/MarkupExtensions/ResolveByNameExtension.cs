@@ -4,8 +4,13 @@ using Avalonia.Controls;
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     public class ResolveByNameExtension
-    {   
-        public string Name { get; set; }
+    {
+        public ResolveByNameExtension(string name)
+        {
+            Name = name;
+        }
+
+        public string Name { get; }
 
         public object ProvideValue(IServiceProvider serviceProvider)
         {

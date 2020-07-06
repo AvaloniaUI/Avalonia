@@ -410,6 +410,7 @@ namespace Avalonia.Controls
         private Layoutable GetDependencyElement(AvaloniaProperty property, AvaloniaObject child)
         {
             var dependency = child.GetValue(property);
+                        
             if (dependency == null)
                 return null;
             if (dependency is Layoutable)
@@ -419,6 +420,7 @@ namespace Avalonia.Controls
                 throw new ArgumentException(string.Format("RelativePanel error: Element does not exist in the current context", property.Name));
             }
 
+            return null;
             throw new ArgumentException("RelativePanel error: Value must be of type ILayoutable");
         }
     }

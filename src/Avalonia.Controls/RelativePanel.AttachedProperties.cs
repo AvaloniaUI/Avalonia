@@ -43,6 +43,7 @@ namespace Avalonia.Controls
         /// The RelativePanel.Above XAML attached property value of the specified object.
         /// (The element to position this element above.)
         /// </returns>        
+        [ResolveByName]
         public static object GetAbove(AvaloniaObject obj)
         {
             return (object)obj.GetValue(AboveProperty);
@@ -62,7 +63,7 @@ namespace Avalonia.Controls
         /// <summary>
         ///  Identifies the <see cref="RelativePanel.AboveProperty"/> XAML attached property.
         /// </summary>        
-        [ResolveByName]
+        
         public static readonly AttachedProperty<object> AboveProperty =
             AvaloniaProperty.RegisterAttached<Layoutable, object>("Above", typeof(RelativePanel));
 
@@ -108,6 +109,7 @@ namespace Avalonia.Controls
         /// The RelativePanel.AlignBottomWith XAML attached property value of the specified object.
         /// (The element to align this element's bottom edge with.)
         /// </returns>        
+        [ResolveByName]
         public static object GetAlignBottomWith(AvaloniaObject obj)
         {
             return (object)obj.GetValue(AlignBottomWithProperty);
@@ -126,7 +128,7 @@ namespace Avalonia.Controls
         /// <summary>
         ///  Identifies the <see cref="RelativePanel.AlignBottomWithProperty"/> XAML attached property.
         /// </summary>
-        [ResolveByName]
+        
         public static readonly AttachedProperty<object> AlignBottomWithProperty =
             AvaloniaProperty.RegisterAttached<Layoutable, object>("AlignBottomWith", typeof(RelativePanel));
 
@@ -171,6 +173,7 @@ namespace Avalonia.Controls
         /// The RelativePanel.AlignHorizontalCenterWith XAML attached property value of the
         /// specified object. (The element to align this element's horizontal center with.)
         /// </returns>        
+        [ResolveByName]
         public static object GetAlignHorizontalCenterWith(AvaloniaObject obj)
         {
             return (object)obj.GetValue(AlignHorizontalCenterWithProperty);
@@ -189,7 +192,7 @@ namespace Avalonia.Controls
         /// <summary>
         ///  Identifies the <see cref="RelativePanel.AlignHorizontalCenterWithProperty"/> XAML attached property.
         /// </summary>
-        [ResolveByName]
+        
         public static readonly AttachedProperty<object> AlignHorizontalCenterWithProperty =
             AvaloniaProperty.RegisterAttached<Layoutable, object>("AlignHorizontalCenterWith", typeof(object), typeof(RelativePanel));
 
@@ -235,6 +238,7 @@ namespace Avalonia.Controls
         /// The RelativePanel.AlignLeftWith XAML attached property value of the specified
         /// object. (The element to align this element's left edge with.)
         /// </returns>        
+        [ResolveByName]
         public static object GetAlignLeftWith(AvaloniaObject obj)
         {
             return (object)obj.GetValue(AlignLeftWithProperty);
@@ -253,7 +257,7 @@ namespace Avalonia.Controls
         /// <summary>
         ///  Identifies the <see cref="RelativePanel.AlignLeftWithProperty"/> XAML attached property.
         /// </summary>
-        [ResolveByName]
+        
         public static readonly AttachedProperty<object> AlignLeftWithProperty =
             AvaloniaProperty.RegisterAttached<RelativePanel, Layoutable, object>("AlignLeftWith");
 
@@ -299,6 +303,7 @@ namespace Avalonia.Controls
         /// The RelativePanel.AlignRightWith XAML attached property value of the specified
         /// object. (The element to align this element's right edge with.)
         /// </returns>        
+        [ResolveByName]
         public static object GetAlignRightWith(AvaloniaObject obj)
         {
             return (object)obj.GetValue(AlignRightWithProperty);
@@ -317,7 +322,7 @@ namespace Avalonia.Controls
         /// <summary>
         ///  Identifies the <see cref="RelativePanel.AlignRightWithProperty"/> XAML attached property.
         /// </summary>
-        [ResolveByName]
+        
         public static readonly AttachedProperty<object> AlignRightWithProperty =
             AvaloniaProperty.RegisterAttached<RelativePanel, Layoutable, object>("AlignRightWith");
 
@@ -359,6 +364,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object from which the property value is read.</param>
         /// <returns>The value to set. (The element to align this element's top edge with.)</returns>        
+        [ResolveByName]
         public static object GetAlignTopWith(AvaloniaObject obj)
         {
             return (object)obj.GetValue(AlignTopWithProperty);
@@ -377,7 +383,7 @@ namespace Avalonia.Controls
         /// <summary>
         ///  Identifies the <see cref="RelativePanel.AlignTopWithProperty"/> XAML attached property.
         /// </summary>
-        [ResolveByName]
+        
         public static readonly AttachedProperty<object> AlignTopWithProperty =
             AvaloniaProperty.RegisterAttached<RelativePanel, Layoutable, object>("AlignTopWith");
 
@@ -419,6 +425,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object from which the property value is read.</param>
         /// <returns>The value to set. (The element to align this element's vertical center with.)</returns>        
+        [ResolveByName]
         public static object GetAlignVerticalCenterWith(AvaloniaObject obj)
         {
             return (object)obj.GetValue(AlignVerticalCenterWithProperty);
@@ -429,7 +436,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object to which the property value is written.</param>
         /// <param name="value">The value to set. (The element to align this element's horizontal center with.)</param>        
-        [ResolveByName]
+        
         public static void SetAlignVerticalCenterWith(AvaloniaObject obj, object value)
         {
             obj.SetValue(AlignVerticalCenterWithProperty, value);
@@ -448,7 +455,8 @@ namespace Avalonia.Controls
         /// <returns>
         /// The RelativePanel.Below XAML attached property value of the specified object.
         /// (The element to position this element below.)                                
-        /// </returns>        
+        /// </returns>       
+        [ResolveByName]
         public static object GetBelow(AvaloniaObject obj)
         {
             return (object)obj.GetValue(BelowProperty);
@@ -459,6 +467,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object to which the property value is written.</param>
         /// <param name="value">The value to set. (The element to position this element below.)</param>
+        
         public static void SetBelow(AvaloniaObject obj, object value)
         {
             obj.SetValue(BelowProperty, value);
@@ -467,7 +476,7 @@ namespace Avalonia.Controls
         /// <summary>
         ///  Identifies the <see cref="RelativePanel.BelowProperty"/> XAML attached property.
         /// </summary>
-        [ResolveByName]
+        
         public static readonly AttachedProperty<object> BelowProperty =
             AvaloniaProperty.RegisterAttached<RelativePanel, Layoutable, object>("Below");
 
@@ -479,6 +488,7 @@ namespace Avalonia.Controls
         /// The RelativePanel.LeftOf XAML attached property value of the specified object.
         /// (The element to position this element to the left of.)                                 
         /// </returns>        
+        [ResolveByName]
         public static object GetLeftOf(AvaloniaObject obj)
         {
             return (object)obj.GetValue(LeftOfProperty);
@@ -497,7 +507,7 @@ namespace Avalonia.Controls
         /// <summary>
         ///  Identifies the <see cref="RelativePanel.LeftOfProperty"/> XAML attached property.
         /// </summary>
-        [ResolveByName]
+        
         public static readonly AttachedProperty<object> LeftOfProperty =
             AvaloniaProperty.RegisterAttached<RelativePanel, Layoutable, object>("LeftOf");
 
@@ -509,6 +519,7 @@ namespace Avalonia.Controls
         /// The RelativePanel.RightOf XAML attached property value of the specified object.
         /// (The element to position this element to the right of.)                                   
         /// </returns>        
+        [ResolveByName]
         public static object GetRightOf(AvaloniaObject obj)
         {
             return (object)obj.GetValue(RightOfProperty);
@@ -527,7 +538,7 @@ namespace Avalonia.Controls
         /// <summary>
         ///  Identifies the <see cref="RelativePanel.RightOfProperty"/> XAML attached property.
         /// </summary>
-        [ResolveByName]
+        
         public static readonly AttachedProperty<object> RightOfProperty =
             AvaloniaProperty.RegisterAttached<RelativePanel, Layoutable, object>("RightOf");
     }
