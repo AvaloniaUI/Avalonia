@@ -339,12 +339,12 @@
     <!-- Resources for ProgressBar.xaml -->
     <x:Double x:Key="ProgressBarIndicatorPauseOpacity">0.6</x:Double>
     <x:Double x:Key="ProgressBarThemeMinHeight">4</x:Double>
-    <Thickness x:Key="ProgressBarBorderThemeThickness">0</Thickness>        
+    <Thickness x:Key="ProgressBarBorderThemeThickness">0</Thickness>
     <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="#59FFFFFF" />
     <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="Transparent" />
     <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="#FF5B2EC5" />
     <SolidColorBrush x:Key="ProgressBarIndeterminateForegroundThemeBrush" Color="#FF8A57FF" />
-    
+
     <!-- Resources for TextBox.xaml -->
     <SolidColorBrush x:Key="TextBoxForegroundHeaderThemeBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="TextBoxPlaceholderTextThemeBrush" Color="#AB000000" />
@@ -493,6 +493,15 @@
     <StaticResource x:Key="CalendarViewCalendarItemRevealBorderBrush" ResourceKey="SystemControlTransparentRevealBorderBrush" />
     <StaticResource x:Key="CalendarViewNavigationButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
     <StaticResource x:Key="CalendarViewNavigationButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
+
+    <!--Resources for NotificationCard.xaml -->
+    <SolidColorBrush x:Key="NotificationCardBackgroundBrush" Color="#1F1F1F" />
+    <SolidColorBrush x:Key="NotificationCardProgressBackgroundBrush" Color="#9A9A9A" />
+    <SolidColorBrush x:Key="NotificationCardInformationBackgroundBrush" Color="#0078D4" />
+    <SolidColorBrush x:Key="NotificationCardSuccessBackgroundBrush" Color="#128B44" />
+    <SolidColorBrush x:Key="NotificationCardWarningBackgroundBrush" Color="#FFC316" />
+    <SolidColorBrush x:Key="NotificationCardErrorBackgroundBrush" Color="#F03916" />
+
     <!-- Resources for RadioButton.xaml -->
     <x:Double x:Key="RadioButtonBorderThemeThickness">1</x:Double>
     <StaticResource x:Key="RadioButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -700,7 +709,7 @@
     <StaticResource x:Key="DateTimePickerFlyoutButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
     <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <StaticResource x:Key="DateTimePickerFlyoutButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-    
+
     <!-- Resources for TimePicker.xaml -->
     <StaticResource x:Key="TimePickerSpacerFill" ResourceKey="SystemControlForegroundBaseLowBrush" />
     <StaticResource x:Key="TimePickerSpacerFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
@@ -727,7 +736,7 @@
     <StaticResource x:Key="TimePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
     <SolidColorBrush x:Key="TimePickerHeaderForegroundThemeBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="TimePickerForegroundThemeBrush" Color="#FF000000" />
-    
+
     <!-- Resources for Pivot.xaml -->
     <FontFamily x:Key="PivotHeaderItemFontFamily">XamlAutoFontFamily</FontFamily>
     <FontFamily x:Key="PivotTitleFontFamily">XamlAutoFontFamily</FontFamily>
