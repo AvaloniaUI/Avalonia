@@ -40,13 +40,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             
             
             // Targeted
-
             InsertBefore<PropertyReferenceResolver>(
                 new AvaloniaXamlIlTransformInstanceAttachedProperties(),
                 new AvaloniaXamlIlTransformSyntheticCompiledBindingMembers());
-            InsertAfter<PropertyReferenceResolver>(new AvaloniaXamlIlAvaloniaPropertyResolver());
-            
-
+            InsertAfter<PropertyReferenceResolver>(
+                new AvaloniaXamlIlAvaloniaPropertyResolver(),
+                new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer());
 
             InsertBefore<ContentConvertTransformer>(
                 new AvaloniaXamlIlBindingPathParser(),

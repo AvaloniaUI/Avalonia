@@ -20,7 +20,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             propertyValueNode.Values[0] =
                                 new XamlAstObjectNode(
                                     propertyValueNode.Values[0],
-                                    new XamlAstXmlTypeReference(propertyValueNode.Values[0], "https://github.com/avaloniaui", "ResolveByNameExtension"));
+                                    new XamlAstClrTypeReference(propertyValueNode.Values[0],
+                                    context.GetAvaloniaTypes().ResolveByNameExtension, true));
                         }
                         break;
                     }
