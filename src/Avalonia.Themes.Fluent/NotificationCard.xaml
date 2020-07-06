@@ -1,8 +1,8 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
-    <Border Padding="20" Background="#2a2a2a">
-      <NotificationCard Content="Test" />
+    <Border Padding="0" Background="White">
+      <NotificationCard Content="Testing" />
     </Border>
   </Design.PreviewWith>
   <Style Selector="NotificationCard">
@@ -11,19 +11,20 @@
     <Setter Property="FontSize" Value="14"/>
     <Setter Property="Foreground" Value="White"/>
     <Setter Property="RenderTransformOrigin" Value="50%,75%"/>
-    <Setter Property="BorderThickness" Value="0 4 0 0" />
-    <Setter Property="Background" Value="{DynamicResource NotificationCardBackgroundBrush}" />
-    <Setter Property="BorderBrush" Value="#F03916" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource NotificationCardBackgroundBrush}" />    
     <Setter Property="Template">
       <ControlTemplate>
         <LayoutTransformControl Name="PART_LayoutTransformControl" UseRenderTransform="True">
-          <Border CornerRadius="{DynamicResource ControlCornerRadius}" BoxShadow="0 5 10 4 #2F000000" Margin="10 0 20 30">
+          <Border CornerRadius="{DynamicResource ControlCornerRadius}" BoxShadow="0 6 8 0 #4F000000" Margin="5 5 5 10">
             <Border Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="{DynamicResource ControlCornerRadius}"                                        
-                    ClipToBounds="True">
-              <ContentControl Name="PART_Content" Content="{TemplateBinding Content}" />
+                    CornerRadius="{DynamicResource ControlCornerRadius}" ClipToBounds="True">
+              <DockPanel>
+                <Panel x:Name="PART_HeaderBar" Height="4" DockPanel.Dock="Top" />
+                <ContentControl Name="PART_Content" Content="{TemplateBinding Content}" />
+              </DockPanel>
             </Border>
           </Border>
         </LayoutTransformControl>
@@ -85,16 +86,19 @@
     </Style.Animations>
   </Style>
 
-  <Style Selector="NotificationCard:information">
-    <Setter Property="BorderBrush" Value="{DynamicResource NotificationCardInformationBackgroundBrush}"/>
+  <Style Selector="NotificationCard /template/ Panel#PART_HeaderBar">
+    <Setter Property="Background" Value="{DynamicResource NotificationCardProgressBackgroundBrush}"/>
   </Style>
-  <Style Selector="NotificationCard:success">
-    <Setter Property="BorderBrush" Value="{DynamicResource NotificationCardSuccessBackgroundBrush}"/>
+  <Style Selector="NotificationCard:information /template/ Panel#PART_HeaderBar">
+    <Setter Property="Background" Value="{DynamicResource NotificationCardInformationBackgroundBrush}"/>
   </Style>
-  <Style Selector="NotificationCard:warning">
-    <Setter Property="BorderBrush" Value="{DynamicResource NotificationCardWarningBackgroundBrush}"/>
+  <Style Selector="NotificationCard:success /template/ Panel#PART_HeaderBar">
+    <Setter Property="Background" Value="{DynamicResource NotificationCardSuccessBackgroundBrush}"/>
   </Style>
-  <Style Selector="NotificationCard:error">
-    <Setter Property="BorderBrush" Value="{DynamicResource NotificationCardErrorBackgroundBrush}"/>
+  <Style Selector="NotificationCard:warning /template/ Panel#PART_HeaderBar">
+    <Setter Property="Background" Value="{DynamicResource NotificationCardWarningBackgroundBrush}"/>
+  </Style>
+  <Style Selector="NotificationCard:error /template/ Panel#PART_HeaderBar">
+    <Setter Property="Background" Value="{DynamicResource NotificationCardErrorBackgroundBrush}"/>
   </Style>
 </Styles>
