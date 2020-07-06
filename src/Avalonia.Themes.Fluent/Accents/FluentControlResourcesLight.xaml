@@ -897,5 +897,11 @@
     <x:Double x:Key="TreeViewItemMinHeight">32</x:Double>
     <!-- Resources for SplitView.xaml -->
     <StaticResource x:Key="SplitViewLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
+  
+    <!-- Resources for CalendarDatePicker.xaml -->
+    <StaticResource x:Key="CalendarDatePickerBackground" ResourceKey="SystemControlBackgroundAltMediumLowBrush" />
+    <StaticResource x:Key="CalendarDatePickerForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="CalendarDatePickerBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+    <Thickness x:Key="CalendarDatePickerBorderThemeThickness">1</Thickness>
   </Style.Resources>
 </Style>
