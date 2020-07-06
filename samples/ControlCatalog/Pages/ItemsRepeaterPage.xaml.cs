@@ -79,6 +79,26 @@ namespace ControlCatalog.Pages
                         MinItemHeight = 200,
                     };
                     break;
+                case 4:
+                    _scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+                    _scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                    _repeater.Layout = new WrapLayout
+                    {
+                        Orientation = Orientation.Vertical,
+                        HorizontalSpacing = 20,
+                        VerticalSpacing = 20
+                    };
+                    break;
+                case 5:
+                    _scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                    _scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+                    _repeater.Layout = new WrapLayout
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalSpacing = 20,
+                        VerticalSpacing = 20
+                    };
+                    break;
             }
         }
 

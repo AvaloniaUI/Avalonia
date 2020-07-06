@@ -12,6 +12,8 @@
         <ComboBoxItem>Stack - Horizontal</ComboBoxItem>
         <ComboBoxItem>UniformGrid - Vertical</ComboBoxItem>
         <ComboBoxItem>UniformGrid - Horizontal</ComboBoxItem>
+        <ComboBoxItem>WrapLayout - Horizontal</ComboBoxItem>
+        <ComboBoxItem>WrapLayout - Veritcal</ComboBoxItem>
       </ComboBox>
       <Button Command="{Binding AddItem}">Add Item</Button>
       <Button Command="{Binding RandomizeHeights}">Randomize Heights</Button>
@@ -24,12 +26,16 @@
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollBarVisibility="Auto">
         <ItemsRepeater Name="repeater" Background="Transparent" Items="{Binding Items}">
+          <ItemsRepeater.Styles>
+            <Style Selector="Border:pointerover">
+              <Setter Property="Width" Value="200" />
+            </Style>
+          </ItemsRepeater.Styles>
           <ItemsRepeater.ItemTemplate>
             <DataTemplate>
-              <TextBlock Focusable="True"
-                         Background="{Binding Background}"
-                         Height="{Binding Height}"
-                         Text="{Binding Text}"/>
+              <Border Background="Purple" BorderThickness="2" BorderBrush="Green" MinHeight="100" MinWidth="100">
+                <TextBlock Focusable="True" Height="{Binding Height}" Text="{Binding Text}"  Foreground="White" />
+              </Border>
             </DataTemplate>
           </ItemsRepeater.ItemTemplate>
         </ItemsRepeater>
