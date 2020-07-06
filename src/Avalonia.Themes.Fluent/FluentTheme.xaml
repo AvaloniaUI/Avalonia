@@ -56,8 +56,5 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/ToggleSwitch.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/SplitView.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/DatePicker.xaml"/>  
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/TimePicker.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/ColorPicker.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/ColorPickerSlider.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/ColorSpectrum.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/TimePicker.xaml"/>  
 </Styles>
