@@ -21,7 +21,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                 new XamlAstObjectNode(
                                     propertyValueNode.Values[0],
                                     new XamlAstClrTypeReference(propertyValueNode.Values[0],
-                                    context.GetAvaloniaTypes().ResolveByNameExtension, true));
+                                    context.GetAvaloniaTypes().ResolveByNameExtension, true))
+                                {
+                                    Arguments = new System.Collections.Generic.List<IXamlAstValueNode>
+                                    {
+                                        propertyValueNode.Values[0]
+                                    }
+                                };
                         }
                         break;
                     }
