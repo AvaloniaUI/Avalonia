@@ -39,8 +39,7 @@
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="HorizontalAlignment" Value="Left" />
-    <Setter Property="VerticalAlignment" Value="Top" />
-    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="VerticalAlignment" Value="Top" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="PlaceholderForeground" Value="{DynamicResource ComboBoxPlaceHolderForeground}" />
     <Setter Property="Template">
@@ -51,6 +50,7 @@
                             Grid.Row="0"
                             Grid.Column="0"
                             Grid.ColumnSpan="2"
+                            IsVisible="False"
                             TextBlock.FontWeight="{DynamicResource ComboBoxHeaderThemeFontWeight}"
                             Margin="{DynamicResource ComboBoxTopHeaderMargin}"
                             VerticalAlignment="Top" />

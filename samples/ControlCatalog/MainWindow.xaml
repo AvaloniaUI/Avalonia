@@ -10,10 +10,9 @@
         ExtendClientAreaToDecorationsHint="{Binding ExtendClientAreaEnabled}"
         ExtendClientAreaChromeHints="{Binding ChromeHints}"
         ExtendClientAreaTitleBarHeightHint="{Binding TitleBarHeight}"
-        TransparencyLevelHint="{Binding TransparencyLevel}"
-        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="{Binding TransparencyLevel}"        
         x:Name="MainWindow"
-        x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}" Background="{x:Null}">
+        x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}">
   <NativeMenu.Menu>
     <NativeMenu>
       <NativeMenuItem Header="File">
@@ -69,7 +68,7 @@
   </Window.DataTemplates>
   <Panel>
     <Panel Margin="{Binding #MainWindow.OffScreenMargin}">
-      <DockPanel Background="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" LastChildFill="True" Margin="{Binding #MainWindow.WindowDecorationMargin}">
+      <DockPanel LastChildFill="True" Margin="{Binding #MainWindow.WindowDecorationMargin}">
         <Menu Name="MainMenu" DockPanel.Dock="Top">
           <MenuItem Header="File">
             <MenuItem Header="Exit" Command="{Binding ExitCommand}" />

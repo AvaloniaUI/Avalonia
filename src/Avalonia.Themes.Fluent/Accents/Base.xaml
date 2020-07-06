@@ -12,8 +12,8 @@
     <Color x:Key="SystemColorHotlight">#FF0066CC</Color>
     <Color x:Key="SystemColorWindow">#FFFFFFFF</Color>
     <Color x:Key="SystemColorWindowText">#FF000000</Color>
-    <FontFamily x:Key="ContentControlThemeFontFamily">Segoe UI</FontFamily>
-    <sys:Double x:Key="ControlContentThemeFontSize">14</sys:Double>
+    <FontFamily x:Key="ContentControlThemeFontFamily">avares://Avalonia.Themes.Fluent/Assets#Open Sans</FontFamily>
+    <sys:Double x:Key="ControlContentThemeFontSize">13</sys:Double>
 
     <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
     <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
