@@ -36,7 +36,4 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="ListBox:disabled /template/ Border#border">
-    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
-  </Style>
 </Styles>

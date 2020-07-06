@@ -35,7 +35,7 @@
   <Setter Property="MinHeight" Value="{DynamicResource MenuFlyoutThemeMinHeight}" />
   <Setter Property="Padding" Value="{DynamicResource MenuFlyoutPresenterThemePadding}" />
   <Setter Property="HorizontalAlignment" Value="Stretch" />
-  <Setter Property="TextBlock.FontSize" Value="{DynamicResource FontSizeNormal}" />
+  <Setter Property="TextBlock.FontSize" Value="{DynamicResource ContentControlFontSize}" />
   <Setter Property="TextBlock.FontWeight" Value="Normal" />
   <Setter Property="Template">
     <ControlTemplate>
