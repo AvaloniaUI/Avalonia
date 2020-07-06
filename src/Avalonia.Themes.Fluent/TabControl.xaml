@@ -19,6 +19,10 @@
     </Border>
   </Design.PreviewWith>
 
+  <Styles.Resources>
+    <x:Double x:Key="TabControlTopPlacementItemPadding">0 0 0 2</x:Double>
+  </Styles.Resources>
+  
   <Style Selector="TabControl">
     <Setter Property="Margin" Value="0" />
     <Setter Property="Padding" Value="{DynamicResource TabItemMargin}" />
@@ -56,6 +60,6 @@
     <Setter Property="Orientation" Value="Vertical" />
   </Style>
   <Style Selector="TabControl[TabStripPlacement=Top] /template/ ItemsPresenter#PART_ItemsPresenter">
-    <Setter Property="Margin" Value="0 0 0 2" />
+    <Setter Property="Margin" Value="{StaticResource TabControlTopPlacementItemPadding}" />
   </Style>
 </Styles>
