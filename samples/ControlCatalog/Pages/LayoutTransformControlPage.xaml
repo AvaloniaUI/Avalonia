@@ -11,10 +11,10 @@
           RowDefinitions="24,Auto,24"
           HorizontalAlignment="Center"
           VerticalAlignment="Center">
-      <Border Background="{DynamicResource ThemeAccentBrush}" Grid.Column="1" Grid.Row="0"/>
-      <Border Background="{DynamicResource ThemeAccentBrush}" Grid.Column="0" Grid.Row="1"/>
-      <Border Background="{DynamicResource ThemeAccentBrush}" Grid.Column="2" Grid.Row="1"/>
-      <Border Background="{DynamicResource ThemeAccentBrush}" Grid.Column="1" Grid.Row="2"/>
+      <Border Background="{DynamicResource SystemAccentColor}" Grid.Column="1" Grid.Row="0"/>
+      <Border Background="{DynamicResource SystemAccentColor}" Grid.Column="0" Grid.Row="1"/>
+      <Border Background="{DynamicResource SystemAccentColor}" Grid.Column="2" Grid.Row="1"/>
+      <Border Background="{DynamicResource SystemAccentColor}" Grid.Column="1" Grid.Row="2"/>
 
       <LayoutTransformControl Name="layoutTransform" Grid.Column="1" Grid.Row="1">
         <LayoutTransformControl.LayoutTransform>

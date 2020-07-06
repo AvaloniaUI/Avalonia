@@ -115,8 +115,7 @@
     </Setter>
   </Style>
 
-  <Style Selector="DatePicker">
-    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+  <Style Selector="DatePicker">    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForeground}" />
     <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackground}"/>
@@ -234,8 +233,7 @@
   <Style Selector="DatePickerPresenter">
     <Setter Property="Width" Value="296" />
     <Setter Property="MinWidth" Value="296" />
-    <Setter Property="MaxHeight" Value="398" />
-    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="MaxHeight" Value="398" />    
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Background" Value="{DynamicResource DatePickerFlyoutPresenterBackground}" />
