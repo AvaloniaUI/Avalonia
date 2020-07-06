@@ -16,6 +16,8 @@ namespace Avalonia.Controls
 
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
 
+        private IDisposable _subscription;
+
         static ExperimentalAcrylicBorder()
         {
             AffectsRender<ExperimentalAcrylicBorder>(
@@ -45,7 +47,7 @@ namespace Avalonia.Controls
 
             var tl = (e.Root as TopLevel);
 
-            tl.GetObservable(TopLevel.ActualTransparencyLevelProperty)
+            _subscription = tl.GetObservable(TopLevel.ActualTransparencyLevelProperty)
                 .Subscribe(x =>
                 {
                     switch (x)
@@ -69,19 +71,20 @@ namespace Avalonia.Controls
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-        }
 
+            _subscription?.Dispose();
+        }
 
         public override void Render(DrawingContext context)
         {
-            if(context.PlatformImpl is IDrawingContextWithAcrylicLikeSupport idc)
+            if (context.PlatformImpl is IDrawingContextWithAcrylicLikeSupport idc)
             {
                 var cornerRadius = CornerRadius;
 
                 idc.DrawRectangle(
-                    Material, 
+                    Material,
                     new RoundedRect(
-                        new Rect(Bounds.Size), 
+                        new Rect(Bounds.Size),
                         cornerRadius.TopLeft, cornerRadius.TopRight,
                         cornerRadius.BottomRight, cornerRadius.BottomLeft));
             }
