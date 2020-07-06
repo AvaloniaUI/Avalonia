@@ -45,8 +45,7 @@
     <Setter Property="Foreground" Value="{DynamicResource ToolTipForeground}" />
     <Setter Property="Background" Value="{DynamicResource ToolTipBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ToolTipBorderBrush}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource ToolTipBorderThemeThickness}" />
-    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ToolTipBorderThemeThickness}" />    
     <Setter Property="FontSize" Value="{DynamicResource ToolTipContentThemeFontSize}" />
     <Setter Property="Padding" Value="{DynamicResource ToolTipBorderThemePadding}" />
     <Setter Property="MaxWidth" Value="{DynamicResource ToolTipContentMaxWidth}" />

@@ -43,7 +43,7 @@
                   C 72.078834 28.113269 74.047517 25.960974 74.931641 23.777344 
                   C 78.93827 14.586564 73.049722 2.8815081 63.248047 0.67382812
                   C 61.721916 0.22817968 60.165597 0.038541919 58.625 0.07421875 z ">
-      <Border Name="clipChild" Background="{DynamicResource ThemeAccentBrush}" Margin="4">
+      <Border Name="clipChild" Background="Red" Margin="4">
         <!-- Setting opacity puts the TextBox on a new layer -->
         <TextBox Text="Avalonia" Opacity="0.9" VerticalAlignment="Center"/>
         <Border.RenderTransform>

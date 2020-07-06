@@ -1,7 +1,9 @@
 <Style xmlns="https://github.com/avaloniaui" Selector="Window">
-  <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}"/>
-  <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
-  <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}"/>
+  <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>  
+  <Setter Property="TransparencyBackgroundFallback" Value="{DynamicResource SystemControlBackgroundAltHighBrush}" />
+  <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+  <Setter Property="FontSize" Value="{DynamicResource ContentControlFontSize}"/>  
+  <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
   <Setter Property="Template">
     <ControlTemplate>
       <Panel>

@@ -1,17 +1,17 @@
 using System.Linq;
-using XamlIl;
-using XamlIl.Ast;
-using XamlIl.Transform;
+using XamlX;
+using XamlX.Ast;
+using XamlX.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class IgnoredDirectivesTransformer : IXamlIlAstTransformer
+    class IgnoredDirectivesTransformer : IXamlAstTransformer
     {
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (node is XamlIlAstObjectNode no)
+            if (node is XamlAstObjectNode no)
             {
-                foreach (var d in no.Children.OfType<XamlIlAstXmlDirective>().ToList())
+                foreach (var d in no.Children.OfType<XamlAstXmlDirective>().ToList())
                 {
                     if (d.Namespace == XamlNamespaces.Xaml2006)
                     {

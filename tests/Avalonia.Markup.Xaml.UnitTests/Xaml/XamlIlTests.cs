@@ -6,7 +6,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
+using Avalonia.Data.Core;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -235,6 +239,30 @@ namespace Avalonia.Markup.Xaml.UnitTests
         }
 
         [Fact]
+        public void Provide_Value_Target_Should_Provide_Clr_Property_Info()
+        {
+            var parsed = AvaloniaXamlLoader.Parse<XamlIlClassWithClrPropertyWithValue>(@"
+<XamlIlClassWithClrPropertyWithValue 
+    xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests'
+    Count='{XamlIlCheckClrPropertyInfo ExpectedPropertyName=Count}'
+/>", typeof(XamlIlClassWithClrPropertyWithValue).Assembly);
+            Assert.Equal(6, parsed.Count);
+        }
+
+        [Fact]
+        public void DataContextType_Resolution()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parsed = AvaloniaXamlLoader.Parse<UserControl>(@"
+<UserControl 
+    xmlns='https://github.com/avaloniaui'
+    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:DataType='local:XamlIlBugTestsDataContext' />");
+            }
+        }
+
+        [Fact]
         public void DataTemplates_Should_Resolve_Named_Controls_From_Parent_Scope()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -344,5 +372,23 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             return (int)control.GetValue(TestIntProperty);
         }
+    }
+
+    public class XamlIlCheckClrPropertyInfoExtension
+    {
+        public string ExpectedPropertyName { get; set; }
+
+        public object ProvideValue(IServiceProvider prov)
+        {
+            var pvt = prov.GetService<IProvideValueTarget>();
+            var info = (ClrPropertyInfo)pvt.TargetProperty;
+            var v = (int)info.Get(pvt.TargetObject);
+            return v + 1;
+        }
+    }
+
+    public class XamlIlClassWithClrPropertyWithValue
+    {
+        public int Count { get; set; }= 5;
     }
 }

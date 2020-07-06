@@ -1,7 +1,7 @@
 ﻿using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
-using Avalonia.Utility;
+using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Media

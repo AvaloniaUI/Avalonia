@@ -41,7 +41,7 @@ namespace Avalonia.Direct2D1.UnitTests.Media
                 var fontManager = new FontManagerImpl();
 
                 var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                    new Typeface(new FontFamily("A, B, Arial"), FontWeight.Bold));
+                    new Typeface(new FontFamily("A, B, Arial"), weight: FontWeight.Bold));
 
                 var font = glyphTypeface.DWFont;
 
@@ -105,7 +105,7 @@ namespace Avalonia.Direct2D1.UnitTests.Media
                 var fontManager = new FontManagerImpl();
 
                 var glyphTypeface = (GlyphTypefaceImpl)fontManager.CreateGlyphTypeface(
-                    new Typeface(s_fontUri, FontWeight.Black, FontStyle.Italic));
+                    new Typeface(s_fontUri, FontStyle.Italic, FontWeight.Black));
 
                 var font = glyphTypeface.DWFont;
 

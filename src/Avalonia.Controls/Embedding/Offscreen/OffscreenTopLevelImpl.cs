@@ -52,6 +52,9 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
+        /// <inheritdoc/>
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
+
         public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 
         public virtual Point PointToClient(PixelPoint point) => point.ToPoint(1);
