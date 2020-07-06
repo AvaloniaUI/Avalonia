@@ -13,78 +13,20 @@
         TransparencyLevelHint="{Binding TransparencyLevel}"        
         x:Name="MainWindow"
         x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}">
-  <NativeMenu.Menu>
-    <NativeMenu>
-      <NativeMenuItem Header="File">
-        <NativeMenuItem.Menu>
-          <NativeMenu>
-            <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Open" Clicked="OnOpenClicked" Gesture="Ctrl+O"/>
-            <NativeMenuItemSeperator/>
-            <NativeMenuItem Icon="/Assets/github_icon.png" Header="Recent">
-              <NativeMenuItem.Menu>
-                <NativeMenu/>
-              </NativeMenuItem.Menu>
-            </NativeMenuItem>
-            <NativeMenuItemSeperator/>
-            <NativeMenuItem Header="{x:Static local:MainWindow.MenuQuitHeader}"
-                            Gesture="{x:Static local:MainWindow.MenuQuitGesture}"
-                            Clicked="OnCloseClicked" />
-          </NativeMenu>
-        </NativeMenuItem.Menu>
-      </NativeMenuItem>
-      <NativeMenuItem Header="Edit">
-        <NativeMenuItem.Menu>
-          <NativeMenu>
-            <NativeMenuItem Header="Copy"/>
-            <NativeMenuItem Header="Paste"/>
-          </NativeMenu>
-        </NativeMenuItem.Menu>
-      </NativeMenuItem>
-      <NativeMenuItem Header="Options">
-        <NativeMenuItem.Menu>
-          <NativeMenu>
-           <NativeMenuItem Header="Check Me (None)" 
-                            Command="{Binding ToggleMenuItemCheckedCommand}"
-                            ToggleType="None"
-                            IsChecked="{Binding IsMenuItemChecked}"  />
-            <NativeMenuItem Header="Check Me (CheckBox)" 
-                            Command="{Binding ToggleMenuItemCheckedCommand}"
-                            ToggleType="CheckBox"
-                            IsChecked="{Binding IsMenuItemChecked}"  />
-            <NativeMenuItem Header="Check Me (Radio)" 
-                            Command="{Binding ToggleMenuItemCheckedCommand}"
-                            ToggleType="Radio"
-                            IsChecked="{Binding IsMenuItemChecked}"  />
-          </NativeMenu>
-        </NativeMenuItem.Menu>
-      </NativeMenuItem>
-    </NativeMenu>
-  </NativeMenu.Menu>
-
-  <Window.DataTemplates>
-    <DataTemplate DataType="vm:NotificationViewModel">
-      <v:CustomNotificationView />
-    </DataTemplate>
-  </Window.DataTemplates>
-  <Panel>
-    <Panel Margin="{Binding #MainWindow.OffScreenMargin}">
-      <DockPanel LastChildFill="True" Margin="{Binding #MainWindow.WindowDecorationMargin}">
-        <Menu Name="MainMenu" DockPanel.Dock="Top">
-          <MenuItem Header="File">
-            <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
-          </MenuItem>
-          <MenuItem Header="Help">
-            <MenuItem Header="About" Command="{Binding AboutCommand}" />
-          </MenuItem>
-        </Menu>
-        <local:MainView />
-      </DockPanel>
-    </Panel>
-    <Border IsVisible="{Binding ExtendClientAreaEnabled}" BorderThickness="1 1 1 0" CornerRadius="4 4 0 0" BorderBrush="#55000000" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250 8 0 0">
-      <Border.Background>
-        <SolidColorBrush Color="White" Opacity="0.7" />
-      </Border.Background>
-      <TextBlock Margin="5 5 5 0" Text="Content In Title Bar" />
-    </Border>
-  </Panel>
+  <RelativePanel
+    VerticalAlignment="Stretch"
+    HorizontalAlignment="Stretch">
+    <Rectangle
+        Name="rectangle1"
+        RelativePanel.AlignLeftWithPanel="True"
+        Width="360"
+        Height="50"
+        Fill="Red"/>
+    <Rectangle
+        Name="rectangle2"
+        RelativePanel.Below="rectangle1"
+        Width="360"
+        Height="50"
+        Fill="Green" />
+  </RelativePanel>
 </Window>
