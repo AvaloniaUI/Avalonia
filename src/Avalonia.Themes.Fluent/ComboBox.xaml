@@ -50,6 +50,7 @@
                             Grid.Row="0"
                             Grid.Column="0"
                             Grid.ColumnSpan="2"
+                            IsVisible="False"
                             TextBlock.FontWeight="{DynamicResource ComboBoxHeaderThemeFontWeight}"
                             Margin="{DynamicResource ComboBoxTopHeaderMargin}"
                             VerticalAlignment="Top" />
