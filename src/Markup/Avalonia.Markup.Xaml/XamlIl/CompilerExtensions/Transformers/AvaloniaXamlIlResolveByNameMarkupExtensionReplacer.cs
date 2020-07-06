@@ -17,7 +17,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         if (propertyValueNode.Values.Count == 1 &&
                             propertyValueNode.Values.First() is XamlAstTextNode)
                         {
-                            //propertyValueNode.Values[0] = new XamlMarkupExtensionNode();
+                            propertyValueNode.Values[0] =
+                                new XamlAstObjectNode(
+                                    propertyValueNode.Values[0],
+                                    new XamlAstXmlTypeReference(propertyValueNode.Values[0], "https://github.com/avaloniaui", "ResolveByNameExtension"));
                         }
                         break;
                     }

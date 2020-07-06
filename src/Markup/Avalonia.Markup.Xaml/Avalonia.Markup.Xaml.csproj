@@ -59,6 +59,7 @@
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlCompiledBindingsMetadataRemover.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlMetadataRemover.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlPropertyPathTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlResolveByNameMarkupExtensionReplacer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlRootObjectScopeTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlTransformInstanceAttachedProperties.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlTransformSyntheticCompiledBindingMembers.cs" />
