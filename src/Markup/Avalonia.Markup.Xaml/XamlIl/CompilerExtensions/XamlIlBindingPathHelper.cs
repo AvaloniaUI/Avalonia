@@ -121,7 +121,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         }
                         else
                         {
-                            var clrProperty = targetType.GetAllProperties().FirstOrDefault(p => p.Name == propName.PropertyName);
+                            var clrProperty = GetAllDefinedProperties(targetType).FirstOrDefault(p => p.Name == propName.PropertyName);
 
                             if (clrProperty is null)
                             {
@@ -139,15 +139,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                             }
 
                             IXamlProperty property = null;
-                            for (var currentType = targetType; currentType != null; currentType = currentType.BaseType)
+                            foreach (var currentType in TraverseTypeHierarchy(targetType))
                             {
                                 var defaultMemberAttribute = currentType.CustomAttributes.FirstOrDefault(x => x.Type.Namespace == "System.Reflection" && x.Type.Name == "DefaultMemberAttribute");
                                 if (defaultMemberAttribute != null)
                                 {
-                                    property = targetType.GetAllProperties().FirstOrDefault(x => x.Name == (string)defaultMemberAttribute.Parameters[0]);
+                                    property = currentType.GetAllProperties().FirstOrDefault(x => x.Name == (string)defaultMemberAttribute.Parameters[0]);
                                     break;
                                 }
-                            };
+                            }
                             if (property is null)
                             {
                                 throw new XamlX.XamlParseException($"The type '${targetType}' does not have an indexer.", lineInfo);
@@ -251,6 +251,39 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 return TypeReferenceResolver.ResolveType(context, $"{ns}:{name}", false,
                     lineInfo, true).GetClrType();
+            }
+
+            static IEnumerable<IXamlProperty> GetAllDefinedProperties(IXamlType type)
+            {
+                foreach (var t in TraverseTypeHierarchy(type))
+                {
+                    foreach (var p in t.Properties)
+                    {
+                        yield return p;
+                    }
+                }
+            }
+
+            static IEnumerable<IXamlType> TraverseTypeHierarchy(IXamlType type)
+            {
+                if (type.IsInterface)
+                {
+                    yield return type;
+                    foreach (var iface in type.Interfaces)
+                    {
+                        foreach (var h in TraverseTypeHierarchy(iface))
+                        {
+                            yield return h;
+                        }
+                    }
+                }
+                else
+                {
+                    for (var currentType = type; currentType != null; currentType = currentType.BaseType)
+                    {
+                        yield return currentType;
+                    }
+                }
             }
         }
 
