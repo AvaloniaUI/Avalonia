@@ -10,6 +10,12 @@ namespace Avalonia.Controls
     /// </summary>
     public class ToggleSwitch : ToggleButton
     {
+        Panel _knobsPanel;
+        Panel _switchKnob;
+        bool _knobsPanelPressed = false;
+        Point _switchStartPoint = new Point();
+        double _initLeft = -1;
+
         static ToggleSwitch()
         {
             OffContentProperty.Changed.AddClassHandler<ToggleSwitch>((x, e) => x.OffContentChanged(e));
@@ -17,13 +23,17 @@ namespace Avalonia.Controls
             IsCheckedProperty.Changed.AddClassHandler<ToggleSwitch>((x, e) =>
             {
                 if ((e.NewValue != null) && (e.NewValue is bool val))
+                {
                     x.UpdateKnobPos(val);
+                }
             });
 
             BoundsProperty.Changed.AddClassHandler<ToggleSwitch>((x, e) =>
             {
                 if (x.IsChecked != null)
+                {
                     x.UpdateKnobPos(x.IsChecked.Value);
+                }
             });
         }
 
@@ -144,9 +154,6 @@ namespace Avalonia.Controls
         }
 
 
-        Panel _knobsPanel;
-        Panel _switchKnob;
-        bool _knobsPanelPressed = false;
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
@@ -159,11 +166,11 @@ namespace Avalonia.Controls
             _knobsPanel.PointerMoved += KnobsPanel_PointerMoved;
 
             if (IsChecked.HasValue)
+            {
                 UpdateKnobPos(IsChecked.Value);
+            }
         }
-
-        Point _switchStartPoint = new Point();
-        double _initLeft = -1;
+        
         private void KnobsPanel_PointerPressed(object sender, Input.PointerPressedEventArgs e)
         {
             _switchStartPoint = e.GetPosition(_switchKnob);
@@ -178,16 +185,22 @@ namespace Avalonia.Controls
             {
                 bool shouldBecomeChecked = Canvas.GetLeft(_knobsPanel) >= (_switchKnob.Bounds.Width / 2);
                 _knobsPanel.ClearValue(Canvas.LeftProperty);
-                
+
                 PseudoClasses.Set(":dragging", false);
 
                 if (shouldBecomeChecked == IsChecked)
+                {
                     UpdateKnobPos(shouldBecomeChecked);
+                }
                 else
+                {
                     IsChecked = shouldBecomeChecked;
+                }
             }
             else
+            {
                 base.Toggle();
+            }
 
             _isDragging = false;
 
@@ -208,14 +221,18 @@ namespace Avalonia.Controls
                 }
 
                 if (_isDragging)
+                {
                     Canvas.SetLeft(_knobsPanel, System.Math.Min(_switchKnob.Bounds.Width, System.Math.Max(0, (_initLeft + difference.X))));
+                }
             }
         }
 
         protected override void Toggle()
         {
             if ((_switchKnob != null) && (!_switchKnob.IsPointerOver))
+            {
                 base.Toggle();
+            }
         }
 
         protected void UpdateKnobPos(bool value)
@@ -223,9 +240,13 @@ namespace Avalonia.Controls
             if ((_switchKnob != null) && (_knobsPanel != null))
             {
                 if (value)
+                {
                     Canvas.SetLeft(_knobsPanel, _switchKnob.Bounds.Width);
+                }
                 else
+                {
                     Canvas.SetLeft(_knobsPanel, 0);
+                }
             }
         }
     }
