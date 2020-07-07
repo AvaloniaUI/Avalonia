@@ -11,5 +11,7 @@
       <Button Name="DecoratedWindowDialog">Decorated window (dialog)</Button>
       <Button Name="Dialog">Dialog</Button>
       <Button Name="DialogNoTaskbar">Dialog (No taskbar icon)</Button>
+      <Button Name="OwnedWindow">Owned window</Button>
+      <Button Name="OwnedWindowNoTaskbar">Owned window (No taskbar icon)</Button>
   </StackPanel>
 </UserControl>

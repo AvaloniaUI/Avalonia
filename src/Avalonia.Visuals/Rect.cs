@@ -211,6 +211,21 @@ namespace Avalonia
                 rect.Width * scale.X,
                 rect.Height * scale.Y);
         }
+        
+        /// <summary>
+        /// Multiplies a rectangle by a scale.
+        /// </summary>
+        /// <param name="rect">The rectangle.</param>
+        /// <param name="scale">The scale.</param>
+        /// <returns>The scaled rectangle.</returns>
+        public static Rect operator *(Rect rect, double scale)
+        {
+            return new Rect(
+                rect.X * scale,
+                rect.Y * scale,
+                rect.Width * scale,
+                rect.Height * scale);
+        }
 
         /// <summary>
         /// Divides a rectangle by a vector.
@@ -421,11 +436,50 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the union of two rectangles.
-        /// </summary>
-        /// <param name="rect">The other rectangle.</param>
-        /// <returns>The union.</returns>
-        public Rect Union(Rect rect)
+		/// Normalizes the rectangle so both the <see cref="Width"/> and <see 
+        /// cref="Height"/> are positive, without changing the location of the rectangle
+		/// </summary>
+        /// <returns>Normalized Rect</returns>
+		/// <remarks>
+		/// Empty rect will be return when Rect contains invalid values. Like NaN.
+		/// </remarks>
+		public Rect Normalize()
+        {
+            Rect rect = this;            
+
+            if(double.IsNaN(rect.Right) || double.IsNaN(rect.Bottom) || 
+                double.IsNaN(rect.X) || double.IsNaN(rect.Y) || 
+                double.IsNaN(Height) || double.IsNaN(Width))
+            {
+                return Rect.Empty;
+            }
+
+            if (rect.Width < 0)
+            {
+                var x = X + Width;
+                var width = X - x;
+
+                rect = rect.WithX(x).WithWidth(width);
+            }
+
+            if (rect.Height < 0)
+            {
+                var y = Y + Height;
+                var height = Y - y;
+
+                rect = rect.WithY(y).WithHeight(height);
+            }
+
+            return rect;
+        }
+
+
+            /// <summary>
+            /// Gets the union of two rectangles.
+            /// </summary>
+            /// <param name="rect">The other rectangle.</param>
+            /// <returns>The union.</returns>
+            public Rect Union(Rect rect)
         {
             if (IsEmpty)
             {

@@ -25,7 +25,7 @@ namespace Avalonia.Rendering.SceneGraph
             Point p1,
             Point p2,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(new Rect(p1, p2), transform, pen)
+            : base(LineBoundsHelper.CalculateBounds(p1, p2, pen), transform)
         {
             Transform = transform;
             Pen = pen?.ToImmutable();

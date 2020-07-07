@@ -95,6 +95,7 @@ namespace Avalonia.Controls.Presenters
         static ContentPresenter()
         {
             AffectsRender<ContentPresenter>(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty, CornerRadiusProperty);
+            AffectsArrange<ContentPresenter>(HorizontalContentAlignmentProperty, VerticalContentAlignmentProperty);
             AffectsMeasure<ContentPresenter>(BorderThicknessProperty, PaddingProperty);
             ContentProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
             ContentTemplateProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
@@ -365,12 +366,8 @@ namespace Avalonia.Controls.Presenters
 
             if (useLayoutRounding)
             {
-                sizeForChild = new Size(
-                    Math.Ceiling(sizeForChild.Width * scale) / scale,
-                    Math.Ceiling(sizeForChild.Height * scale) / scale);
-                availableSize = new Size(
-                    Math.Ceiling(availableSize.Width * scale) / scale,
-                    Math.Ceiling(availableSize.Height * scale) / scale);
+                sizeForChild = LayoutHelper.RoundLayoutSize(sizeForChild, scale, scale);
+                availableSize = LayoutHelper.RoundLayoutSize(availableSize, scale, scale);
             }
 
             switch (horizontalContentAlignment)
@@ -395,8 +392,8 @@ namespace Avalonia.Controls.Presenters
 
             if (useLayoutRounding)
             {
-                originX = Math.Floor(originX * scale) / scale;
-                originY = Math.Floor(originY * scale) / scale;
+                originX = LayoutHelper.RoundLayoutValue(originX, scale);
+                originY = LayoutHelper.RoundLayoutValue(originY, scale);
             }
 
             var boundsForChild =

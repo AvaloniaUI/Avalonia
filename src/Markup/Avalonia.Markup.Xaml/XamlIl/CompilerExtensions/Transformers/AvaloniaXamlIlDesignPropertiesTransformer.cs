@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using XamlIl;
-using XamlIl.Ast;
-using XamlIl.Transform;
+using XamlX;
+using XamlX.Ast;
+using XamlX.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AvaloniaXamlIlDesignPropertiesTransformer : IXamlIlAstTransformer
+    class AvaloniaXamlIlDesignPropertiesTransformer : IXamlAstTransformer
     {
         public bool IsDesignMode { get; set; }
 
@@ -17,14 +17,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         };
 
         private const string AvaloniaNs = "https://github.com/avaloniaui";
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (node is XamlIlAstObjectNode on)
+            if (node is XamlAstObjectNode on)
             {
                 for (var c=0; c<on.Children.Count;)
                 {
                     var ch = on.Children[c];
-                    if (ch is XamlIlAstXmlDirective directive
+                    if (ch is XamlAstXmlDirective directive
                         && directive.Namespace == XamlNamespaces.Blend2008
                         && DesignDirectives.TryGetValue(directive.Name, out var mapTo))
                     {
@@ -34,9 +34,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         else
                         {
                             // Map to an actual property in `Design` class
-                            on.Children[c] = new XamlIlAstXamlPropertyValueNode(ch,
-                                new XamlIlAstNamePropertyReference(ch,
-                                    new XamlIlAstXmlTypeReference(ch, AvaloniaNs, "Design"),
+                            on.Children[c] = new XamlAstXamlPropertyValueNode(ch,
+                                new XamlAstNamePropertyReference(ch,
+                                    new XamlAstXmlTypeReference(ch, AvaloniaNs, "Design"),
                                     mapTo, on.Type), directive.Values);
                             c++;
                         }
@@ -44,9 +44,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     // Remove all "Design" attached properties in non-design mode
                     else if (
                         !IsDesignMode
-                        && ch is XamlIlAstXamlPropertyValueNode pv
-                        && pv.Property is XamlIlAstNamePropertyReference pref
-                        && pref.DeclaringType is XamlIlAstXmlTypeReference dref
+                        && ch is XamlAstXamlPropertyValueNode pv
+                        && pv.Property is XamlAstNamePropertyReference pref
+                        && pref.DeclaringType is XamlAstXmlTypeReference dref
                         && dref.XmlNamespace == AvaloniaNs && dref.Name == "Design"
                     )
                     {

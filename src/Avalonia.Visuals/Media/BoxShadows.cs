@@ -21,7 +21,7 @@ namespace Avalonia.Media
         {
             _first = shadow;
             _list = null;
-            Count = 1;
+            Count = _first.IsEmpty ? 0 : 1;
         }
 
         public BoxShadows(BoxShadow first, BoxShadow[] rest)
@@ -105,8 +105,6 @@ namespace Avalonia.Media
                 return false;
             }
         }
-
-        public static implicit operator BoxShadows(BoxShadow shadow) => new BoxShadows(shadow);
         
         public bool Equals(BoxShadows other)
         {

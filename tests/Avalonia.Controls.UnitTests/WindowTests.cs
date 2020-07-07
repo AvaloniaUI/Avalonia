@@ -297,12 +297,12 @@ namespace Avalonia.Controls.UnitTests
         {
             var parentWindowImpl = MockWindowingPlatform.CreateWindowMock();
             parentWindowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
-            parentWindowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1920, 1080));
+            parentWindowImpl.Setup(x => x.MaxAutoSizeHint).Returns(new Size(1920, 1080));
             parentWindowImpl.Setup(x => x.Scaling).Returns(1);
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(320, 200));
-            windowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1920, 1080));
+            windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(new Size(1920, 1080));
             windowImpl.Setup(x => x.Scaling).Returns(1);
 
             var parentWindowServices = TestServices.StyledWindow.With(
@@ -322,10 +322,9 @@ namespace Avalonia.Controls.UnitTests
                 {
                     var window = new Window();
                     window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                    window.Position = new PixelPoint(60, 40);
-                    window.Owner = parentWindow;
+                    window.Position = new PixelPoint(60, 40);                    
 
-                    window.Show();
+                    window.ShowDialog(parentWindow);
 
                     var expectedPosition = new PixelPoint(
                         (int)(parentWindow.Position.X + parentWindow.ClientSize.Width / 2 - window.ClientSize.Width / 2),
@@ -382,12 +381,15 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
-            public void Child_Should_Be_Measured_With_Infinity_If_SizeToContent_Is_WidthAndHeight()
+            public void Child_Should_Be_Measured_With_MaxAutoSizeHint_If_SizeToContent_Is_WidthAndHeight()
             {
                 using (UnitTestApplication.Start(TestServices.StyledWindow))
                 {
+                    var windowImpl = MockWindowingPlatform.CreateWindowMock();
+                    windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(new Size(1200, 1000));
+
                     var child = new ChildControl();
-                    var target = new Window
+                    var target = new Window(windowImpl.Object)
                     {
                         Width = 100,
                         Height = 50,
@@ -395,10 +397,10 @@ namespace Avalonia.Controls.UnitTests
                         Content = child
                     };
 
-                    Show(target);
+                    target.Show();
 
                     Assert.Equal(1, child.MeasureSizes.Count);
-                    Assert.Equal(Size.Infinity, child.MeasureSizes[0]);
+                    Assert.Equal(new Size(1200, 1000), child.MeasureSizes[0]);
                 }
             }
 

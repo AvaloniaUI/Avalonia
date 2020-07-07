@@ -1,5 +1,7 @@
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Layout
 {
     /// <summary>
@@ -109,5 +111,12 @@ namespace Avalonia.Layout
         /// </summary>
         /// <param name="control">The child control.</param>
         void ChildDesiredSizeChanged(ILayoutable control);
+
+        /// <summary>
+        /// Used by the <see cref="LayoutManager"/> to notify the control that its effective
+        /// viewport is changed.
+        /// </summary>
+        /// <param name="e">The viewport information.</param>
+        void EffectiveViewportChanged(EffectiveViewportChangedEventArgs e);
     }
 }

@@ -1,4 +1,5 @@
 using Avalonia.Controls.Mixins;
+using Avalonia.Input;
 
 namespace Avalonia.Controls
 {
@@ -19,6 +20,7 @@ namespace Avalonia.Controls
         static ListBoxItem()
         {
             SelectableMixin.Attach<ListBoxItem>(IsSelectedProperty);
+            PressedMixin.Attach<ListBoxItem>();
             FocusableProperty.OverrideDefaultValue<ListBoxItem>(true);
         }
 

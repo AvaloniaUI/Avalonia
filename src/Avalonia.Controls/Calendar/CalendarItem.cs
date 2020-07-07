@@ -909,7 +909,7 @@ namespace Avalonia.Controls.Primitives
                         case CalendarSelectionMode.SingleDate:
                             {
                                 DateTime selectedDate = (DateTime)b.DataContext;
-                                Owner.DatePickerDisplayDateFlag = true;
+                                Owner.CalendarDatePickerDisplayDateFlag = true;
                                 if (Owner.SelectedDates.Count == 0)
                                 {
                                     Owner.SelectedDates.Add(selectedDate);
@@ -981,7 +981,7 @@ namespace Avalonia.Controls.Primitives
                                 }
                             case CalendarSelectionMode.SingleDate:
                                 {
-                                    Owner.DatePickerDisplayDateFlag = true;
+                                    Owner.CalendarDatePickerDisplayDateFlag = true;
                                     if (Owner.SelectedDates.Count == 0)
                                     {
                                         Owner.SelectedDates.Add(selectedDate);

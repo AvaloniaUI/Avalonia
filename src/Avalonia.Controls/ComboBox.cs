@@ -7,6 +7,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -50,6 +51,30 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
             ItemsPresenter.VirtualizationModeProperty.AddOwner<ComboBox>();
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderText"/> property.
+        /// </summary>
+        public static readonly StyledProperty<string> PlaceholderTextProperty =
+            AvaloniaProperty.Register<ComboBox, string>(nameof(PlaceholderText));
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderForeground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush> PlaceholderForegroundProperty =
+            AvaloniaProperty.Register<ComboBox, IBrush>(nameof(PlaceholderForeground));
+
+        /// <summary>
+        /// Defines the <see cref="HorizontalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
+            ContentControl.HorizontalContentAlignmentProperty.AddOwner<ComboBox>();
+
+        /// <summary>
+        /// Defines the <see cref="VerticalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
+            ContentControl.VerticalContentAlignmentProperty.AddOwner<ComboBox>();
 
         private bool _isDropDownOpen;
         private Popup _popup;
@@ -95,12 +120,48 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the PlaceHolder text.
+        /// </summary>
+        public string PlaceholderText
+        {
+            get { return GetValue(PlaceholderTextProperty); }
+            set { SetValue(PlaceholderTextProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the Brush that renders the placeholder text.
+        /// </summary>
+        public IBrush PlaceholderForeground
+        {
+            get { return GetValue(PlaceholderForegroundProperty); }
+            set { SetValue(PlaceholderForegroundProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the virtualization mode for the items.
         /// </summary>
         public ItemVirtualizationMode VirtualizationMode
         {
             get { return GetValue(VirtualizationModeProperty); }
             set { SetValue(VirtualizationModeProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the horizontal alignment of the content within the control.
+        /// </summary>
+        public HorizontalAlignment HorizontalContentAlignment
+        {
+            get { return GetValue(HorizontalContentAlignmentProperty); }
+            set { SetValue(HorizontalContentAlignmentProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the vertical alignment of the content within the control.
+        /// </summary>
+        public VerticalAlignment VerticalContentAlignment
+        {
+            get { return GetValue(VerticalContentAlignmentProperty); }
+            set { SetValue(VerticalContentAlignmentProperty, value); }
         }
 
         /// <inheritdoc/>

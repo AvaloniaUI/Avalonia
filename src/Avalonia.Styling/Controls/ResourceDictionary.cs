@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Metadata;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// An indexed dictionary of resources.
     /// </summary>
-    public class ResourceDictionary : AvaloniaDictionary<object, object>,
-        IResourceDictionary,
-        IResourceNode,
-        ISetResourceParent
+    public class ResourceDictionary : AvaloniaDictionary<object, object?>, IResourceDictionary
     {
-        private IResourceNode _parent;
-        private AvaloniaList<IResourceProvider> _mergedDictionaries;
+        private IResourceHost? _owner;
+        private AvaloniaList<IResourceProvider>? _mergedDictionaries;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResourceDictionary"/> class.
@@ -25,10 +24,28 @@ namespace Avalonia.Controls
             CollectionChanged += OnCollectionChanged;
         }
 
-        /// <inheritdoc/>
-        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ResourceDictionary"/> class.
+        /// </summary>
+        public ResourceDictionary(IResourceHost owner)
+            : this()
+        {
+            Owner = owner;
+        }
 
-        /// <inheritdoc/>
+        public IResourceHost? Owner
+        {
+            get => _owner;
+            private set
+            {
+                if (_owner != value)
+                {
+                    _owner = value;
+                    OwnerChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
         public IList<IResourceProvider> MergedDictionaries
         {
             get
@@ -40,71 +57,51 @@ namespace Avalonia.Controls
                     _mergedDictionaries.ForEachItem(
                         x =>
                         {
-                            if (x is ISetResourceParent setParent)
+                            if (Owner is object)
                             {
-                                setParent.SetParent(this);
-                                setParent.ParentResourcesChanged(new ResourcesChangedEventArgs());
+                                x.AddOwner(Owner);
                             }
-
-                            if (x.HasResources)
-                            {
-                                OnResourcesChanged();
-                            }
-
-                            x.ResourcesChanged += MergedDictionaryResourcesChanged;
                         },
                         x =>
                         {
-                            if (x is ISetResourceParent setParent)
+                            if (Owner is object)
                             {
-                                setParent.SetParent(null);
-                                setParent.ParentResourcesChanged(new ResourcesChangedEventArgs());
+                                x.RemoveOwner(Owner);
                             }
-
-                            if (x.HasResources)
-                            {
-                                OnResourcesChanged();
-                            }
-
-                            (x as ISetResourceParent)?.SetParent(null);
-                            x.ResourcesChanged -= MergedDictionaryResourcesChanged;
-                        },
-                        () => { });
+                        }, null);
                 }
 
                 return _mergedDictionaries;
             }
         }
 
-        /// <inheritdoc/>
-        bool IResourceProvider.HasResources
+        bool IResourceNode.HasResources
         {
-            get => Count > 0 || (_mergedDictionaries?.Any(x => x.HasResources) ?? false);
-        }
-
-        /// <inheritdoc/>
-        IResourceNode IResourceNode.ResourceParent => _parent;
-
-        /// <inheritdoc/>
-        void ISetResourceParent.ParentResourcesChanged(ResourcesChangedEventArgs e)
-        {
-            NotifyMergedDictionariesResourcesChanged(e);
-            ResourcesChanged?.Invoke(this, e);
-        }
-
-        /// <inheritdoc/>
-        void ISetResourceParent.SetParent(IResourceNode parent)
-        {
-            if (_parent != null && parent != null)
+            get
             {
-                throw new InvalidOperationException("The ResourceDictionary already has a parent.");
+                if (Count > 0)
+                {
+                    return true;
+                }
+
+                if (_mergedDictionaries?.Count > 0)
+                {
+                    foreach (var i in _mergedDictionaries)
+                    {
+                        if (i.HasResources)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
             }
-            
-            _parent = parent;
         }
 
-        /// <inheritdoc/>
-        public bool TryGetResource(object key, out object value)
+        public event EventHandler? OwnerChanged;
+
+        public bool TryGetResource(object key, out object? value)
         {
             if (TryGetValue(key, out value))
             {
@@ -125,32 +122,63 @@ namespace Avalonia.Controls
             return false;
         }
 
-        private void OnResourcesChanged()
+        void IResourceProvider.AddOwner(IResourceHost owner)
         {
-            ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+            owner = owner ?? throw new ArgumentNullException(nameof(owner));
+
+            if (Owner != null)
+            {
+                throw new InvalidOperationException("The ResourceDictionary already has a parent.");
+            }
+            
+            Owner = owner;
+
+            var hasResources = Count > 0;
+            
+            if (_mergedDictionaries is object)
+            {
+                foreach (var i in _mergedDictionaries)
+                {
+                    i.AddOwner(owner);
+                    hasResources |= i.HasResources;
+                }
+            }
+
+            if (hasResources)
+            {
+                owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+            }
         }
 
-        private void NotifyMergedDictionariesResourcesChanged(ResourcesChangedEventArgs e)
+        void IResourceProvider.RemoveOwner(IResourceHost owner)
         {
-            if (_mergedDictionaries != null)
+            owner = owner ?? throw new ArgumentNullException(nameof(owner));
+
+            if (Owner == owner)
             {
-                for (var i = _mergedDictionaries.Count - 1; i >= 0; --i)
+                Owner = null;
+
+                var hasResources = Count > 0;
+
+                if (_mergedDictionaries is object)
                 {
-                    if (_mergedDictionaries[i] is ISetResourceParent merged)
+                    foreach (var i in _mergedDictionaries)
                     {
-                        merged.ParentResourcesChanged(e);
+                        i.RemoveOwner(owner);
+                        hasResources |= i.HasResources;
                     }
+                }
+
+                if (hasResources)
+                {
+                    owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
                 }
             }
         }
 
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            var ev = new ResourcesChangedEventArgs();
-            NotifyMergedDictionariesResourcesChanged(ev);
-            OnResourcesChanged();
+            Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
         }
-
-        private void MergedDictionaryResourcesChanged(object sender, ResourcesChangedEventArgs e) => OnResourcesChanged();
     }
 }

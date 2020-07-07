@@ -27,7 +27,7 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets the parent style host element.
         /// </summary>
-        IStyleHost StylingParent { get; }
+        IStyleHost? StylingParent { get; }
 
         /// <summary>
         /// Called when styles are added to <see cref="Styles"/> or a nested styles collection.

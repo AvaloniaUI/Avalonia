@@ -252,7 +252,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (template != null)
                 {
-                    Logger.TryGet(LogEventLevel.Verbose)?.Log(LogArea.Control, this, "Creating control template");
+                    Logger.TryGet(LogEventLevel.Verbose, LogArea.Control)?.Log(this, "Creating control template");
 
                     var (child, nameScope) = template.Build(this);
                     ApplyTemplatedParent(child);
@@ -285,6 +285,21 @@ namespace Avalonia.Controls.Primitives
             }
 
             return this;
+        }
+
+        protected sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            var count = VisualChildren.Count;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (VisualChildren[i] is ILogical logical)
+                {
+                    logical.NotifyResourcesChanged(e);
+                }
+            }
+
+            base.NotifyChildResourcesChanged(e);
         }
 
         /// <inheritdoc/>

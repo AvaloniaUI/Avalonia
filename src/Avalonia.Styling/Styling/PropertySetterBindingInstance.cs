@@ -24,6 +24,7 @@ namespace Avalonia.Styling
         private BindingValue<T> _value;
         private IDisposable? _subscription;
         private IDisposable? _subscriptionTwoWay;
+        private IDisposable? _innerSubscription;
         private bool _isActive;
 
         public PropertySetterBindingInstance(
@@ -121,6 +122,9 @@ namespace Avalonia.Styling
                 sub.Dispose();
             }
 
+            _innerSubscription?.Dispose();
+            _innerSubscription = null;
+
             base.Dispose();
         }
 
@@ -144,13 +148,13 @@ namespace Avalonia.Styling
 
         protected override void Subscribed()
         {
-            _subscription = _binding.Observable.Subscribe(_inner);
+            _innerSubscription = _binding.Observable.Subscribe(_inner);
         }
 
         protected override void Unsubscribed()
         {
-            _subscription?.Dispose();
-            _subscription = null;
+            _innerSubscription?.Dispose();
+            _innerSubscription = null;
         }
 
         private void PublishNext()
@@ -160,7 +164,7 @@ namespace Avalonia.Styling
 
         private void ConvertAndPublishNext(object? value)
         {
-            _value = value is T v ? v : BindingValue<object>.FromUntyped(value).Convert<T>();
+            _value = value is T v ? v : BindingValue<T>.FromUntyped(value);
 
             if (_isActive)
             {

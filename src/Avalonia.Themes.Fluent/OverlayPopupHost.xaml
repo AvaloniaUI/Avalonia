@@ -1,0 +1,17 @@
+<Style xmlns="https://github.com/avaloniaui" Selector="OverlayPopupHost">
+  <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Panel>
+        <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
+        <VisualLayerManager IsPopup="True">
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            Padding="{TemplateBinding Padding}"/>
+        </VisualLayerManager>
+      </Panel>
+    </ControlTemplate>
+  </Setter>
+</Style>

@@ -11,9 +11,9 @@ namespace Avalonia.Styling
     /// <summary>
     /// Defines a style.
     /// </summary>
-    public class Style : AvaloniaObject, IStyle, ISetResourceParent
+    public class Style : AvaloniaObject, IStyle, IResourceProvider
     {
-        private IResourceNode? _parent;
+        private IResourceHost? _owner;
         private IResourceDictionary? _resources;
         private List<ISetter>? _setters;
         private List<IAnimation>? _animations;
@@ -34,8 +34,18 @@ namespace Avalonia.Styling
             Selector = selector(null);
         }
 
-        /// <inheritdoc/>
-        public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
+        public IResourceHost? Owner
+        {
+            get => _owner;
+            private set
+            {
+                if (_owner != value)
+                {
+                    _owner = value;
+                    OwnerChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets a dictionary of style resources.
@@ -47,20 +57,18 @@ namespace Avalonia.Styling
             {
                 value = value ?? throw new ArgumentNullException(nameof(value));
 
-                var hadResources = false;
-
-                if (_resources != null)
-                {
-                    hadResources = _resources.HasResources;
-                    _resources.ResourcesChanged -= ResourceDictionaryChanged;
-                }
+                var hadResources = _resources?.HasResources ?? false;
 
                 _resources = value;
-                _resources.ResourcesChanged += ResourceDictionaryChanged;
 
-                if (hadResources || _resources.HasResources)
+                if (Owner is object)
                 {
-                    ((ISetResourceParent)this).ParentResourcesChanged(new ResourcesChangedEventArgs());
+                    _resources.AddOwner(Owner);
+
+                    if (hadResources || _resources.HasResources)
+                    {
+                        Owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                    }
                 }
             }
         }
@@ -81,15 +89,11 @@ namespace Avalonia.Styling
         /// </summary>
         public IList<IAnimation> Animations => _animations ??= new List<IAnimation>();
 
-        /// <inheritdoc/>
-        IResourceNode? IResourceNode.ResourceParent => _parent;
-
-        /// <inheritdoc/>
-        bool IResourceProvider.HasResources => _resources?.Count > 0;
-
+        bool IResourceNode.HasResources => _resources?.Count > 0;
         IReadOnlyList<IStyle> IStyle.Children => Array.Empty<IStyle>();
 
-        /// <inheritdoc/>
+        public event EventHandler? OwnerChanged;
+
         public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
@@ -107,7 +111,6 @@ namespace Avalonia.Styling
             return match.Result;
         }
 
-        /// <inheritdoc/>
         public bool TryGetResource(object key, out object? result)
         {
             result = null;
@@ -130,26 +133,28 @@ namespace Avalonia.Styling
             }
         }
 
-        /// <inheritdoc/>
-        void ISetResourceParent.ParentResourcesChanged(ResourcesChangedEventArgs e)
+        void IResourceProvider.AddOwner(IResourceHost owner)
         {
-            ResourcesChanged?.Invoke(this, e);
-        }
+            owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
-        /// <inheritdoc/>
-        void ISetResourceParent.SetParent(IResourceNode parent)
-        {
-            if (_parent != null && parent != null)
+            if (Owner != null)
             {
                 throw new InvalidOperationException("The Style already has a parent.");
             }
 
-            _parent = parent;
+            Owner = owner;
+            _resources?.AddOwner(owner);
         }
 
-        private void ResourceDictionaryChanged(object sender, ResourcesChangedEventArgs e)
+        void IResourceProvider.RemoveOwner(IResourceHost owner)
         {
-            ResourcesChanged?.Invoke(this, e);
+            owner = owner ?? throw new ArgumentNullException(nameof(owner));
+
+            if (Owner == owner)
+            {
+                Owner = null;
+                _resources?.RemoveOwner(owner);
+            }
         }
     }
 }

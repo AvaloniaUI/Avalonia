@@ -102,7 +102,7 @@ namespace Avalonia.Input
             switch (key)
             {
                 case Key.Tab:
-                    return (modifiers & KeyModifiers.Shift) != 0 ?
+                    return (modifiers & KeyModifiers.Shift) == 0 ?
                         NavigationDirection.Next : NavigationDirection.Previous;
                 case Key.Up:
                     return NavigationDirection.Up;

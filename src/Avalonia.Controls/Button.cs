@@ -313,17 +313,13 @@ namespace Avalonia.Controls
             IsPressed = false;
         }
 
-        protected override void OnPropertyChanged<T>(
-            AvaloniaProperty<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == IsPressedProperty)
+            if (change.Property == IsPressedProperty)
             {
-                UpdatePseudoClasses(newValue.GetValueOrDefault<bool>());
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>());
             }
         }
 

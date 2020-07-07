@@ -1,7 +1,7 @@
 ﻿using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
-using Avalonia.Utility;
+using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Media
@@ -128,10 +128,8 @@ namespace Avalonia.Visuals.UnitTests.Media
 
             var characters = new ReadOnlySlice<char>(new char[count], start, count);
 
-            var bounds = new Rect(0, 0, count * 10, 10);
-
             return new GlyphRun(new GlyphTypeface(new MockGlyphTypeface()), 10, glyphIndices, glyphAdvances,
-                glyphClusters: glyphClusters, characters: characters, biDiLevel: bidiLevel, bounds: bounds);
+                glyphClusters: glyphClusters, characters: characters, biDiLevel: bidiLevel);
         }
     }
 }

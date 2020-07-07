@@ -6,7 +6,9 @@ namespace Avalonia.Controls.Primitives
     public class VisualLayerManager : Decorator
     {
         private const int AdornerZIndex = int.MaxValue - 100;
-        private const int OverlayZIndex = int.MaxValue - 99;
+        private const int ChromeZIndex = int.MaxValue - 99;
+        private const int OverlayZIndex = int.MaxValue - 98;
+
         private ILogicalRoot _logicalRoot;
         private readonly List<Control> _layers = new List<Control>();
         
@@ -20,6 +22,17 @@ namespace Avalonia.Controls.Primitives
                 var rv = FindLayer<AdornerLayer>();
                 if (rv == null)
                     AddLayer(rv = new AdornerLayer(), AdornerZIndex);
+                return rv;
+            }
+        }
+
+        public ChromeOverlayLayer ChromeOverlayLayer
+        {
+            get
+            {
+                var rv = FindLayer<ChromeOverlayLayer>();
+                if (rv == null)
+                    AddLayer(rv = new ChromeOverlayLayer(), ChromeZIndex);
                 return rv;
             }
         }
@@ -55,8 +68,15 @@ namespace Avalonia.Controls.Primitives
                 ((ILogical)layer).NotifyAttachedToLogicalTree(new LogicalTreeAttachmentEventArgs(_logicalRoot, layer, this));
             InvalidateArrange();
         }
-        
-        
+
+        protected override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            foreach (var l in _layers)
+                ((ILogical)l).NotifyResourcesChanged(e);
+
+            base.NotifyChildResourcesChanged(e);
+        }
+
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
@@ -73,7 +93,6 @@ namespace Avalonia.Controls.Primitives
             foreach (var l in _layers)
                 ((ILogical)l).NotifyDetachedFromLogicalTree(e);
         }
-
 
         protected override Size MeasureOverride(Size availableSize)
         {

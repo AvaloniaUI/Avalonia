@@ -234,18 +234,10 @@ namespace Avalonia.DesignerSupport.Remote
                 }
                 catch (Exception e)
                 {
-                    var xmlException = e as XmlException;
-                    
                     s_transport.Send(new UpdateXamlResultMessage
                     {
                         Error = e.ToString(),
-                        Exception = new ExceptionDetails
-                        {
-                            ExceptionType = e.GetType().FullName,
-                            Message = e.Message.ToString(),
-                            LineNumber = xmlException?.LineNumber,
-                            LinePosition = xmlException?.LinePosition,
-                        }
+                        Exception = new ExceptionDetails(e),
                     });
                 }
             }

@@ -767,6 +767,11 @@ namespace Avalonia.Controls
             }
         }
 
+        internal void InvalidateDesiredHeight()
+        {
+            _cellsElement?.InvalidateDesiredHeight();
+        }
+
         internal void ResetGridLine()
         {
             _bottomGridLine = null;
@@ -879,7 +884,7 @@ namespace Avalonia.Controls
                 && (double.IsNaN(_detailsContent.Height))
                 && (AreDetailsVisible)
                 && (!double.IsNaN(_detailsDesiredHeight))
-                && !DoubleUtil.AreClose(_detailsContent.Bounds.Inflate(_detailsContent.Margin).Height, _detailsDesiredHeight)
+                && !MathUtilities.AreClose(_detailsContent.Bounds.Inflate(_detailsContent.Margin).Height, _detailsDesiredHeight)
                 && Slot != -1)
             {
                 _detailsDesiredHeight = _detailsContent.Bounds.Inflate(_detailsContent.Margin).Height;

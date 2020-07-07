@@ -6,6 +6,7 @@ using Avalonia.Metadata;
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Animation")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Media")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Media.Imaging")]
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Media.Transformation")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia")]
 
 [assembly: InternalsVisibleTo("Avalonia.Direct2D1.RenderTests")]

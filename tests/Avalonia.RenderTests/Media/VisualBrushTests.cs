@@ -14,6 +14,10 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 {
     public class VisualBrushTests : TestBase
     {
+        //Whitespaces are used here to be able to compare rendering results in a platform independent way.
+        //Otherwise tests will fail because of slightly different glyph rendering.
+        private static readonly string s_visualBrushText = "           ";
+
         public VisualBrushTests()
             : base(@"Media\VisualBrush")
         {
@@ -48,7 +52,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                                 FontFamily = TestFontFamily,
                                 Background = Brushes.Green,
                                 Foreground = Brushes.Yellow,
-                                Text = "VisualBrush",
+                                Text = s_visualBrushText
                             }
                         }
                     }
@@ -56,7 +60,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             }
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_NoStretch_NoTile_Alignment_TopLeft()
         {
             Decorator target = new Decorator
@@ -81,7 +85,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_NoStretch_NoTile_Alignment_Center()
         {
             Decorator target = new Decorator
@@ -106,7 +110,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_NoStretch_NoTile_Alignment_BottomRight()
         {
             Decorator target = new Decorator
@@ -131,7 +135,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_Fill_NoTile()
         {
             Decorator target = new Decorator
@@ -154,7 +158,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_Uniform_NoTile()
         {
             Decorator target = new Decorator
@@ -177,7 +181,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_UniformToFill_NoTile()
         {
             Decorator target = new Decorator
@@ -200,7 +204,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_NoStretch_NoTile_BottomRightQuarterSource()
         {
             Decorator target = new Decorator
@@ -224,7 +228,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_NoStretch_NoTile_BottomRightQuarterDest()
         {
             Decorator target = new Decorator
@@ -248,7 +252,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_NoStretch_NoTile_BottomRightQuarterSource_BottomRightQuarterDest()
         {
             Decorator target = new Decorator
@@ -273,7 +277,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_NoStretch_Tile_BottomRightQuarterSource_CenterQuarterDest()
         {
             Decorator target = new Decorator
@@ -298,7 +302,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_NoStretch_FlipX_TopLeftDest()
         {
             Decorator target = new Decorator
@@ -322,7 +326,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_NoStretch_FlipY_TopLeftDest()
         {
             Decorator target = new Decorator
@@ -346,7 +350,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_NoStretch_FlipXY_TopLeftDest()
         {
             Decorator target = new Decorator
@@ -370,7 +374,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact(Skip = "Visual brush is broken in combination with text rendering.")]
+        [Fact]
         public async Task VisualBrush_InTree_Visual()
         {
             Border source;
@@ -391,7 +395,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                             Child = new TextBlock
                             {
                                 FontFamily = TestFontFamily,
-                                Text = "Visual"
+                                Text = s_visualBrushText
                             }
                         }),
                         new Border

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.UnitTests;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -1182,13 +1183,18 @@ namespace Avalonia.Controls.UnitTests
             foreach (var xgrids in grids)
                 scope.Children.Add(xgrids);
 
-            var root = new Grid();
-            root.UseLayoutRounding = false;
-            root.SetValue(Grid.IsSharedSizeScopeProperty, true);
-            root.Children.Add(scope);
+            var rootGrid = new Grid();
+            rootGrid.UseLayoutRounding = false;
+            rootGrid.SetValue(Grid.IsSharedSizeScopeProperty, true);
+            rootGrid.Children.Add(scope);
 
-            root.Measure(new Size(50, 50));
-            root.Arrange(new Rect(new Point(), new Point(50, 50)));
+            var root = new TestRoot(rootGrid)
+            {
+                Width = 50,
+                Height = 50,
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             PrintColumnDefinitions(grids[0]);
             Assert.Equal(5, grids[0].ColumnDefinitions[0].ActualWidth);

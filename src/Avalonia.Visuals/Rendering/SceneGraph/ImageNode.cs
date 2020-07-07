@@ -19,7 +19,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="destRect">The destination rect.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
-            : base(destRect, transform, null)
+            : base(destRect, transform)
         {
             Transform = transform;
             Source = source.Clone();

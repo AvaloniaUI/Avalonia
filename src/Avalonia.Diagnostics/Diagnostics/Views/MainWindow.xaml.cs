@@ -14,8 +14,8 @@ namespace Avalonia.Diagnostics.Views
 {
     internal class MainWindow : Window, IStyleHost
     {
+        private readonly IDisposable _keySubscription;
         private TopLevel _root;
-        private IDisposable _keySubscription;
 
         public MainWindow()
         {
@@ -33,8 +33,22 @@ namespace Avalonia.Diagnostics.Views
             {
                 if (_root != value)
                 {
+                    if (_root != null)
+                    {
+                        _root.Closed -= RootClosed;
+                    }
+
                     _root = value;
-                    DataContext = new MainViewModel(value);
+
+                    if (_root != null)
+                    {
+                        _root.Closed += RootClosed;
+                        DataContext = new MainViewModel(value);
+                    }
+                    else
+                    {
+                        DataContext = null;
+                    }
                 }
             }
         }
@@ -45,6 +59,8 @@ namespace Avalonia.Diagnostics.Views
         {
             base.OnClosed(e);
             _keySubscription.Dispose();
+            _root.Closed -= RootClosed;
+            _root = null;
             ((MainViewModel)DataContext)?.Dispose();
         }
 
@@ -70,5 +86,7 @@ namespace Avalonia.Diagnostics.Views
                 }
             }
         }
+
+        private void RootClosed(object sender, EventArgs e) => Close();
     }
 }

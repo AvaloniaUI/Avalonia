@@ -123,6 +123,26 @@ namespace Avalonia.Controls
             }
         }
 
+        public bool IsAncestorOf(in IndexPath other)
+        {
+            if (other.GetSize() <= GetSize())
+            {
+                return false;
+            }
+
+            var size = GetSize();
+
+            for (int i = 0; i < size; i++)
+            {
+                if (GetAt(i) != other.GetAt(i))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public override string ToString()
         {
             if (_path != null)

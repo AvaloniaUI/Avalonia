@@ -36,7 +36,7 @@ Avalonia requires [CastXML](https://github.com/CastXML/CastXML) for XML processi
 
 On macOS:
 ```
-brew install castxml
+brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/8a004a91a7fcd3f6620d5b01b6541ff0a640ffba/Formula/castxml.rb
 ```
 
 On Debian based Linux (Debian, Ubuntu, Mint, etc):

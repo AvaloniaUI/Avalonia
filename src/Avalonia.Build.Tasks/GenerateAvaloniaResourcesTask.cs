@@ -22,6 +22,10 @@ namespace Avalonia.Build.Tasks
         [Required]
         public ITaskItem[] EmbeddedResources { get; set; }
 
+        public string ReportImportance { get; set; }
+
+        private MessageImportance _reportImportance;
+
         class Source
         {
             public string Path { get; set; }
@@ -29,15 +33,11 @@ namespace Avalonia.Build.Tasks
             private byte[] _data;
             private string _sourcePath;
 
-            public Source(string file, string root)
+            public Source(string relativePath, string root)
             {
-                file = SPath.GetFullPath(file);
                 root = SPath.GetFullPath(root);
-                var fileUri = new Uri(file, UriKind.Absolute);
-                var rootUri = new Uri(root, UriKind.Absolute);
-                rootUri = new Uri(rootUri.ToString().TrimEnd('/') + '/');
-                Path = '/' + rootUri.MakeRelativeUri(fileUri).ToString().TrimStart('/');
-                _sourcePath = file;
+                Path = "/" + relativePath.Replace('\\', '/');
+                _sourcePath = SPath.Combine(root, relativePath);
                 Size = (int)new FileInfo(_sourcePath).Length;
             }
 
@@ -65,7 +65,14 @@ namespace Avalonia.Build.Tasks
             }
         }
 
-        List<Source> BuildResourceSources() => Resources.Select(r => new Source(r.ItemSpec, Root)).ToList();
+        List<Source> BuildResourceSources()
+           => Resources.Select(r =>
+           {
+              
+               var src = new Source(r.ItemSpec, Root);
+               BuildEngine.LogMessage($"avares -> name:{src.Path}, path: {src.SystemPath}, size:{src.Size}, ItemSpec:{r.ItemSpec}", _reportImportance);
+               return src;
+           }).ToList();
 
         private void Pack(Stream output, List<Source> sources)
         {
@@ -100,7 +107,7 @@ namespace Avalonia.Build.Tasks
             
             foreach (var s in sources.ToList())
             {
-                if (s.Path.ToLowerInvariant().EndsWith(".xaml") || s.Path.ToLowerInvariant().EndsWith(".paml"))
+                if (s.Path.ToLowerInvariant().EndsWith(".xaml") || s.Path.ToLowerInvariant().EndsWith(".paml") || s.Path.ToLowerInvariant().EndsWith(".axaml"))
                 {
                     XamlFileInfo info;
                     try
@@ -136,10 +143,14 @@ namespace Avalonia.Build.Tasks
             sources.Add(new Source("/!AvaloniaResourceXamlInfo", ms.ToArray()));
             return true;
         }
-        
+
         public bool Execute()
         {
-            foreach(var r in EmbeddedResources.Where(r=>r.ItemSpec.EndsWith(".xaml")||r.ItemSpec.EndsWith(".paml")))
+            Enum.TryParse<MessageImportance>(ReportImportance, out _reportImportance);
+
+            BuildEngine.LogMessage($"GenerateAvaloniaResourcesTask -> Root: {Root}, {Resources?.Count()} resources, Output:{Output}", _reportImportance < MessageImportance.Low ? MessageImportance.High : _reportImportance);
+
+            foreach (var r in EmbeddedResources.Where(r => r.ItemSpec.EndsWith(".xaml") || r.ItemSpec.EndsWith(".paml") || r.ItemSpec.EndsWith(".axaml")))
                 BuildEngine.LogWarning(BuildEngineErrorCode.LegacyResmScheme, r.ItemSpec,
                     "XAML file is packed using legacy EmbeddedResource/resm scheme, relative URIs won't work");
             var resources = BuildResourceSources();

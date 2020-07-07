@@ -158,6 +158,7 @@ namespace Avalonia.Input
 
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
+        private bool _isFocusVisible;
         private bool _isPointerOver;
         private GestureRecognizerCollection _gestureRecognizers;
 
@@ -427,7 +428,9 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnGotFocus(GotFocusEventArgs e)
         {
-            IsFocused = e.Source == this;
+            var isFocused = e.Source == this;
+            _isFocusVisible = isFocused && (e.NavigationMethod == NavigationMethod.Directional || e.NavigationMethod == NavigationMethod.Tab);
+            IsFocused = isFocused;
         }
 
         /// <summary>
@@ -436,6 +439,7 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnLostFocus(RoutedEventArgs e)
         {
+            _isFocusVisible = false;
             IsFocused = false;
         }
 
@@ -526,17 +530,17 @@ namespace Avalonia.Input
         {
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue, BindingPriority priority)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnPropertyChanged(property, oldValue, newValue, priority);
+            base.OnPropertyChanged(change);
 
-            if (property == IsFocusedProperty)
+            if (change.Property == IsFocusedProperty)
             {
-                UpdatePseudoClasses(newValue.GetValueOrDefault<bool>(), null);
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>(), null);
             }
-            else if (property == IsPointerOverProperty)
+            else if (change.Property == IsPointerOverProperty)
             {
-                UpdatePseudoClasses(null, newValue.GetValueOrDefault<bool>());
+                UpdatePseudoClasses(null, change.NewValue.GetValueOrDefault<bool>());
             }
         }
 
@@ -602,6 +606,7 @@ namespace Avalonia.Input
             if (isFocused.HasValue)
             {
                 PseudoClasses.Set(":focus", isFocused.Value);
+                PseudoClasses.Set(":focus-visible", _isFocusVisible);
             }
             
             if (isPointerOver.HasValue)

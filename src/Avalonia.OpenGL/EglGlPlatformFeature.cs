@@ -34,7 +34,7 @@ namespace Avalonia.OpenGL
             }
             catch(Exception e)
             {
-                Logger.TryGet(LogEventLevel.Error)?.Log("OpenGL", null, "Unable to initialize EGL-based rendering: {0}", e);
+                Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log(null, "Unable to initialize EGL-based rendering: {0}", e);
                 return null;
             }
         }

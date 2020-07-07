@@ -287,7 +287,7 @@ namespace Avalonia.Rendering
                 }
                 catch (RenderTargetCorruptedException ex)
                 {
-                    Logger.TryGet(LogEventLevel.Information)?.Log("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                    Logger.TryGet(LogEventLevel.Information, LogArea.Animations)?.Log(this, "Render target was corrupted. Exception: {0}", ex);
                     RenderTarget?.Dispose();
                     RenderTarget = null;
                 }
@@ -443,11 +443,12 @@ namespace Avalonia.Rendering
         private static Rect SnapToDevicePixels(Rect rect, double scale)
         {
             return new Rect(
-                Math.Floor(rect.X * scale) / scale,
-                Math.Floor(rect.Y * scale) / scale,
-                Math.Ceiling(rect.Width * scale) / scale,
-                Math.Ceiling(rect.Height * scale) / scale);
-                
+                new Point(
+                    Math.Floor(rect.X * scale) / scale,
+                    Math.Floor(rect.Y * scale) / scale),
+                new Point(
+                    Math.Ceiling(rect.Right * scale) / scale,
+                    Math.Ceiling(rect.Bottom * scale) / scale));
         }
 
         private void RenderOverlay(Scene scene, ref IDrawingContextImpl parentContent)

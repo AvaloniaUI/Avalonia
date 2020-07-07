@@ -109,7 +109,7 @@ namespace Avalonia.Controls
         public WindowBase Owner
         {
             get { return _owner; }
-            set { SetAndRaise(OwnerProperty, ref _owner, value); }
+            protected set { SetAndRaise(OwnerProperty, ref _owner, value); }
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace Avalonia.Controls
 
                 if (!_hasExecutedInitialLayoutPass)
                 {
-                    LayoutManager.ExecuteInitialLayoutPass(this);
+                    LayoutManager.ExecuteInitialLayoutPass();
                     _hasExecutedInitialLayoutPass = true;
                 }
                 PlatformImpl?.Show();

@@ -6,7 +6,7 @@
     <TextBlock Classes="h2">A drop-down list.</TextBlock>
 
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 16 0 0" Spacing="8">
-      <ComboBox SelectedIndex="0">
+      <ComboBox PlaceholderText="Pick an Item">
         <ComboBoxItem>Inline Items</ComboBoxItem>
         <ComboBoxItem>Inline Item 2</ComboBoxItem>
         <ComboBoxItem>Inline Item 3</ComboBoxItem>
@@ -16,7 +16,7 @@
       <ComboBox SelectedIndex="0">
         <ComboBoxItem>
           <Panel>
-            <Rectangle Fill="{DynamicResource ThemeAccentBrush}"/>
+            <Rectangle Fill="{DynamicResource SystemAccentColor}"/>
             <TextBlock Margin="8">Control Items</TextBlock>
           </Panel>
         </ComboBoxItem>

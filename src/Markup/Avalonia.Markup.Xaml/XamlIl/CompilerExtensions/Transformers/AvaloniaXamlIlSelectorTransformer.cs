@@ -3,41 +3,45 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Markup.Parsers;
-using XamlIl;
-using XamlIl.Ast;
-using XamlIl.Transform;
-using XamlIl.Transform.Transformers;
-using XamlIl.TypeSystem;
+using XamlX;
+using XamlX.Ast;
+using XamlX.Emit;
+using XamlX.IL;
+using XamlX.Transform;
+using XamlX.Transform.Transformers;
+using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AvaloniaXamlIlSelectorTransformer : IXamlIlAstTransformer
+    using XamlParseException = XamlX.XamlParseException;
+    using XamlLoadException = XamlX.XamlLoadException;
+    class AvaloniaXamlIlSelectorTransformer : IXamlAstTransformer
     {
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (!(node is XamlIlAstObjectNode on && on.Type.GetClrType().FullName == "Avalonia.Styling.Style"))
+            if (!(node is XamlAstObjectNode on && on.Type.GetClrType().FullName == "Avalonia.Styling.Style"))
                 return node;
 
-            var pn = on.Children.OfType<XamlIlAstXamlPropertyValueNode>()
+            var pn = on.Children.OfType<XamlAstXamlPropertyValueNode>()
                 .FirstOrDefault(p => p.Property.GetClrProperty().Name == "Selector");
 
             if (pn == null)
                 return node;
 
             if (pn.Values.Count != 1)
-                throw new XamlIlParseException("Selector property should should have exactly one value", node);
+                throw new XamlParseException("Selector property should should have exactly one value", node);
             
             if (pn.Values[0] is XamlIlSelectorNode)
                 //Deja vu. I've just been in this place before
                 return node;
             
-            if (!(pn.Values[0] is XamlIlAstTextNode tn))
-                throw new XamlIlParseException("Selector property should be a text node", node);
+            if (!(pn.Values[0] is XamlAstTextNode tn))
+                throw new XamlParseException("Selector property should be a text node", node);
 
             var selectorType = pn.Property.GetClrProperty().Getter.ReturnType;
             var initialNode = new XamlIlSelectorInitialNode(node, selectorType);
             XamlIlSelectorNode Create(IEnumerable<SelectorGrammar.ISyntax> syntax,
-                Func<string, string, XamlIlAstClrTypeReference> typeResolver)
+                Func<string, string, XamlAstClrTypeReference> typeResolver)
             {
                 XamlIlSelectorNode result = initialNode;
                 XamlIlOrSelectorNode results = null;
@@ -63,18 +67,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             var type = result?.TargetType;
 
                             if (type == null)
-                                throw new XamlIlParseException("Property selectors must be applied to a type.", node);
+                                throw new XamlParseException("Property selectors must be applied to a type.", node);
 
                             var targetProperty =
                                 type.GetAllProperties().FirstOrDefault(p => p.Name == property.Property);
 
                             if (targetProperty == null)
-                                throw new XamlIlParseException($"Cannot find '{property.Property}' on '{type}", node);
+                                throw new XamlParseException($"Cannot find '{property.Property}' on '{type}", node);
 
-                            if (!XamlIlTransformHelpers.TryGetCorrectlyTypedValue(context,
-                                new XamlIlAstTextNode(node, property.Value, context.Configuration.WellKnownTypes.String),
+                            if (!XamlTransformHelpers.TryGetCorrectlyTypedValue(context,
+                                new XamlAstTextNode(node, property.Value, context.Configuration.WellKnownTypes.String),
                                 targetProperty.PropertyType, out var typedValue))
-                                throw new XamlIlParseException(
+                                throw new XamlParseException(
                                     $"Cannot convert '{property.Value}' to '{targetProperty.PropertyType.GetFqn()}",
                                     node);
 
@@ -100,7 +104,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             result = initialNode;
                             break;
                         default:
-                            throw new XamlIlParseException($"Unsupported selector grammar '{i.GetType()}'.", node);
+                            throw new XamlParseException($"Unsupported selector grammar '{i.GetType()}'.", node);
                     }
                 }
 
@@ -119,15 +123,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
             catch (Exception e)
             {
-                throw new XamlIlParseException("Unable to parse selector: " + e.Message, node);
+                throw new XamlParseException("Unable to parse selector: " + e.Message, node);
             }
 
             var selector = Create(parsed, (p, n) 
-                => XamlIlTypeReferenceResolver.ResolveType(context, $"{p}:{n}", true, node, true));
+                => TypeReferenceResolver.ResolveType(context, $"{p}:{n}", true, node, true));
             pn.Values[0] = selector;
 
             return new AvaloniaXamlIlTargetTypeMetadataNode(on,
-                new XamlIlAstClrTypeReference(selector, selector.TargetType, false),
+                new XamlAstClrTypeReference(selector, selector.TargetType, false),
                 AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style);
         }
 
@@ -135,32 +139,32 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
 
     
-    abstract class XamlIlSelectorNode : XamlIlAstNode, IXamlIlAstValueNode, IXamlIlAstEmitableNode
+    abstract class XamlIlSelectorNode : XamlAstNode, IXamlAstValueNode, IXamlAstEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
     {
         protected XamlIlSelectorNode Previous { get; }
-        public abstract IXamlIlType TargetType { get; }
+        public abstract IXamlType TargetType { get; }
 
         public XamlIlSelectorNode(XamlIlSelectorNode previous,
-            IXamlIlLineInfo info = null,
-            IXamlIlType selectorType = null) : base(info ?? previous)
+            IXamlLineInfo info = null,
+            IXamlType selectorType = null) : base(info ?? previous)
         {
             Previous = previous;
-            Type = selectorType == null ? previous.Type : new XamlIlAstClrTypeReference(this, selectorType, false);
+            Type = selectorType == null ? previous.Type : new XamlAstClrTypeReference(this, selectorType, false);
         }
 
-        public IXamlIlAstTypeReference Type { get; }
+        public IXamlAstTypeReference Type { get; }
 
-        public virtual XamlIlNodeEmitResult Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+        public virtual XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
             if (Previous != null)
                 context.Emit(Previous, codeGen, Type.GetClrType());
             DoEmit(context, codeGen);
-            return XamlIlNodeEmitResult.Type(0, Type.GetClrType());
+            return XamlILNodeEmitResult.Type(0, Type.GetClrType());
         }
         
-        protected abstract void DoEmit(XamlIlEmitContext context, IXamlIlEmitter codeGen);
+        protected abstract void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen);
 
-        protected void EmitCall(XamlIlEmitContext context, IXamlIlEmitter codeGen, Func<IXamlIlMethod, bool> method)
+        protected void EmitCall(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen, Func<IXamlMethod, bool> method)
         {
             var selectors = context.Configuration.TypeSystem.GetType("Avalonia.Styling.Selectors");
             var found = selectors.FindMethod(m => m.IsStatic && m.Parameters.Count > 0 && method(m));
@@ -170,27 +174,27 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     
     class XamlIlSelectorInitialNode : XamlIlSelectorNode
     {
-        public XamlIlSelectorInitialNode(IXamlIlLineInfo info,
-            IXamlIlType selectorType) : base(null, info, selectorType)
+        public XamlIlSelectorInitialNode(IXamlLineInfo info,
+            IXamlType selectorType) : base(null, info, selectorType)
         {
         }
 
-        public override IXamlIlType TargetType => null;
-        protected override void DoEmit(XamlIlEmitContext context, IXamlIlEmitter codeGen) => codeGen.Ldnull();
+        public override IXamlType TargetType => null;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen) => codeGen.Ldnull();
     }
 
     class XamlIlTypeSelector : XamlIlSelectorNode
     {
         public bool Concrete { get; }
 
-        public XamlIlTypeSelector(XamlIlSelectorNode previous, IXamlIlType type, bool concrete) : base(previous)
+        public XamlIlTypeSelector(XamlIlSelectorNode previous, IXamlType type, bool concrete) : base(previous)
         {
             TargetType = type;
             Concrete = concrete;
         }
 
-        public override IXamlIlType TargetType { get; }
-        protected override void DoEmit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+        public override IXamlType TargetType { get; }
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
             var name = Concrete ? "OfType" : "Is";
             codeGen.Ldtype(TargetType);
@@ -217,8 +221,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         }
 
 
-        public override IXamlIlType TargetType => Previous?.TargetType;
-        protected override void DoEmit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+        public override IXamlType TargetType => Previous?.TargetType;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
             codeGen.Ldstr(String);
             var name = _type.ToString();
@@ -242,8 +246,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             _type = type;
         }
 
-        public override IXamlIlType TargetType => null;
-        protected override void DoEmit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+        public override IXamlType TargetType => null;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
             var name = _type.ToString();
             EmitCall(context, codeGen,
@@ -260,8 +264,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             Argument = argument;
         }
 
-        public override IXamlIlType TargetType => Previous?.TargetType;
-        protected override void DoEmit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+        public override IXamlType TargetType => Previous?.TargetType;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
             context.Emit(Argument, codeGen, Type.GetClrType());
             EmitCall(context, codeGen,
@@ -272,22 +276,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     class XamlIlPropertyEqualsSelector : XamlIlSelectorNode
     {
         public XamlIlPropertyEqualsSelector(XamlIlSelectorNode previous,
-            IXamlIlProperty property,
-            IXamlIlAstValueNode value)
+            IXamlProperty property,
+            IXamlAstValueNode value)
             : base(previous)
         {
             Property = property;
             Value = value;
         }
 
-        public IXamlIlProperty Property { get; set; }
-        public IXamlIlAstValueNode Value { get; set; }
+        public IXamlProperty Property { get; set; }
+        public IXamlAstValueNode Value { get; set; }
         
-        public override IXamlIlType TargetType => Previous?.TargetType;
-        protected override void DoEmit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+        public override IXamlType TargetType => Previous?.TargetType;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
             if (!XamlIlAvaloniaPropertyHelper.Emit(context, codeGen, Property))
-                throw new XamlIlLoadException(
+                throw new XamlLoadException(
                     $"{Property.Name} of {(Property.Setter ?? Property.Getter).DeclaringType.GetFqn()} doesn't seem to be an AvaloniaProperty",
                     this);
             context.Emit(Value, codeGen, context.Configuration.WellKnownTypes.Object);
@@ -302,7 +306,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     class XamlIlOrSelectorNode : XamlIlSelectorNode
     {
         List<XamlIlSelectorNode> _selectors = new List<XamlIlSelectorNode>();
-        public XamlIlOrSelectorNode(IXamlIlLineInfo info, IXamlIlType selectorType) : base(null, info, selectorType)
+        public XamlIlOrSelectorNode(IXamlLineInfo info, IXamlType selectorType) : base(null, info, selectorType)
         {
         }
 
@@ -311,11 +315,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             _selectors.Add(node);
         }
         
-        public override IXamlIlType TargetType
+        public override IXamlType TargetType
         {
             get
             {
-                IXamlIlType result = null;
+                IXamlType result = null;
 
                 foreach (var selector in _selectors)
                 {
@@ -340,10 +344,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
         }
 
-        protected override void DoEmit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
             if (_selectors.Count == 0)
-                throw new XamlIlLoadException("Invalid selector count", this);
+                throw new XamlLoadException("Invalid selector count", this);
             if (_selectors.Count == 1)
             {
                 _selectors[0].Emit(context, codeGen);

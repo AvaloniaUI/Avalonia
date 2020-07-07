@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Styling.UnitTests
@@ -418,6 +419,33 @@ namespace Avalonia.Styling.UnitTests
                 root.Measure(Size.Infinity);
                 Assert.Equal(new Thickness(4), border.BorderThickness);
             }
+        }
+
+        [Fact]
+        public void Should_Set_Owner_On_Assigned_Resources()
+        {
+            var host = new Mock<IResourceHost>();
+            var target = new Style();
+            ((IResourceProvider)target).AddOwner(host.Object);
+
+            var resources = new Mock<IResourceDictionary>();
+            target.Resources = resources.Object;
+
+            resources.Verify(x => x.AddOwner(host.Object), Times.Once);
+        }
+
+        [Fact]
+        public void Should_Set_Owner_On_Assigned_Resources_2()
+        {
+            var host = new Mock<IResourceHost>();
+            var target = new Style();
+
+            var resources = new Mock<IResourceDictionary>();
+            target.Resources = resources.Object;
+
+            host.ResetCalls();
+            ((IResourceProvider)target).AddOwner(host.Object);
+            resources.Verify(x => x.AddOwner(host.Object), Times.Once);
         }
 
         private class Class1 : Control
