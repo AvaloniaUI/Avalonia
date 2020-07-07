@@ -17,6 +17,8 @@ namespace Avalonia.Controls
 
         static RelativePanel()
         {
+            ClipToBoundsProperty.OverrideDefaultValue<RelativePanel>(true);
+            
             AboveProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
             AlignBottomWithPanelProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
             AlignBottomWithProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
