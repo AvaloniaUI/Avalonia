@@ -157,7 +157,6 @@
   </Style>
 
   <Style Selector="ToggleSwitch:not(:dragging) /template/ Grid#MovingKnobs">
-    <!--Setter Property="Canvas.Left" Value="{DynamicResource KnobOffPosition}"/-->
     <Setter Property="Transitions">
       <Transitions>
         <DoubleTransition Property="Canvas.Left" Duration="0:0:0.2" Easing="CubicEaseOut"/>
@@ -235,10 +234,6 @@
   </Style>
 
   <!-- CheckedState -->
-  <!--Style Selector="ToggleSwitch:checked /template/ Grid#MovingKnobs">
-    <Setter Property="Canvas.Left" Value="{DynamicResource KnobOnPosition}"/>
-  </Style-->
-
   <Style Selector="ToggleSwitch:checked /template/ Border#OuterBorder">
     <Setter Property="Opacity" Value="0"/>
   </Style>
@@ -264,10 +259,6 @@
   </Style>
 
   <!--UncheckedState -->
-  <!--Style Selector="ToggleSwitch:unchecked /template/ Grid#MovingKnobs">
-    <Setter Property="Canvas.Left" Value="{DynamicResource KnobOffPosition}"/>
-  </Style-->
-
   <Style Selector="ToggleSwitch:unchecked /template/ Border#OuterBorder">
     <Setter Property="Opacity" Value="1"/>
   </Style>
