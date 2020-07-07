@@ -60,12 +60,26 @@ namespace Avalonia.Controls
             {
                 child.Measure(availableSize);
             }
+
+            Rect bounds = new Rect();
+
             foreach (var item in CalculateLocations(availableSize))
             {
                 if (item.Item2.Size.Width < item.Item1.DesiredSize.Width || item.Item2.Size.Height < item.Item1.DesiredSize.Height)
                     item.Item1.Measure(item.Item2.Size);
+
+                if(item.Item2.Right > bounds.Width)
+                {
+                    bounds = bounds.WithWidth(item.Item2.Right);
+                }
+
+                if(item.Item2.Bottom > bounds.Height)
+                {
+                    bounds = bounds.WithHeight(item.Item2.Bottom);
+                }
             }
-            return base.MeasureOverride(availableSize);
+
+            return bounds.Size;
         }
 
         /// <summary>
@@ -79,9 +93,24 @@ namespace Avalonia.Controls
         /// <returns>The actual size used.</returns>
         protected override Size ArrangeOverride(Size finalSize)
         {
+            Rect bounds = new Rect();
+
             foreach (var item in CalculateLocations(finalSize))
+            {
                 item.Item1.Arrange(item.Item2);
-            return finalSize;
+
+                if (item.Item2.Right > bounds.Width)
+                {
+                    bounds = bounds.WithWidth(item.Item2.Right);
+                }
+
+                if (item.Item2.Bottom > bounds.Height)
+                {
+                    bounds = bounds.WithHeight(item.Item2.Bottom);
+                }
+            }            
+            
+            return bounds.Size;
         }
 
         private IEnumerable<Tuple<ILayoutable, Rect>> CalculateLocations(Size finalSize)
