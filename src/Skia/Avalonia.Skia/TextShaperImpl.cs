@@ -15,51 +15,7 @@ namespace Avalonia.Skia
         {
             using (var buffer = new Buffer())
             {
-                buffer.ContentType = ContentType.Unicode;
-
-                var breakCharPosition = text.Length - 1;
-
-                var codepoint = Codepoint.ReadAt(text, breakCharPosition, out var count);
-
-                if (codepoint.IsBreakChar)
-                {
-                    var breakCharCount = 1;
-
-                    if (text.Length > 1)
-                    {
-                        var previousCodepoint = Codepoint.ReadAt(text, breakCharPosition - count, out _);
-
-                        if (codepoint == '\r' && previousCodepoint == '\n'
-                            || codepoint == '\n' && previousCodepoint == '\r')
-                        {
-                            breakCharCount = 2;
-                        }
-                    }
-
-                    if (breakCharPosition != text.Start)
-                    {
-                        buffer.AddUtf16(text.Buffer.Span.Slice(0, text.Length - breakCharCount));
-                    }
-
-                    var cluster = buffer.GlyphInfos.Length > 0 ?
-                        buffer.GlyphInfos[buffer.Length - 1].Cluster + 1 :
-                        (uint)text.Start;
-
-                    switch (breakCharCount)
-                    {
-                        case 1:
-                            buffer.Add('\u200C', cluster);
-                            break;
-                        case 2:
-                            buffer.Add('\u200C', cluster);
-                            buffer.Add('\u200D', cluster);
-                            break;
-                    }
-                }
-                else
-                {
-                    buffer.AddUtf16(text.Buffer.Span);
-                }
+                FillBuffer(buffer, text);
 
                 buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
 
@@ -93,7 +49,7 @@ namespace Avalonia.Skia
                 {
                     glyphIndices[i] = (ushort)glyphInfos[i].Codepoint;
 
-                    clusters[i] = (ushort)(text.Start + glyphInfos[i].Cluster);
+                    clusters[i] = (ushort)glyphInfos[i].Cluster;
 
                     if (!glyphTypeface.IsFixedPitch)
                     {
@@ -109,6 +65,51 @@ namespace Avalonia.Skia
                     new ReadOnlySlice<Vector>(glyphOffsets),
                     text,
                     new ReadOnlySlice<ushort>(clusters));
+            }
+        }
+
+        private static void FillBuffer(Buffer buffer, ReadOnlySlice<char> text)
+        {
+            buffer.ContentType = ContentType.Unicode;
+
+            var i = 0;
+
+            while (i < text.Length)
+            {
+                var codepoint = Codepoint.ReadAt(text, i, out var count);
+
+                var cluster = (uint)(text.Start + i);
+
+                if (codepoint.IsBreakChar)
+                {
+                    if (i < text.End)
+                    {
+                        var nextCodepoint = Codepoint.ReadAt(text, i + 1, out _);
+
+                        if (nextCodepoint == '\r' && codepoint == '\n' || nextCodepoint == '\n' && codepoint == '\r')
+                        {
+                            count++;
+
+                            buffer.Add('\u200D', cluster);
+
+                            buffer.Add('\u200C', cluster);
+                        }
+                        else
+                        {
+                            buffer.Add('\u200C', cluster);
+                        }
+                    }
+                    else
+                    {
+                        buffer.Add('\u200C', cluster);
+                    }
+                }
+                else
+                {
+                    buffer.Add(codepoint, cluster);
+                }
+
+                i += count;
             }
         }
 
