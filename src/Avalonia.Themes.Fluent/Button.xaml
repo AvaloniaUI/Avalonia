@@ -81,7 +81,7 @@
     <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Transitions">
       <Transitions>
-        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:.15" />
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:.075" />
       </Transitions>
     </Setter>
   </Style>
