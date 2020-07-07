@@ -81,7 +81,7 @@ namespace Avalonia.Controls
         {
             foreach (var item in CalculateLocations(finalSize))
                 item.Item1.Arrange(item.Item2);
-            return base.ArrangeOverride(finalSize);
+            return finalSize;
         }
 
         private IEnumerable<Tuple<ILayoutable, Rect>> CalculateLocations(Size finalSize)
@@ -207,6 +207,10 @@ namespace Avalonia.Controls
                                 rect[0] = finalSize.Width - rect[2] - child.DesiredSize.Width;
                                 valueChanged = true;
                             }
+                            else
+                            {
+                                rect[0] = 0;
+                            }
                         }
                     }
                     //Calculate top side
@@ -238,6 +242,10 @@ namespace Avalonia.Controls
                             {
                                 rect[1] = finalSize.Height - rect[3] - child.DesiredSize.Height;
                                 valueChanged = true;
+                            }
+                            else
+                            {
+                                rect[1] = 0;
                             }
                         }
                     }
@@ -278,6 +286,10 @@ namespace Avalonia.Controls
                                 rect[2] = finalSize.Width - rect[0] - child.DesiredSize.Width;
                                 valueChanged = true;
                             }
+                            else
+                            {
+                                rect[2] = child.DesiredSize.Width;
+                            }
                         }
                     }
                     //Calculate bottom side
@@ -316,6 +328,10 @@ namespace Avalonia.Controls
                             {
                                 rect[3] = finalSize.Height - rect[1] - child.DesiredSize.Height;
                                 valueChanged = true;
+                            }
+                            else
+                            {
+                                rect[3] = child.DesiredSize.Height;
                             }
                         }
                     }
@@ -410,18 +426,16 @@ namespace Avalonia.Controls
         private Layoutable GetDependencyElement(AvaloniaProperty property, AvaloniaObject child)
         {
             var dependency = child.GetValue(property);
-                        
-            if (dependency == null)
-                return null;
-            if (dependency is Layoutable)
+
+            if (dependency is Layoutable layoutable)
             {
-                if (Children.Contains((ILayoutable)dependency))
-                    return (Layoutable)dependency;
+                if (Children.Contains((ILayoutable)layoutable))
+                    return layoutable;
+
                 throw new ArgumentException(string.Format("RelativePanel error: Element does not exist in the current context", property.Name));
             }
 
-            //return null;
-            throw new ArgumentException("RelativePanel error: Value must be of type ILayoutable");
+            return null;
         }
     }
 }
