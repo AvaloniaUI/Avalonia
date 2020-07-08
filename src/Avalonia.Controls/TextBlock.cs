@@ -411,9 +411,30 @@ namespace Avalonia.Controls
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
+            if (TextLayout is null)
+            {
+                return;
+            }
+
+            var textAlignment = TextAlignment;
+
+            var width = Bounds.Size.Width;
+
+            var offsetX = 0.0;
+
+            switch (textAlignment)
+            {
+                case TextAlignment.Center:
+                    offsetX = (width - TextLayout.Size.Width) / 2;
+                    break;
+                case TextAlignment.Right:
+                    offsetX =  width - TextLayout.Size.Width;
+                    break;
+            }
+
             var padding = Padding;
 
-            TextLayout?.Draw(context, new Point(padding.Left, padding.Top));
+            TextLayout.Draw(context, new Point(padding.Left + offsetX, padding.Top));
         }
 
         /// <summary>
@@ -431,7 +452,7 @@ namespace Avalonia.Controls
 
             return new TextLayout(
                 text ?? string.Empty,
-                FontManager.Current?.GetOrAddTypeface(FontFamily, FontWeight, FontStyle),
+                FontManager.Current?.GetOrAddTypeface(FontFamily, FontStyle, FontWeight),
                 FontSize,
                 Foreground,
                 TextAlignment,
@@ -470,12 +491,12 @@ namespace Avalonia.Controls
 
             if (_constraint != availableSize)
             {
+                _constraint = availableSize;
+
                 InvalidateTextLayout();
             }
 
-            _constraint = availableSize;
-
-            var measuredSize = TextLayout?.Bounds.Size ?? Size.Empty;
+            var measuredSize = TextLayout?.Size ?? Size.Empty;
 
             return measuredSize.Inflate(padding);
         }

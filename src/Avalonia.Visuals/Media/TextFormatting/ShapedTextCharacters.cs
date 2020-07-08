@@ -89,16 +89,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The split result.</returns>
         public SplitTextCharactersResult Split(int length)
         {
-            var glyphCount = 0;
-
-            var firstCharacters = GlyphRun.Characters.Take(length);
-
-            var codepointEnumerator = new CodepointEnumerator(firstCharacters);
-
-            while (codepointEnumerator.MoveNext())
-            {
-                glyphCount++;
-            }
+            var glyphCount = GlyphRun.FindGlyphIndex(GlyphRun.Characters.Start + length);
 
             if (GlyphRun.Characters.Length == length)
             {

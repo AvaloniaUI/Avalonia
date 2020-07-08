@@ -9,10 +9,10 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public readonly struct TextLineMetrics
     {
-        public TextLineMetrics(Size size, Point baselineOrigin, TextRange textRange)
+        public TextLineMetrics(Size size, double textBaseline, TextRange textRange)
         {
             Size = size;
-            BaselineOrigin = baselineOrigin;
+            TextBaseline = textBaseline;
             TextRange = textRange;
         }
 
@@ -33,12 +33,9 @@ namespace Avalonia.Media.TextFormatting
         public Size Size { get; }
 
         /// <summary>
-        /// Gets the baseline origin.
+        /// Gets the distance from the top to the baseline of the line of text.
         /// </summary>
-        /// <value>
-        /// The baseline origin.
-        /// </value>
-        public Point BaselineOrigin { get; }
+        public double TextBaseline { get; }
 
         /// <summary>
         /// Creates the text line metrics.
@@ -81,16 +78,12 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            var xOrigin = TextLine.GetParagraphOffsetX(lineWidth, paragraphWidth, paragraphProperties.TextAlignment);
-
-            var baselineOrigin = new Point(xOrigin, -ascent);
-
             var size = new Size(lineWidth,
                 double.IsNaN(paragraphProperties.LineHeight) || MathUtilities.IsZero(paragraphProperties.LineHeight) ?
                     descent - ascent + lineGap :
                     paragraphProperties.LineHeight);
 
-            return new TextLineMetrics(size, baselineOrigin, textRange);
+            return new TextLineMetrics(size, -ascent, textRange);
         }
     }
 }
