@@ -10,11 +10,12 @@ namespace Avalonia.Controls
     /// </summary>
     public class ToggleSwitch : ToggleButton
     {
-        Panel _knobsPanel;
-        Panel _switchKnob;
-        bool _knobsPanelPressed = false;
-        Point _switchStartPoint = new Point();
-        double _initLeft = -1;
+        private Panel _knobsPanel;
+        private Panel _switchKnob;
+        private bool _knobsPanelPressed = false;
+        private Point _switchStartPoint = new Point();
+        private double _initLeft = -1;
+        private bool _isDragging = false;
 
         static ToggleSwitch()
         {
@@ -207,7 +208,6 @@ namespace Avalonia.Controls
             _knobsPanelPressed = false;
         }
 
-        bool _isDragging = false;
         private void KnobsPanel_PointerMoved(object sender, Input.PointerEventArgs e)
         {
             if (_knobsPanelPressed)
