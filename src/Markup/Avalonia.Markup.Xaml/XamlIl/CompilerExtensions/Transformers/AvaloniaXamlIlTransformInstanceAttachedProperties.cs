@@ -174,6 +174,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     other is GetterMethod m && m.Name == Name && m.DeclaringType.Equals(DeclaringType);
                 public IXamlType ReturnType => Parent.PropertyType;
                 public IReadOnlyList<IXamlType> Parameters { get; }
+
+                public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => DeclaringType.CustomAttributes;
+
                 public void EmitCall(IXamlILEmitter emitter)
                 {
                     var method = Parent._avaloniaObject
