@@ -44,6 +44,33 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void ResolvesClrPropertyBasedOnDataContextType_InterfaceInheritance()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:IHasPropertyDerived'>
+    <TextBlock Text='{CompiledBinding StringProperty}' Name='textBlock' />
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext
+                {
+                    StringProperty = "foobar"
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.StringProperty, textBlock.Text);
+            }
+        }
+
+        [Fact]
         public void ResolvesPathPassedByProperty()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -271,6 +298,36 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 dataContext.NonIntegerIndexerProperty["Test"] = "New Value";
 
                 Assert.Equal(dataContext.NonIntegerIndexerProperty["Test"], textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void ResolvesNonIntegerIndexerBindingFromParentInterfaceCorrectly()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{CompiledBinding NonIntegerIndexerInterfaceProperty[Test]}' Name='textBlock' />
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                var dataContext = new TestDataContext();
+
+                dataContext.NonIntegerIndexerInterfaceProperty["Test"] = "Initial Value";
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.NonIntegerIndexerInterfaceProperty["Test"], textBlock.Text);
+
+                dataContext.NonIntegerIndexerInterfaceProperty["Test"] = "New Value";
+
+                Assert.Equal(dataContext.NonIntegerIndexerInterfaceProperty["Test"], textBlock.Text);
             }
         }
 
@@ -584,7 +641,23 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
     }
 
-    public class TestDataContext
+    public interface INonIntegerIndexer
+    {
+        string this[string key] {get; set;}
+    }
+
+    public interface INonIntegerIndexerDerived : INonIntegerIndexer
+    {}
+
+    public interface IHasProperty
+    {
+        string StringProperty {get; set; }
+    }
+
+    public interface IHasPropertyDerived : IHasProperty
+    {}
+
+    public class TestDataContext : IHasPropertyDerived
     {
         public string StringProperty { get; set; }
 
@@ -600,7 +673,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
         public NonIntegerIndexer NonIntegerIndexerProperty { get; set; } = new NonIntegerIndexer();
 
-        public class NonIntegerIndexer : NotifyingBase
+        public INonIntegerIndexerDerived NonIntegerIndexerInterfaceProperty => NonIntegerIndexerProperty;
+
+        public class NonIntegerIndexer : NotifyingBase, INonIntegerIndexerDerived
         {
             private readonly Dictionary<string, string> _storage = new Dictionary<string, string>();
 
