@@ -1,14 +1,17 @@
 ﻿using Avalonia.Layout;
 
+#nullable enable
+
 namespace Avalonia.Controls
 {
     public partial class RelativePanel
     {
         private static void OnAlignPropertiesChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
-            var elm = d as Layoutable;
-            if (elm.Parent is Layoutable)
-                ((Layoutable)elm.Parent).InvalidateArrange();
+            if (d is Layoutable layoutable && layoutable.Parent is Layoutable layoutableParent)
+            {
+                layoutableParent.InvalidateArrange();
+            }
         }
 
         static RelativePanel()

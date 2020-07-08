@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Layout;
 
+#nullable enable
+
 namespace Avalonia.Controls
 {
     public partial class RelativePanel : Panel
@@ -80,7 +82,7 @@ namespace Avalonia.Controls
             return size;
         }
 
-        private Layoutable GetDependencyElement(AvaloniaProperty property, AvaloniaObject child)
+        private Layoutable? GetDependencyElement(AvaloniaProperty property, AvaloniaObject child)
         {
             var dependency = child.GetValue(property);
 
@@ -89,7 +91,7 @@ namespace Avalonia.Controls
                 if (Children.Contains((ILayoutable)layoutable))
                     return layoutable;
 
-                throw new ArgumentException(string.Format("RelativePanel error: Element does not exist in the current context", property.Name));
+                throw new ArgumentException($"RelativePanel error: Element does not exist in the current context: {property.Name}");
             }
 
             return null;
@@ -105,25 +107,25 @@ namespace Avalonia.Controls
 
             public HashSet<GraphNode> OutgoingNodes { get; }
 
-            public GraphNode AlignLeftWithNode { get; set; }
+            public GraphNode? AlignLeftWithNode { get; set; }
 
-            public GraphNode AlignTopWithNode { get; set; }
+            public GraphNode? AlignTopWithNode { get; set; }
 
-            public GraphNode AlignRightWithNode { get; set; }
+            public GraphNode? AlignRightWithNode { get; set; }
 
-            public GraphNode AlignBottomWithNode { get; set; }
+            public GraphNode? AlignBottomWithNode { get; set; }
 
-            public GraphNode LeftOfNode { get; set; }
+            public GraphNode? LeftOfNode { get; set; }
 
-            public GraphNode AboveNode { get; set; }
+            public GraphNode? AboveNode { get; set; }
 
-            public GraphNode RightOfNode { get; set; }
+            public GraphNode? RightOfNode { get; set; }
 
-            public GraphNode BelowNode { get; set; }
+            public GraphNode? BelowNode { get; set; }
 
-            public GraphNode AlignHorizontalCenterWith { get; set; }
+            public GraphNode? AlignHorizontalCenterWith { get; set; }
 
-            public GraphNode AlignVerticalCenterWith { get; set; }
+            public GraphNode? AlignVerticalCenterWith { get; set; }
 
             public GraphNode(Layoutable element)
             {
@@ -143,7 +145,7 @@ namespace Avalonia.Controls
                 _nodeDic = new Dictionary<AvaloniaObject, GraphNode>();
             }
 
-            public GraphNode AddLink(GraphNode from, Layoutable to)
+            public GraphNode? AddLink(GraphNode from, Layoutable? to)
             {
                 if (to == null)
                     return null;
@@ -183,12 +185,9 @@ namespace Avalonia.Controls
 
             public bool CheckCyclic() => CheckCyclic(_nodeDic.Values, null);
 
-            private bool CheckCyclic(IEnumerable<GraphNode> nodes, HashSet<Layoutable> set)
+            private bool CheckCyclic(IEnumerable<GraphNode> nodes, HashSet<Layoutable>? set)
             {
-                if (set == null)
-                {
-                    set = new HashSet<Layoutable>();
-                }
+                set ??= new HashSet<Layoutable>();
 
                 foreach (var node in nodes)
                 {
@@ -341,7 +340,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        childPos = childPos.WithY((_arrangeSize.Height + node.AlignLeftWithNode.Position.Y - childSize.Height) / 2);
+                        childPos = childPos.WithY((_arrangeSize.Height + node.AlignTopWithNode.Position.Y - childSize.Height) / 2);
                     }
                 }
 
