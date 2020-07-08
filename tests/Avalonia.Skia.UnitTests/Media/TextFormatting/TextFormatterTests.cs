@@ -260,6 +260,39 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Not_Produce_TextLine_Wider_Than_ParagraphWidth()
+        {
+            using (Start())
+            {
+                const string text =
+                    "Multiline TextBlock with TextWrapping.\r\rLorem ipsum dolor sit amet, consectetur adipiscing elit. " +
+                    "Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. " +
+                    "Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. " +
+                    "Vivamus pretium ornare est.";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textSourceIndex = 0;
+
+                while (textSourceIndex < text.Length)
+                {
+                    var textLine =
+                        formatter.FormatLine(textSource, textSourceIndex, 200, paragraphProperties);
+
+                    Assert.True(textLine.LineMetrics.Size.Width <= 200);
+
+                    textSourceIndex += textLine.TextRange.Length;
+                }
+            }
+        }
+
         public static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface

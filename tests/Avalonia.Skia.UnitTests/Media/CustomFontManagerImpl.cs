@@ -38,7 +38,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
         private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
 
-        public bool TryMatchCharacter(int codepoint, FontWeight fontWeight, FontStyle fontStyle, FontFamily fontFamily,
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily,
             CultureInfo culture, out FontKey fontKey)
         {
             foreach (var customTypeface in _customTypefaces)
@@ -48,7 +48,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     continue;
                 }
 
-                fontKey = new FontKey(customTypeface.FontFamily.Name, fontWeight, fontStyle);
+                fontKey = new FontKey(customTypeface.FontFamily.Name, fontStyle, fontWeight);
 
                 return true;
             }
@@ -56,7 +56,7 @@ namespace Avalonia.Skia.UnitTests.Media
             var fallback = SKFontManager.Default.MatchCharacter(fontFamily?.Name, (SKFontStyleWeight)fontWeight,
                 SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle, _bcp47, codepoint);
 
-            fontKey = new FontKey(fallback?.FamilyName ?? _defaultFamilyName, fontWeight, fontStyle);
+            fontKey = new FontKey(fallback?.FamilyName ?? _defaultFamilyName, fontStyle, fontWeight);
 
             return true;
         }

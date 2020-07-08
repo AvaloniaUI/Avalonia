@@ -79,12 +79,13 @@ namespace Avalonia.Media
         ///     Returns a new typeface, or an existing one if a matching typeface exists.
         /// </summary>
         /// <param name="fontFamily">The font family.</param>
-        /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontStyle">The font style.</param>
+        /// <param name="fontWeight">The font weight.</param>
         /// <returns>
         ///     The typeface.
         /// </returns>
-        public Typeface GetOrAddTypeface(FontFamily fontFamily, FontWeight fontWeight = FontWeight.Normal, FontStyle fontStyle = FontStyle.Normal)
+        public Typeface GetOrAddTypeface(FontFamily fontFamily, FontStyle fontStyle = FontStyle.Normal,
+            FontWeight fontWeight = FontWeight.Normal)
         {
             while (true)
             {
@@ -93,7 +94,7 @@ namespace Avalonia.Media
                     fontFamily = _defaultFontFamily;
                 }
 
-                var key = new FontKey(fontFamily.Name, fontWeight, fontStyle);
+                var key = new FontKey(fontFamily.Name, fontStyle, fontWeight);
 
                 if (_typefaceCache.TryGetValue(key, out var typeface))
                 {
@@ -121,15 +122,16 @@ namespace Avalonia.Media
         ///     Returns <c>null</c> if no fallback was found.
         /// </summary>
         /// <param name="codepoint">The codepoint to match against.</param>
-        /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontStyle">The font style.</param>
+        /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontFamily">The font family. This is optional and used for fallback lookup.</param>
         /// <param name="culture">The culture.</param>
         /// <returns>
         ///     The matched typeface.
         /// </returns>
-        public Typeface MatchCharacter(int codepoint, FontWeight fontWeight = FontWeight.Normal,
+        public Typeface MatchCharacter(int codepoint,
             FontStyle fontStyle = FontStyle.Normal,
+            FontWeight fontWeight = FontWeight.Normal,
             FontFamily fontFamily = null, CultureInfo culture = null)
         {
             foreach (var cachedTypeface in _typefaceCache.Values)
@@ -142,7 +144,7 @@ namespace Avalonia.Media
                 }
             }
 
-            var matchedTypeface = PlatformImpl.TryMatchCharacter(codepoint, fontWeight, fontStyle, fontFamily, culture, out var key) ?
+            var matchedTypeface = PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontFamily, culture, out var key) ?
                 _typefaceCache.GetOrAdd(key, new Typeface(key.FamilyName, key.Style, key.Weight)) :
                 null;
 
