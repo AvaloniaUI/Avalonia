@@ -273,7 +273,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
-                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
 
                 var textSource = new SingleBufferTextSource(text, defaultProperties);
 
