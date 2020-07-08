@@ -46,15 +46,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertAfter<PropertyReferenceResolver>(
                 new AvaloniaXamlIlAvaloniaPropertyResolver());
 
-            InsertBefore<ContentConvertTransformer>(
-                new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer(),
+            InsertBefore<ContentConvertTransformer>(                
                 new AvaloniaXamlIlBindingPathParser(),
                 new AvaloniaXamlIlSelectorTransformer(),
                 new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlPropertyPathTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
-                new AvaloniaXamlIlTransitionsTypeMetadataTransformer()
+                new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
+                new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer()
             );
 
             // After everything else
