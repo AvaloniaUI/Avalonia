@@ -377,7 +377,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var glyph = glyphRun.GlyphIndices[i];
 
-                    var advance = glyphTypeface.GetGlyphAdvance(glyph);
+                    var advance = glyphTypeface.GetGlyphAdvance(glyph) * glyphRun.Scale;
 
                     if (currentWidth + advance > availableWidth)
                     {
@@ -409,6 +409,11 @@ namespace Avalonia.Media.TextFormatting
             if (glyphCount == glyphRun.GlyphIndices.Length)
             {
                 return glyphRun.Characters.Length;
+            }
+
+            if (glyphRun.GlyphClusters.IsEmpty)
+            {
+                return glyphCount;
             }
 
             var firstCluster = glyphRun.GlyphClusters[0];

@@ -90,9 +90,9 @@ namespace Avalonia.Skia
                         {
                             count++;
 
-                            buffer.Add('\u200D', cluster);
-
                             buffer.Add('\u200C', cluster);
+
+                            buffer.Add('\u200D', cluster);
                         }
                         else
                         {
