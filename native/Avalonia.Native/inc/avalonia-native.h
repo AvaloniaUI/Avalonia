@@ -205,6 +205,15 @@ enum AvnMenuItemToggleType
     Radio
 };
 
+enum AvnExtendClientAreaChromeHints
+{
+    AvnNoChrome = 0,
+    AvnSystemChrome = 0x01,
+    AvnPreferSystemChrome = 0x02,
+    AvnOSXThickTitleBar = 0x08,
+    AvnDefaultChrome = AvnSystemChrome,
+};
+
 AVNCOM(IAvaloniaNativeFactory, 01) : IUnknown
 {
 public:
@@ -279,6 +288,10 @@ AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
     virtual HRESULT SetWindowState(AvnWindowState state) = 0;
     virtual HRESULT GetWindowState(AvnWindowState*ret) = 0;
     virtual HRESULT TakeFocusFromChildren() = 0;
+    virtual HRESULT SetExtendClientArea (bool enable) = 0;
+    virtual HRESULT SetExtendClientAreaHints (AvnExtendClientAreaChromeHints hints) = 0;
+    virtual HRESULT GetExtendTitleBarHeight (double*ret) = 0;
+    virtual HRESULT SetExtendTitleBarHeight (double value) = 0;
 };
 
 AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown

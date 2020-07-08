@@ -157,8 +157,6 @@
     <FontFamily x:Key="MTCMediaFontFamily">XamlAutoFontFamily</FontFamily>
     <FontFamily x:Key="PhoneFontFamilyNormal">Segoe WP</FontFamily>
     <FontFamily x:Key="PhoneFontFamilySemiLight">Segoe WP SemiLight</FontFamily>
-    <FontFamily x:Key="PivotHeaderItemFontFamily">XamlAutoFontFamily</FontFamily>
-    <FontFamily x:Key="PivotTitleFontFamily">XamlAutoFontFamily</FontFamily>
     <FontFamily x:Key="SettingsFlyoutHeaderThemeFontFamily">XamlAutoFontFamily</FontFamily>
     <FontFamily x:Key="SymbolThemeFontFamily">Segoe MDL2 Assets</FontFamily>
     <FontFamily x:Key="KeyTipFontFamily">XamlAutoFontFamily</FontFamily>
@@ -216,9 +214,6 @@
     <x:Double x:Key="MTCVerticalVolumeSliderMinHeight">96</x:Double>
     <x:Double x:Key="MTCVerticalVolumeSliderTopGap">8</x:Double>
     <x:Double x:Key="MTCVerticalVolumeSliderTopPadding">16</x:Double>
-    <x:Double x:Key="PivotHeaderItemFontSize">24</x:Double>
-    <x:Double x:Key="PivotHeaderItemLockedTranslation">40</x:Double>
-    <x:Double x:Key="PivotTitleFontSize">14</x:Double>
     <x:Double x:Key="ProgressBarIndicatorPauseOpacity">0.6</x:Double>
     <x:Double x:Key="ProgressBarThemeMinHeight">4</x:Double>
     <x:Double x:Key="RadioButtonBorderThemeThickness">2</x:Double>
@@ -261,7 +256,6 @@
     <x:Double x:Key="GridViewItemMinWidth">44</x:Double>
     <x:Double x:Key="GridViewItemMinHeight">44</x:Double>
     <x:Double x:Key="KeyTipContentThemeFontSize">12</x:Double>
-    <x:Int32 x:Key="PivotHeaderItemCharacterSpacing">-25</x:Int32>
     <Thickness x:Key="AppBarBottomBorderThemeThickness">0,0,0,0</Thickness>
     <Thickness x:Key="AppBarBottomThemePadding">0,0,0,0</Thickness>
     <Thickness x:Key="AppBarTopBorderThemeThickness">0,0,0,0</Thickness>
@@ -311,12 +305,6 @@
     <Thickness x:Key="PickerFlyoutContentPanelLandscapeThemeMargin">19,19,19,0</Thickness>
     <Thickness x:Key="PickerFlyoutContentPanelPortraitThemeMargin">19,37,19,0</Thickness>
     <Thickness x:Key="PickerFlyoutTitleThemeMargin">0,0,0,32.5</Thickness>
-    <Thickness x:Key="PivotHeaderItemMargin">12,0,12,0</Thickness>
-    <Thickness x:Key="PivotItemMargin">12,0,12,0</Thickness>
-    <Thickness x:Key="PivotLandscapeThemePadding">12,14,0,13</Thickness>
-    <Thickness x:Key="PivotNavButtonBorderThemeThickness">0</Thickness>
-    <Thickness x:Key="PivotNavButtonMargin">0,6,0,0</Thickness>
-    <Thickness x:Key="PivotPortraitThemePadding">12,14,0,13</Thickness>
     <Thickness x:Key="ProgressBarBorderThemeThickness">0</Thickness>
     <Thickness x:Key="RepeatButtonBorderThemeThickness">0</Thickness>
     <Thickness x:Key="ScrollBarPanningBorderThemeThickness">1</Thickness>
@@ -345,8 +333,6 @@
     <FontWeight x:Key="ComboBoxHeaderThemeFontWeight">Normal</FontWeight>
     <FontWeight x:Key="ComboBoxPlaceholderTextThemeFontWeight">SemiLight</FontWeight>
     <FontWeight x:Key="DatePickerHeaderThemeFontWeight">Normal</FontWeight>
-    <FontWeight x:Key="PivotHeaderItemThemeFontWeight">SemiLight</FontWeight>
-    <FontWeight x:Key="PivotTitleThemeFontWeight">Bold</FontWeight>
     <FontWeight x:Key="SearchBoxButtonThemeFontWeight">Normal</FontWeight>
     <FontWeight x:Key="SearchBoxContentThemeFontWeight">Normal</FontWeight>
     <FontWeight x:Key="TimePickerHeaderThemeFontWeight">Normal</FontWeight>

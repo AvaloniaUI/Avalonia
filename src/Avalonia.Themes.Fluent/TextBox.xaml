@@ -8,8 +8,7 @@
     <Setter Property="CaretBrush" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
-    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
@@ -50,7 +49,7 @@
             Margin="{TemplateBinding BorderThickness}">
             <DockPanel>
               <TextBlock Name="floatingWatermark"
-                         Foreground="{DynamicResource ThemeAccentBrush}"
+                         Foreground="{DynamicResource SystemAccentColor}"
                          FontSize="{DynamicResource FontSizeSmall}"
                          Text="{TemplateBinding Watermark}"
                          DockPanel.Dock="Top">
@@ -103,7 +102,6 @@
   </Style>
 
   <Style Selector="TextBox:disabled /template/ Border#border">
-    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
     <Setter Property="Background" Value="{DynamicResource TextControlBackgroundDisabled}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushDisabled}" />
   </Style>

@@ -312,7 +312,15 @@ namespace Avalonia.X11
         {
             get => _transparencyHelper.TransparencyLevelChanged;
             set => _transparencyHelper.TransparencyLevelChanged = value;
-        }
+        }        
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public Thickness ExtendedMargins { get; } = new Thickness();
+
+        public Thickness OffScreenMargin { get; } = new Thickness();
+
+        public bool IsClientAreaExtendedToDecorations { get; }
 
         public Action Closed { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
@@ -1039,6 +1047,18 @@ namespace Avalonia.X11
             _disabled = !enable;
         }
 
+        public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
+        {
+        }
+
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {
+        }
+
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+        }
+
         public Action GotInputWhenDisabled { get; set; }
 
         public void SetIcon(IWindowIconImpl icon)
@@ -1107,5 +1127,9 @@ namespace Avalonia.X11
         }
 
         public WindowTransparencyLevel TransparencyLevel => _transparencyHelper.CurrentLevel;
+
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
+
+        public bool NeedsManagedDecorations => false;
     }
 }

@@ -1,17 +1,19 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Design.PreviewWith>
     <Border Padding="20">
-      <StackPanel Spacing="10">
-        <ComboBox>
+      <Border Background="{DynamicResource ComboBoxDropDownBackground}"
+              BorderBrush="{DynamicResource ComboBoxDropDownBorderBrush}"
+              BorderThickness="{DynamicResource ComboBoxDropdownBorderThickness}"
+              Margin="0,-1,0,-1"
+              Padding="{DynamicResource ComboBoxDropdownBorderPadding}"
+              CornerRadius="{DynamicResource OverlayCornerRadius}">
+        <StackPanel HorizontalAlignment="Stretch">
           <ComboBoxItem>Item 1</ComboBoxItem>
-          <ComboBoxItem>Item 2</ComboBoxItem>
-        </ComboBox>
-
-        <ComboBox IsEnabled="False">
-          <ComboBoxItem>Item 1</ComboBoxItem>
-          <ComboBoxItem>Item 2</ComboBoxItem>
-        </ComboBox>
-      </StackPanel>
+          <ComboBoxItem>Item 2 long</ComboBoxItem>
+          <ComboBoxItem IsSelected="True">Item 3</ComboBoxItem>
+          <ComboBoxItem IsEnabled="False">Item 4</ComboBoxItem>
+        </StackPanel>
+      </Border>
     </Border>
   </Design.PreviewWith>
 
@@ -19,12 +21,11 @@
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxItemForeground}" />
     <Setter Property="Background" Value="{DynamicResource ComboBoxItemBackground}" />
     <Setter Property="Padding" Value="{DynamicResource ComboBoxItemThemePadding}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxItemRevealBorderBrush}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource ComboBoxItemRevealBorderThemeThickness}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter Name="PART_ContentPresenter"
+                          TextBlock.Foreground="{TemplateBinding Foreground}"
                           Background="{TemplateBinding Background}"
                           BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
@@ -32,28 +33,57 @@
                           Content="{TemplateBinding Content}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                          Padding="{TemplateBinding Padding}"/>
+                          Padding="{TemplateBinding Padding}" />
       </ControlTemplate>
     </Setter>
   </Style>
 
+  <!--  PointerOver state  -->
   <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource ComboBoxItemBackgroundPointerOver}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxItemBorderBrushPointerOver}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxItemForegroundPointerOver}" />
   </Style>
 
+  <!--  Disabled state  -->
+  <Style Selector="ComboBoxItem:disabled /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource ComboBoxItemBackgroundDisabled}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxItemBorderBrushDisabled}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxItemForegroundDisabled}" />
+  </Style>
+
+  <!--  Pressed state  -->
+  <Style Selector="ComboBoxItem:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource ComboBoxItemBackgroundPressed}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxItemBorderBrushPressed}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxItemForegroundPressed}" />
+  </Style>
+
+  <!--  Selected state  -->
   <Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
+    <Setter Property="Background" Value="{DynamicResource ComboBoxItemBackgroundSelected}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxItemBorderBrushSelected}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxItemForegroundSelected}" />
   </Style>
 
-  <Style Selector="ComboBoxItem:selected:focus /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}"/>
+  <!--  Selected Disabled state  -->
+  <Style Selector="ComboBoxItem:selected:disabled /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource ComboBoxItemBackgroundSelectedDisabled}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxItemBorderBrushSelectedDisabled}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxItemForegroundSelectedDisabled}" />
   </Style>
 
+  <!--  Selected PointerOver state  -->
   <Style Selector="ComboBoxItem:selected:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}"/>
+    <Setter Property="Background" Value="{DynamicResource ComboBoxItemBackgroundSelectedPointerOver}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxItemBorderBrushSelectedPointerOver}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxItemForegroundSelectedPointerOver}" />
   </Style>
 
-  <Style Selector="ComboBoxItem:selected:focus:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}"/>
+  <!--  Selected Pressed state  -->
+  <Style Selector="ComboBoxItem:selected:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource ComboBoxItemBackgroundSelectedPressed}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxItemBorderBrushSelectedPressed}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ComboBoxItemForegroundSelectedPressed}" />
   </Style>
 </Styles>

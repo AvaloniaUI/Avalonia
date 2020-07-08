@@ -1,139 +1,120 @@
 using System;
 using System.Linq;
-using XamlIl.Ast;
-using XamlIl.Transform;
-using XamlIl.TypeSystem;
+using XamlX;
+using XamlX.Ast;
+using XamlX.Transform;
+using XamlX.TypeSystem;
+using XamlX.Emit;
+using XamlX.IL;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    class AddNameScopeRegistration : IXamlIlAstTransformer
+    class AddNameScopeRegistration : IXamlAstTransformer
     {
-        public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+        public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (node is XamlIlPropertyAssignmentNode pa
-                && pa.Property.Name == "Name"
-                && pa.Property.DeclaringType.FullName == "Avalonia.StyledElement")
+            if (node is XamlPropertyAssignmentNode pa)
             {
-                if (context.ParentNodes().FirstOrDefault() is XamlIlManipulationGroupNode mg
-                    && mg.Children.OfType<AvaloniaNameScopeRegistrationXamlIlNode>().Any())
-                    return node;
-                
-                IXamlIlAstValueNode value = null;
-                for (var c = 0; c < pa.Values.Count; c++)
-                    if (pa.Values[c].Type.GetClrType().Equals(context.Configuration.WellKnownTypes.String))
-                    {
-                        value = pa.Values[c];
-                        if (!(value is XamlIlAstTextNode))
-                        {
-                            var local = new XamlIlAstCompilerLocalNode(value);
-                            // Wrap original in local initialization
-                            pa.Values[c] = new XamlIlAstLocalInitializationNodeEmitter(value, value, local);
-                            // Use local
-                            value = local;
-                        }
-
-                        break;
-                    }
-
-                if (value != null)
-                    return new XamlIlManipulationGroupNode(pa)
-                    {
-                        Children =
-                        {
-                            pa,
-                            new AvaloniaNameScopeRegistrationXamlIlNode(value, context.GetAvaloniaTypes())
-                        }
-                    };
-            }
-
-            if (!context.ParentNodes().Any()
-                && node is XamlIlValueWithManipulationNode mnode)
-            {
-                mnode.Manipulation = new XamlIlManipulationGroupNode(mnode,
-                    new[]
-                    {
-                        mnode.Manipulation,
-                        new HandleRootObjectScopeNode(mnode, context.GetAvaloniaTypes())
-                    });
-            }
-            return node;
-        }
-
-        class HandleRootObjectScopeNode : XamlIlAstNode, IXamlIlAstManipulationNode, IXamlIlAstEmitableNode
-        {
-            private readonly AvaloniaXamlIlWellKnownTypes _types;
-
-            public HandleRootObjectScopeNode(IXamlIlLineInfo lineInfo,
-                AvaloniaXamlIlWellKnownTypes types) : base(lineInfo)
-            {
-                _types = types;
-            }
-
-            public XamlIlNodeEmitResult Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
-            {
-                var next = codeGen.DefineLabel();
-                var scopeField = context.RuntimeContext.ContextType.Fields.First(f =>
-                    f.Name == AvaloniaXamlIlLanguage.ContextNameScopeFieldName);
-                using (var local = codeGen.LocalsPool.GetLocal(_types.StyledElement))
+                if (pa.Property.Name == "Name"
+                    && pa.Property.DeclaringType.FullName == "Avalonia.StyledElement")
                 {
-                    codeGen
-                        .Isinst(_types.StyledElement)
-                        .Dup()
-                        .Stloc(local.Local)
-                        .Brfalse(next)
-                        .Ldloc(local.Local)
-                        .Ldloc(context.ContextLocal)
-                        .Ldfld(scopeField)
-                        .EmitCall(_types.NameScopeSetNameScope, true)
-                        .MarkLabel(next)
-                        .Ldloc(context.ContextLocal)
-                        .Ldfld(scopeField)
-                        .EmitCall(_types.INameScopeComplete, true);
+                    if (context.ParentNodes().FirstOrDefault() is XamlManipulationGroupNode mg
+                        && mg.Children.OfType<AvaloniaNameScopeRegistrationXamlIlNode>().Any())
+                        return node;
+
+                    IXamlAstValueNode value = null;
+                    for (var c = 0; c < pa.Values.Count; c++)
+                        if (pa.Values[c].Type.GetClrType().Equals(context.Configuration.WellKnownTypes.String))
+                        {
+                            value = pa.Values[c];
+                            if (!(value is XamlAstTextNode))
+                            {
+                                var local = new XamlAstCompilerLocalNode(value);
+                                // Wrap original in local initialization
+                                pa.Values[c] = new XamlAstLocalInitializationNodeEmitter(value, value, local);
+                                // Use local
+                                value = local;
+                            }
+
+                            break;
+                        }
+
+                    if (value != null)
+                    {
+                        var objectType = context.ParentNodes().OfType<XamlAstConstructableObjectNode>().FirstOrDefault()?.Type.GetClrType();
+                        return new XamlManipulationGroupNode(pa)
+                        {
+                            Children =
+                            {
+                                pa,
+                                new AvaloniaNameScopeRegistrationXamlIlNode(value, objectType)
+                            }
+                        };
+                    }
                 }
-
-                return XamlIlNodeEmitResult.Void(1);
-
+                else if (pa.Property.CustomAttributes.Select(attr => attr.Type).Intersect(context.Configuration.TypeMappings.DeferredContentPropertyAttributes).Any())
+                {
+                    pa.Values[pa.Values.Count - 1] =
+                        new NestedScopeMetadataNode(pa.Values[pa.Values.Count - 1]);
+                }
             }
+
+            return node;
         }
     }
 
-    class AvaloniaNameScopeRegistrationXamlIlNode : XamlIlAstNode, IXamlIlAstManipulationNode, IXamlIlAstEmitableNode
+    class NestedScopeMetadataNode : XamlValueWithSideEffectNodeBase
     {
-        private readonly AvaloniaXamlIlWellKnownTypes _types;
-        public IXamlIlAstValueNode Name { get; set; }
-
-        public AvaloniaNameScopeRegistrationXamlIlNode(IXamlIlAstValueNode name, AvaloniaXamlIlWellKnownTypes types) : base(name)
+        public NestedScopeMetadataNode(IXamlAstValueNode value) : base(value, value)
         {
-            _types = types;
+        }
+    }
+
+    class AvaloniaNameScopeRegistrationXamlIlNode : XamlAstNode, IXamlAstManipulationNode
+    {
+        public IXamlAstValueNode Name { get; set; }
+        public IXamlType TargetType { get; }
+
+        public AvaloniaNameScopeRegistrationXamlIlNode(IXamlAstValueNode name, IXamlType targetType) : base(name)
+        {
+            TargetType = targetType;
             Name = name;
         }
 
-        public override void VisitChildren(IXamlIlAstVisitor visitor)
-            => Name = (IXamlIlAstValueNode)Name.Visit(visitor);
+        public override void VisitChildren(IXamlAstVisitor visitor)
+            => Name = (IXamlAstValueNode)Name.Visit(visitor);
+    }
 
-        public XamlIlNodeEmitResult Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+    class AvaloniaNameScopeRegistrationXamlIlNodeEmitter : IXamlAstLocalsNodeEmitter<IXamlILEmitter, XamlILNodeEmitResult>
+    {
+        public XamlILNodeEmitResult Emit(IXamlAstNode node, XamlEmitContextWithLocals<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
-            var scopeField = context.RuntimeContext.ContextType.Fields.First(f =>
-                f.Name == AvaloniaXamlIlLanguage.ContextNameScopeFieldName);
-            
-            using (var targetLoc = context.GetLocal(context.Configuration.WellKnownTypes.Object))
+            if (node is AvaloniaNameScopeRegistrationXamlIlNode registration)
             {
 
-                codeGen
-                    // var target = {pop}
-                    .Stloc(targetLoc.Local)
-                    // _context.NameScope.Register(Name, target)
-                    .Ldloc(context.ContextLocal)
-                    .Ldfld(scopeField);
-                    
-                context.Emit(Name, codeGen, Name.Type.GetClrType());
-                
-                codeGen
-                    .Ldloc(targetLoc.Local)
-                    .EmitCall(_types.INameScopeRegister, true);
-            }
+                var scopeField = context.RuntimeContext.ContextType.Fields.First(f =>
+                    f.Name == AvaloniaXamlIlLanguage.ContextNameScopeFieldName);
 
-            return XamlIlNodeEmitResult.Void(1);
+                using (var targetLoc = context.GetLocalOfType(context.Configuration.WellKnownTypes.Object))
+                {
+
+                    codeGen
+                        // var target = {pop}
+                        .Stloc(targetLoc.Local)
+                        // _context.NameScope.Register(Name, target)
+                        .Ldloc(context.ContextLocal)
+                        .Ldfld(scopeField);
+
+                    context.Emit(registration.Name, codeGen, registration.Name.Type.GetClrType());
+
+                    codeGen
+                        .Ldloc(targetLoc.Local)
+                        .EmitCall(context.GetAvaloniaTypes().INameScopeRegister, true);
+                }
+
+                return XamlILNodeEmitResult.Void(1);
+            }
+            return default;
         }
     }
 }
