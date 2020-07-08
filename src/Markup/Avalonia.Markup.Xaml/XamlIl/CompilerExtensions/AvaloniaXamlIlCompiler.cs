@@ -44,10 +44,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlTransformInstanceAttachedProperties(),
                 new AvaloniaXamlIlTransformSyntheticCompiledBindingMembers());
             InsertAfter<PropertyReferenceResolver>(
-                new AvaloniaXamlIlAvaloniaPropertyResolver(),
-                new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer());
+                new AvaloniaXamlIlAvaloniaPropertyResolver());
 
             InsertBefore<ContentConvertTransformer>(
+                new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer(),
                 new AvaloniaXamlIlBindingPathParser(),
                 new AvaloniaXamlIlSelectorTransformer(),
                 new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),

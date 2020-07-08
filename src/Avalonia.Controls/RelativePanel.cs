@@ -1,4 +1,4 @@
-﻿/* Ported from https://github.com/ghost1372/HandyControls/blob/develop/src/Shared/HandyControl_Shared/Controls/Panel/RelativePanel.cs */
+﻿/// Ported from https://github.com/HandyOrg/HandyControl/blob/master/src/Shared/HandyControl_Shared/Controls/Panel/RelativePanel.cs
 using System;
 using System.Collections.Generic;
 using System.Linq;
