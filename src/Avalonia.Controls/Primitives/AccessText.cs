@@ -97,9 +97,7 @@ namespace Avalonia.Controls.Primitives
             {
                 var lastLine = TextLayout.TextLines[TextLayout.TextLines.Count - 1];
 
-                var offsetX = lastLine.LineMetrics.BaselineOrigin.X;
-
-                var lineX = offsetX + lastLine.LineMetrics.Size.Width;
+                var lineX = lastLine.LineMetrics.Size.Width;
 
                 var lineY = Bounds.Height - lastLine.LineMetrics.Size.Height;
 
@@ -117,7 +115,7 @@ namespace Avalonia.Controls.Primitives
                     continue;
                 }
 
-                var currentX = textLine.LineMetrics.BaselineOrigin.X;
+                var currentX = 0.0;
 
                 foreach (var textRun in textLine.TextRuns)
                 {

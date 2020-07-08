@@ -103,12 +103,12 @@ namespace Avalonia.Media.TextFormatting
         public IReadOnlyList<TextLine> TextLines { get; private set; }
 
         /// <summary>
-        /// Gets the bounds of the layout.
+        /// Gets the size of the layout.
         /// </summary>
         /// <value>
         /// The bounds.
         /// </value>
-        public Rect Bounds { get; private set; }
+        public Size Size { get; private set; }
 
         /// <summary>
         /// Draws the text layout.
@@ -126,7 +126,10 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textLine in TextLines)
             {
-                textLine.Draw(context, new Point(origin.X, currentY));
+                var offsetX = TextLine.GetParagraphOffsetX(textLine.LineMetrics.Size.Width, Size.Width,
+                    _paragraphProperties.TextAlignment);
+
+                textLine.Draw(context, new Point(origin.X + offsetX, currentY));
 
                 currentY += textLine.LineMetrics.Size.Height;
             }
@@ -158,22 +161,16 @@ namespace Avalonia.Media.TextFormatting
         /// Updates the current bounds.
         /// </summary>
         /// <param name="textLine">The text line.</param>
-        /// <param name="left">The left.</param>
-        /// <param name="right">The right.</param>
-        /// <param name="bottom">The bottom.</param>
-        private static void UpdateBounds(TextLine textLine, ref double left, ref double right, ref double bottom)
+        /// <param name="width">The current width.</param>
+        /// <param name="height">The current height.</param>
+        private static void UpdateBounds(TextLine textLine, ref double width, ref double height)
         {
-            if (right < textLine.LineMetrics.BaselineOrigin.X + textLine.LineMetrics.Size.Width)
+            if (width < textLine.LineMetrics.Size.Width)
             {
-                right = textLine.LineMetrics.BaselineOrigin.X + textLine.LineMetrics.Size.Width;
+                width = textLine.LineMetrics.Size.Width;
             }
 
-            if (left < textLine.LineMetrics.BaselineOrigin.X)
-            {
-                left = textLine.LineMetrics.BaselineOrigin.X;
-            }
-
-            bottom += textLine.LineMetrics.Size.Height;
+            height += textLine.LineMetrics.Size.Height;
         }
 
         /// <summary>
@@ -204,13 +201,13 @@ namespace Avalonia.Media.TextFormatting
 
                 TextLines = new List<TextLine> { textLine };
 
-                Bounds = new Rect(textLine.LineMetrics.BaselineOrigin.X, 0, 0, textLine.LineMetrics.Size.Height);
+                Size = new Size(0, textLine.LineMetrics.Size.Height);
             }
             else
             {
                 var textLines = new List<TextLine>();
 
-                double left = 0.0, right = 0.0, bottom = 0.0;
+                double width = 0.0, height = 0.0;
 
                 var currentPosition = 0;
 
@@ -228,9 +225,9 @@ namespace Avalonia.Media.TextFormatting
 
                     textLines.Add(textLine);
 
-                    UpdateBounds(textLine, ref left, ref right, ref bottom);
+                    UpdateBounds(textLine, ref width, ref height);
 
-                    if (!double.IsPositiveInfinity(MaxHeight) && bottom > MaxHeight)
+                    if (!double.IsPositiveInfinity(MaxHeight) && height > MaxHeight)
                     {
                         break;
                     }
@@ -247,7 +244,7 @@ namespace Avalonia.Media.TextFormatting
                     textLines.Add(emptyTextLine);
                 }
 
-                Bounds = new Rect(left, 0, right, bottom);
+                Size = new Size(width, height);
 
                 TextLines = textLines;
             }

@@ -54,7 +54,7 @@ namespace Avalonia.Headless
 
     class HeadlessCursorFactoryStub : IStandardCursorFactory
     {
-        
+
         public IPlatformHandle GetCursor(StandardCursorType cursorType)
         {
             return new PlatformHandle(new IntPtr((int)cursorType), "STUB");
@@ -101,7 +101,7 @@ namespace Avalonia.Headless
         public bool IsFixedPitch => true;
 
         public void Dispose()
-        {            
+        {
         }
 
         public ushort GetGlyph(uint codepoint)
@@ -155,9 +155,9 @@ namespace Avalonia.Headless
             return new List<string> { "Arial" };
         }
 
-        public bool TryMatchCharacter(int codepoint, FontWeight fontWeight, FontStyle fontStyle, FontFamily fontFamily, CultureInfo culture, out FontKey fontKey)
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily, CultureInfo culture, out FontKey fontKey)
         {
-            fontKey = new FontKey("Arial", fontWeight, fontStyle);
+            fontKey = new FontKey("Arial", fontStyle, fontWeight);
             return true;
         }
     }
@@ -169,7 +169,7 @@ namespace Avalonia.Headless
         {
             public void Save(Stream outputStream)
             {
-                
+
             }
         }
         public IWindowIconImpl LoadIcon(string fileName)
